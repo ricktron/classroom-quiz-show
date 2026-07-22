@@ -1,7 +1,7 @@
 # Status
 
 **Current slice:** Slice 2 — State & event core
-**Slice state:** In review
+**Slice state:** Complete
 
 ## State vocabulary
 
@@ -10,11 +10,13 @@
 > Slice 1 is **Complete** (merged, deployed, owner-accepted — see the post-merge
 > reconciliation receipt
 > [`receipts/2026-07-22-slice-1-post-merge-reconciliation.md`](receipts/2026-07-22-slice-1-post-merge-reconciliation.md)).
-> Slice 2 is **In review**: the implementation PR is open and not merged. Per the
-> plan, Slice 2 must not be marked `Complete` until it is merged and a post-merge
-> reconciliation is recorded. **Slice 3 remains unstarted.**
+> Slice 2 is **Complete**: implementation PR #3 was merged to `main` (merge
+> commit `883111e`, merged 2026-07-22T23:00:07Z) with CI green, and the post-merge
+> reconciliation is recorded in
+> [`receipts/2026-07-22-slice-2-post-merge-reconciliation.md`](receipts/2026-07-22-slice-2-post-merge-reconciliation.md).
+> **Slice 3 remains unstarted and owner-gated.**
 
-## Slice 2 work (In review)
+## Slice 2 work (Complete)
 
 Neutral state/event/sync foundation — no gameplay. Full rationale in
 [`architecture/ADR-002-state-event-sync-core.md`](architecture/ADR-002-state-event-sync-core.md).
@@ -54,9 +56,12 @@ Local `verify:all` passed on the Slice 2 branch: lint, typecheck, unit tests
 (66 passed, 8 files), production build, and Playwright e2e (58 passed, 2 skipped
 — the offline-shell test runs once on the desktop project). `git diff --check`
 is clean. See [`handoff/CURRENT.md`](handoff/CURRENT.md) for exact commands and
-the Slice 2 receipt under [`receipts/`](receipts/) for durable evidence.
+the Slice 2 receipts under [`receipts/`](receipts/) for durable evidence.
 
-- CI on GitHub Actions: **Not yet observed for Slice 2** (runs when the PR opens).
+- CI on GitHub Actions: **Observed green** on PR #3 (head `bb8904b`) — the
+  "Lint, typecheck, unit tests, build" and "Playwright e2e" jobs both concluded
+  success, and the SonarCloud Quality Gate passed (0 security hotspots). No
+  actionable review comments.
 - Pages deployment: unchanged from Slice 1; Slice 2 alters no deploy config.
 
 ## Completed work (Slice 1)
@@ -85,5 +90,5 @@ None.
 
 ## Next safe action
 
-Review the Slice 2 implementation PR. **Do not merge and do not begin Slice 3**
-until Slice 2 is reviewed, merged, and reconciled.
+Review and merge the Slice 2 post-merge reconciliation PR (documentation only).
+**Do not begin Slice 3** until the owner explicitly authorizes it.

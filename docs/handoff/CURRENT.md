@@ -2,7 +2,7 @@
 
 This is the entry point for the next contributor or coding agent. It reflects
 the repository with Slice 1 merged/deployed/accepted and Slice 2 (state & event
-core) **In review** on an open PR.
+core) **Complete** — merged to `main` with CI green.
 
 ## Repository state
 
@@ -10,10 +10,13 @@ core) **In review** on an open PR.
   implementation truth).
 - **Slice 1:** delivered on `claude/classroom-quiz-show-slice-1-a6ogu4`, merged
   to `main` (PR #1, merge commit `e0bfb14`), deployed, owner-accepted.
-- **Slice 2 (current):** **In review** on branch
-  `claude/slice-2-state-event-core-ycf9i8`, based on `main` at `b0e5913`. PR open,
-  **not merged**. Slice 2 must not be marked `Complete` until merged and
-  reconciled. **Slice 3 is unstarted.**
+- **Slice 2 (current):** **Complete.** Delivered on
+  `claude/slice-2-state-event-core-ycf9i8` (based on `main` at `b0e5913`,
+  implementation commit `bb8904b`), merged to `main` via **PR #3** (merge commit
+  `883111e`, merged 2026-07-22T23:00:07Z) with CI green. Post-merge reconciliation
+  recorded in
+  [`../receipts/2026-07-22-slice-2-post-merge-reconciliation.md`](../receipts/2026-07-22-slice-2-post-merge-reconciliation.md).
+  **Slice 3 is unstarted and owner-gated.**
 - **What Slice 2 adds:** a neutral state/event/sync foundation — a command-driven
   reducer, append-only event history, deterministic replay + auditable undo, an
   allow-list private→public sanitizer, and same-browser host/display sync over
@@ -75,8 +78,10 @@ npm run verify:all   # verify + build + e2e (merge gate)
 > the matching browser and needs no override.
 
 Latest local results: `verify:all` green — 66 unit tests, 58 e2e passed / 2
-skipped; `git diff --check` clean. Durable evidence in the Slice 2 receipt under
-[`../receipts/`](../receipts/).
+skipped; `git diff --check` clean. CI on PR #3 was observed green (build + e2e
+jobs success; SonarCloud Quality Gate passed, 0 security hotspots). Durable
+evidence in the Slice 2 local-verification and post-merge reconciliation receipts
+under [`../receipts/`](../receipts/).
 
 ## Known risks / limitations
 
@@ -84,7 +89,6 @@ skipped; `git diff --check` clean. Durable evidence in the Slice 2 receipt under
   lost on tab close.
 - **Same-browser sync only** — BroadcastChannel, same origin. No cross-device
   sync, backend, or leader election (later/out of scope).
-- **CI not yet observed for Slice 2** — will run on the PR.
 - **PWA icons remain placeholders** (carried from Slice 1).
 
 ## Open questions / unresolved decisions
@@ -94,9 +98,9 @@ skipped; `git diff --check` clean. Durable evidence in the Slice 2 receipt under
 
 ## Next action
 
-Review the Slice 2 implementation PR. Do **not** merge it and do **not** begin
-Slice 3 until Slice 2 is reviewed, merged, and a post-merge reconciliation is
-recorded.
+Review and merge the Slice 2 post-merge reconciliation PR (documentation only).
+Slice 2 is already `Complete` in [`../STATUS.md`](../STATUS.md). Do **not** begin
+Slice 3 until the owner explicitly authorizes it.
 
 ## Prohibited next actions until Slice 3 is authorized
 

@@ -84,8 +84,8 @@ artifact adversarial QA found no Slice 1 defects. Evidence and the owner-live vs
 sandbox-artifact distinction are recorded in
 [`../receipts/2026-07-22-slice-1-post-merge-reconciliation.md`](../receipts/2026-07-22-slice-1-post-merge-reconciliation.md).
 
-**Slice 2 is now authorized and In review** (implementation PR open, not merged;
-see the Slice 2 section below).
+**Slice 2 is Complete** (merged to `main` via PR #3, merge commit `883111e`; see
+the Slice 2 section below).
 
 ### Explicit non-goals (Slice 1)
 
@@ -98,8 +98,10 @@ backend, accounts, grading, AI, and multiple playable round types.
 
 ## Slice 2 — scope, acceptance, non-goals
 
-**State: In review** (implementation PR open; not merged). Full technical
-rationale is in [`../architecture/ADR-002-state-event-sync-core.md`](../architecture/ADR-002-state-event-sync-core.md).
+**State: Complete.** Implementation PR #3 was merged to `main` (merge commit
+`883111e`, merged 2026-07-22T23:00:07Z) with CI green; post-merge reconciliation
+is recorded in [`../receipts/2026-07-22-slice-2-post-merge-reconciliation.md`](../receipts/2026-07-22-slice-2-post-merge-reconciliation.md).
+Full technical rationale is in [`../architecture/ADR-002-state-event-sync-core.md`](../architecture/ADR-002-state-event-sync-core.md).
 
 ### Scope (implemented)
 
