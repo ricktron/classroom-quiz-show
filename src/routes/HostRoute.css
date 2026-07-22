@@ -1,0 +1,51 @@
+.host {
+  --host-accent: var(--color-host-accent);
+}
+
+.host__banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  background: rgba(242, 169, 0, 0.12);
+  border-bottom: 2px solid var(--color-host-accent);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.host__banner-badge {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: var(--color-host-accent);
+  color: #201400;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.host__status {
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  max-width: 40rem;
+}
+
+.host__status h2 {
+  margin-top: 0;
+  color: var(--color-host-accent);
+}
+
+.host__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+.host__note {
+  color: var(--color-text-muted);
+  max-width: 42rem;
+  font-size: 0.95rem;
+}

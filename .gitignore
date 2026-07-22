@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dev-dist/
+
+# Test / tooling artifacts
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# Editor / OS
+.DS_Store
+*.local
+
+# Local Claude settings (machine-specific; not part of the project)
+.claude/settings.local.json
+
+# Logs
+npm-debug.log*
