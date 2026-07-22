@@ -1,0 +1,140 @@
+/*
+ * Foundational visual identity for Classroom Quiz Show.
+ *
+ * This is intentionally restrained and token-driven so it can be replaced by a
+ * real theme engine later (see GAME-ENGINE-BOUNDARIES.md). Tokens live on
+ * :root; screens consume them. No commercial game-show branding is imitated.
+ */
+
+:root {
+  /* Neutral / surface palette (dark, projector-friendly base) */
+  --color-bg: #0b1b2b;
+  --color-surface: #12263a;
+  --color-surface-raised: #1b344c;
+  --color-border: #2b4a68;
+  --color-text: #f2f7fb;
+  --color-text-muted: #b9c9d8;
+
+  /* Accents */
+  --color-accent: #3aa0ff; /* display / general */
+  --color-accent-strong: #1d7fe0;
+  --color-host-accent: #f2a900; /* host = private, amber caution */
+  --color-danger: #ff6b6b;
+  --color-success: #4ade80;
+
+  /* Typography */
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-display: var(--font-sans);
+
+  /* Scale */
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2.5rem;
+  --radius: 12px;
+  --focus-ring: 3px solid var(--color-accent);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--color-accent);
+}
+
+/* Visible, consistent focus for keyboard users on every interactive element. */
+:where(a, button, [tabindex]):focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Shared button foundation. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: 48px; /* touch-friendly */
+  padding: 0.75rem 1.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text);
+  background: var(--color-accent-strong);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.btn:hover {
+  background: var(--color-accent);
+}
+
+.btn--secondary {
+  background: transparent;
+  border-color: var(--color-border);
+}
+
+.btn--secondary:hover {
+  background: var(--color-surface-raised);
+}
+
+.screen {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-4) var(--space-2);
+  gap: var(--space-3);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
