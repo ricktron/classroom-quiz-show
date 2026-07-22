@@ -10,8 +10,11 @@ classroom. A teacher runs a private **host** screen; students watch a public
 
 ## Current implementation status
 
-**Slice 1 — foundation.** This repository currently contains the technical
-foundation only:
+**Slice 1 — foundation. Complete** — merged (PR #1), CI green, and deployed live
+to GitHub Pages at <https://ricktron.github.io/classroom-quiz-show/> (owner-
+verified; see [`docs/STATUS.md`](docs/STATUS.md) and the reconciliation receipt
+[`docs/receipts/2026-07-22-slice-1-post-merge-reconciliation.md`](docs/receipts/2026-07-22-slice-1-post-merge-reconciliation.md)).
+Slice 2 is unstarted. This repository contains the technical foundation only:
 
 - React + TypeScript + Vite app shell
 - Hash-based routing with separate **host** and **display** routes, a root
@@ -124,9 +127,10 @@ they have been cached once.
 
 Deployed to **GitHub Pages** from the `main` branch via
 `.github/workflows/deploy-pages.yml` (build → upload Pages artifact → deploy).
-The build applies the `/classroom-quiz-show/` base path automatically.
+The build applies the `/classroom-quiz-show/` base path automatically. The site
+is **live** at <https://ricktron.github.io/classroom-quiz-show/>.
 
-**One-time repository settings the owner must enable:**
+**One-time repository settings (already enabled):**
 
 1. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
 2. Ensure Actions are enabled for the repository.

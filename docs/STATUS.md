@@ -1,15 +1,18 @@
 # Status
 
 **Current slice:** Slice 1 — Foundation
-**Slice state:** In review
+**Slice state:** Complete
 
 ## State vocabulary
 
 `Planned` · `In progress` · `In review` · `Complete` · `Blocked` · `Unknown`
 
-> Slice 1 is **In review**, not `Complete`. Per the plan, it may only be marked
-> `Complete` after review and workflow completion (CI green + Pages deploy
-> configured and accepted by the owner).
+> Slice 1 is **Complete**. Per the plan, it could be marked `Complete` only after
+> review and workflow completion (CI green + Pages deployed and accepted by the
+> owner); all of those are now satisfied and recorded in the post-merge
+> reconciliation receipt
+> ([`receipts/2026-07-22-slice-1-post-merge-reconciliation.md`](receipts/2026-07-22-slice-1-post-merge-reconciliation.md)).
+> **Slice 2 remains unstarted.**
 
 ## Completed work (Slice 1)
 
@@ -39,24 +42,32 @@ production build, Playwright e2e). See
 [`handoff/CURRENT.md`](handoff/CURRENT.md) for exact commands and results, and
 [`receipts/README.md`](receipts/README.md) for how evidence is recorded.
 
-- CI on GitHub Actions: **Configured, not yet observed green** (no push/PR run
-  recorded at the time of writing).
-- GitHub Pages live deployment: **Configured, not yet observed live** (requires
-  the one-time repository setting in the README and a push to `main`).
+- CI on GitHub Actions: **Observed green.** Runs `29882292809` (PR, feature
+  commit `0fad6bf`) and `29882719298` (push, merge commit `e0bfb14`) both
+  concluded success.
+- GitHub Pages live deployment: **Observed live.** Deploy workflow
+  (`deploy-pages.yml`) run `29882719376`, attempt 2, completed successfully at
+  2026-07-22T03:41:51Z at https://ricktron.github.io/classroom-quiz-show/. The
+  owner opened the live root, host, and display routes and observed them render
+  and work with no obvious display leakage or rendering defect.
 
-These two items are accurately qualified as "configured but unverified in the
-GitHub environment" and are the reason Slice 1 is `In review`, not `Complete`.
+Evidence is distinguished by type — owner live-site observation vs.
+sandbox production-**artifact** QA (same commit, build, and base path; the
+sandbox did not access the deployed `github.io` origin) — and recorded in full
+in [`receipts/2026-07-22-slice-1-post-merge-reconciliation.md`](receipts/2026-07-22-slice-1-post-merge-reconciliation.md).
 
-## Remaining work (before marking Slice 1 Complete)
+## Completion criteria (all satisfied)
 
-- [ ] Observe CI green on the PR.
-- [ ] Owner enables **Settings → Pages → Source: GitHub Actions**.
-- [ ] Observe a successful Pages deployment and load the live host/display URLs.
+- [x] Observe CI green on the PR.
+- [x] Owner enables **Settings → Pages → Source: GitHub Actions**.
+- [x] Observe a successful Pages deployment and load the live host/display URLs.
+- [x] Passing production-artifact adversarial QA — no Slice 1 defects.
+- [x] Accurate post-merge reconciliation recorded.
 
 ## Blockers
 
-None at the code level. The only gating items are GitHub-side (CI run + the
-one-time Pages source setting), which require the repository owner.
+None. All gating items (CI green, Pages source setting, live deployment) are
+resolved and observed.
 
 ## Limitations
 
@@ -69,6 +80,7 @@ one-time Pages source setting), which require the repository owner.
 
 ## Next safe action
 
-Open the review PR for `claude/classroom-quiz-show-slice-1-a6ogu4`, let CI run,
-and have the owner enable the GitHub Pages source setting. **Do not begin
-Slice 2** until Slice 1 is accepted.
+Review and merge the documentation-only post-merge reconciliation PR
+(`docs/slice-1-post-merge-reconciliation`). **Do not begin Slice 2** until the
+owner explicitly authorizes it; Slice 2 (state & event core) is planned but
+unstarted.

@@ -76,6 +76,15 @@ under the Pages base path with refresh; display leaks no private content and
 fails closed; PWA manifest valid + offline shell cached; CI and Pages deploy
 configured.
 
+**Status: accepted.** Slice 1 was merged (PR #1, merge commit `e0bfb14`),
+CI ran green, and the Pages deployment completed successfully
+(2026-07-22T03:41:51Z) at https://ricktron.github.io/classroom-quiz-show/. The
+owner observed the live root/host/display routes rendering, and production-
+artifact adversarial QA found no Slice 1 defects. Evidence and the owner-live vs.
+sandbox-artifact distinction are recorded in
+[`../receipts/2026-07-22-slice-1-post-merge-reconciliation.md`](../receipts/2026-07-22-slice-1-post-merge-reconciliation.md).
+Slice 2 remains unstarted and must not begin until the owner authorizes it.
+
 ### Explicit non-goals (Slice 1)
 
 Board/round engines, round-registry runtime, schemas, Zod, spreadsheet import,
