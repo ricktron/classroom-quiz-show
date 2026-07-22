@@ -1,14 +1,16 @@
 import { Link } from 'react-router-dom'
 import { ROUTES, absoluteHashUrl } from './paths'
+import { FoundationControls } from '../host/FoundationControls'
 import './HostRoute.css'
 
 /**
  * Private teacher host screen.
  *
- * Slice 1 intentionally exposes NO game controls. There is no session, no
- * scoring, no answers — only an honest "nothing is running yet" state plus a
- * link to open the projector display. It must never be projected, hence the
- * persistent warning banner.
+ * There is still NO gameplay here — no board, scoring, teams, timers, or answer
+ * reveal. Slice 2 adds a clearly-labeled "Foundation / testing controls" panel
+ * that owns the authoritative in-memory state store, shows private state and the
+ * append-only event history (host-only), and publishes sanitized public state to
+ * the display. It must never be projected, hence the persistent warning banner.
  */
 export function HostRoute() {
   function openDisplay() {
@@ -51,6 +53,8 @@ export function HostRoute() {
           Tip: put this host screen on your laptop and the display screen on the
           projector. They are separate screens on purpose.
         </p>
+
+        <FoundationControls />
       </main>
     </div>
   )

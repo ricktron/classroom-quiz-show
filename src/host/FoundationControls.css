@@ -1,0 +1,128 @@
+/*
+ * Foundation / testing controls. Host-only diagnostics surface for Slice 2 —
+ * deliberately utilitarian, clearly separated from the (future) game UI.
+ */
+.foundation {
+  width: 100%;
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  text-align: left;
+}
+
+.foundation__tag {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  margin-bottom: var(--space-1);
+  border-radius: 999px;
+  background: rgba(242, 169, 0, 0.16);
+  border: 1px solid var(--color-host-accent);
+  color: var(--color-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.foundation__intro {
+  margin-top: 0;
+}
+
+.foundation__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.foundation__status {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.foundation__status legend {
+  padding: 0 0.4rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.foundation__status-btn {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9rem;
+}
+
+.foundation__status[disabled] {
+  opacity: 0.55;
+}
+
+.foundation__grid {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.foundation__panel {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-2);
+}
+
+.foundation__panel h3 {
+  margin-top: 0;
+  font-size: 1rem;
+  color: var(--color-accent);
+}
+
+.foundation__kv {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 1rem;
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9rem;
+}
+
+.foundation__kv dt {
+  color: var(--color-text-muted);
+}
+
+.foundation__kv dd {
+  margin: 0;
+  word-break: break-word;
+}
+
+.foundation__history {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9rem;
+}
+
+.foundation__event {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.foundation__event-seq {
+  color: var(--color-text-muted);
+}
+
+.foundation__event-type {
+  font-weight: 600;
+}
+
+.foundation__event-flag {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}

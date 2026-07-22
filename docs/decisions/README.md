@@ -5,7 +5,11 @@ This project separates two kinds of durable decision records:
 1. **Architecture Decision Records (ADRs)** — technical decisions with
    trade-offs, alternatives, and consequences. Stored in
    [`../architecture/`](../architecture/) as `ADR-NNN-<slug>.md`.
-   Example: [`ADR-001-github-pages-routing.md`](../architecture/ADR-001-github-pages-routing.md).
+   - [`ADR-001-github-pages-routing.md`](../architecture/ADR-001-github-pages-routing.md)
+     — hash routing for static GitHub Pages (Slice 1).
+   - [`ADR-002-state-event-sync-core.md`](../architecture/ADR-002-state-event-sync-core.md)
+     — command/event core, replay/undo, allow-list sanitizer, BroadcastChannel
+     sync (Slice 2).
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).

@@ -101,13 +101,20 @@ stale state, unsupported version, runtime error, or missing round renderer must
 resolve the display to a **safe** state — never to leaked private data and never
 to a crash that exposes internals.
 
-**Slice 1 status.** No game state exists yet, so there is no sanitizer to run.
-The boundary is honored today by construction: the display route renders only
-static, public placeholder text and no private placeholder data. The permanent
-projector-leak test suite (`tests/e2e/projector-safety.spec.ts`,
-`src/test/leakLabels.ts`) is the first, baseline guard. Label matching is a
-_smoke check only_ — when the real sanitizer lands, structural `PublicState`
-assertions must be added.
+**Status (Slice 2).** The allow-list sanitizer now exists:
+`toPublicState(private): PublicState` in `src/state/sanitize.ts` (see
+[`ADR-002-state-event-sync-core.md`](ADR-002-state-event-sync-core.md)). It
+constructs each public field explicitly — no clone-and-delete, no spread, no
+serialization of private state — so a newly-added private field cannot leak by
+default. `PublicState` (`src/state/publicState.ts`) is dependency-free so the
+display bundle cannot pull a private type in, and `safeToPublicState` makes a
+projection failure fall back to the safe initial state. Structural `PublicState`
+assertions (allow-listed keys only, future-field non-leak, serialized-value
+checks) now back the baseline projector-leak string checks in
+`tests/e2e/projector-safety.spec.ts` / `src/test/leakLabels.ts`. Gameplay-era
+private data (answers, notes, wagers, upcoming prompts) still does not exist;
+those fields join the private state — and are guarded by the same allow-list — in
+later slices.
 
 ## 5. Imported content is data, never executable code
 
@@ -125,7 +132,13 @@ Runtime is command-driven: the host issues **commands**; a reducer produces an
 **append-only event history**; state is derived from events. Undo, replay, and
 recovery are all derived from the event model rather than ad-hoc mutation.
 
-Deferred entirely from Slice 1 (no reducer, no event log, no commands, no undo).
+**Status (Slice 2).** Implemented as a neutral foundation with a deliberately
+small, non-gameplay command/event vocabulary — see
+[`ADR-002-state-event-sync-core.md`](ADR-002-state-event-sync-core.md). The pure
+reducer, append-only history, deterministic replay, and auditable undo (an
+append-only `EVENT_UNDONE` marker, never a deletion) all exist now. Gameplay
+commands/events (tiles, reveal, teams, scoring, timers, wagers, rounds) are still
+deferred to later slices and will extend this core, not replace it.
 
 ## 7. Scoring-strategy boundary (future)
 
