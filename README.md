@@ -14,7 +14,23 @@ classroom. A teacher runs a private **host** screen; students watch a public
 to GitHub Pages at <https://ricktron.github.io/classroom-quiz-show/> (owner-
 verified; see [`docs/STATUS.md`](docs/STATUS.md) and the reconciliation receipt
 [`docs/receipts/2026-07-22-slice-1-post-merge-reconciliation.md`](docs/receipts/2026-07-22-slice-1-post-merge-reconciliation.md)).
-Slice 2 is unstarted. This repository contains the technical foundation only:
+
+**Slice 2 — state & event core. In review** (implementation PR open; not
+merged). Slice 2 adds a neutral runtime foundation on top of the shell — no
+gameplay — see [`docs/architecture/ADR-002-state-event-sync-core.md`](docs/architecture/ADR-002-state-event-sync-core.md):
+
+- A **command-driven reducer**: commands express intent, a pure reducer produces
+  an **append-only event history**, and authoritative state is derived by
+  **replaying** events. **Undo** is an append-only, auditable marker (nothing is
+  deleted).
+- An explicit **private → public boundary**: an allow-list `toPublicState`
+  sanitizer produces the only data the projector ever sees; the display **fails
+  closed**.
+- **Same-browser host/display sync** over a versioned **BroadcastChannel**
+  envelope: the host is authoritative, the display is read-only, and unknown /
+  stale / malformed messages are ignored.
+
+The Slice 1 foundation is unchanged beneath it:
 
 - React + TypeScript + Vite app shell
 - Hash-based routing with separate **host** and **display** routes, a root
@@ -26,9 +42,11 @@ Slice 2 is unstarted. This repository contains the technical foundation only:
 - Lint, typecheck, unit/component tests (Vitest), and browser tests (Playwright)
 - Architecture and governance documentation
 
-There is **no gameplay yet** — no board, rounds, scoring, timers, teams, answer
-reveal, or persistence. Those arrive in later slices. See
-[`docs/STATUS.md`](docs/STATUS.md) and [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md).
+There is still **no gameplay** — no board, rounds, scoring, timers, teams,
+answer reveal, or durable persistence. The host "Foundation / testing controls"
+are diagnostics that prove the state core, not game controls. Those systems
+arrive in later slices. See [`docs/STATUS.md`](docs/STATUS.md) and
+[`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md).
 
 ## Requirements
 

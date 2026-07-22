@@ -1,40 +1,59 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository after Slice 1 was merged, deployed, and accepted.
+the repository with Slice 1 merged/deployed/accepted and Slice 2 (state & event
+core) **In review** on an open PR.
 
 ## Repository state
 
 - **Repository:** `ricktron/classroom-quiz-show` (standalone; single source of
   implementation truth).
-- **Branch:** Slice 1 was delivered on `claude/classroom-quiz-show-slice-1-a6ogu4`
-  and **merged to `main` via PR #1** (merge commit `e0bfb14`). Post-merge
-  reconciliation lives on `docs/slice-1-post-merge-reconciliation`
-  (documentation only).
-- **Current slice:** Slice 1 — Foundation. **State: Complete** (merged,
-  deployed, and owner-accepted). **Slice 2 is unstarted.**
-- **What exists:** React + TS + Vite app shell; hash routing with host/display/
-  root/unknown routes; route-level error handling (display fails closed); PWA
-  (manifest + SW + offline shell); Pages deploy config under
-  `/classroom-quiz-show/`; Vitest + Playwright suites; full docs/governance.
-- **What does NOT exist:** any gameplay (board, rounds, scoring, timers, teams,
-  answer reveal, persistence, state/event core). Deferred by design.
+- **Slice 1:** delivered on `claude/classroom-quiz-show-slice-1-a6ogu4`, merged
+  to `main` (PR #1, merge commit `e0bfb14`), deployed, owner-accepted.
+- **Slice 2 (current):** **In review** on branch
+  `claude/slice-2-state-event-core-ycf9i8`, based on `main` at `b0e5913`. PR open,
+  **not merged**. Slice 2 must not be marked `Complete` until merged and
+  reconciled. **Slice 3 is unstarted.**
+- **What Slice 2 adds:** a neutral state/event/sync foundation — a command-driven
+  reducer, append-only event history, deterministic replay + auditable undo, an
+  allow-list private→public sanitizer, and same-browser host/display sync over
+  BroadcastChannel. No gameplay.
 
 ## Architecture decisions
 
-- **Routing:** hash routing (`HashRouter`) — see
-  [`../architecture/ADR-001-github-pages-routing.md`](../architecture/ADR-001-github-pages-routing.md).
-  Chosen for reliable direct-load/refresh on static GitHub Pages under a repo
-  base path, with no 404 trick.
-- **Base path:** `/classroom-quiz-show/` in production, `/` in dev; shareable
-  links composed via `absoluteHashUrl()` (`src/routes/paths.ts`) from
-  `import.meta.env.BASE_URL`.
-- **Private/public boundary + fail-closed display:** permanent invariants,
-  documented in [`../architecture/GAME-ENGINE-BOUNDARIES.md`](../architecture/GAME-ENGINE-BOUNDARIES.md).
-  No sanitizer yet (no state yet); the display renders only static public text
-  and is guarded by the baseline projector-leak suite.
-- **Multi-round engine:** game = ordered typed rounds via a future registry;
-  nothing assumes one-game-one-board, one scoring model, or text-only prompts.
+- **Routing / base path:** unchanged from Slice 1 (hash routing; ADR-001).
+- **State, event & sync core:** see
+  [`../architecture/ADR-002-state-event-sync-core.md`](../architecture/ADR-002-state-event-sync-core.md).
+  Commands express intent; a pure reducer produces append-only events;
+  authoritative state is `replay(initial + events)`; undo appends an auditable
+  `EVENT_UNDONE` marker (nothing is deleted). The allow-list `toPublicState`
+  sanitizer is the only path from private state to the display. Host/display sync
+  uses a versioned BroadcastChannel envelope; the host is authoritative and the
+  display is read-only and fails closed.
+- **Four failure categories** (command rejection, event application failure,
+  transport decode failure, public projection failure) are documented in ADR-002
+  and each has a defined fail-safe behavior.
+
+## Module map (Slice 2)
+
+```
+src/state/
+  publicState.ts   PublicState type + isPublicState guard (display-safe; no private imports)
+  status.ts        Bounded PublicStatusCode + fixed public copy (host-side)
+  privateState.ts  PrivateState / PrivateSessionState (authoritative; private fields)
+  commands.ts      SessionCommand union (intent)
+  events.ts        SessionEvent union (accepted facts; reversible flag)
+  reducer.ts       reduce, planCommand, replay, findUndoTarget
+  sanitize.ts      toPublicState (allow-list) + safeToPublicState (fail-closed)
+  store.ts         createSessionStore (append-only history → derived state)
+src/sync/
+  protocol.ts      Versioned envelope + strict decodeEnvelope (fail-closed)
+  channel.ts       SyncChannel: BroadcastChannel / no-op / in-memory-hub impls
+  broadcaster.ts   Host publisher (sanitized only; answers request-state)
+  receiver.ts      Display subscriber (decode, stale/dup drop, request on start)
+src/host/          useSessionStore, useHostSync, FoundationControls (host-only)
+src/display/       usePublicState (imports only PublicState + receiver)
+```
 
 ## Verification commands
 
@@ -42,54 +61,49 @@ the repository after Slice 1 was merged, deployed, and accepted.
 npm ci               # reproducible install
 npm run lint         # ESLint (flat config)
 npm run typecheck    # tsc -b --noEmit
-npm run test:run     # Vitest (unit/component)
+npm run test:run     # Vitest (unit/component) — 66 tests
 npm run build        # tsc -b && vite build → dist/
-npm run preview      # serve dist/ at /classroom-quiz-show/
 npm run test:e2e     # Playwright vs production preview (3 viewport projects)
 npm run verify       # lint + typecheck + unit
 npm run verify:all   # verify + build + e2e (merge gate)
 ```
 
-> **Local Playwright note:** if the machine's pre-provisioned Chromium does not
-> match Playwright's bundled version, set `PLAYWRIGHT_CHROMIUM_PATH` to the
-> Chromium executable before `npm run test:e2e`. CI installs the matching
-> browser and needs no override. This env var keeps machine-specific paths out
-> of committed config.
+> **Local Playwright note:** this sandbox's pre-provisioned Chromium is build
+> 1194 while `@playwright/test@1.56` expects 1228, so `test:e2e` needs
+> `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.
+> That override is passed via the environment only — never committed. CI installs
+> the matching browser and needs no override.
 
-Latest local verification results are recorded in the implementation PR
-description and (for durable evidence) may be captured as a receipt under
+Latest local results: `verify:all` green — 66 unit tests, 58 e2e passed / 2
+skipped; `git diff --check` clean. Durable evidence in the Slice 2 receipt under
 [`../receipts/`](../receipts/).
 
-## Known risks
+## Known risks / limitations
 
-- **CI observed green** and **Pages observed live** — both resolved. CI runs
-  `29882292809`/`29882719298` succeeded; the deploy workflow run `29882719376`
-  (attempt 2) completed at 2026-07-22T03:41:51Z, and the owner verified the live
-  root/host/display routes render. Full evidence, including the distinction
-  between owner live observation and sandbox production-**artifact** QA, is in
-  [`../receipts/2026-07-22-slice-1-post-merge-reconciliation.md`](../receipts/2026-07-22-slice-1-post-merge-reconciliation.md).
-- **Projector-leak tests are a baseline** (labels + controls), not proof of the
-  future sanitizer boundary. Add structural `PublicState` assertions when the
-  sanitizer lands (Slice 2). QA advisory INFO-1 (a non-rendered `<meta>`
-  description containing "teacher") is a related, non-blocking note.
-- **PWA icons are placeholders.**
+- **In-memory history only** — no durable persistence yet (Slice 8). State is
+  lost on tab close.
+- **Same-browser sync only** — BroadcastChannel, same origin. No cross-device
+  sync, backend, or leader election (later/out of scope).
+- **CI not yet observed for Slice 2** — will run on the PR.
+- **PWA icons remain placeholders** (carried from Slice 1).
 
 ## Open questions / unresolved decisions
 
-- None blocking. Confirm the default branch is `main` (the deploy workflow
-  targets `main`); adjust the workflow if the owner prefers another branch.
+- None blocking. Confirm the default branch is `main` (deploy workflow targets
+  `main`).
 
 ## Next action
 
-Review and merge the documentation-only post-merge reconciliation PR
-(`docs/slice-1-post-merge-reconciliation`). Slice 1 is already `Complete` in
-[`../STATUS.md`](../STATUS.md). Begin Slice 2 (state & event core) only after the
-owner explicitly authorizes starting it.
+Review the Slice 2 implementation PR. Do **not** merge it and do **not** begin
+Slice 3 until Slice 2 is reviewed, merged, and a post-merge reconciliation is
+recorded.
 
-## Prohibited next actions until Slice 2 is authorized
+## Prohibited next actions until Slice 3 is authorized
 
-Do **not**: begin Slice 2 or any later slice; implement playable rounds, a
-board, scoring, timers, teams, answer reveal, state/event core, persistence, or
-imports; add a backend, accounts, buzzers, or AI services; weaken fail-closed
-display behavior; send private host state to the display; permit executable
-imported game code; or move implementation truth into NightWatch or Obsidian.
+Do **not**: begin Slice 3 or any later slice; implement a game/round model or
+registry, validation/import pipeline, board/round engine, scoring, timers, teams,
+answer reveal, durable persistence, final wager, media/theme engine, or
+authoring; add a backend, accounts, buzzers, cross-device sync, or AI services;
+weaken fail-closed display behavior; send private host state to the display;
+permit executable imported game code; or move implementation truth into
+NightWatch or Obsidian.

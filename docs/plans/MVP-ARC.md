@@ -83,7 +83,9 @@ owner observed the live root/host/display routes rendering, and production-
 artifact adversarial QA found no Slice 1 defects. Evidence and the owner-live vs.
 sandbox-artifact distinction are recorded in
 [`../receipts/2026-07-22-slice-1-post-merge-reconciliation.md`](../receipts/2026-07-22-slice-1-post-merge-reconciliation.md).
-Slice 2 remains unstarted and must not begin until the owner authorizes it.
+
+**Slice 2 is now authorized and In review** (implementation PR open, not merged;
+see the Slice 2 section below).
 
 ### Explicit non-goals (Slice 1)
 
@@ -94,11 +96,70 @@ pipeline, theme engine, soundboard, random events, presentation APIs,
 whiteboard/concept-map/timeline interactions, analytics, buzzers, WebSockets,
 backend, accounts, grading, AI, and multiple playable round types.
 
+## Slice 2 — scope, acceptance, non-goals
+
+**State: In review** (implementation PR open; not merged). Full technical
+rationale is in [`../architecture/ADR-002-state-event-sync-core.md`](../architecture/ADR-002-state-event-sync-core.md).
+
+### Scope (implemented)
+
+1. **Command-driven reducer** — commands express intent; a pure reducer produces
+   events. Rejected/malformed commands never mutate state.
+2. **Append-only event history** — events are never edited in place; state is
+   derived by replaying `initial + events`.
+3. **Replay & undo** — deterministic, idempotent replay; undo is an append-only,
+   auditable `EVENT_UNDONE` marker (no history deletion); reversible vs.
+   irreversible events distinguished; empty-history undo is a safe no-op.
+4. **Private authoritative state** vs. **explicit `PublicState`** types.
+5. **Allow-list `toPublicState` sanitizer** — constructs public fields
+   explicitly; no clone-and-delete, no spread, no serialization of private
+   state; future private fields cannot leak; projection failure fails closed.
+6. **Same-device host/display sync (BroadcastChannel)** — versioned envelope;
+   host authoritative; display read-only; stale/duplicate revisions ignored;
+   unknown version/type/malformed messages fail closed; unsupported environments
+   degrade to a safe no-op.
+7. **Conservative host/display integration** — a clearly-labeled host
+   "Foundation / testing controls" panel proves the core; the display renders
+   only sanitized public state and stays non-interactive and fail-closed.
+
+Commands: `INIT_SESSION`, `SET_PUBLIC_STATUS`, `ADVANCE_SEQUENCE`,
+`MARK_WAITING`, `SET_HOST_NOTE`, `UNDO`. Events: `SESSION_INITIALIZED`,
+`PUBLIC_STATUS_SET`, `SEQUENCE_ADVANCED`, `WAITING_MARKED`, `HOST_NOTE_SET`,
+`EVENT_UNDONE`. `PublicState` fields: `schemaVersion`, `revision`, `phase`,
+`headline`, `detail`.
+
+### Acceptance criteria
+
+Local `verify:all` passes (lint, typecheck, unit, build, e2e). Unit tests cover
+reducer/replay/undo determinism, allow-list projection (incl. future-field
+non-leak), the four fail-closed categories, and transport ordering/degradation;
+browser tests exercise real two-tab BroadcastChannel sync, host authority, and
+fail-closed decoding. The projector-leak, routing, PWA/offline, responsive, and
+accessibility suites remain green.
+
+### Explicit non-goals (Slice 2)
+
+No gameplay of any kind: no game/round model or registry (Slice 3), no
+validation/import pipeline or Zod (Slice 4), no board/round engine (Slice 5), no
+teams/scoring (Slice 6), no timers/transitions (Slice 7), no durable IndexedDB
+persistence or leader coordination (Slice 8), no final wager (Slice 9), no
+media/theme engine (Slice 10), no authoring/packs (Slice 11). No tile selection,
+answer reveal, team assignment, scoring, wagers, or gameplay commands. No
+WebSockets, backend, cross-device sync, authentication, or analytics.
+
+### What remains for Slice 3
+
+Game & round model + registry: `GameDefinition` / `GameSession` types, typed
+`RoundDefinition`, a round-registry scaffold, and unknown-round-type fail-closed
+handling — built on top of this state/event/sync core.
+
 ## Dependencies & risks
 
 - **GitHub Pages base path** must stay correct across assets, manifest, SW
   scope, and links — covered by ADR-001 and e2e base-path tests.
-- **Private/public boundary** is a permanent invariant; the sanitizer (slice 2)
-  must be allow-list based. Baseline projector-leak tests exist now.
+- **Private/public boundary** is a permanent invariant; the allow-list
+  `toPublicState` sanitizer landed in Slice 2 (ADR-002) and is now backed by
+  structural `PublicState` assertions in addition to the baseline projector-leak
+  string checks.
 - **No executable imported code** — enforced by design when the registry and
   import pipeline land (slices 3–4).

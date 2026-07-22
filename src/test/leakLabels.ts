@@ -5,10 +5,12 @@
  * must NEVER appear on the projector display. Both the component tests and the
  * Playwright e2e suite assert the display contains none of them.
  *
- * NOTE: label matching is only a BASELINE smoke check. It is not proof of the
- * future private→public sanitizer boundary (see GAME-ENGINE-BOUNDARIES.md).
- * When the real sanitizer lands, structural PublicState assertions must be
- * added alongside these string checks.
+ * NOTE: label matching is only a BASELINE smoke check. It is not by itself proof
+ * of the private→public sanitizer boundary (see GAME-ENGINE-BOUNDARIES.md). As
+ * of Slice 2 the real allow-list sanitizer exists and is additionally guarded by
+ * STRUCTURAL PublicState assertions in src/state/sanitize.test.ts (allow-listed
+ * keys only, future-field non-leak, serialized-value checks). These string
+ * checks remain as a cheap, permanent smoke test alongside them.
  */
 export const FORBIDDEN_DISPLAY_LABELS: readonly string[] = [
   'Correct answer',
