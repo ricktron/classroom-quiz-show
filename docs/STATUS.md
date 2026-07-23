@@ -1,7 +1,7 @@
 # Status
 
 **Current slice:** Slice 3 — Game & round model + registry
-**Slice state:** In review
+**Slice state:** Complete
 
 ## State vocabulary
 
@@ -14,12 +14,13 @@
 > commit `883111e`, merged 2026-07-22T23:00:07Z) with CI green, and the post-merge
 > reconciliation is recorded in
 > [`receipts/2026-07-22-slice-2-post-merge-reconciliation.md`](receipts/2026-07-22-slice-2-post-merge-reconciliation.md).
-> Slice 3 is **In review**, not `Complete`: implemented on
-> `claude/slice-3-game-round-registry-yjzexz` (base `main` at
-> `61e1a29`), local `verify:all` green; the implementation PR is open for review.
+> Slice 3 is **Complete**: implementation PR #5 was merged to `main` (merge
+> commit `01070c8`, merged 2026-07-23T19:18:32Z) with CI green (final reviewed
+> head `464ef07`), and the post-merge reconciliation is recorded in
+> [`receipts/2026-07-23-slice-3-post-merge-reconciliation.md`](receipts/2026-07-23-slice-3-post-merge-reconciliation.md).
 > **Slice 4 remains unstarted and owner-gated.**
 
-## Slice 3 work (In review)
+## Slice 3 work (Complete)
 
 Typed game & round model + non-executable round registry — no gameplay. Full
 rationale in
@@ -92,12 +93,12 @@ Local `verify:all` passed on the Slice 3 branch: lint, typecheck, unit tests
 (123 passed, 13 files), production build, and Playwright e2e (73 passed, 2 skipped
 — the offline-shell test runs once on the desktop project). `git diff --check`
 is clean. See [`handoff/CURRENT.md`](handoff/CURRENT.md) for exact commands and
-the Slice 3 local-verification receipt under [`receipts/`](receipts/) for durable
-evidence.
+the Slice 3 receipts under [`receipts/`](receipts/) for durable evidence.
 
-- CI on GitHub Actions: **Not yet observed for Slice 3** — it runs when the
-  implementation PR opens; local results are recorded above and in the receipt.
-- Slice 2 CI was observed green on PR #3 (head `bb8904b`).
+- CI on GitHub Actions: **Observed green** on PR #5 (final reviewed head
+  `464ef07`) — the "Lint, typecheck, unit tests, build" and "Playwright e2e" jobs
+  both concluded success, and the SonarCloud Quality Gate passed (0 security
+  hotspots). No actionable review comments.
 - Pages deployment: unchanged; Slice 3 alters no deploy config.
 
 ## Completed work (Slice 1)
@@ -132,5 +133,5 @@ None.
 
 ## Next safe action
 
-Review the Slice 3 implementation PR. **Do not begin Slice 4** until the owner
-explicitly authorizes it.
+Review and merge the Slice 3 post-merge reconciliation PR (documentation only).
+**Do not begin Slice 4** until the owner explicitly authorizes it.
