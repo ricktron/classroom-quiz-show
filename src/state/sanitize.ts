@@ -20,22 +20,20 @@ import { PUBLIC_STATUS_COPY, PUBLIC_STATUS_PHASE } from './status'
  * unsupported current round projects to `roundAvailability: 'unavailable'`
  * (fail closed) and exposes nothing about the unsupported type.
  */
+function roundAvailabilityOf(game: PrivateGameState): PublicRoundAvailability {
+  if (game.gameLifecycle === 'ended' || game.currentRoundIndex === null) return 'none'
+  if (game.currentRoundSupport === 'unsupported') return 'unavailable'
+  return 'available'
+}
+
 function toPublicGameView(game: PrivateGameState | null): PublicGameView | null {
   if (!game) return null
 
-  const ended = game.gameLifecycle === 'ended'
-  const roundAvailability: PublicRoundAvailability =
-    ended || game.currentRoundIndex === null
-      ? 'none'
-      : game.currentRoundSupport === 'unsupported'
-        ? 'unavailable'
-        : 'available'
-
   return {
-    status: ended ? 'ended' : 'active',
+    status: game.gameLifecycle === 'ended' ? 'ended' : 'active',
     roundCount: game.definition.rounds.length,
     currentRound: game.currentRoundIndex === null ? null : game.currentRoundIndex + 1,
-    roundAvailability,
+    roundAvailability: roundAvailabilityOf(game),
   }
 }
 
