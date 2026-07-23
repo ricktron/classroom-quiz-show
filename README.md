@@ -15,9 +15,11 @@ to GitHub Pages at <https://ricktron.github.io/classroom-quiz-show/> (owner-
 verified; see [`docs/STATUS.md`](docs/STATUS.md) and the reconciliation receipt
 [`docs/receipts/2026-07-22-slice-1-post-merge-reconciliation.md`](docs/receipts/2026-07-22-slice-1-post-merge-reconciliation.md)).
 
-**Slice 2 — state & event core. In review** (implementation PR open; not
-merged). Slice 2 adds a neutral runtime foundation on top of the shell — no
-gameplay — see [`docs/architecture/ADR-002-state-event-sync-core.md`](docs/architecture/ADR-002-state-event-sync-core.md):
+**Slice 2 — state & event core. Complete** — merged to `main` (PR #3), CI green
+(see [`docs/STATUS.md`](docs/STATUS.md) and the reconciliation receipt
+[`docs/receipts/2026-07-22-slice-2-post-merge-reconciliation.md`](docs/receipts/2026-07-22-slice-2-post-merge-reconciliation.md)).
+Slice 2 adds a neutral runtime foundation on top of the shell — no gameplay —
+see [`docs/architecture/ADR-002-state-event-sync-core.md`](docs/architecture/ADR-002-state-event-sync-core.md):
 
 - A **command-driven reducer**: commands express intent, a pure reducer produces
   an **append-only event history**, and authoritative state is derived by
