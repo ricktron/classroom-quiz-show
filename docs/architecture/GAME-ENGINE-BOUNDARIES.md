@@ -39,6 +39,16 @@ GameDefinition
 
 These are distinct concepts and must not be conflated.
 
+**Status (Slice 3).** Both now exist as neutral, non-gameplay foundations — see
+[`ADR-003-game-round-model-registry.md`](ADR-003-game-round-model-registry.md).
+`GameDefinition` (`src/game/gameDefinition.ts`) is immutable authored data
+(deep-frozen by its factory, unique round ids enforced, ordered rounds). The
+`GameSession` concept is modeled as `PrivateGameState` inside the private state
+(loaded definition snapshot, `gameLifecycle`, `currentRoundIndex`,
+`currentRoundSupport`) and is driven by the new game commands/events. The two are
+kept strictly separate: session operations never mutate the frozen definition.
+Teams, scoring, and round gameplay state are still deferred.
+
 ## 3. Typed round definitions + a round registry (future)
 
 Each round is described by a typed `RoundDefinition` (id, schema version, type,
@@ -74,6 +84,20 @@ protected commercial branding as internal identifiers; teacher-facing labels
 **Invariant:** custom rounds are constrained to registered, typed definitions.
 There is no path for arbitrary teacher content to become a new code-bearing
 round type at runtime (see §5).
+
+**Status (Slice 3).** The typed `RoundDefinition` and the round **registry
+scaffold** now exist — see
+[`ADR-003-game-round-model-registry.md`](ADR-003-game-round-model-registry.md).
+`RoundType` is an open branded string; the registry (`src/game/registry.ts`)
+decides known vs. unknown with an **explicit** lookup result and **no silent
+fallback**, duplicate registration throws, and it is application-controlled (no
+dynamic import, no eval, no code from content). Round order comes from
+`GameDefinition`, never the registry. Only one deliberately **non-gameplay**
+placeholder type is registered so far; the registry entry's typed behavior
+(`matches`, `createInitialState`, `toPublicRoundView`) is the seam real round
+engines fill from Slice 5 on. An unknown/unsupported round type **fails closed**:
+a host-only diagnostic, a neutral "unavailable" display, no substitution, no
+crash, deterministic replay.
 
 ## 4. Host-owned authoritative state → sanitized public state
 
@@ -125,6 +149,14 @@ code supplied by an imported file.
   never execute imported code, never reveal private data, produce a clear
   host-side error, and leave the display in a safe state.
 - "Custom" rounds are still typed, registered definitions — not a code hatch.
+
+**Status (Slice 3).** Round `config` is typed as `RoundConfig` (a recursive
+`DataValue` of string/number/boolean/null/array/object), so the type system
+**forbids a function** anywhere in content — code in config is only expressible
+through an explicit unsafe cast. Tests deep-scan sample definitions for functions,
+assert JSON round-trippability, and assert the registry exposes no eval/import/
+dynamic-registration surface. Full JSON/Zod import validation is still Slice 4;
+Slice 3 uses trusted in-memory definitions built by a structural factory.
 
 ## 6. Command / event architecture (future)
 

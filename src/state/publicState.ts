@@ -15,8 +15,12 @@
  * See docs/architecture/GAME-ENGINE-BOUNDARIES.md (§4) and ADR-002.
  */
 
-/** Bump when the PublicState wire shape changes incompatibly. */
-export const PUBLIC_STATE_SCHEMA_VERSION = 1 as const
+/**
+ * Bump when the PublicState wire shape changes incompatibly. Slice 3 added the
+ * `game` field, so this moved from 1 → 2; a display expecting the old shape
+ * fails closed on the version mismatch.
+ */
+export const PUBLIC_STATE_SCHEMA_VERSION = 2 as const
 
 /**
  * Coarse, public-safe lifecycle phase. This is intentionally NOT the private
@@ -24,6 +28,32 @@ export const PUBLIC_STATE_SCHEMA_VERSION = 1 as const
  * a session id, counter, notes, or diagnostics.
  */
 export type PublicPhase = 'no-session' | 'ready' | 'waiting'
+
+/**
+ * Neutral, display-safe availability of the current round.
+ *  - `none` — no round is selected (or the game has ended).
+ *  - `available` — a supported round is current.
+ *  - `unavailable` — the current round's type is unsupported; the display fails
+ *    closed to a neutral "unavailable" state and reveals nothing about why.
+ */
+export type PublicRoundAvailability = 'none' | 'available' | 'unavailable'
+
+/**
+ * The ONLY game information the display may see. It is deliberately minimal and
+ * derived: counts and a 1-based ordinal, a coarse status, and a neutral
+ * availability. It never carries the game title, round ids, round-type
+ * identifiers, round labels, or any authored config — those stay private.
+ */
+export interface PublicGameView {
+  /** Whether the game is still active or has ended. */
+  readonly status: 'active' | 'ended'
+  /** Total number of rounds in the game. */
+  readonly roundCount: number
+  /** 1-based ordinal of the current round, or `null` when none is selected. */
+  readonly currentRound: number | null
+  /** Neutral availability of the current round. */
+  readonly roundAvailability: PublicRoundAvailability
+}
 
 /** The complete set of information the display shell is permitted to render. */
 export interface PublicState {
@@ -40,6 +70,8 @@ export interface PublicState {
   readonly headline: string
   /** Secondary public line safe for the projector. */
   readonly detail: string
+  /** Safe, derived game view, or `null` when no game is loaded. */
+  readonly game: PublicGameView | null
 }
 
 /**
@@ -53,9 +85,31 @@ export const INITIAL_PUBLIC_STATE: PublicState = {
   phase: 'no-session',
   headline: 'Waiting for the host',
   detail: 'No active round.',
+  game: null,
 }
 
 const PUBLIC_PHASES: readonly PublicPhase[] = ['no-session', 'ready', 'waiting']
+const PUBLIC_ROUND_AVAILABILITIES: readonly PublicRoundAvailability[] = [
+  'none',
+  'available',
+  'unavailable',
+]
+
+/** Strict guard for the nested game view (or `null`). */
+function isPublicGameView(value: unknown): value is PublicGameView {
+  if (value === null) return true
+  if (typeof value !== 'object') return false
+  const v = value as Record<string, unknown>
+  return (
+    (v.status === 'active' || v.status === 'ended') &&
+    typeof v.roundCount === 'number' &&
+    Number.isFinite(v.roundCount) &&
+    (v.currentRound === null ||
+      (typeof v.currentRound === 'number' && Number.isFinite(v.currentRound))) &&
+    typeof v.roundAvailability === 'string' &&
+    (PUBLIC_ROUND_AVAILABILITIES as readonly string[]).includes(v.roundAvailability)
+  )
+}
 
 /**
  * Runtime validator used at BOTH trust boundaries:
@@ -76,6 +130,7 @@ export function isPublicState(value: unknown): value is PublicState {
     typeof v.phase === 'string' &&
     (PUBLIC_PHASES as readonly string[]).includes(v.phase) &&
     typeof v.headline === 'string' &&
-    typeof v.detail === 'string'
+    typeof v.detail === 'string' &&
+    isPublicGameView(v.game)
   )
 }

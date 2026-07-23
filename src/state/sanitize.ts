@@ -1,12 +1,41 @@
-import type { PrivateState } from './privateState'
+import type { PrivateGameState, PrivateState } from './privateState'
 import {
   INITIAL_PUBLIC_STATE,
   PUBLIC_STATE_SCHEMA_VERSION,
   isPublicState,
+  type PublicGameView,
   type PublicPhase,
+  type PublicRoundAvailability,
   type PublicState,
 } from './publicState'
 import { PUBLIC_STATUS_COPY, PUBLIC_STATUS_PHASE } from './status'
+
+/**
+ * Project the private game session to the tiny, safe public game view.
+ *
+ * Like the parent sanitizer this is ALLOW-LIST based: it names only counts, a
+ * 1-based ordinal, a coarse status, and a neutral availability. It NEVER reads
+ * the definition's title, round ids, round types, round titles, or config — so
+ * authored content (and any future answers/notes) cannot leak through it. An
+ * unsupported current round projects to `roundAvailability: 'unavailable'`
+ * (fail closed) and exposes nothing about the unsupported type.
+ */
+function roundAvailabilityOf(game: PrivateGameState): PublicRoundAvailability {
+  if (game.gameLifecycle === 'ended' || game.currentRoundIndex === null) return 'none'
+  if (game.currentRoundSupport === 'unsupported') return 'unavailable'
+  return 'available'
+}
+
+function toPublicGameView(game: PrivateGameState | null): PublicGameView | null {
+  if (!game) return null
+
+  return {
+    status: game.gameLifecycle === 'ended' ? 'ended' : 'active',
+    roundCount: game.definition.rounds.length,
+    currentRound: game.currentRoundIndex === null ? null : game.currentRoundIndex + 1,
+    roundAvailability: roundAvailabilityOf(game),
+  }
+}
 
 /**
  * The private → public boundary (permanent invariant — GAME-ENGINE-BOUNDARIES §4).
@@ -38,20 +67,23 @@ export function toPublicState(state: PrivateState): PublicState {
       phase: 'no-session',
       headline: INITIAL_PUBLIC_STATE.headline,
       detail: INITIAL_PUBLIC_STATE.detail,
+      game: null,
     }
   }
 
   const copy = PUBLIC_STATUS_COPY[session.publicStatusCode]
   const phase: PublicPhase = PUBLIC_STATUS_PHASE[session.publicStatusCode]
 
-  // NOTE: sessionId, counter, hostNotes, and diagnostics are intentionally not
-  // referenced. Do not spread `session` or `state` here.
+  // NOTE: sessionId, counter, hostNotes, diagnostics, and the FULL game
+  // definition are intentionally not referenced. The game view is a separately
+  // allow-listed projection. Do not spread `session`, `state`, or `game` here.
   return {
     schemaVersion: PUBLIC_STATE_SCHEMA_VERSION,
     revision: state.revision,
     phase,
     headline: copy.headline,
     detail: copy.detail,
+    game: toPublicGameView(session.game),
   }
 }
 

@@ -32,6 +32,27 @@ see [`docs/architecture/ADR-002-state-event-sync-core.md`](docs/architecture/ADR
   envelope: the host is authoritative, the display is read-only, and unknown /
   stale / malformed messages are ignored.
 
+**Slice 3 — game & round model + registry. In review** — implemented on
+`claude/slice-3-game-round-registry-yjzexz`, local `verify:all` green; the
+implementation PR is open for review (see [`docs/STATUS.md`](docs/STATUS.md) and
+[`docs/architecture/ADR-003-game-round-model-registry.md`](docs/architecture/ADR-003-game-round-model-registry.md)).
+Slice 3 adds the typed domain model — still **no gameplay**:
+
+- A **`GameDefinition`**: immutable, authored, deep-frozen data — a stable id, a
+  model version, a title, and an **ordered** list of typed rounds with **unique
+  round ids**. Separate from a **`GameSession`** (runtime progress derived from
+  it).
+- A typed **`RoundDefinition`** whose `config` is **data, never code** (the type
+  forbids functions), and a **round registry**: an application-controlled table
+  with **explicit known/unknown** lookup, duplicate-registration errors, and **no
+  dynamic import, eval, or plugin loading**. One non-gameplay placeholder round
+  type is registered so far.
+- **Unknown round types fail closed**: a host-only diagnostic and a neutral
+  "unavailable" display — never a crash, a substituted round, or a leak.
+- A single allow-listed **`PublicGameView`** (round count, current-round ordinal,
+  neutral availability) — the projector never sees the definition, round types,
+  or config.
+
 The Slice 1 foundation is unchanged beneath it:
 
 - React + TypeScript + Vite app shell
@@ -44,10 +65,12 @@ The Slice 1 foundation is unchanged beneath it:
 - Lint, typecheck, unit/component tests (Vitest), and browser tests (Playwright)
 - Architecture and governance documentation
 
-There is still **no gameplay** — no board, rounds, scoring, timers, teams,
-answer reveal, or durable persistence. The host "Foundation / testing controls"
-are diagnostics that prove the state core, not game controls. Those systems
-arrive in later slices. See [`docs/STATUS.md`](docs/STATUS.md) and
+There is still **no gameplay** — no board, questions, answers, scoring, timers,
+teams, reveal, or durable persistence, and definitions are trusted in-memory
+objects (JSON import + validation are Slice 4). The host "Foundation / testing
+controls" are diagnostics that prove the state core and the game/round model, not
+game controls. Those systems arrive in later slices. See
+[`docs/STATUS.md`](docs/STATUS.md) and
 [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md).
 
 ## Requirements

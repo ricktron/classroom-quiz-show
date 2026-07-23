@@ -1,11 +1,14 @@
 import type { SessionCommand, CommandType } from './commands'
-import type { SessionEvent } from './events'
+import type { RoundSupport, SessionEvent } from './events'
 import {
   INITIAL_PRIVATE_STATE,
+  type PrivateGameState,
   type PrivateSessionState,
   type PrivateState,
 } from './privateState'
 import { isPublicStatusCode } from './status'
+import { isGameDefinition, roundIndexById } from '../game/gameDefinition'
+import type { RoundType } from '../game/ids'
 
 /**
  * The command/event core.
@@ -31,6 +34,24 @@ export type RejectionReason =
   | 'invalid-note'
   | 'nothing-to-undo'
   | 'malformed-command'
+  | 'invalid-game-definition'
+  | 'game-not-initialized'
+  | 'unknown-round'
+  | 'no-next-round'
+
+/**
+ * Dependencies the planner needs that live OUTSIDE the event history — currently
+ * just "is this round type registered?". Kept as an injected predicate so the
+ * reducer stays pure and testable, and so the real registry lives in the store.
+ * The result is frozen onto the emitted event, so `reduce`/`replay` never need
+ * it and replay stays deterministic. Defaults to "nothing is known" — the store
+ * always supplies the real predicate; non-game commands ignore it entirely.
+ */
+export interface PlanDeps {
+  readonly isKnownRoundType: (type: RoundType) => boolean
+}
+
+const DEFAULT_PLAN_DEPS: PlanDeps = { isKnownRoundType: () => false }
 
 export type CommandOutcome =
   | { readonly status: 'accepted'; readonly events: readonly SessionEvent[] }
@@ -54,6 +75,7 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
         counter: 0,
         publicStatusCode: 'session-ready',
         hostNotes: '',
+        game: null,
       }
       return withApplied(state, event.type, { ...state, session })
     }
@@ -84,6 +106,34 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
       if (!state.session) return state
       const session = { ...state.session, hostNotes: event.note }
       return withApplied(state, event.type, { ...state, session })
+    }
+
+    case 'GAME_INITIALIZED': {
+      if (!state.session) return state
+      const game: PrivateGameState = {
+        definition: event.definition,
+        gameLifecycle: 'active',
+        currentRoundIndex: null,
+        currentRoundSupport: null,
+      }
+      return withApplied(state, event.type, { ...state, session: { ...state.session, game } })
+    }
+
+    case 'CURRENT_ROUND_SELECTED':
+    case 'ROUND_ADVANCED': {
+      if (!state.session || !state.session.game) return state
+      const game: PrivateGameState = {
+        ...state.session.game,
+        currentRoundIndex: event.roundIndex,
+        currentRoundSupport: event.support,
+      }
+      return withApplied(state, event.type, { ...state, session: { ...state.session, game } })
+    }
+
+    case 'GAME_SESSION_ENDED': {
+      if (!state.session || !state.session.game) return state
+      const game: PrivateGameState = { ...state.session.game, gameLifecycle: 'ended' }
+      return withApplied(state, event.type, { ...state, session: { ...state.session, game } })
     }
 
     // Undo markers change nothing directly; `replay` neutralizes their targets.
@@ -166,6 +216,7 @@ export function planCommand(
   state: PrivateState,
   history: readonly SessionEvent[],
   command: SessionCommand,
+  deps: PlanDeps = DEFAULT_PLAN_DEPS,
 ): CommandOutcome {
   const seq = history.length
   const id = `evt-${seq}`
@@ -248,6 +299,96 @@ export function planCommand(
             targetEventId: target.id,
           },
         ],
+      }
+    }
+
+    case 'INITIALIZE_GAME': {
+      if (!state.session) return { status: 'rejected', reason: 'session-not-initialized' }
+      // Fail closed on a malformed definition rather than trusting provenance.
+      if (!isGameDefinition(command.definition)) {
+        return { status: 'rejected', reason: 'invalid-game-definition' }
+      }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'GAME_INITIALIZED',
+            seq,
+            occurredAt: at,
+            reversible: false,
+            definition: command.definition,
+          },
+        ],
+      }
+    }
+
+    case 'SELECT_ROUND': {
+      if (!state.session) return { status: 'rejected', reason: 'session-not-initialized' }
+      const game = state.session.game
+      if (!game) return { status: 'rejected', reason: 'game-not-initialized' }
+      if (typeof command.roundId !== 'string' || command.roundId.length === 0) {
+        return { status: 'rejected', reason: 'malformed-command' }
+      }
+      const index = roundIndexById(game.definition, command.roundId)
+      if (index < 0) return { status: 'rejected', reason: 'unknown-round' }
+      const round = game.definition.rounds[index]
+      const support: RoundSupport = deps.isKnownRoundType(round.type)
+        ? 'supported'
+        : 'unsupported'
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'CURRENT_ROUND_SELECTED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundIndex: index,
+            roundId: round.id,
+            support,
+          },
+        ],
+      }
+    }
+
+    case 'ADVANCE_TO_NEXT_ROUND': {
+      if (!state.session) return { status: 'rejected', reason: 'session-not-initialized' }
+      const game = state.session.game
+      if (!game) return { status: 'rejected', reason: 'game-not-initialized' }
+      const nextIndex = (game.currentRoundIndex ?? -1) + 1
+      if (nextIndex >= game.definition.rounds.length) {
+        // At (or past) the final round, or an empty game: safe rejection.
+        return { status: 'rejected', reason: 'no-next-round' }
+      }
+      const round = game.definition.rounds[nextIndex]
+      const support: RoundSupport = deps.isKnownRoundType(round.type)
+        ? 'supported'
+        : 'unsupported'
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'ROUND_ADVANCED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundIndex: nextIndex,
+            roundId: round.id,
+            support,
+          },
+        ],
+      }
+    }
+
+    case 'END_GAME_SESSION': {
+      if (!state.session) return { status: 'rejected', reason: 'session-not-initialized' }
+      if (!state.session.game) return { status: 'rejected', reason: 'game-not-initialized' }
+      return {
+        status: 'accepted',
+        events: [{ id, type: 'GAME_SESSION_ENDED', seq, occurredAt: at, reversible: false }],
       }
     }
 
