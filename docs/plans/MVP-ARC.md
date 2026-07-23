@@ -37,7 +37,7 @@ systems.
 | --- | ------------------------------ | ------------------------------------------------------------------------------- | ---------- |
 | 1   | **Foundation**                 | App shell, routing, PWA, safety boundaries, tests, deploy, docs.                | —          |
 | 2   | **State & event core**         | Command-driven reducer, append-only event history, undo/replay, private/public `PublicState` types + `toPublicState` sanitizer, host/display sync (BroadcastChannel), fail-closed decoding. | 1          |
-| 3   | **Game & round model + registry** | `GameDefinition` / `GameSession` types, typed `RoundDefinition`, round registry scaffold, unknown-type fail-closed handling. **(In review.)** | 2          |
+| 3   | **Game & round model + registry** | `GameDefinition` / `GameSession` types, typed `RoundDefinition`, round registry scaffold, unknown-type fail-closed handling. **(Complete.)** | 2          |
 | 4   | **Validation & import pipeline** | Canonical versioned JSON, one Zod-based validation/normalization pipeline, actionable errors, no silent repair. | 3          |
 | 5   | **Category-board round**       | First playable round type: configurable categories/rows/ladder, multiplier, used-tile state, prompt/answer reveal, alternates, notes. | 3, 4       |
 | 6   | **Teams & scoring**            | Teams, typed scoring strategy (points first), awards/deductions, partial credit, unrestricted manual correction, audit history, undo. | 2, 5       |
@@ -157,9 +157,12 @@ handling — built on top of this state/event/sync core.
 
 ## Slice 3 — scope, acceptance, non-goals
 
-**State: In review** (not Complete). Implemented on
-`claude/slice-3-game-round-registry-yjzexz` on top of `main` at
-`61e1a29548e8735886c3637e5c2e521ff6ee6db4`. Full technical rationale in
+**State: Complete.** Implemented on `claude/slice-3-game-round-registry-yjzexz`
+on top of `main` at `61e1a29548e8735886c3637e5c2e521ff6ee6db4`, and merged to
+`main` via **PR #5** (merge commit `01070c8`, merged 2026-07-23T19:18:32Z) with
+CI green; post-merge reconciliation recorded in
+[`../receipts/2026-07-23-slice-3-post-merge-reconciliation.md`](../receipts/2026-07-23-slice-3-post-merge-reconciliation.md).
+Full technical rationale in
 [`../architecture/ADR-003-game-round-model-registry.md`](../architecture/ADR-003-game-round-model-registry.md).
 
 ### Scope (implemented)
