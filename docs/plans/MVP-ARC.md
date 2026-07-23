@@ -37,7 +37,7 @@ systems.
 | --- | ------------------------------ | ------------------------------------------------------------------------------- | ---------- |
 | 1   | **Foundation**                 | App shell, routing, PWA, safety boundaries, tests, deploy, docs.                | —          |
 | 2   | **State & event core**         | Command-driven reducer, append-only event history, undo/replay, private/public `PublicState` types + `toPublicState` sanitizer, host/display sync (BroadcastChannel), fail-closed decoding. | 1          |
-| 3   | **Game & round model + registry** | `GameDefinition` / `GameSession` types, typed `RoundDefinition`, round registry scaffold, unknown-type fail-closed handling. | 2          |
+| 3   | **Game & round model + registry** | `GameDefinition` / `GameSession` types, typed `RoundDefinition`, round registry scaffold, unknown-type fail-closed handling. **(In review.)** | 2          |
 | 4   | **Validation & import pipeline** | Canonical versioned JSON, one Zod-based validation/normalization pipeline, actionable errors, no silent repair. | 3          |
 | 5   | **Category-board round**       | First playable round type: configurable categories/rows/ladder, multiplier, used-tile state, prompt/answer reveal, alternates, notes. | 3, 4       |
 | 6   | **Teams & scoring**            | Teams, typed scoring strategy (points first), awards/deductions, partial credit, unrestricted manual correction, audit history, undo. | 2, 5       |
@@ -155,6 +155,74 @@ Game & round model + registry: `GameDefinition` / `GameSession` types, typed
 `RoundDefinition`, a round-registry scaffold, and unknown-round-type fail-closed
 handling — built on top of this state/event/sync core.
 
+## Slice 3 — scope, acceptance, non-goals
+
+**State: In review** (not Complete). Implemented on
+`claude/slice-3-game-round-registry-yjzexz` on top of `main` at
+`61e1a29548e8735886c3637e5c2e521ff6ee6db4`. Full technical rationale in
+[`../architecture/ADR-003-game-round-model-registry.md`](../architecture/ADR-003-game-round-model-registry.md).
+
+### Scope (implemented)
+
+1. **Branded identifiers** — `GameId`, `RoundId`, `RoundType`, `GameSessionId`
+   (compile-time brands over plain strings; `RoundType` open, not a closed union).
+2. **`GameDefinition`** — immutable authored data (`modelVersion`, `id`, `title`,
+   ordered `RoundDefinition[]`); trusted factory enforces non-empty id/title,
+   valid rounds, **unique round ids**, and **deep-freezes** the result; empty
+   rounds explicitly allowed.
+3. **Typed `RoundDefinition`** — stable id, open `RoundType`, and data-only
+   `config` (`RoundConfig`/`DataValue` forbids functions). One non-gameplay
+   **placeholder** type only.
+4. **Round registry scaffold** — application-controlled table with explicit
+   known/unknown lookup, duplicate-registration error, no fallback, and **no
+   code execution / dynamic import / eval**. Order comes from the definition.
+5. **`GameSession`** — runtime progress (`PrivateGameState`: frozen definition
+   snapshot, `gameLifecycle`, `currentRoundIndex`, `currentRoundSupport`),
+   distinct from the definition it references.
+6. **Command/event additions** — `INITIALIZE_GAME`/`GAME_INITIALIZED`,
+   `SELECT_ROUND`/`CURRENT_ROUND_SELECTED`, `ADVANCE_TO_NEXT_ROUND`/
+   `ROUND_ADVANCED`, `END_GAME_SESSION`/`GAME_SESSION_ENDED`. Round support is
+   frozen onto the event at plan time so replay stays deterministic without the
+   registry; selection/advance are reversible, init/end irreversible.
+7. **`PublicState` addition** — one allow-listed `game: PublicGameView | null`
+   (`status`, `roundCount`, 1-based `currentRound`, neutral `roundAvailability`);
+   wire version bumped 1 → 2. Never carries title, round ids/types, or config.
+8. **Unknown-type fail-closed** — host-only diagnostic; neutral "unavailable"
+   display; no substitution; no crash; deterministic replay; no leak.
+9. **Host/display integration** — foundation game controls + host-only
+   diagnostics (not gameplay); the display shows only safe round status.
+
+Commands added: `INITIALIZE_GAME`, `SELECT_ROUND`, `ADVANCE_TO_NEXT_ROUND`,
+`END_GAME_SESSION`. Events added: `GAME_INITIALIZED`, `CURRENT_ROUND_SELECTED`,
+`ROUND_ADVANCED`, `GAME_SESSION_ENDED`. `PublicState` gains `game`.
+
+### Acceptance criteria
+
+Local `verify:all` passes (lint, typecheck, 123 unit tests, build, 73 e2e
+passed / 2 skipped). Coverage: deterministic ordered rounds, unique/duplicate
+round-id enforcement, empty-round behavior, deep-freeze immutability through
+session ops; registry known/unknown/duplicate/no-fallback/no-mutation/no-exec;
+game command/event determinism, rejection-no-mutation, replay determinism +
+idempotency, undo/audit; unknown-type fail-closed at init/select/advance/replay/
+projection/sync/display; exact allow-listed public projection with no definition/
+registry/diagnostic leak. Existing Slice 1/2 routing, PWA/offline, projector-
+leak, responsive, accessibility, and sync suites remain green.
+
+### Explicit non-goals (Slice 3)
+
+No Slice 4+ work: no Zod, canonical JSON import, schema validation/normalization,
+file/spreadsheet upload; no category-board or any playable round, questions,
+answers, tile selection; no scoring, teams, timers, transitions; no persistence/
+IndexedDB, leader coordination; no final wager, media pipeline, theme engine,
+content authoring, game packs; no remote plugins or executable imported code; no
+backend or cross-device sync. The app is **not** made playable in Slice 3.
+
+### What remains for Slice 4
+
+Validation & import pipeline: the canonical versioned JSON game format and one
+Zod-based validation/normalization pipeline on every import path, with actionable
+errors and no silent repair — feeding trusted `GameDefinition`s into this model.
+
 ## Dependencies & risks
 
 - **GitHub Pages base path** must stay correct across assets, manifest, SW
@@ -163,5 +231,7 @@ handling — built on top of this state/event/sync core.
   `toPublicState` sanitizer landed in Slice 2 (ADR-002) and is now backed by
   structural `PublicState` assertions in addition to the baseline projector-leak
   string checks.
-- **No executable imported code** — enforced by design when the registry and
-  import pipeline land (slices 3–4).
+- **No executable imported code** — the registry half landed in Slice 3
+  (ADR-003): `RoundConfig`/`DataValue` forbids functions in content, the registry
+  has no eval/dynamic-import/plugin surface, and tests assert both. The import
+  pipeline half (Zod validation on every import path) lands in Slice 4.

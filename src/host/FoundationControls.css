@@ -31,6 +31,10 @@
   margin-top: 0;
 }
 
+.foundation__tag--slice3 {
+  margin-top: var(--space-3);
+}
+
 .foundation__actions {
   display: flex;
   flex-wrap: wrap;

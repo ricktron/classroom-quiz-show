@@ -4,6 +4,9 @@ import type { PrivateState } from './privateState'
 import type { PublicState } from './publicState'
 import { planCommand, replay, type RejectionReason } from './reducer'
 import { safeToPublicState } from './sanitize'
+import { createDefaultRegistry } from '../game/defaultRegistry'
+import type { RoundRegistry } from '../game/registry'
+import type { PlanDeps } from './reducer'
 
 /**
  * In-memory authoritative session store (Slice 2).
@@ -26,11 +29,24 @@ export interface SessionStore {
   getState(): PrivateState
   getPublicState(): PublicState
   getHistory(): readonly SessionEvent[]
+  /** The round registry this store resolves round-type support against. */
+  getRegistry(): RoundRegistry
   /** Subscribe to post-change notifications. Returns an unsubscribe function. */
   subscribe(listener: () => void): () => void
 }
 
-export function createSessionStore(): SessionStore {
+export interface SessionStoreOptions {
+  /**
+   * Round registry used to resolve whether a selected round's type is
+   * supported. Defaults to the application's default registry (placeholder type
+   * only). Injectable so tests can supply a registry with unknown types.
+   */
+  readonly registry?: RoundRegistry
+}
+
+export function createSessionStore(options: SessionStoreOptions = {}): SessionStore {
+  const registry = options.registry ?? createDefaultRegistry()
+  const planDeps: PlanDeps = { isKnownRoundType: (type) => registry.isKnown(type) }
   let history: readonly SessionEvent[] = []
   let state: PrivateState = replay(history)
   const listeners = new Set<() => void>()
@@ -42,7 +58,7 @@ export function createSessionStore(): SessionStore {
 
   return {
     dispatch(command) {
-      const outcome = planCommand(state, history, command)
+      const outcome = planCommand(state, history, command, planDeps)
       if (outcome.status === 'rejected') {
         // Command rejection: no event, no mutation.
         return { status: 'rejected', reason: outcome.reason }
@@ -62,6 +78,9 @@ export function createSessionStore(): SessionStore {
     },
     getHistory() {
       return history
+    },
+    getRegistry() {
+      return registry
     },
     subscribe(listener) {
       listeners.add(listener)

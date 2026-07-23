@@ -1,4 +1,5 @@
 import type { PublicStatusCode } from './status'
+import type { GameDefinition } from '../game/gameDefinition'
 
 /**
  * EVENTS record *accepted facts* — things that actually happened, in order. The
@@ -10,9 +11,14 @@ import type { PublicStatusCode } from './status'
  * Reversibility is an explicit, per-event property so that reversible and
  * irreversible behavior are distinguishable:
  *  - reversible events can be neutralized by an `EVENT_UNDONE` marker;
- *  - irreversible events (session init/reset, and undo markers themselves) can
- *    never be undone, which keeps a reset a hard baseline and prevents undoing
- *    an undo.
+ *  - irreversible events (session init/reset, game init/end, and undo markers
+ *    themselves) can never be undone, which keeps init/reset/end hard baselines
+ *    and prevents undoing an undo.
+ *
+ * Slice 3 adds four game/round-lifecycle events. Round *support* (whether the
+ * selected round's type is registered) is resolved ONCE at command-plan time and
+ * frozen onto the selection/advance event, so replay needs no registry and stays
+ * deterministic — see ADR-003.
  */
 
 export const EVENT_TYPES = [
@@ -22,6 +28,10 @@ export const EVENT_TYPES = [
   'WAITING_MARKED',
   'HOST_NOTE_SET',
   'EVENT_UNDONE',
+  'GAME_INITIALIZED',
+  'CURRENT_ROUND_SELECTED',
+  'ROUND_ADVANCED',
+  'GAME_SESSION_ENDED',
 ] as const
 
 export type EventType = (typeof EVENT_TYPES)[number]
@@ -67,6 +77,40 @@ export interface EventUndoneEvent extends EventBase<'EVENT_UNDONE'> {
   readonly targetEventId: string
 }
 
+/** Whether a selected round's type is registered/supported by the engine. */
+export type RoundSupport = 'supported' | 'unsupported'
+
+/** A trusted game definition was loaded into the session. Irreversible baseline. */
+export interface GameInitializedEvent extends EventBase<'GAME_INITIALIZED'> {
+  readonly reversible: false
+  readonly definition: GameDefinition
+}
+
+/**
+ * The current round was selected by stable identity. Carries the resolved
+ * ordinal index and the round's support, both frozen at plan time so replay is
+ * deterministic without consulting the registry.
+ */
+export interface CurrentRoundSelectedEvent extends EventBase<'CURRENT_ROUND_SELECTED'> {
+  readonly reversible: true
+  readonly roundIndex: number
+  readonly roundId: string
+  readonly support: RoundSupport
+}
+
+/** The current round advanced to the next round in definition order. */
+export interface RoundAdvancedEvent extends EventBase<'ROUND_ADVANCED'> {
+  readonly reversible: true
+  readonly roundIndex: number
+  readonly roundId: string
+  readonly support: RoundSupport
+}
+
+/** The game session was ended. Irreversible finalization. */
+export interface GameSessionEndedEvent extends EventBase<'GAME_SESSION_ENDED'> {
+  readonly reversible: false
+}
+
 export type SessionEvent =
   | SessionInitializedEvent
   | PublicStatusSetEvent
@@ -74,3 +118,7 @@ export type SessionEvent =
   | WaitingMarkedEvent
   | HostNoteSetEvent
   | EventUndoneEvent
+  | GameInitializedEvent
+  | CurrentRoundSelectedEvent
+  | RoundAdvancedEvent
+  | GameSessionEndedEvent

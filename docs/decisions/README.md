@@ -10,6 +10,9 @@ This project separates two kinds of durable decision records:
    - [`ADR-002-state-event-sync-core.md`](../architecture/ADR-002-state-event-sync-core.md)
      — command/event core, replay/undo, allow-list sanitizer, BroadcastChannel
      sync (Slice 2).
+   - [`ADR-003-game-round-model-registry.md`](../architecture/ADR-003-game-round-model-registry.md)
+     — `GameDefinition`/`GameSession`, typed `RoundDefinition`, round registry
+     scaffold, unknown-type fail-closed handling (Slice 3).
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).

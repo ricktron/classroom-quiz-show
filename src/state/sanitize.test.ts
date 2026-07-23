@@ -3,8 +3,19 @@ import { INITIAL_PRIVATE_STATE, type PrivateState } from './privateState'
 import { safeToPublicState, toPublicState } from './sanitize'
 import { replay } from './reducer'
 import { PUBLIC_STATE_SCHEMA_VERSION } from './publicState'
+import type { SessionEvent } from './events'
+import { createSampleGame, createSampleGameWithUnsupportedRound } from '../game/sampleGame'
 
 const AT = 1_000
+
+const sessionInit: SessionEvent = {
+  id: 'evt-0',
+  type: 'SESSION_INITIALIZED',
+  seq: 0,
+  occurredAt: AT,
+  reversible: false,
+  sessionId: 'sess',
+}
 
 /** A fully-populated private state with secrets in every private field. */
 function loadedPrivateState(): PrivateState {
@@ -16,7 +27,7 @@ function loadedPrivateState(): PrivateState {
 }
 
 /** The exact set of keys a PublicState is allowed to contain. */
-const ALLOWED_KEYS = ['schemaVersion', 'revision', 'phase', 'headline', 'detail'].sort()
+const ALLOWED_KEYS = ['schemaVersion', 'revision', 'phase', 'headline', 'detail', 'game'].sort()
 
 describe('toPublicState — allow-list projection', () => {
   it('produces exactly the allow-listed keys and nothing else', () => {
@@ -31,6 +42,7 @@ describe('toPublicState — allow-list projection', () => {
       phase: 'no-session',
       headline: 'Waiting for the host',
       detail: 'No active round.',
+      game: null,
     })
   })
 
@@ -73,6 +85,78 @@ describe('toPublicState — allow-list projection', () => {
   })
 })
 
+describe('toPublicState — game projection (allow-list, no leak)', () => {
+  const GAME_VIEW_KEYS = ['status', 'roundCount', 'currentRound', 'roundAvailability'].sort()
+
+  it('projects a loaded game to counts + coarse status only, no round selected', () => {
+    const state = replay([
+      sessionInit,
+      { id: 'evt-1', type: 'GAME_INITIALIZED', seq: 1, occurredAt: AT, reversible: false, definition: createSampleGame() },
+    ])
+    const view = toPublicState(state).game
+    expect(view).toEqual({
+      status: 'active',
+      roundCount: 3,
+      currentRound: null,
+      roundAvailability: 'none',
+    })
+    expect(Object.keys(view ?? {}).sort()).toEqual(GAME_VIEW_KEYS)
+  })
+
+  it('projects a selected supported round as available with a 1-based ordinal', () => {
+    const state = replay([
+      sessionInit,
+      { id: 'evt-1', type: 'GAME_INITIALIZED', seq: 1, occurredAt: AT, reversible: false, definition: createSampleGame() },
+      { id: 'evt-2', type: 'CURRENT_ROUND_SELECTED', seq: 2, occurredAt: AT, reversible: true, roundIndex: 0, roundId: 'round-1', support: 'supported' },
+    ])
+    expect(toPublicState(state).game).toMatchObject({
+      currentRound: 1,
+      roundAvailability: 'available',
+    })
+  })
+
+  it('projects an unsupported current round as a neutral "unavailable" (fail closed)', () => {
+    const state = replay([
+      sessionInit,
+      { id: 'evt-1', type: 'GAME_INITIALIZED', seq: 1, occurredAt: AT, reversible: false, definition: createSampleGameWithUnsupportedRound() },
+      { id: 'evt-2', type: 'CURRENT_ROUND_SELECTED', seq: 2, occurredAt: AT, reversible: true, roundIndex: 1, roundId: 'mystery-round', support: 'unsupported' },
+    ])
+    expect(toPublicState(state).game).toMatchObject({
+      currentRound: 2,
+      roundAvailability: 'unavailable',
+    })
+  })
+
+  it('projects an ended game as ended with no active round', () => {
+    const state = replay([
+      sessionInit,
+      { id: 'evt-1', type: 'GAME_INITIALIZED', seq: 1, occurredAt: AT, reversible: false, definition: createSampleGame() },
+      { id: 'evt-2', type: 'GAME_SESSION_ENDED', seq: 2, occurredAt: AT, reversible: false },
+    ])
+    expect(toPublicState(state).game).toMatchObject({ status: 'ended', roundAvailability: 'none' })
+  })
+
+  it('never leaks the game title, round ids, round types, or config into the projection', () => {
+    const state = replay([
+      sessionInit,
+      { id: 'evt-1', type: 'GAME_INITIALIZED', seq: 1, occurredAt: AT, reversible: false, definition: createSampleGameWithUnsupportedRound() },
+      { id: 'evt-2', type: 'CURRENT_ROUND_SELECTED', seq: 2, occurredAt: AT, reversible: true, roundIndex: 1, roundId: 'mystery-round', support: 'unsupported' },
+    ])
+    const serialized = JSON.stringify(toPublicState(state)).toLowerCase()
+    for (const forbidden of [
+      'foundation', // from the game title
+      'mystery', // round title / id
+      'supported-1', // round id
+      'placeholder', // round type
+      'unsupported-sample', // unsupported round type
+      'plumbing', // placeholder config note
+      'reason', // unsupported config key
+    ]) {
+      expect(serialized, `must not leak "${forbidden}"`).not.toContain(forbidden)
+    }
+  })
+})
+
 describe('safeToPublicState — projection failure fails closed', () => {
   it('returns the safe initial public state when projection throws', () => {
     // A getter that throws simulates a projection-time failure.
@@ -91,6 +175,7 @@ describe('safeToPublicState — projection failure fails closed', () => {
       phase: 'no-session',
       headline: 'Waiting for the host',
       detail: 'No active round.',
+      game: null,
     })
   })
 

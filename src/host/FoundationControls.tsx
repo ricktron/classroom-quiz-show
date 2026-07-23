@@ -1,19 +1,23 @@
 import { useSessionStore } from './useSessionStore'
 import { useHostSync } from './useHostSync'
 import { PUBLIC_STATUS_CODES } from '../state/status'
+import { createSampleGame, createSampleGameWithUnsupportedRound } from '../game/sampleGame'
 import './FoundationControls.css'
 
 /**
  * Foundation / testing controls (NOT gameplay).
  *
- * This panel exists only to prove the Slice 2 state/event core end to end from
- * the host surface: it dispatches the small foundation command vocabulary,
- * renders the authoritative PRIVATE state + append-only event history (host-only
- * — never projected), and publishes sanitized public state to any open display.
+ * This panel exists only to prove the state/event core and the Slice 3 game &
+ * round model + registry end to end from the host surface: it dispatches the
+ * foundation command vocabulary, renders the authoritative PRIVATE state +
+ * append-only event history (host-only — never projected), and publishes
+ * sanitized public state to any open display.
  *
  * These are deliberately labeled as foundation/testing controls. They are not
- * game controls — there is no board, scoring, teams, timers, or answer reveal
- * here (those arrive in later slices).
+ * game controls — there is no board, questions, answers, scoring, teams, timers,
+ * or reveal here (those arrive in later slices). The "game" here is only a small
+ * in-memory definition of NON-gameplay placeholder rounds used to exercise the
+ * model, plus one deliberately-unsupported round to prove fail-closed handling.
  */
 
 let sessionCounter = 0
@@ -28,6 +32,9 @@ export function FoundationControls() {
 
   const now = () => Date.now()
   const hasSession = state.session !== null
+  const registry = store.getRegistry()
+  const game = state.session?.game ?? null
+  const hasGame = game !== null
 
   return (
     <section className="foundation" aria-labelledby="foundation-title">
@@ -134,6 +141,100 @@ export function FoundationControls() {
             </ol>
           )}
         </div>
+      </div>
+
+      <div className="foundation__tag foundation__tag--slice3">
+        Game &amp; round model (Slice 3) — foundation, not gameplay
+      </div>
+
+      <div className="foundation__actions" role="group" aria-label="Game foundation commands">
+        <button
+          type="button"
+          className="btn"
+          disabled={!hasSession}
+          onClick={() =>
+            dispatch({ type: 'INITIALIZE_GAME', issuedAt: now(), definition: createSampleGame() })
+          }
+        >
+          Initialize sample game
+        </button>
+        <button
+          type="button"
+          className="btn btn--secondary"
+          disabled={!hasSession}
+          onClick={() =>
+            dispatch({
+              type: 'INITIALIZE_GAME',
+              issuedAt: now(),
+              definition: createSampleGameWithUnsupportedRound(),
+            })
+          }
+        >
+          Initialize sample with unsupported round
+        </button>
+        <button
+          type="button"
+          className="btn btn--secondary"
+          disabled={!hasGame}
+          onClick={() => dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: now() })}
+        >
+          Advance to next round
+        </button>
+        <button
+          type="button"
+          className="btn btn--secondary"
+          disabled={!hasGame}
+          onClick={() => dispatch({ type: 'END_GAME_SESSION', issuedAt: now() })}
+        >
+          End game session
+        </button>
+      </div>
+
+      <div className="foundation__panel" aria-label="Game session (host-only)">
+        <h3>Game session (host-only diagnostics)</h3>
+        {!hasGame ? (
+          <p className="host__note">No game loaded. Initialize a sample game above.</p>
+        ) : (
+          <>
+            <dl className="foundation__kv">
+              <dt>game title</dt>
+              <dd data-testid="game-title">{game.definition.title}</dd>
+              <dt>lifecycle</dt>
+              <dd data-testid="game-lifecycle">{game.gameLifecycle}</dd>
+              <dt>current round index</dt>
+              <dd data-testid="game-current-index">
+                {game.currentRoundIndex === null ? '—' : game.currentRoundIndex}
+              </dd>
+              <dt>current round support</dt>
+              <dd data-testid="game-current-support">{game.currentRoundSupport ?? '—'}</dd>
+              <dt>round count</dt>
+              <dd>{game.definition.rounds.length}</dd>
+            </dl>
+            <ol className="foundation__history" data-testid="game-rounds">
+              {game.definition.rounds.map((round, index) => {
+                const known = registry.isKnown(round.type)
+                return (
+                  <li key={round.id} className="foundation__event">
+                    <span className="foundation__event-seq">#{index}</span>
+                    <span className="foundation__event-type">{round.type}</span>
+                    <span className="foundation__event-flag">
+                      {known ? 'supported' : 'UNSUPPORTED'}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn--secondary foundation__status-btn"
+                      onClick={() =>
+                        dispatch({ type: 'SELECT_ROUND', issuedAt: now(), roundId: round.id })
+                      }
+                    >
+                      Select
+                    </button>
+                  </li>
+                )
+              })}
+            </ol>
+          </>
+        )}
       </div>
     </section>
   )
