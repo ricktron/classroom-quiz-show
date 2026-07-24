@@ -18,10 +18,11 @@
 > commit `01070c8`, merged 2026-07-23T19:18:32Z) with CI green (final reviewed
 > head `464ef07`), and the post-merge reconciliation is recorded in
 > [`receipts/2026-07-23-slice-3-post-merge-reconciliation.md`](receipts/2026-07-23-slice-3-post-merge-reconciliation.md).
-> Slice 4 is **In review**, not `Complete`: it is implemented and locally
-> verified on `claude/slice-4-validation-import-pynvab` (base `main`
-> `349bff72f471c798df8a902a6a3c4c3eae2e17a5`), but the implementation PR has not
-> been reviewed, has not been observed green in CI, and has not been merged.
+> Slice 4 is **In review**, not `Complete`: it is implemented on
+> `claude/slice-4-validation-import-pynvab` (base `main`
+> `349bff72f471c798df8a902a6a3c4c3eae2e17a5`), locally verified, and **CI is
+> observed green on PR #7** — but the PR has not been reviewed or merged, and no
+> post-merge reconciliation exists.
 > **Slice 5 remains unstarted and owner-gated.**
 
 ## Slice 4 work (In review)
@@ -146,9 +147,11 @@ Local `verify:all` passed on the Slice 4 branch: lint, typecheck, unit tests
 is clean. See [`handoff/CURRENT.md`](handoff/CURRENT.md) for exact commands and
 the Slice 4 receipt under [`receipts/`](receipts/) for durable evidence.
 
-- CI on GitHub Actions for Slice 4: **not yet observed** — the implementation PR
-  was opened at the end of this slice and no run had concluded at the time of
-  writing. This is one of the reasons Slice 4 is `In review`.
+- CI on GitHub Actions for Slice 4: **Observed green** on PR #7 (commit
+  `d08f140`) — "Lint, typecheck, unit tests, build" and "Playwright e2e" both
+  concluded success, and the SonarCloud Quality Gate passed (0 security
+  hotspots). Slice 4 remains `In review` because the PR is unreviewed and
+  unmerged, not because of CI.
 - Slice 3 CI was observed green on PR #5 (final reviewed head `464ef07`) — both
   jobs succeeded and the SonarCloud Quality Gate passed (0 security hotspots).
 - Pages deployment: unchanged; Slice 4 alters no deploy config.

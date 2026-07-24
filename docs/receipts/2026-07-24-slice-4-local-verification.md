@@ -1,7 +1,7 @@
 # Slice 4 — local verification (validation & import pipeline)
 
 - **Date:** 2026-07-24
-- **Slice / PR:** Slice 4 / implementation PR (opened at the end of this slice)
+- **Slice / PR:** Slice 4 / PR #7
 - **Branch:** `claude/slice-4-validation-import-pynvab`
 - **Base `main`:** `349bff72f471c798df8a902a6a3c4c3eae2e17a5` (merge of PR #6,
   the Slice 3 post-merge reconciliation)
@@ -68,11 +68,26 @@ The 2 skipped e2e tests are the offline app-shell test, which by design runs
 only on the `desktop-1080p` project (carried over unchanged from Slice 1). There
 are **no** skipped failing tests and no other intentional skips.
 
+## CI (observed after the PR was opened)
+
+CI was subsequently **observed green** on PR #7 at commit `d08f140`:
+
+| Check | Conclusion |
+| --- | --- |
+| Lint, typecheck, unit tests, build | success |
+| Playwright e2e | success |
+| SonarCloud Code Analysis | success — **Quality Gate passed**, 0 security hotspots, 0 duplication on new code, 3 new (non-blocking) issues |
+
+Run: <https://github.com/ricktron/classroom-quiz-show/actions/runs/30127035662>
+
 ## Caveats
 
-- **CI has not been observed for Slice 4.** The implementation PR was opened at
-  the end of this slice; no GitHub Actions run had concluded at the time of
-  writing. This is why Slice 4 is `In review`, not `Complete`.
+- **Slice 4 is still `In review`, not `Complete`** — CI is green but the PR has
+  not been reviewed or merged, and no post-merge reconciliation exists.
+- SonarCloud reports **0.0% coverage on new code** because this project does not
+  upload a coverage report to Sonar (unchanged from Slices 1–3); it is not a
+  statement that the new code is untested. The 249 unit tests and 97 browser
+  tests above are the actual coverage evidence.
 - **Pages deployment is unchanged and not re-verified** — Slice 4 alters no
   deploy configuration.
 - The e2e run used the environment-only Chromium override described above, so

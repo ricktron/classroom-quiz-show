@@ -23,7 +23,9 @@ Slice 4 (validation & import pipeline) **In review** on a branch.
 - **Slice 4 (current):** **In review.** Delivered on
   `claude/slice-4-validation-import-pynvab`, based on `main` at
   `349bff72f471c798df8a902a6a3c4c3eae2e17a5` (after the merged Slice 3
-  reconciliation, PR #6). Not merged; CI not yet observed.
+  reconciliation, PR #6). Implementation commit `d08f140`; open as **PR #7**
+  with **CI observed green** (build + e2e success, SonarCloud Quality Gate
+  passed, 0 security hotspots). Unreviewed and unmerged.
   **Slice 5 is unstarted and owner-gated.**
 - **What Slice 4 adds:** the canonical versioned JSON game-file format and ONE
   Zod-based validation/normalization import pipeline
@@ -143,15 +145,15 @@ npm run verify:all   # verify + build + e2e (merge gate)
 > the matching browser and needs no override.
 
 Latest local results (Slice 4 branch): `verify:all` green — 249 unit tests, 97
-e2e passed / 2 skipped; `git diff --check` clean. **Slice 4 CI has not been
-observed yet.** Slice 3 CI was observed green on PR #5 (final reviewed head
+e2e passed / 2 skipped; `git diff --check` clean. Slice 4 CI was observed green
+on PR #7 (commit `d08f140`). Slice 3 CI was observed green on PR #5 (final reviewed head
 `464ef07`: build + e2e success, SonarCloud Quality Gate passed, 0 security
 hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/).
 
 ## Known risks / limitations
 
-- **Slice 4 CI is unobserved and the PR is unmerged** — this is why Slice 4 is
-  `In review`, not `Complete`.
+- **The Slice 4 PR is unreviewed and unmerged** — this is why Slice 4 is
+  `In review`, not `Complete`. CI is green.
 - **One schema version, no migrations** (`schemaVersion: 1`). Older/newer fail
   by design.
 - **Paste is the only import transport** — no file picker, spreadsheet/CSV/XLSX,
