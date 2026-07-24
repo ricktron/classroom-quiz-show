@@ -38,7 +38,7 @@ systems.
 | 1   | **Foundation**                 | App shell, routing, PWA, safety boundaries, tests, deploy, docs.                | —          |
 | 2   | **State & event core**         | Command-driven reducer, append-only event history, undo/replay, private/public `PublicState` types + `toPublicState` sanitizer, host/display sync (BroadcastChannel), fail-closed decoding. | 1          |
 | 3   | **Game & round model + registry** | `GameDefinition` / `GameSession` types, typed `RoundDefinition`, round registry scaffold, unknown-type fail-closed handling. **(Complete.)** | 2          |
-| 4   | **Validation & import pipeline** | Canonical versioned JSON, one Zod-based validation/normalization pipeline, actionable errors, no silent repair. | 3          |
+| 4   | **Validation & import pipeline** | Canonical versioned JSON, one Zod-based validation/normalization pipeline, actionable errors, no silent repair. **(In review.)** | 3          |
 | 5   | **Category-board round**       | First playable round type: configurable categories/rows/ladder, multiplier, used-tile state, prompt/answer reveal, alternates, notes. | 3, 4       |
 | 6   | **Teams & scoring**            | Teams, typed scoring strategy (points first), awards/deductions, partial credit, unrestricted manual correction, audit history, undo. | 2, 5       |
 | 7   | **Timers & transitions**       | Timer config, public timer, host-controlled undoable round transitions, reduced-motion-safe. | 5, 6       |
@@ -226,6 +226,89 @@ Validation & import pipeline: the canonical versioned JSON game format and one
 Zod-based validation/normalization pipeline on every import path, with actionable
 errors and no silent repair — feeding trusted `GameDefinition`s into this model.
 
+## Slice 4 — scope, acceptance, non-goals
+
+**State: In review.** Implemented on `claude/slice-4-validation-import-pynvab`
+on top of `main` at `349bff72f471c798df8a902a6a3c4c3eae2e17a5` (after the merged
+Slice 3 post-merge reconciliation, PR #6). Full technical rationale in
+[`../architecture/ADR-004-canonical-validation-import.md`](../architecture/ADR-004-canonical-validation-import.md).
+
+### Scope (implemented)
+
+1. **Canonical versioned JSON format** — a JSON object discriminated by an exact
+   `format: "classroom-quiz-show/game"` and an exact `schemaVersion: 1`, with
+   `id`, `title`, and ordered `rounds` of `{ id, type, title, config }`. Only
+   fields the Slice 3 domain model justifies; array order **is** round order;
+   identifiers are supplied and validated, never generated; empty `rounds` is
+   valid, matching the domain contract.
+2. **One authoritative pipeline** (`src/import/importGame.ts`) — transport →
+   JSON parse → format → version → safety scan → Zod → semantic → registry →
+   normalization → trusted construction. Pasted JSON, the built-in samples, and
+   tests all converge on it; the samples are JSON **text** so they cannot skip it.
+3. **Explicit version policy** — missing / malformed / older / newer all fail. No
+   shape guessing, no silent up- or downgrade, no speculative migrations.
+4. **Zod schema boundary** — strict objects (unknown keys rejected, not dropped),
+   **no coercion, defaults, catches, or transforms** anywhere. Every issue is
+   preserved with its exact document path.
+5. **Document safety scan (pre-Zod)** — rejects reserved keys (`__proto__`,
+   `prototype`, `constructor`), non-data values (function/symbol/bigint/
+   `undefined`/`Date`/`Map`/`Set`/`RegExp`/class instances), non-finite numbers,
+   cycles, and excessive nesting. Needed because `z.strictObject` does **not**
+   flag those reserved keys (they are inherited from `Object.prototype`).
+6. **Semantic validation** — unique round ids, non-blank titles, bounds.
+7. **Registry integration** — `RoundTypeEntry.configSchema` gives each known
+   round type exactly one config validation path; an **unregistered round type
+   fails import** (deliberately stricter than Slice 3's trusted in-memory path,
+   whose fail-closed handling is unchanged). Content cannot register or supply
+   a schema; duplicate registration still throws; registration order still does
+   not affect round order.
+8. **Narrow normalization** — branded ids, a deep copy of validated config (the
+   caller's input object is never mutated), then the Slice 3 trusted constructor.
+   **No silent repair** of any kind — failure instead.
+9. **Structured error model + result type** — discriminated
+   `ImportResult`; `ImportIssue { code, stage, path, message, context? }` with
+   stable codes, deterministic ordering, no stack traces, and internal failures
+   contained behind a generic issue.
+10. **Host-only paste harness** — textarea, Import button, structured result
+    panel, built-in sample buttons, and clearly separated "active game" vs.
+    "last attempted import" vs. "last import result".
+
+### Acceptance criteria
+
+Local `verify:all` passes (lint, typecheck, 249 unit tests, build, 97 e2e passed
+/ 2 skipped). Coverage: canonical format + version policy; strict unknown keys at
+every level; identifier/title rules; no coercion/defaults/repair/partial import;
+JSON transport (malformed, empty, non-text, oversized, every non-object root,
+trailing content, no eval path); safety (prototype-pollution keys, non-data
+values, non-finite numbers, cycles, depth, explicit truncation); error model
+(codes, stages, paths, multi-issue, determinism, no stack traces, contained
+internal failure); registry integration (unknown type, per-type config schema,
+no mutation, duplicate registration, order independence); normalization (frozen
+output, branded ids, order, determinism, input not mutated); state isolation (no
+event, no revision change, no sync, no `PublicState`/display change on failure;
+`INITIALIZE_GAME`-only on success; replay + undo unchanged); host component and
+browser tests. All Slice 1/2/3 suites remain green.
+
+### Explicit non-goals (Slice 4)
+
+No Slice 5+ work: no category-board or any playable round, categories, clues,
+prompts/answers, point ladders, tile selection, used-tile state, alternates, or
+teacher notes for playable content; no teams, scoring, timers, transitions;
+no persistence/IndexedDB or leader coordination; no final wager, media pipeline,
+or theme engine; no spreadsheet/CSV/XLSX import, content authoring, pack
+management, remote URL import, or backend upload; no cross-device sync,
+authentication, analytics, or executable plugins. **A local `.json` file picker
+was also deliberately not added** — the paste adapter is sufficient to prove the
+pipeline, and a picker is a later, thin transport adapter onto the same
+pipeline. The app is **not** made playable in Slice 4.
+
+### What remains for Slice 5
+
+Category-board round: the first playable round type — configurable categories,
+rows and point ladder, multiplier, used-tile state, prompt/answer reveal,
+alternates, and notes — registered behind the Slice 3 registry and made
+importable by supplying its config schema to this pipeline.
+
 ## Dependencies & risks
 
 - **GitHub Pages base path** must stay correct across assets, manifest, SW
@@ -237,4 +320,6 @@ errors and no silent repair — feeding trusted `GameDefinition`s into this mode
 - **No executable imported code** — the registry half landed in Slice 3
   (ADR-003): `RoundConfig`/`DataValue` forbids functions in content, the registry
   has no eval/dynamic-import/plugin surface, and tests assert both. The import
-  pipeline half (Zod validation on every import path) lands in Slice 4.
+  pipeline half landed in Slice 4 (ADR-004): one `JSON.parse`-only ingestion
+  boundary with a pre-Zod safety scan, no registry mutation from content, and
+  unknown round types rejected at import.

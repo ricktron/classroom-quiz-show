@@ -1,0 +1,112 @@
+/*
+ * Host-only game-import harness (Slice 4). Utilitarian by design — this is a
+ * diagnostics/ingestion surface, not gameplay UI, and it is never projected.
+ */
+.import {
+  margin-top: var(--space-3);
+}
+
+.import h3 {
+  margin: var(--space-1) 0 0.25rem;
+  font-size: 1rem;
+  color: var(--color-accent);
+}
+
+.import h4 {
+  margin-top: 0;
+  font-size: 0.95rem;
+  color: var(--color-accent);
+}
+
+.import__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+.import__label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.import__textarea {
+  width: 100%;
+  padding: var(--space-1);
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.import__textarea:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.import__result {
+  margin-top: var(--space-2);
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+}
+
+.import__result--ok {
+  border-color: rgba(46, 160, 67, 0.6);
+  background: rgba(46, 160, 67, 0.08);
+}
+
+.import__result--bad {
+  border-color: rgba(218, 54, 51, 0.6);
+  background: rgba(218, 54, 51, 0.08);
+}
+
+.import__headline {
+  margin: 0 0 var(--space-1);
+  font-weight: 600;
+}
+
+.import__issues {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.import__issue {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: baseline;
+}
+
+.import__issue-stage {
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.import__issue-code,
+.import__issue-path {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.import__issue-message {
+  flex: 1 1 14rem;
+  min-width: 12rem;
+}

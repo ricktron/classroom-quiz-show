@@ -1,8 +1,8 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with Slice 1, 2 & 3 **Complete** (all merged to `main`). Slice 3
-(game & round model + registry) merged via PR #5; Slice 4 is unstarted.
+the repository with Slice 1, 2 & 3 **Complete** (all merged to `main`) and
+Slice 4 (validation & import pipeline) **In review** on a branch.
 
 ## Repository state
 
@@ -20,7 +20,20 @@ the repository with Slice 1, 2 & 3 **Complete** (all merged to `main`). Slice 3
   2026-07-23T19:18:32Z) with CI green (build + e2e success, SonarCloud Quality
   Gate passed, 0 security hotspots). Post-merge reconciliation recorded in
   [`../receipts/2026-07-23-slice-3-post-merge-reconciliation.md`](../receipts/2026-07-23-slice-3-post-merge-reconciliation.md).
-  **Slice 4 is unstarted and owner-gated.**
+- **Slice 4 (current):** **In review.** Delivered on
+  `claude/slice-4-validation-import-pynvab`, based on `main` at
+  `349bff72f471c798df8a902a6a3c4c3eae2e17a5` (after the merged Slice 3
+  reconciliation, PR #6). Not merged; CI not yet observed.
+  **Slice 5 is unstarted and owner-gated.**
+- **What Slice 4 adds:** the canonical versioned JSON game-file format and ONE
+  Zod-based validation/normalization import pipeline
+  (`src/import/importGame.ts`) that every import entry point converges on —
+  explicit format/version discrimination, a pre-Zod document safety scan, strict
+  schemas with zero coercion, semantic checks, registry-supplied per-round-type
+  config schemas, narrow lossless normalization with no silent repair, a
+  structured `ImportIssue` error model, a discriminated `ImportResult`, and a
+  host-only paste harness. Invalid imports provably touch no state. Still no
+  gameplay.
 - **What Slice 3 adds:** the typed game & round model + a non-executable round
   registry — `GameDefinition` (immutable, deep-frozen, unique round ids), typed
   `RoundDefinition` with data-only config, a registry with explicit known/unknown
@@ -40,6 +53,16 @@ the repository with Slice 1, 2 & 3 **Complete** (all merged to `main`). Slice 3
   path from private state to the display. Host/display sync uses a versioned
   BroadcastChannel envelope; the host is authoritative, the display read-only and
   fails closed.
+- **Canonical validation & import:** see
+  [`../architecture/ADR-004-canonical-validation-import.md`](../architecture/ADR-004-canonical-validation-import.md).
+  A game file is a JSON object discriminated by exact `format` +
+  `schemaVersion`; there is exactly one ingestion pipeline; unknown keys are
+  rejected (never dropped); nothing is coerced, defaulted, or repaired; failures
+  are structured issues, not exceptions; and the pipeline holds no reference to
+  the store, reducer, or sync layer, so an invalid import cannot mutate anything.
+  A successful import loads only via the existing `INITIALIZE_GAME` command.
+  **Unknown round types fail IMPORT** — deliberately stricter than Slice 3's
+  trusted in-memory path, which still represents and fail-closes on them.
 - **Game & round model + registry:** see
   [`../architecture/ADR-003-game-round-model-registry.md`](../architecture/ADR-003-game-round-model-registry.md).
   `GameDefinition` is immutable authored data (deep-frozen; unique ordered
@@ -78,9 +101,27 @@ src/sync/
   channel.ts       SyncChannel: BroadcastChannel / no-op / in-memory-hub impls
   broadcaster.ts   Host publisher (sanitized only; answers request-state)
   receiver.ts      Display subscriber (decode, stale/dup drop, request on start)
-src/host/          useSessionStore, useHostSync, FoundationControls (host-only)
+src/import/
+  canonicalFormat.ts  Format identity, supported version, documented limits
+  issues.ts           ImportStage/ImportIssueCode/ImportIssue, paths, sorting
+  result.ts           Discriminated ImportResult + ImportMetadata
+  safetyScan.ts       Pre-Zod plain-data scan (reserved keys, non-data, cycles)
+  schemas.ts          Strict Zod schemas + ZodIssue → ImportIssue mapping
+  semantic.ts         Unique round ids, non-blank titles
+  registryCheck.ts    Registry compatibility + per-type config schema
+  normalize.ts        Validated → branded, deep-copied, frozen GameDefinition
+  importGame.ts       THE pipeline (importGameFromJsonText / …FromUnknown)
+  sampleGameFile.ts   Built-in sample game files as JSON TEXT (not definitions)
+src/host/          useSessionStore, useHostSync, FoundationControls,
+                   GameImportPanel (host-only import harness)
 src/display/       usePublicState (imports only PublicState + receiver)
+src/test/          leakLabels, gameFileFixtures (untrusted test documents)
 ```
+
+> **Module map note (Slice 4).** `src/game/sampleGame.ts` builds *trusted
+> in-memory* fixtures through the domain constructor; `src/import/sampleGameFile.ts`
+> holds *untrusted* JSON text that goes through the pipeline. They are not
+> interchangeable — the first is not an import path.
 
 ## Verification commands
 
@@ -101,16 +142,23 @@ npm run verify:all   # verify + build + e2e (merge gate)
 > That override is passed via the environment only — never committed. CI installs
 > the matching browser and needs no override.
 
-Latest local results (Slice 3 branch): `verify:all` green — 123 unit tests, 73
-e2e passed / 2 skipped; `git diff --check` clean. Slice 3 CI was observed green on
-PR #5 (final reviewed head `464ef07`: build + e2e success, SonarCloud Quality Gate
-passed, 0 security hotspots). Durable evidence in the Slice 3 local-verification
-and post-merge reconciliation receipts under [`../receipts/`](../receipts/).
+Latest local results (Slice 4 branch): `verify:all` green — 249 unit tests, 97
+e2e passed / 2 skipped; `git diff --check` clean. **Slice 4 CI has not been
+observed yet.** Slice 3 CI was observed green on PR #5 (final reviewed head
+`464ef07`: build + e2e success, SonarCloud Quality Gate passed, 0 security
+hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/).
 
 ## Known risks / limitations
 
-- **Definitions are trusted in-memory objects** — JSON format + Zod validation
-  are Slice 4. Slice 3 validates structure via factory + guard only.
+- **Slice 4 CI is unobserved and the PR is unmerged** — this is why Slice 4 is
+  `In review`, not `Complete`.
+- **One schema version, no migrations** (`schemaVersion: 1`). Older/newer fail
+  by design.
+- **Paste is the only import transport** — no file picker, spreadsheet/CSV/XLSX,
+  remote URL, or backend upload (later slices, same pipeline).
+- **The import size guard counts characters, not bytes**, and covers only the
+  text entry point; the object entry point is bounded by depth and field limits.
+- **Duplicate JSON keys are not observable** (`JSON.parse` keeps the last).
 - **Un-ending a game is unsupported** — `GAME_SESSION_ENDED` is irreversible;
   re-initialize to start over.
 - **In-memory history/definitions only** — no durable persistence yet (Slice 8).
@@ -126,16 +174,15 @@ and post-merge reconciliation receipts under [`../receipts/`](../receipts/).
 
 ## Next action
 
-Review and merge the Slice 3 post-merge reconciliation PR (documentation only).
-Slice 3 is already `Complete` in [`../STATUS.md`](../STATUS.md). Do **not** begin
-Slice 4 until the owner explicitly authorizes it.
+Review the Slice 4 implementation PR. Do **not** begin Slice 5 until Slice 4 is
+reviewed, observed green in CI, merged, and reconciled.
 
-## Prohibited next actions until Slice 4 is authorized
+## Prohibited next actions until Slice 5 is authorized
 
-Do **not**: begin Slice 4 or any later slice; implement the Zod validation /
-JSON import pipeline, a playable board/round engine, questions/answers, tile
+Do **not**: begin Slice 5 or any later slice; implement a playable board/round
+engine, categories, clues, questions/answers, point ladders, tile
 selection, scoring, teams, timers, transitions, durable persistence, final wager,
-media/theme engine, or authoring; add a backend, accounts, buzzers, cross-device
+media/theme engine, spreadsheet import, or authoring; add a backend, accounts, buzzers, cross-device
 sync, or AI services; weaken fail-closed display behavior; send private host
 state to the display; permit executable imported game code; add dynamic
 module/plugin loading based on game content; or move implementation truth into

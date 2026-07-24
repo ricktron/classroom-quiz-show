@@ -54,6 +54,33 @@ Slice 3 adds the typed domain model — still **no gameplay**:
   neutral availability) — the projector never sees the definition, round types,
   or config.
 
+**Slice 4 — validation & import pipeline. In review** — implemented on
+`claude/slice-4-validation-import-pynvab`; not merged, CI not yet observed (see
+[`docs/STATUS.md`](docs/STATUS.md) and
+[`docs/architecture/ADR-004-canonical-validation-import.md`](docs/architecture/ADR-004-canonical-validation-import.md)).
+Slice 4 opens the trusted ingestion boundary — still **no gameplay**:
+
+- A **canonical, versioned JSON game file**, discriminated by an exact
+  `"format": "classroom-quiz-show/game"` and an exact `"schemaVersion": 1`,
+  carrying only `id`, `title`, and ordered `rounds` of
+  `{ id, type, title, config }`. Array order **is** round order; ids are
+  supplied by the file and validated, never generated.
+- **One validation pipeline** (`src/import/importGame.ts`) that every import
+  path converges on: transport → `JSON.parse` → format → version → safety scan →
+  Zod → semantic → registry → normalization → trusted construction. The built-in
+  samples are JSON *text* so they cannot skip it.
+- **Strict and honest**: unknown keys are rejected rather than dropped, nothing
+  is coerced or defaulted, an unsupported version fails (no migrations exist),
+  an unregistered round type fails at import, and **nothing is ever silently
+  repaired** — malformed content returns structured issues instead.
+- **Actionable errors**: every failure is an `ImportIssue` with a stable code, a
+  pipeline stage, an exact document path (`rounds[1].id`), and a message written
+  for a teacher — never a stack trace and never just "invalid file".
+- **Nothing leaks and nothing half-lands**: an invalid import appends no event,
+  changes no revision, publishes no sync message, and leaves `PublicState` and
+  the display untouched. A valid import loads only through the existing
+  `INITIALIZE_GAME` command.
+
 The Slice 1 foundation is unchanged beneath it:
 
 - React + TypeScript + Vite app shell
@@ -67,10 +94,11 @@ The Slice 1 foundation is unchanged beneath it:
 - Architecture and governance documentation
 
 There is still **no gameplay** — no board, questions, answers, scoring, timers,
-teams, reveal, or durable persistence, and definitions are trusted in-memory
-objects (JSON import + validation are Slice 4). The host "Foundation / testing
-controls" are diagnostics that prove the state core and the game/round model, not
-game controls. Those systems arrive in later slices. See
+teams, reveal, or durable persistence. The host "Foundation / testing controls"
+and the import harness are diagnostics that prove the state core, the game/round
+model, and the ingestion boundary — not game controls. Importing is limited to
+pasting canonical JSON (no file picker, spreadsheet, or remote import yet). Those
+systems arrive in later slices. See
 [`docs/STATUS.md`](docs/STATUS.md) and
 [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md).
 

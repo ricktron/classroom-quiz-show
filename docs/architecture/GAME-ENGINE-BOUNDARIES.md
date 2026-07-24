@@ -155,8 +155,29 @@ code supplied by an imported file.
 **forbids a function** anywhere in content — code in config is only expressible
 through an explicit unsafe cast. Tests deep-scan sample definitions for functions,
 assert JSON round-trippability, and assert the registry exposes no eval/import/
-dynamic-registration surface. Full JSON/Zod import validation is still Slice 4;
-Slice 3 uses trusted in-memory definitions built by a structural factory.
+dynamic-registration surface.
+
+**Status (Slice 4).** The import half now exists — see
+[`ADR-004-canonical-validation-import.md`](ADR-004-canonical-validation-import.md).
+`src/import/importGame.ts` is the **single** trusted ingestion boundary: every
+entry point (pasted JSON, built-in samples, future adapters) converges on it.
+It uses `JSON.parse` only — never `eval`, `new Function`, or dynamic `import()`
+— and a **document safety scan** runs before Zod to reject reserved keys
+(`__proto__`, `prototype`, `constructor`), non-data values (function, symbol,
+bigint, `undefined`, `Date`, `Map`, `Set`, class instances), non-finite numbers,
+cycles, and excessive nesting. Imported content cannot register a round type,
+supply a schema, name a module, or mutate the registry; a `register`-shaped
+field in a game file is simply an unknown field and is rejected as one.
+
+**Unknown round types now fail IMPORT** (stage `registry`), rather than being
+imported and failing at play time. That is deliberately stricter than Slice 3's
+trusted in-memory path, which must still be able to *represent* an unsupported
+type so the engine can be proven to encounter one and fail closed. Both rules
+hold simultaneously; ADR-004 §6 tabulates the distinction.
+
+Code-related words in ordinary educational text (a prompt about `eval()`, a
+round titled "Scripts and constructors") are plain strings and are imported
+normally — the boundary rejects unsupported *structures*, not vocabulary.
 
 ## 6. Command / event architecture (future)
 
@@ -212,9 +233,26 @@ config, theme selection, media references, accessibility metadata, citations,
 standards tags, a final round, and optional transition settings.
 
 Spreadsheets are an authoring/import _convenience_, never runtime truth. Every
-import path must eventually pass through **one** canonical validation and
-normalization pipeline (Zod-based, future). Malformed content produces
-actionable errors; ambiguous content is **never** silently repaired.
+import path must pass through **one** canonical validation and normalization
+pipeline (Zod-based). Malformed content produces actionable errors; ambiguous
+content is **never** silently repaired.
+
+**Status (Slice 4).** The canonical format and that one pipeline now exist —
+see [`ADR-004-canonical-validation-import.md`](ADR-004-canonical-validation-import.md).
+A game file is a JSON object discriminated by an exact
+`format: "classroom-quiz-show/game"` and an exact `schemaVersion: 1`, carrying
+only the fields the current domain model justifies (`id`, `title`, ordered
+`rounds` of `{ id, type, title, config }`). Missing / malformed / older / newer
+versions all fail — there is no shape guessing and no silent up- or downgrade,
+because no migration is implemented. Unknown keys are **rejected, not dropped**,
+and there is no coercion anywhere. Failures are structured `ImportIssue`s
+(stable `code`, pipeline `stage`, document `path`, actionable `message`), and
+the pipeline has no reference to the store, the reducer, or the sync layer — so
+an invalid import cannot append an event, change the revision, publish sync
+data, or alter `PublicState` or the display. A **successful** import reaches
+state only through the existing `INITIALIZE_GAME` command.
+
+Import diagnostics are host-only and, per §4, are never projected.
 
 Standards use free-text namespaced tags (e.g. `teks:ESS.1A`, `ngss:HS-ESS2-1`,
 `unit:plate-tectonics`). TEKS/NGSS are **not** required by the MVP.

@@ -1,7 +1,7 @@
 # Status
 
-**Current slice:** Slice 3 — Game & round model + registry
-**Slice state:** Complete
+**Current slice:** Slice 4 — Validation & import pipeline
+**Slice state:** In review
 
 ## State vocabulary
 
@@ -18,7 +18,58 @@
 > commit `01070c8`, merged 2026-07-23T19:18:32Z) with CI green (final reviewed
 > head `464ef07`), and the post-merge reconciliation is recorded in
 > [`receipts/2026-07-23-slice-3-post-merge-reconciliation.md`](receipts/2026-07-23-slice-3-post-merge-reconciliation.md).
-> **Slice 4 remains unstarted and owner-gated.**
+> Slice 4 is **In review**, not `Complete`: it is implemented and locally
+> verified on `claude/slice-4-validation-import-pynvab` (base `main`
+> `349bff72f471c798df8a902a6a3c4c3eae2e17a5`), but the implementation PR has not
+> been reviewed, has not been observed green in CI, and has not been merged.
+> **Slice 5 remains unstarted and owner-gated.**
+
+## Slice 4 work (In review)
+
+The canonical versioned JSON game-file format and the single Zod-based
+validation / normalization import pipeline — **no gameplay**. Full rationale in
+[`architecture/ADR-004-canonical-validation-import.md`](architecture/ADR-004-canonical-validation-import.md);
+local evidence in
+[`receipts/2026-07-24-slice-4-local-verification.md`](receipts/2026-07-24-slice-4-local-verification.md).
+
+| Item | State |
+| --- | --- |
+| Canonical versioned JSON format (`format` + `schemaVersion` discriminators) | Implemented |
+| One authoritative pipeline every import entry point converges on | Implemented |
+| Explicit version policy (missing/malformed/older/newer all fail; no guessing) | Implemented |
+| Strict Zod schemas; unknown keys rejected, not dropped; zero coercion | Implemented |
+| Pre-Zod document safety scan (reserved keys, non-data, non-finite, cycles, depth) | Implemented |
+| Semantic validation (unique round ids, non-blank titles, bounds) | Implemented |
+| Registry `configSchema` — one config validation path per known round type | Implemented |
+| Unknown round type **fails import** (distinct from Slice 3 runtime fail-closed) | Implemented |
+| Narrow, lossless normalization; **no silent repair**; input never mutated | Implemented |
+| Structured `ImportIssue` model (stable codes, stages, paths, actionable messages) | Implemented |
+| Discriminated `ImportResult`; no exceptions for ordinary invalid input | Implemented |
+| Internal failures contained behind a safe generic issue (no stack traces) | Implemented |
+| Host-only paste/import harness with structured result panel | Implemented |
+| Invalid import mutates no state/event/revision/sync/`PublicState`/display | Implemented |
+| Valid import loads only through the existing `INITIALIZE_GAME` command | Implemented |
+| Unit, component and browser tests; docs (ADR-004, plan, handoff, receipt) | Implemented |
+
+### Canonical format (version 1)
+
+```jsonc
+{
+  "format": "classroom-quiz-show/game",
+  "schemaVersion": 1,
+  "id": "sample-foundation-game",
+  "title": "Foundation Sample Game",
+  "rounds": [{ "id": "round-1", "type": "placeholder", "title": "Round One",
+               "config": { "note": "…" } }]
+}
+```
+
+Pipeline stages (also the issue-report order): `transport` · `json-parse` ·
+`format` · `version` · `semantic` · `schema` · `registry` · `construction`.
+
+**Not added to `PublicState`:** import status, filenames, raw titles, error
+paths, schema diagnostics, or registry internals. `PublicState` is unchanged by
+Slice 4 (still wire version 2).
 
 ## Slice 3 work (Complete)
 
@@ -89,17 +140,18 @@ Neutral state/event/sync foundation — no gameplay. Full rationale in
 
 ## Verification state
 
-Local `verify:all` passed on the Slice 3 branch: lint, typecheck, unit tests
-(123 passed, 13 files), production build, and Playwright e2e (73 passed, 2 skipped
+Local `verify:all` passed on the Slice 4 branch: lint, typecheck, unit tests
+(249 passed, 20 files), production build, and Playwright e2e (97 passed, 2 skipped
 — the offline-shell test runs once on the desktop project). `git diff --check`
 is clean. See [`handoff/CURRENT.md`](handoff/CURRENT.md) for exact commands and
-the Slice 3 receipts under [`receipts/`](receipts/) for durable evidence.
+the Slice 4 receipt under [`receipts/`](receipts/) for durable evidence.
 
-- CI on GitHub Actions: **Observed green** on PR #5 (final reviewed head
-  `464ef07`) — the "Lint, typecheck, unit tests, build" and "Playwright e2e" jobs
-  both concluded success, and the SonarCloud Quality Gate passed (0 security
-  hotspots). No actionable review comments.
-- Pages deployment: unchanged; Slice 3 alters no deploy config.
+- CI on GitHub Actions for Slice 4: **not yet observed** — the implementation PR
+  was opened at the end of this slice and no run had concluded at the time of
+  writing. This is one of the reasons Slice 4 is `In review`.
+- Slice 3 CI was observed green on PR #5 (final reviewed head `464ef07`) — both
+  jobs succeeded and the SonarCloud Quality Gate passed (0 security hotspots).
+- Pages deployment: unchanged; Slice 4 alters no deploy config.
 
 ## Completed work (Slice 1)
 
@@ -117,11 +169,21 @@ None.
 ## Limitations
 
 - **No gameplay exists yet** (no board, questions, answers, scoring, timers,
-  teams, reveal). Slice 3 adds only the typed game/round model + registry; the
-  one registered round type is a non-gameplay placeholder.
-- **Definitions are trusted in-memory objects** — the canonical JSON format and
-  Zod validation/import pipeline are Slice 4. Slice 3 validates structure via a
-  factory + guard only.
+  teams, reveal). Slice 4 adds only ingestion; the one registered round type is
+  still a non-gameplay placeholder and the app is **not** playable.
+- **One schema version, no migrations.** `schemaVersion: 1` only. An older or
+  newer version fails by design; a v2 will need a real, tested migration.
+- **Paste is the only import transport.** No `.json` file picker, spreadsheet /
+  CSV / XLSX import, remote URL import, or backend upload (later slices; each
+  must converge on the same pipeline).
+- **The import size guard counts characters, not bytes**, and applies only to the
+  text entry point; the object entry point is bounded by nesting depth and the
+  round/title/id limits.
+- **Duplicate JSON keys are not observable** — `JSON.parse` keeps the last
+  occurrence and the pipeline validates the survivor. Documented behaviour, not
+  a claimed defence.
+- **The placeholder round's config schema is intentionally trivial** (one `note`
+  string). It proves the registry seam; it is not a preview of `category-board`.
 - **Un-ending a game is not supported** — `GAME_SESSION_ENDED` is irreversible;
   re-initialize a game to start over.
 - **Event history and definitions are in-memory only** — lost on tab close.
@@ -133,5 +195,5 @@ None.
 
 ## Next safe action
 
-Review and merge the Slice 3 post-merge reconciliation PR (documentation only).
-**Do not begin Slice 4** until the owner explicitly authorizes it.
+Review the Slice 4 implementation PR. **Do not begin Slice 5** until Slice 4 is
+reviewed, observed green in CI, merged, and reconciled.
