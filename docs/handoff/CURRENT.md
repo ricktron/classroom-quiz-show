@@ -1,8 +1,8 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with Slice 1 & 2 **Complete** (merged to `main`) and Slice 3
-(game & round model + registry) **In review** on its implementation branch.
+the repository with Slice 1, 2 & 3 **Complete** (all merged to `main`). Slice 3
+(game & round model + registry) merged via PR #5; Slice 4 is unstarted.
 
 ## Repository state
 
@@ -12,12 +12,14 @@ the repository with Slice 1 & 2 **Complete** (merged to `main`) and Slice 3
   owner-accepted.
 - **Slice 2:** **Complete.** Merged to `main` via **PR #3** (merge commit
   `883111e`) with CI green; reconciliation PR #4 (merge commit `61e1a29`).
-- **Slice 3 (current):** **In review.** Delivered on
+- **Slice 3 (current):** **Complete.** Delivered on
   `claude/slice-3-game-round-registry-yjzexz`, based on `main` at
   `61e1a29548e8735886c3637e5c2e521ff6ee6db4` (after the merged Slice 2
-  reconciliation, PR #4). Local `verify:all` green; the implementation PR is open
-  for review. Local evidence:
-  [`../receipts/2026-07-23-slice-3-local-verification.md`](../receipts/2026-07-23-slice-3-local-verification.md).
+  reconciliation, PR #4). Original implementation commit `7ac2466`; final reviewed
+  head `464ef07`. Merged to `main` via **PR #5** (merge commit `01070c8`, merged
+  2026-07-23T19:18:32Z) with CI green (build + e2e success, SonarCloud Quality
+  Gate passed, 0 security hotspots). Post-merge reconciliation recorded in
+  [`../receipts/2026-07-23-slice-3-post-merge-reconciliation.md`](../receipts/2026-07-23-slice-3-post-merge-reconciliation.md).
   **Slice 4 is unstarted and owner-gated.**
 - **What Slice 3 adds:** the typed game & round model + a non-executable round
   registry — `GameDefinition` (immutable, deep-frozen, unique round ids), typed
@@ -100,9 +102,10 @@ npm run verify:all   # verify + build + e2e (merge gate)
 > the matching browser and needs no override.
 
 Latest local results (Slice 3 branch): `verify:all` green — 123 unit tests, 73
-e2e passed / 2 skipped; `git diff --check` clean. Slice 3 CI runs when the
-implementation PR opens. Durable evidence in
-[`../receipts/2026-07-23-slice-3-local-verification.md`](../receipts/2026-07-23-slice-3-local-verification.md).
+e2e passed / 2 skipped; `git diff --check` clean. Slice 3 CI was observed green on
+PR #5 (final reviewed head `464ef07`: build + e2e success, SonarCloud Quality Gate
+passed, 0 security hotspots). Durable evidence in the Slice 3 local-verification
+and post-merge reconciliation receipts under [`../receipts/`](../receipts/).
 
 ## Known risks / limitations
 
@@ -123,9 +126,9 @@ implementation PR opens. Durable evidence in
 
 ## Next action
 
-Review the Slice 3 implementation PR. Slice 3 is `In review` in
-[`../STATUS.md`](../STATUS.md). Do **not** begin Slice 4 until the owner
-explicitly authorizes it.
+Review and merge the Slice 3 post-merge reconciliation PR (documentation only).
+Slice 3 is already `Complete` in [`../STATUS.md`](../STATUS.md). Do **not** begin
+Slice 4 until the owner explicitly authorizes it.
 
 ## Prohibited next actions until Slice 4 is authorized
 

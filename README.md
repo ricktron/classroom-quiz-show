@@ -32,10 +32,11 @@ see [`docs/architecture/ADR-002-state-event-sync-core.md`](docs/architecture/ADR
   envelope: the host is authoritative, the display is read-only, and unknown /
   stale / malformed messages are ignored.
 
-**Slice 3 — game & round model + registry. In review** — implemented on
-`claude/slice-3-game-round-registry-yjzexz`, local `verify:all` green; the
-implementation PR is open for review (see [`docs/STATUS.md`](docs/STATUS.md) and
-[`docs/architecture/ADR-003-game-round-model-registry.md`](docs/architecture/ADR-003-game-round-model-registry.md)).
+**Slice 3 — game & round model + registry. Complete** — merged to `main`
+(PR #5), CI green (see [`docs/STATUS.md`](docs/STATUS.md), the reconciliation
+receipt
+[`docs/receipts/2026-07-23-slice-3-post-merge-reconciliation.md`](docs/receipts/2026-07-23-slice-3-post-merge-reconciliation.md),
+and [`docs/architecture/ADR-003-game-round-model-registry.md`](docs/architecture/ADR-003-game-round-model-registry.md)).
 Slice 3 adds the typed domain model — still **no gameplay**:
 
 - A **`GameDefinition`**: immutable, authored, deep-frozen data — a stable id, a
