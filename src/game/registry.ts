@@ -1,3 +1,4 @@
+import type { ZodType } from 'zod'
 import type { RoundId, RoundType } from './ids'
 import type { RoundDefinition } from './roundDefinition'
 
@@ -46,6 +47,21 @@ export interface RoundTypeEntry {
   readonly type: RoundType
   /** Human-readable name for HOST diagnostics only. Never projected. */
   readonly displayName: string
+  /**
+   * The single validation path for this round type's `config` at the untrusted
+   * IMPORT boundary (Slice 4 / ADR-004). Each registered type owns exactly one
+   * config schema; there is no generic fallback, and an unregistered type has
+   * no schema at all — which is precisely why an unknown type fails import.
+   *
+   * The schema VALIDATES, it never transforms: the import pipeline discards the
+   * parsed output and normalizes from the original validated input, so a schema
+   * cannot silently rewrite, default, or coerce authored content.
+   *
+   * This field is supplied by APPLICATION CODE when a type is registered.
+   * Imported content can never provide, replace, or extend a schema — a game
+   * file is data and has no path to `register`.
+   */
+  readonly configSchema: ZodType
   /** Does this definition match this entry's type (and expected config shape)? */
   readonly matches: (definition: RoundDefinition) => boolean
   /** Build the initial runtime state for a round of this type. */

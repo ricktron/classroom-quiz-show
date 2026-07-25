@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { z } from 'zod'
 import { createRoundRegistry, RegistryError, type RoundTypeEntry } from './registry'
 import { createDefaultRegistry } from './defaultRegistry'
 import { placeholderRoundType } from './placeholderRound'
@@ -9,6 +10,7 @@ function fakeEntry(type: string): RoundTypeEntry {
   return {
     type: roundType(type),
     displayName: `Fake ${type}`,
+    configSchema: z.strictObject({}),
     matches: (definition) => definition.type === type,
     createInitialState: (definition) => ({ roundId: definition.id, type: definition.type }),
     toPublicRoundView: () => ({ availability: 'available' }),

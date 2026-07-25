@@ -2,6 +2,7 @@ import { useSessionStore } from './useSessionStore'
 import { useHostSync } from './useHostSync'
 import { PUBLIC_STATUS_CODES } from '../state/status'
 import { createSampleGame, createSampleGameWithUnsupportedRound } from '../game/sampleGame'
+import { GameImportPanel } from './GameImportPanel'
 import './FoundationControls.css'
 
 /**
@@ -146,6 +147,11 @@ export function FoundationControls() {
       <div className="foundation__tag foundation__tag--slice3">
         Game &amp; round model (Slice 3) — foundation, not gameplay
       </div>
+      <p className="host__note foundation__intro">
+        These two samples are <strong>trusted in-memory fixtures</strong> built by the
+        application through the domain constructor — they are not an import path. Untrusted
+        content goes through the import pipeline below.
+      </p>
 
       <div className="foundation__actions" role="group" aria-label="Game foundation commands">
         <button
@@ -236,6 +242,13 @@ export function FoundationControls() {
           </>
         )}
       </div>
+
+      <GameImportPanel
+        dispatch={dispatch}
+        registry={registry}
+        hasSession={hasSession}
+        activeGame={game}
+      />
     </section>
   )
 }

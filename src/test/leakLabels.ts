@@ -19,5 +19,10 @@ export const FORBIDDEN_DISPLAY_LABELS: readonly string[] = [
   'Subtract points',
   'Host controls',
   'Wager entry',
+  // Slice 4: the host import harness. Its heading, its raw-JSON field, and any
+  // validation issue text are host-only diagnostics and must never be projected.
   'Import diagnostics',
+  'Game file JSON',
+  'Import failed',
+  'classroom-quiz-show/game',
 ]

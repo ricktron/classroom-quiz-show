@@ -13,6 +13,10 @@ This project separates two kinds of durable decision records:
    - [`ADR-003-game-round-model-registry.md`](../architecture/ADR-003-game-round-model-registry.md)
      — `GameDefinition`/`GameSession`, typed `RoundDefinition`, round registry
      scaffold, unknown-type fail-closed handling (Slice 3).
+   - [`ADR-004-canonical-validation-import.md`](../architecture/ADR-004-canonical-validation-import.md)
+     — canonical versioned JSON game file, the single Zod-based validation /
+     normalization import pipeline, structured errors, no silent repair
+     (Slice 4).
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).
