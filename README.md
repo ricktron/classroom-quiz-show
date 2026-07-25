@@ -54,10 +54,11 @@ Slice 3 adds the typed domain model — still **no gameplay**:
   neutral availability) — the projector never sees the definition, round types,
   or config.
 
-**Slice 4 — validation & import pipeline. In review** — implemented on
-`claude/slice-4-validation-import-pynvab`; not merged, CI not yet observed (see
-[`docs/STATUS.md`](docs/STATUS.md) and
-[`docs/architecture/ADR-004-canonical-validation-import.md`](docs/architecture/ADR-004-canonical-validation-import.md)).
+**Slice 4 — validation & import pipeline. Complete** — merged to `main` (PR #7),
+CI green and Pages deployed (see [`docs/STATUS.md`](docs/STATUS.md), the
+reconciliation receipt
+[`docs/receipts/2026-07-25-slice-4-post-merge-reconciliation.md`](docs/receipts/2026-07-25-slice-4-post-merge-reconciliation.md),
+and [`docs/architecture/ADR-004-canonical-validation-import.md`](docs/architecture/ADR-004-canonical-validation-import.md)).
 Slice 4 opens the trusted ingestion boundary — still **no gameplay**:
 
 - A **canonical, versioned JSON game file**, discriminated by an exact

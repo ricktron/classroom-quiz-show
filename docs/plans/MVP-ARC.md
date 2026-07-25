@@ -38,7 +38,7 @@ systems.
 | 1   | **Foundation**                 | App shell, routing, PWA, safety boundaries, tests, deploy, docs.                | —          |
 | 2   | **State & event core**         | Command-driven reducer, append-only event history, undo/replay, private/public `PublicState` types + `toPublicState` sanitizer, host/display sync (BroadcastChannel), fail-closed decoding. | 1          |
 | 3   | **Game & round model + registry** | `GameDefinition` / `GameSession` types, typed `RoundDefinition`, round registry scaffold, unknown-type fail-closed handling. **(Complete.)** | 2          |
-| 4   | **Validation & import pipeline** | Canonical versioned JSON, one Zod-based validation/normalization pipeline, actionable errors, no silent repair. **(In review.)** | 3          |
+| 4   | **Validation & import pipeline** | Canonical versioned JSON, one Zod-based validation/normalization pipeline, actionable errors, no silent repair. **(Complete.)** | 3          |
 | 5   | **Category-board round**       | First playable round type: configurable categories/rows/ladder, multiplier, used-tile state, prompt/answer reveal, alternates, notes. | 3, 4       |
 | 6   | **Teams & scoring**            | Teams, typed scoring strategy (points first), awards/deductions, partial credit, unrestricted manual correction, audit history, undo. | 2, 5       |
 | 7   | **Timers & transitions**       | Timer config, public timer, host-controlled undoable round transitions, reduced-motion-safe. | 5, 6       |
@@ -228,9 +228,14 @@ errors and no silent repair — feeding trusted `GameDefinition`s into this mode
 
 ## Slice 4 — scope, acceptance, non-goals
 
-**State: In review.** Implemented on `claude/slice-4-validation-import-pynvab`
+**State: Complete.** Implemented on `claude/slice-4-validation-import-pynvab`
 on top of `main` at `349bff72f471c798df8a902a6a3c4c3eae2e17a5` (after the merged
-Slice 3 post-merge reconciliation, PR #6). Full technical rationale in
+Slice 3 post-merge reconciliation, PR #6), and merged to `main` via **PR #7**
+(merge commit `5295e83`, merged 2026-07-25T20:14:42Z; final reviewed head
+`8ce850c`). Post-merge CI on `main` green and the Pages deployment succeeded;
+post-merge reconciliation recorded in
+[`../receipts/2026-07-25-slice-4-post-merge-reconciliation.md`](../receipts/2026-07-25-slice-4-post-merge-reconciliation.md).
+Full technical rationale in
 [`../architecture/ADR-004-canonical-validation-import.md`](../architecture/ADR-004-canonical-validation-import.md).
 
 ### Scope (implemented)
