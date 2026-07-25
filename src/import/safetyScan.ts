@@ -143,6 +143,22 @@ export function scanImportedDocument(root: unknown): readonly ImportIssue[] {
           )
           continue
         }
+        // Reject accessor properties. A getter can return one value while it is
+        // being validated and a different one when the definition is later
+        // built from it, so an accessor anywhere would make validation a
+        // statement about a value that no longer exists (a time-of-check /
+        // time-of-use hole). Data has no accessors — `JSON.parse` cannot
+        // produce one — so rejecting them closes that class outright rather
+        // than relying on every downstream reader to snapshot defensively.
+        const descriptor = Object.getOwnPropertyDescriptor(value, key)
+        if (descriptor !== undefined && !('value' in descriptor)) {
+          add(
+            'non-data-value',
+            [...segments, key],
+            `${formatPath([...segments, key])} is an accessor (getter/setter), not a stored value; game content must be plain JSON data.`,
+          )
+          continue
+        }
         walk(value[key], [...segments, key], depth + 1)
       }
     } else {

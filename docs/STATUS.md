@@ -142,7 +142,7 @@ Neutral state/event/sync foundation — no gameplay. Full rationale in
 ## Verification state
 
 Local `verify:all` passed on the Slice 4 branch: lint, typecheck, unit tests
-(249 passed, 20 files), production build, and Playwright e2e (97 passed, 2 skipped
+(253 passed, 20 files), production build, and Playwright e2e (97 passed, 2 skipped
 — the offline-shell test runs once on the desktop project). `git diff --check`
 is clean. See [`handoff/CURRENT.md`](handoff/CURRENT.md) for exact commands and
 the Slice 4 receipt under [`receipts/`](receipts/) for durable evidence.

@@ -15,7 +15,7 @@
 | `npm install zod` | pass | one new runtime dependency: `zod@4.4.3` |
 | `npm run lint` | pass | ESLint flat config, no warnings |
 | `npm run typecheck` | pass | `tsc -b --noEmit` |
-| `npm run test:run` | pass | **249 passed**, 20 files (was 123 / 13 at Slice 3) |
+| `npm run test:run` | pass | **253 passed**, 20 files (was 123 / 13 at Slice 3) |
 | `npm run build` | pass | `tsc -b && vite build` → `dist/`, PWA precache generated |
 | `npm run test:e2e` | pass | **97 passed / 2 skipped**, 3 viewport projects (was 73 / 2) |
 | `npm run verify:all` | pass | lint + typecheck + unit + build + e2e |
@@ -33,7 +33,7 @@
 | --- | --- | --- |
 | `src/import/canonicalFormat.test.ts` | 30 | format identity, version policy, strict unknown keys, id/title rules, no coercion/defaults/repair/partial import |
 | `src/import/jsonTransport.test.ts` | 15 | text transport, malformed/empty/oversized/non-object roots, no eval path, code-like strings imported as data, built-in samples through the pipeline, contained internal failure |
-| `src/import/safety.test.ts` | 25 | `__proto__`/`prototype`/`constructor`, non-data values (function/symbol/bigint/`undefined`/`Date`/`Map`/`Set`/`RegExp`/class instance), non-finite numbers, cycles, depth, explicit truncation, array/object confusion, duplicate JSON keys |
+| `src/import/safety.test.ts` | 29 | `__proto__`/`prototype`/`constructor`, non-data values (function/symbol/bigint/`undefined`/`Date`/`Map`/`Set`/`RegExp`/class instance), non-finite numbers, cycles, depth, explicit truncation, array/object confusion, duplicate JSON keys, accessor properties (TOCTOU) |
 | `src/import/errorModel.test.ts` | 18 | issue shape, multi-issue preservation, deterministic ordering, path formatting, registry integration (unknown type, per-type config schema, no mutation, duplicate registration, order independence) |
 | `src/import/normalize.test.ts` | 10 | frozen output, branded ids, order, verbatim values, input not mutated, determinism, text/object convergence |
 | `src/import/stateIsolation.test.ts` | 18 | no event / revision / state / sync / `PublicState` change on failure; `INITIALIZE_GAME`-only on success; replay + undo unchanged |
@@ -55,7 +55,7 @@ Final `verify:all` summary lines:
 > tsc -b --noEmit
 
  Test Files  20 passed (20)
-      Tests  249 passed (249)
+      Tests  253 passed (253)
 
 ✓ built in 1.60s
 PWA v1.3.0  precache 16 entries
@@ -86,7 +86,7 @@ Run: <https://github.com/ricktron/classroom-quiz-show/actions/runs/30127035662>
   not been reviewed or merged, and no post-merge reconciliation exists.
 - SonarCloud reports **0.0% coverage on new code** because this project does not
   upload a coverage report to Sonar (unchanged from Slices 1–3); it is not a
-  statement that the new code is untested. The 249 unit tests and 97 browser
+  statement that the new code is untested. The 253 unit tests and 97 browser
   tests above are the actual coverage evidence.
 - **Pages deployment is unchanged and not re-verified** — Slice 4 alters no
   deploy configuration.

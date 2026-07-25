@@ -275,7 +275,7 @@ Slice 3 post-merge reconciliation, PR #6). Full technical rationale in
 
 ### Acceptance criteria
 
-Local `verify:all` passes (lint, typecheck, 249 unit tests, build, 97 e2e passed
+Local `verify:all` passes (lint, typecheck, 253 unit tests, build, 97 e2e passed
 / 2 skipped). Coverage: canonical format + version policy; strict unknown keys at
 every level; identifier/title rules; no coercion/defaults/repair/partial import;
 JSON transport (malformed, empty, non-text, oversized, every non-object root,

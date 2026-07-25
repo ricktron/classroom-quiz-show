@@ -120,6 +120,14 @@ Zod**. Two reasons, and the first is not theoretical:
    arbitrary in-memory values (functions, `Date`, `Map`, cycles, non-finite
    numbers) that `JSON.parse` could never produce.
 
+The scan also rejects **accessor properties**. A getter can return one value
+while it is being validated and another when the definition is later built from
+it — a time-of-check/time-of-use hole, and a live one here because Zod's
+`z.custom` returns `config` by reference, so normalization re-reads the original
+object. Data has no accessors (`JSON.parse` cannot produce one), so rejecting
+them closes that class outright instead of relying on every downstream reader to
+snapshot defensively.
+
 The scan **rejects**; it never strips or rewrites.
 
 ### 5. Strict unknown keys

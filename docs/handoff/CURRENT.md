@@ -131,7 +131,7 @@ src/test/          leakLabels, gameFileFixtures (untrusted test documents)
 npm ci               # reproducible install
 npm run lint         # ESLint (flat config)
 npm run typecheck    # tsc -b --noEmit
-npm run test:run     # Vitest (unit/component) — 123 tests
+npm run test:run     # Vitest (unit/component) — 253 tests
 npm run build        # tsc -b && vite build → dist/
 npm run test:e2e     # Playwright vs production preview (3 viewport projects)
 npm run verify       # lint + typecheck + unit
@@ -144,7 +144,7 @@ npm run verify:all   # verify + build + e2e (merge gate)
 > That override is passed via the environment only — never committed. CI installs
 > the matching browser and needs no override.
 
-Latest local results (Slice 4 branch): `verify:all` green — 249 unit tests, 97
+Latest local results (Slice 4 branch): `verify:all` green — 253 unit tests, 97
 e2e passed / 2 skipped; `git diff --check` clean. Slice 4 CI was observed green
 on PR #7 (commit `d08f140`). Slice 3 CI was observed green on PR #5 (final reviewed head
 `464ef07`: build + e2e success, SonarCloud Quality Gate passed, 0 security

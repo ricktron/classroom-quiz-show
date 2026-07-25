@@ -192,3 +192,56 @@ describe('duplicate JSON keys', () => {
     expect(result.issues.some((i) => i.path === 'id' && i.code === 'invalid-format')).toBe(true)
   })
 })
+
+describe('accessor properties (time-of-check / time-of-use)', () => {
+  it('rejects a getter rather than validating a value that can then change', () => {
+    // A getter could return a valid value while it is being validated and a
+    // different one when the definition is built from it. Data has no
+    // accessors, so the scan rejects them outright.
+    let reads = 0
+    const config = {
+      note: 'n',
+      get sneaky(): string {
+        reads += 1
+        return reads === 1 ? 'innocent' : 'swapped after validation'
+      },
+    }
+    const document = gameFile({
+      rounds: [{ id: 'r1', type: 'placeholder', title: 'R1', config }],
+    })
+    const issues = issuesOf(document)
+    expect(
+      issues.some(
+        (i) => i.code === 'non-data-value' && i.path === 'rounds[0].config.sneaky',
+      ),
+    ).toBe(true)
+  })
+
+  it('rejects a setter-only property', () => {
+    const config: Record<string, unknown> = { note: 'n' }
+    Object.defineProperty(config, 'trap', {
+      set: () => {},
+      enumerable: true,
+      configurable: true,
+    })
+    const document = gameFile({
+      rounds: [{ id: 'r1', type: 'placeholder', title: 'R1', config }],
+    })
+    expect(codes(document)).toContain('non-data-value')
+  })
+
+  it('rejects a getter on the document root', () => {
+    const document = gameFile()
+    Object.defineProperty(document, 'title', {
+      get: () => 'Shifting Title',
+      enumerable: true,
+      configurable: true,
+    })
+    const issues = issuesOf(document)
+    expect(issues.some((i) => i.code === 'non-data-value' && i.path === 'title')).toBe(true)
+  })
+
+  it('still accepts ordinary data properties', () => {
+    expect(importGameFromUnknown(gameFile()).status).toBe('success')
+  })
+})
