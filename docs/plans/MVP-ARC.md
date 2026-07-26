@@ -39,7 +39,7 @@ systems.
 | 2   | **State & event core**         | Command-driven reducer, append-only event history, undo/replay, private/public `PublicState` types + `toPublicState` sanitizer, host/display sync (BroadcastChannel), fail-closed decoding. | 1          |
 | 3   | **Game & round model + registry** | `GameDefinition` / `GameSession` types, typed `RoundDefinition`, round registry scaffold, unknown-type fail-closed handling. **(Complete.)** | 2          |
 | 4   | **Validation & import pipeline** | Canonical versioned JSON, one Zod-based validation/normalization pipeline, actionable errors, no silent repair. **(Complete.)** | 3          |
-| 5   | **Category-board round**       | First playable round type: configurable categories/rows/ladder, multiplier, used-tile state, prompt/answer reveal, alternates, notes. **(In review.)** | 3, 4       |
+| 5   | **Category-board round**       | First playable round type: configurable categories/rows/ladder, multiplier, used-tile state, prompt/answer reveal, alternates, notes. **(Complete.)** | 3, 4       |
 | 6   | **Teams & scoring**            | Teams, typed scoring strategy (points first), awards/deductions, partial credit, unrestricted manual correction, audit history, undo. | 2, 5       |
 | 7   | **Timers & transitions**       | Timer config, public timer, host-controlled undoable round transitions, reduced-motion-safe. | 5, 6       |
 | 8   | **Persistence & recovery**     | IndexedDB durable local persistence, session recovery, lightweight leader coordination. | 2          |
@@ -316,11 +316,15 @@ importable by supplying its config schema to this pipeline.
 
 ## Slice 5 — scope, acceptance, non-goals
 
-**State: In review.** Implemented on `claude/slice-5-category-board-6gfxnq` on
+**State: Complete.** Implemented on `claude/slice-5-category-board-6gfxnq` on
 top of `main` at `0dacd3501fb10ce1272386f56bf15a2956ee8c6d` (the merge commit of
-PR #8, the Slice 4 post-merge reconciliation). It is **not** merged and **not**
-`Complete`; it may only be marked `Complete` after review, CI green, and owner
-acceptance. Full technical rationale in
+PR #8, the Slice 4 post-merge reconciliation). Implementation commit `f8c4517`;
+final reviewed head `5e6994e`. Merged to `main` via **PR #9** (merge commit
+`2ec69323c203a989b06610e6506475e875a40e45`, merged 2026-07-26T05:02:33Z) with
+all three PR checks green. Post-merge CI on `main` concluded success and the
+Pages deployment succeeded; post-merge reconciliation recorded in
+[`../receipts/2026-07-26-slice-5-post-merge-reconciliation.md`](../receipts/2026-07-26-slice-5-post-merge-reconciliation.md).
+Full technical rationale in
 [`../architecture/ADR-005-category-board-round.md`](../architecture/ADR-005-category-board-round.md);
 local evidence in
 [`../receipts/2026-07-26-slice-5-local-verification.md`](../receipts/2026-07-26-slice-5-local-verification.md).
@@ -391,7 +395,8 @@ AI generation; and **no additional playable round types**.
 
 Teams & scoring: teams, a typed scoring strategy (points first), awards and
 deductions, partial credit, unrestricted manual correction, an audit history,
-and undo — built on top of the reveal events this slice produces.
+and undo — built on top of the reveal events this slice produces. **Slice 6 is
+`Planned` and unstarted; it is owner-gated.**
 
 ## Dependencies & risks
 

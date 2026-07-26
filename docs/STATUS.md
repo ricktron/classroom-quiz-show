@@ -1,7 +1,7 @@
 # Status
 
 **Current slice:** Slice 5 — Category-board round
-**Slice state:** In review
+**Slice state:** Complete
 
 ## State vocabulary
 
@@ -27,18 +27,23 @@
 > head (it concluded success ~23 s after the merge); SonarCloud and the
 > lint/typecheck/unit/build job had both already reported success. The receipt
 > records this precisely rather than claiming all checks were green pre-merge.
-> Slice 5 is **In review**, not `Complete`: it is delivered on
-> `claude/slice-5-category-board-6gfxnq` on top of `main` at
-> `0dacd3501fb10ce1272386f56bf15a2956ee8c6d` and has an open review PR. It may
-> only be marked `Complete` after review, CI green, and owner acceptance.
+> Slice 5 is **Complete**: implementation PR #9 was merged to `main` (merge
+> commit `2ec69323c203a989b06610e6506475e875a40e45`, merged
+> 2026-07-26T05:02:33Z; implementation commit `f8c4517`, final reviewed head
+> `5e6994e`). All three PR checks were green before merge, **post-merge CI on
+> `main` at `2ec6932` concluded success**, and the **Pages deployment
+> succeeded**. Post-merge reconciliation is recorded in
+> [`receipts/2026-07-26-slice-5-post-merge-reconciliation.md`](receipts/2026-07-26-slice-5-post-merge-reconciliation.md).
 > **Slice 6 (teams & scoring) remains unstarted and owner-gated.**
 
-## Slice 5 work (In review)
+## Slice 5 work (Complete)
 
 The first **playable** round type — `category-board`. Full rationale in
 [`architecture/ADR-005-category-board-round.md`](architecture/ADR-005-category-board-round.md);
 local evidence in
-[`receipts/2026-07-26-slice-5-local-verification.md`](receipts/2026-07-26-slice-5-local-verification.md).
+[`receipts/2026-07-26-slice-5-local-verification.md`](receipts/2026-07-26-slice-5-local-verification.md)
+and merge / CI / deployment evidence in
+[`receipts/2026-07-26-slice-5-post-merge-reconciliation.md`](receipts/2026-07-26-slice-5-post-merge-reconciliation.md).
 
 | Item | State |
 | --- | --- |
@@ -215,11 +220,15 @@ Local `verify:all` passed on the Slice 5 branch: lint, typecheck, unit tests
 `git diff --check` is clean. See [`handoff/CURRENT.md`](handoff/CURRENT.md) for
 exact commands and the Slice 5 receipt under [`receipts/`](receipts/).
 
-- CI on GitHub Actions for Slice 5: **Observed green.** On PR #9 (head
-  `f8c4517`) "Lint, typecheck, unit tests, build", "Playwright e2e", and the
-  SonarCloud Quality Gate (0 security hotspots) all concluded success. Slice 5
-  changes no CI or deploy configuration.
-- Pages deployment for Slice 5: **Not yet observed** (Pages deploys from `main`).
+- CI on GitHub Actions for Slice 5: **Observed green.** On PR #9 (final
+  reviewed head `5e6994e`) "Lint, typecheck, unit tests, build", "Playwright
+  e2e", and the SonarCloud Quality Gate (0 security hotspots) all concluded
+  success. **Post-merge on `main` (`2ec6932`)** the `CI` workflow concluded
+  success for both jobs.
+- Pages deployment for Slice 5: **Observed successful** on `main` at `2ec6932`
+  (deploy job completed 2026-07-26T05:03:16Z). Slice 5 altered no deploy
+  configuration. Owner-verified loading of the live URLs after this deployment
+  is **not** claimed.
 - Slice 4 local `verify:all` also passed (253 unit, 97 e2e / 2 skipped).
 - CI on GitHub Actions for Slice 4: **Observed green.** On PR #7 (final head
   `8ce850c`) "Lint, typecheck, unit tests, build", "Playwright e2e", and the
@@ -282,5 +291,5 @@ None.
 
 ## Next safe action
 
-Review the Slice 5 implementation PR. **Do not begin Slice 6** until Slice 5 is
-reviewed, merged, and accepted by the owner.
+**Authorize Slice 6 — Teams & scoring.** Slice 6 is `Planned` and has not been
+started; no work on it may begin until the owner explicitly authorizes it.

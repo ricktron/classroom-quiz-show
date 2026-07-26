@@ -82,9 +82,11 @@ Slice 4 opens the trusted ingestion boundary — still **no gameplay**:
   the display untouched. A valid import loads only through the existing
   `INITIALIZE_GAME` command.
 
-**Slice 5 — category-board round. In review** — delivered on
-`claude/slice-5-category-board-6gfxnq`, **not merged** (see
-[`docs/STATUS.md`](docs/STATUS.md), the local-verification receipt
+**Slice 5 — category-board round. Complete** — merged to `main` (PR #9, merge
+commit `2ec6932`), CI green and Pages deployed (see
+[`docs/STATUS.md`](docs/STATUS.md), the reconciliation receipt
+[`docs/receipts/2026-07-26-slice-5-post-merge-reconciliation.md`](docs/receipts/2026-07-26-slice-5-post-merge-reconciliation.md),
+the local-verification receipt
 [`docs/receipts/2026-07-26-slice-5-local-verification.md`](docs/receipts/2026-07-26-slice-5-local-verification.md),
 and [`docs/architecture/ADR-005-category-board-round.md`](docs/architecture/ADR-005-category-board-round.md)).
 Slice 5 makes the app **playable for the first time**:
@@ -174,6 +176,13 @@ real GitHub Pages base path, then exercises direct navigation, refresh, the
 base path, projector legibility, mobile host usability, the offline app shell,
 a full category-board play-through across a host tab and a projector tab, and
 the permanent **projector-leak** checks.
+
+**Testing policy.** Every slice that changes user-visible host or display
+behavior must add or update Playwright coverage; unit tests cover schemas,
+reducers, replay and edge cases, component tests cover bounded UI states and
+accessibility, and Playwright covers end-to-end workflows, sync, privacy and
+fail-closed behavior. The full rule is in
+[`docs/architecture/GAME-ENGINE-BOUNDARIES.md` §13](docs/architecture/GAME-ENGINE-BOUNDARIES.md).
 
 > If your machine has a pre-provisioned Chromium that does not match
 > Playwright's bundled version, set `PLAYWRIGHT_CHROMIUM_PATH` to its executable
