@@ -1,6 +1,6 @@
 # ADR-006 — Teams and scoring: the first scoring strategy
 
-- **Status:** Accepted (Slice 6, in review)
+- **Status:** Accepted (Slice 6)
 - **Date:** 2026-07-26
 - **Slice:** 6 — Teams & scoring
 - **Depends on:** [ADR-002](ADR-002-state-event-sync-core.md) (command/event core,

@@ -40,7 +40,7 @@ systems.
 | 3   | **Game & round model + registry** | `GameDefinition` / `GameSession` types, typed `RoundDefinition`, round registry scaffold, unknown-type fail-closed handling. **(Complete.)** | 2          |
 | 4   | **Validation & import pipeline** | Canonical versioned JSON, one Zod-based validation/normalization pipeline, actionable errors, no silent repair. **(Complete.)** | 3          |
 | 5   | **Category-board round**       | First playable round type: configurable categories/rows/ladder, multiplier, used-tile state, prompt/answer reveal, alternates, notes. **(Complete.)** | 3, 4       |
-| 6   | **Teams & scoring**            | Teams, typed scoring strategy (points first), awards/deductions, partial credit, unrestricted manual correction, audit history, undo. **(In review.)** | 2, 5       |
+| 6   | **Teams & scoring**            | Teams, typed scoring strategy (points first), awards/deductions, partial credit, unrestricted manual correction, audit history, undo. **(Complete.)** | 2, 5       |
 | 7   | **Timers & transitions**       | Timer config, public timer, host-controlled undoable round transitions, reduced-motion-safe. | 5, 6       |
 | 8   | **Persistence & recovery**     | IndexedDB durable local persistence, session recovery, lightweight leader coordination. | 2          |
 | 9   | **Final-wager round**          | Public prompt, host-entered/private wagers, timed response, reveal, settlement, tie handling. | 5, 6, 7    |
@@ -396,17 +396,23 @@ AI generation; and **no additional playable round types**.
 Teams & scoring: teams, a typed scoring strategy (points first), awards and
 deductions, partial credit, unrestricted manual correction, an audit history,
 and undo — built on top of the reveal events this slice produces. **Slice 6 was
-authorized by the owner and is now `In review` (see below).**
+authorized by the owner and is now `Complete` (see below).**
 
 ## Slice 6 — scope, acceptance, non-goals
 
-**State: In review.** Implemented on `claude/slice-6-teams-and-scoring-we53wr` on
+**State: Complete.** Implemented on `claude/slice-6-teams-and-scoring-we53wr` on
 top of `main` at `5237a1f9f6b451c2137330fd0a7f4613b7a919f2` (the merge commit of
-PR #10, the Slice 5 post-merge reconciliation). Review PR only — **not merged**, and
-post-merge reconciliation has **not** been performed. Full technical rationale in
+PR #10, the Slice 5 post-merge reconciliation); implementation commit `7734065`,
+final reviewed head `48ed8180278b6966080be6ce00a0e3b06ca3abf1`. **Merged to `main`
+via PR #11** (merge commit `67180a3a24b43124ce7a2dee91d02fe1f797618e`, merged
+2026-07-26T15:58:11Z), with post-merge CI on `main` green for both jobs and the
+**GitHub Pages deployment succeeded. Manual live-route verification was not
+performed.** Full technical rationale in
 [`../architecture/ADR-006-teams-and-scoring.md`](../architecture/ADR-006-teams-and-scoring.md);
 local evidence in
-[`../receipts/2026-07-26-slice-6-local-verification.md`](../receipts/2026-07-26-slice-6-local-verification.md).
+[`../receipts/2026-07-26-slice-6-local-verification.md`](../receipts/2026-07-26-slice-6-local-verification.md);
+merged-state evidence in
+[`../receipts/2026-07-26-slice-6-post-merge-reconciliation.md`](../receipts/2026-07-26-slice-6-post-merge-reconciliation.md).
 
 ### Scope (implemented)
 
@@ -476,7 +482,8 @@ generation; and **no additional playable round types**.
 
 Timers & transitions: timer configuration, a public timer, host-controlled undoable
 round transitions, and reduced-motion-safe presentation — built on top of the
-scoring events this slice produces. **Slice 7 is `Planned` and unstarted.**
+scoring events this slice produces. **Slice 7 is `Planned`, unstarted, and
+owner-gated — it must not begin until the owner explicitly authorizes it.**
 
 ## Dependencies & risks
 
