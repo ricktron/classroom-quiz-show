@@ -301,8 +301,11 @@ npm run verify:all   # verify + build + e2e (merge gate)
 
 Latest local results (Slice 7): `verify:all` green — **947 unit tests (42 files),
 175 e2e passed / 2 skipped** (both skips are the one desktop-only offline-shell
-test); `git diff --check` clean. **Slice 7 PR CI has not been observed yet** — the
-PR is open at the time of writing, and the receipt says so rather than assuming it.
+test); `git diff --check` clean. **Slice 7 PR CI was observed green** on PR #14 at
+implementation commit `f804430`: all three checks concluded success, SonarCloud
+Quality Gate passed, 0 security hotspots. Sonar's 12 new non-blocking issues were
+not inspected (`sonarcloud.io` is unreachable from the sandbox). The PR is **open
+and unmerged**, so there is no post-merge or Pages evidence yet.
 
 Earlier, on the Slice 6 branch: `verify:all` green — **740 unit tests,
 154 e2e passed / 2 skipped** (both skips are the one desktop-only offline-shell

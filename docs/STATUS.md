@@ -385,9 +385,18 @@ Neutral state/event/sync foundation — no gameplay. Full rationale in
 Local `verify:all` passed on the Slice 7 branch: lint, typecheck, unit tests
 (**947 passed, 42 files**), production build, and Playwright e2e (**175 passed,
 2 skipped** — both skips are the one desktop-only offline-shell test).
-`git diff --check` is clean. **Slice 7 PR CI has not yet been observed** at the
-time of writing; the local-verification receipt records that explicitly. Details
-in [`receipts/2026-07-26-slice-7-local-verification.md`](receipts/2026-07-26-slice-7-local-verification.md).
+`git diff --check` is clean. Details in
+[`receipts/2026-07-26-slice-7-local-verification.md`](receipts/2026-07-26-slice-7-local-verification.md).
+
+- **PR CI on GitHub Actions for Slice 7: observed green.** All three checks
+  concluded success on implementation commit `f804430` of PR
+  [#14](https://github.com/ricktron/classroom-quiz-show/pull/14) — `Lint,
+  typecheck, unit tests, build`; `Playwright e2e`; and `SonarCloud Code Analysis`
+  with the Quality Gate **passed** and **0 Security Hotspots**. Sonar's 12 new
+  non-blocking issues were **not inspected**: `sonarcloud.io` is unreachable from
+  the sandbox (HTTP 403 on CONNECT).
+- **Post-merge CI and Pages deployment for Slice 7: not applicable yet** — the PR
+  is open and unmerged. No live-URL verification is claimed.
 
 Earlier, local `verify:all` passed on the Slice 6 branch and again on the
 reconciliation branch: lint, typecheck, unit tests (**740 passed, 35 files**),

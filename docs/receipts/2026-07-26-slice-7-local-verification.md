@@ -8,17 +8,19 @@
   (7–18)") listed Slice 7 as the next recommended slice with **no open decision
   gates**; the owner granted authorization to begin, and additionally authorized
   recording owner decisions `OG-1`, `OG-2` and `OG-3`.
-- **PR:** implementation PR against `main` — **open and unmerged at the time this
-  receipt was written.**
+- **PR:** [#14](https://github.com/ricktron/classroom-quiz-show/pull/14) against
+  `main` — **open and unmerged at the time this receipt was written.**
 - **Branch:** `claude/slice-7-timers-arming-transitions-wd7cmf`
 - **Base `main` commit:** `752a3fe0f45fdc1ee687339134023c3811facd91`
   (merge commit of **PR #13**, `ROADMAP-AMENDMENT-001`, merged
   2026-07-26T20:02:13Z by `ricktron`; reviewed head
   `2524e7450dc97a602cc90bcc748ad4af9cef8868`; all three PR checks concluded
   success)
-- **Implementation commits:** one commit on the branch above, containing every
-  change listed under "Files changed". Its SHA is recorded in the pull request
-  rather than here, because a commit cannot contain its own hash.
+- **Implementation commits:** `f8044304623858a4a09efbdd88b151af2730babd` — one
+  commit containing every change listed under "Files changed", plus this
+  documentation commit recording the PR CI observation below. (The implementation
+  commit could not name its own hash when it was written; the SHA was added by the
+  follow-up commit, matching the Slice 5 and Slice 6 precedent.)
 - **Environment:** local sandbox (Linux 6.18.5, Node v22.22.2, npm 10.9.7)
 
 ## Commands & results
@@ -36,6 +38,30 @@
 
 Each command above was run individually **and** `verify:all` was then run once as a
 single chain; both passed.
+
+## PR CI (observed)
+
+**All three checks on PR #14 concluded success** at implementation commit
+`f804430`:
+
+| Check | Conclusion | Completed |
+| --- | --- | --- |
+| Lint, typecheck, unit tests, build | **success** | 2026-07-26T21:22:23Z |
+| Playwright e2e | **success** | 2026-07-26T21:24:32Z |
+| SonarCloud Code Analysis | **success** — Quality Gate **passed**, **0 Security Hotspots**, 0.8% duplication on new code | 2026-07-26T21:22:51Z |
+
+Recorded honestly, with two things explicitly **not** claimed:
+
+- **Sonar's 12 new non-blocking issues were not inspected.** `sonarcloud.io` is
+  unreachable from this sandbox (HTTP 403 on CONNECT), so the issue list could not
+  be read. The Quality Gate passing is the only Sonar claim made.
+- **No post-merge or Pages evidence exists.** The PR is open and unmerged, so
+  post-merge CI on `main` has not run and no live URL was loaded.
+
+This section was added by a follow-up documentation commit on the same branch,
+**before merge**, exactly as Slice 5 (`93e2ce9`) and Slice 6 (`48ed818`) did. The
+receipt is still not amended *after* merge — post-merge evidence belongs in a
+separate reconciliation receipt.
 
 ## Skips (accurately reported)
 
@@ -206,8 +232,9 @@ vocabulary is still absent. Sixteen test envelope literals gained the now-requir
 - **`PublicState` v4 and sync v1 consumers fail closed**; there is no migration.
 - **No manual live-URL verification was performed** — the sandbox network policy
   denies `ricktron.github.io`. Nothing about live behaviour is claimed.
-- **Slice 7 PR CI has not been observed** at the time of writing. This receipt
-  records local verification only and is not amended after merge.
+- **Sonar's 12 new non-blocking issues were not inspected** (`sonarcloud.io` is
+  unreachable from this sandbox), and **no post-merge or Pages evidence exists** —
+  the PR is open and unmerged. This receipt is not amended after merge.
 
 ## Deferred decisions
 
