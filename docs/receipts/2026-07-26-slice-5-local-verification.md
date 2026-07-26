@@ -92,8 +92,10 @@ earlier slices; the Vitest and Playwright suites are the actual coverage
 evidence). Slice 5 changes no CI or deploy configuration.
 
 ## Caveats
-- **Pages deployment not yet observed** for this branch (Pages deploys from
-  `main`, and Slice 5 is not merged).
-- **This is local evidence only.** Slice 5 is `In review`, not `Complete`.
+
+- **Pages deployment not observed** for this branch — Pages deploys from `main`,
+  and Slice 5 is not merged.
+- **Slice 5 is `In review`, not `Complete`.** Local `verify:all` and PR CI are
+  both green, but the slice still needs review and owner acceptance.
 - The e2e run used the Chromium override described above rather than the browser
   build CI installs. The application code under test is the production build.
