@@ -39,8 +39,7 @@
 > `5237a1f9f6b451c2137330fd0a7f4613b7a919f2` (the merge commit of PR #10, the
 > Slice 5 post-merge reconciliation). A **review PR is open and has not been
 > merged**; post-merge reconciliation has **not** been performed. Local
-> `verify:all` passed (see below); CI on the PR is **not yet observed** at the time
-> of writing. **Slice 7 (timers & transitions) remains unstarted.**
+> `verify:all` passed and **PR CI was observed green** (see below). **Slice 7 (timers & transitions) remains unstarted.**
 
 ## Slice 6 work (In review)
 
@@ -295,8 +294,12 @@ Local `verify:all` passed on the Slice 6 branch: lint, typecheck, unit tests
 `git diff --check` is clean. See [`handoff/CURRENT.md`](handoff/CURRENT.md) for
 exact commands and the Slice 6 receipt under [`receipts/`](receipts/).
 
-- CI on GitHub Actions for Slice 6: **not yet observed.** The review PR was opened
-  from this branch; nobody has recorded a green run on it yet.
+- CI on GitHub Actions for Slice 6: **observed green** on PR
+  [#11](https://github.com/ricktron/classroom-quiz-show/pull/11) at implementation
+  commit `7734065` — all three checks concluded success (`Lint, typecheck, unit
+  tests, build`; `Playwright e2e`; `SonarCloud Code Analysis` with the Quality Gate
+  **passed** and **0 Security Hotspots**). Sonar's 13 new non-blocking issues were
+  not inspected: `sonarcloud.io` is unreachable from the sandbox.
 - Live GitHub Pages verification for Slice 6: **not performed.** The sandbox
   network policy denies `ricktron.github.io` (HTTP 403 on CONNECT), so the live
   host/display URLs were not loaded. Slice 6 changes no CI or deploy configuration.

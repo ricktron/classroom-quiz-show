@@ -49,9 +49,11 @@ PR. **Slice 7 (timers & transitions) is unstarted.**
   `5237a1f9f6b451c2137330fd0a7f4613b7a919f2` (the merge commit of PR #10, the
   Slice 5 post-merge reconciliation). A **review PR is open against `main` and has
   NOT been merged**; post-merge reconciliation has **not** been performed. Local
-  `verify:all` is green (740 unit, 154 e2e / 2 skipped); **CI on the PR is not yet
-  observed**, and **live Pages verification was not performed** (the sandbox network
-  policy denies `ricktron.github.io`). **Slice 7 is unstarted.**
+  `verify:all` is green (740 unit, 154 e2e / 2 skipped), and **PR CI was observed
+  green** on [PR #11](https://github.com/ricktron/classroom-quiz-show/pull/11) at
+  `7734065` (all three checks success; SonarCloud Quality Gate passed with 0 security
+  hotspots). **Live Pages verification was not performed** — the sandbox network
+  policy denies `ricktron.github.io`. **Slice 7 is unstarted.**
 - **What Slice 6 adds:** teams and the first scoring strategy. Teams are authored
   content on the immutable `GameDefinition` (stable id as identity, a public name
   that is *not* identity, an accent from an application-controlled palette of eight
@@ -233,9 +235,10 @@ npm run verify:all   # verify + build + e2e (merge gate)
 
 Latest local results (Slice 6 branch): `verify:all` green — **740 unit tests,
 154 e2e passed / 2 skipped** (both skips are the one desktop-only offline-shell
-test); `git diff --check` clean. **Slice 6 CI is not yet observed** and **live Pages
-URLs were not loaded** (the sandbox network policy denies `ricktron.github.io` with
-HTTP 403 on CONNECT).
+test); `git diff --check` clean. **Slice 6 CI was observed green** on PR #11 at
+`7734065` (all three checks success, SonarCloud Quality Gate passed, 0 security
+hotspots). **Live Pages URLs were not loaded** — the sandbox network policy denies
+`ricktron.github.io` with HTTP 403 on CONNECT.
 
 Earlier, on the Slice 5 branch: `verify:all` green — **455 unit tests,
 121 e2e passed / 2 skipped**. Slice 5 CI was **observed green** on PR #9
@@ -251,9 +254,9 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Known risks / limitations
 
-- **Slice 6 CI has not been observed**, and **no live-URL verification has been
-  performed** since the Slice 5 deployment (the sandbox network policy denies
-  `ricktron.github.io`). Slice 6 changes no CI or deploy configuration.
+- **No live-URL verification has been performed** since the Slice 5 deployment (the
+  sandbox network policy denies `ricktron.github.io`). Slice 6 CI *was* observed
+  green on PR #11, and Slice 6 changes no CI or deploy configuration.
 - **`PublicState` wire version is now 4.** A consumer pinned to version 3 (or 2)
   fails closed by design; no migration exists.
 - **The board itself still scores nothing.** `multiplier` affects the displayed

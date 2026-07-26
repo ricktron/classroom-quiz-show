@@ -18,7 +18,6 @@
 | `npm run build` | pass | `tsc -b && vite build`; PWA precache 16 entries / 402.29 KiB |
 | `npm run test:e2e` | pass | **154 passed / 2 skipped**, 3 viewport projects |
 | `git diff --check` | pass | no whitespace errors |
-
 | `npm run verify:all` | pass | the whole lint → typecheck → unit → build → e2e chain, run again end to end |
 
 Each command above was run individually **and** `verify:all` was then run once as a
@@ -91,10 +90,30 @@ timeout increase, not a skip), and two of the four full-DOM privacy sweeps were
 removed from the longest test because the dedicated privacy test already performs the
 exhaustive version. The subsequent full run was green with no retries.
 
+## CI on the review PR — observed green
+
+Recorded after the PR was opened, on implementation commit `7734065`
+(PR [#11](https://github.com/ricktron/classroom-quiz-show/pull/11)):
+
+| Check | Conclusion |
+| --- | --- |
+| `Lint, typecheck, unit tests, build` | **success** (2026-07-26T06:52:16Z) |
+| `Playwright e2e` | **success** (2026-07-26T06:53:19Z) |
+| `SonarCloud Code Analysis` | **success** — Quality Gate **passed**, **0 Security Hotspots** |
+
+All three checks concluded success. No review threads were open at that point; the
+only PR comments were two bot notices (a Cursor Bugbot "not enabled" upsell and the
+SonarCloud summary), neither of which requires action.
+
+**Not inspected:** SonarCloud's summary also reports **13 new non-blocking issues**
+(the Quality Gate passed regardless). They were **not** examined, because
+`sonarcloud.io` is unreachable from this sandbox under the same network policy that
+blocks the Pages site (HTTP 403 on CONNECT). Coverage on new code reads 0.0% because
+this repository does not upload coverage to Sonar — unchanged from earlier slices,
+not a regression introduced here.
+
 ## Verification NOT claimed
 
-- **CI on GitHub Actions: not observed.** No CI run for this branch had been
-  recorded at the time of writing.
 - **Live GitHub Pages URLs: not loaded.** The sandbox network policy denies
   `ricktron.github.io` (the proxy answered **HTTP 403 to CONNECT**), so
   `https://ricktron.github.io/classroom-quiz-show/#/host` and `#/display` were
