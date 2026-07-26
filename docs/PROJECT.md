@@ -86,10 +86,33 @@ implementation status that contradicts this repository.
 
 ## Major non-goals (MVP)
 
-No backend, no accounts, no student devices/buzzers, no LMS integration, no
-cloud dependencies, no AI services, no grading/defensible individual analytics,
-and no imitation of any commercial game show's branding, audio, or board
-styling.
+No backend, no accounts, **no student-owned devices and no student phones**, no
+LMS integration, no cloud dependencies, no AI services, no grading/defensible
+individual analytics, and no imitation of any commercial game show's branding,
+audio, or board styling.
+
+> **Scope amendment (owner-authorized, 2026-07-26).** This clause previously read
+> "no student devices/buzzers". It bundled two different things — *student-owned
+> devices* and *buzzers* — and the owner has narrowed it deliberately, not
+> removed it:
+>
+> - **Local host-attached USB buzzer controllers are an approved future
+>   capability.** Sony Buzz! USB controllers are the preferred initial validation
+>   target, not an exclusive dependency and not a tested compatibility claim.
+> - **The product must remain fully usable without buzzer hardware.**
+> - **Student-owned devices, student phones and networked buzzers remain
+>   excluded.** No backend, account, WebRTC, Bluetooth requirement, cloud
+>   dependency or classroom Wi-Fi dependency is authorized.
+> - Local buzzer input must pass through a **hardware-independent input adapter**
+>   and the existing command/event/reducer architecture.
+>
+> A USB controller plugged into the host preserves everything the original
+> non-goal protected: **privacy** (no student device, account or identity; a press
+> is a *team* input, never a person's), **offline operation** (USB HID needs no
+> network), and **operational simplicity** (one device, no pairing, no per-student
+> setup, no classroom Wi-Fi). Rationale, the rejected buzzer architectures, and
+> the roadmap consequences are recorded in
+> [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md).
 
 ## Approved product decisions (owner)
 
@@ -104,7 +127,13 @@ styling.
 - **Default tie-break:** host-controlled sudden-death prompt.
 - **Standards vocabulary:** free-text namespaced tags (e.g. `teks:ESS.1A`,
   `ngss:HS-ESS2-1`); TEKS/NGSS **not** required in the MVP.
+- **Local buzzers (2026-07-26):** an approved future capability, host-attached
+  USB only, with Sony Buzz! controllers as the preferred initial validation
+  target. Delivered through a hardware-independent input adapter in slices 8–10
+  of the amended roadmap. See the non-goal amendment above and
+  [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md).
 
-(These are targets for the engine. As of Slice 5 the `category-board` round
-implements the board itself; scoring, partial credit, manual correction and
-tie-breaks remain targets for later slices.)
+(These are targets for the engine. As of Slice 6 the `category-board` round
+implements the board and the first scoring strategy implements bounded integer
+points, partial credit and unrestricted manual correction; tie-breaks and
+buzzers remain targets for later slices.)
