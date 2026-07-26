@@ -94,6 +94,18 @@ const SAMPLE_CATEGORY_BOARD_CONFIG = {
 }
 
 /**
+ * Two teams for the built-in samples (Slice 6).
+ *
+ * They name accents from the application palette — which is the ONLY thing a game
+ * file may say about presentation. The names are Earth-science flavoured so the
+ * sample reads like a real classroom game rather than "Team 1 / Team 2".
+ */
+const SAMPLE_TEAMS = [
+  { id: 'basalts', name: 'Blue Basalts', accent: 'azure' },
+  { id: 'rhyolites', name: 'Red Rhyolites', accent: 'crimson' },
+]
+
+/**
  * The valid built-in sample. It now contains a REAL playable `category-board`
  * round alongside a non-gameplay `placeholder` round, so importing it proves
  * both round types travel the one canonical pipeline.
@@ -104,6 +116,7 @@ export const CANONICAL_SAMPLE_GAME_FILE = JSON.stringify(
     schemaVersion: SUPPORTED_SCHEMA_VERSION,
     id: 'imported-sample-game',
     title: 'Imported Sample Game',
+    teams: SAMPLE_TEAMS,
     rounds: [
       {
         id: 'round-1',
@@ -139,6 +152,7 @@ export const CANONICAL_SAMPLE_CATEGORY_BOARD_FILE = JSON.stringify(
     schemaVersion: SUPPORTED_SCHEMA_VERSION,
     id: 'imported-sample-board',
     title: 'Earth & Space Science Board',
+    teams: SAMPLE_TEAMS,
     rounds: [
       {
         id: 'board-round',
@@ -212,6 +226,35 @@ export const CANONICAL_SAMPLE_WITH_DUPLICATE_TILE_ID = JSON.stringify(
             },
           ],
         },
+      },
+    ],
+  },
+  null,
+  2,
+)
+
+/**
+ * A file with two DIFFERENT teams sharing one id (Slice 6). It exists to
+ * demonstrate a precise, actionable team error with an exact document path
+ * (`teams[1].id`) and no silent repair: the id is not renamed, the second team is
+ * not dropped, and no game is loaded.
+ */
+export const CANONICAL_SAMPLE_WITH_DUPLICATE_TEAM_ID = JSON.stringify(
+  {
+    format: CANONICAL_GAME_FILE_FORMAT,
+    schemaVersion: SUPPORTED_SCHEMA_VERSION,
+    id: 'imported-sample-duplicate-team',
+    title: 'Imported Sample (duplicate team id)',
+    teams: [
+      { id: 'basalts', name: 'Blue Basalts', accent: 'azure' },
+      { id: 'basalts', name: 'Red Rhyolites', accent: 'crimson' },
+    ],
+    rounds: [
+      {
+        id: 'board-round',
+        type: 'category-board',
+        title: 'Earth & Space Science',
+        config: SAMPLE_CATEGORY_BOARD_CONFIG,
       },
     ],
   },

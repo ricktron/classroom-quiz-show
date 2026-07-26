@@ -18,6 +18,7 @@ import {
   type ImportStage,
 } from './issues'
 import { isPlainRecord } from './safetyScan'
+import { teamsSchema } from '../game/teams/schema'
 
 /**
  * The Zod schema boundary for untrusted imported data (Slice 4).
@@ -87,6 +88,19 @@ export const canonicalGameFileSchema = z.strictObject({
   schemaVersion: z.literal(SUPPORTED_SCHEMA_VERSION),
   id: identifierSchema('the game id'),
   title: titleSchema,
+  /**
+   * Optional ordered teams (Slice 6). The schema is owned by the game domain
+   * (`src/game/teams/schema.ts`) and re-used verbatim by the trusted constructor,
+   * so there is exactly ONE team validation path — the same arrangement the
+   * registry uses for a round type's `config`.
+   *
+   * It is OPTIONAL because a game with no teams is valid and is precisely what
+   * every pre-Slice-6 game file is. Being additive and optional is also what
+   * makes this an in-place extension of `schemaVersion: 1` rather than a new
+   * version: every document that was valid before is still valid, still means
+   * exactly the same thing, and needs no migration (see ADR-006 §4).
+   */
+  teams: teamsSchema.optional(),
   rounds: z
     .array(canonicalRoundSchema)
     .max(MAX_ROUNDS, `a game may contain at most ${MAX_ROUNDS} rounds`),

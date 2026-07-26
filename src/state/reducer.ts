@@ -19,6 +19,16 @@ import {
   type CategoryBoardDefinition,
 } from '../game/categoryBoard/definition'
 import type { RoundDefinition } from '../game/roundDefinition'
+import { findTeamById } from '../game/teams/definition'
+import {
+  INITIAL_TEAM_SCORE,
+  checkScoreAdjustment,
+  isScoreAdjustmentMode,
+  isScoreSource,
+  isTeamScore,
+  modeRequiresValueSource,
+  type ScoreSource,
+} from '../game/teams/scoring'
 
 /**
  * The command/event core.
@@ -57,6 +67,14 @@ export type RejectionReason =
   | 'unknown-tile'
   | 'tile-already-used'
   | 'invalid-board-stage'
+  // Team / scoring rejections (Slice 6).
+  | 'no-teams-configured'
+  | 'unknown-team'
+  | 'tile-mismatch'
+  | 'invalid-score-delta'
+  | 'invalid-score-source'
+  | 'score-amount-mismatch'
+  | 'score-out-of-range'
 
 /**
  * Dependencies the planner needs that live OUTSIDE the event history — currently
@@ -134,8 +152,11 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
         gameLifecycle: 'active',
         currentRoundIndex: null,
         currentRoundSupport: null,
-        // A new game starts every board fresh. Loading a game is an irreversible
-        // baseline, so no prior board progress can survive it.
+        // A new game starts every board fresh AND every team on zero. Loading a
+        // game is an irreversible baseline, so neither prior board progress nor a
+        // prior score can survive it — starting a new game is how a teacher
+        // resets for the next class.
+        teamScores: {},
         categoryBoards: {},
       }
       return withApplied(state, event.type, { ...state, session: { ...state.session, game } })
@@ -194,6 +215,27 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
         progress: { stage: 'board', selectedTileId: null },
       }))
 
+    case 'TEAM_SCORE_ADJUSTED': {
+      if (!state.session || !state.session.game) return state
+      const game = state.session.game
+      if (game.gameLifecycle !== 'active') return state
+      // Fail safe on a log that references a team this game does not have.
+      if (findTeamById(game.definition.teams, event.teamId) === null) return state
+      const next = teamScoreFor(game, event.teamId) + event.delta
+      // Fail safe rather than clamp: a stored delta that would leave the bounds
+      // means the log disagrees with the rules that produced it, and silently
+      // clamping would invent a score nobody awarded.
+      if (!isTeamScore(next)) return state
+      const nextGame: PrivateGameState = {
+        ...game,
+        teamScores: { ...game.teamScores, [event.teamId]: next },
+      }
+      return withApplied(state, event.type, {
+        ...state,
+        session: { ...state.session, game: nextGame },
+      })
+    }
+
     // Undo markers change nothing directly; `replay` neutralizes their targets.
     case 'EVENT_UNDONE':
       return state
@@ -215,6 +257,33 @@ export function categoryBoardStateFor(
   roundId: string,
 ): CategoryBoardRoundState {
   return game.categoryBoards[roundId] ?? INITIAL_CATEGORY_BOARD_ROUND_STATE
+}
+
+/**
+ * Read a team's current score, defaulting to {@link INITIAL_TEAM_SCORE}.
+ *
+ * A pure read with a constant default — NOT a cache, and it never writes anything
+ * back, so replay produces the same result every time. "No entry in the map" and
+ * "zero" are therefore the same fact and can never disagree.
+ *
+ * `hasOwnProperty` rather than a bare index so an inherited `Object.prototype`
+ * member can never be mistaken for a score. (Team ids cannot be `__proto__` —
+ * the grammar requires a leading alphanumeric — but a read helper should not
+ * depend on a rule enforced three layers away.)
+ *
+ * It deliberately does NOT sanitize a stored value. A score only enters the map
+ * through `reduce`, which already refuses anything outside the bounds, so an
+ * unusable value means the state is corrupt — and quietly substituting a zero
+ * would hide that from the two places designed to notice: the planner (which
+ * rejects with `score-out-of-range`) and the sanitizer (which projects the
+ * neutral "unavailable" scoreboard). Repairing here would be exactly the silent
+ * repair the rest of the engine refuses to do.
+ */
+export function teamScoreFor(game: PrivateGameState, teamId: string): number {
+  if (!Object.prototype.hasOwnProperty.call(game.teamScores, teamId)) {
+    return INITIAL_TEAM_SCORE
+  }
+  return game.teamScores[teamId]
 }
 
 /**
@@ -289,6 +358,17 @@ export function replay(history: readonly SessionEvent[]): PrivateState {
     state = reduce(state, event)
   }
   return { ...state, revision: history.length }
+}
+
+/**
+ * The events that currently COUNT: history minus undo markers minus every event
+ * a marker neutralized. This is exactly the sequence `replay` applies, exposed so
+ * a host surface can ask "has this already happened?" from the same source of
+ * truth the state came from, instead of keeping its own parallel record.
+ */
+export function effectiveEvents(history: readonly SessionEvent[]): readonly SessionEvent[] {
+  const undone = collectUndoneIds(history)
+  return history.filter((event) => event.type !== 'EVENT_UNDONE' && !undone.has(event.id))
 }
 
 /**
@@ -596,6 +676,89 @@ export function planCommand(
             occurredAt: at,
             reversible: true,
             roundId: context.round.id,
+          },
+        ],
+      }
+    }
+
+    case 'ADJUST_TEAM_SCORE': {
+      if (!state.session) return { status: 'rejected', reason: 'session-not-initialized' }
+      const game = state.session.game
+      if (!game) return { status: 'rejected', reason: 'game-not-initialized' }
+      if (game.gameLifecycle !== 'active') {
+        return { status: 'rejected', reason: 'game-already-ended' }
+      }
+      if (game.definition.teams.length === 0) {
+        return { status: 'rejected', reason: 'no-teams-configured' }
+      }
+      if (typeof command.teamId !== 'string' || command.teamId.length === 0) {
+        return { status: 'rejected', reason: 'malformed-command' }
+      }
+      const team = findTeamById(game.definition.teams, command.teamId)
+      if (team === null) return { status: 'rejected', reason: 'unknown-team' }
+      if (!isScoreAdjustmentMode(command.mode)) {
+        return { status: 'rejected', reason: 'malformed-command' }
+      }
+      if (!isScoreSource(command.source)) {
+        return { status: 'rejected', reason: 'malformed-command' }
+      }
+      // Mode and source must agree in BOTH directions: a tile mode without a tile
+      // has no value to match against, and a manual correction that names a tile
+      // would claim provenance it did not use.
+      if (modeRequiresValueSource(command.mode) !== (command.source.kind === 'category-board-tile')) {
+        return { status: 'rejected', reason: 'invalid-score-source' }
+      }
+
+      // Resolve the amount's provenance from the trusted board — never from the
+      // command. This is what makes "full credit" mean the tile's real effective
+      // value rather than whatever number the UI sent.
+      let sourceValue: number | null = null
+      let source: ScoreSource = { kind: 'manual' }
+      if (command.source.kind === 'category-board-tile') {
+        const context = resolveCategoryBoard(state, command.source.roundId)
+        if ('reason' in context) return { status: 'rejected', reason: context.reason }
+        const tile = findTileById(context.board, command.source.tileId)
+        if (tile === null) return { status: 'rejected', reason: 'unknown-tile' }
+        const progress = context.boardState.progress
+        // Scoring is only possible while the tile is LIVE and the class has seen
+        // the question. A stale control from a closed tile is inert.
+        if (progress.stage !== 'prompt' && progress.stage !== 'answer') {
+          return { status: 'rejected', reason: 'invalid-board-stage' }
+        }
+        if (progress.selectedTileId !== command.source.tileId) {
+          return { status: 'rejected', reason: 'tile-mismatch' }
+        }
+        sourceValue = tile.effectiveValue
+        // Rebuild the source so the appended event cannot alias a caller object
+        // that is mutated later.
+        source = {
+          kind: 'category-board-tile',
+          roundId: context.round.id,
+          tileId: command.source.tileId,
+        }
+      }
+
+      const check = checkScoreAdjustment({
+        mode: command.mode,
+        delta: command.delta,
+        currentScore: teamScoreFor(game, team.id),
+        sourceValue,
+      })
+      if (!check.ok) return { status: 'rejected', reason: check.reason }
+
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'TEAM_SCORE_ADJUSTED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            teamId: team.id,
+            delta: command.delta,
+            mode: command.mode,
+            source,
           },
         ],
       }

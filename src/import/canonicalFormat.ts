@@ -12,6 +12,9 @@
  *   "schemaVersion": 1,                     // exact integer; the only supported version
  *   "id": "sample-foundation-game",         // stable, supplied game id
  *   "title": "Foundation Sample Game",      // authored/public title
+ *   "teams": [                              // OPTIONAL; ordered; 1–8 teams
+ *     { "id": "red", "name": "Red Team", "accent": "crimson" }
+ *   ],
  *   "rounds": [                             // ordered; array order IS round order
  *     {
  *       "id": "round-1",                    // stable, supplied round id (unique in file)
@@ -32,6 +35,13 @@
  * **Identifiers are supplied, not generated.** `id` fields come from the
  * imported document and are validated; the pipeline never invents, rewrites, or
  * de-duplicates an id (that would be silent repair — see ADR-004).
+ *
+ * **`teams` is an additive, optional extension of version 1 (Slice 6).** Every
+ * document that was valid before it existed is still valid and still means
+ * exactly the same thing, so no migration is required and the version is
+ * unchanged. `accent` may only NAME one of the accents the application provides;
+ * a game file can never supply a colour, a gradient, a class name, or any other
+ * style value (see ADR-006 §4 and `src/game/teams/accents.ts`).
  */
 
 /** Exact top-level `format` value. Anything else fails at the `format` stage. */

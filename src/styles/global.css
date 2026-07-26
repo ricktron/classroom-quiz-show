@@ -27,6 +27,26 @@
     system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-display: var(--font-sans);
 
+  /*
+   * Team accent palette (Slice 6). These are the ONLY colours a team can be
+   * given: a game file names a token, application code maps the token to the
+   * class below, and the class reads one of these variables. No authored string
+   * ever reaches a style property, and a future theme engine can redefine every
+   * value here without touching a single game file.
+   *
+   * All eight are chosen to sit legibly on the dark projector background AND to
+   * stay distinguishable in greyscale, because colour is only ever supplemental —
+   * every surface also renders the team's name as text.
+   */
+  --color-team-crimson: #ff7a7a;
+  --color-team-azure: #5cb8ff;
+  --color-team-emerald: #5ee2a0;
+  --color-team-amber: #ffc75c;
+  --color-team-violet: #c39bff;
+  --color-team-teal: #4fd8d8;
+  --color-team-rose: #ff92c2;
+  --color-team-slate: #b9c9d8;
+
   /* Scale */
   --space-1: 0.5rem;
   --space-2: 1rem;
@@ -100,6 +120,27 @@ a {
   background: var(--color-surface-raised);
 }
 
+/*
+ * A disabled control must LOOK unavailable, not merely refuse to fire. Slice 6
+ * introduces several controls that are deliberately disabled until they can be
+ * used legitimately (no scoring target chosen, no tile open, an adjustment already
+ * submitted), and a teacher mid-lesson should be able to see that at a glance.
+ * The `disabled` attribute is what makes them inoperable; this is the visual half.
+ */
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn:disabled:hover {
+  background: var(--color-accent-strong);
+}
+
+.btn--secondary:disabled:hover {
+  background: transparent;
+}
+
 .screen {
   min-height: 100%;
   display: flex;
@@ -115,6 +156,37 @@ a {
   text-align: center;
   padding: var(--space-4) var(--space-2);
   gap: var(--space-3);
+}
+
+/*
+ * The accent classes. `teamAccentClass()` (src/game/teams/accents.ts) is the only
+ * thing that produces these names, and it can only produce them from a validated
+ * palette token — so an unknown accent yields no class and falls back to the
+ * neutral default rather than injecting anything.
+ */
+.accent--crimson {
+  --team-accent: var(--color-team-crimson);
+}
+.accent--azure {
+  --team-accent: var(--color-team-azure);
+}
+.accent--emerald {
+  --team-accent: var(--color-team-emerald);
+}
+.accent--amber {
+  --team-accent: var(--color-team-amber);
+}
+.accent--violet {
+  --team-accent: var(--color-team-violet);
+}
+.accent--teal {
+  --team-accent: var(--color-team-teal);
+}
+.accent--rose {
+  --team-accent: var(--color-team-rose);
+}
+.accent--slate {
+  --team-accent: var(--color-team-slate);
 }
 
 .visually-hidden {

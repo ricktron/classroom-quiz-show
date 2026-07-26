@@ -118,8 +118,53 @@ Slice 5 makes the app **playable for the first time**:
   Teacher notes, alternate answers and authored ids are **never** projected, and
   the answer is `null` until the host explicitly reveals it.
 - **Bounded host controls** that state, in words, exactly what the projector is
-  showing right now — with every private block badged "Host only". No team,
-  score, timer or buzzer control exists; that is Slice 6.
+  showing right now — with every private block badged "Host only". It moves no
+  points: scoring lives in its own panel (Slice 6), so revealing and awarding stay
+  separate teacher actions.
+
+**Slice 6 — teams & scoring. In review** — implemented on
+`claude/slice-6-teams-and-scoring-we53wr` on top of `main` at `5237a1f`, with an
+open **review PR that has not been merged** (see [`docs/STATUS.md`](docs/STATUS.md),
+the local-verification receipt
+[`docs/receipts/2026-07-26-slice-6-local-verification.md`](docs/receipts/2026-07-26-slice-6-local-verification.md),
+and [`docs/architecture/ADR-006-teams-and-scoring.md`](docs/architecture/ADR-006-teams-and-scoring.md)).
+Slice 6 makes the board **score**:
+
+- **Teams are authored content**, on the immutable game definition: a stable id
+  (identity), a public name (explicitly *not* identity — renaming a team moves no
+  points), an accent, and authored display order. **1–8 teams**; omit the field
+  entirely for a game with no teams.
+- **A game file may NAME an accent, never supply one.** Eight application-controlled
+  tokens (`crimson`, `azure`, `emerald`, `amber`, `violet`, `teal`, `rose`, `slate`);
+  a colour, gradient, class name or CSS declaration is **rejected at import**. Colour
+  is always supplemental — every surface shows the team's name as text.
+- **Scores are session state, derived only by replaying events** — bounded integers
+  (−1,000,000…1,000,000, starting at **0**), with no cache, no floats, no `NaN`, and
+  no write path outside the reducer. So undo restores a prior total *exactly*.
+- **One command, four typed modes.** `ADJUST_TEAM_SCORE` carries a signed amount plus
+  a `mode` (**full credit** = the tile's effective value · **partial credit** =
+  bounded by it · **deduction** = its negation · **manual correction** = any bounded
+  amount) and a `source` (the exact round and tile, or explicitly none). A score is
+  never an unexplained integer, so the log still makes sense in a month.
+- **The resulting total is deliberately not stored on the event** — it would become a
+  lie the moment an *earlier* adjustment were undone.
+- **Revealing and scoring are independent, both ways.** Revealing an answer awards
+  nothing; scoring consumes no tile; undoing a score leaves the reveal alone; undoing
+  a reveal leaves the score standing. Two host panels, two decisions.
+- **Correction never rewrites history**: undo appends an auditable marker, or a
+  compensating manual correction is appended beside the original.
+- **Partial credit is whole points**, never a fraction — so there is no rounding rule
+  to argue about in front of a class.
+- **The projector gets a scoreboard** (`PublicState.teams`, wire version 3 → 4):
+  ordered team names and integer totals, present at every stage and after the game
+  ends. It never receives the authored team ids, the score history, undo metadata, or
+  the host's selected scoring target. A malformed total shows a neutral "Scores
+  unavailable" rather than `NaN`, and there is **no animation** — a class needs the
+  score to be true more than lively.
+- **The host panel shows the work before it happens**: which tile is live and what it
+  is worth, which team is selected, the resulting total (`120 → 220`), and whether
+  that exact adjustment has already been submitted. Negative or large manual
+  adjustments need an explicit confirmation.
 
 The Slice 1 foundation is unchanged beneath it:
 
@@ -133,14 +178,13 @@ The Slice 1 foundation is unchanged beneath it:
 - Lint, typecheck, unit/component tests (Vitest), and browser tests (Playwright)
 - Architecture and governance documentation
 
-There is **one playable round type, and it does not score**. There are still no
-teams, score totals, awards, deductions, partial credit, timers, buzzers,
-wagers, media, themes, or durable persistence, and importing is still limited to
-pasting canonical JSON (no file picker, spreadsheet, or remote import). The host
-"Foundation / testing controls" and the import harness remain diagnostics that
-prove the state core, the game/round model and the ingestion boundary — the
-category-board panel is the only game control. Those systems arrive in later
-slices. See [`docs/STATUS.md`](docs/STATUS.md) and
+There is **one playable round type**, and it now scores. There are still no timers,
+buzzers, wagers, media, themes, or durable persistence, and importing is still
+limited to pasting canonical JSON (no file picker, spreadsheet, or remote import).
+The host "Foundation / testing controls" and the import harness remain diagnostics
+that prove the state core, the game/round model and the ingestion boundary — the
+category-board and teams & scoring panels are the game controls. Those other systems
+arrive in later slices. See [`docs/STATUS.md`](docs/STATUS.md) and
 [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md).
 
 ## Requirements
@@ -174,8 +218,9 @@ npm run test:e2e    # Playwright against the production preview
 The Playwright suite builds the app and serves it with `vite preview` under the
 real GitHub Pages base path, then exercises direct navigation, refresh, the
 base path, projector legibility, mobile host usability, the offline app shell,
-a full category-board play-through across a host tab and a projector tab, and
-the permanent **projector-leak** checks.
+a full category-board play-through across a host tab and a projector tab, a full
+teams-and-scoring flow (award, deduct, partial credit, manual correction, undo) with
+the projector mirroring every total, and the permanent **projector-leak** checks.
 
 **Testing policy.** Every slice that changes user-visible host or display
 behavior must add or update Playwright coverage; unit tests cover schemas,

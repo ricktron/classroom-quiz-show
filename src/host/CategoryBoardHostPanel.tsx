@@ -12,11 +12,12 @@ import './CategoryBoardHostPanel.css'
 /**
  * Host controls for the active `category-board` round (Slice 5).
  *
- * This is the first real GAMEPLAY surface in the app, and it is deliberately
- * bounded: it selects a tile, reveals the prompt, reveals the answer, and
- * returns to the board. There are no team controls, no score awards or
- * deductions, no manual corrections, no timers, and no buzzers — those are
- * Slice 6 and 7 and are not smuggled in here.
+ * This panel is deliberately bounded to REVEALING: it selects a tile, reveals the
+ * prompt, reveals the answer, and returns to the board. It moves no points. Teams
+ * and scoring live in their own panel (`TeamScoringPanel`, Slice 6) precisely so
+ * that revealing an answer and awarding credit stay two separate teacher
+ * decisions — nothing here can fire a score, and nothing there can reveal
+ * content. Timers and buzzers (Slice 7) are not smuggled in either.
  *
  * ## Private preview vs. public content
  *
@@ -206,8 +207,8 @@ export function CategoryBoardHostPanel({ dispatch, game }: CategoryBoardHostPane
 
           <p className="host__note cbh__hint">
             {progress.stage === 'answer'
-              ? 'This tile is now used. Undo the answer reveal to put it back on the board.'
-              : 'Nothing is scored here — awarding points arrives in a later slice.'}
+              ? 'This tile is now used. Undo the answer reveal to put it back on the board. Revealing the answer awarded nothing on its own.'
+              : 'Revealing does not score. Award or deduct points in the teams & scoring panel below — they are separate actions on purpose.'}
           </p>
         </div>
       )}

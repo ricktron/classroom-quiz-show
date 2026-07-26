@@ -492,14 +492,35 @@ describe('round transitions', () => {
   })
 })
 
-describe('scoring is explicitly out of scope', () => {
-  it('adds no score, team, timer or wager field to private state', () => {
+describe('revealing is not scoring', () => {
+  /**
+   * Slice 5 asserted here that NO scoring field existed at all. Slice 6 adds
+   * scoring, so the durable claim this test protects is the one that still
+   * matters: playing a tile end to end — select, prompt, answer — moves no
+   * points and appends no score event on its own. A teacher must act
+   * deliberately to award anything.
+   */
+  it('appends no score event and leaves scores untouched when a tile is played', () => {
     const store = boardStore()
     store.dispatch(select('alpha-100'))
     store.dispatch(revealPrompt())
     store.dispatch(revealAnswer())
+
+    const scoreEvents = store.getHistory().filter((event) => event.type === 'TEAM_SCORE_ADJUSTED')
+    expect(scoreEvents).toHaveLength(0)
+    // This fixture game configures no teams at all, so there is nothing to score.
+    const game = store.getState().session?.game
+    expect(game?.definition.teams).toEqual([])
+    expect(game?.teamScores).toEqual({})
+    expect(store.getPublicState().teams).toBeNull()
+  })
+
+  it('still adds no timer, buzzer or wager field to private state', () => {
+    const store = boardStore()
+    store.dispatch(select('alpha-100'))
+    store.dispatch(revealPrompt())
     const serialized = JSON.stringify(store.getState())
-    for (const forbidden of ['"score"', '"teams"', '"timer"', '"wager"', '"points"']) {
+    for (const forbidden of ['"timer"', '"wager"', '"buzzer"', '"countdown"']) {
       expect(serialized).not.toContain(forbidden)
     }
   })

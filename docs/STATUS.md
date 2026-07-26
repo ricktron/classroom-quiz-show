@@ -1,7 +1,7 @@
 # Status
 
-**Current slice:** Slice 5 — Category-board round
-**Slice state:** Complete
+**Current slice:** Slice 6 — Teams & scoring
+**Slice state:** In review
 
 ## State vocabulary
 
@@ -34,7 +34,81 @@
 > `main` at `2ec6932` concluded success**, and the **Pages deployment
 > succeeded**. Post-merge reconciliation is recorded in
 > [`receipts/2026-07-26-slice-5-post-merge-reconciliation.md`](receipts/2026-07-26-slice-5-post-merge-reconciliation.md).
-> **Slice 6 (teams & scoring) remains unstarted and owner-gated.**
+> Slice 6 is **In review**: owner-authorized and implemented on
+> `claude/slice-6-teams-and-scoring-we53wr`, based on `main` at
+> `5237a1f9f6b451c2137330fd0a7f4613b7a919f2` (the merge commit of PR #10, the
+> Slice 5 post-merge reconciliation). A **review PR is open and has not been
+> merged**; post-merge reconciliation has **not** been performed. Local
+> `verify:all` passed and **PR CI was observed green** (see below). **Slice 7 (timers & transitions) remains unstarted.**
+
+## Slice 6 work (In review)
+
+Teams and the first **scoring strategy** — bounded integer points. Full rationale in
+[`architecture/ADR-006-teams-and-scoring.md`](architecture/ADR-006-teams-and-scoring.md);
+local evidence in
+[`receipts/2026-07-26-slice-6-local-verification.md`](receipts/2026-07-26-slice-6-local-verification.md).
+
+| Item | State |
+| --- | --- |
+| Typed team model on the immutable definition (id = identity, name ≠ identity) | Implemented |
+| Authored team order canonical, frozen onto `order`; scoreboard never re-sorts | Implemented |
+| Team limits with classroom rationale: 1–8 teams, 40-char names, id grammar mirrored | Implemented |
+| One-team game supported (whole-class / individual / demo play) | Implemented |
+| "No teams" = omit the field; `teams: []` rejected, never treated as "none" | Implemented |
+| Application-controlled accent palette; content may NAME a token, never supply style | Implemented |
+| Documented positional accent default applied only by the trusted constructor | Implemented |
+| Colour supplemental everywhere; no colour-only team identification | Implemented |
+| Import through the ONE Slice 4 pipeline; same schema re-used by trusted construction | Implemented |
+| `teams` additive + optional on `schemaVersion: 1` (no migration needed) | Implemented |
+| Exact-path team diagnostics (`teams[1].accent`) with no silent repair | Implemented |
+| Scores as session state: bounded integers, initial 0, derived only by replay | Implemented |
+| No score cache, no `NaN`/`Infinity`/floats, no coercion, no write path outside `reduce` | Implemented |
+| One command / one reversible event with typed `mode` + typed `source` | Implemented |
+| Resulting total deliberately NOT stored on the event (undo would make it a lie) | Implemented |
+| Tile presets derived from `effectiveValue`; exact-match validation at the boundary | Implemented |
+| Scoring gated to the `prompt`/`answer` stages and the open tile; stale controls inert | Implemented |
+| Revealing and scoring independent in BOTH directions | Implemented |
+| Multiple teams scorable for one tile; returning with no score allowed | Implemented |
+| Correction by undo OR compensating event; history never rewritten | Implemented |
+| Reset policy: new game resets scores; round transitions and game end preserve them | Implemented |
+| `PublicState.teams` allow-list DTO + explicit `unavailable`; wire version 3 → 4 | Implemented |
+| Projector never receives team ids, score history, undo metadata, or the host target | Implemented |
+| Host panel: target selection, tile value, previewed result, duplicate + large guards | Implemented |
+| Projector scoreboard at every stage and after the game ends; no animation | Implemented |
+| Accessibility: spoken negative totals, named controls, associated errors, focus | Implemented |
+| Unit, component and browser tests; docs (ADR-006, plan, handoff, receipt) | Implemented |
+
+### Team config shape (top-level, optional)
+
+```jsonc
+{
+  "teams": [
+    { "id": "basalts", "name": "Blue Basalts", "accent": "azure" },
+    { "id": "rhyolites", "name": "Red Rhyolites" }
+  ]
+}
+```
+
+Accents: `crimson` · `azure` · `emerald` · `amber` · `violet` · `teal` · `rose` ·
+`slate`. Omitting `accent` gets the palette entry at the team's authored position.
+
+### Commands / events / public fields (added in Slice 6)
+
+- **Command:** `ADJUST_TEAM_SCORE` — `{ teamId, delta, mode, source }`. There is
+  deliberately **no** command for choosing the scoring target: that is private host
+  UI state, it awards nothing, and it is never broadcast.
+- **Event:** `TEAM_SCORE_ADJUSTED` (reversible) — carries `teamId`, the signed
+  `delta`, the `mode` and the `source`. It does **not** carry a resulting total.
+- **Modes:** `full-credit` (= `effectiveValue`) · `deduction` (= −`effectiveValue`) ·
+  `partial-credit` (0 < |delta| ≤ `effectiveValue`) · `manual-correction` (bounded,
+  no tile).
+- **Score bounds:** −1,000,000 … 1,000,000, integers only, initial **0**.
+- **New rejection reasons:** `no-teams-configured`, `unknown-team`, `tile-mismatch`,
+  `invalid-score-delta`, `invalid-score-source`, `score-amount-mismatch`,
+  `score-out-of-range`.
+- **`PublicState` (added):** `teams: PublicTeamsState | null`. Wire version
+  **3 → 4**; version 3 is rejected, never reinterpreted.
+- **New import issue codes:** `duplicate-team-id`, `invalid-team-accent`.
 
 ## Slice 5 work (Complete)
 
@@ -214,11 +288,23 @@ Neutral state/event/sync foundation — no gameplay. Full rationale in
 
 ## Verification state
 
-Local `verify:all` passed on the Slice 5 branch: lint, typecheck, unit tests
-(**455 passed, 27 files**), production build, and Playwright e2e (**121 passed,
-2 skipped** — the offline-shell test runs once on the desktop project).
+Local `verify:all` passed on the Slice 6 branch: lint, typecheck, unit tests
+(**740 passed, 35 files**), production build, and Playwright e2e (**154 passed,
+2 skipped** — both skips are the one desktop-only offline-shell test).
 `git diff --check` is clean. See [`handoff/CURRENT.md`](handoff/CURRENT.md) for
-exact commands and the Slice 5 receipt under [`receipts/`](receipts/).
+exact commands and the Slice 6 receipt under [`receipts/`](receipts/).
+
+- CI on GitHub Actions for Slice 6: **observed green** on PR
+  [#11](https://github.com/ricktron/classroom-quiz-show/pull/11) at implementation
+  commit `7734065` — all three checks concluded success (`Lint, typecheck, unit
+  tests, build`; `Playwright e2e`; `SonarCloud Code Analysis` with the Quality Gate
+  **passed** and **0 Security Hotspots**). Sonar's 13 new non-blocking issues were
+  not inspected: `sonarcloud.io` is unreachable from the sandbox.
+- Live GitHub Pages verification for Slice 6: **not performed.** The sandbox
+  network policy denies `ricktron.github.io` (HTTP 403 on CONNECT), so the live
+  host/display URLs were not loaded. Slice 6 changes no CI or deploy configuration.
+- Earlier, on the Slice 5 branch: lint, typecheck, **455 unit tests**, build, and
+  **121 e2e passed / 2 skipped**.
 
 - CI on GitHub Actions for Slice 5: **Observed green.** On PR #9 (final
   reviewed head `5e6994e`) "Lint, typecheck, unit tests, build", "Playwright
@@ -255,11 +341,25 @@ None.
 
 ## Limitations
 
-- **One playable round type, and it does not score.** `category-board` can
-  reveal prompts and answers and track used tiles; no team, score, timer,
-  buzzer, or wager exists. Awarding points is Slice 6.
-- **No score is attached to a tile.** `multiplier` affects the DISPLAYED value
-  and a typed `effectiveValue`; it moves no points.
+- **One playable round type.** `category-board` reveals prompts and answers and
+  tracks used tiles; Slice 6 adds teams and scoring on top of it. No timer,
+  buzzer, or wager exists.
+- **A tile still scores nothing by itself.** `multiplier` affects the DISPLAYED
+  value and the typed `effectiveValue`, and revealing an answer awards nothing —
+  a teacher must deliberately award or deduct.
+- **The selected scoring target is host UI state only** and is lost if the host tab
+  is reloaded. It is never broadcast and awards nothing by existing.
+- **Undo reaches only the latest reversible event.** To fix an older score, apply a
+  compensating manual correction; there is no targeted "undo this event".
+- **A tile can only be scored while it is open** (the `prompt` or `answer` stage).
+  Once the host returns to the board, use a manual correction.
+- **A zero-value tile has no scoring preset** — every preset amount rule would
+  require a zero delta, and a zero-point event is not recorded. Manual correction
+  remains available.
+- **Partial credit is a whole number of points**, never a fraction or a percentage,
+  so there is no rounding rule to disagree about.
+- **Score bounds are ±1,000,000** and a single adjustment is bounded the same way;
+  an adjustment that would leave the range is rejected, never clamped.
 - **Board state is per round and resumes on return.** Leaving a round and coming
   back restores its used tiles and reveal stage; that is deliberate, not a bug.
 - **No second tile can be opened while one is live.** Return to the board first.
@@ -278,8 +378,8 @@ None.
   a claimed defence.
 - **The placeholder round is retained** as the non-gameplay engine-test type
   and safe fallback fixture. Its config schema is intentionally trivial.
-- **`PublicState` wire version is now 3.** A consumer pinned to version 2 fails
-  closed; there is no migration and none is implied.
+- **`PublicState` wire version is now 4.** A consumer pinned to version 3 (or 2)
+  fails closed; there is no migration and none is implied.
 - **Un-ending a game is not supported** — `GAME_SESSION_ENDED` is irreversible;
   re-initialize a game to start over.
 - **Event history and definitions are in-memory only** — lost on tab close.
@@ -291,5 +391,6 @@ None.
 
 ## Next safe action
 
-**Authorize Slice 6 — Teams & scoring.** Slice 6 is `Planned` and has not been
-started; no work on it may begin until the owner explicitly authorizes it.
+**Review the Slice 6 implementation PR.** The PR is open against `main` and must
+not be merged until it has been reviewed. Do **not** begin Slice 7 and do **not**
+perform post-merge reconciliation before the implementation PR merges.

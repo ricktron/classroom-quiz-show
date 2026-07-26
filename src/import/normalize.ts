@@ -1,6 +1,7 @@
 import { createGameDefinition, type GameDefinition } from '../game/gameDefinition'
 import { roundId, roundType } from '../game/ids'
 import type { DataValue, RoundConfig, RoundDefinition } from '../game/roundDefinition'
+import { createTeamDefinitions, NO_TEAMS } from '../game/teams/definition'
 import type { CanonicalGameFile } from './schemas'
 
 /**
@@ -13,14 +14,17 @@ import type { CanonicalGameFile } from './schemas'
  *  - deep-COPY the validated config so the caller's input object is never
  *    mutated (the trusted factory deep-freezes what it is given, and freezing
  *    the caller's own object would be a mutation of the input);
+ *  - hand validated teams to the trusted team constructor, which re-validates
+ *    with the SAME schema and applies the one documented accent default;
  *  - hand the result to the Slice 3 trusted constructor, which enforces the
  *    domain invariants again and deep-freezes the definition.
  *
  * What normalization must NEVER do — return a failure instead:
  *  generate a missing id · de-duplicate ids · drop or replace an unsupported
  *  round · substitute a default config · truncate an overlong value · invent a
- *  title · reorder rounds · silently drop unknown fields · accept a partially
- *  valid game · change semantic meaning in any way.
+ *  title · reorder rounds or teams · rename a team · invent a team · silently
+ *  drop unknown fields · accept a partially valid game · change semantic meaning
+ *  in any way.
  *
  * Because every value written below is copied verbatim from the validated
  * document — and the Zod schemas perform no coercion — normalization is
@@ -71,9 +75,17 @@ export function normalizeToGameDefinition(document: CanonicalGameFile): GameDefi
     config: cloneConfig(round.config),
   }))
 
+  // Teams go through their own trusted constructor, which re-validates with the
+  // same schema and builds a fresh, frozen object graph — so the document's array
+  // is neither retained nor mutated. An absent `teams` field means "no teams";
+  // nothing is invented for a game that did not ask for any.
+  const teams =
+    document.teams === undefined ? NO_TEAMS : createTeamDefinitions(document.teams)
+
   return createGameDefinition({
     id: document.id,
     title: document.title,
     rounds,
+    teams,
   })
 }
