@@ -1,7 +1,7 @@
 # Status
 
 **Current slice:** Slice 4 — Validation & import pipeline
-**Slice state:** In review
+**Slice state:** Complete
 
 ## State vocabulary
 
@@ -18,20 +18,26 @@
 > commit `01070c8`, merged 2026-07-23T19:18:32Z) with CI green (final reviewed
 > head `464ef07`), and the post-merge reconciliation is recorded in
 > [`receipts/2026-07-23-slice-3-post-merge-reconciliation.md`](receipts/2026-07-23-slice-3-post-merge-reconciliation.md).
-> Slice 4 is **In review**, not `Complete`: it is implemented on
-> `claude/slice-4-validation-import-pynvab` (base `main`
-> `349bff72f471c798df8a902a6a3c4c3eae2e17a5`), locally verified, and **CI is
-> observed green on PR #7** — but the PR has not been reviewed or merged, and no
-> post-merge reconciliation exists.
+> Slice 4 is **Complete**: implementation PR #7 was merged to `main` (merge
+> commit `5295e83`, merged 2026-07-25T20:14:42Z; final reviewed head `8ce850c`).
+> Post-merge CI on `main` is green (both jobs success) and the Pages deployment
+> succeeded; the post-merge reconciliation is recorded in
+> [`receipts/2026-07-25-slice-4-post-merge-reconciliation.md`](receipts/2026-07-25-slice-4-post-merge-reconciliation.md).
+> **Note:** the owner merged before **Playwright e2e** had concluded on the PR
+> head (it concluded success ~23 s after the merge); SonarCloud and the
+> lint/typecheck/unit/build job had both already reported success. The receipt
+> records this precisely rather than claiming all checks were green pre-merge.
 > **Slice 5 remains unstarted and owner-gated.**
 
-## Slice 4 work (In review)
+## Slice 4 work (Complete)
 
 The canonical versioned JSON game-file format and the single Zod-based
 validation / normalization import pipeline — **no gameplay**. Full rationale in
 [`architecture/ADR-004-canonical-validation-import.md`](architecture/ADR-004-canonical-validation-import.md);
 local evidence in
-[`receipts/2026-07-24-slice-4-local-verification.md`](receipts/2026-07-24-slice-4-local-verification.md).
+[`receipts/2026-07-24-slice-4-local-verification.md`](receipts/2026-07-24-slice-4-local-verification.md)
+and merge/CI/deployment evidence in
+[`receipts/2026-07-25-slice-4-post-merge-reconciliation.md`](receipts/2026-07-25-slice-4-post-merge-reconciliation.md).
 
 | Item | State |
 | --- | --- |
@@ -147,11 +153,12 @@ Local `verify:all` passed on the Slice 4 branch: lint, typecheck, unit tests
 is clean. See [`handoff/CURRENT.md`](handoff/CURRENT.md) for exact commands and
 the Slice 4 receipt under [`receipts/`](receipts/) for durable evidence.
 
-- CI on GitHub Actions for Slice 4: **Observed green** on PR #7 (commit
-  `d08f140`) — "Lint, typecheck, unit tests, build" and "Playwright e2e" both
-  concluded success, and the SonarCloud Quality Gate passed (0 security
-  hotspots). Slice 4 remains `In review` because the PR is unreviewed and
-  unmerged, not because of CI.
+- CI on GitHub Actions for Slice 4: **Observed green.** On PR #7 (final head
+  `8ce850c`) "Lint, typecheck, unit tests, build", "Playwright e2e", and the
+  SonarCloud Quality Gate (0 security hotspots) all concluded success.
+  **Post-merge on `main` (`5295e83`)** both CI jobs concluded success.
+- Pages deployment: **Observed successful** on `main` at `5295e83`
+  (2026-07-25T20:15:31Z). Slice 4 altered no deploy configuration.
 - Slice 3 CI was observed green on PR #5 (final reviewed head `464ef07`) — both
   jobs succeeded and the SonarCloud Quality Gate passed (0 security hotspots).
 - Pages deployment: unchanged; Slice 4 alters no deploy config.
@@ -198,5 +205,5 @@ None.
 
 ## Next safe action
 
-Review the Slice 4 implementation PR. **Do not begin Slice 5** until Slice 4 is
-reviewed, observed green in CI, merged, and reconciled.
+Review and merge the Slice 4 post-merge reconciliation PR (documentation only).
+**Do not begin Slice 5** until the owner explicitly authorizes it.

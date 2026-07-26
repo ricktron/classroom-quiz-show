@@ -1,8 +1,8 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with Slice 1, 2 & 3 **Complete** (all merged to `main`) and
-Slice 4 (validation & import pipeline) **In review** on a branch.
+the repository with Slice 1, 2, 3 & 4 **Complete** (all merged to `main`).
+Slice 4 (validation & import pipeline) merged via PR #7; Slice 5 is unstarted.
 
 ## Repository state
 
@@ -20,12 +20,18 @@ Slice 4 (validation & import pipeline) **In review** on a branch.
   2026-07-23T19:18:32Z) with CI green (build + e2e success, SonarCloud Quality
   Gate passed, 0 security hotspots). Post-merge reconciliation recorded in
   [`../receipts/2026-07-23-slice-3-post-merge-reconciliation.md`](../receipts/2026-07-23-slice-3-post-merge-reconciliation.md).
-- **Slice 4 (current):** **In review.** Delivered on
+- **Slice 4 (current):** **Complete.** Delivered on
   `claude/slice-4-validation-import-pynvab`, based on `main` at
   `349bff72f471c798df8a902a6a3c4c3eae2e17a5` (after the merged Slice 3
-  reconciliation, PR #6). Implementation commit `d08f140`; open as **PR #7**
-  with **CI observed green** (build + e2e success, SonarCloud Quality Gate
-  passed, 0 security hotspots). Unreviewed and unmerged.
+  reconciliation, PR #6). Implementation commit `d08f140`; docs commit
+  `b44b585`; final reviewed head `8ce850c` (accessor/TOCTOU repair found in
+  review). Merged to `main` via **PR #7** (merge commit `5295e83`, merged
+  2026-07-25T20:14:42Z). Post-merge CI on `main` green (both jobs success) and
+  the Pages deployment succeeded. Post-merge reconciliation recorded in
+  [`../receipts/2026-07-25-slice-4-post-merge-reconciliation.md`](../receipts/2026-07-25-slice-4-post-merge-reconciliation.md).
+  **Note:** the owner merged before **Playwright e2e** concluded on the PR head
+  (it concluded success ~23 s later); SonarCloud and the lint/typecheck/unit/
+  build job had already reported success. See the receipt for the exact timeline.
   **Slice 5 is unstarted and owner-gated.**
 - **What Slice 4 adds:** the canonical versioned JSON game-file format and ONE
   Zod-based validation/normalization import pipeline
@@ -77,7 +83,7 @@ Slice 4 (validation & import pipeline) **In review** on a branch.
   decode failure, public projection failure) each have a defined fail-safe
   behavior; unknown-round-type is handled fail-closed at every layer.
 
-## Module map (Slices 2–3)
+## Module map (Slices 2–4)
 
 ```
 src/game/
@@ -145,15 +151,17 @@ npm run verify:all   # verify + build + e2e (merge gate)
 > the matching browser and needs no override.
 
 Latest local results (Slice 4 branch): `verify:all` green — 253 unit tests, 97
-e2e passed / 2 skipped; `git diff --check` clean. Slice 4 CI was observed green
-on PR #7 (commit `d08f140`). Slice 3 CI was observed green on PR #5 (final reviewed head
+e2e passed / 2 skipped; `git diff --check` clean. Slice 4 CI was observed green on
+PR #7 (final head `8ce850c`) and again **post-merge on `main` (`5295e83`)**, where
+the Pages deployment also succeeded. Slice 3 CI was observed green on PR #5 (final reviewed head
 `464ef07`: build + e2e success, SonarCloud Quality Gate passed, 0 security
 hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/).
 
 ## Known risks / limitations
 
-- **The Slice 4 PR is unreviewed and unmerged** — this is why Slice 4 is
-  `In review`, not `Complete`. CI is green.
+- **Slice 4 merged before Playwright e2e concluded** on the PR head; it
+  concluded success ~23 s after the merge, and post-merge CI on `main` is green.
+  Recorded precisely in the Slice 4 reconciliation receipt.
 - **One schema version, no migrations** (`schemaVersion: 1`). Older/newer fail
   by design.
 - **Paste is the only import transport** — no file picker, spreadsheet/CSV/XLSX,
@@ -176,8 +184,9 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Next action
 
-Review the Slice 4 implementation PR. Do **not** begin Slice 5 until Slice 4 is
-reviewed, observed green in CI, merged, and reconciled.
+Review and merge the Slice 4 post-merge reconciliation PR (documentation only).
+Slice 4 is already `Complete` in [`../STATUS.md`](../STATUS.md). Do **not** begin
+Slice 5 until the owner explicitly authorizes it.
 
 ## Prohibited next actions until Slice 5 is authorized
 
