@@ -7,6 +7,7 @@ import {
   readCategoryBoardDefinition,
   type CategoryBoardTile,
 } from '../game/categoryBoard/definition'
+import { systemClock, type Clock } from '../time/clock'
 import './CategoryBoardHostPanel.css'
 
 /**
@@ -40,6 +41,11 @@ import './CategoryBoardHostPanel.css'
 export interface CategoryBoardHostPanelProps {
   readonly dispatch: (command: SessionCommand) => DispatchResult
   readonly game: PrivateGameState
+  /**
+   * The dispatch-edge clock (Slice 7). Injectable so the host surface has exactly
+   * one place the real clock enters it — see `src/time/clock.ts`.
+   */
+  readonly clock?: Clock
 }
 
 /** Public copy describing exactly what the projector is showing right now. */
@@ -50,7 +56,11 @@ const PUBLIC_STAGE_COPY = {
   answer: 'the prompt and the answer',
 } as const
 
-export function CategoryBoardHostPanel({ dispatch, game }: CategoryBoardHostPanelProps) {
+export function CategoryBoardHostPanel({
+  dispatch,
+  game,
+  clock = systemClock,
+}: CategoryBoardHostPanelProps) {
   const roundIndex = game.currentRoundIndex
   if (roundIndex === null || game.gameLifecycle !== 'active') return null
   const round = game.definition.rounds[roundIndex]
@@ -62,7 +72,7 @@ export function CategoryBoardHostPanel({ dispatch, game }: CategoryBoardHostPane
   const boardState = categoryBoardStateFor(game, round.id)
   const progress = boardState.progress
   const used = new Set(boardState.usedTileIds)
-  const now = () => Date.now()
+  const now = () => clock.now()
   const location =
     progress.selectedTileId === null ? null : findTileLocation(board, progress.selectedTileId)
 

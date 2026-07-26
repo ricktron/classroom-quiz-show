@@ -169,6 +169,42 @@ Slice 6 makes the board **score**:
   that exact adjustment has already been submitted. Negative or large manual
   adjustments need an explicit confirmation.
 
+**Slice 7 — timers, arming & transitions. In review** — implemented on
+`claude/slice-7-timers-arming-transitions-wd7cmf`, PR open and unmerged (see
+[`docs/STATUS.md`](docs/STATUS.md), the local-verification receipt
+[`docs/receipts/2026-07-26-slice-7-local-verification.md`](docs/receipts/2026-07-26-slice-7-local-verification.md),
+and [`docs/architecture/ADR-007-timers-arming-transitions.md`](docs/architecture/ADR-007-timers-arming-transitions.md)).
+Slice 7 gives a clue a clock, and contains the engine's first non-deterministic
+input:
+
+- **One explicit clock boundary.** A clock is read at the command/dispatch edge
+  and at the presentation edge — and **never** inside the reducer, replay, the
+  planner's decision logic, or the sanitizer. Replaying a stored history is still
+  bit-exact and needs no clock, however much later it happens.
+- **Durable facts, a derived countdown.** Events record that a timer started with
+  a stated duration and deadline, was paused with a stated amount left, resumed,
+  was interrupted, or expired. There is **no tick event, no per-second revision,
+  and no remaining-time value on a running timer** — "how long is left" is
+  computed at the rendering edge.
+- **Manual host arming.** A clue is armed only when the teacher arms it; nothing
+  arms it automatically. Arming and the timer are independent.
+- **A typed interruption seam** that stops the clock **without ending the clue**,
+  so a future buzz-in is an addition rather than a rewrite.
+- **Expiry through the command boundary**, carrying the timer identity and the
+  exact deadline. A callback left over from a reset, restart, pause, undo, clue
+  change or round change appends nothing, and exactly one expiry per countdown is
+  structural. Expiry awards and deducts **nothing**.
+- **Host pause and resume.** Paused wall-clock time is never charged to the class,
+  and a replay consumes none of it either.
+- **The projector shows a deadline, not a stream** (`PublicState.response`, wire
+  version 4 → 5): armed state plus a status-discriminated timer, with the display
+  deriving the countdown locally against a clamped estimate of the host/display
+  clock offset. The display **never** expires a timer. Every state is stated in
+  words, and the only animation is disabled under `prefers-reduced-motion`.
+- **An optional authored `timer` block** (`{ "responseSeconds": 45 }`, 5–600
+  whole seconds) that is additive on `schemaVersion: 1` — every existing game file
+  is still valid and gets the documented 30-second default.
+
 The Slice 1 foundation is unchanged beneath it:
 
 - React + TypeScript + Vite app shell
@@ -181,12 +217,13 @@ The Slice 1 foundation is unchanged beneath it:
 - Lint, typecheck, unit/component tests (Vitest), and browser tests (Playwright)
 - Architecture and governance documentation
 
-There is **one playable round type**, and it now scores. There are still no timers,
-buzzers, wagers, media, themes, or durable persistence, and importing is still
-limited to pasting canonical JSON (no file picker, spreadsheet, or remote import).
-The host "Foundation / testing controls" and the import harness remain diagnostics
-that prove the state core, the game/round model and the ingestion boundary — the
-category-board and teams & scoring panels are the game controls. Those other systems
+There is **one playable round type**; it scores, and it can now be timed. There
+are still no buzzers of any kind, no wagers, media, themes, or durable
+persistence, and importing is still limited to pasting canonical JSON (no file
+picker, spreadsheet, or remote import). The host "Foundation / testing controls"
+and the import harness remain diagnostics that prove the state core, the
+game/round model and the ingestion boundary — the category-board, teams &
+scoring, and response-window panels are the game controls. Those other systems
 arrive in later slices. See [`docs/STATUS.md`](docs/STATUS.md) and
 [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md).
 
@@ -223,7 +260,9 @@ real GitHub Pages base path, then exercises direct navigation, refresh, the
 base path, projector legibility, mobile host usability, the offline app shell,
 a full category-board play-through across a host tab and a projector tab, a full
 teams-and-scoring flow (award, deduct, partial credit, manual correction, undo) with
-the projector mirroring every total, and the permanent **projector-leak** checks.
+the projector mirroring every total, a full response-window flow (arm, run, pause,
+resume, stop, expire, stale-callback, undo, projector reload, reduced motion), and
+the permanent **projector-leak** checks.
 
 **Testing policy.** Every slice that changes user-visible host or display
 behavior must add or update Playwright coverage; unit tests cover schemas,

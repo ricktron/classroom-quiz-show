@@ -5,6 +5,9 @@ import { createSampleGame, createSampleGameWithUnsupportedRound } from '../game/
 import { GameImportPanel } from './GameImportPanel'
 import { CategoryBoardHostPanel } from './CategoryBoardHostPanel'
 import { TeamScoringPanel } from './TeamScoringPanel'
+import { ResponseTimerHostPanel } from './ResponseTimerHostPanel'
+import { useResponseTimerExpiry } from './useResponseTimerExpiry'
+import { systemClock, type Clock } from '../time/clock'
 import './FoundationControls.css'
 
 /**
@@ -29,15 +32,30 @@ function nextSessionId(): string {
   return `session-${sessionCounter}`
 }
 
-export function FoundationControls() {
-  const { store, state, history, dispatch } = useSessionStore()
-  useHostSync(store)
+export interface FoundationControlsProps {
+  /**
+   * The host surface's clock (Slice 7). Injectable so tests drive time instead of
+   * waiting for it, and so there is ONE place the real clock enters the host —
+   * see `src/time/clock.ts`. Every `issuedAt` below and the sync `sentAt` stamp
+   * come from here; nothing downstream calls `Date.now()` for itself.
+   */
+  readonly clock?: Clock
+}
 
-  const now = () => Date.now()
+export function FoundationControls({ clock = systemClock }: FoundationControlsProps = {}) {
+  const { store, state, history, dispatch } = useSessionStore()
+  useHostSync(store, clock)
+
+  const now = () => clock.now()
   const hasSession = state.session !== null
   const registry = store.getRegistry()
   const game = state.session?.game ?? null
   const hasGame = game !== null
+
+  // The ONE scheduled clock read in the application. It turns a deadline into a
+  // COMMAND; it never mutates state, and a stale callback is rejected by the
+  // planner rather than being defended against here (Slice 7).
+  useResponseTimerExpiry({ game, dispatch, clock })
 
   return (
     <section className="foundation" aria-labelledby="foundation-title">
@@ -251,14 +269,23 @@ export function FoundationControls() {
         round, a placeholder round, an unsupported round) renders nothing here
         and the foundation diagnostics above remain the whole host surface.
       */}
-      {game && <CategoryBoardHostPanel dispatch={dispatch} game={game} />}
+      {game && <CategoryBoardHostPanel dispatch={dispatch} game={game} clock={clock} />}
+
+      {/*
+        Timers & arming (Slice 7). A third bounded panel: it arms and times, it
+        reveals nothing, and it scores nothing — the same separation that keeps
+        the board panel and the scoring panel apart.
+      */}
+      {game && <ResponseTimerHostPanel dispatch={dispatch} game={game} clock={clock} />}
 
       {/*
         Teams & scoring (Slice 6). It sits BESIDE the board panel, not inside it,
         because revealing content and awarding points are separate decisions —
         neither panel can trigger the other's action.
       */}
-      {game && <TeamScoringPanel dispatch={dispatch} game={game} history={history} />}
+      {game && (
+        <TeamScoringPanel dispatch={dispatch} game={game} history={history} clock={clock} />
+      )}
 
       <GameImportPanel
         dispatch={dispatch}

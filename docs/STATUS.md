@@ -1,11 +1,12 @@
 # Status
 
-**Current slice:** Slice 6 — Teams & scoring
-**Slice state:** Complete
-**Next slice:** Slice 7 — Timers, arming & transitions (`Planned`, unstarted,
-owner-gated)
+**Current slice:** Slice 7 — Timers, arming & transitions
+**Slice state:** In review (branch pushed, PR open and unmerged)
+**Next slice:** Slice 8 — Local input contract & keyboard buzz-in (`Planned`,
+unstarted, owner-gated)
 **Roadmap:** 18 slices, amended 2026-07-26 by
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
+(**merged to `main` via PR #13**, merge commit `752a3fe`, 2026-07-26T20:02:13Z)
 
 ## State vocabulary
 
@@ -49,15 +50,88 @@ owner-gated)
 > reconciliation sandbox's network policy denies `ricktron.github.io`. Post-merge
 > reconciliation is recorded in
 > [`receipts/2026-07-26-slice-6-post-merge-reconciliation.md`](receipts/2026-07-26-slice-6-post-merge-reconciliation.md).
-> **Slice 7 remains unstarted and owner-gated.** On 2026-07-26 the owner
-> authorized a planning-only **roadmap amendment**
+> On 2026-07-26 the owner authorized a planning-only **roadmap amendment**
 > ([`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)):
 > local host-attached USB buzzers became an approved future capability, the MVP
 > non-goal excluding "student devices/buzzers" was narrowed (student-owned
 > devices and networked buzzers stay excluded), Slice 7 was renamed and re-scoped
 > to **Timers, arming & transitions**, and the 11-slice plan became 18 slices.
 > **That amendment changed documentation only — no runtime code, schema, test,
-> workflow or dependency changed, and no implementation slice was started.**
+> workflow or dependency changed, and no implementation slice was started by it.**
+> It was **merged to `main` via [PR #13](https://github.com/ricktron/classroom-quiz-show/pull/13)**
+> (merge commit `752a3fe0f45fdc1ee687339134023c3811facd91`, merged
+> 2026-07-26T20:02:13Z by `ricktron`; reviewed head `2524e745`), with all three PR
+> checks green.
+> **Slice 7 is now In review**: owner-authorized, implemented on
+> `claude/slice-7-timers-arming-transitions-wd7cmf` from `main` at `752a3fe`, with
+> the PR open and unmerged. **Slice 8 remains unstarted and owner-gated.**
+
+## Slice 7 work (In review)
+
+Timers, arming and transitions — the engine's first **non-deterministic input**,
+contained. Full rationale in
+[`architecture/ADR-007-timers-arming-transitions.md`](architecture/ADR-007-timers-arming-transitions.md);
+local evidence in
+[`receipts/2026-07-26-slice-7-local-verification.md`](receipts/2026-07-26-slice-7-local-verification.md).
+
+| Item | State |
+| --- | --- |
+| Explicit `Clock` seam; read at the dispatch and presentation edges only | Implemented |
+| Reducer, replay, planner logic and sanitizer read no clock; replay bit-exact | Implemented |
+| No global timer service; nothing mutates state outside the command pipeline | Implemented |
+| Durable timer FACTS (duration, start, absolute deadline, frozen remaining) | Implemented |
+| No tick event, no per-frame revision, no remaining value on a running timer | Implemented |
+| Round-type-neutral `responsePhases` map, legal at the `prompt` stage only | Implemented |
+| Manual host arming (`OG-1`) as first-class durable state, orthogonal to the timer | Implemented |
+| Typed interruption seam; stops the clock WITHOUT ending the clue | Implemented |
+| Expiry through the command boundary with timer id + deadline evidence | Implemented |
+| Stale / premature / repeated / reset / restarted / paused / undone callbacks inert | Implemented |
+| Exactly one effective expiry per countdown, structurally | Implemented |
+| Host pause and resume (`OG-8` resolved); replay consumes no time while paused | Implemented |
+| Transition rules: cleared by selection, answer reveal, return, round change, end | Implemented |
+| A window is NOT resumed across a round change (unlike board progress) | Implemented |
+| Expiry awards and deducts nothing; scoring and the window stay independent | Implemented |
+| `PublicState.response` allow-list DTO; wire version 4 → 5 | Implemented |
+| Sync envelope version 1 → 2 (required `sentAt`); both fail closed | Implemented |
+| Bounded, clamped host/display clock-offset estimate; display never expires | Implemented |
+| Additive optional `timer` block on `schemaVersion: 1`, default 30 s | Implemented |
+| Host panel: four facts in words, illegal controls disabled, keyboard operable | Implemented |
+| Projector panel: countdown, armed/paused/expired/stopped in words, reduced-motion safe | Implemented |
+| Unit, component and browser tests; docs (ADR-007, plan, handoff, receipt) | Implemented |
+| Buzzers, queues, promotion, device input (`OG-2`/`OG-3` recorded, Slice 8) | **Not implemented** |
+
+### Timer config shape (top-level, optional)
+
+```jsonc
+{
+  "timer": { "responseSeconds": 45 }
+}
+```
+
+Whole seconds, 5–600. Omitting the block yields the documented default of **30**,
+applied by the trusted constructor — never by a Zod `.default()`. The host may pick
+another bounded duration for one clue at start time.
+
+### Commands / events / public fields (added in Slice 7)
+
+- **Commands (8):** `ARM_RESPONSE_PHASE` · `DISARM_RESPONSE_PHASE` ·
+  `START_RESPONSE_TIMER` (optional `durationSeconds`) · `PAUSE_RESPONSE_TIMER` ·
+  `RESUME_RESPONSE_TIMER` · `INTERRUPT_RESPONSE_TIMER` (typed `source`) ·
+  `EXPIRE_RESPONSE_TIMER` (`timerId` + `deadline`) · `RESET_RESPONSE_PHASE`. All
+  carry the `roundId` they target.
+- **Events (8, all reversible):** `RESPONSE_PHASE_ARMED` ·
+  `RESPONSE_PHASE_DISARMED` · `RESPONSE_TIMER_STARTED` · `RESPONSE_TIMER_PAUSED` ·
+  `RESPONSE_TIMER_RESUMED` · `RESPONSE_TIMER_INTERRUPTED` ·
+  `RESPONSE_TIMER_EXPIRED` · `RESPONSE_PHASE_RESET`.
+- **Timer statuses:** `idle` · `running` · `paused` · `expired` · `interrupted`.
+- **Interruption sources:** `host` (the only member today; unrecognized values fail
+  closed at the command boundary and again on event application).
+- **New rejection reasons:** `invalid-response-phase`, `invalid-timer-duration`,
+  `stale-timer-expiration`, `premature-timer-expiration`.
+- **`PublicState` (added):** `response: PublicResponseState | null`. Wire version
+  **4 → 5**; version 4 is rejected, never reinterpreted.
+- **Sync envelope:** `SYNC_SCHEMA_VERSION` **1 → 2**; `public-state` gained a
+  required `sentAt`. A version-1 envelope is rejected with `unsupported-version`.
 
 ## Slice 6 work (Complete)
 
@@ -308,10 +382,26 @@ Neutral state/event/sync foundation — no gameplay. Full rationale in
 
 ## Verification state
 
-Local `verify:all` passed on the Slice 6 branch and again on the reconciliation
-branch: lint, typecheck, unit tests (**740 passed, 35 files**), production build,
-and Playwright e2e (**154 passed, 2 skipped** — both skips are the one
-desktop-only offline-shell test). `git diff --check` is clean. See
+Local `verify:all` passed on the Slice 7 branch: lint, typecheck, unit tests
+(**947 passed, 42 files**), production build, and Playwright e2e (**175 passed,
+2 skipped** — both skips are the one desktop-only offline-shell test).
+`git diff --check` is clean. Details in
+[`receipts/2026-07-26-slice-7-local-verification.md`](receipts/2026-07-26-slice-7-local-verification.md).
+
+- **PR CI on GitHub Actions for Slice 7: observed green.** All three checks
+  concluded success on implementation commit `f804430` of PR
+  [#14](https://github.com/ricktron/classroom-quiz-show/pull/14) — `Lint,
+  typecheck, unit tests, build`; `Playwright e2e`; and `SonarCloud Code Analysis`
+  with the Quality Gate **passed** and **0 Security Hotspots**. Sonar's 12 new
+  non-blocking issues were **not inspected**: `sonarcloud.io` is unreachable from
+  the sandbox (HTTP 403 on CONNECT).
+- **Post-merge CI and Pages deployment for Slice 7: not applicable yet** — the PR
+  is open and unmerged. No live-URL verification is claimed.
+
+Earlier, local `verify:all` passed on the Slice 6 branch and again on the
+reconciliation branch: lint, typecheck, unit tests (**740 passed, 35 files**),
+production build, and Playwright e2e (**154 passed, 2 skipped** — both skips are
+the one desktop-only offline-shell test). `git diff --check` is clean. See
 [`handoff/CURRENT.md`](handoff/CURRENT.md) for exact commands and the Slice 6
 receipts under [`receipts/`](receipts/).
 
@@ -374,8 +464,31 @@ None.
 ## Limitations
 
 - **One playable round type.** `category-board` reveals prompts and answers and
-  tracks used tiles; Slice 6 adds teams and scoring on top of it. No timer,
-  buzzer, or wager exists.
+  tracks used tiles; Slice 6 added teams and scoring on top of it, and Slice 7 adds
+  the response window. No buzzer or wager exists.
+- **A response window exists only at the `prompt` stage.** Before the prompt is
+  public there is nothing to respond to; once the answer is public the window is
+  over and is cleared.
+- **A response window does not survive a round change**, unlike board progress,
+  which does resume. A deadline is an absolute instant, and resuming a stale one
+  would put a nonsense clock in front of a class.
+- **Host and display clocks are not synchronized.** The display applies a clamped
+  (±5 s) estimate of the offset derived from each snapshot's `sentAt`; transport
+  delay is ignored and no round-trip measurement is done. On today's same-browser
+  transport both clocks are the same, so the correction is effectively a no-op.
+- **The display never expires a timer.** At 0:00 it keeps showing the running
+  state until the host publishes `expired`.
+- **Undoing an expiry restores an already-overdue running timer**, which the host
+  adapter then expires again on the next tick unless the host acts. Undo restores
+  the prior durable state exactly; it does not invent a friendlier one.
+- **`PublicState` wire version is now 5 and the sync envelope version is 2.** A
+  consumer pinned to either older version fails closed; there is no migration.
+- **Expiry awards and deducts nothing.** A window ending is a fact about the
+  window, never a scoring decision.
+- **Timer durations are 5–600 whole seconds**, authored per game or chosen per
+  clue by the host. An out-of-range value is rejected, never clamped.
+- **`OG-2`, `OG-3` and `OG-6` are recorded but not implemented.** There is no buzz
+  input, no queue, no promotion, and no respondent-restricted scoring anywhere.
 - **A tile still scores nothing by itself.** `multiplier` affects the DISPLAYED
   value and the typed `effectiveValue`, and revealing an answer awards nothing —
   a teacher must deliberately award or deduct.
@@ -410,8 +523,8 @@ None.
   a claimed defence.
 - **The placeholder round is retained** as the non-gameplay engine-test type
   and safe fallback fixture. Its config schema is intentionally trivial.
-- **`PublicState` wire version is now 4.** A consumer pinned to version 3 (or 2)
-  fails closed; there is no migration and none is implied.
+- **A consumer pinned to `PublicState` version 4, 3 or 2 fails closed**; there is
+  no migration and none is implied.
 - **Un-ending a game is not supported** — `GAME_SESSION_ENDED` is irreversible;
   re-initialize a game to start over.
 - **Event history and definitions are in-memory only** — lost on tab close.
@@ -423,15 +536,15 @@ None.
 
 ## Next safe action
 
-**Review and merge the roadmap amendment PR** (`ROADMAP-AMENDMENT-001`, local
-buzzers). It is documentation-only: it amends the slice sequence, narrows one MVP
-non-goal with owner authorization, and adds one immutable receipt. It touches no
-application code, tests, workflows, dependencies or package files.
+**Review the Slice 7 pull request** (timers, arming & transitions). It is open and
+unmerged: local `verify:all` is green, the ADR and the immutable receipt are in
+place, and every existing receipt was proved byte-identical.
 
-After it merges, the next implementation slice is **Slice 7 — Timers, arming &
-transitions**. It has **no open decision gates** and may be authorized directly.
+After it merges, record the post-merge reconciliation as usual. The next
+implementation slice is **Slice 8 — Local input contract & keyboard buzz-in**. Its
+vocabulary gates `OG-1`, `OG-2` and `OG-3` are now answered, but it is still
+`Planned`, unstarted, and **owner-gated**.
 
-Do **not** begin Slice 7 on the strength of this amendment — the amendment
-*recommends* it as next but does not authorize it. Slices 8–10 (local buzzers) are
-additionally blocked on owner gates `OG-1`, `OG-2` and `OG-3`, recorded in the
-amendment.
+Do **not** begin Slice 8 on the strength of those answers — recording a decision
+is not authorization to implement it. No buzz input, queue or promotion behaviour
+exists anywhere in the codebase.

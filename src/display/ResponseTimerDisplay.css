@@ -1,0 +1,115 @@
+/*
+ * Projector response timer. Read from across a classroom at 1280×720 and
+ * 1920×1080.
+ *
+ * Layout rules that matter:
+ *  - the countdown is the largest element on the panel, in tabular figures so the
+ *    digits do not shift width as they change;
+ *  - every state is carried by TEXT; colour and the accent bar are supplemental;
+ *  - it never pushes the page sideways — the row wraps instead;
+ *  - the only motion is a slow pulse in the last ten seconds, and reduced-motion
+ *    users get none of it (the global rule already neutralises animations; the
+ *    explicit block below removes this one outright rather than running it at
+ *    0.001 ms, so nothing flickers at all).
+ */
+.rtd {
+  width: 100%;
+  overflow-x: hidden;
+  text-align: center;
+  padding: clamp(0.3rem, 0.8vw, 0.7rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  /* Colour changes between states fade rather than snap. Information-free. */
+  transition: background-color 200ms ease, border-color 200ms ease;
+}
+
+.rtd__armed {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: clamp(0.85rem, 1.3vw, 1.15rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.rtd__armed-dot {
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+}
+
+.rtd[data-armed='armed'] .rtd__armed {
+  color: var(--color-success);
+}
+
+.rtd[data-armed='armed'] .rtd__armed-dot {
+  background: var(--color-success);
+}
+
+.rtd__status {
+  margin: 0.1rem 0 0;
+  font-size: clamp(0.85rem, 1.4vw, 1.25rem);
+  color: var(--color-text-muted);
+}
+
+.rtd__clock {
+  margin: 0;
+  font-size: clamp(2.2rem, 7vw, 6rem);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Paused, stopped and expired are stated in words; colour only reinforces them. */
+.rtd--paused .rtd__clock {
+  color: var(--color-text-muted);
+}
+
+.rtd--interrupted {
+  border-color: var(--color-host-accent);
+}
+
+.rtd--expired {
+  border-color: var(--color-danger);
+}
+
+.rtd--expired .rtd__clock {
+  color: var(--color-danger);
+}
+
+.rtd--urgent .rtd__clock {
+  color: var(--color-host-accent);
+  animation: rtd-pulse 1s ease-in-out infinite;
+}
+
+/*
+ * A slow opacity pulse — no movement, no scale, no colour flashing, and far below
+ * any flash-rate threshold. It is emphasis, never meaning: the number itself
+ * already says how long is left.
+ */
+@keyframes rtd-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.72;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rtd {
+    transition: none;
+  }
+
+  .rtd--urgent .rtd__clock {
+    animation: none;
+    /* The emphasis colour stays; only the motion is removed. */
+    opacity: 1;
+  }
+}

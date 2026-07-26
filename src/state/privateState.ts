@@ -1,6 +1,7 @@
 import type { PublicStatusCode } from './status'
 import type { EventType, RoundSupport } from './events'
 import type { GameDefinition } from '../game/gameDefinition'
+import type { ResponsePhaseState } from '../game/timing/responsePhase'
 
 /**
  * PRIVATE (authoritative) application state.
@@ -12,8 +13,9 @@ import type { GameDefinition } from '../game/gameDefinition'
  * in this module is display-safe.
  *
  * Slice 2 was a neutral foundation with no gameplay at all. Gameplay state has
- * arrived since: Slice 5 added per-round board progress and Slice 6 adds team
- * scores. Timers, buzzers, wagers and persistence remain absent.
+ * arrived since: Slice 5 added per-round board progress, Slice 6 added team
+ * scores, and Slice 7 adds the per-round response phase (arming + timer facts).
+ * Buzzers, wagers and persistence remain absent.
  */
 
 /** Foundation lifecycle. No gameplay states — those arrive in later slices. */
@@ -125,6 +127,27 @@ export interface PrivateGameState {
    * public DTO in `sanitize.ts` ever reaches the display.
    */
   readonly categoryBoards: Readonly<Record<string, CategoryBoardRoundState>>
+  /**
+   * Per-round response-phase state — arming and the timer (Slice 7), keyed by the
+   * round's stable `RoundId`.
+   *
+   * It is a SIBLING of `categoryBoards`, not a field inside it, on purpose. The
+   * response phase is not a property of the category-board round type: a future
+   * round type with a timed response gets the same state, the same commands and
+   * the same public projection by reusing this map, without the board's shape
+   * being dragged along.
+   *
+   * A missing key means the round is in {@link INITIAL_RESPONSE_PHASE_STATE} —
+   * disarmed with no timer — so "no entry" and "idle" are the same fact and can
+   * never disagree, exactly as with `teamScores`.
+   *
+   * Like every other gameplay field it is DERIVED BY REPLAY. There is no timer
+   * object, no interval, and no write path outside `reduce`; the countdown a
+   * teacher sees is computed at the rendering edge from these facts plus a clock.
+   * A response phase is deliberately NOT resumed across a round change — see
+   * ADR-007 §8.
+   */
+  readonly responsePhases: Readonly<Record<string, ResponsePhaseState>>
 }
 
 /** Nested private diagnostics — used to prove nested fields never leak. */

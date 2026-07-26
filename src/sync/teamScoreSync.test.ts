@@ -196,7 +196,7 @@ describe('the display never becomes authoritative', () => {
     const forged = store.getPublicState()
     intruder.post(
       encodeEnvelope({
-        type: 'public-state',
+        type: 'public-state', sentAt: 1_700_000_000_000,
         revision: 9_999,
         payload: {
           ...forged,
@@ -222,7 +222,7 @@ describe('stale, duplicate and malformed payloads', () => {
     const intruder = hub.createChannel()
     intruder.post(
       encodeEnvelope({
-        type: 'public-state',
+        type: 'public-state', sentAt: 1_700_000_000_000,
         revision: 1,
         payload: {
           ...store.getPublicState(),
@@ -245,7 +245,7 @@ describe('stale, duplicate and malformed payloads', () => {
     const countBefore = received.length
 
     const intruder = hub.createChannel()
-    intruder.post(encodeEnvelope({ type: 'public-state', revision: snapshot.revision, payload: snapshot }))
+    intruder.post(encodeEnvelope({ type: 'public-state', sentAt: 1_700_000_000_000, revision: snapshot.revision, payload: snapshot }))
     expect(received).toHaveLength(countBefore)
     intruder.close()
     close()
@@ -266,7 +266,7 @@ describe('stale, duplicate and malformed payloads', () => {
     ]) {
       intruder.post(
         encodeEnvelope({
-          type: 'public-state',
+          type: 'public-state', sentAt: 1_700_000_000_000,
           revision: 9_999,
           payload: { ...store.getPublicState(), revision: 9_999, teams } as never,
         }),
@@ -286,7 +286,7 @@ describe('stale, duplicate and malformed payloads', () => {
 
     intruder.post(
       encodeEnvelope({
-        type: 'public-state',
+        type: 'public-state', sentAt: 1_700_000_000_000,
         revision: 9_999,
         payload: { ...withoutTeams, schemaVersion: 3, revision: 9_999 } as never,
       }),

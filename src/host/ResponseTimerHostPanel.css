@@ -1,0 +1,85 @@
+/*
+ * Response-timer host controls (Slice 7).
+ *
+ * Host-side, private, utilitarian — the projector styling lives in the display
+ * component. It reuses the Slice 1 tokens so a real theme can replace it later.
+ *
+ * Accessibility notes baked into this file:
+ *  - every control is a real <button> or <select>, keyboard-reachable in DOM
+ *    order, using the shared global focus ring;
+ *  - a disabled control stays visible and legible rather than disappearing, so
+ *    the set of actions does not jump around under a teacher's cursor mid-lesson;
+ *  - armed / paused / expired / stopped are all conveyed in TEXT in the summary
+ *    list — colour is never the carrier;
+ *  - the summary is a definition list, so a screen reader reads term/value pairs
+ *    instead of a wall of words;
+ *  - there is no motion at all in this panel: a private control surface has
+ *    nothing to animate, and the projector owns the emphasis.
+ */
+
+.rth {
+  margin-top: var(--space-3);
+  padding: var(--space-2);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.rth h3 {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+.foundation__tag--slice7 {
+  margin-top: var(--space-1);
+}
+
+.rth__summary {
+  display: grid;
+  grid-template-columns: minmax(6rem, max-content) 1fr;
+  gap: 0.2rem var(--space-2);
+  margin: 0 0 var(--space-2);
+}
+
+.rth__summary dt {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.rth__summary dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.rth__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.rth__duration {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.rth__duration label {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.rth__duration select {
+  padding: 0.35rem 0.5rem;
+  min-height: 2.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.rth__hint {
+  margin-bottom: 0;
+}

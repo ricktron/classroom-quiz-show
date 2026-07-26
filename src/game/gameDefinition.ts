@@ -6,6 +6,11 @@ import {
   isTeamDefinitionList,
   type TeamDefinition,
 } from './teams/definition'
+import {
+  createTimerConfig,
+  isTimerConfig,
+  type TimerConfig,
+} from './timing/timerConfig'
 
 /**
  * `GameDefinition` — reusable, authored game structure (Slice 3).
@@ -44,6 +49,17 @@ export interface GameDefinition {
    * `src/game/teams/scoring.ts`.
    */
   readonly teams: readonly TeamDefinition[]
+  /**
+   * Authored timing configuration (Slice 7). ALWAYS present: a game that authors
+   * no `timer` block gets {@link DEFAULT_TIMER_CONFIG} from the trusted
+   * constructor, so no consumer has to handle "this game has no timer settings".
+   *
+   * Like `teams`, this is authored CONTENT. The running timer — its deadline, its
+   * status, whether the clue is armed — is session state derived from the event
+   * log and deliberately does not live here (see
+   * `PrivateGameState.responsePhases` and `src/game/timing/responsePhase.ts`).
+   */
+  readonly timer: TimerConfig
 }
 
 /** Thrown by `createGameDefinition` when authored input violates an invariant. */
@@ -63,6 +79,12 @@ export interface CreateGameDefinitionInput {
    * has no teams" — a valid configuration, not a defect to repair.
    */
   readonly teams?: readonly TeamDefinition[]
+  /**
+   * Authored timer block, or omitted for "this game authored no timing" — which
+   * yields the documented default rather than an error. Validated by the same
+   * strict schema the import boundary uses.
+   */
+  readonly timer?: unknown
   readonly modelVersion?: number
 }
 
@@ -109,10 +131,15 @@ export function createGameDefinition(input: CreateGameDefinitionInput): GameDefi
     seenTeamIds.add(team.id)
   }
 
+  // Throws `TimerConfigError` on an out-of-range or malformed block; an omitted
+  // block is the documented default, never an error.
+  const timer = createTimerConfig(input.timer)
+
   const definition: GameDefinition = {
     modelVersion: input.modelVersion ?? GAME_DEFINITION_MODEL_VERSION,
     id: gameId(input.id),
     title: input.title,
+    timer,
     // Copy the array so later external mutation of the caller's array cannot
     // affect the (frozen) definition; order is preserved exactly.
     rounds: [...input.rounds],
@@ -138,6 +165,10 @@ export function isGameDefinition(value: unknown): value is GameDefinition {
   // empty list), so a value missing it is not a definition this build produced
   // and is rejected rather than treated as "no teams".
   if (!isTeamDefinitionList(v.teams)) return false
+  // `timer` is required on the model (the factory always sets it, possibly to the
+  // default), so a value missing it is not a definition this build produced and is
+  // rejected rather than being silently defaulted at the trust boundary.
+  if (!isTimerConfig(v.timer)) return false
   return v.rounds.every(isRoundDefinition)
 }
 

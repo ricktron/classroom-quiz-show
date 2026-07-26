@@ -119,11 +119,11 @@ describe('the transport stays fail-closed with a board payload', () => {
 
     store.dispatch(select('alpha-100'))
     const fresh = store.getPublicState()
-    sender.post(encodeEnvelope({ type: 'public-state', revision: fresh.revision, payload: fresh }))
+    sender.post(encodeEnvelope({ type: 'public-state', sentAt: 1_700_000_000_000, revision: fresh.revision, payload: fresh }))
     expect(received).toHaveLength(1)
 
     const stale = { ...fresh, revision: fresh.revision - 1 }
-    sender.post(encodeEnvelope({ type: 'public-state', revision: stale.revision, payload: stale }))
+    sender.post(encodeEnvelope({ type: 'public-state', sentAt: 1_700_000_000_000, revision: stale.revision, payload: stale }))
     expect(received).toHaveLength(1)
     receiver.close()
   })
@@ -140,7 +140,7 @@ describe('the transport stays fail-closed with a board payload', () => {
 
     const snapshot = store.getPublicState()
     const envelope = encodeEnvelope({
-      type: 'public-state',
+      type: 'public-state', sentAt: 1_700_000_000_000,
       revision: snapshot.revision,
       payload: snapshot,
     })
@@ -168,7 +168,7 @@ describe('the transport stays fail-closed with a board payload', () => {
       { ...base, round: 'a board' },
     ]
     malformed.forEach((payload, index) => {
-      sender.post(encodeEnvelope({ type: 'public-state', revision: 100 + index, payload: payload as PublicState }))
+      sender.post(encodeEnvelope({ type: 'public-state', sentAt: 1_700_000_000_000, revision: 100 + index, payload: payload as PublicState }))
     })
 
     expect(received).toHaveLength(0)
@@ -185,7 +185,7 @@ describe('the transport stays fail-closed with a board payload', () => {
     const hub = createMemoryChannelHub()
     const broadcaster = createPublicStateBroadcaster({ getSnapshot: snapshot, channel: hub.createChannel() })
     const rogueChannel = hub.createChannel()
-    rogueChannel.post(encodeEnvelope({ type: 'public-state', revision: 999, payload: rogue }))
+    rogueChannel.post(encodeEnvelope({ type: 'public-state', sentAt: 1_700_000_000_000, revision: 999, payload: rogue }))
 
     expect(snapshot).not.toHaveBeenCalled()
     expect(store.getState().revision).toBe(revisionBefore)

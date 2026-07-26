@@ -1,6 +1,7 @@
 import type { PublicStatusCode } from './status'
 import type { GameDefinition } from '../game/gameDefinition'
 import type { ScoreAdjustmentMode, ScoreSource } from '../game/teams/scoring'
+import type { ResponseInterruptionSource } from '../game/timing/responsePhase'
 
 /**
  * EVENTS record *accepted facts* — things that actually happened, in order. The
@@ -38,6 +39,14 @@ export const EVENT_TYPES = [
   'CATEGORY_BOARD_ANSWER_REVEALED',
   'CATEGORY_BOARD_RETURNED',
   'TEAM_SCORE_ADJUSTED',
+  'RESPONSE_PHASE_ARMED',
+  'RESPONSE_PHASE_DISARMED',
+  'RESPONSE_TIMER_STARTED',
+  'RESPONSE_TIMER_PAUSED',
+  'RESPONSE_TIMER_RESUMED',
+  'RESPONSE_TIMER_INTERRUPTED',
+  'RESPONSE_TIMER_EXPIRED',
+  'RESPONSE_PHASE_RESET',
 ] as const
 
 export type EventType = (typeof EVENT_TYPES)[number]
@@ -195,6 +204,107 @@ export interface TeamScoreAdjustedEvent extends EventBase<'TEAM_SCORE_ADJUSTED'>
   readonly source: ScoreSource
 }
 
+/**
+ * Response-phase events (Slice 7) — arming, the timer, and its transitions.
+ *
+ * ## Facts, never ticks
+ *
+ * The log records that a timer STARTED with a stated duration and deadline, that
+ * it was paused with a stated amount left, that it was resumed, that it was
+ * interrupted, or that it expired. It never records a per-second or per-frame
+ * remaining value: "seconds left" is not a fact, it is a rendering of one, and a
+ * tick stream would make the history unbounded and the sync channel a frame
+ * transport (`ROADMAP-AMENDMENT-001` §5.2–§5.3).
+ *
+ * Every timestamp on these events is copied from the originating command's
+ * `issuedAt` — the reducer still never reads a clock — so replaying a stored
+ * history reproduces the timer state exactly, however much later it happens.
+ *
+ * ## All reversible
+ *
+ * A mis-clicked start, a premature stop and an expiry a teacher wants to take
+ * back are all ordinary classroom mistakes, so all eight are reversible. Undo is
+ * exact for free: state is replayed, so an undone start simply is not applied and
+ * the phase returns to the state that preceded it.
+ */
+interface ResponsePhaseEventBase<T extends EventType> extends EventBase<T> {
+  readonly reversible: true
+  readonly roundId: string
+}
+
+/** The clue was armed: a future interrupting input would be accepted. */
+export type ResponsePhaseArmedEvent = ResponsePhaseEventBase<'RESPONSE_PHASE_ARMED'>
+
+/** The clue was disarmed. */
+export type ResponsePhaseDisarmedEvent = ResponsePhaseEventBase<'RESPONSE_PHASE_DISARMED'>
+
+/**
+ * A response countdown began.
+ *
+ * It carries the whole durable description of the countdown: a stable identity,
+ * the duration that was chosen, the instant it started, and the absolute instant
+ * it ends. The deadline is stored rather than re-derived so that a replay, the
+ * projector and a timeout callback can never compute three slightly different
+ * ends from the same start.
+ */
+export interface ResponseTimerStartedEvent
+  extends ResponsePhaseEventBase<'RESPONSE_TIMER_STARTED'> {
+  /** Stable identity for this countdown, kept across a pause and resume. */
+  readonly timerId: string
+  readonly durationMs: number
+  readonly startedAt: number
+  readonly deadline: number
+}
+
+/** The countdown was frozen; `remainingMs` is the durable fact it froze at. */
+export interface ResponseTimerPausedEvent
+  extends ResponsePhaseEventBase<'RESPONSE_TIMER_PAUSED'> {
+  readonly timerId: string
+  readonly remainingMs: number
+}
+
+/** The countdown resumed with a NEW deadline derived at the dispatch edge. */
+export interface ResponseTimerResumedEvent
+  extends ResponsePhaseEventBase<'RESPONSE_TIMER_RESUMED'> {
+  readonly timerId: string
+  readonly resumedAt: number
+  readonly deadline: number
+}
+
+/**
+ * The countdown was stopped early, with a TYPED source.
+ *
+ * This is the interruption seam. Interruption records that the window ended
+ * before its deadline and how much was left; it deliberately does not decide what
+ * happens next, because a later slice must be able to promote another team into a
+ * fresh window without redesigning this event.
+ */
+export interface ResponseTimerInterruptedEvent
+  extends ResponsePhaseEventBase<'RESPONSE_TIMER_INTERRUPTED'> {
+  readonly timerId: string
+  /** Why it stopped. Bounded and typed — never a free-form string. */
+  readonly source: ResponseInterruptionSource
+  /** How much of the window was left, frozen at the moment of the interruption. */
+  readonly remainingMs: number
+}
+
+/**
+ * The countdown reached its deadline. The ONE authoritative expiry fact.
+ *
+ * At most one of these can be effective for a given countdown: the planner
+ * accepts it only while that exact timer is `running`, and applying it moves the
+ * timer to `expired`, so a repeated or late callback is rejected rather than
+ * appending a second identical fact. It awards and deducts nothing.
+ */
+export interface ResponseTimerExpiredEvent
+  extends ResponsePhaseEventBase<'RESPONSE_TIMER_EXPIRED'> {
+  readonly timerId: string
+  readonly deadline: number
+}
+
+/** The phase was cleared back to disarmed with no timer, without leaving the clue. */
+export type ResponsePhaseResetEvent = ResponsePhaseEventBase<'RESPONSE_PHASE_RESET'>
+
 export type SessionEvent =
   | SessionInitializedEvent
   | PublicStatusSetEvent
@@ -211,3 +321,11 @@ export type SessionEvent =
   | CategoryBoardAnswerRevealedEvent
   | CategoryBoardReturnedEvent
   | TeamScoreAdjustedEvent
+  | ResponsePhaseArmedEvent
+  | ResponsePhaseDisarmedEvent
+  | ResponseTimerStartedEvent
+  | ResponseTimerPausedEvent
+  | ResponseTimerResumedEvent
+  | ResponseTimerInterruptedEvent
+  | ResponseTimerExpiredEvent
+  | ResponsePhaseResetEvent

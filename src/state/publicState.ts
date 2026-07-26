@@ -17,12 +17,13 @@
 
 /**
  * Bump when the PublicState wire shape changes incompatibly. Slice 3 added the
- * `game` field (1 → 2); Slice 5 added the `round` field (2 → 3); Slice 6 adds the
- * `teams` field (3 → 4). A display expecting an older shape fails closed on the
- * version mismatch — an old wire shape is never reinterpreted, guessed at, or
- * upgraded, and version 3 is never re-read as though it were version 4.
+ * `game` field (1 → 2); Slice 5 added the `round` field (2 → 3); Slice 6 added
+ * the `teams` field (3 → 4); Slice 7 adds the `response` field (4 → 5). A display
+ * expecting an older shape fails closed on the version mismatch — an old wire
+ * shape is never reinterpreted, guessed at, or upgraded, and version 4 is never
+ * re-read as though it were version 5.
  */
-export const PUBLIC_STATE_SCHEMA_VERSION = 4 as const
+export const PUBLIC_STATE_SCHEMA_VERSION = 5 as const
 
 /**
  * Coarse, public-safe lifecycle phase. This is intentionally NOT the private
@@ -248,6 +249,157 @@ export function isPublicTeamsState(value: unknown): value is PublicTeamsState | 
   return Array.isArray(v.teams) && v.teams.every(isPublicTeam)
 }
 
+/**
+ * ── Response-phase public DTO (Slice 7) ──────────────────────────────────────
+ *
+ * The countdown and the armed light ARE public: a class has to see how long is
+ * left and whether the buzzers (one day) are live. So this DTO is deliberately
+ * present at the one stage where it means something — the open, prompt-revealed
+ * clue — and absent everywhere else.
+ *
+ * ## A deadline, not a tick stream
+ *
+ * A running timer is projected as its ABSOLUTE deadline plus the configured
+ * duration, and the display derives "how long is left" locally against its own
+ * clock. The host does not publish a revision per second: the sync channel drops
+ * non-newer envelopes and is a snapshot transport, not a frame transport
+ * (`ROADMAP-AMENDMENT-001` §5.3). A paused, interrupted or expired timer carries
+ * no deadline at all, because there is nothing counting down.
+ *
+ * ## What it deliberately never carries
+ *
+ * The internal `timerId`, the interruption SOURCE, which host controls exist, the
+ * authored timer block, the round id, the private phase map, or anything about a
+ * future buzzer: no device, no mapping, no team, no queue, no raw input evidence.
+ * "Stopped" is all a class needs to know; *who* stopped it is host knowledge
+ * today and becomes public only when a slice deliberately makes it so.
+ */
+
+/** The projector-visible timer, discriminated by status. */
+export type PublicResponseTimer =
+  | { readonly status: 'idle' }
+  | {
+      readonly status: 'running'
+      /** The window that was started, so a progress bar needs no second value. */
+      readonly durationMs: number
+      /** Absolute instant the window ends, on the HOST's clock. */
+      readonly deadline: number
+    }
+  | { readonly status: 'paused'; readonly durationMs: number; readonly remainingMs: number }
+  | { readonly status: 'expired'; readonly durationMs: number }
+  | {
+      readonly status: 'interrupted'
+      readonly durationMs: number
+      readonly remainingMs: number
+    }
+
+/** The projector-visible response phase: the armed light plus the timer. */
+export interface PublicResponseState {
+  /** Whether the clue is armed. Rendered as words, never as colour alone. */
+  readonly armed: boolean
+  readonly timer: PublicResponseTimer
+}
+
+/**
+ * Upper bound for a projected duration, mirroring `MAX_RESPONSE_SECONDS` rather
+ * than importing it (this module stays dependency-free — see the file header). A
+ * test asserts the two stay equal.
+ */
+export const PUBLIC_MAX_TIMER_DURATION_MS = 600_000
+
+function isBoundedDurationMs(value: unknown): value is number {
+  return (
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= 0 &&
+    value <= PUBLIC_MAX_TIMER_DURATION_MS
+  )
+}
+
+function isPublicResponseTimer(value: unknown): value is PublicResponseTimer {
+  if (typeof value !== 'object' || value === null) return false
+  const v = value as Record<string, unknown>
+  switch (v.status) {
+    case 'idle':
+      return true
+    case 'running':
+      return (
+        isBoundedDurationMs(v.durationMs) &&
+        typeof v.deadline === 'number' &&
+        Number.isInteger(v.deadline) &&
+        v.deadline >= 0
+      )
+    case 'paused':
+    case 'interrupted':
+      return isBoundedDurationMs(v.durationMs) && isBoundedDurationMs(v.remainingMs)
+    case 'expired':
+      return isBoundedDurationMs(v.durationMs)
+    default:
+      return false
+  }
+}
+
+/**
+ * Strict guard for the response DTO (or `null`).
+ *
+ * Like the round guard it validates the status/payload PAIRING, not just field
+ * types: a `paused` timer carrying a deadline, or a `running` one carrying a
+ * leftover remaining value, is rejected outright rather than rendered. A
+ * malformed timer fails the whole snapshot, so the display keeps its last safe
+ * state instead of putting `NaN` on a projector.
+ */
+export function isPublicResponseState(value: unknown): value is PublicResponseState | null {
+  if (value === null) return true
+  if (typeof value !== 'object') return false
+  const v = value as Record<string, unknown>
+  if (typeof v.armed !== 'boolean') return false
+  if (!isPublicResponseTimer(v.timer)) return false
+  const timer = v.timer as Record<string, unknown>
+  // Pairing checks: no field may be present that the status does not define.
+  if (timer.status === 'running' && timer.remainingMs !== undefined) return false
+  if ((timer.status === 'paused' || timer.status === 'interrupted') && timer.deadline !== undefined) {
+    return false
+  }
+  if (timer.status === 'expired' && (timer.deadline !== undefined || timer.remainingMs !== undefined)) {
+    return false
+  }
+  return true
+}
+
+/**
+ * How much of the window is left, from the display's point of view.
+ *
+ * `hostNow` must be the display's own clock reading ALREADY corrected by the
+ * estimated host offset (`receiver.ts`), so a deadline computed on the host is
+ * compared against an instant on the same notional clock. The caller supplies the
+ * reading; this function reads no clock, so a test can ask "what would the
+ * projector show 12 seconds in?" without waiting 12 seconds.
+ *
+ * The result is clamped to `0 … durationMs`: a projector never shows a negative
+ * countdown, and a corrected clock can never make it show more than the window
+ * that was actually started. Reaching zero is NOT expiry — the display keeps
+ * showing `running` at 0:00 until the host publishes the authoritative `expired`
+ * status, because only the host may end a window (ADR-007 §10).
+ */
+export function publicRemainingMsAt(timer: PublicResponseTimer, hostNow: number): number {
+  switch (timer.status) {
+    case 'running':
+      return clampPublicDuration(timer.deadline - hostNow, timer.durationMs)
+    case 'paused':
+    case 'interrupted':
+      return clampPublicDuration(timer.remainingMs, timer.durationMs)
+    case 'expired':
+    case 'idle':
+    default:
+      return 0
+  }
+}
+
+function clampPublicDuration(value: number, max: number): number {
+  if (!Number.isFinite(value) || value < 0) return 0
+  return value > max ? max : value
+}
+
 /** The complete set of information the display shell is permitted to render. */
 export interface PublicState {
   /** Wire-shape version so the display can fail closed on an unknown shape. */
@@ -276,6 +428,13 @@ export interface PublicState {
    * has no scoreboard at all — that is the Slice 5 board, unchanged).
    */
   readonly teams: PublicTeamsState | null
+  /**
+   * The response phase of the live clue — arming and the timer — or `null` when
+   * there is nothing to show: no open clue, a clue that has been neither armed nor
+   * timed, a non-playable round, or an ended game. A projector therefore shows a
+   * timer panel only while one genuinely exists.
+   */
+  readonly response: PublicResponseState | null
 }
 
 /**
@@ -292,6 +451,7 @@ export const INITIAL_PUBLIC_STATE: PublicState = {
   game: null,
   round: null,
   teams: null,
+  response: null,
 }
 
 const PUBLIC_PHASES: readonly PublicPhase[] = ['no-session', 'ready', 'waiting']
@@ -403,6 +563,7 @@ export function isPublicState(value: unknown): value is PublicState {
     typeof v.detail === 'string' &&
     isPublicGameView(v.game) &&
     isPublicRoundState(v.round) &&
-    isPublicTeamsState(v.teams)
+    isPublicTeamsState(v.teams) &&
+    isPublicResponseState(v.response)
   )
 }

@@ -4,6 +4,7 @@ import {
   type SyncChannel,
 } from './channel'
 import { SYNC_CHANNEL_NAME, decodeEnvelope, encodeEnvelope } from './protocol'
+import { systemClock, type Clock } from '../time/clock'
 
 /**
  * Host-side publisher (authoritative side).
@@ -27,12 +28,22 @@ export interface BroadcasterOptions {
   getSnapshot: () => PublicState
   /** Injectable transport (defaults to the real BroadcastChannel). */
   channel?: SyncChannel
+  /**
+   * Clock used to stamp `sentAt` on every published envelope (Slice 7).
+   *
+   * This is a legitimate clock read: the broadcast edge is transport, not the
+   * reducer and not the sanitizer. The stamp lets the display estimate the
+   * host/display clock difference before interpreting an absolute deadline, and
+   * it never enters state, history or replay.
+   */
+  clock?: Clock
 }
 
 export function createPublicStateBroadcaster(
   options: BroadcasterOptions,
 ): PublicStateBroadcaster {
   const channel = options.channel ?? createBroadcastChannelTransport(SYNC_CHANNEL_NAME)
+  const clock = options.clock ?? systemClock
 
   const unsubscribe = channel.subscribe((data) => {
     const decoded = decodeEnvelope(data)
@@ -44,7 +55,12 @@ export function createPublicStateBroadcaster(
 
   function publish(state: PublicState): void {
     channel.post(
-      encodeEnvelope({ type: 'public-state', revision: state.revision, payload: state }),
+      encodeEnvelope({
+        type: 'public-state',
+        revision: state.revision,
+        sentAt: clock.now(),
+        payload: state,
+      }),
     )
   }
 

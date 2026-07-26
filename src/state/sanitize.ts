@@ -12,6 +12,8 @@ import {
   type PublicCategoryBoardTile,
   type PublicGameView,
   type PublicPhase,
+  type PublicResponseState,
+  type PublicResponseTimer,
   type PublicRoundAvailability,
   type PublicRoundState,
   type PublicState,
@@ -19,7 +21,8 @@ import {
   type PublicTeamsState,
 } from './publicState'
 import { PUBLIC_STATUS_COPY, PUBLIC_STATUS_PHASE } from './status'
-import { categoryBoardStateFor, teamScoreFor } from './reducer'
+import { categoryBoardStateFor, responsePhaseFor, teamScoreFor } from './reducer'
+import { isInitialResponsePhase } from '../game/timing/responsePhase'
 import { isTeamAccent } from '../game/teams/accents'
 import { isTeamScore } from '../game/teams/scoring'
 import {
@@ -183,6 +186,75 @@ function toPublicTeams(game: PrivateGameState | null): PublicTeamsState | null {
   return { status: 'available', teams: projected }
 }
 
+/**
+ * Project the live clue's response phase to the public DTO (Slice 7).
+ *
+ * ALLOW-LIST, exactly like its siblings: every public field is NAMED and copied
+ * individually from the durable phase. Nothing is spread or serialized, so a
+ * field added to `ResponseTimerState` later is NOT exposed by default.
+ *
+ * What it deliberately never reads:
+ *  - `timerId` — an internal token the projector has no use for;
+ *  - the interruption `source` — "stopped" is public, *why* is not (a later slice
+ *    makes a buzz source public deliberately, not by inheritance);
+ *  - a running timer's `startedAt` — the deadline is the fact the display needs,
+ *    and publishing both would invite the display to recompute the window;
+ *  - the private per-round phase map, or any other round's phase.
+ *
+ * It is PURE: it reads no clock. A running timer is projected as its absolute
+ * deadline, and "how long is left" is derived by the display against its own
+ * clock at render time — which is the whole reason there is no tick stream.
+ *
+ * Returns `null` when there is nothing to show, including when the phase is
+ * untouched: a clue that was never armed and never timed publishes no timer panel
+ * at all rather than an empty one.
+ */
+function toPublicResponse(game: PrivateGameState | null): PublicResponseState | null {
+  if (!game || game.gameLifecycle !== 'active') return null
+  const current = currentRoundOf(game)
+  if (!current) return null
+  // Only a round with a public presentation may carry a public response phase.
+  if (readCategoryBoardDefinition(current) === null) return null
+
+  const phase = responsePhaseFor(game, current.id)
+  if (isInitialResponsePhase(phase)) return null
+
+  const timer = phase.timer
+  let publicTimer: PublicResponseTimer
+  switch (timer.status) {
+    case 'running':
+      publicTimer = {
+        status: 'running',
+        durationMs: timer.durationMs,
+        deadline: timer.deadline,
+      }
+      break
+    case 'paused':
+      publicTimer = {
+        status: 'paused',
+        durationMs: timer.durationMs,
+        remainingMs: timer.remainingMs,
+      }
+      break
+    case 'expired':
+      publicTimer = { status: 'expired', durationMs: timer.durationMs }
+      break
+    case 'interrupted':
+      publicTimer = {
+        status: 'interrupted',
+        durationMs: timer.durationMs,
+        remainingMs: timer.remainingMs,
+      }
+      break
+    case 'idle':
+    default:
+      publicTimer = { status: 'idle' }
+      break
+  }
+
+  return { armed: phase.armed, timer: publicTimer }
+}
+
 /** Outcome of projecting the current round: a DTO, nothing to show, or a failure. */
 interface RoundProjection {
   readonly round: PublicRoundState | null
@@ -237,6 +309,7 @@ export function toPublicState(state: PrivateState): PublicState {
       game: null,
       round: null,
       teams: null,
+      response: null,
     }
   }
 
@@ -245,10 +318,11 @@ export function toPublicState(state: PrivateState): PublicState {
   const projection = projectCurrentRound(session.game)
 
   // NOTE: sessionId, counter, hostNotes, diagnostics, the FULL game definition,
-  // the private per-round board state, and the raw team score map are
-  // intentionally not referenced. The game view, the round DTO and the scoreboard
-  // are separately allow-listed projections. Do not spread `session`, `state`,
-  // `game`, or any board/tile/team object here.
+  // the private per-round board state, the raw team score map and the private
+  // response-phase map (with its internal timer ids and interruption sources) are
+  // intentionally not referenced. The game view, the round DTO, the scoreboard and
+  // the response phase are separately allow-listed projections. Do not spread
+  // `session`, `state`, `game`, or any board/tile/team/phase object here.
   return {
     schemaVersion: PUBLIC_STATE_SCHEMA_VERSION,
     revision: state.revision,
@@ -258,6 +332,10 @@ export function toPublicState(state: PrivateState): PublicState {
     game: toPublicGameView(session.game, projection.failed),
     round: projection.round,
     teams: toPublicTeams(session.game),
+    // A round whose public projection FAILED must not publish a timer either: the
+    // display fails closed to the neutral "not available" panel, and a countdown
+    // floating above it would contradict that.
+    response: projection.failed ? null : toPublicResponse(session.game),
   }
 }
 

@@ -168,6 +168,19 @@ state (a selection that is not on the board), an unusable config, a malformed
 payload, a stale revision, or an old wire version each resolve to the neutral
 "not available" panel.
 
+**Status (Slice 7).** `PublicState` gained exactly one new field,
+`response: PublicResponseState | null` (wire version 4 → 5), carrying the armed
+flag and a status-discriminated timer. A running window is projected as an
+**absolute deadline** plus the configured duration, and the display derives the
+countdown locally — the sync channel is a snapshot transport and never becomes a
+frame transport. Never projected: the internal timer id, the interruption
+**source**, the authored `timer` block, a running timer's start instant, the
+private per-round phase map, or anything about a future buzzer. A clue that was
+neither armed nor timed projects `null`, so the projector shows a timer panel only
+while one exists, and a round whose projection failed publishes no timer either.
+The sync envelope also moved 1 → 2 (a required `sentAt` stamp used to estimate the
+host/display clock offset); both versions fail closed rather than being guessed at.
+
 **Status (Slice 6).** The scoreboard is the first DELIBERATELY public gameplay
 data, and the allow-list still holds. `PublicState` gained exactly one new field,
 `teams: PublicTeamsState | null` (wire version 3 → 4), carrying per team a
@@ -267,6 +280,23 @@ score is `replay`ed rather than mutated. `effectiveEvents(history)` is exported 
 host surface can ask "has this already happened?" from the same source of truth the
 state came from, instead of keeping a parallel record. Timers, buzzers and wagers
 remain deferred.
+
+**Status (Slice 7).** The core now survives its first NON-DETERMINISTIC input —
+the clock — without giving anything up. See
+[`ADR-007-timers-arming-transitions.md`](ADR-007-timers-arming-transitions.md).
+Eight reversible commands/events cover arming, the timer and its transitions, and
+they record **facts** only: a timer started with a stated duration and deadline,
+was paused with a stated amount left, resumed, was interrupted with a typed
+source, or expired. There is **no tick event and no remaining-time value on any
+running timer** — "how long is left" is derived at the rendering edge from durable
+facts plus a clock. `src/time/clock.ts` makes the seam explicit: a clock may be
+read at the command/dispatch edge and at the presentation edge, and **never**
+inside `reduce`, `replay`, the planner's decision logic, or the sanitizer, so
+replay stays bit-exact and needs no clock. Expiry enters through the same command
+boundary as everything else and carries the timer identity and deadline it
+believes it is expiring, so a stale callback appends nothing. Buzzers and wagers
+remain deferred; arming records only that an interrupting input *would* be
+accepted.
 
 ## 7. Scoring-strategy boundary (future)
 

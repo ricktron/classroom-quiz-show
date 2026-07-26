@@ -1,4 +1,5 @@
 import { isPublicState, type PublicState } from '../state/publicState'
+import { isInstant } from '../time/clock'
 
 /**
  * Versioned synchronization envelope + fail-closed decoding.
@@ -18,14 +19,34 @@ import { isPublicState, type PublicState } from '../state/publicState'
 
 /** Magic tag so we ignore any BroadcastChannel traffic that isn't ours. */
 export const SYNC_PROTOCOL = 'classroom-quiz-show/sync' as const
-export const SYNC_SCHEMA_VERSION = 1 as const
+/**
+ * Envelope version. Bumped 1 → 2 in Slice 7, when `public-state` gained the
+ * required `sentAt` stamp (see {@link PublicStateMessage}). This is deliberately
+ * a HARD break rather than an optional field that the receiver guesses at: a
+ * version-1 sender would publish a deadline with no way to estimate the sending
+ * clock, and silently treating "absent" as "no offset" is exactly the implicit
+ * compatibility guessing ADR-004 refuses. A version-1 envelope is rejected with
+ * `unsupported-version` and the display keeps its last safe state.
+ */
+export const SYNC_SCHEMA_VERSION = 2 as const
 /** Same-origin channel name shared by host and display in one browser. */
 export const SYNC_CHANNEL_NAME = 'classroom-quiz-show:sync' as const
 
-/** Host → display: a full sanitized snapshot at a given revision. */
+/**
+ * Host → display: a full sanitized snapshot at a given revision.
+ *
+ * `sentAt` is the host's clock reading at the moment the snapshot was posted. It
+ * exists so a display can estimate the difference between its clock and the
+ * host's before interpreting an absolute deadline — see `receiver.ts` and
+ * ADR-007 §10. It is transport metadata, not state: it is stamped at the
+ * broadcast edge, never stored, never replayed, and it never reaches the public
+ * state a component renders.
+ */
 export interface PublicStateMessage {
   readonly type: 'public-state'
   readonly revision: number
+  /** The host's wall clock when this envelope was posted (ms since the epoch). */
+  readonly sentAt: number
   readonly payload: PublicState
 }
 
@@ -85,6 +106,11 @@ export function decodeEnvelope(raw: unknown): DecodeResult {
       if (typeof message.revision !== 'number' || !Number.isFinite(message.revision)) {
         return { ok: false, reason: 'malformed-payload' }
       }
+      // An unusable stamp fails the whole envelope rather than being defaulted:
+      // a fabricated `sentAt` would silently become a fabricated clock offset.
+      if (!isInstant(message.sentAt)) {
+        return { ok: false, reason: 'malformed-payload' }
+      }
       if (!isPublicState(message.payload)) {
         return { ok: false, reason: 'malformed-payload' }
       }
@@ -93,6 +119,7 @@ export function decodeEnvelope(raw: unknown): DecodeResult {
         message: {
           type: 'public-state',
           revision: message.revision,
+          sentAt: message.sentAt,
           payload: message.payload,
         },
       }
