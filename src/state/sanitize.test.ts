@@ -27,7 +27,7 @@ function loadedPrivateState(): PrivateState {
 }
 
 /** The exact set of keys a PublicState is allowed to contain. */
-const ALLOWED_KEYS = ['schemaVersion', 'revision', 'phase', 'headline', 'detail', 'game'].sort()
+const ALLOWED_KEYS = ['schemaVersion', 'revision', 'phase', 'headline', 'detail', 'game', 'round'].sort()
 
 describe('toPublicState — allow-list projection', () => {
   it('produces exactly the allow-listed keys and nothing else', () => {
@@ -43,6 +43,7 @@ describe('toPublicState — allow-list projection', () => {
       headline: 'Waiting for the host',
       detail: 'No active round.',
       game: null,
+      round: null,
     })
   })
 
@@ -176,6 +177,7 @@ describe('safeToPublicState — projection failure fails closed', () => {
       headline: 'Waiting for the host',
       detail: 'No active round.',
       game: null,
+      round: null,
     })
   })
 

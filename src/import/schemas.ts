@@ -9,6 +9,7 @@ import {
   SUPPORTED_SCHEMA_VERSION,
 } from './canonicalFormat'
 import {
+  IMPORT_ISSUE_CODES,
   describePath,
   formatPath,
   issue,
@@ -107,7 +108,30 @@ function valueAtPath(root: unknown, segments: readonly PropertyKey[]): unknown {
   return current
 }
 
+const IMPORT_ISSUE_CODE_SET: ReadonlySet<string> = new Set(IMPORT_ISSUE_CODES)
+
+/**
+ * A schema may name the exact import issue code its check should report, by
+ * attaching `params: { importCode: '…' }` to a custom Zod issue.
+ *
+ * This is how a round type's own config schema (e.g. `category-board`) reports
+ * a precise `duplicate-tile-id` or `blank-text` instead of a generic
+ * "invalid value", WITHOUT the import pipeline needing to know anything about
+ * that round type. The requested code is validated against the stable code
+ * list, so a typo degrades to the generic mapping rather than inventing a code.
+ */
+function requestedIssueCode(zodIssue: z.core.$ZodIssue): ImportIssueCode | null {
+  const params = (zodIssue as { readonly params?: unknown }).params
+  if (typeof params !== 'object' || params === null) return null
+  const requested = (params as Record<string, unknown>).importCode
+  if (typeof requested !== 'string' || !IMPORT_ISSUE_CODE_SET.has(requested)) return null
+  return requested as ImportIssueCode
+}
+
 function codeForZodIssue(zodIssue: z.core.$ZodIssue, missing: boolean): ImportIssueCode {
+  const requested = requestedIssueCode(zodIssue)
+  if (requested !== null) return requested
+
   switch (zodIssue.code) {
     case 'invalid_type':
       return missing ? 'missing-field' : 'invalid-type'

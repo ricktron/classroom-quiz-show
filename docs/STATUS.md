@@ -1,7 +1,7 @@
 # Status
 
-**Current slice:** Slice 4 — Validation & import pipeline
-**Slice state:** Complete
+**Current slice:** Slice 5 — Category-board round
+**Slice state:** In review
 
 ## State vocabulary
 
@@ -27,7 +27,69 @@
 > head (it concluded success ~23 s after the merge); SonarCloud and the
 > lint/typecheck/unit/build job had both already reported success. The receipt
 > records this precisely rather than claiming all checks were green pre-merge.
-> **Slice 5 remains unstarted and owner-gated.**
+> Slice 5 is **In review**, not `Complete`: it is delivered on
+> `claude/slice-5-category-board-6gfxnq` on top of `main` at
+> `0dacd3501fb10ce1272386f56bf15a2956ee8c6d` and has an open review PR. It may
+> only be marked `Complete` after review, CI green, and owner acceptance.
+> **Slice 6 (teams & scoring) remains unstarted and owner-gated.**
+
+## Slice 5 work (In review)
+
+The first **playable** round type — `category-board`. Full rationale in
+[`architecture/ADR-005-category-board-round.md`](architecture/ADR-005-category-board-round.md);
+local evidence in
+[`receipts/2026-07-26-slice-5-local-verification.md`](receipts/2026-07-26-slice-5-local-verification.md).
+
+| Item | State |
+| --- | --- |
+| `category-board` registered by application code (content cannot register) | Implemented |
+| Strict typed config: ordered categories, ordered tiles, stable ids | Implemented |
+| Prompt, answer, optional alternates, optional host-only notes, optional multiplier | Implemented |
+| Authored array order preserved; identity from stable ids, never value | Implemented |
+| Uneven categories **allowed**; duplicate values **allowed** (both documented) | Implemented |
+| `effectiveValue = value × multiplier` (exact integers, no scoring) | Implemented |
+| Documented default `multiplier: 1` applied at the trusted constructor only | Implemented |
+| Documented, tested board-size limits with classroom rationale; no truncation | Implemented |
+| Private per-round state: discriminated reveal stage + used tiles | Implemented |
+| Four commands / four events; every command carries its target `roundId` | Implemented |
+| Used-tile policy: consumed on **answer reveal**, released by undo | Implemented |
+| Deterministic replay; used tiles derived only from events; no lookup cache | Implemented |
+| Registered `configSchema` — one validation path, no second importer | Implemented |
+| Precise import errors with exact paths (`rounds[0].config.categories[1].tiles[2].prompt`) | Implemented |
+| Built-in valid sample contains a real category-board round | Implemented |
+| `PublicState.round` — current-stage-only DTO; wire version 2 → 3 | Implemented |
+| Projector never receives notes, alternates, authored ids, or unselected content | Implemented |
+| Fail-closed neutral panel on any impossible/unsupported/stale state | Implemented |
+| Bounded host controls with explicit private/public distinction | Implemented |
+| Accessibility: semantic buttons, keyboard grid, no colour-only meaning, wrapping | Implemented |
+| Unit, component and browser tests; docs (ADR-005, plan, handoff, receipt) | Implemented |
+
+### Config shape (round `config`)
+
+```jsonc
+{
+  "categories": [
+    { "id": "earth-structure", "title": "Earth Structure",
+      "tiles": [{ "id": "earth-structure-100", "value": 100,
+                  "prompt": "…", "answer": "…",
+                  "alternates": ["…"], "notes": "…", "multiplier": 1 }] }
+  ]
+}
+```
+
+### Commands / events / public fields (added in Slice 5)
+
+- **Commands:** `SELECT_CATEGORY_BOARD_TILE`, `REVEAL_CATEGORY_BOARD_PROMPT`,
+  `REVEAL_CATEGORY_BOARD_ANSWER`, `RETURN_TO_CATEGORY_BOARD` — each carries the
+  `roundId` it targets, so a stale host control is inert.
+- **Events:** `CATEGORY_BOARD_TILE_SELECTED`, `CATEGORY_BOARD_PROMPT_REVEALED`,
+  `CATEGORY_BOARD_ANSWER_REVEALED`, `CATEGORY_BOARD_RETURNED` — all reversible.
+- **Reveal stages:** `board → selected → prompt → answer`, plus
+  `selected|prompt|answer → board`.
+- **`PublicState` (added):** `round: PublicRoundState | null`. Wire version
+  **2 → 3**; an older shape is rejected, never reinterpreted.
+- **New import issue codes:** `duplicate-category-id`, `duplicate-tile-id`,
+  `blank-text`.
 
 ## Slice 4 work (Complete)
 
@@ -147,12 +209,16 @@ Neutral state/event/sync foundation — no gameplay. Full rationale in
 
 ## Verification state
 
-Local `verify:all` passed on the Slice 4 branch: lint, typecheck, unit tests
-(253 passed, 20 files), production build, and Playwright e2e (97 passed, 2 skipped
-— the offline-shell test runs once on the desktop project). `git diff --check`
-is clean. See [`handoff/CURRENT.md`](handoff/CURRENT.md) for exact commands and
-the Slice 4 receipt under [`receipts/`](receipts/) for durable evidence.
+Local `verify:all` passed on the Slice 5 branch: lint, typecheck, unit tests
+(**455 passed, 27 files**), production build, and Playwright e2e (**121 passed,
+2 skipped** — the offline-shell test runs once on the desktop project).
+`git diff --check` is clean. See [`handoff/CURRENT.md`](handoff/CURRENT.md) for
+exact commands and the Slice 5 receipt under [`receipts/`](receipts/).
 
+- CI on GitHub Actions for Slice 5: **Not yet observed.** Slice 5 changes no CI
+  or deploy configuration.
+- Pages deployment for Slice 5: **Not yet observed** (Pages deploys from `main`).
+- Slice 4 local `verify:all` also passed (253 unit, 97 e2e / 2 skipped).
 - CI on GitHub Actions for Slice 4: **Observed green.** On PR #7 (final head
   `8ce850c`) "Lint, typecheck, unit tests, build", "Playwright e2e", and the
   SonarCloud Quality Gate (0 security hotspots) all concluded success.
@@ -178,9 +244,16 @@ None.
 
 ## Limitations
 
-- **No gameplay exists yet** (no board, questions, answers, scoring, timers,
-  teams, reveal). Slice 4 adds only ingestion; the one registered round type is
-  still a non-gameplay placeholder and the app is **not** playable.
+- **One playable round type, and it does not score.** `category-board` can
+  reveal prompts and answers and track used tiles; no team, score, timer,
+  buzzer, or wager exists. Awarding points is Slice 6.
+- **No score is attached to a tile.** `multiplier` affects the DISPLAYED value
+  and a typed `effectiveValue`; it moves no points.
+- **Board state is per round and resumes on return.** Leaving a round and coming
+  back restores its used tiles and reveal stage; that is deliberate, not a bug.
+- **No second tile can be opened while one is live.** Return to the board first.
+- **Alternates are never projected.** They are a host grading aid; making them
+  public would be a separate, reviewed decision.
 - **One schema version, no migrations.** `schemaVersion: 1` only. An older or
   newer version fails by design; a v2 will need a real, tested migration.
 - **Paste is the only import transport.** No `.json` file picker, spreadsheet /
@@ -192,8 +265,10 @@ None.
 - **Duplicate JSON keys are not observable** — `JSON.parse` keeps the last
   occurrence and the pipeline validates the survivor. Documented behaviour, not
   a claimed defence.
-- **The placeholder round's config schema is intentionally trivial** (one `note`
-  string). It proves the registry seam; it is not a preview of `category-board`.
+- **The placeholder round is retained** as the non-gameplay engine-test type
+  and safe fallback fixture. Its config schema is intentionally trivial.
+- **`PublicState` wire version is now 3.** A consumer pinned to version 2 fails
+  closed; there is no migration and none is implied.
 - **Un-ending a game is not supported** — `GAME_SESSION_ENDED` is irreversible;
   re-initialize a game to start over.
 - **Event history and definitions are in-memory only** — lost on tab close.
@@ -205,5 +280,5 @@ None.
 
 ## Next safe action
 
-Review and merge the Slice 4 post-merge reconciliation PR (documentation only).
-**Do not begin Slice 5** until the owner explicitly authorizes it.
+Review the Slice 5 implementation PR. **Do not begin Slice 6** until Slice 5 is
+reviewed, merged, and accepted by the owner.

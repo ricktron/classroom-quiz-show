@@ -5,6 +5,7 @@ import { createDefaultRegistry } from '../game/defaultRegistry'
 import { placeholderRoundConfigSchema } from '../game/placeholderRound'
 import { roundType } from '../game/ids'
 import { gameFile, roundFile } from '../test/gameFileFixtures'
+import { UNREGISTERED_ROUND_TYPE } from './sampleGameFile'
 import { importGameFromJsonText, importGameFromUnknown } from './importGame'
 import {
   IMPORT_ISSUE_CODES,
@@ -87,7 +88,7 @@ describe('multiple independent issues are preserved', () => {
         rounds: [
           roundFile('dup'),
           roundFile('dup'),
-          { id: 'r3', type: 'category-board', title: 'R3', config: {} },
+          { id: 'r3', type: UNREGISTERED_ROUND_TYPE, title: 'R3', config: {} },
         ],
       }),
     )
@@ -109,7 +110,7 @@ describe('deterministic ordering', () => {
     const stages = issuesOf(
       gameFile({
         title: '  ',
-        rounds: [{ id: 'r1', type: 'category-board', title: 'R', config: {} }],
+        rounds: [{ id: 'r1', type: UNREGISTERED_ROUND_TYPE, title: 'R', config: {} }],
       }),
     ).map((i) => i.stage)
     const indexes = stages.map((s) => IMPORT_STAGES.indexOf(s))
@@ -142,7 +143,7 @@ describe('path formatting', () => {
 describe('registry integration', () => {
   it('rejects an unregistered round type at the registry stage', () => {
     const issues = issuesOf(
-      gameFile({ rounds: [{ id: 'r1', type: 'category-board', title: 'R', config: {} }] }),
+      gameFile({ rounds: [{ id: 'r1', type: UNREGISTERED_ROUND_TYPE, title: 'R', config: {} }] }),
     )
     const unknown = issues.find((i) => i.code === 'unknown-round-type')
     expect(unknown?.stage).toBe('registry')

@@ -32,6 +32,10 @@ export const EVENT_TYPES = [
   'CURRENT_ROUND_SELECTED',
   'ROUND_ADVANCED',
   'GAME_SESSION_ENDED',
+  'CATEGORY_BOARD_TILE_SELECTED',
+  'CATEGORY_BOARD_PROMPT_REVEALED',
+  'CATEGORY_BOARD_ANSWER_REVEALED',
+  'CATEGORY_BOARD_RETURNED',
 ] as const
 
 export type EventType = (typeof EVENT_TYPES)[number]
@@ -111,6 +115,46 @@ export interface GameSessionEndedEvent extends EventBase<'GAME_SESSION_ENDED'> {
   readonly reversible: false
 }
 
+/**
+ * Category-board gameplay events (Slice 5).
+ *
+ * Each one carries the `roundId` it applies to, resolved at plan time, so replay
+ * never has to ask "which round was current back then". All four are REVERSIBLE:
+ * a misclick during a lesson must be undoable, and undoing the answer reveal is
+ * precisely what returns a tile to the board (see `CategoryBoardAnswerRevealedEvent`).
+ *
+ * `CATEGORY_BOARD_TILE_SELECTED` and `CATEGORY_BOARD_ANSWER_REVEALED` also carry
+ * the `tileId`, frozen at plan time, so applying them needs neither the registry
+ * nor a board lookup — replay stays deterministic from the log alone.
+ */
+interface CategoryBoardEventBase<T extends EventType> extends EventBase<T> {
+  readonly reversible: true
+  readonly roundId: string
+}
+
+/** A tile was chosen for host preview. It is NOT yet used and NOT yet public. */
+export interface CategoryBoardTileSelectedEvent
+  extends CategoryBoardEventBase<'CATEGORY_BOARD_TILE_SELECTED'> {
+  readonly tileId: string
+}
+
+/** The selected tile's prompt became public. */
+export type CategoryBoardPromptRevealedEvent =
+  CategoryBoardEventBase<'CATEGORY_BOARD_PROMPT_REVEALED'>
+
+/**
+ * The selected tile's answer became public. This is the ONE event that marks a
+ * tile used, so undoing it deterministically returns the tile to the board.
+ */
+export interface CategoryBoardAnswerRevealedEvent
+  extends CategoryBoardEventBase<'CATEGORY_BOARD_ANSWER_REVEALED'> {
+  readonly tileId: string
+}
+
+/** The round returned to the board grid; the selection was cleared. */
+export type CategoryBoardReturnedEvent =
+  CategoryBoardEventBase<'CATEGORY_BOARD_RETURNED'>
+
 export type SessionEvent =
   | SessionInitializedEvent
   | PublicStatusSetEvent
@@ -122,3 +166,7 @@ export type SessionEvent =
   | CurrentRoundSelectedEvent
   | RoundAdvancedEvent
   | GameSessionEndedEvent
+  | CategoryBoardTileSelectedEvent
+  | CategoryBoardPromptRevealedEvent
+  | CategoryBoardAnswerRevealedEvent
+  | CategoryBoardReturnedEvent

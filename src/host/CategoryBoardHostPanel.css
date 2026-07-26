@@ -1,0 +1,197 @@
+/*
+ * Category-board host controls (Slice 5).
+ *
+ * Host-side, private, and deliberately utilitarian — the projector styling
+ * lives in the display component. Nothing here is a theme engine: it reuses the
+ * Slice 1 tokens so a real theme can replace it wholesale later.
+ *
+ * Accessibility notes baked into this file:
+ *  - every tile is a real <button> with a >= 48px touch target;
+ *  - "used" is conveyed by TEXT ("Used") plus a dashed border, never by colour
+ *    alone;
+ *  - private blocks carry a visible "Host only" badge, so the private/public
+ *    distinction survives greyscale, colour-blindness, and a dimmed projector;
+ *  - focus uses the shared global focus ring, so it is visible everywhere;
+ *  - long prompts/answers wrap rather than overflow.
+ */
+
+.cbh {
+  margin-top: var(--space-3);
+  padding: var(--space-2);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.cbh h3 {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+.cbh__public {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-muted);
+}
+
+.cbh__public-badge {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(58, 160, 255, 0.16);
+  border: 1px solid var(--color-accent);
+  color: var(--color-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/*
+ * The grid is a wrapping flex row rather than a fixed-column CSS grid, so a
+ * ragged board (categories with different tile counts) and a narrow phone-sized
+ * host screen both lay out safely without horizontal overflow.
+ */
+.cbh__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.cbh__column {
+  flex: 1 1 8rem;
+  min-width: 8rem;
+}
+
+.cbh__category {
+  margin: 0 0 var(--space-1);
+  font-size: 0.95rem;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.cbh__tiles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.cbh__tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  width: 100%;
+  min-height: 48px; /* touch-friendly on a phone-sized host screen */
+  padding: 0.5rem;
+  font: inherit;
+  font-weight: 700;
+  color: var(--color-text);
+  background: var(--color-accent-strong);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.cbh__tile:hover:not(:disabled) {
+  background: var(--color-accent);
+}
+
+.cbh__tile--used,
+.cbh__tile:disabled {
+  background: transparent;
+  border: 2px dashed var(--color-border);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.cbh__tile-value {
+  font-size: 1.05rem;
+}
+
+.cbh__tile-used {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cbh__selected {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cbh__selection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1);
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.cbh__selection-value {
+  font-weight: 800;
+  color: var(--color-host-accent);
+}
+
+.cbh__selection-multiplier {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.cbh__private {
+  padding: var(--space-1);
+  background: var(--color-surface);
+  border: 1px solid var(--color-host-accent);
+  border-radius: var(--radius);
+}
+
+.cbh__private-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0 0 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+
+.cbh__private-badge {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(242, 169, 0, 0.18);
+  border: 1px solid var(--color-host-accent);
+  color: var(--color-text);
+  font-size: 0.7rem;
+}
+
+.cbh__private-body {
+  margin: 0;
+  overflow-wrap: anywhere; /* a long unbroken answer must never overflow */
+}
+
+.cbh__alternates {
+  margin: 0;
+  padding-left: 1.2rem;
+  overflow-wrap: anywhere;
+}
+
+.cbh__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.cbh__hint {
+  margin: 0;
+}

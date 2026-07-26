@@ -43,6 +43,39 @@
   max-width: 30ch;
 }
 
+/*
+ * A live round owns the screen. The waiting-state chrome stays present (and
+ * still labels the page for assistive technology) but steps down in size so the
+ * board or prompt gets the projector's real estate.
+ */
+.display--round {
+  justify-content: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-2);
+}
+
+.display--round .display__brand {
+  font-size: clamp(0.85rem, 1.2vw, 1.1rem);
+}
+
+.display--round .display__headline {
+  font-size: clamp(1rem, 1.6vw, 1.4rem);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  max-width: none;
+}
+
+.display--round .display__subtext {
+  font-size: clamp(0.9rem, 1.4vw, 1.2rem);
+  max-width: none;
+}
+
+.display__round {
+  width: 100%;
+  /* The round panel never pushes the page sideways. */
+  overflow-x: hidden;
+}
+
 .display__status-dot {
   width: 0.9rem;
   height: 0.9rem;

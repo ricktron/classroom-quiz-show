@@ -1,7 +1,10 @@
 import type { SessionCommand, CommandType } from './commands'
 import type { RoundSupport, SessionEvent } from './events'
 import {
+  INITIAL_CATEGORY_BOARD_ROUND_STATE,
   INITIAL_PRIVATE_STATE,
+  type CategoryBoardProgress,
+  type CategoryBoardRoundState,
   type PrivateGameState,
   type PrivateSessionState,
   type PrivateState,
@@ -9,6 +12,13 @@ import {
 import { isPublicStatusCode } from './status'
 import { isGameDefinition, roundIndexById } from '../game/gameDefinition'
 import type { RoundType } from '../game/ids'
+import {
+  CATEGORY_BOARD_ROUND_TYPE,
+  findTileById,
+  readCategoryBoardDefinition,
+  type CategoryBoardDefinition,
+} from '../game/categoryBoard/definition'
+import type { RoundDefinition } from '../game/roundDefinition'
 
 /**
  * The command/event core.
@@ -38,6 +48,15 @@ export type RejectionReason =
   | 'game-not-initialized'
   | 'unknown-round'
   | 'no-next-round'
+  // Category-board gameplay rejections (Slice 5).
+  | 'game-already-ended'
+  | 'no-current-round'
+  | 'round-mismatch'
+  | 'not-a-category-board-round'
+  | 'invalid-category-board-config'
+  | 'unknown-tile'
+  | 'tile-already-used'
+  | 'invalid-board-stage'
 
 /**
  * Dependencies the planner needs that live OUTSIDE the event history — currently
@@ -115,6 +134,9 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
         gameLifecycle: 'active',
         currentRoundIndex: null,
         currentRoundSupport: null,
+        // A new game starts every board fresh. Loading a game is an irreversible
+        // baseline, so no prior board progress can survive it.
+        categoryBoards: {},
       }
       return withApplied(state, event.type, { ...state, session: { ...state.session, game } })
     }
@@ -136,6 +158,42 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
       return withApplied(state, event.type, { ...state, session: { ...state.session, game } })
     }
 
+    case 'CATEGORY_BOARD_TILE_SELECTED':
+      return withBoardState(state, event.type, event.roundId, (board) => ({
+        ...board,
+        progress: { stage: 'selected', selectedTileId: event.tileId },
+      }))
+
+    case 'CATEGORY_BOARD_PROMPT_REVEALED':
+      return withBoardState(state, event.type, event.roundId, (board) =>
+        // Fail safe: a prompt reveal with nothing selected is not applicable.
+        board.progress.selectedTileId === null
+          ? null
+          : { ...board, progress: { stage: 'prompt', selectedTileId: board.progress.selectedTileId } },
+      )
+
+    case 'CATEGORY_BOARD_ANSWER_REVEALED':
+      return withBoardState(state, event.type, event.roundId, (board) => {
+        if (board.progress.selectedTileId === null) return null
+        const progress: CategoryBoardProgress = {
+          stage: 'answer',
+          selectedTileId: board.progress.selectedTileId,
+        }
+        // Revealing the answer is what CONSUMES the tile. Because used tiles are
+        // derived only by replaying these events, undoing this event removes the
+        // tile from `usedTileIds` automatically on the next replay.
+        const usedTileIds = board.usedTileIds.includes(event.tileId)
+          ? board.usedTileIds
+          : [...board.usedTileIds, event.tileId]
+        return { progress, usedTileIds }
+      })
+
+    case 'CATEGORY_BOARD_RETURNED':
+      return withBoardState(state, event.type, event.roundId, (board) => ({
+        ...board,
+        progress: { stage: 'board', selectedTileId: null },
+      }))
+
     // Undo markers change nothing directly; `replay` neutralizes their targets.
     case 'EVENT_UNDONE':
       return state
@@ -144,6 +202,49 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
       // Unknown event type: fail safe, state unchanged.
       return state
   }
+}
+
+/**
+ * Read a round's board state, defaulting to a fresh, untouched board.
+ *
+ * This is a pure read with a constant default — it is NOT a cache and never
+ * writes anything back, so replay produces the same result every time.
+ */
+export function categoryBoardStateFor(
+  game: PrivateGameState,
+  roundId: string,
+): CategoryBoardRoundState {
+  return game.categoryBoards[roundId] ?? INITIAL_CATEGORY_BOARD_ROUND_STATE
+}
+
+/**
+ * Apply a pure update to one round's board state.
+ *
+ * The updater returns `null` when the event does not apply to the current board
+ * state (an impossible transition in a stored log). In that case the whole
+ * event is skipped and state is returned UNCHANGED — the same fail-safe
+ * event-application behavior the rest of the reducer uses, so a corrupt log
+ * degrades to the last consistent state instead of throwing.
+ */
+function withBoardState(
+  state: PrivateState,
+  type: PrivateState['diagnostics']['lastAppliedEventType'],
+  roundId: string,
+  update: (board: CategoryBoardRoundState) => CategoryBoardRoundState | null,
+): PrivateState {
+  if (!state.session || !state.session.game) return state
+  const game = state.session.game
+  if (game.gameLifecycle !== 'active') return state
+  const next = update(categoryBoardStateFor(game, roundId))
+  if (next === null) return state
+  const nextGame: PrivateGameState = {
+    ...game,
+    categoryBoards: { ...game.categoryBoards, [roundId]: next },
+  }
+  return withApplied(state, type, {
+    ...state,
+    session: { ...state.session, game: nextGame },
+  })
 }
 
 /** Update the nested diagnostics for a successfully applied, state-affecting event. */
@@ -392,9 +493,155 @@ export function planCommand(
       }
     }
 
+    case 'SELECT_CATEGORY_BOARD_TILE': {
+      const context = resolveCategoryBoard(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      if (typeof command.tileId !== 'string' || command.tileId.length === 0) {
+        return { status: 'rejected', reason: 'malformed-command' }
+      }
+      if (findTileById(context.board, command.tileId) === null) {
+        return { status: 'rejected', reason: 'unknown-tile' }
+      }
+      if (context.boardState.usedTileIds.includes(command.tileId)) {
+        return { status: 'rejected', reason: 'tile-already-used' }
+      }
+      // A tile may only be picked from the board grid. Replacing an in-flight
+      // selection is not allowed: return to the board first, so a stray click
+      // during a live prompt cannot silently swap the question under the class.
+      if (context.boardState.progress.stage !== 'board') {
+        return { status: 'rejected', reason: 'invalid-board-stage' }
+      }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'CATEGORY_BOARD_TILE_SELECTED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            tileId: command.tileId,
+          },
+        ],
+      }
+    }
+
+    case 'REVEAL_CATEGORY_BOARD_PROMPT': {
+      const context = resolveCategoryBoard(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      // Only from `selected`: no prompt without a selection, and no re-reveal.
+      if (context.boardState.progress.stage !== 'selected') {
+        return { status: 'rejected', reason: 'invalid-board-stage' }
+      }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'CATEGORY_BOARD_PROMPT_REVEALED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+          },
+        ],
+      }
+    }
+
+    case 'REVEAL_CATEGORY_BOARD_ANSWER': {
+      const context = resolveCategoryBoard(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      // Only from `prompt`: the answer can never precede the question.
+      const progress = context.boardState.progress
+      if (progress.stage !== 'prompt') {
+        return { status: 'rejected', reason: 'invalid-board-stage' }
+      }
+      // Defensive: the selected tile must still exist on the current board.
+      if (findTileById(context.board, progress.selectedTileId) === null) {
+        return { status: 'rejected', reason: 'unknown-tile' }
+      }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'CATEGORY_BOARD_ANSWER_REVEALED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            tileId: progress.selectedTileId,
+          },
+        ],
+      }
+    }
+
+    case 'RETURN_TO_CATEGORY_BOARD': {
+      const context = resolveCategoryBoard(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      // Returning is valid from any stage that has a selection; returning to the
+      // board from the board is a no-op transition and is rejected so it cannot
+      // pad the event log with meaningless entries.
+      if (context.boardState.progress.stage === 'board') {
+        return { status: 'rejected', reason: 'invalid-board-stage' }
+      }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'CATEGORY_BOARD_RETURNED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+          },
+        ],
+      }
+    }
+
     default:
       return { status: 'rejected', reason: 'malformed-command' }
   }
+}
+
+/** Everything a category-board command needs, or the reason it cannot proceed. */
+type CategoryBoardContext =
+  | {
+      readonly round: RoundDefinition
+      readonly board: CategoryBoardDefinition
+      readonly boardState: CategoryBoardRoundState
+    }
+  | { readonly reason: RejectionReason }
+
+/**
+ * Resolve the current round as a playable category board, or explain why not.
+ *
+ * This is the single gate every category-board command passes through, so the
+ * rejection rules are stated once: there must be a session, an ACTIVE game, a
+ * current round, that round must be the one the command targeted, it must be a
+ * category-board, and its config must still validate as a real board.
+ */
+function resolveCategoryBoard(state: PrivateState, roundId: unknown): CategoryBoardContext {
+  if (!state.session) return { reason: 'session-not-initialized' }
+  const game = state.session.game
+  if (!game) return { reason: 'game-not-initialized' }
+  if (game.gameLifecycle !== 'active') return { reason: 'game-already-ended' }
+  if (game.currentRoundIndex === null) return { reason: 'no-current-round' }
+  const round = game.definition.rounds[game.currentRoundIndex]
+  if (!round) return { reason: 'no-current-round' }
+  if (typeof roundId !== 'string' || roundId !== round.id) return { reason: 'round-mismatch' }
+  const board = readCategoryBoardDefinition(round)
+  if (board === null) {
+    return {
+      reason:
+        round.type === CATEGORY_BOARD_ROUND_TYPE
+          ? 'invalid-category-board-config'
+          : 'not-a-category-board-round',
+    }
+  }
+  return { round, board, boardState: categoryBoardStateFor(game, round.id) }
 }
 
 export type { CommandType }

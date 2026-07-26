@@ -1,4 +1,5 @@
 import { usePublicState } from '../display/usePublicState'
+import { CategoryBoardDisplay } from '../display/CategoryBoardDisplay'
 import type { PublicGameView } from '../state/publicState'
 import './DisplayRoute.css'
 
@@ -39,9 +40,17 @@ function describeGame(game: PublicGameView): string {
 
 export function DisplayRoute() {
   const publicState = usePublicState()
+  // When a round is on screen the round IS the content, so the waiting-state
+  // chrome shrinks out of its way rather than competing with it for the
+  // projector. Nothing is hidden — only resized.
+  const hasRound = publicState.round !== null
 
   return (
-    <div className="display" role="main" aria-labelledby="display-headline">
+    <div
+      className={`display${hasRound ? ' display--round' : ''}`}
+      role="main"
+      aria-labelledby="display-headline"
+    >
       <p className="display__brand">Classroom Quiz Show</p>
       <h1 id="display-headline" className="display__headline">
         Game display ready
@@ -54,6 +63,17 @@ export function DisplayRoute() {
         <p className="display__subtext" aria-live="polite" data-testid="display-game">
           {describeGame(publicState.game)}
         </p>
+      )}
+      {/*
+        The round panel renders only when the host has published one. It is
+        wrapped in a polite live region so a reveal is announced without
+        interrupting, and it draws exclusively from the sanitized DTO — the
+        display never reconstructs a board from anything else.
+      */}
+      {publicState.round && (
+        <div className="display__round" aria-live="polite" data-testid="display-round">
+          <CategoryBoardDisplay round={publicState.round} />
+        </div>
       )}
     </div>
   )

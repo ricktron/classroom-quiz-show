@@ -1,8 +1,9 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with Slice 1, 2, 3 & 4 **Complete** (all merged to `main`).
-Slice 4 (validation & import pipeline) merged via PR #7; Slice 5 is unstarted.
+the repository with Slices 1–4 **Complete** (all merged to `main`) and **Slice 5
+`In review`** on `claude/slice-5-category-board-6gfxnq`. Slice 5 adds the first
+PLAYABLE round type, `category-board`. **Slice 6 is unstarted and owner-gated.**
 
 ## Repository state
 
@@ -12,7 +13,7 @@ Slice 4 (validation & import pipeline) merged via PR #7; Slice 5 is unstarted.
   owner-accepted.
 - **Slice 2:** **Complete.** Merged to `main` via **PR #3** (merge commit
   `883111e`) with CI green; reconciliation PR #4 (merge commit `61e1a29`).
-- **Slice 3 (current):** **Complete.** Delivered on
+- **Slice 3:** **Complete.** Delivered on
   `claude/slice-3-game-round-registry-yjzexz`, based on `main` at
   `61e1a29548e8735886c3637e5c2e521ff6ee6db4` (after the merged Slice 2
   reconciliation, PR #4). Original implementation commit `7ac2466`; final reviewed
@@ -20,7 +21,7 @@ Slice 4 (validation & import pipeline) merged via PR #7; Slice 5 is unstarted.
   2026-07-23T19:18:32Z) with CI green (build + e2e success, SonarCloud Quality
   Gate passed, 0 security hotspots). Post-merge reconciliation recorded in
   [`../receipts/2026-07-23-slice-3-post-merge-reconciliation.md`](../receipts/2026-07-23-slice-3-post-merge-reconciliation.md).
-- **Slice 4 (current):** **Complete.** Delivered on
+- **Slice 4:** **Complete.** Delivered on
   `claude/slice-4-validation-import-pynvab`, based on `main` at
   `349bff72f471c798df8a902a6a3c4c3eae2e17a5` (after the merged Slice 3
   reconciliation, PR #6). Implementation commit `d08f140`; docs commit
@@ -32,7 +33,22 @@ Slice 4 (validation & import pipeline) merged via PR #7; Slice 5 is unstarted.
   **Note:** the owner merged before **Playwright e2e** concluded on the PR head
   (it concluded success ~23 s later); SonarCloud and the lint/typecheck/unit/
   build job had already reported success. See the receipt for the exact timeline.
-  **Slice 5 is unstarted and owner-gated.**
+- **Slice 5 (current):** **In review.** Delivered on
+  `claude/slice-5-category-board-6gfxnq`, based on `main` at
+  `0dacd3501fb10ce1272386f56bf15a2956ee8c6d` (the merge commit of PR #8, the
+  Slice 4 post-merge reconciliation). An implementation PR is open for review; it
+  is **not merged** and must not be marked `Complete` until review, CI green and
+  owner acceptance. **Slice 6 is unstarted and owner-gated.**
+- **What Slice 5 adds:** the first playable round type. `category-board` is
+  registered by application code and supplies its own strict config schema to the
+  Slice 4 pipeline (no second importer). It adds a typed board config (ordered
+  categories and tiles, stable round-wide-unique ids, prompt, answer, optional
+  alternates, optional host-only notes, optional multiplier), a private
+  per-round reveal-stage machine (`board → selected → prompt → answer`), four
+  reversible commands/events, a used-tile policy where a tile is consumed on
+  ANSWER reveal and released by undo, one new `PublicState.round` DTO
+  (current-stage-only; wire version 2 → 3), the first real projector experience,
+  and bounded host controls. It scores nothing.
 - **What Slice 4 adds:** the canonical versioned JSON game-file format and ONE
   Zod-based validation/normalization import pipeline
   (`src/import/importGame.ts`) that every import entry point converges on —
@@ -79,30 +95,47 @@ Slice 4 (validation & import pipeline) merged via PR #7; Slice 5 is unstarted.
   data-only (`DataValue` forbids functions). The `GameSession` (`PrivateGameState`)
   is distinct from the definition. Round **support is frozen onto the event at
   plan time**, so replay is deterministic without the registry.
+- **Category-board round:** see
+  [`../architecture/ADR-005-category-board-round.md`](../architecture/ADR-005-category-board-round.md).
+  Authored array order is canonical; identity is the stable id (tile ids unique
+  across the whole round). Uneven categories and duplicate values are both
+  ALLOWED and documented. `effectiveValue = value × multiplier` over bounded
+  integers, affecting only the displayed value — it scores nothing, and the
+  default of 1 is applied by the trusted constructor, never a Zod transform.
+  The reveal stage is one discriminated value paired with the selection, so
+  "no answer without a selected tile" is structural. A tile is consumed on
+  ANSWER reveal and released by undo, derived only from replayed events. The
+  public DTO is current-stage-only with positional keys and a neutral `kind`
+  discriminator; notes and alternates are never projected.
 - **Failure categories** (command rejection, event application failure, transport
   decode failure, public projection failure) each have a defined fail-safe
   behavior; unknown-round-type is handled fail-closed at every layer.
 
-## Module map (Slices 2–4)
+## Module map (Slices 2–5)
 
 ```
 src/game/
+  categoryBoard/
+    limits.ts        Board-size + text limits, each with a classroom rationale
+    schema.ts        Strict Zod config schema + whole-board semantic checks
+    definition.ts    Trusted CategoryBoardDefinition, fail-closed read, lookups
+    roundType.ts     The registered `category-board` RoundTypeEntry
   ids.ts             Branded GameId / RoundId / RoundType / GameSessionId
   roundDefinition.ts RoundDefinition, DataValue/RoundConfig, placeholder type + guard
   gameDefinition.ts  GameDefinition, createGameDefinition (unique ids, deep-freeze), guard
   deepFreeze.ts      Recursive freeze used by the definition factory
   registry.ts        RoundTypeEntry, createRoundRegistry (explicit known/unknown, no exec)
   placeholderRound.ts  The one built-in non-gameplay round type entry
-  defaultRegistry.ts createDefaultRegistry (placeholder only)
+  defaultRegistry.ts createDefaultRegistry (placeholder + category-board)
   sampleGame.ts      Trusted in-memory samples (incl. one unsupported round)
 src/state/
-  publicState.ts   PublicState (+ PublicGameView) + isPublicState guard (no private imports)
+  publicState.ts   PublicState (+ PublicGameView, + PublicRoundState DTO, v3) + guards
   status.ts        Bounded PublicStatusCode + fixed public copy (host-side)
-  privateState.ts  PrivateState / PrivateSessionState / PrivateGameState (authoritative)
-  commands.ts      SessionCommand union (intent; +4 game commands)
-  events.ts        SessionEvent union (accepted facts; +4 game events; RoundSupport)
-  reducer.ts       reduce, planCommand (+PlanDeps), replay, findUndoTarget
-  sanitize.ts      toPublicState (allow-list, +game view) + safeToPublicState (fail-closed)
+  privateState.ts  PrivateState / …GameState (+ CategoryBoardRoundState, per-round)
+  commands.ts      SessionCommand union (+4 game, +4 category-board commands)
+  events.ts        SessionEvent union (+4 game, +4 category-board events)
+  reducer.ts       reduce, planCommand, replay, findUndoTarget, categoryBoardStateFor
+  sanitize.ts      toPublicState (allow-list; +game view, +round DTO) + safeToPublicState
   store.ts         createSessionStore (owns a RoundRegistry; injects support predicate)
 src/sync/
   protocol.ts      Versioned envelope + strict decodeEnvelope (fail-closed)
@@ -121,9 +154,11 @@ src/import/
   importGame.ts       THE pipeline (importGameFromJsonText / …FromUnknown)
   sampleGameFile.ts   Built-in sample game files as JSON TEXT (not definitions)
 src/host/          useSessionStore, useHostSync, FoundationControls,
-                   GameImportPanel (host-only import harness)
-src/display/       usePublicState (imports only PublicState + receiver)
-src/test/          leakLabels, gameFileFixtures (untrusted test documents)
+                   GameImportPanel (host-only import harness),
+                   CategoryBoardHostPanel (the one gameplay surface)
+src/display/       usePublicState (imports only PublicState + receiver),
+                   CategoryBoardDisplay (projector board / prompt / answer)
+src/test/          leakLabels, gameFileFixtures, categoryBoardFixtures
 ```
 
 > **Module map note (Slice 4).** `src/game/sampleGame.ts` builds *trusted
@@ -137,7 +172,7 @@ src/test/          leakLabels, gameFileFixtures (untrusted test documents)
 npm ci               # reproducible install
 npm run lint         # ESLint (flat config)
 npm run typecheck    # tsc -b --noEmit
-npm run test:run     # Vitest (unit/component) — 253 tests
+npm run test:run     # Vitest (unit/component) — 455 tests
 npm run build        # tsc -b && vite build → dist/
 npm run test:e2e     # Playwright vs production preview (3 viewport projects)
 npm run verify       # lint + typecheck + unit
@@ -150,8 +185,10 @@ npm run verify:all   # verify + build + e2e (merge gate)
 > That override is passed via the environment only — never committed. CI installs
 > the matching browser and needs no override.
 
-Latest local results (Slice 4 branch): `verify:all` green — 253 unit tests, 97
-e2e passed / 2 skipped; `git diff --check` clean. Slice 4 CI was observed green on
+Latest local results (Slice 5 branch): `verify:all` green — **455 unit tests,
+121 e2e passed / 2 skipped** (both skips are the one desktop-only offline-shell
+test); `git diff --check` clean. Slice 5 CI has **not yet been observed**.
+Earlier, on the Slice 4 branch: 253 unit tests, 97 e2e passed / 2 skipped. Slice 4 CI was observed green on
 PR #7 (final head `8ce850c`) and again **post-merge on `main` (`5295e83`)**, where
 the Pages deployment also succeeded. Slice 3 CI was observed green on PR #5 (final reviewed head
 `464ef07`: build + e2e success, SonarCloud Quality Gate passed, 0 security
@@ -159,6 +196,20 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Known risks / limitations
 
+- **Slice 5 CI not yet observed.** Local `verify:all` is green; no GitHub
+  Actions run existed for the branch at the time of writing. Slice 5 changes no
+  CI or deploy configuration.
+- **`PublicState` wire version is now 3.** A consumer pinned to version 2 fails
+  closed by design; no migration exists.
+- **The board scores nothing.** `multiplier` affects the displayed value and a
+  typed `effectiveValue`; no team, score, timer, buzzer or wager exists.
+- **Board state is per round and RESUMES on return** — leaving a round and
+  coming back restores its used tiles and reveal stage. Deliberate.
+- **One tile at a time.** A second tile cannot be opened while one is live;
+  return to the board first.
+- **Alternates are never projected** — host-only grading aid.
+- **The "unregistered round type" test fixture moved** from `category-board` to
+  `not-a-real-round-type`, because the former is now a real registered type.
 - **Slice 4 merged before Playwright e2e concluded** on the PR head; it
   concluded success ~23 s after the merge, and post-merge CI on `main` is green.
   Recorded precisely in the Slice 4 reconciliation receipt.
@@ -184,17 +235,19 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Next action
 
-Review and merge the Slice 4 post-merge reconciliation PR (documentation only).
-Slice 4 is already `Complete` in [`../STATUS.md`](../STATUS.md). Do **not** begin
-Slice 5 until the owner explicitly authorizes it.
+Review the Slice 5 implementation PR. Do **not** begin Slice 6 until Slice 5 is
+reviewed, merged, and accepted by the owner.
 
-## Prohibited next actions until Slice 5 is authorized
+## Prohibited next actions until Slice 6 is authorized
 
-Do **not**: begin Slice 5 or any later slice; implement a playable board/round
-engine, categories, clues, questions/answers, point ladders, tile
-selection, scoring, teams, timers, transitions, durable persistence, final wager,
-media/theme engine, spreadsheet import, or authoring; add a backend, accounts, buzzers, cross-device
-sync, or AI services; weaken fail-closed display behavior; send private host
-state to the display; permit executable imported game code; add dynamic
-module/plugin loading based on game content; or move implementation truth into
-NightWatch or Obsidian.
+Do **not**: begin Slice 6 or any later slice; implement teams, team colours,
+score totals, awards, deductions, partial credit, manual score correction, score
+audit history, or scoring strategies; add buzzers or lockout, timers or timed
+transitions, durable persistence/IndexedDB/session recovery/leader coordination,
+a final wager, a media pipeline, a theme engine, spreadsheet/CSV/XLSX import,
+an authoring UI, pack management, a saved game library, or remote URL import;
+add a backend, accounts, cross-device sync, analytics, or AI services; add any
+further playable round type; weaken fail-closed display behavior; project
+teacher notes, alternates, or unrevealed content; permit executable imported
+game code; add dynamic module/plugin loading based on game content; or move
+implementation truth into NightWatch or Obsidian.

@@ -4,6 +4,7 @@ import { replay } from '../state/reducer'
 import { createPublicStateBroadcaster } from '../sync/broadcaster'
 import type { SyncChannel } from '../sync/channel'
 import { gameFile, gameFileText, roundFile } from '../test/gameFileFixtures'
+import { UNREGISTERED_ROUND_TYPE } from './sampleGameFile'
 import { importGameFromJsonText, importGameFromUnknown } from './importGame'
 import type { ImportResult } from './result'
 
@@ -52,7 +53,7 @@ const INVALID_INPUTS: ReadonlyArray<readonly [string, string]> = [
   ['top-level null', 'null'],
   ['unsupported version', gameFileText({ schemaVersion: 2 })],
   ['unknown format', gameFileText({ format: 'other/game' })],
-  ['unknown round type', gameFileText({ rounds: [{ id: 'r', type: 'category-board', title: 'R', config: {} }] })],
+  ['unknown round type', gameFileText({ rounds: [{ id: 'r', type: UNREGISTERED_ROUND_TYPE, title: 'R', config: {} }] })],
   ['duplicate round ids', gameFileText({ rounds: [roundFile('same'), roundFile('same')] })],
   ['unknown field', gameFileText({ theme: 'space' })],
   ['prototype-pollution key', '{"format":"classroom-quiz-show/game","schemaVersion":1,"id":"a","title":"T","rounds":[],"__proto__":{"x":1}}'],

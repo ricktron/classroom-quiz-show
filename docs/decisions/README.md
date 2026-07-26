@@ -17,6 +17,11 @@ This project separates two kinds of durable decision records:
      — canonical versioned JSON game file, the single Zod-based validation /
      normalization import pipeline, structured errors, no silent repair
      (Slice 4).
+   - [`ADR-005-category-board-round.md`](../architecture/ADR-005-category-board-round.md)
+     — the `category-board` round: config model, ordering and identity rules,
+     board-shape and duplicate-value decisions, multiplier semantics, the
+     reveal-stage state machine, used-tile policy, replay/undo, the
+     current-stage-only public DTO and wire version 3 (Slice 5).
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).

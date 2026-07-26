@@ -39,7 +39,7 @@ systems.
 | 2   | **State & event core**         | Command-driven reducer, append-only event history, undo/replay, private/public `PublicState` types + `toPublicState` sanitizer, host/display sync (BroadcastChannel), fail-closed decoding. | 1          |
 | 3   | **Game & round model + registry** | `GameDefinition` / `GameSession` types, typed `RoundDefinition`, round registry scaffold, unknown-type fail-closed handling. **(Complete.)** | 2          |
 | 4   | **Validation & import pipeline** | Canonical versioned JSON, one Zod-based validation/normalization pipeline, actionable errors, no silent repair. **(Complete.)** | 3          |
-| 5   | **Category-board round**       | First playable round type: configurable categories/rows/ladder, multiplier, used-tile state, prompt/answer reveal, alternates, notes. | 3, 4       |
+| 5   | **Category-board round**       | First playable round type: configurable categories/rows/ladder, multiplier, used-tile state, prompt/answer reveal, alternates, notes. **(In review.)** | 3, 4       |
 | 6   | **Teams & scoring**            | Teams, typed scoring strategy (points first), awards/deductions, partial credit, unrestricted manual correction, audit history, undo. | 2, 5       |
 | 7   | **Timers & transitions**       | Timer config, public timer, host-controlled undoable round transitions, reduced-motion-safe. | 5, 6       |
 | 8   | **Persistence & recovery**     | IndexedDB durable local persistence, session recovery, lightweight leader coordination. | 2          |
@@ -313,6 +313,85 @@ Category-board round: the first playable round type — configurable categories,
 rows and point ladder, multiplier, used-tile state, prompt/answer reveal,
 alternates, and notes — registered behind the Slice 3 registry and made
 importable by supplying its config schema to this pipeline.
+
+## Slice 5 — scope, acceptance, non-goals
+
+**State: In review.** Implemented on `claude/slice-5-category-board-6gfxnq` on
+top of `main` at `0dacd3501fb10ce1272386f56bf15a2956ee8c6d` (the merge commit of
+PR #8, the Slice 4 post-merge reconciliation). It is **not** merged and **not**
+`Complete`; it may only be marked `Complete` after review, CI green, and owner
+acceptance. Full technical rationale in
+[`../architecture/ADR-005-category-board-round.md`](../architecture/ADR-005-category-board-round.md);
+local evidence in
+[`../receipts/2026-07-26-slice-5-local-verification.md`](../receipts/2026-07-26-slice-5-local-verification.md).
+
+### Scope (implemented)
+
+1. **One new registered round type** — `category-board`, registered by
+   application code. Imported content cannot register it, replace its schema,
+   reducer or public projection, or supply a callback/handler. Duplicate
+   registration still throws. The non-gameplay `placeholder` type is retained.
+2. **Strict typed config** — ordered `categories` (stable id, public title,
+   ordered `tiles`) and ordered tiles (stable id, non-negative integer `value`,
+   `prompt`, `answer`, optional `alternates`, optional host-only `notes`,
+   optional `multiplier`). Authored array order is canonical; identity is the
+   stable id, never the displayed value.
+3. **Board-shape decisions** — uneven category lengths are **allowed**;
+   duplicate values are **allowed**. Empty boards and empty categories are
+   rejected. Both decisions are documented in ADR-005 §4.
+4. **Multiplier semantics** — `effectiveValue = value × multiplier` over bounded
+   integers (exact, no floating point). It affects the displayed value and a
+   typed field; it awards and deducts nothing. The default of 1 is applied by
+   the trusted domain constructor, never by a Zod transform.
+5. **Documented board-size limits** with classroom rationale (8 categories,
+   8 tiles/category, **48 total tiles**, and text/collection bounds). Oversized
+   boards are rejected with actionable messages — never truncated.
+6. **Private round session state** — a discriminated reveal stage
+   (`board`/`selected`/`prompt`/`answer`) paired with the selection, plus
+   `usedTileIds`, stored per round so leaving and returning resumes a board.
+7. **Four commands / four events**, all reversible, each carrying the `roundId`
+   it targets so a stale host control is inert.
+8. **Used-tile policy** — a tile is consumed when its ANSWER is revealed, not
+   when it is selected; undoing the answer reveal releases it. Used state is
+   derived only by replaying events.
+9. **Import integration through the Slice 4 seam** — the registry supplies the
+   round type's own strict config schema; there is no second importer. Precise
+   errors with exact document paths; three new issue codes. The built-in valid
+   sample now contains a real category-board round.
+10. **`PublicState.round`** — a current-stage-only DTO with a neutral `kind`
+    discriminator and positional keys. Wire version **2 → 3**.
+11. **Projector and host surfaces** — the first real projector experience and
+    bounded host controls that make private preview vs. public content explicit.
+
+### Acceptance criteria
+
+Local `verify:all` passes (lint, typecheck, **455 unit tests**, build, **121 e2e
+passed / 2 skipped**). Coverage: config model, ordering, board shape, multiplier,
+limits, immutability and fail-closed reads; canonical import integration with
+exact paths and no repair; command validation, the reveal-stage machine,
+used-tile policy, undo and deterministic replay; public projection privacy at
+every stage plus fail-closed and wire-version behaviour; host and display
+component behaviour including accessibility; host→display sync with a live
+board. All Slice 1/2/3/4 suites remain green.
+
+### Explicit non-goals (Slice 5)
+
+No Slice 6+ work: no teams, team colours, score totals, awards, deductions,
+partial credit, manual score correction, score audit history, or scoring
+strategies; no buzzers or lockout; no timers or timed transitions; no
+persistence, IndexedDB, session recovery, or leader coordination; no final
+wager; no media (images/audio/video); no theme engine; no spreadsheet/CSV/XLSX/
+Google Sheets import; no authoring UI, pack management, saved game library, or
+remote URL import; no backend, accounts, cross-device networking, analytics, or
+AI generation; and **no additional playable round types**.
+
+**The round can reveal content and track used tiles. It must not score teams.**
+
+### What remains for Slice 6
+
+Teams & scoring: teams, a typed scoring strategy (points first), awards and
+deductions, partial credit, unrestricted manual correction, an audit history,
+and undo — built on top of the reveal events this slice produces.
 
 ## Dependencies & risks
 
