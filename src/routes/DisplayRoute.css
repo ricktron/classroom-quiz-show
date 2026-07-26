@@ -76,6 +76,18 @@
   overflow-x: hidden;
 }
 
+/*
+ * The scoreboard strip. `margin-block-start: auto` pins it to the bottom of the
+ * flex column so it sits below the board or prompt instead of competing with it,
+ * and it never pushes the page sideways.
+ */
+.display__scores {
+  width: 100%;
+  overflow-x: hidden;
+  margin-block-start: auto;
+  padding-block-start: var(--space-1);
+}
+
 .display__status-dot {
   width: 0.9rem;
   height: 0.9rem;

@@ -1,6 +1,11 @@
 import { deepFreeze } from './deepFreeze'
 import { gameId, type GameId } from './ids'
 import { isRoundDefinition, type RoundDefinition } from './roundDefinition'
+import {
+  NO_TEAMS,
+  isTeamDefinitionList,
+  type TeamDefinition,
+} from './teams/definition'
 
 /**
  * `GameDefinition` — reusable, authored game structure (Slice 3).
@@ -28,6 +33,17 @@ export interface GameDefinition {
   readonly title: string
   /** Ordered rounds. Array position IS the canonical round order. */
   readonly rounds: readonly RoundDefinition[]
+  /**
+   * Ordered teams (Slice 6). Array position IS the canonical display order, and
+   * an EMPTY list is valid — that is a game with no teams, which is exactly the
+   * Slice 5 board that scores nothing.
+   *
+   * Teams are authored CONTENT and live here, on the immutable definition. Their
+   * SCORES are session state derived from the event log and deliberately do not
+   * live here — see `PrivateGameState.teamScores` and
+   * `src/game/teams/scoring.ts`.
+   */
+  readonly teams: readonly TeamDefinition[]
 }
 
 /** Thrown by `createGameDefinition` when authored input violates an invariant. */
@@ -42,6 +58,11 @@ export interface CreateGameDefinitionInput {
   readonly id: string
   readonly title: string
   readonly rounds: readonly RoundDefinition[]
+  /**
+   * Already-trusted teams from `createTeamDefinitions`. Omitted means "this game
+   * has no teams" — a valid configuration, not a defect to repair.
+   */
+  readonly teams?: readonly TeamDefinition[]
   readonly modelVersion?: number
 }
 
@@ -76,6 +97,18 @@ export function createGameDefinition(input: CreateGameDefinitionInput): GameDefi
     seenRoundIds.add(round.id)
   }
 
+  const teams = input.teams ?? NO_TEAMS
+  if (!isTeamDefinitionList(teams)) {
+    throw new GameDefinitionError('teams must be a list of valid TeamDefinitions')
+  }
+  const seenTeamIds = new Set<string>()
+  for (const team of teams) {
+    if (seenTeamIds.has(team.id)) {
+      throw new GameDefinitionError(`duplicate team id within game: ${team.id}`)
+    }
+    seenTeamIds.add(team.id)
+  }
+
   const definition: GameDefinition = {
     modelVersion: input.modelVersion ?? GAME_DEFINITION_MODEL_VERSION,
     id: gameId(input.id),
@@ -83,6 +116,8 @@ export function createGameDefinition(input: CreateGameDefinitionInput): GameDefi
     // Copy the array so later external mutation of the caller's array cannot
     // affect the (frozen) definition; order is preserved exactly.
     rounds: [...input.rounds],
+    // Same reasoning for teams: the caller keeps its own array, we keep ours.
+    teams: [...teams],
   }
   return deepFreeze(definition)
 }
@@ -99,6 +134,10 @@ export function isGameDefinition(value: unknown): value is GameDefinition {
   if (typeof v.id !== 'string' || v.id.length === 0) return false
   if (typeof v.title !== 'string' || v.title.length === 0) return false
   if (!Array.isArray(v.rounds)) return false
+  // `teams` is required on the model (the factory always sets it, possibly to an
+  // empty list), so a value missing it is not a definition this build produced
+  // and is rejected rather than treated as "no teams".
+  if (!isTeamDefinitionList(v.teams)) return false
   return v.rounds.every(isRoundDefinition)
 }
 

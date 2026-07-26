@@ -1,5 +1,6 @@
 import { usePublicState } from '../display/usePublicState'
 import { CategoryBoardDisplay } from '../display/CategoryBoardDisplay'
+import { TeamScoreboard } from '../display/TeamScoreboard'
 import type { PublicGameView } from '../state/publicState'
 import './DisplayRoute.css'
 
@@ -9,8 +10,11 @@ import './DisplayRoute.css'
  * This screen is student-facing and read-only. It subscribes to sanitized
  * `PublicState` broadcast by the host (same browser, BroadcastChannel) and
  * renders ONLY that — no controls, no navigation into the host, and no private
- * data: no answers, no teacher notes, no upcoming prompts, no scores, no
- * round-type identifiers, and no unsupported-type diagnostics.
+ * data: no answers, no teacher notes, no upcoming prompts, no round-type
+ * identifiers, no score history or undo metadata, no host-selected scoring
+ * target, and no unsupported-type diagnostics. Team names and current totals ARE
+ * public (a class must be able to see the score) and arrive as an allow-listed
+ * DTO — never as the team definitions themselves.
  *
  * It fails closed by construction: before any host message (and if every message
  * is invalid) it shows the neutral `INITIAL_PUBLIC_STATE` waiting screen, and it
@@ -73,6 +77,21 @@ export function DisplayRoute() {
       {publicState.round && (
         <div className="display__round" aria-live="polite" data-testid="display-round">
           <CategoryBoardDisplay round={publicState.round} />
+        </div>
+      )}
+      {/*
+        The scoreboard is present at EVERY stage — board, prompt and answer — and
+        stays on screen when the game ends so final results can be read. It sits
+        last so it renders as a strip along the bottom of the projector, out of the
+        board's way, and it is a polite live region so an award is announced
+        without interrupting whatever is being read out.
+
+        It renders only when the game configures teams; a game with no teams has
+        no scoreboard at all, which is exactly the Slice 5 behaviour unchanged.
+      */}
+      {publicState.teams && (
+        <div className="display__scores" aria-live="polite" data-testid="display-scores">
+          <TeamScoreboard teams={publicState.teams} />
         </div>
       )}
     </div>

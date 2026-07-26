@@ -274,7 +274,12 @@ describe('the panel renders nothing outside a playable board', () => {
   })
 })
 
-describe('no Slice 6/7 controls appear', () => {
+describe('this panel reveals; it does not score', () => {
+  /**
+   * Slice 6 adds scoring, but it adds it in a SEPARATE panel. The claim protected
+   * here is the one that survives: no button in the board panel can move a point,
+   * and no timer/buzzer/wager control has appeared either.
+   */
   it('offers no team, score, timer or buzzer control at any stage', () => {
     renderPanel()
     const forbidden = /team|score|point award|award points|subtract|deduct|timer|buzzer|wager/i
@@ -292,9 +297,18 @@ describe('no Slice 6/7 controls appear', () => {
     check()
   })
 
-  it('says explicitly that nothing is scored here', () => {
+  it('says explicitly that revealing does not score, and where scoring lives', () => {
     renderPanel()
     fireEvent.click(screen.getByTestId('cbh-tile-alpha-100'))
-    expect(screen.getByTestId('cbh-selected')).toHaveTextContent(/nothing is scored here/i)
+    expect(screen.getByTestId('cbh-selected')).toHaveTextContent(/revealing does not score/i)
+    expect(screen.getByTestId('cbh-selected')).toHaveTextContent(/scoring panel/i)
+  })
+
+  it('says the answer reveal awarded nothing once the answer is up', () => {
+    renderPanel()
+    fireEvent.click(screen.getByTestId('cbh-tile-alpha-100'))
+    fireEvent.click(screen.getByTestId('cbh-reveal-prompt'))
+    fireEvent.click(screen.getByTestId('cbh-reveal-answer'))
+    expect(screen.getByTestId('cbh-selected')).toHaveTextContent(/awarded nothing on its own/i)
   })
 })

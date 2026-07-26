@@ -1,5 +1,6 @@
 import type { PublicStatusCode } from './status'
 import type { GameDefinition } from '../game/gameDefinition'
+import type { ScoreAdjustmentMode, ScoreSource } from '../game/teams/scoring'
 
 /**
  * COMMANDS express *intent* — a request to change state that the reducer may
@@ -33,6 +34,7 @@ export const COMMAND_TYPES = [
   'REVEAL_CATEGORY_BOARD_PROMPT',
   'REVEAL_CATEGORY_BOARD_ANSWER',
   'RETURN_TO_CATEGORY_BOARD',
+  'ADJUST_TEAM_SCORE',
 ] as const
 
 export type CommandType = (typeof COMMAND_TYPES)[number]
@@ -97,8 +99,9 @@ export type EndGameSessionCommand = CommandBase<'END_GAME_SESSION'>
  * whose `roundId` is not the current round, so a stale control is inert rather
  * than dangerous.
  *
- * These commands reveal content and track used tiles. They do NOT award,
- * deduct, or otherwise touch any team score — that is Slice 6.
+ * These commands reveal content and track used tiles. They never move a point:
+ * scoring is the separate `ADJUST_TEAM_SCORE` command below, so revealing an
+ * answer and awarding credit stay two deliberate teacher actions.
  */
 interface CategoryBoardCommandBase<T extends CommandType> extends CommandBase<T> {
   /** The round this command targets. Must equal the current round. */
@@ -123,6 +126,37 @@ export type RevealCategoryBoardAnswerCommand =
 export type ReturnToCategoryBoardCommand =
   CategoryBoardCommandBase<'RETURN_TO_CATEGORY_BOARD'>
 
+/**
+ * Adjust one team's score (Slice 6) — the ONE scoring command.
+ *
+ * It is deliberately a single command rather than four (`AWARD_FULL`,
+ * `DEDUCT_FULL`, …), because those would differ only in how the amount is
+ * derived, and every one of them would still need the same team check, the same
+ * bounds check, and the same provenance. Instead the amount is explicit and the
+ * `mode` + `source` record WHAT the teacher did and WHERE the number came from —
+ * so the event log stays explainable rather than being a stream of bare integers.
+ *
+ * The planner does not trust any of it: the team must exist, the amount must be a
+ * bounded non-zero integer, the resulting score must stay in range, and for a
+ * tile-sourced mode the amount must MATCH the selected tile's effective value
+ * (exactly, or exactly negated, or within it for partial credit). The UI is a
+ * convenience, never the authority.
+ *
+ * There is deliberately NO command for choosing the scoring target: the selected
+ * team is private host UI state, it awards nothing, and putting it in the event
+ * log would pad history with selections and make "undo" ambiguous. See ADR-006 §7.
+ */
+export interface AdjustTeamScoreCommand extends CommandBase<'ADJUST_TEAM_SCORE'> {
+  /** The team whose score changes. Must be a team of the loaded game. */
+  readonly teamId: string
+  /** Signed, non-zero, bounded integer amount. Never a fraction. */
+  readonly delta: number
+  /** Typed reason code — what this adjustment means. */
+  readonly mode: ScoreAdjustmentMode
+  /** Where the amount came from (a specific board tile, or nothing). */
+  readonly source: ScoreSource
+}
+
 export type SessionCommand =
   | InitSessionCommand
   | SetPublicStatusCommand
@@ -138,3 +172,4 @@ export type SessionCommand =
   | RevealCategoryBoardPromptCommand
   | RevealCategoryBoardAnswerCommand
   | ReturnToCategoryBoardCommand
+  | AdjustTeamScoreCommand

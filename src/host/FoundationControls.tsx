@@ -4,6 +4,7 @@ import { PUBLIC_STATUS_CODES } from '../state/status'
 import { createSampleGame, createSampleGameWithUnsupportedRound } from '../game/sampleGame'
 import { GameImportPanel } from './GameImportPanel'
 import { CategoryBoardHostPanel } from './CategoryBoardHostPanel'
+import { TeamScoringPanel } from './TeamScoringPanel'
 import './FoundationControls.css'
 
 /**
@@ -251,6 +252,13 @@ export function FoundationControls() {
         and the foundation diagnostics above remain the whole host surface.
       */}
       {game && <CategoryBoardHostPanel dispatch={dispatch} game={game} />}
+
+      {/*
+        Teams & scoring (Slice 6). It sits BESIDE the board panel, not inside it,
+        because revealing content and awarding points are separate decisions —
+        neither panel can trigger the other's action.
+      */}
+      {game && <TeamScoringPanel dispatch={dispatch} game={game} history={history} />}
 
       <GameImportPanel
         dispatch={dispatch}

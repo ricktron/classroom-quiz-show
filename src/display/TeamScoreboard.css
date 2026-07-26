@@ -1,0 +1,98 @@
+/*
+ * Projector scoreboard. Read from across a classroom at 1280×720 and 1920×1080.
+ *
+ * Layout rules that matter:
+ *  - it NEVER pushes the page sideways: the team row wraps instead;
+ *  - it stays legible with eight teams (the documented maximum) by shrinking the
+ *    card, not by clipping or scrolling;
+ *  - it carries no motion at all, so a score is never mid-animation when someone
+ *    looks up.
+ */
+.tsb {
+  width: 100%;
+  /* Wrapping, never horizontal overflow. */
+  overflow-x: hidden;
+  text-align: center;
+}
+
+.tsb__title {
+  margin: 0 0 0.35rem;
+  font-size: clamp(0.85rem, 1.3vw, 1.15rem);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.tsb__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(0.35rem, 0.8vw, 0.75rem);
+}
+
+.tsb__team {
+  position: relative;
+  flex: 0 1 auto;
+  min-width: clamp(7rem, 11vw, 12rem);
+  max-width: 100%;
+  padding: clamp(0.3rem, 0.7vw, 0.6rem) clamp(0.5rem, 1vw, 0.9rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  overflow: hidden;
+}
+
+/*
+ * The accent is a bar along the top edge — decoration only. With no accent class
+ * it falls back to the neutral muted colour, and the card stays fully readable.
+ */
+.tsb__accent-bar {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: 4px;
+  background: var(--team-accent, var(--color-text-muted));
+}
+
+.tsb__name {
+  font-size: clamp(0.9rem, 1.5vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.15;
+  /* Long team names wrap rather than overflow the projector. */
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+.tsb__score {
+  font-size: clamp(1.5rem, 3vw, 3rem);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * A negative total is called out by colour AND by the minus sign that is always
+ * in the text, so the meaning survives a washed-out projector and colour-blind
+ * viewers. The accessible name says "minus N points" outright.
+ */
+.tsb__score--negative {
+  color: var(--color-danger);
+}
+
+.tsb--unavailable {
+  padding: var(--space-2);
+}
+
+.tsb__unavailable-text {
+  margin: 0;
+  font-size: clamp(1rem, 1.8vw, 1.5rem);
+  color: var(--color-text-muted);
+}

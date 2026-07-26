@@ -40,7 +40,7 @@ systems.
 | 3   | **Game & round model + registry** | `GameDefinition` / `GameSession` types, typed `RoundDefinition`, round registry scaffold, unknown-type fail-closed handling. **(Complete.)** | 2          |
 | 4   | **Validation & import pipeline** | Canonical versioned JSON, one Zod-based validation/normalization pipeline, actionable errors, no silent repair. **(Complete.)** | 3          |
 | 5   | **Category-board round**       | First playable round type: configurable categories/rows/ladder, multiplier, used-tile state, prompt/answer reveal, alternates, notes. **(Complete.)** | 3, 4       |
-| 6   | **Teams & scoring**            | Teams, typed scoring strategy (points first), awards/deductions, partial credit, unrestricted manual correction, audit history, undo. | 2, 5       |
+| 6   | **Teams & scoring**            | Teams, typed scoring strategy (points first), awards/deductions, partial credit, unrestricted manual correction, audit history, undo. **(In review.)** | 2, 5       |
 | 7   | **Timers & transitions**       | Timer config, public timer, host-controlled undoable round transitions, reduced-motion-safe. | 5, 6       |
 | 8   | **Persistence & recovery**     | IndexedDB durable local persistence, session recovery, lightweight leader coordination. | 2          |
 | 9   | **Final-wager round**          | Public prompt, host-entered/private wagers, timed response, reveal, settlement, tie handling. | 5, 6, 7    |
@@ -395,8 +395,88 @@ AI generation; and **no additional playable round types**.
 
 Teams & scoring: teams, a typed scoring strategy (points first), awards and
 deductions, partial credit, unrestricted manual correction, an audit history,
-and undo — built on top of the reveal events this slice produces. **Slice 6 is
-`Planned` and unstarted; it is owner-gated.**
+and undo — built on top of the reveal events this slice produces. **Slice 6 was
+authorized by the owner and is now `In review` (see below).**
+
+## Slice 6 — scope, acceptance, non-goals
+
+**State: In review.** Implemented on `claude/slice-6-teams-and-scoring-we53wr` on
+top of `main` at `5237a1f9f6b451c2137330fd0a7f4613b7a919f2` (the merge commit of
+PR #10, the Slice 5 post-merge reconciliation). Review PR only — **not merged**, and
+post-merge reconciliation has **not** been performed. Full technical rationale in
+[`../architecture/ADR-006-teams-and-scoring.md`](../architecture/ADR-006-teams-and-scoring.md);
+local evidence in
+[`../receipts/2026-07-26-slice-6-local-verification.md`](../receipts/2026-07-26-slice-6-local-verification.md).
+
+### Scope (implemented)
+
+1. **A typed team model** on the immutable `GameDefinition` — stable id as identity,
+   a public name that is explicitly *not* identity, an accent from an
+   application-controlled palette, and authored array order frozen onto `order`.
+   1–8 teams; omitting the field means "no teams" and `teams: []` is rejected.
+2. **Imported content may name an accent, never supply one.** Eight palette tokens;
+   a colour, gradient, class name, CSS declaration or URL is rejected at import with
+   a message naming the permitted values. Colour is always supplemental to the name.
+3. **Import integration through the Slice 4 pipeline** — one team schema, owned by
+   the game domain and re-used verbatim by the trusted constructor, so there is no
+   second importer. `teams` is an **additive, optional** extension of
+   `schemaVersion: 1`: every previously valid document still means exactly the same
+   thing, so no migration is needed. Two new issue codes (`duplicate-team-id`,
+   `invalid-team-accent`); exact paths such as `teams[1].accent`.
+4. **Scores as session state**, bounded integers (−1,000,000…1,000,000, initial 0),
+   derived purely by replaying the event log. No cache, no `NaN`/`Infinity`/floats,
+   no coercion, and no write path outside `reduce`.
+5. **One command / one event** — `ADJUST_TEAM_SCORE` → `TEAM_SCORE_ADJUSTED`
+   (reversible) — carrying a signed `delta`, a typed `mode` (`full-credit` ·
+   `partial-credit` · `deduction` · `manual-correction`) and a typed `source` (a
+   specific board tile, or explicitly `manual`). The resulting total is deliberately
+   **not** stored on the event.
+6. **Category-board integration** — tile presets are derived from the tile's
+   `effectiveValue` (`value × multiplier`, exact integers). Full credit must equal
+   it, a deduction must equal its negation, and partial credit must fit inside it.
+   Scoring requires the `prompt` or `answer` stage and the open tile.
+7. **Revealing and scoring are independent in both directions** — a reveal scores
+   nothing, scoring consumes no tile, and undoing either leaves the other standing.
+8. **Correction without rewriting history** — undo through the existing
+   `EVENT_UNDONE` marker, or append a compensating `manual-correction`.
+9. **`PublicState.teams`** — an allow-listed scoreboard DTO with positional keys and
+   an explicit `unavailable` fail-closed state. Wire version **3 → 4**.
+10. **Host scoring panel** beside the board panel: ordered scoreboard, radio target
+    selection (nothing selected by default), the open tile's value, the resulting
+    total previewed before submission, already-submitted presets disabled (derived
+    from the effective log, so undo re-enables them), confirmation for negative or
+    large manual amounts, and an undo affordance that is honest about what the
+    engine's undo model can reach.
+11. **Projector scoreboard** — authored order, names as text, integer totals,
+    negative totals marked by colour *and* sign, responsive to eight teams at 720p,
+    and deliberately free of animation.
+
+### Acceptance criteria
+
+Local `verify:all` passes (lint, typecheck, **740 unit tests**, build, **154 e2e
+passed / 2 skipped**). Coverage: the team model, limits, accents, immutability and
+guards; the scoring domain rules exhaustively; canonical import integration with
+exact paths and no repair; command validation, provenance, replay, undo,
+independence from the reveal lifecycle, round transitions and reset; public
+projection privacy and fail-closed behaviour plus the wire-version bump; host and
+display component behaviour including accessibility; host→display sync of totals;
+and end-to-end teacher/projector workflows. All Slice 1–5 suites remain green.
+
+### Explicit non-goals (Slice 6)
+
+No Slice 7+ work: no timers, countdowns, timed transitions or automatic timeout
+scoring; no buzzers, lockout, contestant devices or remote team input; no
+persistence, IndexedDB, session recovery or leader coordination; no wagering, Daily
+Double or Final Jeopardy; no media; no theme engine or arbitrary team colours; no
+spreadsheet/CSV/XLSX/Google Sheets import; no authoring UI, pack management or saved
+game library; no backend, accounts, cross-device networking, analytics or AI
+generation; and **no additional playable round types**.
+
+### What remains for Slice 7
+
+Timers & transitions: timer configuration, a public timer, host-controlled undoable
+round transitions, and reduced-motion-safe presentation — built on top of the
+scoring events this slice produces. **Slice 7 is `Planned` and unstarted.**
 
 ## Dependencies & risks
 

@@ -99,6 +99,12 @@ engines fill from Slice 5 on. An unknown/unsupported round type **fails closed**
 a host-only diagnostic, a neutral "unavailable" display, no substitution, no
 crash, deterministic replay.
 
+**Status (Slice 6).** No new round type. Teams and scoring are deliberately
+CROSS-ROUND capability, not a round type: they live on the `GameDefinition` and in
+session state, and a tile-sourced adjustment names its source through a typed
+`ScoreSource` member. A future round type adds a member there instead of a parallel
+scoring system, and the registry is untouched by this slice.
+
 **Status (Slice 5).** The first PLAYABLE type is registered: `category-board` —
 see [`ADR-005-category-board-round.md`](ADR-005-category-board-round.md). It
 fills the registry seam exactly as designed: application code registers the
@@ -162,6 +168,17 @@ state (a selection that is not on the board), an unusable config, a malformed
 payload, a stale revision, or an old wire version each resolve to the neutral
 "not available" panel.
 
+**Status (Slice 6).** The scoreboard is the first DELIBERATELY public gameplay
+data, and the allow-list still holds. `PublicState` gained exactly one new field,
+`teams: PublicTeamsState | null` (wire version 3 → 4), carrying per team a
+positional render key, the public name, one palette accent token, and the current
+integer total — never the authored team id, `order`, the score event history, undo
+metadata, an adjustment mode, or the host's selected scoring target (which is not in
+session state at all). A malformed score or an accent outside the palette resolves to
+an explicit `{ status: 'unavailable' }`, because a projector showing nothing is
+indistinguishable from a broken one. The scoreboard is present at every reveal stage
+and after the game ends, so final results stay readable.
+
 ## 5. Imported content is data, never executable code
 
 Game packs and question imports are **data**. The engine must **never** execute
@@ -211,6 +228,16 @@ Code-related words in ordinary educational text (a prompt about `eval()`, a
 round titled "Scripts and constructors") are plain strings and are imported
 normally — the boundary rejects unsupported *structures*, not vocabulary.
 
+**Status (Slice 6).** The rule now covers PRESENTATION as well as code. A team may
+name an accent, and only from a fixed application palette of eight tokens; the token
+is mapped to a CSS class by application code. A game file therefore cannot supply a
+colour, a hex value, a gradient, a CSS declaration, a class name, or a URL — an
+unrecognized token is rejected at import with a message naming the permitted values,
+and the projector additionally enforces a token *shape* and ignores any token it does
+not know. Imported content still cannot supply scoring logic, a command, a reducer,
+or a public projection: a `score` field on an authored team is simply an unknown
+field and is rejected as one.
+
 ## 6. Command / event architecture (future)
 
 Runtime is command-driven: the host issues **commands**; a reducer produces an
@@ -232,7 +259,14 @@ command appends no event and does not change the revision. Used-tile state is
 derived **only** by replaying effective answer-reveal events, so undo releases a
 tile exactly, with no separate bookkeeping to keep in step. Nothing in the
 gameplay path reads a clock, a random source, or a locale-dependent ordering.
-Teams, scoring, timers and wagers remain deferred.
+
+**Status (Slice 6).** One further command/event pair: `ADJUST_TEAM_SCORE` →
+`TEAM_SCORE_ADJUSTED` (reversible). It extends the same core rather than replacing
+it — a rejected command appends no event and does not change the revision, and every
+score is `replay`ed rather than mutated. `effectiveEvents(history)` is exported so a
+host surface can ask "has this already happened?" from the same source of truth the
+state came from, instead of keeping a parallel record. Timers, buzzers and wagers
+remain deferred.
 
 ## 7. Scoring-strategy boundary (future)
 
@@ -243,7 +277,40 @@ unrestricted manual correction, multipliers, streaks, wagers, steals, caps/
 floors, labels, audit history, and undo.
 
 **Invariant:** no module may assume all rounds share one scoring model or that a
-score is a bare number. Not implemented in Slice 1.
+score is a bare number.
+
+**Status (Slice 6).** The FIRST strategy now exists — bounded integer points — and
+it keeps the seam visible rather than hard-coding "points" into the engine. See
+[`ADR-006-teams-and-scoring.md`](ADR-006-teams-and-scoring.md).
+
+Teams are authored content on the immutable `GameDefinition` (stable id as identity,
+public name that is explicitly *not* identity, an accent chosen only from an
+application palette, authored array order frozen onto `order`). Their scores are
+SESSION state (`PrivateGameState.teamScores`), derived purely by replaying the
+append-only log — there is no score cache and no write path outside `reduce`, so
+"no entry" and "zero" are the same fact and undo restores a prior total exactly.
+
+Scores are bounded integers (−1,000,000…1,000,000, initial 0): no `NaN`, no
+`Infinity`, no floats, no coercion. One command, `ADJUST_TEAM_SCORE`, carries a
+signed `delta` plus a typed `mode` (`full-credit` · `partial-credit` · `deduction` ·
+`manual-correction`) and a typed `source` (a specific category-board tile, or
+explicitly `manual`). That is what keeps the strategy typed: an amount is never an
+unexplained integer, and a future strategy (lives, stars, composite round scores)
+adds a mode/source pair rather than a parallel scoring system. The resulting total
+is deliberately NOT stored on the event — it is always derived, because a frozen
+total becomes a lie when an earlier adjustment is undone.
+
+**Revealing and scoring are independent in both directions.** A reveal never scores;
+scoring never consumes a tile; undoing a score leaves the reveal and the used tile
+alone; undoing a reveal leaves the score standing. Correction never rewrites
+history — undo appends a marker, or a compensating `manual-correction` is appended
+beside the original.
+
+Partial credit is an explicit whole number of points, never a fraction — so there is
+no rounding rule to get wrong in front of a class.
+
+Lives, stars, coins, badges, experience, streaks, multipliers beyond the board's own
+`effectiveValue`, wagers, steals, caps and floors remain deferred.
 
 ## 8. Theme boundary (future)
 

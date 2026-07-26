@@ -15,9 +15,13 @@ import {
   type PublicRoundAvailability,
   type PublicRoundState,
   type PublicState,
+  type PublicTeam,
+  type PublicTeamsState,
 } from './publicState'
 import { PUBLIC_STATUS_COPY, PUBLIC_STATUS_PHASE } from './status'
-import { categoryBoardStateFor } from './reducer'
+import { categoryBoardStateFor, teamScoreFor } from './reducer'
+import { isTeamAccent } from '../game/teams/accents'
+import { isTeamScore } from '../game/teams/scoring'
 import {
   findTileLocation,
   readCategoryBoardDefinition,
@@ -133,6 +137,52 @@ function toPublicCategoryBoardState(
   }
 }
 
+/**
+ * Project the session's teams and scores to the public scoreboard (Slice 6).
+ *
+ * ALLOW-LIST, exactly like its siblings: every public field is NAMED and copied
+ * individually. Nothing is spread, cloned-and-deleted, or serialized, so a field
+ * added to `TeamDefinition` later (a roster, a device token, a private note) is
+ * NOT exposed by default.
+ *
+ * What it deliberately never reads:
+ *  - the authored team `id` — the projector gets a positional key instead;
+ *  - the private per-event score history, or any undo metadata;
+ *  - the host's selected scoring target (which is not in session state at all);
+ *  - `order`, except as the array position it already implies.
+ *
+ * Returns `null` when the game configures no teams (no scoreboard exists), and
+ * the explicit `unavailable` state when a team's data cannot be safely projected —
+ * so a corrupt score becomes a visible neutral panel rather than `NaN` at the
+ * front of a classroom.
+ *
+ * Scores are still projected after the game ENDS: final results are exactly what
+ * a class wants on screen at that point.
+ */
+function toPublicTeams(game: PrivateGameState | null): PublicTeamsState | null {
+  if (!game) return null
+  const teams = game.definition.teams
+  if (teams.length === 0) return null
+
+  const projected: PublicTeam[] = []
+  for (let index = 0; index < teams.length; index += 1) {
+    const team = teams[index]
+    const score = teamScoreFor(game, team.id)
+    // Fail closed on anything the projector should not be asked to render.
+    if (typeof team.name !== 'string' || !isTeamAccent(team.accent) || !isTeamScore(score)) {
+      return { status: 'unavailable' }
+    }
+    projected.push({
+      // Positional, opaque, deterministic — never the authored team id.
+      key: `t${index}`,
+      name: team.name,
+      accent: team.accent,
+      score,
+    })
+  }
+  return { status: 'available', teams: projected }
+}
+
 /** Outcome of projecting the current round: a DTO, nothing to show, or a failure. */
 interface RoundProjection {
   readonly round: PublicRoundState | null
@@ -186,6 +236,7 @@ export function toPublicState(state: PrivateState): PublicState {
       detail: INITIAL_PUBLIC_STATE.detail,
       game: null,
       round: null,
+      teams: null,
     }
   }
 
@@ -194,9 +245,10 @@ export function toPublicState(state: PrivateState): PublicState {
   const projection = projectCurrentRound(session.game)
 
   // NOTE: sessionId, counter, hostNotes, diagnostics, the FULL game definition,
-  // and the private per-round board state are intentionally not referenced. The
-  // game view and the round DTO are separately allow-listed projections. Do not
-  // spread `session`, `state`, `game`, or any board/tile object here.
+  // the private per-round board state, and the raw team score map are
+  // intentionally not referenced. The game view, the round DTO and the scoreboard
+  // are separately allow-listed projections. Do not spread `session`, `state`,
+  // `game`, or any board/tile/team object here.
   return {
     schemaVersion: PUBLIC_STATE_SCHEMA_VERSION,
     revision: state.revision,
@@ -205,6 +257,7 @@ export function toPublicState(state: PrivateState): PublicState {
     detail: copy.detail,
     game: toPublicGameView(session.game, projection.failed),
     round: projection.round,
+    teams: toPublicTeams(session.game),
   }
 }
 

@@ -1,5 +1,6 @@
 import type { PublicStatusCode } from './status'
 import type { GameDefinition } from '../game/gameDefinition'
+import type { ScoreAdjustmentMode, ScoreSource } from '../game/teams/scoring'
 
 /**
  * EVENTS record *accepted facts* — things that actually happened, in order. The
@@ -36,6 +37,7 @@ export const EVENT_TYPES = [
   'CATEGORY_BOARD_PROMPT_REVEALED',
   'CATEGORY_BOARD_ANSWER_REVEALED',
   'CATEGORY_BOARD_RETURNED',
+  'TEAM_SCORE_ADJUSTED',
 ] as const
 
 export type EventType = (typeof EVENT_TYPES)[number]
@@ -155,6 +157,44 @@ export interface CategoryBoardAnswerRevealedEvent
 export type CategoryBoardReturnedEvent =
   CategoryBoardEventBase<'CATEGORY_BOARD_RETURNED'>
 
+/**
+ * One team's score changed (Slice 6) — the whole score audit trail.
+ *
+ * ## Provenance is durable
+ *
+ * The event answers, months later and without any other record: which team, by
+ * how much, what the teacher meant (`mode`), and where the number came from
+ * (`source` — the exact round and tile, or explicitly nothing). That is why the
+ * payload is not just a signed integer.
+ *
+ * ## The resulting total is deliberately NOT stored
+ *
+ * A running total frozen onto the event would be a lie the moment an EARLIER
+ * adjustment is undone: the stored number would describe a history that no longer
+ * applies. Scores are therefore always derived by summing the effective events in
+ * order, and the event carries only the delta plus enough context to explain it.
+ * This is the same rule that makes used tiles exact (ADR-005 §9): one source of
+ * truth, no cache to drift.
+ *
+ * ## Independent of the reveal events
+ *
+ * A score adjustment is its own reversible fact. Undoing it does not un-reveal an
+ * answer and does not put a tile back on the board; undoing an answer reveal does
+ * not remove it. The two are causally related only through the teacher's
+ * intention, and the log records exactly that — see ADR-006 §9.
+ */
+export interface TeamScoreAdjustedEvent extends EventBase<'TEAM_SCORE_ADJUSTED'> {
+  readonly reversible: true
+  /** The team whose score changed, by stable id. */
+  readonly teamId: string
+  /** The signed integer amount applied. Never zero. */
+  readonly delta: number
+  /** What the adjustment meant, as a typed reason code. */
+  readonly mode: ScoreAdjustmentMode
+  /** Where the amount came from, resolved and frozen at plan time. */
+  readonly source: ScoreSource
+}
+
 export type SessionEvent =
   | SessionInitializedEvent
   | PublicStatusSetEvent
@@ -170,3 +210,4 @@ export type SessionEvent =
   | CategoryBoardPromptRevealedEvent
   | CategoryBoardAnswerRevealedEvent
   | CategoryBoardReturnedEvent
+  | TeamScoreAdjustedEvent

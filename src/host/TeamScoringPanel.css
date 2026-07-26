@@ -1,0 +1,205 @@
+/*
+ * Host teams & scoring panel. PRIVATE — never projected.
+ *
+ * Sized for a teacher's laptop and usable on a phone-width host screen: every
+ * control keeps a ~44 px touch target, nothing depends on hover, and no
+ * information is carried by colour alone (a team is identified by its name, and
+ * the accent swatch is decorative).
+ */
+.tsp {
+  width: 100%;
+  max-width: 60rem;
+  margin: var(--space-3) auto 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  text-align: start;
+}
+
+.foundation__tag--slice6 {
+  background: color-mix(in srgb, var(--color-success) 22%, transparent);
+  border-color: var(--color-success);
+}
+
+.tsp h3 {
+  margin: var(--space-1) 0 var(--space-2);
+  font-size: 1.1rem;
+}
+
+/* ── Scoreboard ─────────────────────────────────────────────────────────── */
+.tsp__board {
+  list-style: none;
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--space-1);
+}
+
+.tsp__team {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface-raised);
+}
+
+.tsp__swatch {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  flex: none;
+  background: var(--team-accent, var(--color-text-muted));
+}
+
+.tsp__team-name {
+  flex: 1;
+  overflow-wrap: break-word;
+}
+
+.tsp__team-score {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+/* ── Target selection ───────────────────────────────────────────────────── */
+.tsp__targets {
+  margin: 0 0 var(--space-2);
+  padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.tsp__targets legend {
+  padding: 0 0.4rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.tsp__target {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  /* A comfortable target on a phone-width host screen. */
+  min-height: 44px;
+  padding: 0 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.tsp__target input {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.tsp__target:focus-within {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ── Context / actions ──────────────────────────────────────────────────── */
+.tsp__context,
+.tsp__selected-team,
+.tsp__last {
+  margin: 0 0 var(--space-1);
+  font-size: 0.95rem;
+}
+
+.tsp__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.tsp__result {
+  margin-inline-start: 0.4rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
+}
+
+.tsp__field {
+  margin-bottom: var(--space-2);
+}
+
+.tsp__label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.tsp__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.tsp__input {
+  min-height: 44px;
+  width: 9rem;
+  padding: 0 0.6rem;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.tsp__input:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.tsp__input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.tsp__confirm {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  margin-top: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.tsp__confirm input {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.tsp__preview {
+  margin: 0.3rem 0 0;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}
+
+.tsp__error {
+  margin: 0 0 var(--space-2);
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--color-danger) 15%, transparent);
+  font-size: 0.9rem;
+}
+
+.tsp__history {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-1);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}

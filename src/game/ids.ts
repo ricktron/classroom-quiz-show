@@ -26,6 +26,14 @@ export type GameId = Branded<string, 'GameId'>
 export type RoundId = Branded<string, 'RoundId'>
 /** A round-type identifier. May or may not be registered (see the registry). */
 export type RoundType = Branded<string, 'RoundType'>
+/**
+ * Stable identity of a team within a game (Slice 6). Unique per `GameDefinition`.
+ *
+ * A team's identity is this id and never its display name: renaming "Red Team"
+ * to "The Tectonics" must not move a single point, and two teams with the same
+ * name must still be distinguishable. Scores are keyed by this id.
+ */
+export type TeamId = Branded<string, 'TeamId'>
 /** Runtime identity of a game session (distinct from the private session shell). */
 export type GameSessionId = Branded<string, 'GameSessionId'>
 
@@ -46,6 +54,10 @@ export function roundId(value: string): RoundId {
 
 export function roundType(value: string): RoundType {
   return requireNonEmpty(value, 'roundType') as RoundType
+}
+
+export function teamId(value: string): TeamId {
+  return requireNonEmpty(value, 'teamId') as TeamId
 }
 
 export function gameSessionId(value: string): GameSessionId {

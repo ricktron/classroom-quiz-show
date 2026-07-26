@@ -31,4 +31,14 @@ export const FORBIDDEN_DISPLAY_LABELS: readonly string[] = [
   'Host only',
   'Acceptable alternates',
   'On the display now',
+  // Slice 6: the host teams & scoring panel. The projector shows team NAMES and
+  // TOTALS (both public by design) and nothing else — never the host's scoring
+  // target, the adjustment controls, the mode vocabulary, or the undo affordance.
+  'Scoring target',
+  'Award full value',
+  'Deduct full value',
+  'Partial credit',
+  'Manual correction',
+  'Last score change',
+  'Undo last score change',
 ]

@@ -1,9 +1,9 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with **Slices 1–5 all `Complete` and merged to `main`**. Slice 5
-added the first PLAYABLE round type, `category-board`. **Slice 6 (teams &
-scoring) is unstarted and owner-gated.**
+the repository with **Slices 1–5 all `Complete` and merged to `main`**, and
+**Slice 6 (teams & scoring) `In review`** on a branch with an open, unmerged review
+PR. **Slice 7 (timers & transitions) is unstarted.**
 
 ## Repository state
 
@@ -44,7 +44,27 @@ scoring) is unstarted and owner-gated.**
   success for both jobs and the Pages deployment succeeded. Post-merge
   reconciliation recorded in
   [`../receipts/2026-07-26-slice-5-post-merge-reconciliation.md`](../receipts/2026-07-26-slice-5-post-merge-reconciliation.md).
-  **Slice 6 is unstarted and owner-gated.**
+- **Slice 6 (current):** **In review.** Owner-authorized and delivered on
+  `claude/slice-6-teams-and-scoring-we53wr`, based on `main` at
+  `5237a1f9f6b451c2137330fd0a7f4613b7a919f2` (the merge commit of PR #10, the
+  Slice 5 post-merge reconciliation). A **review PR is open against `main` and has
+  NOT been merged**; post-merge reconciliation has **not** been performed. Local
+  `verify:all` is green (740 unit, 154 e2e / 2 skipped); **CI on the PR is not yet
+  observed**, and **live Pages verification was not performed** (the sandbox network
+  policy denies `ricktron.github.io`). **Slice 7 is unstarted.**
+- **What Slice 6 adds:** teams and the first scoring strategy. Teams are authored
+  content on the immutable `GameDefinition` (stable id as identity, a public name
+  that is *not* identity, an accent from an application-controlled palette of eight
+  tokens, authored order frozen onto `order`, 1–8 teams). Scores are SESSION state
+  (`PrivateGameState.teamScores`): bounded integers (−1,000,000…1,000,000, initial
+  0) derived purely by replaying the log. One command `ADJUST_TEAM_SCORE` → one
+  reversible event `TEAM_SCORE_ADJUSTED`, carrying a signed delta plus a typed
+  `mode` (`full-credit`/`partial-credit`/`deduction`/`manual-correction`) and a
+  typed `source` (a specific board tile, or `manual`). Revealing and scoring are
+  independent in both directions; correction never rewrites history; `PublicState`
+  gained one field, `teams` (wire version 3 → 4); and there is a host scoring panel
+  plus a projector scoreboard. See
+  [`../architecture/ADR-006-teams-and-scoring.md`](../architecture/ADR-006-teams-and-scoring.md).
 - **What Slice 5 adds:** the first playable round type. `category-board` is
   registered by application code and supplies its own strict config schema to the
   Slice 4 pipeline (no second importer). It adds a typed board config (ordered
@@ -101,6 +121,17 @@ scoring) is unstarted and owner-gated.**
   data-only (`DataValue` forbids functions). The `GameSession` (`PrivateGameState`)
   is distinct from the definition. Round **support is frozen onto the event at
   plan time**, so replay is deterministic without the registry.
+- **Teams & scoring:** see
+  [`../architecture/ADR-006-teams-and-scoring.md`](../architecture/ADR-006-teams-and-scoring.md).
+  Teams are authored content, scores are replayed session state, and the two never
+  mix. Identity is the team id (never the name); authored order is canonical and the
+  scoreboard never re-sorts. Imported content may NAME an accent from a fixed
+  application palette and can never supply a colour or any style value. Scores are
+  bounded integers derived only from events — the resulting total is deliberately
+  **not** stored on the event, because undoing an earlier adjustment would make a
+  stored total a lie. The selected scoring target is host UI state: not a command,
+  not an event, not in `PublicState`. Revealing and scoring are independent in both
+  directions, and correction is undo-or-compensate, never an edit.
 - **Category-board round:** see
   [`../architecture/ADR-005-category-board-round.md`](../architecture/ADR-005-category-board-round.md).
   Authored array order is canonical; identity is the stable id (tile ids unique
@@ -121,6 +152,12 @@ scoring) is unstarted and owner-gated.**
 
 ```
 src/game/
+  teams/
+    accents.ts       The application-controlled accent palette (8 tokens) + guard
+    limits.ts        Team-count / name / id limits, each with a classroom rationale
+    schema.ts        Strict Zod teams schema + whole-list semantic checks
+    definition.ts    Trusted TeamDefinition, fail-closed read, lookups, guards
+    scoring.ts       Score bounds, the four typed modes, ScoreSource, THE amount rule
   categoryBoard/
     limits.ts        Board-size + text limits, each with a classroom rationale
     schema.ts        Strict Zod config schema + whole-board semantic checks
@@ -135,13 +172,14 @@ src/game/
   defaultRegistry.ts createDefaultRegistry (placeholder + category-board)
   sampleGame.ts      Trusted in-memory samples (incl. one unsupported round)
 src/state/
-  publicState.ts   PublicState (+ PublicGameView, + PublicRoundState DTO, v3) + guards
+  publicState.ts   PublicState (+ PublicGameView, + PublicRoundState, + teams DTO, v4)
   status.ts        Bounded PublicStatusCode + fixed public copy (host-side)
-  privateState.ts  PrivateState / …GameState (+ CategoryBoardRoundState, per-round)
-  commands.ts      SessionCommand union (+4 game, +4 category-board commands)
-  events.ts        SessionEvent union (+4 game, +4 category-board events)
-  reducer.ts       reduce, planCommand, replay, findUndoTarget, categoryBoardStateFor
-  sanitize.ts      toPublicState (allow-list; +game view, +round DTO) + safeToPublicState
+  privateState.ts  PrivateState / …GameState (+ CategoryBoardRoundState, + teamScores)
+  commands.ts      SessionCommand union (+4 game, +4 board, +1 scoring command)
+  events.ts        SessionEvent union (+4 game, +4 board, +1 scoring event)
+  reducer.ts       reduce, planCommand, replay, findUndoTarget, effectiveEvents,
+                   categoryBoardStateFor, teamScoreFor
+  sanitize.ts      toPublicState (allow-list; +game view, +round DTO, +scoreboard)
   store.ts         createSessionStore (owns a RoundRegistry; injects support predicate)
 src/sync/
   protocol.ts      Versioned envelope + strict decodeEnvelope (fail-closed)
@@ -161,10 +199,12 @@ src/import/
   sampleGameFile.ts   Built-in sample game files as JSON TEXT (not definitions)
 src/host/          useSessionStore, useHostSync, FoundationControls,
                    GameImportPanel (host-only import harness),
-                   CategoryBoardHostPanel (the one gameplay surface)
+                   CategoryBoardHostPanel (reveals; scores nothing),
+                   TeamScoringPanel (scores; reveals nothing)
 src/display/       usePublicState (imports only PublicState + receiver),
-                   CategoryBoardDisplay (projector board / prompt / answer)
-src/test/          leakLabels, gameFileFixtures, categoryBoardFixtures
+                   CategoryBoardDisplay (projector board / prompt / answer),
+                   TeamScoreboard (projector scoreboard, fails closed)
+src/test/          leakLabels, gameFileFixtures, categoryBoardFixtures, teamFixtures
 ```
 
 > **Module map note (Slice 4).** `src/game/sampleGame.ts` builds *trusted
@@ -178,7 +218,7 @@ src/test/          leakLabels, gameFileFixtures, categoryBoardFixtures
 npm ci               # reproducible install
 npm run lint         # ESLint (flat config)
 npm run typecheck    # tsc -b --noEmit
-npm run test:run     # Vitest (unit/component) — 455 tests
+npm run test:run     # Vitest (unit/component) — 740 tests
 npm run build        # tsc -b && vite build → dist/
 npm run test:e2e     # Playwright vs production preview (3 viewport projects)
 npm run verify       # lint + typecheck + unit
@@ -191,9 +231,14 @@ npm run verify:all   # verify + build + e2e (merge gate)
 > That override is passed via the environment only — never committed. CI installs
 > the matching browser and needs no override.
 
-Latest local results (Slice 5 branch): `verify:all` green — **455 unit tests,
-121 e2e passed / 2 skipped** (both skips are the one desktop-only offline-shell
-test); `git diff --check` clean. Slice 5 CI was **observed green** on PR #9
+Latest local results (Slice 6 branch): `verify:all` green — **740 unit tests,
+154 e2e passed / 2 skipped** (both skips are the one desktop-only offline-shell
+test); `git diff --check` clean. **Slice 6 CI is not yet observed** and **live Pages
+URLs were not loaded** (the sandbox network policy denies `ricktron.github.io` with
+HTTP 403 on CONNECT).
+
+Earlier, on the Slice 5 branch: `verify:all` green — **455 unit tests,
+121 e2e passed / 2 skipped**. Slice 5 CI was **observed green** on PR #9
 (final reviewed head `5e6994e`): all three checks concluded success, SonarCloud
 Quality Gate passed with 0 security hotspots. **Post-merge on `main`
 (`2ec6932`)** the `CI` workflow concluded success for both jobs, and the Pages
@@ -206,14 +251,27 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Known risks / limitations
 
-- **Live-URL verification after the Slice 5 deployment is not claimed.** The
-  Pages workflow concluded success on `main` at `2ec6932`; nobody has recorded
-  loading the live host/display URLs since. Slice 5 changed no CI or deploy
-  configuration.
-- **`PublicState` wire version is now 3.** A consumer pinned to version 2 fails
-  closed by design; no migration exists.
-- **The board scores nothing.** `multiplier` affects the displayed value and a
-  typed `effectiveValue`; no team, score, timer, buzzer or wager exists.
+- **Slice 6 CI has not been observed**, and **no live-URL verification has been
+  performed** since the Slice 5 deployment (the sandbox network policy denies
+  `ricktron.github.io`). Slice 6 changes no CI or deploy configuration.
+- **`PublicState` wire version is now 4.** A consumer pinned to version 3 (or 2)
+  fails closed by design; no migration exists.
+- **The board itself still scores nothing.** `multiplier` affects the displayed
+  value and the typed `effectiveValue`, and revealing an answer awards nothing — the
+  teacher must deliberately award or deduct. No timer, buzzer or wager exists.
+- **The selected scoring target is host UI state** and is lost on a host reload. It
+  is never broadcast and awards nothing by existing (a deliberate decision —
+  ADR-006 §7).
+- **Undo reaches only the latest reversible event.** The host panel enables "Undo
+  last score change" only when the next undo target actually is a score; otherwise it
+  points at manual correction. There is no targeted per-event undo.
+- **A tile can only be scored while it is open** (`prompt` or `answer` stage). After
+  returning to the board, use a manual correction.
+- **A zero-value tile has no scoring preset** (every amount rule would need a zero
+  delta). Manual correction remains available.
+- **Partial credit is whole points only** — no fractions, so no rounding rule.
+- **Score bounds are ±1,000,000**; an adjustment that would leave the range is
+  rejected, never clamped.
 - **Board state is per round and RESUMES on return** — leaving a round and
   coming back restores its used tiles and reveal stage. Deliberate.
 - **One tile at a time.** A second tile cannot be opened while one is live;
@@ -246,20 +304,21 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Next action
 
-**Authorize Slice 6 — Teams & scoring.** Slice 5 is already `Complete` in
-[`../STATUS.md`](../STATUS.md). Do **not** begin Slice 6 until the owner
-explicitly authorizes it.
+**Review the Slice 6 implementation PR.** It is open against `main` and must not be
+merged until reviewed. Slice 6 is `In review` in [`../STATUS.md`](../STATUS.md).
 
-## Prohibited next actions until Slice 6 is authorized
+## Prohibited next actions until the Slice 6 PR merges
 
-Do **not**: begin Slice 6 or any later slice; implement teams, team colours,
-score totals, awards, deductions, partial credit, manual score correction, score
-audit history, or scoring strategies; add buzzers or lockout, timers or timed
-transitions, durable persistence/IndexedDB/session recovery/leader coordination,
-a final wager, a media pipeline, a theme engine, spreadsheet/CSV/XLSX import,
-an authoring UI, pack management, a saved game library, or remote URL import;
-add a backend, accounts, cross-device sync, analytics, or AI services; add any
-further playable round type; weaken fail-closed display behavior; project
-teacher notes, alternates, or unrevealed content; permit executable imported
-game code; add dynamic module/plugin loading based on game content; or move
-implementation truth into NightWatch or Obsidian.
+Do **not**: merge the Slice 6 PR yourself; perform Slice 6 post-merge
+reconciliation; begin Slice 7 or any later slice; add timers, countdowns, timed
+transitions, or automatic timeout scoring; add buzzers, lockout, contestant devices,
+or remote team input; add durable persistence/IndexedDB/session recovery/leader
+coordination; add a final wager, Daily Double, or Final Jeopardy; add a media
+pipeline, a theme engine, or team colours beyond the application palette; add
+spreadsheet/CSV/XLSX/Google Sheets import, an authoring UI, pack management, a saved
+game library, or remote URL import; add a backend, accounts, cross-device sync,
+analytics, or AI services; add any further playable round type; weaken fail-closed
+display behavior; project teacher notes, alternates, unrevealed content, the score
+event history, undo metadata, or the host's scoring target; permit executable
+imported game code or imported style values; add dynamic module/plugin loading based
+on game content; or move implementation truth into NightWatch or Obsidian.

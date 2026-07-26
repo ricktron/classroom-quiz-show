@@ -22,6 +22,13 @@ This project separates two kinds of durable decision records:
      board-shape and duplicate-value decisions, multiplier semantics, the
      reveal-stage state machine, used-tile policy, replay/undo, the
      current-stage-only public DTO and wire version 3 (Slice 5).
+   - [`ADR-006-teams-and-scoring.md`](../architecture/ADR-006-teams-and-scoring.md)
+     — teams as authored content vs. scores as replayed session state, identity
+     and ordering rules, team limits, the application-controlled accent palette,
+     bounded integer score policy, the four typed scoring modes, the single
+     `ADJUST_TEAM_SCORE` command and its provenance, the host-only scoring
+     target, reveal/score independence, correction without rewriting history,
+     reset semantics, the public scoreboard DTO and wire version 4 (Slice 6).
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).

@@ -68,6 +68,10 @@ export const IMPORT_ISSUE_CODES = [
   'duplicate-category-id',
   'duplicate-tile-id',
   'blank-text',
+  // semantic — team content checks contributed by the team schema (Slice 6).
+  // Reported at the `schema` stage for the same reason: the schema produced them.
+  'duplicate-team-id',
+  'invalid-team-accent',
   // schema (Zod, including round `config` schemas supplied by the registry)
   'missing-field',
   'invalid-type',

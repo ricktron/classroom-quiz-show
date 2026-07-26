@@ -17,11 +17,12 @@
 
 /**
  * Bump when the PublicState wire shape changes incompatibly. Slice 3 added the
- * `game` field (1 → 2); Slice 5 adds the `round` field (2 → 3). A display
- * expecting an older shape fails closed on the version mismatch — an old wire
- * shape is never reinterpreted, guessed at, or upgraded.
+ * `game` field (1 → 2); Slice 5 added the `round` field (2 → 3); Slice 6 adds the
+ * `teams` field (3 → 4). A display expecting an older shape fails closed on the
+ * version mismatch — an old wire shape is never reinterpreted, guessed at, or
+ * upgraded, and version 3 is never re-read as though it were version 4.
  */
-export const PUBLIC_STATE_SCHEMA_VERSION = 3 as const
+export const PUBLIC_STATE_SCHEMA_VERSION = 4 as const
 
 /**
  * Coarse, public-safe lifecycle phase. This is intentionally NOT the private
@@ -151,6 +152,102 @@ export type PublicCategoryBoardState =
  */
 export type PublicRoundState = PublicCategoryBoardState
 
+/**
+ * ── Team scoreboard public DTO (Slice 6) ─────────────────────────────────────
+ *
+ * The scoreboard IS public: a class must be able to see the score. So unlike the
+ * board DTO this one is not stage-dependent — it is present at every stage, and
+ * it stays present when the game ends so final results can be read.
+ *
+ * What it deliberately never carries, at any point: the authored team id, the
+ * private import diagnostics that produced the teams, the score EVENT history,
+ * any undo metadata, the host's currently selected scoring target, which host
+ * controls exist, or any style value. Colour is one token from a fixed
+ * application palette, and it is always supplemental to the visible name.
+ */
+
+/** One team as the projector sees it. */
+export interface PublicTeam {
+  /**
+   * Opaque, position-derived rendering key (e.g. `t0`). It is NOT the authored
+   * team id — the same rule the board DTO follows, so authored identifiers never
+   * travel to the projector even when they look harmless.
+   */
+  readonly key: string
+  /** The authored, public-facing team name. */
+  readonly name: string
+  /**
+   * One token from the application's fixed accent palette. It is a NAME, never a
+   * colour or a style string, so the projector cannot be handed arbitrary CSS.
+   */
+  readonly accent: string
+  /** The team's current score: an integer, possibly negative. */
+  readonly score: number
+}
+
+/**
+ * The scoreboard, discriminated so "we cannot safely show the scores" is an
+ * explicit public state rather than a silently missing scoreboard. A projector
+ * that shows nothing is indistinguishable from one that is broken; a projector
+ * that says "Scores unavailable" tells the teacher something is wrong.
+ */
+export type PublicTeamsState =
+  | { readonly status: 'available'; readonly teams: readonly PublicTeam[] }
+  | { readonly status: 'unavailable' }
+
+/**
+ * Wire-level accent grammar: a short lower-case token and nothing else.
+ *
+ * This module stays dependency-free on purpose (see the file header), so it does
+ * NOT import the accent palette. Instead it enforces the SHAPE that makes a style
+ * injection impossible — no spaces, braces, semicolons, colons, parentheses,
+ * `url(`, or `#rrggbb` can match — while palette membership is enforced by the
+ * host sanitizer and again by the display's own token map. Three independent
+ * checks, none of which relies on the other two.
+ *
+ * The same mirroring convention as `CATEGORY_BOARD_ID_PATTERN`: a test asserts
+ * every real palette token matches this pattern, so the two cannot drift apart.
+ */
+export const PUBLIC_TEAM_ACCENT_PATTERN = /^[a-z][a-z0-9-]{0,31}$/
+
+/**
+ * Wire-level score bound, deliberately mirroring the domain's
+ * `MAX_TEAM_SCORE`/`MIN_TEAM_SCORE` rather than importing them (same reason as
+ * above). A test asserts the two stay equal.
+ */
+export const PUBLIC_TEAM_SCORE_LIMIT = 1_000_000
+
+function isPublicTeam(value: unknown): value is PublicTeam {
+  if (typeof value !== 'object' || value === null) return false
+  const v = value as Record<string, unknown>
+  return (
+    typeof v.key === 'string' &&
+    v.key.length > 0 &&
+    typeof v.name === 'string' &&
+    typeof v.accent === 'string' &&
+    PUBLIC_TEAM_ACCENT_PATTERN.test(v.accent) &&
+    typeof v.score === 'number' &&
+    Number.isInteger(v.score) &&
+    Math.abs(v.score) <= PUBLIC_TEAM_SCORE_LIMIT
+  )
+}
+
+/**
+ * Strict guard for the scoreboard DTO (or `null`).
+ *
+ * A malformed score — a float, a `NaN`, an out-of-range total, a missing name, an
+ * accent that is not a plain token — fails the whole snapshot, so the display
+ * falls back to its last safe state rather than rendering `NaN` on a projector.
+ */
+export function isPublicTeamsState(value: unknown): value is PublicTeamsState | null {
+  if (value === null) return true
+  if (typeof value !== 'object') return false
+  const v = value as Record<string, unknown>
+  if (v.status === 'unavailable') return v.teams === undefined
+  if (v.status !== 'available') return false
+  return Array.isArray(v.teams) && v.teams.every(isPublicTeam)
+}
+
 /** The complete set of information the display shell is permitted to render. */
 export interface PublicState {
   /** Wire-shape version so the display can fail closed on an unknown shape. */
@@ -174,6 +271,11 @@ export interface PublicState {
    * game, or a round whose projection failed and therefore fails closed).
    */
   readonly round: PublicRoundState | null
+  /**
+   * The public scoreboard, or `null` when the game configures NO teams (and so
+   * has no scoreboard at all — that is the Slice 5 board, unchanged).
+   */
+  readonly teams: PublicTeamsState | null
 }
 
 /**
@@ -189,6 +291,7 @@ export const INITIAL_PUBLIC_STATE: PublicState = {
   detail: 'No active round.',
   game: null,
   round: null,
+  teams: null,
 }
 
 const PUBLIC_PHASES: readonly PublicPhase[] = ['no-session', 'ready', 'waiting']
@@ -299,6 +402,7 @@ export function isPublicState(value: unknown): value is PublicState {
     typeof v.headline === 'string' &&
     typeof v.detail === 'string' &&
     isPublicGameView(v.game) &&
-    isPublicRoundState(v.round)
+    isPublicRoundState(v.round) &&
+    isPublicTeamsState(v.teams)
   )
 }

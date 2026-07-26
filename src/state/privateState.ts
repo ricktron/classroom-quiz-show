@@ -11,8 +11,9 @@ import type { GameDefinition } from '../game/gameDefinition'
  * from here to the display is the allow-list sanitizer in `sanitize.ts`; nothing
  * in this module is display-safe.
  *
- * Slice 2 is a neutral foundation: this "session shell" deliberately models NO
- * gameplay (no board, rounds, teams, scoring, timers, prompts, or answers).
+ * Slice 2 was a neutral foundation with no gameplay at all. Gameplay state has
+ * arrived since: Slice 5 added per-round board progress and Slice 6 adds team
+ * scores. Timers, buzzers, wagers and persistence remain absent.
  */
 
 /** Foundation lifecycle. No gameplay states — those arrive in later slices. */
@@ -96,6 +97,21 @@ export interface PrivateGameState {
    * `unsupported` drives the host diagnostic and the fail-closed public view.
    */
   readonly currentRoundSupport: RoundSupport | null
+  /**
+   * Team scores for this game session, keyed by stable `TeamId` (Slice 6).
+   *
+   * This is SESSION state, not authored content: the teams themselves live on the
+   * immutable `definition`, and their scores live here because they change. A
+   * missing key means the team is still on {@link INITIAL_TEAM_SCORE} — the map
+   * only records teams that have actually been adjusted, so "no entry" and "zero"
+   * are the same fact and cannot disagree.
+   *
+   * Like `categoryBoards`, this is DERIVED BY REPLAY from the append-only event
+   * log. There is no score cache, no running total kept alongside the events, and
+   * no path that mutates a score outside `reduce`. That is what makes undo exact:
+   * an undone adjustment is simply not applied on the next replay.
+   */
+  readonly teamScores: Readonly<Record<string, number>>
   /**
    * Per-round category-board progress, keyed by the round's stable `RoundId`.
    *

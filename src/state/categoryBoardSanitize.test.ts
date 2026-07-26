@@ -221,7 +221,7 @@ describe('nothing else from the private world crosses the boundary', () => {
   it('keeps the top-level allow-list exactly', () => {
     const publicState = drive(boardStore(), select('alpha-100'))
     expect(Object.keys(publicState).sort()).toEqual(
-      ['detail', 'game', 'headline', 'phase', 'revision', 'round', 'schemaVersion'].sort(),
+      ['detail', 'game', 'headline', 'phase', 'revision', 'round', 'schemaVersion', 'teams'].sort(),
     )
   })
 
@@ -343,8 +343,10 @@ describe('the public round guard rejects impossible payloads', () => {
 })
 
 describe('wire version', () => {
-  it('is 3 — bumped explicitly because Slice 5 added the round field', () => {
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(3)
+  it('is 4 — bumped again because Slice 6 added the teams field', () => {
+    // Slice 5 took this from 2 → 3 for `round`; Slice 6 takes it 3 → 4 for
+    // `teams`. Version 3 is never re-read as though it were version 4.
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(4)
   })
 
   it('rejects an older wire shape instead of reinterpreting it', () => {
