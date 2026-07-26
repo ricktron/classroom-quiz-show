@@ -2,6 +2,10 @@
 
 **Current slice:** Slice 6 — Teams & scoring
 **Slice state:** Complete
+**Next slice:** Slice 7 — Timers, arming & transitions (`Planned`, unstarted,
+owner-gated)
+**Roadmap:** 18 slices, amended 2026-07-26 by
+[`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 
 ## State vocabulary
 
@@ -45,7 +49,15 @@
 > reconciliation sandbox's network policy denies `ricktron.github.io`. Post-merge
 > reconciliation is recorded in
 > [`receipts/2026-07-26-slice-6-post-merge-reconciliation.md`](receipts/2026-07-26-slice-6-post-merge-reconciliation.md).
-> **Slice 7 (timers & transitions) remains unstarted and owner-gated.**
+> **Slice 7 remains unstarted and owner-gated.** On 2026-07-26 the owner
+> authorized a planning-only **roadmap amendment**
+> ([`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)):
+> local host-attached USB buzzers became an approved future capability, the MVP
+> non-goal excluding "student devices/buzzers" was narrowed (student-owned
+> devices and networked buzzers stay excluded), Slice 7 was renamed and re-scoped
+> to **Timers, arming & transitions**, and the 11-slice plan became 18 slices.
+> **That amendment changed documentation only — no runtime code, schema, test,
+> workflow or dependency changed, and no implementation slice was started.**
 
 ## Slice 6 work (Complete)
 
@@ -411,12 +423,15 @@ None.
 
 ## Next safe action
 
-**Review and merge the Slice 6 post-merge reconciliation PR.** It is
-documentation-only — it marks Slice 6 `Complete` across the canonical surfaces and
-adds one immutable reconciliation receipt. It touches no application code, tests,
-workflows, dependencies or package files.
+**Review and merge the roadmap amendment PR** (`ROADMAP-AMENDMENT-001`, local
+buzzers). It is documentation-only: it amends the slice sequence, narrows one MVP
+non-goal with owner authorization, and adds one immutable receipt. It touches no
+application code, tests, workflows, dependencies or package files.
 
-Do **not** begin Slice 7, and do **not** amend the slice sequence in
-[`plans/MVP-ARC.md`](plans/MVP-ARC.md), on the strength of this reconciliation.
-Slice 7 and any roadmap amendment are separate, owner-gated decisions that each
-need their own explicit authorization.
+After it merges, the next implementation slice is **Slice 7 — Timers, arming &
+transitions**. It has **no open decision gates** and may be authorized directly.
+
+Do **not** begin Slice 7 on the strength of this amendment — the amendment
+*recommends* it as next but does not authorize it. Slices 8–10 (local buzzers) are
+additionally blocked on owner gates `OG-1`, `OG-2` and `OG-3`, recorded in the
+amendment.

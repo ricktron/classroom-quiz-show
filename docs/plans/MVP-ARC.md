@@ -26,12 +26,21 @@ fail-closed projector behavior.
 Slice 1 preserves these decisions **without** prematurely implementing the later
 systems.
 
-## Slice sequence (11-slice plan)
+## Slice sequence (18-slice plan, amended)
 
 > This ordering is the plan of record. Later slices must not be started until
-> the current slice is accepted. Details for slices 2–11 are intentionally
+> the current slice is accepted. Details for future slices are intentionally
 > high-level and will be refined when each is picked up; they must not be
 > silently rewritten.
+>
+> **Amended 2026-07-26 by `ROADMAP-AMENDMENT-001`.** The original plan had 11
+> slices. Slices 1–6 are unchanged and `Complete`; former slices 7–11 have been
+> re-scoped, decomposed and reordered into slices 7–18 to accommodate
+> owner-authorized **local host-attached USB buzzers** and to pull the media
+> contract ahead of any new round type. This was **not** a silent rewrite: the
+> full rationale, the dependency analysis, the superseded statements, and the
+> open owner gates are recorded in
+> [`../decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](../decisions/ROADMAP-AMENDMENT-001-local-buzzers.md).
 
 | #   | Slice                          | Focus (summary)                                                                 | Depends on |
 | --- | ------------------------------ | ------------------------------------------------------------------------------- | ---------- |
@@ -41,16 +50,25 @@ systems.
 | 4   | **Validation & import pipeline** | Canonical versioned JSON, one Zod-based validation/normalization pipeline, actionable errors, no silent repair. **(Complete.)** | 3          |
 | 5   | **Category-board round**       | First playable round type: configurable categories/rows/ladder, multiplier, used-tile state, prompt/answer reveal, alternates, notes. **(Complete.)** | 3, 4       |
 | 6   | **Teams & scoring**            | Teams, typed scoring strategy (points first), awards/deductions, partial credit, unrestricted manual correction, audit history, undo. **(Complete.)** | 2, 5       |
-| 7   | **Timers & transitions**       | Timer config, public timer, host-controlled undoable round transitions, reduced-motion-safe. | 5, 6       |
-| 8   | **Persistence & recovery**     | IndexedDB durable local persistence, session recovery, lightweight leader coordination. | 2          |
-| 9   | **Final-wager round**          | Public prompt, host-entered/private wagers, timed response, reveal, settlement, tie handling. | 5, 6, 7    |
-| 10  | **Media & theme boundaries**   | Typed media model (beyond text), theme system (presentation-only), accessibility/high-contrast theme. | 5          |
-| 11  | **Authoring & packs**          | Content authoring, spreadsheet import convenience, complete portable game packs, standards tags. | 4, 5       |
+| 7   | **Timers, arming & transitions** | Timer config, a deadline-projected public timer, host arming/disarming, host-controlled undoable round transitions, reduced-motion-safe. The interrupt seam must be typed so buzz-in is a later addition, not a rewrite. **(Next. Unstarted, owner-gated.)** | 5, 6 |
+| 8   | **Local input contract & keyboard buzz-in** | The device-independent input-adapter boundary + registry, buzz-in domain semantics, one command/event pair, replay-derived queue state, sanitized public projection — with the **keyboard adapter** as its first consumer. | 2, 6, 7 |
+| 9   | **Generic Gamepad adapter**    | Gamepad API adapter behind the slice 8 boundary; connect/disconnect handling, polling isolation, host diagnostics. No model-specific assumptions. | 8 |
+| 10  | **Sony Buzz! mapping, validation & host setup UX** | Configurable controller mapping, Sony Buzz! validation as the preferred target, host setup/test surface, fallback when no controller is present. | 9 |
+| 11  | **Media contract**             | Typed media model (beyond plain-string prompts), fail-closed on unsupported media, additive on `schemaVersion: 1`. **Must precede any new round type.** | 4, 5 |
+| 12  | **Portable export & round-trip import** | Export a game to the canonical portable document and re-import it losslessly; reproducible game identity; round-trip equality as an acceptance criterion. | 4, 11 |
+| 13  | **Local persistence & recovery** | IndexedDB durable local storage, session recovery after refresh, saved definitions kept distinct from active session state, lightweight leader coordination. | 2, 12 |
+| 14  | **Final-wager round**          | Public prompt, host-entered/private wagers, timed response, reveal, settlement, tie handling. | 5, 6, 7, 11 |
+| 15  | **Session summary & compatible-profile reporting** | Per-session result summary from replay; normalized metrics; cross-session comparison behind a stable competitive-profile identifier. | 6, 13 |
+| 16  | **Theme engine**               | Presentation-only theme system, accessibility/high-contrast theme. Never alters scoring, validation, event semantics or the privacy boundary. | 5 |
+| 17  | **Authoring & packs**          | Content authoring, spreadsheet import convenience, complete portable game packs, standards tags. | 4, 5, 12 |
+| 18  | **Release readiness**          | Accessibility audit, polish, documentation completeness, deployment verification. | all |
 
 Additional round engines (image-identification, timeline-ordering, matching,
 data-interpretation, concept-map, claim-evidence-reasoning, whiteboard-challenge,
-custom) are added as registered round types after the engine core (slices 2–7)
-is stable, each behind the registry from slice 3.
+custom) are added as registered round types after the engine core is stable, each
+behind the registry from slice 3 — and, per `ROADMAP-AMENDMENT-001` §5.8,
+**after the media contract (slice 11)**, so a new round type is not built on the
+assumption that a prompt is a plain string.
 
 ## Slice 1 — scope, acceptance, non-goals
 
@@ -480,10 +498,268 @@ generation; and **no additional playable round types**.
 
 ### What remains for Slice 7
 
-Timers & transitions: timer configuration, a public timer, host-controlled undoable
-round transitions, and reduced-motion-safe presentation — built on top of the
-scoring events this slice produces. **Slice 7 is `Planned`, unstarted, and
-owner-gated — it must not begin until the owner explicitly authorizes it.**
+Timers, arming & transitions — **re-scoped by `ROADMAP-AMENDMENT-001`**, built on
+top of the scoring events this slice produces. **Slice 7 is `Planned`, unstarted,
+and owner-gated — it must not begin until the owner explicitly authorizes it.**
+Its amended record is in "Amended slice records (7–18)" below.
+
+## Amended slice records (7–18)
+
+Added by [`ROADMAP-AMENDMENT-001`](../decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
+on 2026-07-26. **No slice below is started.** "Impact" states whether the slice
+changes schema, runtime, UI, storage or hardware support.
+
+### Slice 7 — Timers, arming & transitions
+
+- **Identifier:** `CQS-SLICE-7-TIMERS-ARMING-TRANSITIONS`
+- **Purpose:** introduce time-bounded play and host-controlled undoable
+  transitions without breaking deterministic replay, and settle where a
+  clock-dependent value may live.
+- **Primary deliverables:** authored timer configuration; timer facts as durable
+  reversible events (started with a stated duration, expired, cancelled); host
+  arming/disarming derived from replayed events; a public projection that carries
+  an **absolute deadline plus arming state**, with the display deriving remaining
+  time locally; host-controlled undoable round transitions; reduced-motion-safe
+  presentation; an ADR recording the timing boundary.
+- **Major exclusions:** no buzzers or input adapters; no automatic timeout
+  scoring; no media/playback coupling; no persistence; no tick stream over the
+  sync channel; no remaining-time value in any durable event; no wagering.
+- **Prerequisites:** slices 5 and 6 (Complete).
+- **Completion evidence:** `verify:all` green; unit tests proving replay is
+  bit-exact with no clock read in the reducer; a test proving the sync channel
+  publishes no per-tick revision; e2e coverage of arming, expiry, cancellation
+  and undo across host and projector at all three viewports.
+- **Impact:** schema **yes** (additive, authored timer config, `schemaVersion: 1`)
+  · runtime **yes** · UI **yes** · storage no · hardware no.
+- **Status:** `Planned` — unstarted. **Next recommended slice.**
+- **Owner gate:** authorization to begin. **No open decision gates.** Timer
+  pause/resume is `OG-8` and deferred by default.
+
+### Slice 8 — Local input contract & keyboard buzz-in
+
+- **Identifier:** `CQS-SLICE-8-INPUT-CONTRACT-KEYBOARD`
+- **Purpose:** establish the device-independent local input boundary and buzz-in
+  semantics, with keyboard as the first real adapter and the permanent
+  no-hardware fallback.
+- **Primary deliverables:** an input-adapter interface + application-only
+  registry modelled on ADR-003; mapped logical team input as the only thing
+  crossing into the command layer; one buzz command/event pair; buzz queue state
+  derived only by replay (order from `seq`); duplicate suppression derived from
+  the effective log; a sanitized public buzz projection (ordered team keys and
+  names only); the keyboard adapter and host mapping surface; an ADR.
+- **Major exclusions:** no Gamepad API; no Sony Buzz! support; no networked or
+  student-device buzz-in; no raw device data in any event or in `PublicState`; no
+  scoring change; no reaction-time measurement claim.
+- **Prerequisites:** slices 2, 6, 7; **and owner answers to `OG-1`, `OG-2`,
+  `OG-3`** — these determine the event vocabulary.
+- **Completion evidence:** `verify:all` green; replay determinism tests for buzz
+  order; undo-restores-queue-exactly tests; a privacy test proving no device
+  identifier, button index or mapping reaches `PublicState` or the DOM of the
+  display; e2e keyboard buzz-in across host and projector.
+- **Impact:** schema no · runtime **yes** · UI **yes** · storage no · hardware
+  **no** (keyboard only).
+- **Status:** `Planned` — unstarted.
+- **Owner gate:** blocked on `OG-1`, `OG-2`, `OG-3`.
+
+### Slice 9 — Generic Gamepad adapter
+
+- **Identifier:** `CQS-SLICE-9-GAMEPAD-ADAPTER`
+- **Purpose:** support generic USB controllers through the slice 8 boundary
+  without any model-specific assumption.
+- **Primary deliverables:** a Gamepad API adapter; connect/disconnect handling
+  that fails gracefully and never fabricates a buzz; polling isolated from the
+  reducer and from render; host-private diagnostics; documented browser
+  limitations.
+- **Major exclusions:** no Sony Buzz!-specific mapping; no Bluetooth requirement;
+  no HID driver; no change to the slice 8 contract.
+- **Prerequisites:** slice 8.
+- **Completion evidence:** `verify:all` green; adapter unit tests against a fake
+  gamepad source; a test proving disconnect mid-arming produces no event; e2e
+  coverage of the no-controller fallback path.
+- **Impact:** schema no · runtime **yes** · UI **yes** (diagnostics) · storage no
+  · hardware **yes** (generic USB gamepads).
+- **Status:** `Planned` — unstarted.
+- **Owner gate:** authorization to begin.
+
+### Slice 10 — Sony Buzz! mapping, validation & host setup UX
+
+- **Identifier:** `CQS-SLICE-10-SONY-BUZZ-MAPPING`
+- **Purpose:** make Sony Buzz! USB controllers work well as the preferred initial
+  hardware target, through configuration rather than hard-coded assumptions.
+- **Primary deliverables:** configurable controller mapping (team ↔ controller ↔
+  button); a host setup/test surface that shows presses without scoring
+  anything; validation and clear diagnostics for an unrecognized device; the
+  documented fallback when no controller is connected.
+- **Major exclusions:** no hard-coded single-model assumption; no supported
+  hardware guarantee; no driver; no networked buzzers; no change to the slice 8
+  contract.
+- **Prerequisites:** slice 9.
+- **Completion evidence:** `verify:all` green; mapping validation tests; a test
+  proving no mapping table or device identifier reaches `PublicState`; e2e
+  coverage of the setup surface and the no-controller fallback. **Physical
+  hardware validation is owner-performed and must be recorded as such — it
+  cannot be claimed from CI.**
+- **Impact:** schema no · runtime **yes** · UI **yes** · storage **possibly**
+  (mapping persistence may defer to slice 13) · hardware **yes** (Sony Buzz! USB).
+- **Status:** `Planned` — unstarted.
+- **Owner gate:** authorization to begin; owner-performed hardware validation.
+
+### Slice 11 — Media contract
+
+- **Identifier:** `CQS-SLICE-11-MEDIA-CONTRACT`
+- **Purpose:** honour the permanent §9 invariant that no type or component may
+  assume a prompt is a plain string, **before** any new round type deepens that
+  assumption further.
+- **Primary deliverables:** a typed media model; an additive optional prompt form
+  that keeps a bare string valid and meaning exactly what it means today;
+  fail-closed handling of unsupported or unrecognized media; import diagnostics
+  with exact paths; a projector presentation that never implies content exists
+  when it cannot be rendered; an ADR; a `GAME-ENGINE-BOUNDARIES.md` §9 status
+  update.
+- **Major exclusions:** no `schemaVersion: 2`; no theme engine; no timer/playback
+  coupling (`OG-9`); no remote media fetch; no new round type.
+- **Prerequisites:** slices 4 and 5.
+- **Completion evidence:** `verify:all` green; tests proving every pre-existing
+  bare-string document still validates and still means text; fail-closed tests
+  for unsupported media; privacy tests unchanged and green.
+- **Impact:** schema **yes** (additive on v1) · runtime **yes** · UI **yes** ·
+  storage no · hardware no.
+- **Status:** `Planned` — unstarted.
+- **Owner gate:** authorization to begin.
+
+### Slice 12 — Portable export & round-trip import
+
+- **Identifier:** `CQS-SLICE-12-PORTABLE-EXPORT`
+- **Purpose:** give the teacher a durable, owned, offline copy of an authored
+  game, and a stable portable identity, before any storage layer exists.
+- **Primary deliverables:** export of a loaded game to the canonical portable
+  document; byte-predictable output; round-trip re-import through the existing
+  single pipeline; reproducible game identity; host-only export surface.
+- **Major exclusions:** no persistence; no cloud or remote destination; no
+  spreadsheet/CSV/XLSX; no second import pipeline; no authoring UI.
+- **Prerequisites:** slices 4 and 11.
+- **Completion evidence:** `verify:all` green; **round-trip equality tests**
+  (export → import → structurally identical definition) as a hard acceptance
+  criterion; determinism test on export byte output.
+- **Impact:** schema no (uses the existing format) · runtime **yes** · UI **yes**
+  · storage no · hardware no.
+- **Status:** `Planned` — unstarted.
+- **Owner gate:** authorization to begin.
+
+### Slice 13 — Local persistence & recovery
+
+- **Identifier:** `CQS-SLICE-13-PERSISTENCE`
+- **Purpose:** survive an accidental refresh or tab close without losing a
+  lesson.
+- **Primary deliverables:** IndexedDB local storage; **saved game definitions
+  kept strictly distinct from active session state**; event-log durability;
+  session recovery; lightweight leader coordination; offline-only storage with
+  nothing new projected to the display.
+- **Major exclusions:** no cloud sync; no accounts; no cross-device sync; no new
+  public state; no student data.
+- **Prerequisites:** slices 2 and 12.
+- **Completion evidence:** `verify:all` green; recovery-after-refresh e2e as the
+  headline criterion; a test proving persisted session state is re-derived by
+  replay rather than trusted as state; privacy tests green.
+- **Impact:** schema no · runtime **yes** · UI **yes** · storage **yes** ·
+  hardware no.
+- **Status:** `Planned` — unstarted.
+- **Owner gate:** authorization to begin.
+
+### Slice 14 — Final-wager round
+
+- **Identifier:** `CQS-SLICE-14-FINAL-WAGER`
+- **Purpose:** the second playable round type — a closing wager round.
+- **Primary deliverables:** public prompt; host-entered private wagers; timed
+  response; reveal; settlement; tie handling.
+- **Major exclusions:** no Daily Double mid-board; no student-device wager entry;
+  no new scoring strategy beyond bounded integer points.
+- **Prerequisites:** slices 5, 6, 7 **and 11** (a new round type must follow the
+  media contract).
+- **Completion evidence:** `verify:all` green; privacy tests proving a wager is
+  never projected before reveal; full replay/undo coverage.
+- **Impact:** schema **yes** (additive round config) · runtime **yes** · UI
+  **yes** · storage no · hardware no.
+- **Status:** `Planned` — unstarted.
+- **Owner gate:** authorization to begin; default tie-break already an approved
+  product decision.
+
+### Slice 15 — Session summary & compatible-profile reporting
+
+- **Identifier:** `CQS-SLICE-15-REPORTING`
+- **Purpose:** tell the teacher what happened in a session, and make any
+  cross-session comparison honest.
+- **Primary deliverables:** a per-session result summary derived from replay;
+  **normalized metrics** (percentage of available points, category accuracy,
+  wins, response accuracy); a stable **competitive-profile identifier** so only
+  compatible games are compared; cross-session comparison **only** where
+  persistence supplies the history.
+- **Major exclusions:** **no raw-score leaderboard as a default surface**; no
+  individual student identity (`OG-7`); no grading or defensible individual
+  analytics; no export to an LMS.
+- **Prerequisites:** slice 6; slice 13 for anything cross-session.
+- **Completion evidence:** `verify:all` green; tests proving a summary is derived
+  from the log and never cached; tests proving incompatible profiles are not
+  compared.
+- **Impact:** schema no · runtime **yes** · UI **yes** · storage no (reads slice
+  13's) · hardware no.
+- **Status:** `Planned` — unstarted.
+- **Owner gate:** `OG-7` for any individual identity; authorization to begin.
+
+### Slice 16 — Theme engine
+
+- **Identifier:** `CQS-SLICE-16-THEME-ENGINE`
+- **Purpose:** presentation-only theming, including an accessibility/high-contrast
+  theme.
+- **Primary deliverables:** a theme system covering typography, backgrounds,
+  tiles, score presentation and animation intensity; a high-contrast theme;
+  theme selection that content may name but never supply.
+- **Major exclusions:** a theme must **never** alter scoring rules, the
+  private/public boundary, validation, event semantics or answer-reveal
+  authorization; no imported style values; no team colours beyond the
+  application palette.
+- **Prerequisites:** slice 5.
+- **Completion evidence:** `verify:all` green; tests proving no theme value
+  originates from imported content and no theme changes engine behaviour.
+- **Impact:** schema **possibly** (additive theme name) · runtime **yes** · UI
+  **yes** · storage no · hardware no.
+- **Status:** `Planned` — unstarted.
+- **Owner gate:** authorization to begin.
+
+### Slice 17 — Authoring & packs
+
+- **Identifier:** `CQS-SLICE-17-AUTHORING-PACKS`
+- **Purpose:** let a teacher build and manage content without hand-writing JSON.
+- **Primary deliverables:** content authoring UI; spreadsheet import convenience
+  through the existing single pipeline; complete portable game packs; standards
+  tags.
+- **Major exclusions:** no backend; no cloud library; no AI generation; no second
+  validation pipeline.
+- **Prerequisites:** slices 4, 5, 12.
+- **Completion evidence:** `verify:all` green; every authoring path proven to
+  converge on the one canonical import pipeline.
+- **Impact:** schema **possibly** · runtime **yes** · UI **yes** · storage
+  **yes** · hardware no.
+- **Status:** `Planned` — unstarted.
+- **Owner gate:** authorization to begin.
+
+### Slice 18 — Release readiness
+
+- **Identifier:** `CQS-SLICE-18-RELEASE-READINESS`
+- **Purpose:** close the gap between "features exist" and "a teacher can rely on
+  it in a classroom".
+- **Primary deliverables:** a full accessibility audit; real PWA icons (the Slice
+  1 placeholders); polish; documentation completeness; **owner-performed live
+  deployment verification**, recorded as such.
+- **Major exclusions:** no new capability.
+- **Prerequisites:** all prior slices.
+- **Completion evidence:** `verify:all` green; an accessibility audit receipt;
+  an owner-verified live-route receipt — which, unlike every prior slice, cannot
+  be satisfied by a deployment workflow conclusion alone.
+- **Impact:** schema no · runtime **yes** (polish) · UI **yes** · storage no ·
+  hardware no.
+- **Status:** `Planned` — unstarted.
+- **Owner gate:** authorization to begin.
 
 ## Dependencies & risks
 

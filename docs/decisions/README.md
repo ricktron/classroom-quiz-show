@@ -32,6 +32,21 @@ This project separates two kinds of durable decision records:
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).
+3. **Roadmap amendments** — owner-authorized changes to the slice sequence
+   itself, stored here as `ROADMAP-AMENDMENT-NNN-<slug>.md`. An amendment is
+   required because the slice sequence in
+   [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md) is the plan of record and "must
+   not be silently rewritten": the amendment carries the rationale, the
+   dependency analysis, the superseded statements, and any open owner gates,
+   while `MVP-ARC.md` carries the resulting plan.
+   - [`ROADMAP-AMENDMENT-001-local-buzzers.md`](ROADMAP-AMENDMENT-001-local-buzzers.md)
+     — local host-attached USB buzzers (Sony Buzz! as the preferred initial
+     target) as an approved future capability; the narrowing of the
+     "student devices/buzzers" MVP non-goal; the timing/arming boundary for
+     clock-dependent values; the timer↔buzzer dependency analysis; media pulled
+     ahead of any new round type; export/import before persistence; the schema
+     migration policy; reporting placement and the rejection of raw-score
+     leaderboards; and the 11-slice plan amended to 18 slices (2026-07-26).
 
 ## When an ADR is required
 

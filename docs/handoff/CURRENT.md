@@ -2,8 +2,18 @@
 
 This is the entry point for the next contributor or coding agent. It reflects
 the repository with **Slices 1–6 all `Complete` and merged to `main`**
-(Slice 6, teams & scoring, merged via PR #11 at `67180a3`). **Slice 7 (timers &
-transitions) is unstarted and owner-gated.**
+(Slice 6, teams & scoring, merged via PR #11 at `67180a3`). **Slice 7 — now
+"Timers, arming & transitions" — is unstarted and owner-gated.**
+
+> **Roadmap amended 2026-07-26.** The owner authorized a planning-only amendment,
+> [`../decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](../decisions/ROADMAP-AMENDMENT-001-local-buzzers.md):
+> **local host-attached USB buzzers** (Sony Buzz! preferred initial target) are an
+> approved future capability, the MVP non-goal excluding "student devices/buzzers"
+> was **narrowed** rather than removed, Slice 7 was re-scoped so its interrupt
+> seam is buzz-aware, the media contract moved ahead of any new round type, and
+> the plan went from **11 to 18 slices**. Read that document before planning any
+> work. It changed **documentation only** — no runtime code, schema, test,
+> workflow or dependency.
 
 ## Repository state
 
@@ -304,35 +314,49 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 - **Duplicate JSON keys are not observable** (`JSON.parse` keeps the last).
 - **Un-ending a game is unsupported** — `GAME_SESSION_ENDED` is irreversible;
   re-initialize to start over.
-- **In-memory history/definitions only** — no durable persistence yet (Slice 8).
-  State is lost on tab close.
+- **In-memory history/definitions only** — no durable persistence yet (Slice 13
+  in the amended plan; portable export lands first, in Slice 12). State is lost on
+  tab close.
 - **Same-browser sync only** — BroadcastChannel, same origin. No cross-device
   sync, backend, or leader election (later/out of scope).
 - **PWA icons remain placeholders** (carried from Slice 1).
 
 ## Open questions / unresolved decisions
 
-- None blocking. Confirm the default branch is `main` (deploy workflow targets
-  `main`).
+- Confirm the default branch is `main` (deploy workflow targets `main`).
+- **Nine owner gates are open**, all opened by `ROADMAP-AMENDMENT-001` §16.
+  Three of them **block Slice 8** because they determine its event vocabulary:
+  - **`OG-1`** — manual arming vs. automatic arming on prompt reveal.
+  - **`OG-2`** — first-only lockout vs. recording the full ordered queue.
+  - **`OG-3`** — promotion of the next queued team after an incorrect response or
+    a host pass.
+
+  The remaining six (`OG-4` ties · `OG-5` queue/tile lifetime · `OG-6` scoring
+  restricted to the active respondent · `OG-7` individual student identity in
+  reporting · `OG-8` timer pause/resume · `OG-9` timer/media coordination) can be
+  answered later; see the amendment for which slice each affects.
+- **Slice 7 has no open gates** and needs only authorization to begin.
 
 ## Next action
 
-**Review and merge the Slice 6 post-merge reconciliation PR.** It is
-documentation-only: it marks Slice 6 `Complete` across the canonical surfaces and
-adds one immutable reconciliation receipt. Slice 6 itself is `Complete` and merged
-in [`../STATUS.md`](../STATUS.md).
+**Review and merge the roadmap amendment PR** (`ROADMAP-AMENDMENT-001`). It is
+documentation-only: it amends the slice sequence, narrows one MVP non-goal with
+owner authorization, and adds one immutable receipt.
 
-After that PR merges, the next decision is the owner's. The slice sequence in
-[`../plans/MVP-ARC.md`](../plans/MVP-ARC.md) is unchanged and remains the plan of
-record: **no roadmap amendment has been made in this reconciliation**, and any
-amendment (or Slice 7 itself) needs its own explicit owner authorization.
+After it merges, the next implementation slice is **Slice 7 — Timers, arming &
+transitions**, whose amended record is in
+[`../plans/MVP-ARC.md`](../plans/MVP-ARC.md). The amendment *recommends* it; it
+does **not** authorize it.
 
 ## Prohibited next actions until Slice 7 is explicitly authorized
 
-Do **not**: merge the reconciliation PR yourself; amend the roadmap based on the
-public-precedent survey; begin Slice 7 or any later slice; add timers, countdowns, timed
-transitions, or automatic timeout scoring; add buzzers, lockout, contestant devices,
-or remote team input; add durable persistence/IndexedDB/session recovery/leader
+Do **not**: merge the amendment PR yourself; begin Slice 7 or any later slice;
+add local buzzer support, keyboard buzz-in handling, or Gamepad API code (the
+roadmap now plans these for Slices 8–10, which is **not** authorization to write
+them); add timers, countdowns, timed
+transitions, or automatic timeout scoring; add lockout, student-owned contestant
+devices, networked buzzers, or remote team input — these remain **excluded**, not
+merely deferred; add durable persistence/IndexedDB/session recovery/leader
 coordination; add a final wager, Daily Double, or Final Jeopardy; add a media
 pipeline, a theme engine, or team colours beyond the application palette; add
 spreadsheet/CSV/XLSX/Google Sheets import, an authoring UI, pack management, a saved
