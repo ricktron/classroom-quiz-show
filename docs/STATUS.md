@@ -1,7 +1,7 @@
 # Status
 
 **Current slice:** Slice 6 — Teams & scoring
-**Slice state:** In review
+**Slice state:** Complete
 
 ## State vocabulary
 
@@ -34,19 +34,27 @@
 > `main` at `2ec6932` concluded success**, and the **Pages deployment
 > succeeded**. Post-merge reconciliation is recorded in
 > [`receipts/2026-07-26-slice-5-post-merge-reconciliation.md`](receipts/2026-07-26-slice-5-post-merge-reconciliation.md).
-> Slice 6 is **In review**: owner-authorized and implemented on
-> `claude/slice-6-teams-and-scoring-we53wr`, based on `main` at
-> `5237a1f9f6b451c2137330fd0a7f4613b7a919f2` (the merge commit of PR #10, the
-> Slice 5 post-merge reconciliation). A **review PR is open and has not been
-> merged**; post-merge reconciliation has **not** been performed. Local
-> `verify:all` passed and **PR CI was observed green** (see below). **Slice 7 (timers & transitions) remains unstarted.**
+> Slice 6 is **Complete**: implementation PR #11 was merged to `main` (merge
+> commit `67180a3a24b43124ce7a2dee91d02fe1f797618e`, merged
+> 2026-07-26T15:58:11Z by `ricktron`; based on `main` at
+> `5237a1f9f6b451c2137330fd0a7f4613b7a919f2`, implementation commit `7734065`,
+> final reviewed head `48ed8180278b6966080be6ce00a0e3b06ca3abf1`). All three PR
+> checks were green before merge, **post-merge CI on `main` at `67180a3`
+> concluded success for both jobs**, and the **Pages deployment succeeded (build
+> + deploy)**. **Manual live-route verification was not performed** — the
+> reconciliation sandbox's network policy denies `ricktron.github.io`. Post-merge
+> reconciliation is recorded in
+> [`receipts/2026-07-26-slice-6-post-merge-reconciliation.md`](receipts/2026-07-26-slice-6-post-merge-reconciliation.md).
+> **Slice 7 (timers & transitions) remains unstarted and owner-gated.**
 
-## Slice 6 work (In review)
+## Slice 6 work (Complete)
 
 Teams and the first **scoring strategy** — bounded integer points. Full rationale in
 [`architecture/ADR-006-teams-and-scoring.md`](architecture/ADR-006-teams-and-scoring.md);
 local evidence in
-[`receipts/2026-07-26-slice-6-local-verification.md`](receipts/2026-07-26-slice-6-local-verification.md).
+[`receipts/2026-07-26-slice-6-local-verification.md`](receipts/2026-07-26-slice-6-local-verification.md);
+merged-state evidence in
+[`receipts/2026-07-26-slice-6-post-merge-reconciliation.md`](receipts/2026-07-26-slice-6-post-merge-reconciliation.md).
 
 | Item | State |
 | --- | --- |
@@ -288,21 +296,33 @@ Neutral state/event/sync foundation — no gameplay. Full rationale in
 
 ## Verification state
 
-Local `verify:all` passed on the Slice 6 branch: lint, typecheck, unit tests
-(**740 passed, 35 files**), production build, and Playwright e2e (**154 passed,
-2 skipped** — both skips are the one desktop-only offline-shell test).
-`git diff --check` is clean. See [`handoff/CURRENT.md`](handoff/CURRENT.md) for
-exact commands and the Slice 6 receipt under [`receipts/`](receipts/).
+Local `verify:all` passed on the Slice 6 branch and again on the reconciliation
+branch: lint, typecheck, unit tests (**740 passed, 35 files**), production build,
+and Playwright e2e (**154 passed, 2 skipped** — both skips are the one
+desktop-only offline-shell test). `git diff --check` is clean. See
+[`handoff/CURRENT.md`](handoff/CURRENT.md) for exact commands and the Slice 6
+receipts under [`receipts/`](receipts/).
 
-- CI on GitHub Actions for Slice 6: **observed green** on PR
+- PR CI on GitHub Actions for Slice 6: **observed green** on PR
   [#11](https://github.com/ricktron/classroom-quiz-show/pull/11) at implementation
-  commit `7734065` — all three checks concluded success (`Lint, typecheck, unit
-  tests, build`; `Playwright e2e`; `SonarCloud Code Analysis` with the Quality Gate
-  **passed** and **0 Security Hotspots**). Sonar's 13 new non-blocking issues were
-  not inspected: `sonarcloud.io` is unreachable from the sandbox.
-- Live GitHub Pages verification for Slice 6: **not performed.** The sandbox
-  network policy denies `ricktron.github.io` (HTTP 403 on CONNECT), so the live
-  host/display URLs were not loaded. Slice 6 changes no CI or deploy configuration.
+  commit `7734065` **and** at the final reviewed head `48ed818` — all three checks
+  concluded success at both heads (`Lint, typecheck, unit tests, build`;
+  `Playwright e2e`; `SonarCloud Code Analysis` with the Quality Gate **passed** and
+  **0 Security Hotspots**). Sonar's 13 new non-blocking issues were not inspected:
+  `sonarcloud.io` is unreachable from the sandbox.
+- **Post-merge CI on `main` for Slice 6: observed green.** On merge commit
+  `67180a3` the `CI` workflow (run `30209343948`) concluded **success** for both
+  jobs — "Lint, typecheck, unit tests, build" and "Playwright e2e". This is
+  post-merge observation on `main`, not a restatement of the pre-merge PR checks.
+- **GitHub Pages deployment for Slice 6: succeeded.** The `Deploy to GitHub Pages`
+  workflow (run `30209343946`) on `main` at `67180a3` concluded success for both
+  the build and deploy jobs (deploy completed 2026-07-26T15:59:00Z). Slice 6
+  changes no CI or deploy configuration.
+- **Manual live-route verification was not performed.** The sandbox network policy
+  denies `ricktron.github.io` (HTTP 403 on CONNECT), so
+  `https://ricktron.github.io/classroom-quiz-show/#/host` and `#/display` were not
+  loaded and no live application behaviour is claimed. A successful deployment
+  workflow is not evidence that the live routes were exercised.
 - Earlier, on the Slice 5 branch: lint, typecheck, **455 unit tests**, build, and
   **121 e2e passed / 2 skipped**.
 
@@ -391,6 +411,12 @@ None.
 
 ## Next safe action
 
-**Review the Slice 6 implementation PR.** The PR is open against `main` and must
-not be merged until it has been reviewed. Do **not** begin Slice 7 and do **not**
-perform post-merge reconciliation before the implementation PR merges.
+**Review and merge the Slice 6 post-merge reconciliation PR.** It is
+documentation-only — it marks Slice 6 `Complete` across the canonical surfaces and
+adds one immutable reconciliation receipt. It touches no application code, tests,
+workflows, dependencies or package files.
+
+Do **not** begin Slice 7, and do **not** amend the slice sequence in
+[`plans/MVP-ARC.md`](plans/MVP-ARC.md), on the strength of this reconciliation.
+Slice 7 and any roadmap amendment are separate, owner-gated decisions that each
+need their own explicit authorization.

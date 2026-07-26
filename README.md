@@ -122,11 +122,14 @@ Slice 5 makes the app **playable for the first time**:
   points: scoring lives in its own panel (Slice 6), so revealing and awarding stay
   separate teacher actions.
 
-**Slice 6 — teams & scoring. In review** — implemented on
-`claude/slice-6-teams-and-scoring-we53wr` on top of `main` at `5237a1f`, with an
-open **review PR that has not been merged** (see [`docs/STATUS.md`](docs/STATUS.md),
-the local-verification receipt
+**Slice 6 — teams & scoring. Complete** — implemented on
+`claude/slice-6-teams-and-scoring-we53wr` on top of `main` at `5237a1f`, and
+**merged to `main` via PR #11** (merge commit `67180a3`, merged
+2026-07-26T15:58:11Z) with post-merge CI green (see
+[`docs/STATUS.md`](docs/STATUS.md), the local-verification receipt
 [`docs/receipts/2026-07-26-slice-6-local-verification.md`](docs/receipts/2026-07-26-slice-6-local-verification.md),
+the post-merge receipt
+[`docs/receipts/2026-07-26-slice-6-post-merge-reconciliation.md`](docs/receipts/2026-07-26-slice-6-post-merge-reconciliation.md),
 and [`docs/architecture/ADR-006-teams-and-scoring.md`](docs/architecture/ADR-006-teams-and-scoring.md)).
 Slice 6 makes the board **score**:
 
