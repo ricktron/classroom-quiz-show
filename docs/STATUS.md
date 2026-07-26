@@ -215,8 +215,10 @@ Local `verify:all` passed on the Slice 5 branch: lint, typecheck, unit tests
 `git diff --check` is clean. See [`handoff/CURRENT.md`](handoff/CURRENT.md) for
 exact commands and the Slice 5 receipt under [`receipts/`](receipts/).
 
-- CI on GitHub Actions for Slice 5: **Not yet observed.** Slice 5 changes no CI
-  or deploy configuration.
+- CI on GitHub Actions for Slice 5: **Observed green.** On PR #9 (head
+  `f8c4517`) "Lint, typecheck, unit tests, build", "Playwright e2e", and the
+  SonarCloud Quality Gate (0 security hotspots) all concluded success. Slice 5
+  changes no CI or deploy configuration.
 - Pages deployment for Slice 5: **Not yet observed** (Pages deploys from `main`).
 - Slice 4 local `verify:all` also passed (253 unit, 97 e2e / 2 skipped).
 - CI on GitHub Actions for Slice 4: **Observed green.** On PR #7 (final head

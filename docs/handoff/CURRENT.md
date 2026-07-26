@@ -187,7 +187,9 @@ npm run verify:all   # verify + build + e2e (merge gate)
 
 Latest local results (Slice 5 branch): `verify:all` green — **455 unit tests,
 121 e2e passed / 2 skipped** (both skips are the one desktop-only offline-shell
-test); `git diff --check` clean. Slice 5 CI has **not yet been observed**.
+test); `git diff --check` clean. Slice 5 CI was **observed green** on PR #9
+(head `f8c4517`): all three checks concluded success, SonarCloud Quality Gate
+passed with 0 security hotspots.
 Earlier, on the Slice 4 branch: 253 unit tests, 97 e2e passed / 2 skipped. Slice 4 CI was observed green on
 PR #7 (final head `8ce850c`) and again **post-merge on `main` (`5295e83`)**, where
 the Pages deployment also succeeded. Slice 3 CI was observed green on PR #5 (final reviewed head
@@ -196,9 +198,9 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Known risks / limitations
 
-- **Slice 5 CI not yet observed.** Local `verify:all` is green; no GitHub
-  Actions run existed for the branch at the time of writing. Slice 5 changes no
-  CI or deploy configuration.
+- **Slice 5 Pages deployment not observed** — Pages deploys from `main` and
+  Slice 5 is not merged. CI on PR #9 is green. Slice 5 changes no CI or deploy
+  configuration.
 - **`PublicState` wire version is now 3.** A consumer pinned to version 2 fails
   closed by design; no migration exists.
 - **The board scores nothing.** `multiplier` affects the displayed value and a

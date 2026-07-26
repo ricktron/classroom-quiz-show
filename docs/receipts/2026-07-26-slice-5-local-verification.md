@@ -74,12 +74,26 @@ order" (`placeholder`, then `category-board`).
 which is the point of that test: a new `PublicState` field must be a deliberate,
 reviewed edit.
 
-## Caveats
+## CI (observed after this receipt was first written)
 
-- **CI not yet observed.** No GitHub Actions run existed for this branch at the
-  time of writing. Slice 5 changes no CI or deploy configuration.
+CI on **PR #9**, head `f8c4517b17433bcbf737b754f02c36ad4faf829a`, concluded
+**success** on all three checks:
+
+| Check | Conclusion | Completed (UTC) |
+| --- | --- | --- |
+| Lint, typecheck, unit tests, build | success | 2026-07-26T03:58:00Z |
+| Playwright e2e | success | 2026-07-26T03:58:50Z |
+| SonarCloud Code Analysis | success | 2026-07-26T03:57:52Z |
+
+SonarCloud reported **Quality Gate passed** — 0 security hotspots, 0.0%
+duplication on new code, and 9 new non-blocking issues. Coverage on new code
+reads 0.0% because no coverage report is uploaded to SonarCloud (unchanged from
+earlier slices; the Vitest and Playwright suites are the actual coverage
+evidence). Slice 5 changes no CI or deploy configuration.
+
+## Caveats
 - **Pages deployment not yet observed** for this branch (Pages deploys from
-  `main`).
+  `main`, and Slice 5 is not merged).
 - **This is local evidence only.** Slice 5 is `In review`, not `Complete`.
 - The e2e run used the Chromium override described above rather than the browser
   build CI installs. The application code under test is the production build.
