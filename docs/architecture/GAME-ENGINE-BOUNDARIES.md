@@ -319,3 +319,44 @@ multiple playable round types.
 
 Slice 1 delivers only the foundation on which the above can be built without
 rework, and the invariants (§4, §5, §7, §9) that must never be violated.
+
+## 13. Testing policy (permanent)
+
+This is a durable repository rule, not a framework. It exists so that "the tests
+pass" keeps meaning the same thing as the engine grows.
+
+**Every slice that changes user-visible host or display behavior must add or
+update Playwright end-to-end coverage.** A board that renders, a control that
+reveals something, a screen that fails closed — if a teacher or a classroom
+could see the difference, an end-to-end test must exercise it in a real browser.
+
+A slice with **no** user-visible change may have no Playwright test delta, but
+it must still run the existing full e2e suite unless the repository's
+verification policy explicitly permits otherwise. "Documentation only" is not by
+itself a reason to skip verification.
+
+### The testing split
+
+Each layer answers a different question, and duplicating one inside another
+buys nothing:
+
+- **Unit tests** — schemas, reducers, commands, replay, helpers, and edge cases.
+  This is where validation permutations, boundary values, rejection reasons, and
+  determinism belong.
+- **Component tests** — bounded UI states, accessibility, and rendering
+  contracts: what a component renders for a given state, what it must never
+  render, what its labels and disabled states are.
+- **Playwright** — end-to-end teacher/projector workflows, host↔display
+  synchronization, the privacy boundary in a real DOM, fail-closed behavior, and
+  representative responsive behavior across the configured viewport projects.
+
+**Do not require every validation permutation to be duplicated in Playwright.**
+One representative end-to-end case per user-visible workflow is the target;
+exhaustive input coverage stays in unit tests, where it is faster and clearer.
+
+### Why the split matters here
+
+The private→public boundary (§4) is the invariant most likely to regress
+silently, and it regresses in the DOM, not in a type. That is why the projector
+suites assert on rendered output and on the serialized payload — a leak that
+type-checks and unit-tests clean can still reach a projector.

@@ -1,9 +1,9 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with Slices 1–4 **Complete** (all merged to `main`) and **Slice 5
-`In review`** on `claude/slice-5-category-board-6gfxnq`. Slice 5 adds the first
-PLAYABLE round type, `category-board`. **Slice 6 is unstarted and owner-gated.**
+the repository with **Slices 1–5 all `Complete` and merged to `main`**. Slice 5
+added the first PLAYABLE round type, `category-board`. **Slice 6 (teams &
+scoring) is unstarted and owner-gated.**
 
 ## Repository state
 
@@ -33,12 +33,18 @@ PLAYABLE round type, `category-board`. **Slice 6 is unstarted and owner-gated.**
   **Note:** the owner merged before **Playwright e2e** concluded on the PR head
   (it concluded success ~23 s later); SonarCloud and the lint/typecheck/unit/
   build job had already reported success. See the receipt for the exact timeline.
-- **Slice 5 (current):** **In review.** Delivered on
+- **Slice 5 (current):** **Complete.** Delivered on
   `claude/slice-5-category-board-6gfxnq`, based on `main` at
   `0dacd3501fb10ce1272386f56bf15a2956ee8c6d` (the merge commit of PR #8, the
-  Slice 4 post-merge reconciliation). An implementation PR is open for review; it
-  is **not merged** and must not be marked `Complete` until review, CI green and
-  owner acceptance. **Slice 6 is unstarted and owner-gated.**
+  Slice 4 post-merge reconciliation). Implementation commit `f8c4517`; two
+  follow-up documentation commits `93e2ce9` and `5e6994e` (the final reviewed
+  head). Merged to `main` via **PR #9** (merge commit
+  `2ec69323c203a989b06610e6506475e875a40e45`, merged 2026-07-26T05:02:33Z) with
+  all three PR checks green. Post-merge CI on `main` at `2ec6932` concluded
+  success for both jobs and the Pages deployment succeeded. Post-merge
+  reconciliation recorded in
+  [`../receipts/2026-07-26-slice-5-post-merge-reconciliation.md`](../receipts/2026-07-26-slice-5-post-merge-reconciliation.md).
+  **Slice 6 is unstarted and owner-gated.**
 - **What Slice 5 adds:** the first playable round type. `category-board` is
   registered by application code and supplies its own strict config schema to the
   Slice 4 pipeline (no second importer). It adds a typed board config (ordered
@@ -188,8 +194,10 @@ npm run verify:all   # verify + build + e2e (merge gate)
 Latest local results (Slice 5 branch): `verify:all` green — **455 unit tests,
 121 e2e passed / 2 skipped** (both skips are the one desktop-only offline-shell
 test); `git diff --check` clean. Slice 5 CI was **observed green** on PR #9
-(head `f8c4517`): all three checks concluded success, SonarCloud Quality Gate
-passed with 0 security hotspots.
+(final reviewed head `5e6994e`): all three checks concluded success, SonarCloud
+Quality Gate passed with 0 security hotspots. **Post-merge on `main`
+(`2ec6932`)** the `CI` workflow concluded success for both jobs, and the Pages
+deployment succeeded.
 Earlier, on the Slice 4 branch: 253 unit tests, 97 e2e passed / 2 skipped. Slice 4 CI was observed green on
 PR #7 (final head `8ce850c`) and again **post-merge on `main` (`5295e83`)**, where
 the Pages deployment also succeeded. Slice 3 CI was observed green on PR #5 (final reviewed head
@@ -198,8 +206,9 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Known risks / limitations
 
-- **Slice 5 Pages deployment not observed** — Pages deploys from `main` and
-  Slice 5 is not merged. CI on PR #9 is green. Slice 5 changes no CI or deploy
+- **Live-URL verification after the Slice 5 deployment is not claimed.** The
+  Pages workflow concluded success on `main` at `2ec6932`; nobody has recorded
+  loading the live host/display URLs since. Slice 5 changed no CI or deploy
   configuration.
 - **`PublicState` wire version is now 3.** A consumer pinned to version 2 fails
   closed by design; no migration exists.
@@ -237,8 +246,9 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Next action
 
-Review the Slice 5 implementation PR. Do **not** begin Slice 6 until Slice 5 is
-reviewed, merged, and accepted by the owner.
+**Authorize Slice 6 — Teams & scoring.** Slice 5 is already `Complete` in
+[`../STATUS.md`](../STATUS.md). Do **not** begin Slice 6 until the owner
+explicitly authorizes it.
 
 ## Prohibited next actions until Slice 6 is authorized
 
