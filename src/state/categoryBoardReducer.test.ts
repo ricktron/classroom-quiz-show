@@ -515,13 +515,22 @@ describe('revealing is not scoring', () => {
     expect(store.getPublicState().teams).toBeNull()
   })
 
-  it('still adds no timer, buzzer or wager field to private state', () => {
+  /**
+   * Slice 7 adds timing, so the old blanket "no timer field anywhere" assertion
+   * would now be false. It is replaced rather than deleted: the point of the
+   * original test was that revealing does not smuggle in later-slice machinery,
+   * and that still holds — a revealed prompt has an untouched response phase, and
+   * buzzers and wagers remain entirely absent.
+   */
+  it('adds no buzzer or wager field to private state, and leaves the response phase untouched', () => {
     const store = boardStore()
     store.dispatch(select('alpha-100'))
     store.dispatch(revealPrompt())
     const serialized = JSON.stringify(store.getState())
-    for (const forbidden of ['"timer"', '"wager"', '"buzzer"', '"countdown"']) {
+    for (const forbidden of ['"wager"', '"buzzer"', '"buzz"', '"queue"', '"lockout"']) {
       expect(serialized).not.toContain(forbidden)
     }
+    // Revealing a prompt neither arms the clue nor starts a clock.
+    expect(store.getState().session?.game?.responsePhases).toEqual({})
   })
 })

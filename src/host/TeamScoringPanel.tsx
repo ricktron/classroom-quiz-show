@@ -23,6 +23,7 @@ import {
   type ScoreAdjustmentMode,
   type ScoreSource,
 } from '../game/teams/scoring'
+import { systemClock, type Clock } from '../time/clock'
 import './TeamScoringPanel.css'
 
 /**
@@ -68,6 +69,11 @@ export interface TeamScoringPanelProps {
   readonly game: PrivateGameState
   /** The append-only history, used to derive "already scored" and the undo target. */
   readonly history: readonly SessionEvent[]
+  /**
+   * The dispatch-edge clock (Slice 7). Injectable so the host surface has exactly
+   * one place the real clock enters it — see `src/time/clock.ts`.
+   */
+  readonly clock?: Clock
 }
 
 /** The tile currently open on the board, if one is live and scorable. */
@@ -121,7 +127,12 @@ function parseIntegerInput(raw: string): number | null {
   return Number.isSafeInteger(value) ? value : null
 }
 
-export function TeamScoringPanel({ dispatch, game, history }: TeamScoringPanelProps) {
+export function TeamScoringPanel({
+  dispatch,
+  game,
+  history,
+  clock = systemClock,
+}: TeamScoringPanelProps) {
   const teams = game.definition.teams
   const [targetId, setTargetId] = useState<string | null>(null)
   const [partialText, setPartialText] = useState('')
@@ -176,7 +187,7 @@ export function TeamScoringPanel({ dispatch, game, history }: TeamScoringPanelPr
     mode: ScoreAdjustmentMode,
     source: ScoreSource,
   ): boolean {
-    const result = dispatch({ type: 'ADJUST_TEAM_SCORE', issuedAt: Date.now(), teamId, delta, mode, source })
+    const result = dispatch({ type: 'ADJUST_TEAM_SCORE', issuedAt: clock.now(), teamId, delta, mode, source })
     if (result.status === 'rejected') {
       setError(`The session rejected that adjustment (${result.reason}).`)
       return false
@@ -457,7 +468,7 @@ export function TeamScoringPanel({ dispatch, game, history }: TeamScoringPanelPr
           className="btn btn--secondary"
           data-testid="tsp-undo-score"
           disabled={!canUndoScore}
-          onClick={() => dispatch({ type: 'UNDO', issuedAt: Date.now() })}
+          onClick={() => dispatch({ type: 'UNDO', issuedAt: clock.now() })}
         >
           Undo last score change
         </button>

@@ -1,11 +1,13 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with **Slices 1–6 all `Complete` and merged to `main`**
-(Slice 6, teams & scoring, merged via PR #11 at `67180a3`). **Slice 7 — now
-"Timers, arming & transitions" — is unstarted and owner-gated.**
+the repository with **Slices 1–6 `Complete` and merged to `main`** (Slice 6,
+teams & scoring, merged via PR #11 at `67180a3`) and **Slice 7 — Timers, arming &
+transitions — `In review`**: owner-authorized, implemented, branch pushed, PR open
+and unmerged. **Slice 8 is unstarted and owner-gated.**
 
-> **Roadmap amended 2026-07-26.** The owner authorized a planning-only amendment,
+> **Roadmap amended 2026-07-26, and that amendment is MERGED.** The owner
+> authorized a planning-only amendment,
 > [`../decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](../decisions/ROADMAP-AMENDMENT-001-local-buzzers.md):
 > **local host-attached USB buzzers** (Sony Buzz! preferred initial target) are an
 > approved future capability, the MVP non-goal excluding "student devices/buzzers"
@@ -13,7 +15,10 @@ the repository with **Slices 1–6 all `Complete` and merged to `main`**
 > seam is buzz-aware, the media contract moved ahead of any new round type, and
 > the plan went from **11 to 18 slices**. Read that document before planning any
 > work. It changed **documentation only** — no runtime code, schema, test,
-> workflow or dependency.
+> workflow or dependency. It **merged to `main` via PR #13** (merge commit
+> `752a3fe0f45fdc1ee687339134023c3811facd91`, merged 2026-07-26T20:02:13Z by
+> `ricktron`; reviewed head `2524e745`) with all three PR checks green. Its
+> historical receipt is preserved unchanged.
 
 ## Repository state
 
@@ -54,7 +59,7 @@ the repository with **Slices 1–6 all `Complete` and merged to `main`**
   success for both jobs and the Pages deployment succeeded. Post-merge
   reconciliation recorded in
   [`../receipts/2026-07-26-slice-5-post-merge-reconciliation.md`](../receipts/2026-07-26-slice-5-post-merge-reconciliation.md).
-- **Slice 6 (current):** **Complete.** Owner-authorized and delivered on
+- **Slice 6:** **Complete.** Owner-authorized and delivered on
   `claude/slice-6-teams-and-scoring-we53wr`, based on `main` at
   `5237a1f9f6b451c2137330fd0a7f4613b7a919f2` (the merge commit of PR #10, the
   Slice 5 post-merge reconciliation). Implementation commit `7734065`; final
@@ -67,7 +72,29 @@ the repository with **Slices 1–6 all `Complete` and merged to `main`**
   network policy denies `ricktron.github.io`. Post-merge reconciliation recorded
   in
   [`../receipts/2026-07-26-slice-6-post-merge-reconciliation.md`](../receipts/2026-07-26-slice-6-post-merge-reconciliation.md).
-  **Slice 7 is unstarted and owner-gated.**
+- **Slice 7 (current): `In review`.** Owner-authorized and delivered on
+  `claude/slice-7-timers-arming-transitions-wd7cmf`, based on `main` at
+  `752a3fe0f45fdc1ee687339134023c3811facd91` (the merge commit of PR #13, the
+  roadmap amendment). Local `verify:all` green. **The PR is open and unmerged**;
+  local evidence is in
+  [`../receipts/2026-07-26-slice-7-local-verification.md`](../receipts/2026-07-26-slice-7-local-verification.md).
+  **Slice 8 is unstarted and owner-gated.**
+- **What Slice 7 adds:** the clock boundary and the response window. An explicit
+  `Clock` seam (`src/time/clock.ts`) read only at the dispatch edge and the
+  presentation edge — never in `reduce`, `replay`, the planner's decision logic or
+  the sanitizer, so replay stays bit-exact. Durable timer FACTS (duration, start,
+  absolute deadline; a paused timer stores the frozen remaining and no deadline)
+  with the countdown derived at the rendering edge, so there is no tick event and
+  no per-frame revision. A round-type-neutral per-round `responsePhases` map, legal
+  at the `prompt` stage only. Manual host arming (`OG-1`) as first-class durable
+  state. A typed interruption seam that stops the clock **without ending the clue**.
+  Expiry through the command boundary carrying the timer id and deadline, so a
+  stale callback appends nothing and exactly one effective expiry per countdown is
+  structural. Host pause/resume (`OG-8` resolved). Eight reversible commands and
+  events; `PublicState` gained one field, `response` (wire version 4 → 5); the sync
+  envelope moved 1 → 2 for a required `sentAt`; and the game file gained an
+  additive optional `timer` block on `schemaVersion: 1`. See
+  [`../architecture/ADR-007-timers-arming-transitions.md`](../architecture/ADR-007-timers-arming-transitions.md).
 - **What Slice 6 adds:** teams and the first scoring strategy. Teams are authored
   content on the immutable `GameDefinition` (stable id as identity, a public name
   that is *not* identity, an accent from an application-controlled palette of eight
@@ -137,6 +164,16 @@ the repository with **Slices 1–6 all `Complete` and merged to `main`**
   data-only (`DataValue` forbids functions). The `GameSession` (`PrivateGameState`)
   is distinct from the definition. Round **support is frozen onto the event at
   plan time**, so replay is deterministic without the registry.
+- **Timers, arming & transitions:** see
+  [`../architecture/ADR-007-timers-arming-transitions.md`](../architecture/ADR-007-timers-arming-transitions.md).
+  The clock is read at the command/dispatch edge and the presentation edge and
+  nowhere else; durable events record facts, never a ticking value; a running
+  window is projected as an absolute deadline and the display derives the
+  countdown locally. Arming is manual, durable and orthogonal to the timer.
+  Interruption is a typed source that stops the clock without ending the clue.
+  Expiry must carry the timer identity and the exact deadline, so a stale callback
+  is inert. A window is legal only at the `prompt` stage and is not resumed across
+  a round change. The display never expires a timer.
 - **Teams & scoring:** see
   [`../architecture/ADR-006-teams-and-scoring.md`](../architecture/ADR-006-teams-and-scoring.md).
   Teams are authored content, scores are replayed session state, and the two never
@@ -164,7 +201,7 @@ the repository with **Slices 1–6 all `Complete` and merged to `main`**
   decode failure, public projection failure) each have a defined fail-safe
   behavior; unknown-round-type is handled fail-closed at every layer.
 
-## Module map (Slices 2–5)
+## Module map (Slices 2–7)
 
 ```
 src/game/
@@ -179,6 +216,12 @@ src/game/
     schema.ts        Strict Zod config schema + whole-board semantic checks
     definition.ts    Trusted CategoryBoardDefinition, fail-closed read, lookups
     roundType.ts     The registered `category-board` RoundTypeEntry
+  timing/
+    limits.ts        Response-window bounds + the documented default, with reasons
+    schema.ts        Strict Zod schema for the authored `timer` block
+    timerConfig.ts   Trusted TimerConfig, the ONE default, guards, ms conversion
+    responsePhase.ts ResponsePhaseState, the 5-status timer union, the typed
+                     interruption seam, pure remaining-time derivations
   ids.ts             Branded GameId / RoundId / RoundType / GameSessionId
   roundDefinition.ts RoundDefinition, DataValue/RoundConfig, placeholder type + guard
   gameDefinition.ts  GameDefinition, createGameDefinition (unique ids, deep-freeze), guard
@@ -187,21 +230,27 @@ src/game/
   placeholderRound.ts  The one built-in non-gameplay round type entry
   defaultRegistry.ts createDefaultRegistry (placeholder + category-board)
   sampleGame.ts      Trusted in-memory samples (incl. one unsupported round)
+src/time/
+  clock.ts         THE clock seam: Clock, systemClock, manual clock, isInstant
+  duration.ts      Dependency-free M:SS / spoken-duration formatting
 src/state/
-  publicState.ts   PublicState (+ PublicGameView, + PublicRoundState, + teams DTO, v4)
+  publicState.ts   PublicState (+ game view, + round DTO, + teams, + response, v5)
   status.ts        Bounded PublicStatusCode + fixed public copy (host-side)
   privateState.ts  PrivateState / …GameState (+ CategoryBoardRoundState, + teamScores)
-  commands.ts      SessionCommand union (+4 game, +4 board, +1 scoring command)
-  events.ts        SessionEvent union (+4 game, +4 board, +1 scoring event)
+  privateState.ts  (+ responsePhases per-round map)
+  commands.ts      SessionCommand union (+4 game, +4 board, +1 scoring, +8 response)
+  events.ts        SessionEvent union (+4 game, +4 board, +1 scoring, +8 response)
   reducer.ts       reduce, planCommand, replay, findUndoTarget, effectiveEvents,
-                   categoryBoardStateFor, teamScoreFor
-  sanitize.ts      toPublicState (allow-list; +game view, +round DTO, +scoreboard)
+                   categoryBoardStateFor, teamScoreFor, responsePhaseFor
+  sanitize.ts      toPublicState (allow-list; +game view, +round, +scoreboard,
+                   +response phase)
   store.ts         createSessionStore (owns a RoundRegistry; injects support predicate)
 src/sync/
-  protocol.ts      Versioned envelope + strict decodeEnvelope (fail-closed)
+  protocol.ts      Versioned envelope (v2, required `sentAt`) + strict decode
   channel.ts       SyncChannel: BroadcastChannel / no-op / in-memory-hub impls
   broadcaster.ts   Host publisher (sanitized only; answers request-state)
-  receiver.ts      Display subscriber (decode, stale/dup drop, request on start)
+  receiver.ts      Display subscriber (decode, stale/dup drop, request on start,
+                   clamped host-clock offset estimate)
 src/import/
   canonicalFormat.ts  Format identity, supported version, documented limits
   issues.ts           ImportStage/ImportIssueCode/ImportIssue, paths, sorting
@@ -216,10 +265,13 @@ src/import/
 src/host/          useSessionStore, useHostSync, FoundationControls,
                    GameImportPanel (host-only import harness),
                    CategoryBoardHostPanel (reveals; scores nothing),
-                   TeamScoringPanel (scores; reveals nothing)
-src/display/       usePublicState (imports only PublicState + receiver),
+                   TeamScoringPanel (scores; reveals nothing),
+                   ResponseTimerHostPanel (arms and times; reveals and scores
+                   nothing), useResponseTimerExpiry (the ONE scheduled clock read)
+src/display/       usePublicState (PublicState + receiver + clock offset),
                    CategoryBoardDisplay (projector board / prompt / answer),
-                   TeamScoreboard (projector scoreboard, fails closed)
+                   TeamScoreboard (projector scoreboard, fails closed),
+                   ResponseTimerDisplay + useResponseCountdown (derived countdown)
 src/test/          leakLabels, gameFileFixtures, categoryBoardFixtures, teamFixtures
 ```
 
@@ -234,7 +286,7 @@ src/test/          leakLabels, gameFileFixtures, categoryBoardFixtures, teamFixt
 npm ci               # reproducible install
 npm run lint         # ESLint (flat config)
 npm run typecheck    # tsc -b --noEmit
-npm run test:run     # Vitest (unit/component) — 740 tests
+npm run test:run     # Vitest (unit/component) — 947 tests
 npm run build        # tsc -b && vite build → dist/
 npm run test:e2e     # Playwright vs production preview (3 viewport projects)
 npm run verify       # lint + typecheck + unit
@@ -247,7 +299,12 @@ npm run verify:all   # verify + build + e2e (merge gate)
 > That override is passed via the environment only — never committed. CI installs
 > the matching browser and needs no override.
 
-Latest local results (Slice 6): `verify:all` green — **740 unit tests,
+Latest local results (Slice 7): `verify:all` green — **947 unit tests (42 files),
+175 e2e passed / 2 skipped** (both skips are the one desktop-only offline-shell
+test); `git diff --check` clean. **Slice 7 PR CI has not been observed yet** — the
+PR is open at the time of writing, and the receipt says so rather than assuming it.
+
+Earlier, on the Slice 6 branch: `verify:all` green — **740 unit tests,
 154 e2e passed / 2 skipped** (both skips are the one desktop-only offline-shell
 test); `git diff --check` clean. **Slice 6 PR CI was observed green** on PR #11 at
 both heads (`7734065` and the final reviewed head `48ed818`): all three checks
@@ -277,11 +334,32 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
   **manual live-route verification was not performed** — a successful deploy
   workflow is not the same evidence as loading the site. Slice 6 changes no CI or
   deploy configuration.
-- **`PublicState` wire version is now 4.** A consumer pinned to version 3 (or 2)
-  fails closed by design; no migration exists.
+- **`PublicState` wire version is now 5 and the sync envelope version is 2.** A
+  consumer pinned to any older version of either fails closed by design; no
+  migration exists.
 - **The board itself still scores nothing.** `multiplier` affects the displayed
   value and the typed `effectiveValue`, and revealing an answer awards nothing — the
-  teacher must deliberately award or deduct. No timer, buzzer or wager exists.
+  teacher must deliberately award or deduct. A timer running out awards nothing
+  either. No buzzer or wager exists.
+- **A response window exists only at the `prompt` stage**, and is cleared by a new
+  selection, the answer reveal, a return to the board, any round change, the game
+  ending, or a new game.
+- **A response window is NOT resumed across a round change**, unlike board
+  progress, which is. A deadline is an absolute instant, and resuming a stale one
+  would put a nonsense clock in front of a class.
+- **Host and display clocks are not synchronized.** The display applies a clamped
+  (±5 s) offset estimated from each snapshot's `sentAt`; transport delay is ignored
+  and there is no round-trip measurement. On today's same-browser transport both
+  clocks are identical, so the correction is effectively a no-op — it exists so a
+  future cross-device transport does not silently mis-render a countdown.
+- **The display never expires a timer.** At 0:00 it keeps showing the running state
+  until the host publishes `expired`.
+- **Undoing an expiry restores an already-overdue running timer**, which the host
+  adapter expires again on the next tick unless the host acts. Undo restores the
+  prior durable state exactly.
+- **`OG-2`, `OG-3` and `OG-6` are recorded owner decisions that are NOT
+  implemented.** No buzz input, queue, promotion or respondent-restricted scoring
+  exists anywhere in the codebase.
 - **The selected scoring target is host UI state** and is lost on a host reload. It
   is never broadcast and awards nothing by existing (a deliberate decision —
   ADR-006 §7).
@@ -324,45 +402,59 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 ## Open questions / unresolved decisions
 
 - Confirm the default branch is `main` (deploy workflow targets `main`).
-- **Nine owner gates are open**, all opened by `ROADMAP-AMENDMENT-001` §16.
-  Three of them **block Slice 8** because they determine its event vocabulary:
-  - **`OG-1`** — manual arming vs. automatic arming on prompt reveal.
-  - **`OG-2`** — first-only lockout vs. recording the full ordered queue.
-  - **`OG-3`** — promotion of the next queued team after an incorrect response or
-    a host pass.
+- **Nine owner gates were opened by `ROADMAP-AMENDMENT-001` §16. Four are now
+  answered; five remain open.**
 
-  The remaining six (`OG-4` ties · `OG-5` queue/tile lifetime · `OG-6` scoring
-  restricted to the active respondent · `OG-7` individual student identity in
-  reporting · `OG-8` timer pause/resume · `OG-9` timer/media coordination) can be
-  answered later; see the amendment for which slice each affects.
-- **Slice 7 has no open gates** and needs only authorization to begin.
+  **Answered (2026-07-26), recorded in `docs/PROJECT.md` and ADR-007 §16:**
+  - **`OG-1`** — arming is **manual and host-controlled**. *Implemented in
+    Slice 7.*
+  - **`OG-2`** — future buzzer behaviour preserves a **full ordered team queue**,
+    not a first-only lockout. **Not implemented** (Slice 8).
+  - **`OG-3`** — after an incorrect response or a host pass, the **next queued
+    team is promoted**. **Not implemented** (Slice 8).
+  - **`OG-8`** — timer **pause/resume is supported**, bounded as ADR-007 §7
+    describes. *Implemented in Slice 7*, and open to owner revision.
+
+  **Still open:** `OG-4` (ties on identical arrival stamps) · `OG-5` (queue/tile
+  lifetime) · `OG-6` (scoring restricted to the active respondent — deliberately
+  **not** implemented, because no respondent exists) · `OG-7` (individual student
+  identity in reporting) · `OG-9` (timer/media coordination). See the amendment
+  for which slice each affects.
+- **Recording an owner decision is not authorization to implement it.** `OG-2` and
+  `OG-3` unblock Slice 8's event vocabulary; Slice 8 itself still needs explicit
+  authorization to begin.
 
 ## Next action
 
-**Review and merge the roadmap amendment PR** (`ROADMAP-AMENDMENT-001`). It is
-documentation-only: it amends the slice sequence, narrows one MVP non-goal with
-owner authorization, and adds one immutable receipt.
+**Review the Slice 7 pull request** (timers, arming & transitions). It is open and
+unmerged. Local `verify:all` is green, [`ADR-007`](../architecture/ADR-007-timers-arming-transitions.md)
+records the timing boundary, and the immutable local-verification receipt is in
+place with every pre-existing receipt proved byte-identical.
 
-After it merges, the next implementation slice is **Slice 7 — Timers, arming &
-transitions**, whose amended record is in
-[`../plans/MVP-ARC.md`](../plans/MVP-ARC.md). The amendment *recommends* it; it
-does **not** authorize it.
+After it merges, record the post-merge reconciliation as usual. The next
+implementation slice is **Slice 8 — Local input contract & keyboard buzz-in**,
+whose record is in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md). Its vocabulary
+gates `OG-1`, `OG-2` and `OG-3` are now answered, but the slice is still
+`Planned`, unstarted and **owner-gated**.
 
-## Prohibited next actions until Slice 7 is explicitly authorized
+## Prohibited next actions until Slice 8 is explicitly authorized
 
-Do **not**: merge the amendment PR yourself; begin Slice 7 or any later slice;
+Do **not**: merge the Slice 7 PR yourself; begin Slice 8 or any later slice;
 add local buzzer support, keyboard buzz-in handling, or Gamepad API code (the
-roadmap now plans these for Slices 8–10, which is **not** authorization to write
-them); add timers, countdowns, timed
-transitions, or automatic timeout scoring; add lockout, student-owned contestant
-devices, networked buzzers, or remote team input — these remain **excluded**, not
-merely deferred; add durable persistence/IndexedDB/session recovery/leader
-coordination; add a final wager, Daily Double, or Final Jeopardy; add a media
+roadmap plans these for Slices 8–10, and answering `OG-1`/`OG-2`/`OG-3` is **not**
+authorization to write them); add a buzz queue, first-only lockout, or
+pass-to-next-team promotion; restrict scoring to an active respondent (`OG-6`,
+still deferred); add automatic timeout scoring or make a timer move a point; add
+student-owned contestant devices, networked buzzers, or remote team input — these
+remain **excluded**, not merely deferred; add durable
+persistence/IndexedDB/session recovery/leader coordination; add a final wager, Daily Double, or Final Jeopardy; add a media
 pipeline, a theme engine, or team colours beyond the application palette; add
 spreadsheet/CSV/XLSX/Google Sheets import, an authoring UI, pack management, a saved
 game library, or remote URL import; add a backend, accounts, cross-device sync,
 analytics, or AI services; add any further playable round type; weaken fail-closed
 display behavior; project teacher notes, alternates, unrevealed content, the score
-event history, undo metadata, or the host's scoring target; permit executable
+event history, undo metadata, the host's scoring target, an internal timer id, or
+an interruption source; read a clock inside `reduce`, `replay`, the planner's
+decision logic, or the sanitizer; publish a per-second or per-frame revision; permit executable
 imported game code or imported style values; add dynamic module/plugin loading based
 on game content; or move implementation truth into NightWatch or Obsidian.

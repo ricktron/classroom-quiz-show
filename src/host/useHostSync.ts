@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import type { SessionStore } from '../state/store'
 import { createPublicStateBroadcaster } from '../sync/broadcaster'
+import { systemClock, type Clock } from '../time/clock'
 
 /**
  * Wire an authoritative store to the broadcast transport.
@@ -9,11 +10,18 @@ import { createPublicStateBroadcaster } from '../sync/broadcaster'
  * display updates), then republishes on every store change. The broadcaster also
  * answers `request-state` from freshly opened displays. Only sanitized
  * `PublicState` ever crosses the channel — private state stays on the host.
+ *
+ * Publication is driven by STORE CHANGES, never by a clock. Starting a timer
+ * publishes one snapshot carrying a deadline; the seconds ticking away after that
+ * publish nothing at all, because the display derives them locally (Slice 7). The
+ * clock passed here is used only to stamp `sentAt` on the envelope, so a display
+ * can estimate the difference between the two machines' clocks.
  */
-export function useHostSync(store: SessionStore): void {
+export function useHostSync(store: SessionStore, clock: Clock = systemClock): void {
   useEffect(() => {
     const broadcaster = createPublicStateBroadcaster({
       getSnapshot: () => store.getPublicState(),
+      clock,
     })
 
     broadcaster.publish(store.getPublicState())
@@ -25,5 +33,5 @@ export function useHostSync(store: SessionStore): void {
       unsubscribe()
       broadcaster.close()
     }
-  }, [store])
+  }, [store, clock])
 }

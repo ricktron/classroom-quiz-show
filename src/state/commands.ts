@@ -1,6 +1,7 @@
 import type { PublicStatusCode } from './status'
 import type { GameDefinition } from '../game/gameDefinition'
 import type { ScoreAdjustmentMode, ScoreSource } from '../game/teams/scoring'
+import type { ResponseInterruptionSource } from '../game/timing/responsePhase'
 
 /**
  * COMMANDS express *intent* — a request to change state that the reducer may
@@ -8,11 +9,12 @@ import type { ScoreAdjustmentMode, ScoreSource } from '../game/teams/scoring'
  * is "please do X", an event is "X happened". A rejected command produces no
  * events and never mutates state.
  *
- * The foundation vocabulary is deliberately small. There are NO gameplay
- * commands (no tile selection, answer reveal, team assignment, scoring, timers,
- * or wagers) — those belong to later slices. Slice 3 adds only the round-level
- * lifecycle commands needed to prove the game/round model + registry:
- * `INITIALIZE_GAME`, `SELECT_ROUND`, `ADVANCE_TO_NEXT_ROUND`, `END_GAME_SESSION`.
+ * The foundation vocabulary started deliberately small and has grown one slice at
+ * a time: Slice 3 added the round-level lifecycle (`INITIALIZE_GAME`,
+ * `SELECT_ROUND`, `ADVANCE_TO_NEXT_ROUND`, `END_GAME_SESSION`), Slice 5 the board
+ * reveals, Slice 6 the one scoring command, and Slice 7 the response phase —
+ * arming, the timer, and its transitions. There are still no buzz-in, wager or
+ * persistence commands.
  *
  * Determinism note: every command carries `issuedAt` (a host-supplied wall-clock
  * stamp). The reducer copies it onto the resulting event and never reads the
@@ -35,6 +37,14 @@ export const COMMAND_TYPES = [
   'REVEAL_CATEGORY_BOARD_ANSWER',
   'RETURN_TO_CATEGORY_BOARD',
   'ADJUST_TEAM_SCORE',
+  'ARM_RESPONSE_PHASE',
+  'DISARM_RESPONSE_PHASE',
+  'START_RESPONSE_TIMER',
+  'PAUSE_RESPONSE_TIMER',
+  'RESUME_RESPONSE_TIMER',
+  'INTERRUPT_RESPONSE_TIMER',
+  'EXPIRE_RESPONSE_TIMER',
+  'RESET_RESPONSE_PHASE',
 ] as const
 
 export type CommandType = (typeof COMMAND_TYPES)[number]
@@ -157,6 +167,85 @@ export interface AdjustTeamScoreCommand extends CommandBase<'ADJUST_TEAM_SCORE'>
   readonly source: ScoreSource
 }
 
+/**
+ * Response-phase commands (Slice 7) — arming, the timer, and transitions.
+ *
+ * Every one carries the `roundId` it believes it is acting on, exactly like the
+ * board commands, so a control rendered for one round cannot act on another after
+ * the host has moved on. They are legal ONLY while that round's clue is at the
+ * `prompt` stage: before the prompt is public there is nothing to respond to, and
+ * once the answer is public the response opportunity is over.
+ *
+ * None of them scores. Expiry awards and deducts nothing — a timer running out is
+ * a fact about the window, not a decision about points, and the teacher makes the
+ * scoring decision separately (ADR-006 §9, ADR-007 §14).
+ *
+ * There is deliberately NO buzz-in command. Arming records that an interrupting
+ * input *would* be accepted; no such input exists in this slice.
+ */
+interface ResponsePhaseCommandBase<T extends CommandType> extends CommandBase<T> {
+  /** The round this command targets. Must equal the current round. */
+  readonly roundId: string
+}
+
+/** Accept a future interrupting input for the live clue. Manual, host-controlled. */
+export type ArmResponsePhaseCommand = ResponsePhaseCommandBase<'ARM_RESPONSE_PHASE'>
+
+/** Stop accepting a future interrupting input for the live clue. */
+export type DisarmResponsePhaseCommand = ResponsePhaseCommandBase<'DISARM_RESPONSE_PHASE'>
+
+/**
+ * Start the response countdown.
+ *
+ * `durationSeconds` is optional: omitted, the planner uses the game's AUTHORED
+ * default (`GameDefinition.timer.responseSeconds`). Supplied, it is validated
+ * against the same bounds the authored value is — the host may choose a different
+ * window for one clue, but it can never choose an unbounded one.
+ */
+export interface StartResponseTimerCommand
+  extends ResponsePhaseCommandBase<'START_RESPONSE_TIMER'> {
+  readonly durationSeconds?: number
+}
+
+/** Freeze the countdown, recording how much was left as a durable fact. */
+export type PauseResponseTimerCommand = ResponsePhaseCommandBase<'PAUSE_RESPONSE_TIMER'>
+
+/** Resume a paused countdown, deriving a fresh deadline from the dispatch clock. */
+export type ResumeResponseTimerCommand = ResponsePhaseCommandBase<'RESUME_RESPONSE_TIMER'>
+
+/**
+ * Stop a live countdown early, naming a TYPED source.
+ *
+ * The source is the seam a future buzz-in passes through
+ * (`ROADMAP-AMENDMENT-001` §5.4). Today the only member is `{ kind: 'host' }`;
+ * anything else is rejected at this boundary rather than stored.
+ */
+export interface InterruptResponseTimerCommand
+  extends ResponsePhaseCommandBase<'INTERRUPT_RESPONSE_TIMER'> {
+  readonly source: ResponseInterruptionSource
+}
+
+/**
+ * Record that the countdown reached its deadline.
+ *
+ * This is the ONE way an expiry becomes a fact, and it carries the evidence the
+ * planner needs to refuse a stale one: the identity of the timer the caller
+ * believes is live and the exact deadline it believes it is expiring. A timeout
+ * callback left over from a timer that was reset, restarted, paused, undone or
+ * left behind by a clue change matches neither, so it is rejected and changes
+ * nothing. Only the HOST may dispatch it — a display never expires a timer.
+ */
+export interface ExpireResponseTimerCommand
+  extends ResponsePhaseCommandBase<'EXPIRE_RESPONSE_TIMER'> {
+  /** The timer the caller believes is live. */
+  readonly timerId: string
+  /** The absolute deadline the caller believes it is expiring. */
+  readonly deadline: number
+}
+
+/** Clear arming and the timer for the live clue, back to the initial phase. */
+export type ResetResponsePhaseCommand = ResponsePhaseCommandBase<'RESET_RESPONSE_PHASE'>
+
 export type SessionCommand =
   | InitSessionCommand
   | SetPublicStatusCommand
@@ -173,3 +262,11 @@ export type SessionCommand =
   | RevealCategoryBoardAnswerCommand
   | ReturnToCategoryBoardCommand
   | AdjustTeamScoreCommand
+  | ArmResponsePhaseCommand
+  | DisarmResponsePhaseCommand
+  | StartResponseTimerCommand
+  | PauseResponseTimerCommand
+  | ResumeResponseTimerCommand
+  | InterruptResponseTimerCommand
+  | ExpireResponseTimerCommand
+  | ResetResponsePhaseCommand

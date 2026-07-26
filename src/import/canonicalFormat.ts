@@ -15,6 +15,8 @@
  *   "teams": [                              // OPTIONAL; ordered; 1–8 teams
  *     { "id": "red", "name": "Red Team", "accent": "crimson" }
  *   ],
+ *   "timer": { "responseSeconds": 45 },     // OPTIONAL; 5–600 whole seconds
+ *
  *   "rounds": [                             // ordered; array order IS round order
  *     {
  *       "id": "round-1",                    // stable, supplied round id (unique in file)
@@ -42,6 +44,14 @@
  * unchanged. `accent` may only NAME one of the accents the application provides;
  * a game file can never supply a colour, a gradient, a class name, or any other
  * style value (see ADR-006 §4 and `src/game/teams/accents.ts`).
+ *
+ * **`timer` is an additive, optional extension of version 1 (Slice 7).** Same
+ * discipline again: every document that was valid before it existed is still
+ * valid and still means exactly the same thing, so no migration is required and
+ * the version is unchanged. A game that omits the block gets the documented
+ * default response window (see ADR-007 §15 and
+ * `src/game/timing/timerConfig.ts`). Timing is authored in whole SECONDS; the
+ * engine converts to milliseconds once, at the trusted boundary.
  */
 
 /** Exact top-level `format` value. Anything else fails at the `format` stage. */

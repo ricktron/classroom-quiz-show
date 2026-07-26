@@ -92,7 +92,7 @@ describe('broadcaster ↔ receiver over an in-memory hub', () => {
 
     // A malicious/confused display posts a public-state envelope.
     const rogue = hub.createChannel()
-    rogue.post(encodeEnvelope({ type: 'public-state', revision: 99, payload: stateAt(99) }))
+    rogue.post(encodeEnvelope({ type: 'public-state', sentAt: 1_700_000_000_000, revision: 99, payload: stateAt(99) }))
 
     // The host only republishes on request-state, never on public-state.
     expect(getSnapshot).not.toHaveBeenCalled()

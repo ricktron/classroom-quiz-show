@@ -29,6 +29,15 @@ This project separates two kinds of durable decision records:
      `ADJUST_TEAM_SCORE` command and its provenance, the host-only scoring
      target, reveal/score independence, correction without rewriting history,
      reset semantics, the public scoreboard DTO and wire version 4 (Slice 6).
+   - [`ADR-007-timers-arming-transitions.md`](../architecture/ADR-007-timers-arming-transitions.md)
+     — the clock boundary (dispatch edge and presentation edge only, never the
+     reducer), durable timer facts versus a derived countdown, the response-phase
+     model, manual host arming, the typed interruption seam, expiration through
+     the command boundary with stale-callback validation, the pause/resume
+     resolution of `OG-8`, transition legality, the host/display clock-drift
+     strategy and its limits, the public response DTO and wire version 5, sync
+     envelope version 2, and the additive `timer` block on `schemaVersion: 1`
+     (Slice 7).
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).

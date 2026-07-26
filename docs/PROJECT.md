@@ -127,13 +127,28 @@ audio, or board styling.
 - **Default tie-break:** host-controlled sudden-death prompt.
 - **Standards vocabulary:** free-text namespaced tags (e.g. `teks:ESS.1A`,
   `ngss:HS-ESS2-1`); TEKS/NGSS **not** required in the MVP.
+- **Buzzer arming (`OG-1`, 2026-07-26):** arming is **manual and host-controlled**.
+  Nothing arms a clue automatically. Implemented in Slice 7 as durable
+  arming state; see [`architecture/ADR-007-timers-arming-transitions.md`](architecture/ADR-007-timers-arming-transitions.md) §4.
+- **Buzzer queue (`OG-2`, 2026-07-26):** future buzzer behaviour preserves a **full
+  ordered team queue**, not a first-only lockout. **Not implemented** — it belongs
+  to Slice 8. Recorded now because it constrains the Slice 7 interruption seam.
+- **Promotion after a miss (`OG-3`, 2026-07-26):** after an incorrect response or a
+  host pass, the **next queued team is promoted**. **Not implemented** — Slice 8.
+  Recorded for the same reason.
+- **Timer pause/resume (`OG-8`, 2026-07-26):** explicit host pause and resume are
+  **supported**. Pause records the remaining duration as a durable fact; resume
+  derives a new deadline from the dispatch-edge clock. See ADR-007 §7.
+- **Default response window:** 30 seconds when a game authors none; a game may
+  author 5–600 seconds, and the host may pick another bounded duration per clue.
 - **Local buzzers (2026-07-26):** an approved future capability, host-attached
   USB only, with Sony Buzz! controllers as the preferred initial validation
   target. Delivered through a hardware-independent input adapter in slices 8–10
   of the amended roadmap. See the non-goal amendment above and
   [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md).
 
-(These are targets for the engine. As of Slice 6 the `category-board` round
-implements the board and the first scoring strategy implements bounded integer
-points, partial credit and unrestricted manual correction; tie-breaks and
-buzzers remain targets for later slices.)
+(These are targets for the engine. As of Slice 7 the `category-board` round
+implements the board, the first scoring strategy implements bounded integer
+points, partial credit and unrestricted manual correction, and the response phase
+implements host arming and a replay-safe timer; tie-breaks and buzzers remain
+targets for later slices.)

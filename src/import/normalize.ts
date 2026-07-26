@@ -16,6 +16,8 @@ import type { CanonicalGameFile } from './schemas'
  *    the caller's own object would be a mutation of the input);
  *  - hand validated teams to the trusted team constructor, which re-validates
  *    with the SAME schema and applies the one documented accent default;
+ *  - hand the validated (or absent) timer block to the trusted game constructor,
+ *    which re-validates it and applies the one documented duration default;
  *  - hand the result to the Slice 3 trusted constructor, which enforces the
  *    domain invariants again and deep-freezes the definition.
  *
@@ -87,5 +89,9 @@ export function normalizeToGameDefinition(document: CanonicalGameFile): GameDefi
     title: document.title,
     rounds,
     teams,
+    // Passed through verbatim. The trusted constructor re-validates it with the
+    // same schema and applies the ONE documented default when it is absent —
+    // nothing is invented here for a game that authored no timing.
+    timer: document.timer,
   })
 }

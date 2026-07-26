@@ -36,6 +36,7 @@ const ALLOWED_KEYS = [
   'game',
   'round',
   'teams',
+  'response',
 ].sort()
 
 describe('toPublicState — allow-list projection', () => {
@@ -54,6 +55,7 @@ describe('toPublicState — allow-list projection', () => {
       game: null,
       round: null,
       teams: null,
+      response: null,
     })
   })
 
@@ -189,6 +191,7 @@ describe('safeToPublicState — projection failure fails closed', () => {
       game: null,
       round: null,
       teams: null,
+      response: null,
     })
   })
 

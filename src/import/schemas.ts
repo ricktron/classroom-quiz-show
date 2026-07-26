@@ -19,6 +19,7 @@ import {
 } from './issues'
 import { isPlainRecord } from './safetyScan'
 import { teamsSchema } from '../game/teams/schema'
+import { timerConfigSchema } from '../game/timing/schema'
 
 /**
  * The Zod schema boundary for untrusted imported data (Slice 4).
@@ -101,6 +102,20 @@ export const canonicalGameFileSchema = z.strictObject({
    * exactly the same thing, and needs no migration (see ADR-006 §4).
    */
   teams: teamsSchema.optional(),
+  /**
+   * Optional authored timing (Slice 7). Owned by the game domain
+   * (`src/game/timing/schema.ts`) and re-used verbatim by the trusted
+   * constructor, so there is exactly ONE timer validation path — the same
+   * arrangement `teams` and a round type's `config` use.
+   *
+   * OPTIONAL for the same reason `teams` is: a game with no authored timer block
+   * is valid and is precisely what every pre-Slice-7 game file is. It gets the
+   * documented default from the trusted constructor. Being additive and optional
+   * is what makes this an in-place extension of `schemaVersion: 1` rather than a
+   * new version — every document that was valid before is still valid, still means
+   * exactly the same thing, and needs no migration (ADR-006 §5, ADR-007 §15).
+   */
+  timer: timerConfigSchema.optional(),
   rounds: z
     .array(canonicalRoundSchema)
     .max(MAX_ROUNDS, `a game may contain at most ${MAX_ROUNDS} rounds`),

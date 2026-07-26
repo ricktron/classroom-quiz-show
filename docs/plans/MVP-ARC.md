@@ -50,7 +50,7 @@ systems.
 | 4   | **Validation & import pipeline** | Canonical versioned JSON, one Zod-based validation/normalization pipeline, actionable errors, no silent repair. **(Complete.)** | 3          |
 | 5   | **Category-board round**       | First playable round type: configurable categories/rows/ladder, multiplier, used-tile state, prompt/answer reveal, alternates, notes. **(Complete.)** | 3, 4       |
 | 6   | **Teams & scoring**            | Teams, typed scoring strategy (points first), awards/deductions, partial credit, unrestricted manual correction, audit history, undo. **(Complete.)** | 2, 5       |
-| 7   | **Timers, arming & transitions** | Timer config, a deadline-projected public timer, host arming/disarming, host-controlled undoable round transitions, reduced-motion-safe. The interrupt seam must be typed so buzz-in is a later addition, not a rewrite. **(Next. Unstarted, owner-gated.)** | 5, 6 |
+| 7   | **Timers, arming & transitions** | Timer config, a deadline-projected public timer, host arming/disarming, host-controlled undoable round transitions, reduced-motion-safe. The interrupt seam must be typed so buzz-in is a later addition, not a rewrite. **(In review.)** | 5, 6 |
 | 8   | **Local input contract & keyboard buzz-in** | The device-independent input-adapter boundary + registry, buzz-in domain semantics, one command/event pair, replay-derived queue state, sanitized public projection — with the **keyboard adapter** as its first consumer. | 2, 6, 7 |
 | 9   | **Generic Gamepad adapter**    | Gamepad API adapter behind the slice 8 boundary; connect/disconnect handling, polling isolation, host diagnostics. No model-specific assumptions. | 8 |
 | 10  | **Sony Buzz! mapping, validation & host setup UX** | Configurable controller mapping, Sony Buzz! validation as the preferred target, host setup/test surface, fallback when no controller is present. | 9 |
@@ -499,9 +499,95 @@ generation; and **no additional playable round types**.
 ### What remains for Slice 7
 
 Timers, arming & transitions — **re-scoped by `ROADMAP-AMENDMENT-001`**, built on
-top of the scoring events this slice produces. **Slice 7 is `Planned`, unstarted,
+top of the scoring events this slice produces. Slice 7 was subsequently
+**owner-authorized and implemented**; see its record in "Amended slice records
+(7–18)" below.
+
+## Slice 7 — scope, acceptance, non-goals
+
+**State: In review.** Owner-authorized and implemented on
+`claude/slice-7-timers-arming-transitions-wd7cmf` on top of `main` at
+`752a3fe0f45fdc1ee687339134023c3811facd91` (the merge commit of PR #13, the
+roadmap amendment). Full technical rationale in
+[`../architecture/ADR-007-timers-arming-transitions.md`](../architecture/ADR-007-timers-arming-transitions.md);
+local evidence in
+[`../receipts/2026-07-26-slice-7-local-verification.md`](../receipts/2026-07-26-slice-7-local-verification.md).
+
+### Scope (implemented)
+
+1. **An explicit clock boundary** (`src/time/clock.ts`): a `Clock` interface, the
+   real `systemClock`, a manual clock for tests, and an `isInstant` guard. A clock
+   is read at the command/dispatch edge and the presentation edge only — never in
+   `reduce`, `replay`, the planner's decision logic, or the sanitizer. No global
+   timer service, and nothing mutates state outside the command pipeline.
+2. **Durable timer facts, a derived countdown.** A five-status discriminated
+   union: a running timer stores duration, start and an absolute deadline; a
+   paused one stores the remaining duration and no deadline. There is no tick
+   event, no per-frame revision, and no remaining-time value on a running timer.
+3. **A round-type-neutral response phase** — `PrivateGameState.responsePhases`, a
+   per-round sibling of `categoryBoards`, legal at the `prompt` stage only.
+4. **Manual host arming** (`OG-1`) as first-class durable state, orthogonal to the
+   timer. Nothing arms a clue automatically.
+5. **A typed interruption seam** (`ResponseInterruptionSource`, one member today)
+   that stops the clock **without ending the clue**, so a later slice can promote
+   another respondent without a redesign.
+6. **Expiration through the command boundary**, carrying the timer identity and
+   the exact deadline, with a 250 ms earliness tolerance. Stale, premature,
+   repeated, reset, restarted, paused, undone, clue-changed and round-changed
+   callbacks all append nothing; exactly one effective expiry per countdown is
+   structural.
+7. **Host pause and resume** (`OG-8` resolved): pause records the remaining
+   duration; resume derives a new deadline from the dispatch clock; replay
+   consumes no wall-clock time while paused.
+8. **Replay-safe transitions**: a window is cleared by a new selection, the answer
+   reveal, a return to the board, any round change, the game ending, and a new
+   game — and is deliberately **not** resumed across a round change, unlike board
+   progress.
+9. **One new public field**, `response` (wire version 4 → 5): the armed flag plus a
+   status-discriminated timer projecting an absolute deadline, never a countdown.
+   The sync envelope moved 1 → 2 for a required `sentAt` stamp.
+10. **A bounded host/display drift strategy**: an estimated, clamped clock offset
+    applied at the display, with the display never expiring a timer.
+11. **An additive optional `timer` block** on `schemaVersion: 1`, 5–600 whole
+    seconds, defaulting to 30 when absent, plus a host-chosen per-clue duration
+    validated against the same bounds.
+12. **Host and projector surfaces**: a bounded host panel (arm/disarm, duration,
+    start/pause/resume/stop/reset) with illegal controls disabled, and a projector
+    panel stating every state in words with a reduced-motion-safe emphasis pulse.
+
+### Acceptance criteria
+
+| Criterion (from the amended roadmap record) | Evidence |
+| --- | --- |
+| Authored timer configuration | `timer.responseSeconds`, additive on `schemaVersion: 1`; `src/import/timerImport.test.ts` |
+| Timer facts as durable reversible events (started with a stated duration, expired, cancelled) | eight reversible events in `src/state/events.ts`; `src/state/responsePhaseReducer.test.ts` |
+| Host arming/disarming derived from replayed events | `responsePhaseFor` + replay; arming/undo tests |
+| A public projection carrying an absolute deadline plus arming state, with the display deriving remaining time | `PublicResponseState`; `src/state/responseSanitize.test.ts`, `src/display/ResponseTimerDisplay.test.tsx` |
+| Host-controlled undoable round transitions | transition table (ADR-007 §8) and its tests; undo tests for every event |
+| Reduced-motion-safe presentation | `ResponseTimerDisplay.css` + the reduced-motion e2e test |
+| An ADR recording the timing boundary | [`ADR-007`](../architecture/ADR-007-timers-arming-transitions.md) |
+| `verify:all` green | Slice 7 local-verification receipt |
+| Unit tests proving replay is bit-exact with no clock read in the reducer | "replay and undo" suite in `responsePhaseReducer.test.ts` |
+| A test proving the sync channel publishes no per-tick revision | "publishes no per-second revision" in `responseSanitize.test.ts` |
+| e2e coverage of arming, expiry, cancellation and undo across host and projector at all three viewports | `tests/e2e/timers-arming.spec.ts` (7 tests × 3 viewport projects) |
+
+### Explicit non-goals (Slice 7)
+
+No buzzers of any kind — no team buzz events, ordered queues, pass-to-next-team
+behaviour, keyboard team input, Gamepad API, Sony Buzz! handling, WebHID,
+Bluetooth, phone or networked buzzers. No automatic timeout scoring. No media or
+playback coordination (`OG-9`). No persistence, session recovery or leader
+coordination. No wagering, Daily Double or Final Jeopardy. No portable
+export/import. No reporting or leaderboards. No theme engine. No authoring UI or
+pack management. No backend, accounts, cross-device sync, analytics or AI. No
+additional playable round type. `OG-2`, `OG-3` and `OG-6` are recorded but **not
+implemented**.
+
+### What remains for Slice 8
+
+Local input contract & keyboard buzz-in. `OG-1`, `OG-2` and `OG-3` are now
+answered, so its event vocabulary is unblocked. **Slice 8 is `Planned`, unstarted,
 and owner-gated — it must not begin until the owner explicitly authorizes it.**
-Its amended record is in "Amended slice records (7–18)" below.
 
 ## Amended slice records (7–18)
 
@@ -531,9 +617,15 @@ changes schema, runtime, UI, storage or hardware support.
   and undo across host and projector at all three viewports.
 - **Impact:** schema **yes** (additive, authored timer config, `schemaVersion: 1`)
   · runtime **yes** · UI **yes** · storage no · hardware no.
-- **Status:** `Planned` — unstarted. **Next recommended slice.**
-- **Owner gate:** authorization to begin. **No open decision gates.** Timer
-  pause/resume is `OG-8` and deferred by default.
+- **Status:** `In review` — owner-authorized and implemented. Delivered on
+  `claude/slice-7-timers-arming-transitions-wd7cmf` from `main` at `752a3fe`; the
+  scope, acceptance evidence and non-goals are recorded in "Slice 7 — scope,
+  acceptance, non-goals" above, and the rationale in
+  [`../architecture/ADR-007-timers-arming-transitions.md`](../architecture/ADR-007-timers-arming-transitions.md).
+- **Owner gate:** authorization to begin — **granted**. `OG-8` (timer
+  pause/resume) was **resolved** during the slice: explicit host pause and resume
+  are supported, bounded as ADR-007 §7 describes, and remain open to owner
+  revision.
 
 ### Slice 8 — Local input contract & keyboard buzz-in
 
@@ -559,7 +651,12 @@ changes schema, runtime, UI, storage or hardware support.
 - **Impact:** schema no · runtime **yes** · UI **yes** · storage no · hardware
   **no** (keyboard only).
 - **Status:** `Planned` — unstarted.
-- **Owner gate:** blocked on `OG-1`, `OG-2`, `OG-3`.
+- **Owner gate:** `OG-1`, `OG-2` and `OG-3` are now **answered** (2026-07-26;
+  recorded in `docs/PROJECT.md` and ADR-007 §16): arming is manual, a full ordered
+  queue is preserved rather than a first-only lockout, and the next queued team is
+  promoted after an incorrect response or a host pass. Slice 8's vocabulary is
+  therefore unblocked; it still requires explicit authorization to begin, and
+  **none of those queue behaviours is implemented anywhere in the codebase.**
 
 ### Slice 9 — Generic Gamepad adapter
 

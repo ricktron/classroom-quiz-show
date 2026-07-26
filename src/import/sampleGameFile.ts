@@ -153,6 +153,13 @@ export const CANONICAL_SAMPLE_CATEGORY_BOARD_FILE = JSON.stringify(
     id: 'imported-sample-board',
     title: 'Earth & Space Science Board',
     teams: SAMPLE_TEAMS,
+    /**
+     * An authored response window (Slice 7). The three-round sample above
+     * deliberately omits the block, so between them the two built-in samples
+     * exercise BOTH paths: an authored duration, and the documented default a
+     * pre-Slice-7 game file still gets.
+     */
+    timer: { responseSeconds: 45 },
     rounds: [
       {
         id: 'board-round',

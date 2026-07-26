@@ -11,7 +11,7 @@ const validPublicState: PublicState = { ...INITIAL_PUBLIC_STATE, revision: 3 }
 
 describe('encode/decode round-trip', () => {
   it('accepts a valid public-state envelope', () => {
-    const encoded = encodeEnvelope({ type: 'public-state', revision: 3, payload: validPublicState })
+    const encoded = encodeEnvelope({ type: 'public-state', sentAt: 1_700_000_000_000, revision: 3, payload: validPublicState })
     const decoded = decodeEnvelope(encoded)
     expect(decoded.ok).toBe(true)
     if (decoded.ok && decoded.message.type === 'public-state') {
@@ -64,7 +64,7 @@ describe('decodeEnvelope — fail closed', () => {
       decodeEnvelope({
         protocol: SYNC_PROTOCOL,
         schemaVersion: SYNC_SCHEMA_VERSION,
-        message: { type: 'public-state', revision: 1, payload: { schemaVersion: 999 } },
+        message: { type: 'public-state', sentAt: 1_700_000_000_000, revision: 1, payload: { schemaVersion: 999 } },
       }),
     ).toEqual({ ok: false, reason: 'malformed-payload' })
   })
@@ -74,7 +74,7 @@ describe('decodeEnvelope — fail closed', () => {
       decodeEnvelope({
         protocol: SYNC_PROTOCOL,
         schemaVersion: SYNC_SCHEMA_VERSION,
-        message: { type: 'public-state', revision: 'soon', payload: validPublicState },
+        message: { type: 'public-state', sentAt: 1_700_000_000_000, revision: 'soon', payload: validPublicState },
       }),
     ).toEqual({ ok: false, reason: 'malformed-payload' })
   })

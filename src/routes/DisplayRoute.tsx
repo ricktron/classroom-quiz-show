@@ -1,6 +1,7 @@
 import { usePublicState } from '../display/usePublicState'
 import { CategoryBoardDisplay } from '../display/CategoryBoardDisplay'
 import { TeamScoreboard } from '../display/TeamScoreboard'
+import { ResponseTimerDisplay } from '../display/ResponseTimerDisplay'
 import type { PublicGameView } from '../state/publicState'
 import './DisplayRoute.css'
 
@@ -43,7 +44,7 @@ function describeGame(game: PublicGameView): string {
 }
 
 export function DisplayRoute() {
-  const publicState = usePublicState()
+  const { state: publicState, hostClockOffsetMs } = usePublicState()
   // When a round is on screen the round IS the content, so the waiting-state
   // chrome shrinks out of its way rather than competing with it for the
   // projector. Nothing is hidden — only resized.
@@ -77,6 +78,26 @@ export function DisplayRoute() {
       {publicState.round && (
         <div className="display__round" aria-live="polite" data-testid="display-round">
           <CategoryBoardDisplay round={publicState.round} />
+        </div>
+      )}
+      {/*
+        The response timer renders only while a window actually exists — a clue
+        that was never armed and never timed projects nothing, so the board is not
+        permanently sharing the screen with an empty clock. It sits between the
+        clue and the scoreboard because that is where a class looks while
+        answering. The countdown is derived locally from the published deadline;
+        the host publishes no per-second revision (Slice 7).
+
+        `aria-live="polite"` announces the STATUS changes (armed, paused, time up)
+        without interrupting; the countdown digits themselves are inside a
+        `role="timer"` element and are deliberately not announced every second.
+      */}
+      {publicState.response && (
+        <div className="display__response" aria-live="polite" data-testid="display-response">
+          <ResponseTimerDisplay
+            response={publicState.response}
+            hostClockOffsetMs={hostClockOffsetMs}
+          />
         </div>
       )}
       {/*

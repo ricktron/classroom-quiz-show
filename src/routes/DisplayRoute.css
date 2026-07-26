@@ -77,6 +77,19 @@
 }
 
 /*
+ * The response-timer strip (Slice 7). It sits between the clue and the
+ * scoreboard — where a class is already looking while answering — and, like every
+ * other strip here, it wraps rather than pushing the page sideways. It is present
+ * only while a response window exists, so the board's layout is unchanged the rest
+ * of the time.
+ */
+.display__response {
+  width: 100%;
+  overflow-x: hidden;
+  padding-block-start: var(--space-1);
+}
+
+/*
  * The scoreboard strip. `margin-block-start: auto` pins it to the bottom of the
  * flex column so it sits below the board or prompt instead of competing with it,
  * and it never pushes the page sideways.

@@ -29,6 +29,16 @@ import {
   modeRequiresValueSource,
   type ScoreSource,
 } from '../game/teams/scoring'
+import {
+  INITIAL_RESPONSE_PHASE_STATE,
+  isInitialResponsePhase,
+  isResponseInterruptionSource,
+  type ResponsePhaseState,
+  type ResponseTimerState,
+} from '../game/timing/responsePhase'
+import { EXPIRY_TOLERANCE_MS } from '../game/timing/limits'
+import { isResponseSeconds, responseDurationMs } from '../game/timing/timerConfig'
+import { isInstant } from '../time/clock'
 
 /**
  * The command/event core.
@@ -75,6 +85,11 @@ export type RejectionReason =
   | 'invalid-score-source'
   | 'score-amount-mismatch'
   | 'score-out-of-range'
+  // Response-phase / timer rejections (Slice 7).
+  | 'invalid-response-phase'
+  | 'invalid-timer-duration'
+  | 'stale-timer-expiration'
+  | 'premature-timer-expiration'
 
 /**
  * Dependencies the planner needs that live OUTSIDE the event history — currently
@@ -158,6 +173,9 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
         // resets for the next class.
         teamScores: {},
         categoryBoards: {},
+        // A new game starts with no armed clue and no running timer, for the same
+        // reason it starts every board fresh: loading a game is a hard baseline.
+        responsePhases: {},
       }
       return withApplied(state, event.type, { ...state, session: { ...state.session, game } })
     }
@@ -169,21 +187,41 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
         ...state.session.game,
         currentRoundIndex: event.roundIndex,
         currentRoundSupport: event.support,
+        // A response window does NOT survive a round change (ADR-007 §8). Board
+        // progress deliberately resumes when a teacher comes back to a round; a
+        // countdown must not, because its deadline is an absolute instant and
+        // resuming a five-minute-old deadline would put a nonsense clock in front
+        // of a class. Clearing the whole map keeps the rule one sentence long.
+        responsePhases: {},
       }
       return withApplied(state, event.type, { ...state, session: { ...state.session, game } })
     }
 
     case 'GAME_SESSION_ENDED': {
       if (!state.session || !state.session.game) return state
-      const game: PrivateGameState = { ...state.session.game, gameLifecycle: 'ended' }
+      const game: PrivateGameState = {
+        ...state.session.game,
+        gameLifecycle: 'ended',
+        // Nothing can be responded to once the game is over.
+        responsePhases: {},
+      }
       return withApplied(state, event.type, { ...state, session: { ...state.session, game } })
     }
 
     case 'CATEGORY_BOARD_TILE_SELECTED':
-      return withBoardState(state, event.type, event.roundId, (board) => ({
-        ...board,
-        progress: { stage: 'selected', selectedTileId: event.tileId },
-      }))
+      return withBoardState(
+        state,
+        event.type,
+        event.roundId,
+        (board) => ({
+          ...board,
+          progress: { stage: 'selected', selectedTileId: event.tileId },
+        }),
+        // A new clue starts disarmed with no timer. Carrying an armed phase or a
+        // running countdown into the next question is exactly the surprise a
+        // classroom cannot afford.
+        { clearResponsePhase: true },
+      )
 
     case 'CATEGORY_BOARD_PROMPT_REVEALED':
       return withBoardState(state, event.type, event.roundId, (board) =>
@@ -194,7 +232,11 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
       )
 
     case 'CATEGORY_BOARD_ANSWER_REVEALED':
-      return withBoardState(state, event.type, event.roundId, (board) => {
+      return withBoardState(
+        state,
+        event.type,
+        event.roundId,
+        (board) => {
         if (board.progress.selectedTileId === null) return null
         const progress: CategoryBoardProgress = {
           stage: 'answer',
@@ -207,13 +249,25 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
           ? board.usedTileIds
           : [...board.usedTileIds, event.tileId]
         return { progress, usedTileIds }
-      })
+        },
+        // Revealing the answer ENDS the response opportunity, so the phase is
+        // cleared rather than left running with a deadline nobody is racing. This
+        // is a transition, not an interruption: no interruption event is
+        // fabricated for something the teacher did to the clue itself.
+        { clearResponsePhase: true },
+      )
 
     case 'CATEGORY_BOARD_RETURNED':
-      return withBoardState(state, event.type, event.roundId, (board) => ({
-        ...board,
-        progress: { stage: 'board', selectedTileId: null },
-      }))
+      return withBoardState(
+        state,
+        event.type,
+        event.roundId,
+        (board) => ({
+          ...board,
+          progress: { stage: 'board', selectedTileId: null },
+        }),
+        { clearResponsePhase: true },
+      )
 
     case 'TEAM_SCORE_ADJUSTED': {
       if (!state.session || !state.session.game) return state
@@ -235,6 +289,104 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
         session: { ...state.session, game: nextGame },
       })
     }
+
+    case 'RESPONSE_PHASE_ARMED':
+      return withResponsePhase(state, event.type, event.roundId, (phase) =>
+        // Fail safe on a log that arms an already-armed clue: not applicable.
+        phase.armed ? null : { ...phase, armed: true },
+      )
+
+    case 'RESPONSE_PHASE_DISARMED':
+      return withResponsePhase(state, event.type, event.roundId, (phase) =>
+        phase.armed ? { ...phase, armed: false } : null,
+      )
+
+    case 'RESPONSE_TIMER_STARTED':
+      return withResponsePhase(state, event.type, event.roundId, (phase) => {
+        if (phase.timer.status !== 'idle') return null
+        const timer: ResponseTimerState = {
+          status: 'running',
+          timerId: event.timerId,
+          durationMs: event.durationMs,
+          startedAt: event.startedAt,
+          deadline: event.deadline,
+        }
+        return { ...phase, timer }
+      })
+
+    case 'RESPONSE_TIMER_PAUSED':
+      return withResponsePhase(state, event.type, event.roundId, (phase) => {
+        const current = phase.timer
+        // Identity is re-checked on APPLICATION as well as on planning, so a
+        // stored log that pauses a timer other than the live one degrades to "not
+        // applicable" instead of rewriting the wrong countdown.
+        if (current.status !== 'running' || current.timerId !== event.timerId) return null
+        const timer: ResponseTimerState = {
+          status: 'paused',
+          timerId: current.timerId,
+          durationMs: current.durationMs,
+          remainingMs: event.remainingMs,
+        }
+        return { ...phase, timer }
+      })
+
+    case 'RESPONSE_TIMER_RESUMED':
+      return withResponsePhase(state, event.type, event.roundId, (phase) => {
+        const current = phase.timer
+        if (current.status !== 'paused' || current.timerId !== event.timerId) return null
+        const timer: ResponseTimerState = {
+          status: 'running',
+          timerId: current.timerId,
+          durationMs: current.durationMs,
+          startedAt: event.resumedAt,
+          deadline: event.deadline,
+        }
+        return { ...phase, timer }
+      })
+
+    case 'RESPONSE_TIMER_INTERRUPTED':
+      return withResponsePhase(state, event.type, event.roundId, (phase) => {
+        const current = phase.timer
+        if (current.status !== 'running' && current.status !== 'paused') return null
+        if (current.timerId !== event.timerId) return null
+        if (!isResponseInterruptionSource(event.source)) return null
+        const timer: ResponseTimerState = {
+          status: 'interrupted',
+          timerId: current.timerId,
+          durationMs: current.durationMs,
+          remainingMs: event.remainingMs,
+          source: event.source,
+        }
+        // An interruption stops the CLOCK. It deliberately does not disarm the
+        // clue and does not end it: a later slice promotes the next respondent
+        // into a fresh window from exactly here.
+        return { ...phase, timer }
+      })
+
+    case 'RESPONSE_TIMER_EXPIRED':
+      return withResponsePhase(state, event.type, event.roundId, (phase) => {
+        const current = phase.timer
+        // The three-way match — running, same timer, same deadline — is what makes
+        // "exactly one effective expiry per countdown" structural rather than a
+        // convention: once this applies, the status is no longer `running`, so a
+        // second expiry of the same timer can never apply.
+        if (current.status !== 'running') return null
+        if (current.timerId !== event.timerId || current.deadline !== event.deadline) return null
+        const timer: ResponseTimerState = {
+          status: 'expired',
+          timerId: current.timerId,
+          durationMs: current.durationMs,
+          deadline: current.deadline,
+        }
+        // Expiry closes the window, so it also disarms: nothing may interrupt a
+        // window that has already ended. It moves no points.
+        return { armed: false, timer }
+      })
+
+    case 'RESPONSE_PHASE_RESET':
+      return withResponsePhase(state, event.type, event.roundId, (phase) =>
+        isInitialResponsePhase(phase) ? null : INITIAL_RESPONSE_PHASE_STATE,
+      )
 
     // Undo markers change nothing directly; `replay` neutralizes their targets.
     case 'EVENT_UNDONE':
@@ -287,6 +439,37 @@ export function teamScoreFor(game: PrivateGameState, teamId: string): number {
 }
 
 /**
+ * Read a round's response phase, defaulting to {@link INITIAL_RESPONSE_PHASE_STATE}.
+ *
+ * A pure read with a constant default — NOT a cache, and it never writes anything
+ * back, so replay produces the same result every time and "no entry" and "idle,
+ * disarmed" are the same fact. `hasOwnProperty` rather than a bare index so an
+ * inherited `Object.prototype` member can never be mistaken for a phase.
+ */
+export function responsePhaseFor(
+  game: PrivateGameState,
+  roundId: string,
+): ResponsePhaseState {
+  if (!Object.prototype.hasOwnProperty.call(game.responsePhases, roundId)) {
+    return INITIAL_RESPONSE_PHASE_STATE
+  }
+  return game.responsePhases[roundId]
+}
+
+/** Drop one round's phase entry, so the map only ever records non-initial phases. */
+function withoutResponsePhase(
+  phases: PrivateGameState['responsePhases'],
+  roundId: string,
+): PrivateGameState['responsePhases'] {
+  if (!Object.prototype.hasOwnProperty.call(phases, roundId)) return phases
+  const next: Record<string, ResponsePhaseState> = {}
+  for (const [key, value] of Object.entries(phases)) {
+    if (key !== roundId) next[key] = value
+  }
+  return next
+}
+
+/**
  * Apply a pure update to one round's board state.
  *
  * The updater returns `null` when the event does not apply to the current board
@@ -294,12 +477,19 @@ export function teamScoreFor(game: PrivateGameState, teamId: string): number {
  * event is skipped and state is returned UNCHANGED — the same fail-safe
  * event-application behavior the rest of the reducer uses, so a corrupt log
  * degrades to the last consistent state instead of throwing.
+ *
+ * `clearResponsePhase` expresses the Slice 7 transition rule: the three board
+ * events that change WHICH clue is live (a new selection, the answer reveal, the
+ * return to the grid) also end any response window on that round. It is applied
+ * in the same state update, so a board transition and its phase consequence can
+ * never be observed apart.
  */
 function withBoardState(
   state: PrivateState,
   type: PrivateState['diagnostics']['lastAppliedEventType'],
   roundId: string,
   update: (board: CategoryBoardRoundState) => CategoryBoardRoundState | null,
+  options: { readonly clearResponsePhase?: boolean } = {},
 ): PrivateState {
   if (!state.session || !state.session.game) return state
   const game = state.session.game
@@ -309,7 +499,40 @@ function withBoardState(
   const nextGame: PrivateGameState = {
     ...game,
     categoryBoards: { ...game.categoryBoards, [roundId]: next },
+    responsePhases: options.clearResponsePhase
+      ? withoutResponsePhase(game.responsePhases, roundId)
+      : game.responsePhases,
   }
+  return withApplied(state, type, {
+    ...state,
+    session: { ...state.session, game: nextGame },
+  })
+}
+
+/**
+ * Apply a pure update to one round's response phase.
+ *
+ * Same fail-safe contract as `withBoardState`: an updater returning `null` means
+ * the stored event does not apply to the current phase, and the whole event is
+ * skipped with state unchanged rather than throwing. Writing back the INITIAL
+ * phase removes the entry instead of storing it, so the map stays a record of
+ * clues that actually have a phase.
+ */
+function withResponsePhase(
+  state: PrivateState,
+  type: PrivateState['diagnostics']['lastAppliedEventType'],
+  roundId: string,
+  update: (phase: ResponsePhaseState) => ResponsePhaseState | null,
+): PrivateState {
+  if (!state.session || !state.session.game) return state
+  const game = state.session.game
+  if (game.gameLifecycle !== 'active') return state
+  const next = update(responsePhaseFor(game, roundId))
+  if (next === null) return state
+  const responsePhases = isInitialResponsePhase(next)
+    ? withoutResponsePhase(game.responsePhases, roundId)
+    : { ...game.responsePhases, [roundId]: next }
+  const nextGame: PrivateGameState = { ...game, responsePhases }
   return withApplied(state, type, {
     ...state,
     session: { ...state.session, game: nextGame },
@@ -764,9 +987,250 @@ export function planCommand(
       }
     }
 
+    case 'ARM_RESPONSE_PHASE': {
+      const context = resolveResponsePhase(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      // Arming an armed clue is not a fact worth recording, and recording it would
+      // make "undo" ambiguous between two identical states.
+      if (context.phase.armed) return { status: 'rejected', reason: 'invalid-response-phase' }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'RESPONSE_PHASE_ARMED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+          },
+        ],
+      }
+    }
+
+    case 'DISARM_RESPONSE_PHASE': {
+      const context = resolveResponsePhase(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      if (!context.phase.armed) return { status: 'rejected', reason: 'invalid-response-phase' }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'RESPONSE_PHASE_DISARMED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+          },
+        ],
+      }
+    }
+
+    case 'START_RESPONSE_TIMER': {
+      const context = resolveResponsePhase(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      // One countdown per clue at a time. A second start must follow an explicit
+      // reset, so a stray click cannot silently restart the clock mid-question.
+      if (context.phase.timer.status !== 'idle') {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
+      if (!isInstant(at)) return { status: 'rejected', reason: 'malformed-command' }
+      // The authored default is the fallback; an explicit host choice is validated
+      // against exactly the same bounds, so the UI can never widen the window.
+      const seconds =
+        command.durationSeconds === undefined
+          ? context.game.definition.timer.responseSeconds
+          : command.durationSeconds
+      if (!isResponseSeconds(seconds)) {
+        return { status: 'rejected', reason: 'invalid-timer-duration' }
+      }
+      const durationMs = responseDurationMs(seconds)
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'RESPONSE_TIMER_STARTED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            // Deterministic identity from the append index — the reducer generates
+            // no ids and consults no random source.
+            timerId: `tmr-${seq}`,
+            durationMs,
+            startedAt: at,
+            deadline: at + durationMs,
+          },
+        ],
+      }
+    }
+
+    case 'PAUSE_RESPONSE_TIMER': {
+      const context = resolveResponsePhase(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      const timer = context.phase.timer
+      if (timer.status !== 'running') {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
+      if (!isInstant(at)) return { status: 'rejected', reason: 'malformed-command' }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'RESPONSE_TIMER_PAUSED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            timerId: timer.timerId,
+            // How much is left is computed ONCE, here at the dispatch edge, and
+            // then stored as a fact. Replay never recomputes it, so a paused timer
+            // is frozen however long the history sits unused.
+            remainingMs: boundedRemaining(timer.deadline - at, timer.durationMs),
+          },
+        ],
+      }
+    }
+
+    case 'RESUME_RESPONSE_TIMER': {
+      const context = resolveResponsePhase(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      const timer = context.phase.timer
+      if (timer.status !== 'paused') {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
+      if (!isInstant(at)) return { status: 'rejected', reason: 'malformed-command' }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'RESPONSE_TIMER_RESUMED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            timerId: timer.timerId,
+            resumedAt: at,
+            // A NEW deadline derived from the dispatch clock. The wall-clock time
+            // spent paused is therefore never charged to the class — and never
+            // consumed during a replay either.
+            deadline: at + timer.remainingMs,
+          },
+        ],
+      }
+    }
+
+    case 'INTERRUPT_RESPONSE_TIMER': {
+      const context = resolveResponsePhase(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      const timer = context.phase.timer
+      if (timer.status !== 'running' && timer.status !== 'paused') {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
+      // The typed seam fails closed: an unrecognized source never reaches the log.
+      if (!isResponseInterruptionSource(command.source)) {
+        return { status: 'rejected', reason: 'malformed-command' }
+      }
+      if (!isInstant(at)) return { status: 'rejected', reason: 'malformed-command' }
+      const remainingMs =
+        timer.status === 'running'
+          ? boundedRemaining(timer.deadline - at, timer.durationMs)
+          : timer.remainingMs
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'RESPONSE_TIMER_INTERRUPTED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            timerId: timer.timerId,
+            // Rebuilt rather than aliased, so the appended event cannot reference
+            // a caller object that is mutated later (same rule as `ScoreSource`).
+            source: { kind: command.source.kind },
+            remainingMs,
+          },
+        ],
+      }
+    }
+
+    case 'EXPIRE_RESPONSE_TIMER': {
+      const context = resolveResponsePhase(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      const timer = context.phase.timer
+      // Everything below is what makes a stale timeout callback harmless. A
+      // callback left over from a timer that was reset, restarted, paused, undone,
+      // or abandoned by a clue or round change fails one of these checks and
+      // appends nothing at all.
+      if (timer.status !== 'running') {
+        return { status: 'rejected', reason: 'stale-timer-expiration' }
+      }
+      if (typeof command.timerId !== 'string' || command.timerId !== timer.timerId) {
+        return { status: 'rejected', reason: 'stale-timer-expiration' }
+      }
+      if (!isInstant(command.deadline) || command.deadline !== timer.deadline) {
+        return { status: 'rejected', reason: 'stale-timer-expiration' }
+      }
+      if (!isInstant(at)) return { status: 'rejected', reason: 'malformed-command' }
+      // A window that has not ended cannot expire. The tolerance absorbs a
+      // callback that fires a hair early; anything meaningfully early is the host
+      // trying to end a live window and belongs to INTERRUPT instead.
+      if (at < timer.deadline - EXPIRY_TOLERANCE_MS) {
+        return { status: 'rejected', reason: 'premature-timer-expiration' }
+      }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'RESPONSE_TIMER_EXPIRED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            timerId: timer.timerId,
+            deadline: timer.deadline,
+          },
+        ],
+      }
+    }
+
+    case 'RESET_RESPONSE_PHASE': {
+      const context = resolveResponsePhase(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      if (isInitialResponsePhase(context.phase)) {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'RESPONSE_PHASE_RESET',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+          },
+        ],
+      }
+    }
+
     default:
       return { status: 'rejected', reason: 'malformed-command' }
   }
+}
+
+/** Clamp a computed remaining duration into `0 … durationMs`, integers only. */
+function boundedRemaining(remaining: number, durationMs: number): number {
+  if (!Number.isFinite(remaining) || remaining < 0) return 0
+  return Math.min(Math.round(remaining), durationMs)
 }
 
 /** Everything a category-board command needs, or the reason it cannot proceed. */
@@ -805,6 +1269,47 @@ function resolveCategoryBoard(state: PrivateState, roundId: unknown): CategoryBo
     }
   }
   return { round, board, boardState: categoryBoardStateFor(game, round.id) }
+}
+
+/** Everything a response-phase command needs, or the reason it cannot proceed. */
+type ResponsePhaseContext =
+  | {
+      readonly game: PrivateGameState
+      readonly round: RoundDefinition
+      readonly phase: ResponsePhaseState
+    }
+  | { readonly reason: RejectionReason }
+
+/**
+ * Resolve the current clue as one that can carry a response phase, or explain
+ * why not.
+ *
+ * This is the single gate every arming/timer command passes through, so the
+ * legality rules are stated once. It reuses the board gate (session, ACTIVE game,
+ * current round, matching round id, a real board) and adds ONE rule of its own:
+ *
+ *   **the clue must be at the `prompt` stage.**
+ *
+ * That is the whole legal window. Before the prompt is public there is nothing to
+ * respond to, so arming would be theatre; once the answer is public the
+ * opportunity is over, so a countdown would be meaningless. Every illegal
+ * transition therefore fails closed at this one place rather than being spread
+ * across eight command handlers.
+ *
+ * A future round type with a timed response resolves its own definition here and
+ * reuses everything below unchanged.
+ */
+function resolveResponsePhase(state: PrivateState, roundId: unknown): ResponsePhaseContext {
+  const context = resolveCategoryBoard(state, roundId)
+  if ('reason' in context) return { reason: context.reason }
+  if (context.boardState.progress.stage !== 'prompt') {
+    return { reason: 'invalid-board-stage' }
+  }
+  // `resolveCategoryBoard` already proved both, but the check is repeated rather
+  // than asserted so the types stay honest with no non-null escape hatch.
+  const game = state.session?.game
+  if (!game) return { reason: 'game-not-initialized' }
+  return { game, round: context.round, phase: responsePhaseFor(game, context.round.id) }
 }
 
 export type { CommandType }

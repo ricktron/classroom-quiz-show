@@ -272,7 +272,7 @@ describe('what the scoreboard never carries', () => {
   it('keeps the top-level allow-list exactly (teams is the only addition)', () => {
     const publicState = teamStore().getPublicState()
     expect(Object.keys(publicState).sort()).toEqual(
-      ['detail', 'game', 'headline', 'phase', 'revision', 'round', 'schemaVersion', 'teams'].sort(),
+      ['detail', 'game', 'headline', 'phase', 'response', 'revision', 'round', 'schemaVersion', 'teams'].sort(),
     )
   })
 
@@ -453,11 +453,13 @@ describe('isPublicTeamsState — the wire guard', () => {
 })
 
 describe('wire version', () => {
-  it('is 4 — bumped explicitly because Slice 6 added the teams field', () => {
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(4)
+  it('is 5 — Slice 6 took it to 4 for teams, Slice 7 to 5 for response', () => {
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(5)
   })
 
   it('rejects the Slice 5 wire shape (version 3) instead of reinterpreting it', () => {
+    // The ENVELOPE version moved 1 → 2 in Slice 7 as well, so this uses the
+    // current envelope and proves the payload alone is rejected on its version.
     const legacy = {
       schemaVersion: 3,
       revision: 9,
@@ -470,8 +472,8 @@ describe('wire version', () => {
     expect(isPublicState(legacy)).toBe(false)
     const decoded = decodeEnvelope({
       protocol: 'classroom-quiz-show/sync',
-      schemaVersion: 1,
-      message: { type: 'public-state', revision: 9, payload: legacy },
+      schemaVersion: 2,
+      message: { type: 'public-state', sentAt: 1_700_000_000_000, revision: 9, payload: legacy },
     })
     expect(decoded.ok).toBe(false)
     if (!decoded.ok) expect(decoded.reason).toBe('malformed-payload')

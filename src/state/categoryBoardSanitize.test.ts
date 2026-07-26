@@ -221,7 +221,7 @@ describe('nothing else from the private world crosses the boundary', () => {
   it('keeps the top-level allow-list exactly', () => {
     const publicState = drive(boardStore(), select('alpha-100'))
     expect(Object.keys(publicState).sort()).toEqual(
-      ['detail', 'game', 'headline', 'phase', 'revision', 'round', 'schemaVersion', 'teams'].sort(),
+      ['detail', 'game', 'headline', 'phase', 'response', 'revision', 'round', 'schemaVersion', 'teams'].sort(),
     )
   })
 
@@ -343,10 +343,11 @@ describe('the public round guard rejects impossible payloads', () => {
 })
 
 describe('wire version', () => {
-  it('is 4 — bumped again because Slice 6 added the teams field', () => {
-    // Slice 5 took this from 2 → 3 for `round`; Slice 6 takes it 3 → 4 for
-    // `teams`. Version 3 is never re-read as though it were version 4.
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(4)
+  it('is 5 — bumped again because Slice 7 added the response field', () => {
+    // Slice 5 took this from 2 → 3 for `round`, Slice 6 3 → 4 for `teams`, and
+    // Slice 7 4 → 5 for `response`. An older version is never re-read as a newer
+    // one; it is rejected.
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(5)
   })
 
   it('rejects an older wire shape instead of reinterpreting it', () => {
@@ -361,8 +362,8 @@ describe('wire version', () => {
     expect(isPublicState(legacy)).toBe(false)
     const decoded = decodeEnvelope({
       protocol: 'classroom-quiz-show/sync',
-      schemaVersion: 1,
-      message: { type: 'public-state', revision: 9, payload: legacy },
+      schemaVersion: 2,
+      message: { type: 'public-state', sentAt: 1_700_000_000_000, revision: 9, payload: legacy },
     })
     expect(decoded.ok).toBe(false)
     if (!decoded.ok) expect(decoded.reason).toBe('malformed-payload')
@@ -371,7 +372,7 @@ describe('wire version', () => {
   it('round-trips a current-version board payload through the sync envelope', () => {
     const publicState = drive(boardStore(), select('alpha-100'), revealPrompt)
     const decoded = decodeEnvelope(
-      encodeEnvelope({ type: 'public-state', revision: publicState.revision, payload: publicState }),
+      encodeEnvelope({ type: 'public-state', sentAt: 1_700_000_000_000, revision: publicState.revision, payload: publicState }),
     )
     expect(decoded.ok).toBe(true)
     if (decoded.ok && decoded.message.type === 'public-state') {
