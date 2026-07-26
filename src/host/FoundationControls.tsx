@@ -3,6 +3,7 @@ import { useHostSync } from './useHostSync'
 import { PUBLIC_STATUS_CODES } from '../state/status'
 import { createSampleGame, createSampleGameWithUnsupportedRound } from '../game/sampleGame'
 import { GameImportPanel } from './GameImportPanel'
+import { CategoryBoardHostPanel } from './CategoryBoardHostPanel'
 import './FoundationControls.css'
 
 /**
@@ -242,6 +243,14 @@ export function FoundationControls() {
           </>
         )}
       </div>
+
+      {/*
+        The one GAMEPLAY surface (Slice 5). It renders only when the current
+        round is a playable category board; every other state (no game, no
+        round, a placeholder round, an unsupported round) renders nothing here
+        and the foundation diagnostics above remain the whole host surface.
+      */}
+      {game && <CategoryBoardHostPanel dispatch={dispatch} game={game} />}
 
       <GameImportPanel
         dispatch={dispatch}

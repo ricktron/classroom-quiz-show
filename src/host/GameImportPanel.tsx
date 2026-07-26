@@ -6,7 +6,9 @@ import type { RoundRegistry } from '../game/registry'
 import { importGameFromJsonText } from '../import/importGame'
 import type { ImportResult } from '../import/result'
 import {
+  CANONICAL_SAMPLE_CATEGORY_BOARD_FILE,
   CANONICAL_SAMPLE_GAME_FILE,
+  CANONICAL_SAMPLE_WITH_DUPLICATE_TILE_ID,
   CANONICAL_SAMPLE_WITH_UNKNOWN_ROUND_TYPE,
 } from '../import/sampleGameFile'
 import './GameImportPanel.css'
@@ -123,9 +125,23 @@ export function GameImportPanel({
         <button
           type="button"
           className="btn btn--secondary"
+          onClick={() => setText(CANONICAL_SAMPLE_CATEGORY_BOARD_FILE)}
+        >
+          Load category-board sample file
+        </button>
+        <button
+          type="button"
+          className="btn btn--secondary"
           onClick={() => setText(CANONICAL_SAMPLE_WITH_UNKNOWN_ROUND_TYPE)}
         >
           Load sample with unregistered round type
+        </button>
+        <button
+          type="button"
+          className="btn btn--secondary"
+          onClick={() => setText(CANONICAL_SAMPLE_WITH_DUPLICATE_TILE_ID)}
+        >
+          Load sample with a duplicate tile id
         </button>
         <button
           type="button"

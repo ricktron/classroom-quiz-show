@@ -99,6 +99,17 @@ engines fill from Slice 5 on. An unknown/unsupported round type **fails closed**
 a host-only diagnostic, a neutral "unavailable" display, no substitution, no
 crash, deterministic replay.
 
+**Status (Slice 5).** The first PLAYABLE type is registered: `category-board` —
+see [`ADR-005-category-board-round.md`](ADR-005-category-board-round.md). It
+fills the registry seam exactly as designed: application code registers the
+entry, the entry supplies the single config schema, and the type's gameplay
+behaviour lives in the pure reducer and the allow-list sanitizer rather than in
+the registry. Imported content still cannot register a type, replace a schema, a
+reducer, or a public projection, or supply a callback; duplicate registration
+still throws. The non-gameplay `placeholder` type is retained as the engine-test
+round and the safe fallback fixture. Round order still comes from the
+`GameDefinition`, never the registry.
+
 ## 4. Host-owned authoritative state → sanitized public state
 
 This is a **permanent** requirement.
@@ -135,10 +146,21 @@ display bundle cannot pull a private type in, and `safeToPublicState` makes a
 projection failure fall back to the safe initial state. Structural `PublicState`
 assertions (allow-listed keys only, future-field non-leak, serialized-value
 checks) now back the baseline projector-leak string checks in
-`tests/e2e/projector-safety.spec.ts` / `src/test/leakLabels.ts`. Gameplay-era
-private data (answers, notes, wagers, upcoming prompts) still does not exist;
-those fields join the private state — and are guarded by the same allow-list — in
-later slices.
+`tests/e2e/projector-safety.spec.ts` / `src/test/leakLabels.ts`. **Status (Slice 5).** Gameplay-era private data now exists, and the allow-list
+holds. A `category-board` round carries prompts, canonical answers, alternate
+acceptable answers, and host-only teacher notes; `PublicState` gained exactly one
+new field, `round: PublicRoundState | null` (wire version 2 → 3). That DTO is
+**current-stage-only** — at the board stage it carries category titles,
+positional keys and effective values; from `selected` onward it carries one
+selection and not the rest of the board — so the content of unselected tiles is
+never sent rather than sent-and-hidden. Teacher notes and alternates are never
+projected at any stage; authored ids are replaced by positional render keys; and
+the wire discriminator is a neutral `kind`, not the registry round-type string.
+**Answer reveal** is enforced structurally: `answer` is `null` in the DTO until
+the host has dispatched an explicit answer-reveal command. Impossible private
+state (a selection that is not on the board), an unusable config, a malformed
+payload, a stale revision, or an old wire version each resolve to the neutral
+"not available" panel.
 
 ## 5. Imported content is data, never executable code
 
@@ -169,6 +191,16 @@ cycles, and excessive nesting. Imported content cannot register a round type,
 supply a schema, name a module, or mutate the registry; a `register`-shaped
 field in a game file is simply an unknown field and is rejected as one.
 
+**Status (Slice 5).** A playable round type's config is validated by the SAME
+seam: `category-board` supplies its own strict schema through
+`RoundTypeEntry.configSchema`, so there is still exactly one importer and one
+config validation path per type. Whole-board relationship checks (id uniqueness
+across the round, whitespace-only text, the total-tile budget) report through
+Zod so they inherit exact document paths such as
+`rounds[0].config.categories[1].tiles[2].prompt`. A function anywhere inside a
+board config is still rejected by the pre-Zod safety scan, and a game file still
+cannot register a type or supply a schema.
+
 **Unknown round types now fail IMPORT** (stage `registry`), rather than being
 imported and failing at play time. That is deliberately stricter than Slice 3's
 trusted in-memory path, which must still be able to *represent* an unsupported
@@ -189,9 +221,18 @@ recovery are all derived from the event model rather than ad-hoc mutation.
 small, non-gameplay command/event vocabulary — see
 [`ADR-002-state-event-sync-core.md`](ADR-002-state-event-sync-core.md). The pure
 reducer, append-only history, deterministic replay, and auditable undo (an
-append-only `EVENT_UNDONE` marker, never a deletion) all exist now. Gameplay
-commands/events (tiles, reveal, teams, scoring, timers, wagers, rounds) are still
-deferred to later slices and will extend this core, not replace it.
+append-only `EVENT_UNDONE` marker, never a deletion) all exist now.
+
+**Status (Slice 5).** The first GAMEPLAY commands/events extend that core rather
+than replacing it: `SELECT_CATEGORY_BOARD_TILE`, `REVEAL_CATEGORY_BOARD_PROMPT`,
+`REVEAL_CATEGORY_BOARD_ANSWER`, `RETURN_TO_CATEGORY_BOARD` and their four
+reversible events. Every command carries the `roundId` it targets, so a stale
+host control is rejected rather than acting on the wrong round; a rejected
+command appends no event and does not change the revision. Used-tile state is
+derived **only** by replaying effective answer-reveal events, so undo releases a
+tile exactly, with no separate bookkeeping to keep in step. Nothing in the
+gameplay path reads a clock, a random source, or a locale-dependent ordering.
+Teams, scoring, timers and wagers remain deferred.
 
 ## 7. Scoring-strategy boundary (future)
 

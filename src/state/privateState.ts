@@ -22,6 +22,56 @@ export type SessionLifecycle = 'ready' | 'waiting'
 export type GameLifecycle = 'active' | 'ended'
 
 /**
+ * The reveal stage of a `category-board` round (Slice 5).
+ *
+ * This is ONE explicit stage value, deliberately not a set of booleans: there is
+ * no `isPromptShown && !isAnswerShown` to get out of sync, and an impossible
+ * combination cannot be represented.
+ *
+ *  - `board`    — the grid is showing; nothing is selected.
+ *  - `selected` — the host has chosen a tile and can privately preview it.
+ *                 NOTHING new is public yet beyond the category and value.
+ *  - `prompt`   — the prompt has been revealed publicly.
+ *  - `answer`   — the answer has been revealed publicly.
+ */
+export type CategoryBoardStage = 'board' | 'selected' | 'prompt' | 'answer'
+
+/**
+ * Stage + selection as a single discriminated value, so the invariants
+ * "no prompt without a selected tile" and "no answer without a selected tile"
+ * are STRUCTURAL — an answer stage with no tile is not expressible.
+ */
+export type CategoryBoardProgress =
+  | { readonly stage: 'board'; readonly selectedTileId: null }
+  | { readonly stage: 'selected'; readonly selectedTileId: string }
+  | { readonly stage: 'prompt'; readonly selectedTileId: string }
+  | { readonly stage: 'answer'; readonly selectedTileId: string }
+
+/**
+ * PRIVATE per-round session state for one category-board round.
+ *
+ * Both fields are DERIVED BY REPLAY from the append-only event log — there is no
+ * out-of-band mutation and no separate used-tile cache. `usedTileIds` therefore
+ * shrinks automatically when an answer-reveal event is undone, because the
+ * undone event is simply not applied on the next replay.
+ */
+export interface CategoryBoardRoundState {
+  readonly progress: CategoryBoardProgress
+  /**
+   * Tiles that have been completed, in completion order. A tile is added when
+   * its ANSWER is revealed — selecting a tile does not consume it, so an
+   * accidental selection can be undone without burning the tile.
+   */
+  readonly usedTileIds: readonly string[]
+}
+
+/** A fresh, untouched board: nothing selected, nothing used. */
+export const INITIAL_CATEGORY_BOARD_ROUND_STATE: CategoryBoardRoundState = {
+  progress: { stage: 'board', selectedTileId: null },
+  usedTileIds: [],
+}
+
+/**
  * PRIVATE game/session runtime state (Slice 3). This is the `GameSession`
  * concept: runtime progress DERIVED from a `GameDefinition` plus session
  * history. It is kept distinct from the authored definition it references
@@ -46,6 +96,19 @@ export interface PrivateGameState {
    * `unsupported` drives the host diagnostic and the fail-closed public view.
    */
   readonly currentRoundSupport: RoundSupport | null
+  /**
+   * Per-round category-board progress, keyed by the round's stable `RoundId`.
+   *
+   * Keying by round id (rather than holding one "current board") means moving
+   * to another round and coming back RESUMES that board exactly where it was —
+   * its used tiles and its reveal stage both persist. That is the classroom
+   * expectation: glancing at the next round must not wipe the board you are
+   * halfway through.
+   *
+   * PRIVATE. It is derived purely from events, and only the tiny allow-listed
+   * public DTO in `sanitize.ts` ever reaches the display.
+   */
+  readonly categoryBoards: Readonly<Record<string, CategoryBoardRoundState>>
 }
 
 /** Nested private diagnostics — used to prove nested fields never leak. */

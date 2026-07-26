@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { createSessionStore } from '../state/store'
 import { gameFileText, roundFile } from '../test/gameFileFixtures'
+import { UNREGISTERED_ROUND_TYPE } from '../import/sampleGameFile'
 import { GameImportPanel } from './GameImportPanel'
 
 /**
@@ -80,7 +81,7 @@ describe('GameImportPanel', () => {
   it('rejects an unregistered round type safely and host-only', () => {
     const { store } = renderPanel()
     pasteAndImport(
-      gameFileText({ rounds: [{ id: 'r1', type: 'category-board', title: 'R', config: {} }] }),
+      gameFileText({ rounds: [{ id: 'r1', type: UNREGISTERED_ROUND_TYPE, title: 'R', config: {} }] }),
     )
 
     const result = screen.getByTestId('import-result')

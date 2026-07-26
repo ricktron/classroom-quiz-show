@@ -5,7 +5,7 @@ classroom. A teacher runs a private **host** screen; students watch a public
 **display** screen on the projector.
 
 > **Not a Jeopardy clone.** The category-and-point-value board is the _first_
-> round type this engine will support, not the whole product. See
+> round type this engine supports, not the whole product. See
 > [`docs/architecture/GAME-ENGINE-BOUNDARIES.md`](docs/architecture/GAME-ENGINE-BOUNDARIES.md).
 
 ## Current implementation status
@@ -82,6 +82,43 @@ Slice 4 opens the trusted ingestion boundary — still **no gameplay**:
   the display untouched. A valid import loads only through the existing
   `INITIALIZE_GAME` command.
 
+**Slice 5 — category-board round. In review** — delivered on
+`claude/slice-5-category-board-6gfxnq`, **not merged** (see
+[`docs/STATUS.md`](docs/STATUS.md), the local-verification receipt
+[`docs/receipts/2026-07-26-slice-5-local-verification.md`](docs/receipts/2026-07-26-slice-5-local-verification.md),
+and [`docs/architecture/ADR-005-category-board-round.md`](docs/architecture/ADR-005-category-board-round.md)).
+Slice 5 makes the app **playable for the first time**:
+
+- **`category-board`, the first playable round type**, registered by application
+  code. Imported content still cannot register a type, replace a schema, a
+  reducer or a public projection, or supply a callback.
+- **A typed board**: ordered categories (stable id + public title) of ordered
+  tiles (stable id, non-negative integer value, prompt, answer, optional
+  alternates, optional host-only teacher notes, optional multiplier). Authored
+  array order is canonical; identity is the stable id, and tile ids are unique
+  across the whole round. **Uneven categories and duplicate values are both
+  allowed** — a real classroom board is often ragged, and value is not identity.
+- **`effectiveValue = value × multiplier`** over bounded integers — exact, and
+  it changes only the displayed value. **It scores nothing.**
+- **An explicit reveal-stage machine**: `board → selected → prompt → answer`,
+  plus return-to-board. The stage is one discriminated value paired with the
+  selection, so "an answer with no selected tile" is not expressible.
+- **A used tile is consumed on ANSWER reveal, not on selection** — so a misclick
+  is recoverable — and undoing the answer reveal puts the tile back. Used state
+  is derived only by replaying events; there is no separate record to drift.
+- **One import path, still**: the registry hands the Slice 4 pipeline this
+  type's own strict schema. Errors carry exact paths such as
+  `rounds[0].config.categories[1].tiles[2].prompt`, and nothing is repaired,
+  de-duplicated, reordered, or truncated.
+- **The projector gets a current-stage-only DTO** (`PublicState.round`, wire
+  version 2 → 3): the board stage carries titles, positional keys and values;
+  from `selected` onward it carries one selection and not the rest of the board.
+  Teacher notes, alternate answers and authored ids are **never** projected, and
+  the answer is `null` until the host explicitly reveals it.
+- **Bounded host controls** that state, in words, exactly what the projector is
+  showing right now — with every private block badged "Host only". No team,
+  score, timer or buzzer control exists; that is Slice 6.
+
 The Slice 1 foundation is unchanged beneath it:
 
 - React + TypeScript + Vite app shell
@@ -94,13 +131,14 @@ The Slice 1 foundation is unchanged beneath it:
 - Lint, typecheck, unit/component tests (Vitest), and browser tests (Playwright)
 - Architecture and governance documentation
 
-There is still **no gameplay** — no board, questions, answers, scoring, timers,
-teams, reveal, or durable persistence. The host "Foundation / testing controls"
-and the import harness are diagnostics that prove the state core, the game/round
-model, and the ingestion boundary — not game controls. Importing is limited to
-pasting canonical JSON (no file picker, spreadsheet, or remote import yet). Those
-systems arrive in later slices. See
-[`docs/STATUS.md`](docs/STATUS.md) and
+There is **one playable round type, and it does not score**. There are still no
+teams, score totals, awards, deductions, partial credit, timers, buzzers,
+wagers, media, themes, or durable persistence, and importing is still limited to
+pasting canonical JSON (no file picker, spreadsheet, or remote import). The host
+"Foundation / testing controls" and the import harness remain diagnostics that
+prove the state core, the game/round model and the ingestion boundary — the
+category-board panel is the only game control. Those systems arrive in later
+slices. See [`docs/STATUS.md`](docs/STATUS.md) and
 [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md).
 
 ## Requirements
@@ -134,7 +172,8 @@ npm run test:e2e    # Playwright against the production preview
 The Playwright suite builds the app and serves it with `vite preview` under the
 real GitHub Pages base path, then exercises direct navigation, refresh, the
 base path, projector legibility, mobile host usability, the offline app shell,
-and the permanent **projector-leak** checks.
+a full category-board play-through across a host tab and a projector tab, and
+the permanent **projector-leak** checks.
 
 > If your machine has a pre-provisioned Chromium that does not match
 > Playwright's bundled version, set `PLAYWRIGHT_CHROMIUM_PATH` to its executable

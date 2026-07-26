@@ -17,10 +17,11 @@
 
 /**
  * Bump when the PublicState wire shape changes incompatibly. Slice 3 added the
- * `game` field, so this moved from 1 → 2; a display expecting the old shape
- * fails closed on the version mismatch.
+ * `game` field (1 → 2); Slice 5 adds the `round` field (2 → 3). A display
+ * expecting an older shape fails closed on the version mismatch — an old wire
+ * shape is never reinterpreted, guessed at, or upgraded.
  */
-export const PUBLIC_STATE_SCHEMA_VERSION = 2 as const
+export const PUBLIC_STATE_SCHEMA_VERSION = 3 as const
 
 /**
  * Coarse, public-safe lifecycle phase. This is intentionally NOT the private
@@ -55,6 +56,101 @@ export interface PublicGameView {
   readonly roundAvailability: PublicRoundAvailability
 }
 
+/**
+ * ── Category-board public DTO (Slice 5) ──────────────────────────────────────
+ *
+ * This is a **current-stage-only** DTO, not the board definition with private
+ * fields blanked out. At `board` stage the payload carries categories and tile
+ * values and NOTHING else; from `selected` onward it carries one selection and
+ * NOT the rest of the board. There is therefore no "hidden" prompt or answer
+ * sitting in the projector's memory waiting to be inspected — the content for
+ * unselected tiles is simply never sent.
+ *
+ * Never present at any stage, by construction: teacher notes, alternate
+ * answers, authored category/tile ids, round ids, round-type identifiers, the
+ * imported document, import diagnostics, registry internals, event history, or
+ * which host controls are available.
+ */
+
+/**
+ * The PRESENTATION discriminator for a board-style round.
+ *
+ * It is deliberately NOT the registry round-type string (`category-board`).
+ * The projector must never carry an internal round-type identifier — that is
+ * the same rule `PublicGameView` follows — and keeping the wire discriminator
+ * separate also means a future round type with the same presentation can reuse
+ * this renderer without the wire format naming a registry entry.
+ */
+export const PUBLIC_BOARD_KIND = 'board' as const
+
+/** One tile as the projector sees it: a display value and whether it is spent. */
+export interface PublicCategoryBoardTile {
+  /**
+   * Opaque, position-derived rendering key (e.g. `c1t3`). It is NOT the
+   * authored tile id: authored ids are teacher-written content and can hint at
+   * an answer, so the projector gets a neutral positional key instead.
+   */
+  readonly key: string
+  /** The number printed on the tile — the effective (multiplied) value. */
+  readonly value: number
+  /** Whether this tile has already been played. */
+  readonly used: boolean
+}
+
+/** One board column as the projector sees it: a public title and its tiles. */
+export interface PublicCategoryBoardCategory {
+  /** Opaque, position-derived rendering key (e.g. `c1`). Not the authored id. */
+  readonly key: string
+  /** The authored, public-facing category title. */
+  readonly title: string
+  readonly tiles: readonly PublicCategoryBoardTile[]
+}
+
+/**
+ * The currently selected tile as the projector sees it. `prompt` is `null`
+ * until the host reveals it, and `answer` is `null` until the host reveals
+ * that; there is no field that "contains the answer but is not rendered".
+ */
+export interface PublicCategoryBoardSelection {
+  /** The selected tile's category title. */
+  readonly categoryTitle: string
+  /** The selected tile's effective display value. */
+  readonly value: number
+  /** The prompt, or `null` before the prompt reveal. */
+  readonly prompt: string | null
+  /**
+   * The canonical answer, or `null` before the answer reveal. Alternates are
+   * deliberately NOT projected — they are a host grading aid.
+   */
+  readonly answer: string | null
+}
+
+/**
+ * The public category-board state, discriminated by stage. The two variants
+ * carry disjoint data, which is what makes "the board is not sent while a tile
+ * is open" a type-level fact rather than a rendering convention.
+ *
+ * The `selected` stage intentionally publishes the category and value only —
+ * enough for the class to see what was chosen, with no prompt text yet.
+ */
+export type PublicCategoryBoardState =
+  | {
+      readonly kind: typeof PUBLIC_BOARD_KIND
+      readonly stage: 'board'
+      readonly categories: readonly PublicCategoryBoardCategory[]
+    }
+  | {
+      readonly kind: typeof PUBLIC_BOARD_KIND
+      readonly stage: 'selected' | 'prompt' | 'answer'
+      readonly selection: PublicCategoryBoardSelection
+    }
+
+/**
+ * The public state of the current round. A union of one today; further playable
+ * round types add members here, each with its own allow-listed DTO.
+ */
+export type PublicRoundState = PublicCategoryBoardState
+
 /** The complete set of information the display shell is permitted to render. */
 export interface PublicState {
   /** Wire-shape version so the display can fail closed on an unknown shape. */
@@ -72,6 +168,12 @@ export interface PublicState {
   readonly detail: string
   /** Safe, derived game view, or `null` when no game is loaded. */
   readonly game: PublicGameView | null
+  /**
+   * Public state of the current round, or `null` when the current round has no
+   * public presentation (no round selected, a non-playable round type, an ended
+   * game, or a round whose projection failed and therefore fails closed).
+   */
+  readonly round: PublicRoundState | null
 }
 
 /**
@@ -86,6 +188,7 @@ export const INITIAL_PUBLIC_STATE: PublicState = {
   headline: 'Waiting for the host',
   detail: 'No active round.',
   game: null,
+  round: null,
 }
 
 const PUBLIC_PHASES: readonly PublicPhase[] = ['no-session', 'ready', 'waiting']
@@ -111,6 +214,70 @@ function isPublicGameView(value: unknown): value is PublicGameView {
   )
 }
 
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === 'string'
+}
+
+function isPublicCategoryBoardTile(value: unknown): value is PublicCategoryBoardTile {
+  if (typeof value !== 'object' || value === null) return false
+  const v = value as Record<string, unknown>
+  return (
+    typeof v.key === 'string' &&
+    typeof v.value === 'number' &&
+    Number.isFinite(v.value) &&
+    typeof v.used === 'boolean'
+  )
+}
+
+function isPublicCategoryBoardCategory(value: unknown): value is PublicCategoryBoardCategory {
+  if (typeof value !== 'object' || value === null) return false
+  const v = value as Record<string, unknown>
+  return (
+    typeof v.key === 'string' &&
+    typeof v.title === 'string' &&
+    Array.isArray(v.tiles) &&
+    v.tiles.every(isPublicCategoryBoardTile)
+  )
+}
+
+function isPublicCategoryBoardSelection(value: unknown): value is PublicCategoryBoardSelection {
+  if (typeof value !== 'object' || value === null) return false
+  const v = value as Record<string, unknown>
+  return (
+    typeof v.categoryTitle === 'string' &&
+    typeof v.value === 'number' &&
+    Number.isFinite(v.value) &&
+    isNullableString(v.prompt) &&
+    isNullableString(v.answer)
+  )
+}
+
+/**
+ * Strict guard for the round DTO (or `null`). It validates the stage/payload
+ * PAIRING, not just the field types: a `board` stage carrying a `selection`, or
+ * a `prompt` stage carrying `categories`, is rejected outright rather than
+ * rendered partially. That is what makes an impossible reveal stage fail closed
+ * at the display instead of being guessed at.
+ */
+export function isPublicRoundState(value: unknown): value is PublicRoundState | null {
+  if (value === null) return true
+  if (typeof value !== 'object') return false
+  const v = value as Record<string, unknown>
+  if (v.kind !== PUBLIC_BOARD_KIND) return false
+
+  if (v.stage === 'board') {
+    return (
+      Array.isArray(v.categories) &&
+      v.categories.every(isPublicCategoryBoardCategory) &&
+      v.selection === undefined
+    )
+  }
+  if (v.stage === 'selected' || v.stage === 'prompt' || v.stage === 'answer') {
+    return isPublicCategoryBoardSelection(v.selection) && v.categories === undefined
+  }
+  return false
+}
+
 /**
  * Runtime validator used at BOTH trust boundaries:
  *  - the host re-checks its own projected state before broadcasting, and
@@ -131,6 +298,7 @@ export function isPublicState(value: unknown): value is PublicState {
     (PUBLIC_PHASES as readonly string[]).includes(v.phase) &&
     typeof v.headline === 'string' &&
     typeof v.detail === 'string' &&
-    isPublicGameView(v.game)
+    isPublicGameView(v.game) &&
+    isPublicRoundState(v.round)
   )
 }

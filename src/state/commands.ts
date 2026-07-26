@@ -29,6 +29,10 @@ export const COMMAND_TYPES = [
   'SELECT_ROUND',
   'ADVANCE_TO_NEXT_ROUND',
   'END_GAME_SESSION',
+  'SELECT_CATEGORY_BOARD_TILE',
+  'REVEAL_CATEGORY_BOARD_PROMPT',
+  'REVEAL_CATEGORY_BOARD_ANSWER',
+  'RETURN_TO_CATEGORY_BOARD',
 ] as const
 
 export type CommandType = (typeof COMMAND_TYPES)[number]
@@ -84,6 +88,41 @@ export type AdvanceToNextRoundCommand = CommandBase<'ADVANCE_TO_NEXT_ROUND'>
 /** End the current game session (irreversible finalization). */
 export type EndGameSessionCommand = CommandBase<'END_GAME_SESSION'>
 
+/**
+ * Category-board gameplay commands (Slice 5) — the first PLAYABLE vocabulary.
+ *
+ * Every one of them carries the `roundId` it believes it is acting on. That is
+ * deliberate: a host control rendered for one round must not be able to act on a
+ * different round after the host has moved on. The planner rejects any command
+ * whose `roundId` is not the current round, so a stale control is inert rather
+ * than dangerous.
+ *
+ * These commands reveal content and track used tiles. They do NOT award,
+ * deduct, or otherwise touch any team score — that is Slice 6.
+ */
+interface CategoryBoardCommandBase<T extends CommandType> extends CommandBase<T> {
+  /** The round this command targets. Must equal the current round. */
+  readonly roundId: string
+}
+
+/** Choose a tile for private host preview. Does NOT reveal or consume it. */
+export interface SelectCategoryBoardTileCommand
+  extends CategoryBoardCommandBase<'SELECT_CATEGORY_BOARD_TILE'> {
+  readonly tileId: string
+}
+
+/** Publish the selected tile's prompt to the display. */
+export type RevealCategoryBoardPromptCommand =
+  CategoryBoardCommandBase<'REVEAL_CATEGORY_BOARD_PROMPT'>
+
+/** Publish the selected tile's answer. Also marks the tile used. */
+export type RevealCategoryBoardAnswerCommand =
+  CategoryBoardCommandBase<'REVEAL_CATEGORY_BOARD_ANSWER'>
+
+/** Clear the selection and return the display to the board grid. */
+export type ReturnToCategoryBoardCommand =
+  CategoryBoardCommandBase<'RETURN_TO_CATEGORY_BOARD'>
+
 export type SessionCommand =
   | InitSessionCommand
   | SetPublicStatusCommand
@@ -95,3 +134,7 @@ export type SessionCommand =
   | SelectRoundCommand
   | AdvanceToNextRoundCommand
   | EndGameSessionCommand
+  | SelectCategoryBoardTileCommand
+  | RevealCategoryBoardPromptCommand
+  | RevealCategoryBoardAnswerCommand
+  | ReturnToCategoryBoardCommand

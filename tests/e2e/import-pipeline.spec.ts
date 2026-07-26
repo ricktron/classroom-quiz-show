@@ -28,7 +28,7 @@ const UNKNOWN_TYPE_GAME_FILE = JSON.stringify({
   schemaVersion: 1,
   id: 'e2e-unknown-type',
   title: 'E2E Unknown Type',
-  rounds: [{ id: 'r1', type: 'category-board', title: 'Board', config: {} }],
+  rounds: [{ id: 'r1', type: 'not-a-real-round-type', title: 'Board', config: {} }],
 })
 
 async function openHost(page: Page) {

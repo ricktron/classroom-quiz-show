@@ -1,0 +1,165 @@
+/*
+ * Projector styling for the category board (Slice 5).
+ *
+ * Design constraints, in priority order:
+ *  1. Readable from the back of a classroom at 1280×720.
+ *  2. No horizontal page overflow, ever — a wide board shrinks its columns
+ *     instead of pushing the page sideways.
+ *  3. Long prompts and answers wrap; they never clip or overflow.
+ *  4. Nothing is conveyed by colour alone (a used tile also says "Used").
+ *  5. No animation, so there is nothing for reduced-motion to suppress.
+ *
+ * This is presentation only. It is not a theme engine — that is Slice 10.
+ */
+
+.cbd {
+  width: 100%;
+  max-width: 90rem;
+  margin: 0 auto;
+}
+
+/*
+ * A wrapping flex row, not a fixed-column grid. Columns flex down to a 6rem
+ * floor and wrap onto a second row rather than forcing the page to scroll
+ * sideways, so a ragged or wide board stays fully visible.
+ */
+.cbd__grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(0.35rem, 0.9vw, 0.9rem);
+}
+
+.cbd__column {
+  flex: 1 1 6rem;
+  min-width: 6rem;
+  max-width: 16rem;
+}
+
+.cbd__category {
+  margin: 0 0 clamp(0.35rem, 0.9vw, 0.9rem);
+  padding: 0.45rem 0.35rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.5rem);
+  line-height: 1.15;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow-wrap: anywhere;
+}
+
+.cbd__tiles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.3rem, 0.7vw, 0.7rem);
+}
+
+.cbd__tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: clamp(2.4rem, 6vh, 4.5rem);
+  padding: 0.35rem;
+  background: var(--color-accent-strong);
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  font-weight: 800;
+  font-size: clamp(1.1rem, 2.4vw, 2.4rem);
+}
+
+/* Used: dimmed AND dashed AND labelled — three independent, non-colour cues. */
+.cbd__tile--used {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.cbd__tile-used {
+  font-size: clamp(0.65rem, 1.1vw, 1rem);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cbd--open {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.8rem, 2vh, 2rem);
+  text-align: center;
+}
+
+.cbd__selection-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.cbd__selection-category {
+  font-size: clamp(1.1rem, 2.2vw, 2.2rem);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.cbd__selection-value {
+  font-size: clamp(1.4rem, 3vw, 3rem);
+  font-weight: 800;
+  color: var(--color-accent);
+}
+
+.cbd__prompt {
+  margin: 0;
+  max-width: 40ch;
+  font-size: clamp(1.3rem, 3.2vw, 3rem);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.cbd__answer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  max-width: 40ch;
+  padding: clamp(0.6rem, 1.6vh, 1.4rem) var(--space-2);
+  background: var(--color-surface-raised);
+  border: 2px solid var(--color-success);
+  border-radius: var(--radius);
+}
+
+.cbd__answer-label {
+  font-size: clamp(0.75rem, 1.2vw, 1.1rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
+}
+
+.cbd__answer-text {
+  font-size: clamp(1.3rem, 3vw, 2.8rem);
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.cbd--unavailable {
+  text-align: center;
+}
+
+.cbd__unavailable-text {
+  margin: 0;
+  font-size: clamp(1.1rem, 2.2vw, 2rem);
+  color: var(--color-text-muted);
+}

@@ -96,11 +96,15 @@ styling.
 - **Working name / slug:** Classroom Quiz Show / `classroom-quiz-show`.
 - **Deployment target:** GitHub Pages (static).
 - **Subject seeds:** Earth & Space Science (primary), Ecology (secondary).
-- **Default category-board point ladder:** 100, 200, 300, 400, 500.
+- **Default category-board point ladder:** 100, 200, 300, 400, 500. (Slice 5
+  implements the board; the ladder is authored per game, and this remains the
+  recommended default rather than an enforced one.)
 - **Default partial-credit increment:** 50 points.
 - **Manual score correction:** unrestricted, teacher-controlled (eventually).
 - **Default tie-break:** host-controlled sudden-death prompt.
 - **Standards vocabulary:** free-text namespaced tags (e.g. `teks:ESS.1A`,
   `ngss:HS-ESS2-1`); TEKS/NGSS **not** required in the MVP.
 
-(These are targets for the engine; none are implemented in Slice 1.)
+(These are targets for the engine. As of Slice 5 the `category-board` round
+implements the board itself; scoring, partial credit, manual correction and
+tie-breaks remain targets for later slices.)

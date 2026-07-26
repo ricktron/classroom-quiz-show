@@ -62,6 +62,12 @@ export const IMPORT_ISSUE_CODES = [
   // semantic — content checks (post-Zod)
   'duplicate-round-id',
   'blank-title',
+  // semantic — round-config content checks contributed by a round type's own
+  // schema (Slice 5). They are reported at the `schema` stage, because the
+  // registry decided *which* schema applies and the schema produced them.
+  'duplicate-category-id',
+  'duplicate-tile-id',
+  'blank-text',
   // schema (Zod, including round `config` schemas supplied by the registry)
   'missing-field',
   'invalid-type',

@@ -25,4 +25,10 @@ export const FORBIDDEN_DISPLAY_LABELS: readonly string[] = [
   'Game file JSON',
   'Import failed',
   'classroom-quiz-show/game',
+  // Slice 5: the category-board host panel. Its private-block badge, its
+  // alternate-answer list, and its "what the projector shows" indicator are all
+  // host-only and must never appear on the projector.
+  'Host only',
+  'Acceptable alternates',
+  'On the display now',
 ]
