@@ -127,9 +127,11 @@ and owner-gated.**
   the reviewed head**, and the merge tree is identical to the reviewed head's
   tree, so the head that was reviewed is exactly the head that merged. All three
   PR checks were green at that head; **post-merge CI on `main` at `d16f90d`
-  concluded success**, and the **GitHub Pages deployment succeeded. Manual
-  live-route verification was not performed** — the sandbox network policy denies
-  `ricktron.github.io`. Local evidence in
+  concluded success**, and the **GitHub Pages deployment succeeded**. The document
+  root was later reachable by HTTP HEAD (**200**; `Last-Modified` consistent with
+  that deploy); the response body was not inspected, `/host` and `/display` were
+  not exercised, Gamepad behavior was not tested on the deployed application, and
+  **no live-route or application-behavior claim is made**. Local evidence in
   [`../receipts/2026-07-27-slice-9-local-verification.md`](../receipts/2026-07-27-slice-9-local-verification.md);
   post-merge reconciliation in
   [`../receipts/2026-07-27-slice-9-post-merge-reconciliation.md`](../receipts/2026-07-27-slice-9-post-merge-reconciliation.md);
@@ -428,8 +430,12 @@ green** on PR #19 at the final reviewed head `f63d5c1`: all three checks conclud
 success. Sonar's detailed findings were not inspected (`sonarcloud.io` is
 unreachable from the sandbox). **Post-merge on `main` (`d16f90d`)** the `CI`
 workflow (run `30240064570`) and the `Deploy to GitHub Pages` workflow (run
-`30240064595`) both concluded **success**; **no live route was inspected**. **No
-physical controller was tested**; none is available in this environment.
+`30240064595`) both concluded **success**; the document root was reachable by
+HTTP HEAD (**200**; `Last-Modified` consistent with that deploy), but the
+response body was not inspected, `/host` and `/display` were not exercised,
+Gamepad behavior was not tested on the deployed application, and **no live-route
+or application-behavior claim is made**. **No physical controller was tested**;
+none is available in this environment.
 
 Earlier, on the Slice 8 branch: `verify:all` green — **1,184 unit tests (51
 files), 187 e2e passed / 2 skipped** (both skips are the one desktop-only

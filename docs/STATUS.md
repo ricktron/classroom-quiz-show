@@ -109,9 +109,11 @@ commit's second parent). Post-merge reconciliation:
 > three checks were green at that head (`Lint, typecheck, unit tests, build`;
 > `Playwright e2e`; `SonarCloud Code Analysis`). **Post-merge CI on `main` at
 > `d16f90d` concluded success** (`CI` run `30240064570`), and the **Pages
-> deployment succeeded** (run `30240064595`). **Manual live-route verification was
-> not performed** — the sandbox network policy denies `ricktron.github.io`. Local
-> verification is recorded in
+> deployment succeeded** (run `30240064595`). The document root was later reachable
+> by HTTP HEAD (**200**; `Last-Modified` consistent with that deploy); the response
+> body was not inspected, `/host` and `/display` were not exercised, Gamepad
+> behavior was not tested on the deployed application, and **no live-route or
+> application-behavior claim is made**. Local verification is recorded in
 > [`receipts/2026-07-27-slice-9-local-verification.md`](receipts/2026-07-27-slice-9-local-verification.md);
 > post-merge reconciliation in
 > [`receipts/2026-07-27-slice-9-post-merge-reconciliation.md`](receipts/2026-07-27-slice-9-post-merge-reconciliation.md).
@@ -624,9 +626,12 @@ Details in
 - **Pages deployment for Slice 9: observed successful.** The `Deploy to GitHub
   Pages` workflow (run `30240064595`, head `d16f90d`, event `push`) concluded
   **success**.
-- **No live-route verification was performed.** A successful deploy job is not
-  evidence that the live routes render; the sandbox network policy denies
-  `ricktron.github.io`.
+- **Document-root reachability observed; no live-route claim.** An HTTP HEAD to
+  `https://ricktron.github.io/classroom-quiz-show/` returned **200**, with
+  `Last-Modified` consistent with the Pages deploy above. The response body was
+  not inspected; `/host` and `/display` were not exercised; Gamepad behavior was
+  not tested on the deployed application. **This is not manual live-route
+  verification**, and **no live-route or application-behavior claim is made.**
 - **No physical controller was tested.** None is available in this environment, and
   no claim is made about any specific device. Every physical behaviour is proved by
   deterministic unit tests against a fake Gamepad source; the browser tests cover

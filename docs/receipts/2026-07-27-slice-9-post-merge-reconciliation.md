@@ -141,17 +141,24 @@ conclusion `success`** (05:33:09Z → 05:36:46Z).
 
 Slice 9 changed no CI or deploy configuration.
 
-## Live-route verification — explicitly NOT claimed
+## Live document-root reachability — not live-route verification
 
-**The Pages deployment succeeded. Manual live-route verification was not
-performed.**
+**The Pages deployment succeeded.** Separately, and later in the same session, the
+document root was reachable by an HTTP HEAD request. **This is not described as
+manual live-route verification**, and **no live-route or application-behavior
+claim is made.**
 
-- `https://ricktron.github.io/classroom-quiz-show/` was **not loaded** — the
-  sandbox network policy denies the host.
-- What was observed is the **deployment workflow's conclusion**, above. A
-  successful deploy job is not evidence that the live routes render, that the
-  service worker updated, or that a buzz registers on a real classroom machine.
-- **No claim whatsoever is made about live application behaviour.**
+- An HTTP HEAD to `https://ricktron.github.io/classroom-quiz-show/` returned
+  **HTTP 200**.
+- The response's `Last-Modified` header was **Mon, 27 Jul 2026 05:33:43 GMT**,
+  consistent with the observed Pages deployment (run `30240064595`, concluded
+  05:33:48Z).
+- The response **body was not inspected**.
+- `/host` and `/display` were **not** manually exercised.
+- Gamepad behavior was **not** tested on the deployed application.
+- A successful deploy job, and a successful document-root HEAD, are **not**
+  evidence that live routes render, that the service worker updated, or that a
+  buzz registers on a real classroom machine.
 
 ## Verified Slice 9 architecture — read from merged source on `origin/main`
 
@@ -448,8 +455,10 @@ installs the matching browser and needs no override.
 
 ## Limitations of this reconciliation
 
-- **No live-site verification.** Deployment success is not route success; the
-  sandbox network policy denies `ricktron.github.io`.
+- **No live-route or application-behavior claim.** The document root was
+  reachable by HTTP HEAD (200; `Last-Modified` consistent with the Pages deploy),
+  but the response body was not inspected, `/host` and `/display` were not
+  exercised, and Gamepad behavior was not tested on the deployed application.
 - **Sonar's detailed findings were not inspected** — `sonarcloud.io` is
   unreachable from this sandbox. Only the check-run conclusion is claimed. The
   three "new issues" the Sonar comment reports were **not** examined.

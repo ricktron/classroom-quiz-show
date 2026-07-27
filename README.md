@@ -260,8 +260,11 @@ to `main` via [PR #19](https://github.com/ricktron/classroom-quiz-show/pull/19)
 (merge commit `d16f90d`, merged **2026-07-27T05:33:05Z** by `ricktron`; final
 reviewed head `f63d5c1`, which is the merge commit's **second parent**). All
 three PR checks were green at that head; **post-merge CI on `main` at `d16f90d`
-concluded success**, and the **GitHub Pages deployment succeeded**. Live-route
-behaviour is **not** claimed — the deployed site was not inspected. See
+concluded success**, and the **GitHub Pages deployment succeeded**. The document
+root was reachable by HTTP HEAD (**200**; `Last-Modified` consistent with that
+deploy); the response body was not inspected, `/host` and `/display` were not
+exercised, Gamepad behavior was not tested on the deployed application, and **no
+live-route or application-behavior claim is made**. See
 [`docs/architecture/ADR-009-generic-gamepad-adapter.md`](docs/architecture/ADR-009-generic-gamepad-adapter.md),
 the local-verification receipt
 [`docs/receipts/2026-07-27-slice-9-local-verification.md`](docs/receipts/2026-07-27-slice-9-local-verification.md)
