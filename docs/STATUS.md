@@ -1,10 +1,11 @@
 # Status
 
 **Current slice:** Slice 9 — Generic Gamepad adapter & configurable mappings
-**Slice state:** **In review** — owner-authorized, implemented on
-`claude/slice-9-gamepad-adapter-wfiue4` from `main` at `5cc81d4`, **open and
-unmerged**. It is **not** `Complete` and must not be marked so before merge and
-post-merge reconciliation.
+**Slice state:** **Complete** — merged to `main` via PR #19, merge commit
+`d16f90de94bcbed9a83dfed5e7259a9da5e6a618`, 2026-07-27T05:33:05Z, by `ricktron`
+(final reviewed head `f63d5c190d7747f3a48a3e91a1358868229a170a`, the merge
+commit's second parent). Post-merge reconciliation:
+[`receipts/2026-07-27-slice-9-post-merge-reconciliation.md`](receipts/2026-07-27-slice-9-post-merge-reconciliation.md).
 **Previous slice:** Slice 8 — Local input contract & keyboard buzz-in
 (`Complete`, merged to `main` via PR #16, merge commit `167128d`,
 2026-07-27T02:46:24Z)
@@ -100,8 +101,21 @@ post-merge reconciliation.
 > [`receipts/2026-07-27-slice-8-local-verification.md`](receipts/2026-07-27-slice-8-local-verification.md);
 > post-merge reconciliation in
 > [`receipts/2026-07-27-slice-8-post-merge-reconciliation.md`](receipts/2026-07-27-slice-8-post-merge-reconciliation.md).
-> **Slice 9 is now `In review`** — owner-authorized and implemented, open and
-> unmerged. **Slice 10 remains unstarted and owner-gated**, and **no Sony Buzz!,
+> Slice 9 is **Complete**: implementation PR #19 was merged to `main` (merge
+> commit `d16f90de94bcbed9a83dfed5e7259a9da5e6a618`, merged
+> **2026-07-27T05:33:05Z** by `ricktron`; final reviewed head
+> `f63d5c190d7747f3a48a3e91a1358868229a170a`, which is the merge commit's
+> **second parent**, so the head that was reviewed is the head that merged). All
+> three checks were green at that head (`Lint, typecheck, unit tests, build`;
+> `Playwright e2e`; `SonarCloud Code Analysis`). **Post-merge CI on `main` at
+> `d16f90d` concluded success** (`CI` run `30240064570`), and the **Pages
+> deployment succeeded** (run `30240064595`). **Manual live-route verification was
+> not performed** — the sandbox network policy denies `ricktron.github.io`. Local
+> verification is recorded in
+> [`receipts/2026-07-27-slice-9-local-verification.md`](receipts/2026-07-27-slice-9-local-verification.md);
+> post-merge reconciliation in
+> [`receipts/2026-07-27-slice-9-post-merge-reconciliation.md`](receipts/2026-07-27-slice-9-post-merge-reconciliation.md).
+> **Slice 10 remains `Planned`, unstarted and owner-gated**, and **no Sony Buzz!,
 > vendor-matching, WebHID or Bluetooth runtime exists anywhere in the codebase.**
 >
 > **Repository hygiene (2026-07-27).** `main` is the repository's GitHub default
@@ -178,12 +192,14 @@ Merged to `main` via PR #16 (merge commit `167128d`); post-merge evidence is in
 - **Input sources:** `keyboard` (the only member as of Slice 8; **Slice 9 added
   `gamepad` together with its adapter**).
 
-## Slice 9 work (In review — open, unmerged)
+## Slice 9 work (Complete)
 
 The generic **Gamepad adapter** behind the Slice 8 boundary. Full rationale in
 [`architecture/ADR-009-generic-gamepad-adapter.md`](architecture/ADR-009-generic-gamepad-adapter.md);
 local evidence in
 [`receipts/2026-07-27-slice-9-local-verification.md`](receipts/2026-07-27-slice-9-local-verification.md).
+Merged to `main` via PR #19 (merge commit `d16f90d`); post-merge evidence is in
+[`receipts/2026-07-27-slice-9-post-merge-reconciliation.md`](receipts/2026-07-27-slice-9-post-merge-reconciliation.md).
 
 > **The headline is what did NOT change:** no schema, no `PublicState`, no sync
 > protocol version, no command, no event, no reducer, no queue logic, no timer
@@ -595,8 +611,22 @@ Details in
 - Environment override: `PLAYWRIGHT_CHROMIUM_PATH` (the sandbox provides Chromium
   build 1194 while Playwright 1.56 expects 1228), supplied **through the
   environment only** — no machine-specific path is committed.
-- **PR CI for Slice 9: not yet observed.** The pull request is open and unmerged;
-  no check conclusion is claimed here until one is actually seen.
+- **PR CI on GitHub Actions for Slice 9: observed green.** All three checks
+  concluded success on the final reviewed head `f63d5c1` of PR
+  [#19](https://github.com/ricktron/classroom-quiz-show/pull/19) — `Lint,
+  typecheck, unit tests, build`; `Playwright e2e`; and `SonarCloud Code Analysis`.
+  Sonar's detailed findings were **not inspected**: `sonarcloud.io` is unreachable
+  from the sandbox.
+- **Post-merge CI on `main` for Slice 9: observed green.** On merge commit
+  `d16f90d` the `CI` workflow (run `30240064570`, event `push`) concluded
+  **success**. This is post-merge observation on `main`, not a restatement of the
+  pre-merge PR checks.
+- **Pages deployment for Slice 9: observed successful.** The `Deploy to GitHub
+  Pages` workflow (run `30240064595`, head `d16f90d`, event `push`) concluded
+  **success**.
+- **No live-route verification was performed.** A successful deploy job is not
+  evidence that the live routes render; the sandbox network policy denies
+  `ricktron.github.io`.
 - **No physical controller was tested.** None is available in this environment, and
   no claim is made about any specific device. Every physical behaviour is proved by
   deterministic unit tests against a fake Gamepad source; the browser tests cover
@@ -820,11 +850,10 @@ None.
 
 ## Next safe action
 
-**Review the Slice 9 pull request** (`claude/slice-9-gamepad-adapter-wfiue4` →
-`main`). It is open and unmerged. Wait for CI to conclude, review the diff, and
-merge only if the checks are green — then perform the post-merge reconciliation
-that marks Slice 9 `Complete`. **Slice 9 must not be marked `Complete` before
-that.**
+**Review and merge the Slice 9 post-merge reconciliation pull request**
+(`docs/slice-9-post-merge-reconciliation` → `main`). It is **open and unmerged**,
+is documentation-only, and is the change that records Slice 9 as `Complete`.
+Nothing else is in flight.
 
 Do **not** begin **Slice 10 — Sony Buzz! mapping, validation & host setup UX**
 without explicit owner authorization. It is `Planned` and unstarted, and Slice 9
@@ -835,5 +864,8 @@ codebase, and none may be added.
 
 **Additional response modes are deferred until after the functional MVP** — see
 the owner direction recorded in
-[`handoff/CURRENT.md`](handoff/CURRENT.md). Nothing about them is designed,
-scheduled or authorized, and the active MVP roadmap remains **18 slices**.
+[`handoff/CURRENT.md`](handoff/CURRENT.md). **Optional team buzz-in audio cues are
+likewise deferred owner direction only** (recorded in the same place, 2026-07-27).
+Nothing about either is designed, scheduled or authorized; no audio file,
+playback code, audio schema, audio event or sound-pack manifest exists; and the
+active MVP roadmap remains **18 slices**.

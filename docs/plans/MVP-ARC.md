@@ -52,7 +52,7 @@ systems.
 | 6   | **Teams & scoring**            | Teams, typed scoring strategy (points first), awards/deductions, partial credit, unrestricted manual correction, audit history, undo. **(Complete.)** | 2, 5       |
 | 7   | **Timers, arming & transitions** | Timer config, a deadline-projected public timer, host arming/disarming, host-controlled undoable round transitions, reduced-motion-safe. The interrupt seam must be typed so buzz-in is a later addition, not a rewrite. **(Complete.)** | 5, 6 |
 | 8   | **Local input contract & keyboard buzz-in** | The device-independent input-adapter boundary + registry, buzz-in domain semantics, one command/event pair, replay-derived queue state, sanitized public projection — with the **keyboard adapter** as its first consumer. **(Complete — delivered without the anticipated adapter *registry* object; a bounded application-only input-source union ships its guarantees instead. See ADR-008 §3.)** | 2, 6, 7 |
-| 9   | **Generic Gamepad adapter**    | Gamepad API adapter behind the slice 8 boundary; connect/disconnect handling, polling isolation, host diagnostics. No model-specific assumptions. **(In review — implemented, open and unmerged. No schema, `PublicState`, protocol, command, event or reducer change. See ADR-009.)** | 8 |
+| 9   | **Generic Gamepad adapter**    | Gamepad API adapter behind the slice 8 boundary; connect/disconnect handling, polling isolation, host diagnostics. No model-specific assumptions. **(Complete — merged via PR #19 (`d16f90d`). No schema, `PublicState`, protocol, command, event or reducer change. No physical controller was tested. See ADR-009.)** | 8 |
 | 10  | **Sony Buzz! mapping, validation & host setup UX** | Configurable controller mapping, Sony Buzz! validation as the preferred target, host setup/test surface, fallback when no controller is present. | 9 |
 | 11  | **Media contract**             | Typed media model (beyond plain-string prompts), fail-closed on unsupported media, additive on `schemaVersion: 1`. **Must precede any new round type.** | 4, 5 |
 | 12  | **Portable export & round-trip import** | Export a game to the canonical portable document and re-import it losslessly; reproducible game identity; round-trip equality as an acceptance criterion. | 4, 11 |
@@ -592,8 +592,10 @@ implemented**.
 
 ### What remains for Slice 9
 
-Nothing: Slice 9 is **implemented and `In review`** (owner-authorized, open and
-unmerged). Its scope record is below, and its rationale is in
+Nothing: Slice 9 is **`Complete`** — merged to `main` via
+[PR #19](https://github.com/ricktron/classroom-quiz-show/pull/19) (merge commit
+`d16f90d`, 2026-07-27T05:33:05Z, by `ricktron`). Its scope record is below, and
+its rationale is in
 [`../architecture/ADR-009-generic-gamepad-adapter.md`](../architecture/ADR-009-generic-gamepad-adapter.md).
 **Slice 10 is `Planned`, unstarted, and owner-gated — it must not begin until the
 owner explicitly authorizes it, and Slice 9 having shipped the generic adapter is
@@ -789,10 +791,16 @@ changes schema, runtime, UI, storage or hardware support.
   (stays 2), no new command, no new event, no reducer change, and no persistence —
   the only vocabulary change anywhere is one member added to
   `LOCAL_INPUT_SOURCE_KINDS`.
-- **Status:** **`In review`** — owner-authorized, implemented on
-  `claude/slice-9-gamepad-adapter-wfiue4` from `main` at `5cc81d4`, **open and
-  unmerged**. Not `Complete`, and it must not be marked so before merge and
-  post-merge reconciliation.
+- **Status:** **`Complete`** — owner-authorized, implemented on
+  `claude/slice-9-gamepad-adapter-wfiue4` from `main` at `5cc81d4` (reviewed head
+  `f63d5c1`) and **merged to `main` via
+  [PR #19](https://github.com/ricktron/classroom-quiz-show/pull/19)** (merge
+  commit `d16f90d`, merged 2026-07-27T05:33:05Z by `ricktron`; the reviewed head
+  is the merge commit's second parent). All three PR checks were green at that
+  head, post-merge CI on `main` concluded success, and the Pages deployment
+  succeeded; **live-route behaviour is not claimed**. **No physical controller was
+  tested** — hardware validation remains Slice 10. Post-merge evidence in
+  [`../receipts/2026-07-27-slice-9-post-merge-reconciliation.md`](../receipts/2026-07-27-slice-9-post-merge-reconciliation.md).
 - **Owner gate:** authorization to begin — **granted**. `OG-1` is reused unchanged
   as the intake gate; `OG-2` and `OG-3` (implemented in Slice 8) are reused
   unchanged; `OG-4`'s resolution is extended to simultaneous poll edges without

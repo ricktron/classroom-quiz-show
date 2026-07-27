@@ -255,11 +255,18 @@ hardware-shaped rather than keyboard-shaped:
   entry, validated on load and falling back safely. They are not game content, not
   session history, and **not the start of Slice 13 persistence**.
 
-**Slice 9 — generic Gamepad adapter & configurable mappings. In review** — on
-`claude/slice-9-gamepad-adapter-wfiue4`, not merged (see
-[`docs/architecture/ADR-009-generic-gamepad-adapter.md`](docs/architecture/ADR-009-generic-gamepad-adapter.md)
-and the local-verification receipt
-[`docs/receipts/2026-07-27-slice-9-local-verification.md`](docs/receipts/2026-07-27-slice-9-local-verification.md)).
+**Slice 9 — generic Gamepad adapter & configurable mappings. Complete** — merged
+to `main` via [PR #19](https://github.com/ricktron/classroom-quiz-show/pull/19)
+(merge commit `d16f90d`, merged **2026-07-27T05:33:05Z** by `ricktron`; final
+reviewed head `f63d5c1`, which is the merge commit's **second parent**). All
+three PR checks were green at that head; **post-merge CI on `main` at `d16f90d`
+concluded success**, and the **GitHub Pages deployment succeeded**. Live-route
+behaviour is **not** claimed — the deployed site was not inspected. See
+[`docs/architecture/ADR-009-generic-gamepad-adapter.md`](docs/architecture/ADR-009-generic-gamepad-adapter.md),
+the local-verification receipt
+[`docs/receipts/2026-07-27-slice-9-local-verification.md`](docs/receipts/2026-07-27-slice-9-local-verification.md)
+and the post-merge reconciliation receipt
+[`docs/receipts/2026-07-27-slice-9-post-merge-reconciliation.md`](docs/receipts/2026-07-27-slice-9-post-merge-reconciliation.md).
 Slice 9 adds generic USB controllers **through the Slice 8 boundary**, and the
 strongest thing to say about it is what it did **not** change: no schema, no
 `PublicState`, no sync protocol, no command, no event, no reducer.
@@ -296,6 +303,12 @@ strongest thing to say about it is what it did **not** change: no schema, no
 - **No Sony Buzz! detection, vendor matching, colour defaults, handset grouping or
   setup wizard** — all Slice 10, and none of it exists. No WebHID, Bluetooth, axes,
   analog, haptics or persistent mappings.
+
+> ⚠️ **No physical controller has been tested.** Every physical behaviour is
+> proved by deterministic unit tests against a fake Gamepad source; the browser
+> tests cover the **no-controller** path only. There is no supported-hardware list
+> and no compatibility claim for any specific device. **Physical hardware
+> validation remains Slice 10**, which is `Planned`, unstarted and owner-gated.
 
 The Slice 1 foundation is unchanged beneath it:
 
