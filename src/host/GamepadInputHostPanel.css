@@ -1,0 +1,118 @@
+/*
+ * Generic controller-input host controls (Slice 9).
+ *
+ * Host-side, private, utilitarian, and a deliberate twin of the Slice 8 buzz-in
+ * panel's styling so the two halves of the local-input area read as one surface.
+ * It reuses the Slice 1 tokens so a real theme can replace it later.
+ *
+ * Accessibility notes baked into this file:
+ *  - every control is a real <button> or <select>, keyboard-reachable in DOM
+ *    order, using the shared global focus ring;
+ *  - a disabled control stays visible and legible rather than disappearing, so
+ *    the set of actions does not jump around under a teacher's cursor when a
+ *    controller is plugged in or pulled out mid-lesson;
+ *  - availability, on / off, the connected-controller list, every assignment and
+ *    every rejection reason are conveyed in TEXT — colour is never the carrier;
+ *  - connection changes and capture prompts are polite live regions, and they are
+ *    driven by the STABLE picture only, so nothing announces per frame;
+ *  - nothing here renders live button state, so no element repaints while a
+ *    button is held;
+ *  - the summaries are definition lists and the assignments are a real <ul>, so a
+ *    screen reader reads term/value pairs and an announced item count;
+ *  - there is no motion at all in this panel.
+ */
+
+.gih {
+  margin-top: var(--space-3);
+  padding: var(--space-2);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.gih h3 {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+.gih__heading {
+  margin: var(--space-2) 0 var(--space-1);
+  font-size: 0.95rem;
+}
+
+.foundation__tag--slice9 {
+  margin-top: var(--space-1);
+}
+
+.gih__summary {
+  display: grid;
+  grid-template-columns: minmax(9rem, max-content) 1fr;
+  gap: 0.2rem var(--space-2);
+  margin: 0 0 var(--space-2);
+}
+
+.gih__summary dt {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.gih__summary dd {
+  margin: 0;
+}
+
+.gih__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.gih__action-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.gih__bindings {
+  list-style: none;
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.gih__binding-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.gih__binding-team {
+  min-width: 8rem;
+  font-weight: 600;
+}
+
+/*
+ * The assigned control is boxed so "Controller 1 · button 3" reads as one value
+ * rather than as prose beside a team name. The surrounding label carries the
+ * meaning; the styling is only legibility.
+ */
+.gih__binding-control {
+  min-width: 12rem;
+  padding: 0.1rem var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 4px);
+  text-align: center;
+}
+
+.gih__issues {
+  margin: 0 0 var(--space-2);
+  padding-left: 1.2rem;
+  color: var(--color-text-muted);
+}
+
+.gih__hint {
+  margin-bottom: 0;
+}

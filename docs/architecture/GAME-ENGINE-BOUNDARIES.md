@@ -181,6 +181,17 @@ while one exists, and a round whose projection failed publishes no timer either.
 The sync envelope also moved 1 → 2 (a required `sentAt` stamp used to estimate the
 host/display clock offset); both versions fail closed rather than being guessed at.
 
+**Status (Slice 9).** `PublicState` did **not change at all** — the wire version
+stays at 6 and the sync envelope stays at 2. That is the headline result of the
+slice: a whole new class of input (generic USB controllers) arrived without moving
+a public field, because the projector does not need to know whether a buzz came
+from a keyboard or a controller and is not told. Additionally never projected, and
+not representable in `PublicState`: Gamepad API availability, controller count,
+controller index, controller label, button index, button state, the controller
+mapping, connection state, capture state, adapter errors, and the input **source
+kind** itself. The class-facing result is unchanged: the active team and a waiting
+count.
+
 **Status (Slice 8).** `PublicState.response` gained exactly one new field,
 `buzz: PublicBuzzState` (wire version 5 → 6), carrying **who is answering** — by
 the same positional render key the scoreboard already uses — and **how many teams
@@ -330,6 +341,35 @@ cost of **one union member** — no event type, reducer transition or public fie
 changed. Secondary logical actions are representable and mappable but produce no
 command, and therefore no event: the contract is ready for later hardware while
 the game gains no speculative behaviour. Wagers and persistence remain deferred.
+
+**Status (Slice 9).** The boundary was tested by a SECOND adapter, and it held —
+see
+[`ADR-009-generic-gamepad-adapter.md`](ADR-009-generic-gamepad-adapter.md). Generic
+USB controllers reach the game through the identical chain: a browser-boundary
+module (the only caller of `navigator.getGamepads()`) produces a frozen
+`{ controllerIndex, pressed[] }` snapshot, a pure adapter turns state transitions
+into rising edges, and the SAME `LocalInputSignal` crosses into the SAME
+translator, command, event, reducer, queue and sanitizer. `LOCAL_INPUT_SOURCE_KINDS`
+gained one member, `gamepad`, and **nothing else in the chain changed** — no
+schema, no `PublicState`, no protocol version, no command, no event, no reducer.
+The domain still cannot represent a browser `Gamepad`, a `GamepadButton`, a device
+`id`, a `mapping`, `axes`, an analog value, a vendor or product id, polling state
+or connection diagnostics.
+
+Two boundaries are specific to polled input and are stated here because they are
+easy to breach later. **Polling is not a domain concern**: it happens in one
+host-only lifecycle owner and never in the reducer, during render, in the
+sanitizer, during replay, in command planning or on the display route, and there
+is no global polling service. **A press must be manufactured, and may never be
+fabricated**: the Gamepad API has no press event, so the adapter derives rising
+edges from polled state, and the first observation of any controller is a baseline
+only — a button already held at connect, reconnect, enable, mapping change,
+capture completion, tab restoration or focus restoration cannot buzz until it is
+released and pressed again. Connect and disconnect append nothing. Controller
+mappings are session-local host configuration and are deliberately not persisted:
+a browser controller index is a session-local locator, not a durable identity.
+Sony-specific handling, WebHID, Bluetooth, axes, haptics, wagers and persistence
+all remain deferred or excluded.
 
 ## 7. Scoring-strategy boundary (future)
 

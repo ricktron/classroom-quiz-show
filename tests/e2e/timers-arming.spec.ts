@@ -268,23 +268,28 @@ test('the projector leaks nothing new, and scoring still works alongside a windo
   // And the projector is still read-only.
   await expect(display.getByRole('button')).toHaveCount(0)
 
-  // ── No HARDWARE input exists anywhere, on either surface ──────────────────
-  // Slice 8 added keyboard buzz-in, so the old blanket "no buzz-in anywhere"
-  // assertion would now be false. The claim that survives — and that Slices 9 and
-  // 10 own — is the one asserted here: no controller, gamepad, WebHID, Bluetooth
-  // or Sony surface exists, and there is still no first-only lockout.
+  // ── No VENDOR-SPECIFIC hardware surface exists, on either surface ─────────
+  // Slice 8 added keyboard buzz-in and Slice 9 added a GENERIC controller panel,
+  // so the older blanket assertions would now be false for the neutral words
+  // "gamepad" and "controller" on the host. The claim that survives — and that
+  // Slice 10 owns — is the one asserted here: no WebHID, Bluetooth, handset or
+  // Sony surface exists, and there is still no first-only lockout.
   const hostHtml = (await host.content()).toLowerCase()
   for (const absent of [
-    'gamepad',
     'webhid',
     'bluetooth',
-    'controller',
     'handset',
     'sony',
     'playstation',
+    'vendor',
     'lockout',
   ]) {
     expect(hostHtml, `host must not contain "${absent}"`).not.toContain(absent)
+  }
+  // The projector's claim is unchanged and complete: no controller surface at all.
+  const projectorHtml = (await display.content()).toLowerCase()
+  for (const absent of ['gamepad', 'controller', 'webhid', 'bluetooth', 'sony', 'lockout']) {
+    expect(projectorHtml, `display must not contain "${absent}"`).not.toContain(absent)
   }
 
   // ── Scoring is unchanged and independent of the window ────────────────────

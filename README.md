@@ -255,6 +255,48 @@ hardware-shaped rather than keyboard-shaped:
   entry, validated on load and falling back safely. They are not game content, not
   session history, and **not the start of Slice 13 persistence**.
 
+**Slice 9 — generic Gamepad adapter & configurable mappings. In review** — on
+`claude/slice-9-gamepad-adapter-wfiue4`, not merged (see
+[`docs/architecture/ADR-009-generic-gamepad-adapter.md`](docs/architecture/ADR-009-generic-gamepad-adapter.md)
+and the local-verification receipt
+[`docs/receipts/2026-07-27-slice-9-local-verification.md`](docs/receipts/2026-07-27-slice-9-local-verification.md)).
+Slice 9 adds generic USB controllers **through the Slice 8 boundary**, and the
+strongest thing to say about it is what it did **not** change: no schema, no
+`PublicState`, no sync protocol, no command, no event, no reducer.
+
+- **A generic Gamepad adapter behind the existing waist.** `LOCAL_INPUT_SOURCE_KINDS`
+  gained one member, `gamepad`; everything from command translation downward is
+  untouched. A controller buzz becomes the same `RECORD_TEAM_BUZZ` → `TEAM_BUZZED`
+  → replayed queue → sanitized projection a keyboard buzz does.
+- **The browser boundary is one small module.** Direct `navigator.getGamepads()`
+  access is confined to it, and what crosses is a frozen snapshot of
+  `{ controllerIndex, pressed[] }`. No `Gamepad` object, device `id`, `mapping`,
+  `axes`, analog value, timestamp, vendor or product id is representable above it.
+- **Polling is isolated and lifecycle-safe.** One host-only `requestAnimationFrame`
+  loop, registered once, stopped on unmount; never in the reducer, during render,
+  in the sanitizer, during replay, or **on the display route**. The clock is read
+  only when there is genuinely an edge to stamp.
+- **Rising edges, and a first sighting is a baseline only.** A held button never
+  repeats, and a button already held at connect, enable, mapping change, capture
+  completion, tab restoration, focus restoration or reconnection **cannot buzz** —
+  a release and a fresh press are required. Connect and disconnect append nothing.
+- **Generic, validated, session-local mappings.** A binding is a controller index,
+  a button index, a team and a logical action — no model, vendor, colour or
+  handset is expressible. There is deliberately **no default button assignment**.
+  **Mappings are lost when the host page reloads**, and the panel says so.
+- **Host-private diagnostics**: API availability, neutral labels ("Controller 1"),
+  button counts, each team's assignment, conflicts, and a sentence explaining every
+  press that did nothing. No live per-frame button display, and nothing on the
+  projector.
+- **Keyboard buzzing is the permanent fallback** and is unaffected — including on a
+  browser with no Gamepad API at all: *"No controller detected. Keyboard buzzing
+  remains available."*
+- **Secondary actions stay inert.** The four ordinal slots can be assigned and still
+  terminate at the existing typed rejection: no event, no state change, no score.
+- **No Sony Buzz! detection, vendor matching, colour defaults, handset grouping or
+  setup wizard** — all Slice 10, and none of it exists. No WebHID, Bluetooth, axes,
+  analog, haptics or persistent mappings.
+
 The Slice 1 foundation is unchanged beneath it:
 
 - React + TypeScript + Vite app shell
@@ -268,10 +310,12 @@ The Slice 1 foundation is unchanged beneath it:
 - Architecture and governance documentation
 
 There is **one playable round type**; it scores, it can be timed, and teams can now
-buzz in on it **from the host keyboard only**. There is no Gamepad, WebHID,
-Bluetooth or Sony Buzz! support of any kind (Slices 9 and 10), no networked or
-student-device buzzing, and no wagers, media, themes, or durable session
-persistence; importing is still limited to pasting canonical JSON (no file
+buzz in on it **from the host keyboard, or from a generic USB controller through
+the same boundary**. There is no **Sony Buzz!-specific** support, vendor matching,
+colour profile, handset grouping or controller setup wizard (Slice 10), no WebHID
+or Bluetooth of any kind, no networked or student-device buzzing, and no wagers,
+media, themes, or durable session persistence — **including no persistence of
+controller mappings, which are session-local by design**; importing is still limited to pasting canonical JSON (no file
 picker, spreadsheet, or remote import). The host "Foundation / testing controls"
 and the import harness remain diagnostics that prove the state core, the
 game/round model and the ingestion boundary — the category-board, teams &

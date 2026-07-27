@@ -9,8 +9,8 @@ import { isLocalInputAction, type LocalInputAction } from './logicalAction'
  * before the ordinary command path takes over:
  *
  * ```text
- * raw browser input          KeyboardEvent (host-private, adapter only)
- *   → local input adapter    keyboardAdapter.ts
+ * raw browser input          KeyboardEvent / Gamepad state (host-private)
+ *   → local input adapter    keyboardAdapter.ts / gamepadAdapter.ts
  *   → LocalInputSignal       this module — no device data, no key, no button
  *   → validated game command RECORD_TEAM_BUZZ (state/commands.ts)
  *   → append-only event      TEAM_BUZZED (state/events.ts)
@@ -49,11 +49,18 @@ import { isLocalInputAction, type LocalInputAction } from './logicalAction'
 /**
  * Every local input source this build recognizes.
  *
- * Slice 8 ships exactly one. Slice 9 adds `'gamepad'` here and supplies its
- * adapter; nothing else in the chain changes, which is the whole point of the
- * boundary. Unrecognized values fail closed at {@link isLocalInputSourceKind}.
+ * Slice 8 shipped exactly one. **Slice 9 added `'gamepad'` here and supplied its
+ * adapter in the same change** — a member and its adapter arrive together, never
+ * one without the other. Nothing else in the chain moved to accommodate it, which
+ * is the whole point of the boundary: the command, the event, the reducer, the
+ * queue and the sanitizer cannot tell the two adapters apart, and the projector
+ * is never told which one produced a buzz.
+ *
+ * Unrecognized values fail closed at {@link isLocalInputSourceKind}. The union is
+ * extended by APPLICATION code only — there is no path from imported content to a
+ * new member, and therefore none to a new input adapter.
  */
-export const LOCAL_INPUT_SOURCE_KINDS = ['keyboard'] as const
+export const LOCAL_INPUT_SOURCE_KINDS = ['keyboard', 'gamepad'] as const
 
 export type LocalInputSourceKind = (typeof LOCAL_INPUT_SOURCE_KINDS)[number]
 
@@ -66,6 +73,9 @@ export function isLocalInputSourceKind(value: unknown): value is LocalInputSourc
 /** Host-facing label for a source. Host-only copy — never projected. */
 export const LOCAL_INPUT_SOURCE_LABEL: Readonly<Record<LocalInputSourceKind, string>> = {
   keyboard: 'Keyboard',
+  // Deliberately generic. Not a model, not a vendor, not a colour — the label a
+  // teacher reads must not teach the application a hardware vocabulary either.
+  gamepad: 'Controller',
 }
 
 /**

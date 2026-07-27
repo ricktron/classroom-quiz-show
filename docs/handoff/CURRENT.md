@@ -1,11 +1,13 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with **Slices 1–8 all `Complete` and merged to `main`** (Slice 7,
-timers, arming & transitions, merged via PR #14 at `3f9ae1c`; the Slice 7
-reconciliation merged via PR #15 at `004bf9d`; **Slice 8 — Local input contract &
-keyboard buzz-in — merged via PR #16 at `167128d` on 2026-07-27T02:46:24Z**).
-**Slices 9 and 10 are unstarted and owner-gated.**
+the repository with **Slices 1–8 all `Complete` and merged to `main`** (Slice 8 —
+Local input contract & keyboard buzz-in — merged via PR #16 at `167128d` on
+2026-07-27T02:46:24Z; its reconciliation merged via PR #18 at `5cc81d4` on
+2026-07-27T03:48:25Z), and **Slice 9 — Generic Gamepad adapter & configurable
+mappings — `In review`**: owner-authorized, implemented on
+`claude/slice-9-gamepad-adapter-wfiue4` from `main` at `5cc81d4`, **open and
+unmerged**. **Slice 10 remains unstarted and owner-gated.**
 
 > **Repository hygiene (2026-07-27).** `main` is the GitHub **default branch**.
 > **PR #17 was closed without merging** — an erroneous *reversed* pull request
@@ -112,8 +114,46 @@ keyboard buzz-in — merged via PR #16 at `167128d` on 2026-07-27T02:46:24Z**).
   [`../receipts/2026-07-27-slice-8-local-verification.md`](../receipts/2026-07-27-slice-8-local-verification.md);
   post-merge reconciliation in
   [`../receipts/2026-07-27-slice-8-post-merge-reconciliation.md`](../receipts/2026-07-27-slice-8-post-merge-reconciliation.md).
-  **Slices 9 and 10 are unstarted and owner-gated, and no Gamepad, WebHID or Sony
-  Buzz! runtime exists.**
+  **Slice 10 remains unstarted and owner-gated, and no Sony Buzz!, vendor-matching,
+  WebHID or Bluetooth runtime exists.**
+- **Slice 9 (current): `In review`.** Owner-authorized and delivered on
+  `claude/slice-9-gamepad-adapter-wfiue4`, based on `main` at
+  `5cc81d448f9558e914dd5da497232f071d58b10c` (the merge commit of PR #18, the
+  Slice 8 post-merge reconciliation). The pull request is **open and unmerged**;
+  no CI conclusion is claimed. Local evidence in
+  [`../receipts/2026-07-27-slice-9-local-verification.md`](../receipts/2026-07-27-slice-9-local-verification.md);
+  rationale in
+  [`../architecture/ADR-009-generic-gamepad-adapter.md`](../architecture/ADR-009-generic-gamepad-adapter.md).
+  **Slice 9 is NOT `Complete` and must not be marked so before merge and
+  post-merge reconciliation.**
+- **What Slice 9 adds:** generic USB controller input **through the Slice 8
+  boundary**, and the most important thing about it is the list of things it did
+  not change — no schema, no `PublicState` (wire version stays 6), no sync
+  envelope (stays 2), no command, no event, no reducer, no queue logic, no timer
+  transition, no scoring behaviour, and no new dependency.
+  `LOCAL_INPUT_SOURCE_KINDS` gained exactly one member, `gamepad`, in the same
+  change as its adapter. Direct `navigator.getGamepads()` access is confined to
+  one boundary module (`src/input/gamepadSource.ts`) that produces a frozen,
+  bounded `{ controllerIndex, pressed[] }` snapshot — no browser `Gamepad`,
+  `GamepadButton`, device `id`, `mapping`, `axes`, analog value, timestamp or
+  vendor/product id is representable above it. Both the SOURCE and the SCHEDULER
+  are injectable, so every unit test uses a fake and **no test needs a browser, a
+  frame or a physical controller**. Polling lives in one host-only lifecycle owner
+  (`src/host/useGamepadBuzzInput.ts`), registered once, stopped on unmount, and
+  never in the reducer, render, sanitizer, replay, command planning or on the
+  display route. Presses are derived by RISING EDGE, and the first observation of
+  any controller is a **baseline only** — so a button already held at connect,
+  reconnect, enable, mapping change, capture completion, tab restoration or focus
+  restoration cannot buzz until it is released and pressed again, and connect and
+  disconnect append nothing. Several fresh edges in one poll are ordered by
+  ascending controller index then ascending button index, as a tie-break rule with
+  **no fairness claim** — the event log's `seq` remains the authority. Mappings are
+  generic (controller index + button index + team + logical action), validated with
+  structured issues and no silent overwrite or repair, have **no default button
+  assignment**, and are **session-local — lost when the host page reloads**, which
+  the panel states plainly. Buttons only: no axes, analog, motion or haptics.
+  Secondary slots are assignable and **still inert**. See
+  [`../architecture/ADR-009-generic-gamepad-adapter.md`](../architecture/ADR-009-generic-gamepad-adapter.md).
 - **What Slice 8 adds:** the hardware-independent **local input boundary** and
   keyboard buzz-in through it. A layered chain — raw browser input → a local input
   adapter (`src/input/`) → a **logical action** → a validated command → an
@@ -316,12 +356,29 @@ src/import/
   normalize.ts        Validated → branded, deep-copied, frozen GameDefinition
   importGame.ts       THE pipeline (importGameFromJsonText / …FromUnknown)
   sampleGameFile.ts   Built-in sample game files as JSON TEXT (not definitions)
+src/input/         (Slice 8) localInput, logicalAction, commandTranslation,
+                   keyboardKeys, keyboardAdapter, keyboardMapping,
+                   keyboardMappingStore
+                   (Slice 9) gamepadSource  THE browser Gamepad boundary: the only
+                                            caller of navigator.getGamepads(), the
+                                            bounded frozen snapshot, the injectable
+                                            GamepadSource, neutral labels
+                             gamepadAdapter PURE rising-edge scan + edge → logical
+                                            action; the baseline/re-prime rule
+                             gamepadMapping generic controller/button ↔ team ↔
+                                            action, validation, session-local only
 src/host/          useSessionStore, useHostSync, FoundationControls,
                    GameImportPanel (host-only import harness),
                    CategoryBoardHostPanel (reveals; scores nothing),
                    TeamScoringPanel (scores; reveals nothing),
                    ResponseTimerHostPanel (arms and times; reveals and scores
-                   nothing), useResponseTimerExpiry (the ONE scheduled clock read)
+                   nothing), useResponseTimerExpiry (the ONE scheduled clock read),
+                   LocalInputHostPanel + useKeyboardBuzzInput (the ONE place a
+                   KeyboardEvent is touched),
+                   GamepadInputHostPanel + useGamepadBuzzInput (the ONE polling
+                   lifecycle owner; injectable source and scheduler),
+                   responseOpportunity (the ONE derivation of the live target,
+                   shared by both local-input panels)
 src/display/       usePublicState (PublicState + receiver + clock offset),
                    CategoryBoardDisplay (projector board / prompt / answer),
                    TeamScoreboard (projector scoreboard, fails closed),
@@ -340,7 +397,7 @@ src/test/          leakLabels, gameFileFixtures, categoryBoardFixtures, teamFixt
 npm ci               # reproducible install
 npm run lint         # ESLint (flat config)
 npm run typecheck    # tsc -b --noEmit
-npm run test:run     # Vitest (unit/component) — 1,184 tests
+npm run test:run     # Vitest (unit/component) — 1,349 tests
 npm run build        # tsc -b && vite build → dist/
 npm run test:e2e     # Playwright vs production preview (3 viewport projects)
 npm run verify       # lint + typecheck + unit
@@ -353,7 +410,14 @@ npm run verify:all   # verify + build + e2e (merge gate)
 > That override is passed via the environment only — never committed. CI installs
 > the matching browser and needs no override.
 
-Latest local results (Slice 8): `verify:all` green — **1,184 unit tests (51
+Latest local results (Slice 9): `verify:all` green — **1,349 unit tests (57
+files), 199 e2e passed / 2 skipped** (both skips are the one desktop-only
+offline-shell test); `git diff --check` clean. **Slice 9 PR CI has NOT been
+observed** — the pull request is open and unmerged, and no check conclusion is
+claimed. **No physical controller was tested**; none is available in this
+environment.
+
+Earlier, on the Slice 8 branch: `verify:all` green — **1,184 unit tests (51
 files), 187 e2e passed / 2 skipped** (both skips are the one desktop-only
 offline-shell test); `git diff --check` clean. **Slice 8 PR CI was observed
 green** on PR #16 at the final reviewed head `7d12718`: all three checks concluded
@@ -421,9 +485,28 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 - **Undoing an expiry restores an already-overdue running timer**, which the host
   adapter expires again on the next tick unless the host acts. Undo restores the
   prior durable state exactly.
-- **`OG-2`, `OG-3` and `OG-6` are recorded owner decisions that are NOT
-  implemented.** No buzz input, queue, promotion or respondent-restricted scoring
-  exists anywhere in the codebase.
+- **`OG-6` is a recorded owner decision that is NOT implemented.** Scoring is not
+  restricted to the active respondent; it stays available for every team. (`OG-2`
+  and `OG-3` WERE implemented by Slice 8 — this entry was stale from the Slice 7
+  era and is corrected here.)
+- **Gamepad mappings are session-local and are LOST when the host page reloads**
+  (Slice 9). Deliberate: the roadmap records the slice's storage impact as none,
+  and a browser controller index is not stable across a reload, so a restored
+  mapping could silently point at the wrong controller. Buzz KEYS still persist;
+  controller buttons do not.
+- **A browser controller index is a session-local locator, not an identity.** Not
+  stable across a reload, a browser restart, a disconnect/reconnect, a USB port
+  change, an operating system or a browser version, and never persisted.
+- **Most browsers do not expose a controller until a button on it is pressed**, so
+  a freshly plugged-in controller can legitimately read as "None detected" until it
+  is touched. Browser behaviour, not a panel defect.
+- **No physical controller has been tested.** Generic support is implemented and
+  unit-proven against a fake source; no specific device is claimed to work, and
+  there is no supported-hardware list.
+- **Controller buzzing starts switched OFF** and nothing is bound by default —
+  there is deliberately no assumed "buzz button".
+- **Slice 9 maps BUTTONS only** — no axes, sticks, analog triggers, motion,
+  vibration or haptics, and no analog threshold tuning.
 - **The selected scoring target is host UI state** and is lost on a host reload. It
   is never broadcast and awards nothing by existing (a deliberate decision —
   ADR-006 §7).
@@ -490,14 +573,15 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Next action
 
-**Review and merge the Slice 8 post-merge reconciliation pull request** — a
-documentation-only change that marks Slice 8 `Complete` across the canonical
-surfaces. Slice 8 itself is merged (PR #16, `167128d`); nothing else is in flight.
+**Review the Slice 9 pull request** (`claude/slice-9-gamepad-adapter-wfiue4` →
+`main`). It is open and unmerged. Wait for CI to conclude, review the diff, and
+merge only if the checks are green — then perform the post-merge reconciliation
+that marks Slice 9 `Complete`. Nothing else is in flight.
 
-After that, the next slice is **Slice 9 — Generic Gamepad adapter**, whose record
-is in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md). It is `Planned`, unstarted and
-**owner-gated**: Slice 8 having shipped the boundary it will plug into is not
-authorization to begin it. Slice 10 is likewise `Planned` and unstarted.
+After that, the next slice is **Slice 10 — Sony Buzz! mapping, validation & host
+setup UX**, whose record is in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md). It is
+`Planned`, unstarted and **owner-gated**: Slice 9 having shipped the generic
+adapter it builds on is **not** authorization to begin it.
 
 ## Owner direction — colored buttons and the local input contract (2026-07-27)
 
@@ -527,11 +611,14 @@ Slice allocation is unchanged by this direction:
 | Slice | Scope | State |
 | --- | --- | --- |
 | **8** | The hardware-independent **logical** input contract, and keyboard input as its first consumer. | `Complete` (PR #16, `167128d`) |
-| **9** | The generic **Gamepad** adapter and configurable mappings. | `Planned`, unstarted |
+| **9** | The generic **Gamepad** adapter and configurable mappings. | **`In review`** — implemented, open and unmerged |
 | **10** | **Sony Buzz!** detection, validation, a recommended profile, handset assignment, and the host setup UX. | `Planned`, unstarted |
 
 **A final event vocabulary for secondary actions was deliberately NOT defined in
-advance, and Slice 8 did not define one.** Secondary slots exist at the
+advance, and neither Slice 8 nor Slice 9 defined one.** Slice 9 made the four
+ordinal slots ASSIGNABLE on a controller and left them exactly as inert as before:
+they still terminate at the typed `unsupported-action` rejection, so none produces
+a command, an event or a state change. Secondary slots exist at the
 input-contract and mapping layers; command translation refuses them, so no
 secondary action produces a command, an event or a state change. A durable
 vocabulary is defined only when a slice supplies an authorized consumer —
@@ -558,19 +645,25 @@ open-answer and buzz-first multiple-choice clues may coexist within a single gam
 **No schema, event vocabulary, scoring formula, acceptance criteria, roadmap
 insertion or implementation is authorized now**, and none exists. Nothing in the
 codebase implements, anticipates or reserves space for a response mode or a
-multiple-choice question type. **The immediate frontier remains Slice 9**, which
-is itself `Planned`, unstarted and owner-gated.
+multiple-choice question type. **The immediate frontier is now Slice 10**, which
+is `Planned`, unstarted and owner-gated. Slice 9 introduced nothing that
+anticipates or reserves space for a response mode.
 
 Recording this direction authorizes no work of any kind.
 
-## Prohibited next actions until Slice 9 is explicitly authorized
+## Prohibited next actions until Slice 10 is explicitly authorized
 
-Do **not**: merge the Slice 8 PR yourself; perform a Slice 8 post-merge
-reconciliation before the PR is actually merged; begin Slice 9, Slice 10 or any
-later slice; add Gamepad API, WebHID, Bluetooth, USB or HID code; add Sony Buzz!
-detection, vendor/product identification, button numbering, handset assignment,
-coloured-button default mappings or a controller setup wizard (Slice 10 owns all
-of it, and Slice 8's contract being ready is **not** authorization to write them);
+Do **not**: merge the Slice 9 PR yourself; mark Slice 9 `Complete` before it is
+actually merged; perform a Slice 9 post-merge reconciliation before the PR is
+actually merged; begin Slice 10 or any later slice; add WebHID, Bluetooth, USB or
+HID code; add Sony Buzz! detection, vendor/product identification, button
+numbering, handset assignment, coloured-button default mappings or a controller
+setup wizard (Slice 10 owns all of it, and Slice 9's generic adapter being ready
+is **not** authorization to write them); persist a Gamepad mapping to
+localStorage, IndexedDB, a game file or the sync channel; map axes, sticks, analog
+triggers, motion or haptics; use a browser controller index or device `id` as a
+durable identity; poll the Gamepad API from the reducer, a render, the sanitizer,
+replay, command planning or the display route; add a global polling service;
 give a secondary logical action any gameplay meaning or any durable event; add
 first-only lockout; restrict scoring to an active respondent (`OG-6`,
 still deferred); add automatic timeout scoring or make a timer or a buzz move a point; add

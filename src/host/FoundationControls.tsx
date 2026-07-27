@@ -7,6 +7,7 @@ import { CategoryBoardHostPanel } from './CategoryBoardHostPanel'
 import { TeamScoringPanel } from './TeamScoringPanel'
 import { ResponseTimerHostPanel } from './ResponseTimerHostPanel'
 import { LocalInputHostPanel } from './LocalInputHostPanel'
+import { GamepadInputHostPanel } from './GamepadInputHostPanel'
 import { useResponseTimerExpiry } from './useResponseTimerExpiry'
 import { systemClock, type Clock } from '../time/clock'
 import './FoundationControls.css'
@@ -286,6 +287,16 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
         timer panel above, so the application has exactly one arming control.
       */}
       {game && <LocalInputHostPanel dispatch={dispatch} game={game} clock={clock} />}
+
+      {/*
+        Generic controller input (Slice 9). The other half of the local-input
+        area, kept as its own bounded panel: it configures CONTROLLER input and
+        nothing else, and it feeds the very same boundary the keyboard panel above
+        does — one queue, one command, one event, one projection. Keyboard buzzing
+        is unaffected by anything here, including a browser with no Gamepad API at
+        all. No model, vendor or colour surface exists (Slice 10 owns that).
+      */}
+      {game && <GamepadInputHostPanel dispatch={dispatch} game={game} clock={clock} />}
 
       {/*
         Teams & scoring (Slice 6). It sits BESIDE the board panel, not inside it,
