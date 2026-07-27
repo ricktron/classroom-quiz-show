@@ -1,7 +1,8 @@
 # Status
 
 **Current slice:** Slice 8 — Local input contract & keyboard buzz-in
-**Slice state:** In review (branch pushed, pull request **open and unmerged**)
+**Slice state:** **Complete** (merged to `main` via PR #16, merge commit
+`167128d`, 2026-07-27T02:46:24Z)
 **Previous slice:** Slice 7 — Timers, arming & transitions (`Complete`, merged to
 `main` via PR #14, merge commit `3f9ae1c`)
 **Next slice:** Slice 9 — Generic Gamepad adapter (`Planned`, unstarted,
@@ -78,23 +79,43 @@ owner-gated — **not started by Slice 8**)
 > network policy denies `ricktron.github.io`. Post-merge reconciliation is
 > recorded in
 > [`receipts/2026-07-27-slice-7-post-merge-reconciliation.md`](receipts/2026-07-27-slice-7-post-merge-reconciliation.md).
-> Slice 8 is **In review**: owner-authorized and implemented on
+> Slice 8 is **Complete**: owner-authorized and implemented on
 > `claude/slice-8-local-input-keyboard-thn7bn`, branched from `main` at
-> `004bf9d55d7d7a22b19414e11ffdd050d98fb31f` (the PR #15 merge commit). The pull
-> request is **open and unmerged**, and **no post-merge reconciliation has been
-> performed or claimed**. Local verification is recorded in
-> [`receipts/2026-07-27-slice-8-local-verification.md`](receipts/2026-07-27-slice-8-local-verification.md).
+> `004bf9d55d7d7a22b19414e11ffdd050d98fb31f` (the PR #15 merge commit;
+> implementation commit `1fbe16f`, final reviewed head
+> `7d127188a20ce6bdf844c272db7b717cf5a2825a`). Merged to `main` via
+> **[PR #16](https://github.com/ricktron/classroom-quiz-show/pull/16)** (merge
+> commit `167128dc6462d10192afe92e85026918ebce7ba0`, merged
+> **2026-07-27T02:46:24Z** by `ricktron`). The merge commit has **two parents**,
+> so it is a true merge commit, and its **second parent is the reviewed head** —
+> the head that was reviewed is exactly the head that merged. All three PR checks
+> were green at that head (`Lint, typecheck, unit tests, build`; `Playwright
+> e2e`; `SonarCloud Code Analysis`). **Post-merge CI on `main` at `167128d`
+> concluded success**, and the **Pages deployment succeeded**. **Manual
+> live-route verification was not performed** — the sandbox network policy denies
+> `ricktron.github.io`. Local verification is recorded in
+> [`receipts/2026-07-27-slice-8-local-verification.md`](receipts/2026-07-27-slice-8-local-verification.md);
+> post-merge reconciliation in
+> [`receipts/2026-07-27-slice-8-post-merge-reconciliation.md`](receipts/2026-07-27-slice-8-post-merge-reconciliation.md).
 > **Slices 9 and 10 remain unstarted and owner-gated**, and no Gamepad, WebHID or
 > Sony Buzz! runtime exists anywhere in the codebase.
+>
+> **Repository hygiene (2026-07-27).** `main` is the repository's GitHub default
+> branch. **PR #17 was closed without merging**: it was an erroneous reversed pull
+> request (head `main`, base the abandoned `claude/classroom-quiz-show-slice-1-a6ogu4`)
+> created only because that abandoned Slice 1 branch was still configured as the
+> default branch. The abandoned branch has been **deleted** — `main` is the only
+> remote branch.
 
-## Slice 8 work (In review)
+## Slice 8 work (Complete)
 
 The hardware-independent **local input boundary** and keyboard buzz-in. Full
 rationale in
 [`architecture/ADR-008-local-input-keyboard-buzz.md`](architecture/ADR-008-local-input-keyboard-buzz.md);
 local evidence in
 [`receipts/2026-07-27-slice-8-local-verification.md`](receipts/2026-07-27-slice-8-local-verification.md).
-The pull request is **open and unmerged**; nothing about a merged state is claimed.
+Merged to `main` via PR #16 (merge commit `167128d`); post-merge evidence is in
+[`receipts/2026-07-27-slice-8-post-merge-reconciliation.md`](receipts/2026-07-27-slice-8-post-merge-reconciliation.md).
 
 | Item | State |
 | --- | --- |
@@ -497,9 +518,22 @@ Details in
 - Environment override: `PLAYWRIGHT_CHROMIUM_PATH` (the sandbox provides Chromium
   build 1194 while Playwright 1.56 expects 1228), supplied **through the
   environment only** — no machine-specific path is committed.
-- **PR CI, post-merge CI and the Pages deployment for Slice 8 are NOT claimed.**
-  The pull request is open and unmerged, and no CI run has been observed for it at
-  the time of writing. **No live-route verification was performed.**
+- **PR CI on GitHub Actions for Slice 8: observed green.** All three checks
+  concluded success on the final reviewed head `7d12718` of PR
+  [#16](https://github.com/ricktron/classroom-quiz-show/pull/16) — `Lint,
+  typecheck, unit tests, build`; `Playwright e2e`; and `SonarCloud Code Analysis`.
+  Sonar's detailed findings were **not inspected**: `sonarcloud.io` is unreachable
+  from the sandbox.
+- **Post-merge CI on `main` for Slice 8: observed green.** On merge commit
+  `167128d` the `CI` workflow (run `30232976466`, event `push`) concluded
+  **success**. This is post-merge observation on `main`, not a restatement of the
+  pre-merge PR checks.
+- **Pages deployment for Slice 8: observed successful.** The `Deploy to GitHub
+  Pages` workflow (run `30232976430`, head `167128d`, event `push`) concluded
+  **success**.
+- **No live-route verification was performed.** A successful deploy job is not
+  evidence that the live routes render; the sandbox network policy denies
+  `ricktron.github.io`.
 
 Earlier, local `verify:all` passed on the Slice 7 branch: lint, typecheck, unit tests
 (**947 passed, 42 files**), production build, and Playwright e2e (**175 passed,
@@ -658,7 +692,9 @@ None.
 - **Un-ending a game is not supported** — `GAME_SESSION_ENDED` is irreversible;
   re-initialize a game to start over.
 - **Event history and definitions are in-memory only** — lost on tab close.
-  Durable IndexedDB persistence/recovery is Slice 8.
+  Durable IndexedDB persistence/recovery is **Slice 13** under the amended
+  18-slice roadmap. (Slice 8's keyboard-mapping storage is host-device
+  configuration, not session persistence.)
 - **Sync is same-browser only** (BroadcastChannel, same origin). No cross-device
   sync, backend, or leader election — later/out of scope.
 - The host "Foundation / testing controls" are diagnostics to prove the model,
@@ -666,15 +702,20 @@ None.
 
 ## Next safe action
 
-**Review the Slice 7 pull request** (timers, arming & transitions). It is open and
-unmerged: local `verify:all` is green, the ADR and the immutable receipt are in
-place, and every existing receipt was proved byte-identical.
+**Review and merge the Slice 8 post-merge reconciliation pull request** (this
+documentation-only change). Slice 8 itself is merged and complete; nothing else is
+in flight.
 
-After it merges, record the post-merge reconciliation as usual. The next
-implementation slice is **Slice 8 — Local input contract & keyboard buzz-in**. Its
-vocabulary gates `OG-1`, `OG-2` and `OG-3` are now answered, but it is still
-`Planned`, unstarted, and **owner-gated**.
+After that, the next implementation slice is **Slice 9 — Generic Gamepad
+adapter**. It is `Planned`, unstarted, and **owner-gated**: Slice 8 having shipped
+the boundary Slice 9 plugs into is **not** authorization to begin it. Slice 10 is
+likewise `Planned` and unstarted.
 
-Do **not** begin Slice 8 on the strength of those answers — recording a decision
-is not authorization to implement it. No buzz input, queue or promotion behaviour
-exists anywhere in the codebase.
+Do **not** begin Slice 9 or Slice 10 without explicit owner authorization. No
+Gamepad, WebHID, Bluetooth or Sony-specific runtime exists anywhere in the
+codebase, and none may be added under this reconciliation.
+
+**Additional response modes are deferred until after the functional MVP** — see
+the owner direction recorded in
+[`handoff/CURRENT.md`](handoff/CURRENT.md). Nothing about them is designed,
+scheduled or authorized, and the active MVP roadmap remains **18 slices**.

@@ -1,11 +1,19 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with **Slices 1–7 all `Complete` and merged to `main`** (Slice 7,
+the repository with **Slices 1–8 all `Complete` and merged to `main`** (Slice 7,
 timers, arming & transitions, merged via PR #14 at `3f9ae1c`; the Slice 7
-reconciliation merged via PR #15 at `004bf9d`), and **Slice 8 — Local input
-contract & keyboard buzz-in — `In review`, with its pull request open and
-unmerged.** **Slices 9 and 10 are unstarted and owner-gated.**
+reconciliation merged via PR #15 at `004bf9d`; **Slice 8 — Local input contract &
+keyboard buzz-in — merged via PR #16 at `167128d` on 2026-07-27T02:46:24Z**).
+**Slices 9 and 10 are unstarted and owner-gated.**
+
+> **Repository hygiene (2026-07-27).** `main` is the GitHub **default branch**.
+> **PR #17 was closed without merging** — an erroneous *reversed* pull request
+> (head `main`, base `claude/classroom-quiz-show-slice-1-a6ogu4`) created only
+> because the abandoned Slice 1 branch was still the configured default. That
+> abandoned branch has been **deleted**; `main` is the only remote branch. No
+> further action is needed, and no new pull request involving that branch may be
+> created.
 
 > **Roadmap amended 2026-07-26, and that amendment is MERGED.** The owner
 > authorized a planning-only amendment,
@@ -88,13 +96,22 @@ unmerged.** **Slices 9 and 10 are unstarted and owner-gated.**
   [`../receipts/2026-07-26-slice-7-local-verification.md`](../receipts/2026-07-26-slice-7-local-verification.md);
   post-merge reconciliation in
   [`../receipts/2026-07-27-slice-7-post-merge-reconciliation.md`](../receipts/2026-07-27-slice-7-post-merge-reconciliation.md).
-- **Slice 8 (current): `In review`.** Owner-authorized and delivered on
+- **Slice 8 (current): `Complete`.** Owner-authorized and delivered on
   `claude/slice-8-local-input-keyboard-thn7bn`, based on `main` at
   `004bf9d55d7d7a22b19414e11ffdd050d98fb31f` (the merge commit of PR #15, the
-  Slice 7 post-merge reconciliation). The pull request is **open and unmerged**;
-  **no CI run, no post-merge state and no deployment is claimed for it**. Local
-  evidence in
-  [`../receipts/2026-07-27-slice-8-local-verification.md`](../receipts/2026-07-27-slice-8-local-verification.md).
+  Slice 7 post-merge reconciliation); implementation commit `1fbe16f`, final
+  reviewed head `7d127188a20ce6bdf844c272db7b717cf5a2825a`. **Merged to `main` via
+  [PR #16](https://github.com/ricktron/classroom-quiz-show/pull/16)** (merge
+  commit `167128dc6462d10192afe92e85026918ebce7ba0`, merged
+  **2026-07-27T02:46:24Z** by `ricktron`). The merge commit's **second parent is
+  the reviewed head**, so the head that was reviewed is the head that merged. All
+  three PR checks were green at that head; **post-merge CI on `main` at `167128d`
+  concluded success**, and the **GitHub Pages deployment succeeded. Manual
+  live-route verification was not performed** — the sandbox network policy denies
+  `ricktron.github.io`. Local evidence in
+  [`../receipts/2026-07-27-slice-8-local-verification.md`](../receipts/2026-07-27-slice-8-local-verification.md);
+  post-merge reconciliation in
+  [`../receipts/2026-07-27-slice-8-post-merge-reconciliation.md`](../receipts/2026-07-27-slice-8-post-merge-reconciliation.md).
   **Slices 9 and 10 are unstarted and owner-gated, and no Gamepad, WebHID or Sony
   Buzz! runtime exists.**
 - **What Slice 8 adds:** the hardware-independent **local input boundary** and
@@ -323,7 +340,7 @@ src/test/          leakLabels, gameFileFixtures, categoryBoardFixtures, teamFixt
 npm ci               # reproducible install
 npm run lint         # ESLint (flat config)
 npm run typecheck    # tsc -b --noEmit
-npm run test:run     # Vitest (unit/component) — 947 tests
+npm run test:run     # Vitest (unit/component) — 1,184 tests
 npm run build        # tsc -b && vite build → dist/
 npm run test:e2e     # Playwright vs production preview (3 viewport projects)
 npm run verify       # lint + typecheck + unit
@@ -336,13 +353,20 @@ npm run verify:all   # verify + build + e2e (merge gate)
 > That override is passed via the environment only — never committed. CI installs
 > the matching browser and needs no override.
 
-Latest local results (Slice 7): `verify:all` green — **947 unit tests (42 files),
-175 e2e passed / 2 skipped** (both skips are the one desktop-only offline-shell
-test); `git diff --check` clean. **Slice 7 PR CI was observed green** on PR #14 at
+Latest local results (Slice 8): `verify:all` green — **1,184 unit tests (51
+files), 187 e2e passed / 2 skipped** (both skips are the one desktop-only
+offline-shell test); `git diff --check` clean. **Slice 8 PR CI was observed
+green** on PR #16 at the final reviewed head `7d12718`: all three checks concluded
+success. Sonar's detailed findings were not inspected (`sonarcloud.io` is
+unreachable from the sandbox). **Post-merge on `main` (`167128d`)** the `CI`
+workflow concluded success, and the **GitHub Pages deployment succeeded. Manual
+live-route verification was not performed.**
+
+Earlier, on the Slice 7 branch: `verify:all` green — **947 unit tests (42 files),
+175 e2e passed / 2 skipped**. **Slice 7 PR CI was observed green** on PR #14 at
 implementation commit `f804430`: all three checks concluded success, SonarCloud
 Quality Gate passed, 0 security hotspots. Sonar's 12 new non-blocking issues were
-not inspected (`sonarcloud.io` is unreachable from the sandbox). The PR is **open
-and unmerged**, so there is no post-merge or Pages evidence yet.
+not inspected. Slice 7 merged to `main` via PR #14 at `3f9ae1c`.
 
 Earlier, on the Slice 6 branch: `verify:all` green — **740 unit tests,
 154 e2e passed / 2 skipped** (both skips are the one desktop-only offline-shell
@@ -466,15 +490,14 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Next action
 
-**Review the Slice 8 pull request.** It is open and unmerged on
-`claude/slice-8-local-input-keyboard-thn7bn`. Nothing else is in flight, and no
-post-merge reconciliation has been performed — that is a separate, later step and
-must not be assumed.
+**Review and merge the Slice 8 post-merge reconciliation pull request** — a
+documentation-only change that marks Slice 8 `Complete` across the canonical
+surfaces. Slice 8 itself is merged (PR #16, `167128d`); nothing else is in flight.
 
-After Slice 8 merges, the next slice is **Slice 9 — Generic Gamepad adapter**,
-whose record is in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md). It is `Planned`,
-unstarted and **owner-gated**: Slice 8 shipping the boundary it will plug into is
-not authorization to begin it.
+After that, the next slice is **Slice 9 — Generic Gamepad adapter**, whose record
+is in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md). It is `Planned`, unstarted and
+**owner-gated**: Slice 8 having shipped the boundary it will plug into is not
+authorization to begin it. Slice 10 is likewise `Planned` and unstarted.
 
 ## Owner direction — colored buttons and the local input contract (2026-07-27)
 
@@ -503,7 +526,7 @@ Slice allocation is unchanged by this direction:
 
 | Slice | Scope | State |
 | --- | --- | --- |
-| **8** | The hardware-independent **logical** input contract, and keyboard input as its first consumer. | `In review` |
+| **8** | The hardware-independent **logical** input contract, and keyboard input as its first consumer. | `Complete` (PR #16, `167128d`) |
 | **9** | The generic **Gamepad** adapter and configurable mappings. | `Planned`, unstarted |
 | **10** | **Sony Buzz!** detection, validation, a recommended profile, handset assignment, and the host setup UX. | `Planned`, unstarted |
 
@@ -516,6 +539,29 @@ vocabulary is defined only when a slice supplies an authorized consumer —
 consumer" rule, applied to secondary actions exactly as it was applied to the
 timer's interruption seam. See
 [`../architecture/ADR-008-local-input-keyboard-buzz.md`](../architecture/ADR-008-local-input-keyboard-buzz.md) §3.
+
+## Owner direction — additional response modes are POST-MVP (2026-07-27)
+
+**Deferred until after the functional MVP is complete. Recorded only.** This is a
+parked concept, not a plan: it is **not** inserted into the active roadmap, which
+remains **18 slices**.
+
+The owner has parked additional response-mode work covering:
+
+1. **traditional open-answer buzzer mode** (what the MVP builds today);
+2. **buzz-first multiple-choice mode**;
+3. **simultaneous speed-based multiple-choice mode**.
+
+The eventual design should permit **clue-level response policies**, so that
+open-answer and buzz-first multiple-choice clues may coexist within a single game.
+
+**No schema, event vocabulary, scoring formula, acceptance criteria, roadmap
+insertion or implementation is authorized now**, and none exists. Nothing in the
+codebase implements, anticipates or reserves space for a response mode or a
+multiple-choice question type. **The immediate frontier remains Slice 9**, which
+is itself `Planned`, unstarted and owner-gated.
+
+Recording this direction authorizes no work of any kind.
 
 ## Prohibited next actions until Slice 9 is explicitly authorized
 

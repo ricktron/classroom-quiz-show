@@ -206,10 +206,17 @@ input:
   whole seconds) that is additive on `schemaVersion: 1` — every existing game file
   is still valid and gets the documented 30-second default.
 
-**Slice 8 — local input contract & keyboard buzz-in. In review** — implemented on
-`claude/slice-8-local-input-keyboard-thn7bn`, with the pull request **open and
-unmerged** (see [`docs/STATUS.md`](docs/STATUS.md), the local-verification receipt
+**Slice 8 — local input contract & keyboard buzz-in. Complete** — merged to `main`
+via **[PR #16](https://github.com/ricktron/classroom-quiz-show/pull/16)** (merge
+commit `167128dc6462d10192afe92e85026918ebce7ba0`, merged 2026-07-27T02:46:24Z by
+`ricktron`; reviewed head `7d12718`, which **is** the merge commit's second
+parent). All three PR checks were green at that head, **post-merge CI on `main`
+concluded success**, and the **Pages deployment succeeded**; manual live-route
+verification was **not** performed (see [`docs/STATUS.md`](docs/STATUS.md), the
+local-verification receipt
 [`docs/receipts/2026-07-27-slice-8-local-verification.md`](docs/receipts/2026-07-27-slice-8-local-verification.md),
+the post-merge reconciliation receipt
+[`docs/receipts/2026-07-27-slice-8-post-merge-reconciliation.md`](docs/receipts/2026-07-27-slice-8-post-merge-reconciliation.md),
 and [`docs/architecture/ADR-008-local-input-keyboard-buzz.md`](docs/architecture/ADR-008-local-input-keyboard-buzz.md)).
 Slice 8 gives teams a way to claim a clue, through a boundary that is deliberately
 hardware-shaped rather than keyboard-shaped:
