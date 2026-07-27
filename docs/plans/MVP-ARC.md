@@ -51,7 +51,7 @@ systems.
 | 5   | **Category-board round**       | First playable round type: configurable categories/rows/ladder, multiplier, used-tile state, prompt/answer reveal, alternates, notes. **(Complete.)** | 3, 4       |
 | 6   | **Teams & scoring**            | Teams, typed scoring strategy (points first), awards/deductions, partial credit, unrestricted manual correction, audit history, undo. **(Complete.)** | 2, 5       |
 | 7   | **Timers, arming & transitions** | Timer config, a deadline-projected public timer, host arming/disarming, host-controlled undoable round transitions, reduced-motion-safe. The interrupt seam must be typed so buzz-in is a later addition, not a rewrite. **(Complete.)** | 5, 6 |
-| 8   | **Local input contract & keyboard buzz-in** | The device-independent input-adapter boundary + registry, buzz-in domain semantics, one command/event pair, replay-derived queue state, sanitized public projection — with the **keyboard adapter** as its first consumer. | 2, 6, 7 |
+| 8   | **Local input contract & keyboard buzz-in** | The device-independent input-adapter boundary + registry, buzz-in domain semantics, one command/event pair, replay-derived queue state, sanitized public projection — with the **keyboard adapter** as its first consumer. **(Complete — delivered without the anticipated adapter *registry* object; a bounded application-only input-source union ships its guarantees instead. See ADR-008 §3.)** | 2, 6, 7 |
 | 9   | **Generic Gamepad adapter**    | Gamepad API adapter behind the slice 8 boundary; connect/disconnect handling, polling isolation, host diagnostics. No model-specific assumptions. | 8 |
 | 10  | **Sony Buzz! mapping, validation & host setup UX** | Configurable controller mapping, Sony Buzz! validation as the preferred target, host setup/test surface, fallback when no controller is present. | 9 |
 | 11  | **Media contract**             | Typed media model (beyond plain-string prompts), fail-closed on unsupported media, additive on `schemaVersion: 1`. **Must precede any new round type.** | 4, 5 |
@@ -599,9 +599,13 @@ authorization.**
 
 ## Slice 8 — scope, acceptance, non-goals
 
-Slice 8 is **In review**: implemented on
-`claude/slice-8-local-input-keyboard-thn7bn` from `main` at `004bf9d`, with the
-pull request **open and unmerged**. Rationale in
+Slice 8 is **Complete**: implemented on
+`claude/slice-8-local-input-keyboard-thn7bn` from `main` at `004bf9d` and **merged
+to `main` via [PR #16](https://github.com/ricktron/classroom-quiz-show/pull/16)**
+(merge commit `167128d`, merged 2026-07-27T02:46:24Z by `ricktron`; reviewed head
+`7d12718`, which is the merge commit's second parent). All three PR checks were
+green at that head, post-merge CI on `main` concluded success, and the Pages
+deployment succeeded; live-route behaviour is not claimed. Rationale in
 [`../architecture/ADR-008-local-input-keyboard-buzz.md`](../architecture/ADR-008-local-input-keyboard-buzz.md).
 
 ### Delivered
@@ -738,9 +742,15 @@ changes schema, runtime, UI, storage or hardware support.
   slice's durable plan requires it, following the same "no speculative contract
   without its first consumer" rule that shaped Slice 7's interruption seam.
   **Recorded, not implemented.**
-- **Status:** `In review` — owner-authorized, implemented on
-  `claude/slice-8-local-input-keyboard-thn7bn` from `main` at `004bf9d`, with the
-  pull request **open and unmerged**. The scope, acceptance evidence and non-goals
+- **Status:** `Complete` — owner-authorized, implemented on
+  `claude/slice-8-local-input-keyboard-thn7bn` from `main` at `004bf9d`, and
+  **merged to `main` via
+  [PR #16](https://github.com/ricktron/classroom-quiz-show/pull/16)** (merge
+  commit `167128d`, merged 2026-07-27T02:46:24Z by `ricktron`; reviewed head
+  `7d12718` is the merge commit's second parent). Post-merge CI and the Pages
+  deployment both concluded success; post-merge reconciliation is recorded in
+  [`../receipts/2026-07-27-slice-8-post-merge-reconciliation.md`](../receipts/2026-07-27-slice-8-post-merge-reconciliation.md).
+  The scope, acceptance evidence and non-goals
   are recorded in "Slice 8 — scope, acceptance, non-goals" above, and the rationale
   in
   [`../architecture/ADR-008-local-input-keyboard-buzz.md`](../architecture/ADR-008-local-input-keyboard-buzz.md).
