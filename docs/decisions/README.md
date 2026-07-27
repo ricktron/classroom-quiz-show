@@ -49,6 +49,19 @@ This project separates two kinds of durable decision records:
      Slice 7 seam, the response-opportunity identity, the tie policy, the public
      buzz DTO and wire version 6, and the resolution of `OG-2`, `OG-3`, `OG-4` and
      `OG-5` with `OG-6` still deferred (Slice 8).
+   - [`ADR-009-generic-gamepad-adapter.md`](../architecture/ADR-009-generic-gamepad-adapter.md)
+     — the generic Gamepad adapter behind the Slice 8 boundary: the browser
+     boundary module and its data-only bounded snapshot, the injectable source and
+     scheduler seams, single host-owned polling with no global service, rising-edge
+     semantics and the baseline/re-prime rule that makes connect, reconnect,
+     enable, mapping change, capture, visibility and focus structurally unable to
+     fabricate a press, deterministic simultaneous-edge ordering as a tie-break
+     rather than a fairness claim, the generic controller-index/button-index
+     mapping model with validation and no default assignment, the session-local
+     mapping lifetime and why a controller index may not be persisted, the
+     buttons-only scope, secondary actions remaining inert, host-private
+     diagnostics, keyboard as the permanent fallback, and the decision that
+     `PublicState` and the sync protocol do **not** change (Slice 9).
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).

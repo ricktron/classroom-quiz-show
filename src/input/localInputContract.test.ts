@@ -13,6 +13,7 @@ import {
   isLocalInputSignal,
   isLocalInputSourceKind,
   LOCAL_INPUT_SOURCE_KINDS,
+  LOCAL_INPUT_SOURCE_LABEL,
   type LocalInputSignal,
 } from './localInput'
 import {
@@ -90,13 +91,16 @@ describe('the logical action vocabulary', () => {
    * than by review: no colour word, no device model and no vendor name appears
    * anywhere in the vocabulary or in its host-facing copy.
    */
-  it('names no colour, model or vendor anywhere in the vocabulary', () => {
+  it('names no colour, model, vendor or DEVICE anywhere in the action vocabulary', () => {
+    // The ACTION vocabulary is the thing that must stay button-agnostic: what a
+    // press MEANS may never be described in terms of what was pressed. `gamepad`
+    // is forbidden here even though it is a legitimate SOURCE member (asserted
+    // separately below) — an action must not name a device kind either.
     const surface = JSON.stringify([
       LOCAL_INPUT_ACTION_KINDS,
       SECONDARY_ACTION_SLOTS,
       LOCAL_INPUT_ACTION_LABEL,
       SECONDARY_ACTION_SLOTS.map(secondaryActionLabel),
-      LOCAL_INPUT_SOURCE_KINDS,
     ]).toLowerCase()
     for (const forbidden of [
       'red',
@@ -109,7 +113,39 @@ describe('the logical action vocabulary', () => {
       'playstation',
       'handset',
       'gamepad',
+      'controller',
+      'button',
       'webhid',
+      'usb',
+      'vendor',
+      'product',
+    ]) {
+      expect(surface, `must not contain ${forbidden}`).not.toContain(forbidden)
+    }
+  })
+
+  /**
+   * The SOURCE union names the ADAPTER that produced a signal, which is a
+   * different question from what the signal means. It may say `gamepad`; it may
+   * never say which gamepad.
+   */
+  it('names no colour, model or vendor anywhere in the source vocabulary', () => {
+    const surface = JSON.stringify([
+      LOCAL_INPUT_SOURCE_KINDS,
+      LOCAL_INPUT_SOURCE_LABEL,
+    ]).toLowerCase()
+    for (const forbidden of [
+      'red',
+      'blue',
+      'orange',
+      'green',
+      'yellow',
+      'sony',
+      'buzz!',
+      'playstation',
+      'handset',
+      'webhid',
+      'bluetooth',
       'usb',
       'vendor',
       'product',
@@ -126,11 +162,16 @@ describe('the logical action vocabulary', () => {
 
 describe('the local input signal', () => {
   it('recognizes exactly the sources that have an adapter', () => {
-    expect(LOCAL_INPUT_SOURCE_KINDS).toEqual(['keyboard'])
+    // A member and its adapter arrive together, never one without the other.
+    // Slice 8 shipped `keyboard`; Slice 9 shipped `gamepad` alongside
+    // `src/input/gamepadAdapter.ts`. Nothing else is a member.
+    expect(LOCAL_INPUT_SOURCE_KINDS).toEqual(['keyboard', 'gamepad'])
     expect(isLocalInputSourceKind('keyboard')).toBe(true)
-    // Slice 9 adds its adapter and its member together, not one without the other.
-    expect(isLocalInputSourceKind('gamepad')).toBe(false)
+    expect(isLocalInputSourceKind('gamepad')).toBe(true)
     expect(isLocalInputSourceKind('webhid')).toBe(false)
+    expect(isLocalInputSourceKind('bluetooth')).toBe(false)
+    expect(isLocalInputSourceKind('sony-buzz')).toBe(false)
+    expect(isLocalInputSourceKind('phone')).toBe(false)
   })
 
   it('accepts a well-formed signal', () => {
@@ -143,7 +184,8 @@ describe('the local input signal', () => {
       'buzz',
       signalWithout('teamId'),
       { ...signal(), teamId: '' },
-      { ...signal(), source: 'gamepad' },
+      { ...signal(), source: 'webhid' },
+      { ...signal(), source: 'sony-buzz' },
       { ...signal(), action: { kind: 'nonsense' } },
       { ...signal(), observedAt: -1 },
       { ...signal(), observedAt: 1.5 },

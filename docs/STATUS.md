@@ -1,12 +1,15 @@
 # Status
 
-**Current slice:** Slice 8 — Local input contract & keyboard buzz-in
-**Slice state:** **Complete** (merged to `main` via PR #16, merge commit
-`167128d`, 2026-07-27T02:46:24Z)
-**Previous slice:** Slice 7 — Timers, arming & transitions (`Complete`, merged to
-`main` via PR #14, merge commit `3f9ae1c`)
-**Next slice:** Slice 9 — Generic Gamepad adapter (`Planned`, unstarted,
-owner-gated — **not started by Slice 8**)
+**Current slice:** Slice 9 — Generic Gamepad adapter & configurable mappings
+**Slice state:** **In review** — owner-authorized, implemented on
+`claude/slice-9-gamepad-adapter-wfiue4` from `main` at `5cc81d4`, **open and
+unmerged**. It is **not** `Complete` and must not be marked so before merge and
+post-merge reconciliation.
+**Previous slice:** Slice 8 — Local input contract & keyboard buzz-in
+(`Complete`, merged to `main` via PR #16, merge commit `167128d`,
+2026-07-27T02:46:24Z)
+**Next slice:** Slice 10 — Sony Buzz! mapping, validation & host setup UX
+(`Planned`, unstarted, owner-gated — **not started by Slice 9**)
 **Roadmap:** 18 slices, amended 2026-07-26 by
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 (**merged to `main` via PR #13**, merge commit `752a3fe`, 2026-07-26T20:02:13Z)
@@ -97,8 +100,9 @@ owner-gated — **not started by Slice 8**)
 > [`receipts/2026-07-27-slice-8-local-verification.md`](receipts/2026-07-27-slice-8-local-verification.md);
 > post-merge reconciliation in
 > [`receipts/2026-07-27-slice-8-post-merge-reconciliation.md`](receipts/2026-07-27-slice-8-post-merge-reconciliation.md).
-> **Slices 9 and 10 remain unstarted and owner-gated**, and no Gamepad, WebHID or
-> Sony Buzz! runtime exists anywhere in the codebase.
+> **Slice 9 is now `In review`** — owner-authorized and implemented, open and
+> unmerged. **Slice 10 remains unstarted and owner-gated**, and **no Sony Buzz!,
+> vendor-matching, WebHID or Bluetooth runtime exists anywhere in the codebase.**
 >
 > **Repository hygiene (2026-07-27).** `main` is the repository's GitHub default
 > branch. **PR #17 was closed without merging**: it was an erroneous reversed pull
@@ -157,7 +161,7 @@ Merged to `main` via PR #16 (merge commit `167128d`); post-merge evidence is in
 | Accessibility: real buttons, polite live regions, no colour-only state, no key while typing | Implemented |
 | Unit, component and browser tests; docs (ADR-008, plan, handoff, receipt) | Implemented |
 | Scoring restricted to the active respondent (`OG-6`) | **Deferred — not implemented** |
-| Gamepad, WebHID, Bluetooth, Sony Buzz!, controller assignment, coloured defaults, setup UX | **Not implemented (Slices 9–10)** |
+| Gamepad, WebHID, Bluetooth, Sony Buzz!, controller assignment, coloured defaults, setup UX | **Not implemented in Slice 8** (generic Gamepad arrived in Slice 9; Sony/WebHID/Bluetooth remain Slice 10 or excluded) |
 
 ### Commands / events / public fields (added in Slice 8)
 
@@ -171,8 +175,80 @@ Merged to `main` via PR #16 (merge commit `167128d`); post-merge evidence is in
   still fail closed at the command boundary and again on event application.
 - **Logical actions:** `primary-buzz` · `secondary` with slots `secondary1`…
   `secondary4` (representable, mappable, **inert**).
-- **Input sources:** `keyboard` (the only member; Slice 9 adds `gamepad` together
-  with its adapter).
+- **Input sources:** `keyboard` (the only member as of Slice 8; **Slice 9 added
+  `gamepad` together with its adapter**).
+
+## Slice 9 work (In review — open, unmerged)
+
+The generic **Gamepad adapter** behind the Slice 8 boundary. Full rationale in
+[`architecture/ADR-009-generic-gamepad-adapter.md`](architecture/ADR-009-generic-gamepad-adapter.md);
+local evidence in
+[`receipts/2026-07-27-slice-9-local-verification.md`](receipts/2026-07-27-slice-9-local-verification.md).
+
+> **The headline is what did NOT change:** no schema, no `PublicState`, no sync
+> protocol version, no command, no event, no reducer, no queue logic, no timer
+> transition and no scoring behaviour. `LOCAL_INPUT_SOURCE_KINDS` gained exactly
+> one member.
+
+| Item | State |
+| --- | --- |
+| `gamepad` added to the bounded, application-only input-source union, **with its adapter** | Implemented |
+| Generic Gamepad buttons translate to the EXISTING logical actions | Implemented |
+| Existing translator, command, event, reducer, queue and sanitizer used unchanged | Implemented |
+| No dynamic registration, plugin loading, parallel command path or Gamepad-shaped event | Implemented |
+| Direct `navigator.getGamepads()` access confined to one boundary module | Implemented |
+| Data-only frozen snapshot (`controllerIndex` + `pressed[]`); no browser object crosses | Implemented |
+| Device `id`, `mapping`, `axes`, analog `value`, `touched`, `timestamp`, vendor/product **not representable** | Implemented |
+| Untrusted-input guard: `null` holes, sparse lists, malformed index/buttons, bounded indices | Implemented |
+| Injectable source abstraction; every unit test uses a fake, none needs hardware | Implemented |
+| Typed read outcomes: `ok` · `unsupported` · `unreadable`; a throw never escapes | Implemented |
+| Polling in ONE host-only lifecycle owner; injectable scheduler; deterministic under test | Implemented |
+| No polling in the reducer, render, sanitizer, replay, command planning or the display route | Implemented |
+| Loop registered once (duplicate registration refused) and stopped on unmount | Implemented |
+| No global polling service, module-level loop or singleton | Implemented |
+| Rising-edge detection: one physical press → at most one logical input | Implemented |
+| A held button never repeats; release rearms that control only | Implemented |
+| First observation of a controller is a BASELINE only — a held button cannot buzz | Implemented |
+| Re-prime on enable, disable, mapping change, capture start/end, connect, disconnect, visibility, focus, blur, failed read | Implemented |
+| Disconnect clears prior observation state and appends nothing; reconnect is a new baseline | Implemented |
+| Reconnect at the same index and at a DIFFERENT index both fail closed | Implemented |
+| Deterministic multi-edge order: ascending controller index, then ascending button index | Implemented |
+| Event-log `seq` remains the authoritative accepted order; no fairness claim | Implemented |
+| Clock read once per genuine edge, at the dispatch edge; a no-edge poll reads none | Implemented |
+| Generic mapping: controller index + button index + team + logical action | Implemented |
+| Validation: malformed indices, duplicate control, unknown team, duplicate team primary, malformed action, bounds | Implemented |
+| No silent overwrite, no repair, no drop; structured issues addressed to the binding | Implemented |
+| **No default button assignment** and no generated device profile | Implemented |
+| At most one primary Gamepad buzz per team (within the Gamepad mapping only) | Implemented |
+| Four ordinal secondary slots mappable and **still inert** at command translation | Implemented |
+| Mappings **session-local**: no `localStorage`, IndexedDB, export, game-file field or sync | Implemented |
+| Mapping lifetime (lost on host reload) stated in the host UI | Implemented |
+| Controller indices treated as session-local locators, never persisted or claimed stable | Implemented |
+| Browser device `id`/name never read or used as gameplay identity | Implemented |
+| Neutral session-local labels ("Controller 1"); no vendor recognition | Implemented |
+| Buttons only — no axes, sticks, analog triggers, motion, vibration or haptics | Implemented |
+| Host diagnostics: availability, enabled, controller count/labels/button counts, assignments, conflicts, outcomes | Implemented |
+| Host controls: enable/disable, capture, assign, cancel, clear one, clear all, conflict preview | Implemented |
+| No live per-frame button display; diagnostics emitted only on a STABLE change | Implemented |
+| Calm no-controller fallback: "No controller detected. Keyboard buzzing remains available." | Implemented |
+| Keyboard buzzing fully functional at all times, including with no Gamepad API | Implemented |
+| Accessibility: keyboard-operable, polite live regions, no colour-only state, stable focus, explained disabled states | Implemented |
+| **`PublicState` unchanged; wire version unchanged at 6; sync envelope unchanged at 2** | Implemented |
+| No API availability, controller count/index/label, button index/state, mapping, connection, capture state, adapter error or source kind projected | Implemented |
+| Replay and undo unchanged and bit-exact for a controller-built queue | Implemented |
+| Deterministic adapter/source/mapping/hook/component tests + no-controller e2e | Implemented |
+| **Physical controller hardware tested** | **Not performed — none available** |
+| Sony Buzz! detection, vendor matching, colour defaults, handset grouping, setup wizard | **Not implemented (Slice 10)** |
+| WebHID, Bluetooth, USB drivers, haptics, axes, analog tuning | **Not implemented** |
+| Persistent Gamepad mappings | **Not implemented (deliberate — storage impact is none)** |
+| Scoring restricted to the active respondent (`OG-6`) | **Still deferred — not implemented** |
+
+### Commands / events / public fields (added in Slice 9)
+
+**None.** No command, no event, no `PublicState` field, no wire-version change and
+no sync-envelope change. The only vocabulary change anywhere is one member added
+to `LOCAL_INPUT_SOURCE_KINDS` (`gamepad`), which is host-private and never
+projected.
 - **New rejection reasons:** `response-phase-not-armed`, `team-already-buzzed`,
   `no-active-respondent`. Stale opportunities reuse `tile-mismatch`.
 - **`PublicState` (added):** `response.buzz: PublicBuzzState` — required, not
@@ -508,7 +584,30 @@ Neutral state/event/sync foundation — no gameplay. Full rationale in
 
 ## Verification state
 
-Local `verify:all` passed on the Slice 8 branch: lint, typecheck, unit tests
+Local `verify:all` passed on the **Slice 9** branch
+(`claude/slice-9-gamepad-adapter-wfiue4`): lint, typecheck, unit tests
+(**1,349 passed, 57 files**), production build, and Playwright e2e (**199 passed,
+2 skipped** — both skips are the one pre-existing desktop-only offline-shell
+test; nothing was skipped because it failed). `git diff --check` is clean.
+Details in
+[`receipts/2026-07-27-slice-9-local-verification.md`](receipts/2026-07-27-slice-9-local-verification.md).
+
+- Environment override: `PLAYWRIGHT_CHROMIUM_PATH` (the sandbox provides Chromium
+  build 1194 while Playwright 1.56 expects 1228), supplied **through the
+  environment only** — no machine-specific path is committed.
+- **PR CI for Slice 9: not yet observed.** The pull request is open and unmerged;
+  no check conclusion is claimed here until one is actually seen.
+- **No physical controller was tested.** None is available in this environment, and
+  no claim is made about any specific device. Every physical behaviour is proved by
+  deterministic unit tests against a fake Gamepad source; the browser tests cover
+  the **no-controller** path only.
+- **Primary browser documentation was not fetched.** The sandbox network policy
+  denies `developer.mozilla.org` and `w3c.github.io` (HTTP 403 on CONNECT). The
+  Gamepad contract was instead verified against two primary sources available
+  locally: the WebIDL in TypeScript 5.9's `lib.dom.d.ts`, and a direct probe of the
+  Chromium build this repository tests with. Both are recorded in ADR-009 §Context.
+
+Earlier, local `verify:all` passed on the Slice 8 branch: lint, typecheck, unit tests
 (**1,184 passed, 51 files**), production build, and Playwright e2e (**187 passed,
 2 skipped** — both skips are the one pre-existing desktop-only offline-shell
 test; nothing was skipped because it failed). `git diff --check` is clean.
@@ -651,8 +750,27 @@ None.
   window, never a scoring decision.
 - **Timer durations are 5–600 whole seconds**, authored per game or chosen per
   clue by the host. An out-of-range value is rejected, never clamped.
-- **`OG-2`, `OG-3` and `OG-6` are recorded but not implemented.** There is no buzz
-  input, no queue, no promotion, and no respondent-restricted scoring anywhere.
+- **`OG-6` remains recorded but not implemented.** Scoring is not restricted to the
+  active respondent; it stays available for every team. (`OG-2` and `OG-3` were
+  implemented by Slice 8.)
+- **Gamepad mappings are session-local and are LOST when the host page reloads.**
+  This is deliberate: the roadmap records Slice 9's storage impact as none, and a
+  browser controller index is not stable across a reload, so a restored mapping
+  could silently point at the wrong controller. Buzz KEYS still persist; controller
+  buttons do not.
+- **A browser controller index is a session-local locator, not an identity.** It is
+  not stable across a reload, a browser restart, a disconnect/reconnect, a USB port
+  change, an operating system or a browser version, and it is never persisted.
+- **Most browsers do not expose a controller until a button on it is pressed**, so
+  a freshly plugged-in controller can legitimately read as "None detected" until it
+  is touched. This is browser behaviour, not a defect in the panel.
+- **No physical controller has been tested.** Generic USB controller support is
+  implemented and unit-proven against a fake source; no specific device is claimed
+  to work, and there is no supported-hardware list.
+- **Controller buzzing starts switched OFF** and nothing is bound by default —
+  there is deliberately no assumed "buzz button".
+- **Slice 9 maps BUTTONS only.** No axes, sticks, analog triggers, motion,
+  vibration or haptics, and no analog threshold tuning.
 - **A tile still scores nothing by itself.** `multiplier` affects the DISPLAYED
   value and the typed `effectiveValue`, and revealing an answer awards nothing —
   a teacher must deliberately award or deduct.
@@ -702,18 +820,18 @@ None.
 
 ## Next safe action
 
-**Review and merge the Slice 8 post-merge reconciliation pull request** (this
-documentation-only change). Slice 8 itself is merged and complete; nothing else is
-in flight.
+**Review the Slice 9 pull request** (`claude/slice-9-gamepad-adapter-wfiue4` →
+`main`). It is open and unmerged. Wait for CI to conclude, review the diff, and
+merge only if the checks are green — then perform the post-merge reconciliation
+that marks Slice 9 `Complete`. **Slice 9 must not be marked `Complete` before
+that.**
 
-After that, the next implementation slice is **Slice 9 — Generic Gamepad
-adapter**. It is `Planned`, unstarted, and **owner-gated**: Slice 8 having shipped
-the boundary Slice 9 plugs into is **not** authorization to begin it. Slice 10 is
-likewise `Planned` and unstarted.
-
-Do **not** begin Slice 9 or Slice 10 without explicit owner authorization. No
-Gamepad, WebHID, Bluetooth or Sony-specific runtime exists anywhere in the
-codebase, and none may be added under this reconciliation.
+Do **not** begin **Slice 10 — Sony Buzz! mapping, validation & host setup UX**
+without explicit owner authorization. It is `Planned` and unstarted, and Slice 9
+having shipped the generic adapter it builds on is **not** that authorization. No
+Sony Buzz! detection, vendor/product matching, coloured-button profile, handset
+grouping, controller wizard, WebHID or Bluetooth runtime exists anywhere in the
+codebase, and none may be added.
 
 **Additional response modes are deferred until after the functional MVP** — see
 the owner direction recorded in

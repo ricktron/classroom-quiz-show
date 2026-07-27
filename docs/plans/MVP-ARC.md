@@ -52,7 +52,7 @@ systems.
 | 6   | **Teams & scoring**            | Teams, typed scoring strategy (points first), awards/deductions, partial credit, unrestricted manual correction, audit history, undo. **(Complete.)** | 2, 5       |
 | 7   | **Timers, arming & transitions** | Timer config, a deadline-projected public timer, host arming/disarming, host-controlled undoable round transitions, reduced-motion-safe. The interrupt seam must be typed so buzz-in is a later addition, not a rewrite. **(Complete.)** | 5, 6 |
 | 8   | **Local input contract & keyboard buzz-in** | The device-independent input-adapter boundary + registry, buzz-in domain semantics, one command/event pair, replay-derived queue state, sanitized public projection — with the **keyboard adapter** as its first consumer. **(Complete — delivered without the anticipated adapter *registry* object; a bounded application-only input-source union ships its guarantees instead. See ADR-008 §3.)** | 2, 6, 7 |
-| 9   | **Generic Gamepad adapter**    | Gamepad API adapter behind the slice 8 boundary; connect/disconnect handling, polling isolation, host diagnostics. No model-specific assumptions. | 8 |
+| 9   | **Generic Gamepad adapter**    | Gamepad API adapter behind the slice 8 boundary; connect/disconnect handling, polling isolation, host diagnostics. No model-specific assumptions. **(In review — implemented, open and unmerged. No schema, `PublicState`, protocol, command, event or reducer change. See ADR-009.)** | 8 |
 | 10  | **Sony Buzz! mapping, validation & host setup UX** | Configurable controller mapping, Sony Buzz! validation as the preferred target, host setup/test surface, fallback when no controller is present. | 9 |
 | 11  | **Media contract**             | Typed media model (beyond plain-string prompts), fail-closed on unsupported media, additive on `schemaVersion: 1`. **Must precede any new round type.** | 4, 5 |
 | 12  | **Portable export & round-trip import** | Export a game to the canonical portable document and re-import it losslessly; reproducible game identity; round-trip equality as an acceptance criterion. | 4, 11 |
@@ -592,10 +592,12 @@ implemented**.
 
 ### What remains for Slice 9
 
-Generic Gamepad adapter. Slice 8 shipped the boundary it plugs into. **Slice 9 is
-`Planned`, unstarted, and owner-gated — it must not begin until the owner
-explicitly authorizes it, and Slice 8's contract being ready is not that
-authorization.**
+Nothing: Slice 9 is **implemented and `In review`** (owner-authorized, open and
+unmerged). Its scope record is below, and its rationale is in
+[`../architecture/ADR-009-generic-gamepad-adapter.md`](../architecture/ADR-009-generic-gamepad-adapter.md).
+**Slice 10 is `Planned`, unstarted, and owner-gated — it must not begin until the
+owner explicitly authorizes it, and Slice 9 having shipped the generic adapter is
+not that authorization.**
 
 ## Slice 8 — scope, acceptance, non-goals
 
@@ -782,9 +784,83 @@ changes schema, runtime, UI, storage or hardware support.
   mappings, handset assignment and setup UX are **not** here — they are Slice 10.
   **Recorded, not implemented.**
 - **Impact:** schema no · runtime **yes** · UI **yes** (diagnostics) · storage no
-  · hardware **yes** (generic USB gamepads).
-- **Status:** `Planned` — unstarted.
-- **Owner gate:** authorization to begin.
+  · hardware **yes** (generic USB gamepads). **Confirmed on delivery:** no schema
+  change, no `PublicState` change (wire version stays 6), no sync-envelope change
+  (stays 2), no new command, no new event, no reducer change, and no persistence —
+  the only vocabulary change anywhere is one member added to
+  `LOCAL_INPUT_SOURCE_KINDS`.
+- **Status:** **`In review`** — owner-authorized, implemented on
+  `claude/slice-9-gamepad-adapter-wfiue4` from `main` at `5cc81d4`, **open and
+  unmerged**. Not `Complete`, and it must not be marked so before merge and
+  post-merge reconciliation.
+- **Owner gate:** authorization to begin — **granted**. `OG-1` is reused unchanged
+  as the intake gate; `OG-2` and `OG-3` (implemented in Slice 8) are reused
+  unchanged; `OG-4`'s resolution is extended to simultaneous poll edges without
+  changing it; **`OG-6` remains deferred and is not implemented**.
+
+#### Delivered (Slice 9)
+
+1. **`gamepad` added to the bounded, application-only input-source union**, in the
+   same change as its adapter. Nothing else in the chain moved.
+2. **A browser boundary of one module** (`src/input/gamepadSource.ts`): the only
+   place `navigator.getGamepads()` is called. What crosses is a frozen
+   `{ controllerIndex, pressed[] }` snapshot — no `Gamepad` object, device `id`,
+   `mapping`, `axes`, analog value, `touched`, timestamp or vendor/product id is
+   representable above it.
+3. **An injectable source and an injectable scheduler**, so every unit test uses a
+   fake and none needs a browser, a frame or a physical controller.
+4. **Polling in one host-only lifecycle owner**: registered once, stopped on
+   unmount, never in the reducer, render, sanitizer, replay, command planning or on
+   the display route, and with no global polling service.
+5. **Rising-edge semantics with a baseline rule**: a first sighting emits nothing,
+   a held button never repeats, and enable/disable, mapping changes, capture,
+   connect, disconnect, visibility and focus all RE-PRIME — so a held button
+   requires a release and a fresh press across every one of them.
+6. **Deterministic multi-edge ordering** (ascending controller index, then button
+   index) as a tie-break rule, with the event log's `seq` still the authority and
+   no fairness claimed.
+7. **A generic validated mapping** (controller index + button index + team +
+   logical action) with structured issues, no silent overwrite or repair, and
+   **no default button assignment**.
+8. **Session-local mapping lifetime**: no `localStorage`, IndexedDB, export,
+   game-file field or sync, stated plainly in the host UI.
+9. **Buttons only** — no axes, sticks, analog triggers, motion, vibration or
+   haptics.
+10. **Secondary actions still inert**: assignable, and still terminating at the
+    existing typed `unsupported-action` rejection.
+11. **A bounded host panel**: availability, enable/disable, neutral controller
+    labels and button counts, per-team assignments, capture with cancel, clear one
+    and clear all, conflict messaging, and a sentence for every press that did
+    nothing. No live per-frame button display.
+12. **Keyboard buzzing untouched** and stated as the fallback everywhere.
+
+#### Acceptance criteria (Slice 9)
+
+| Criterion (from the roadmap record) | Evidence |
+| --- | --- |
+| A Gamepad API adapter behind the Slice 8 boundary | `src/input/gamepadSource.ts`, `src/input/gamepadAdapter.ts`; `src/input/gamepadIntegration.test.ts` |
+| Connect/disconnect handling that fails gracefully and never fabricates a buzz | "connect and disconnect" suites in `gamepadAdapter.test.ts` and `useGamepadBuzzInput.test.tsx` |
+| Polling isolated from the reducer and from render | `src/host/useGamepadBuzzInput.ts`; the "poll loop" suite; the display-side e2e instrumentation |
+| Host-private diagnostics | `src/host/GamepadInputHostPanel.tsx` and its component tests |
+| Documented browser limitations | [`ADR-009`](../architecture/ADR-009-generic-gamepad-adapter.md) §Context and §Consequences |
+| Configurable mappings with no model-specific assumption | `src/input/gamepadMapping.ts`; `gamepadMapping.test.ts` |
+| `verify:all` green | Slice 9 local-verification receipt |
+| Adapter unit tests against a FAKE gamepad source | `src/test/gamepadFixtures.ts` + every Slice 9 unit test |
+| A test proving disconnect mid-arming produces no event | "appends no event when a controller disconnects mid-arming" in `gamepadIntegration.test.ts` |
+| e2e coverage of the no-controller fallback path | `tests/e2e/gamepad-input.spec.ts` (4 tests × 3 viewport projects) |
+| No device data in commands, events, private state or `PublicState` | `gamepadIntegration.test.ts` privacy suites; `tests/e2e/gamepad-input.spec.ts` |
+
+#### Explicit non-goals (Slice 9)
+
+No Sony Buzz! detection, PlayStation or Sony naming in runtime UI, vendor/product
+matching, coloured-button profile, handset grouping, controller wizard or
+supported-hardware certification — all Slice 10. No WebHID, USB drivers, Bluetooth
+setup, haptics or vibration. No axes or analog controls. No persistent Gamepad
+mappings. No phone or networked buzzers. No new scoring behaviour and no
+secondary-action gameplay. No multiple-choice response modes, speed scoring,
+response-policy schema or supporting event vocabulary. No media, export/import,
+session persistence, final wager, reporting, themes, authoring, backend, accounts,
+cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
 
 ### Slice 10 — Sony Buzz! mapping, validation & host setup UX
 

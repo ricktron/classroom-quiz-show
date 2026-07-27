@@ -34,6 +34,7 @@ import {
 import { KEYBOARD_IGNORE_MESSAGE } from '../input/keyboardAdapter'
 import { LOCAL_INPUT_TRANSLATION_MESSAGE } from '../input/commandTranslation'
 import { useKeyboardBuzzInput, type KeyboardBuzzOutcome } from './useKeyboardBuzzInput'
+import { responseOpportunityFor } from './responseOpportunity'
 import { systemClock, type Clock } from '../time/clock'
 import './LocalInputHostPanel.css'
 
@@ -134,7 +135,10 @@ export function LocalInputHostPanel({
   const open = stage !== null && stage.stage === 'prompt'
   const tileId = open && stage !== null ? stage.selectedTileId : null
 
-  const target = round !== null && tileId !== null ? { roundId: round.id, tileId } : null
+  // Shared with the Slice 9 controller panel so both local-input surfaces answer
+  // "which response opportunity is live?" from one derivation instead of two
+  // near-identical copies that could drift apart.
+  const target = responseOpportunityFor(game)
 
   useKeyboardBuzzInput({
     enabled,
