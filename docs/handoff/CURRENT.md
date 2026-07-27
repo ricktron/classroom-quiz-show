@@ -1,10 +1,9 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with **Slices 1–6 `Complete` and merged to `main`** (Slice 6,
-teams & scoring, merged via PR #11 at `67180a3`) and **Slice 7 — Timers, arming &
-transitions — `In review`**: owner-authorized, implemented, branch pushed, PR open
-and unmerged. **Slice 8 is unstarted and owner-gated.**
+the repository with **Slices 1–7 all `Complete` and merged to `main`** (Slice 7,
+timers, arming & transitions, merged via PR #14 at `3f9ae1c`). **Slice 8 — Local
+input contract & keyboard buzz-in — is unstarted and owner-gated.**
 
 > **Roadmap amended 2026-07-26, and that amendment is MERGED.** The owner
 > authorized a planning-only amendment,
@@ -72,12 +71,21 @@ and unmerged. **Slice 8 is unstarted and owner-gated.**
   network policy denies `ricktron.github.io`. Post-merge reconciliation recorded
   in
   [`../receipts/2026-07-26-slice-6-post-merge-reconciliation.md`](../receipts/2026-07-26-slice-6-post-merge-reconciliation.md).
-- **Slice 7 (current): `In review`.** Owner-authorized and delivered on
+- **Slice 7 (current): `Complete`.** Owner-authorized and delivered on
   `claude/slice-7-timers-arming-transitions-wd7cmf`, based on `main` at
   `752a3fe0f45fdc1ee687339134023c3811facd91` (the merge commit of PR #13, the
-  roadmap amendment). Local `verify:all` green. **The PR is open and unmerged**;
-  local evidence is in
-  [`../receipts/2026-07-26-slice-7-local-verification.md`](../receipts/2026-07-26-slice-7-local-verification.md).
+  roadmap amendment). Implementation commit `f804430`; final reviewed head
+  `43cc66c5fc2a01cdb46daa1b52b7df08184b0448`. Merged to `main` via
+  **[PR #14](https://github.com/ricktron/classroom-quiz-show/pull/14)** (merge
+  commit `3f9ae1c4c7f9f6e37bac08bf519dbd8ef68af42a`, merged 2026-07-26T23:43:51Z
+  by `ricktron`) with all three PR checks green; the merge commit's second parent
+  is the reviewed head. Post-merge CI on `main` at `3f9ae1c` concluded success for
+  both jobs, and the **GitHub Pages deployment succeeded. Manual live-route
+  verification was not performed** — the sandbox network policy denies
+  `ricktron.github.io`. Local evidence in
+  [`../receipts/2026-07-26-slice-7-local-verification.md`](../receipts/2026-07-26-slice-7-local-verification.md);
+  post-merge reconciliation in
+  [`../receipts/2026-07-27-slice-7-post-merge-reconciliation.md`](../receipts/2026-07-27-slice-7-post-merge-reconciliation.md).
   **Slice 8 is unstarted and owner-gated.**
 - **What Slice 7 adds:** the clock boundary and the response window. An explicit
   `Clock` seam (`src/time/clock.ts`) read only at the dispatch edge and the
@@ -429,16 +437,49 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Next action
 
-**Review the Slice 7 pull request** (timers, arming & transitions). It is open and
-unmerged. Local `verify:all` is green, [`ADR-007`](../architecture/ADR-007-timers-arming-transitions.md)
-records the timing boundary, and the immutable local-verification receipt is in
-place with every pre-existing receipt proved byte-identical.
+**Await explicit owner authorization for Slice 8 — Local input contract &
+keyboard buzz-in**, whose record is in
+[`../plans/MVP-ARC.md`](../plans/MVP-ARC.md). Slice 7 is merged and reconciled;
+nothing is in flight.
 
-After it merges, record the post-merge reconciliation as usual. The next
-implementation slice is **Slice 8 — Local input contract & keyboard buzz-in**,
-whose record is in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md). Its vocabulary
-gates `OG-1`, `OG-2` and `OG-3` are now answered, but the slice is still
-`Planned`, unstarted and **owner-gated**.
+Slice 8's vocabulary gates `OG-1`, `OG-2` and `OG-3` are answered, and the owner
+has additionally given the **colored-button input direction** recorded below — but
+the slice is still `Planned`, unstarted and **owner-gated**. Answering a gate and
+recording a direction are not authorization to implement.
+
+## Owner direction — colored buttons and the local input contract (2026-07-27)
+
+Recorded for Slices 8–10. **Nothing here is implemented, and this direction
+authorizes no work.**
+
+The hardware-independent local input contract must be capable of representing:
+
+- a **primary buzz action**;
+- **secondary logical actions** suitable for coloured controller buttons;
+- **configurable mappings** that are independent of any particular device model.
+
+**The engine must remain button-agnostic.** Logical actions are what cross into
+the command layer; a physical button, its index, its colour and its handset stay
+on the adapter side of the boundary that `ROADMAP-AMENDMENT-001` §5.6 fixes.
+
+**Sony Buzz! controllers are the preferred initial hardware validation target**,
+but Sony-specific detection, button numbering, default colour mappings, handset
+assignment and setup UX **remain deferred to Slice 10**. No hardware has been
+tested in this repository.
+
+Slice allocation is unchanged by this direction:
+
+| Slice | Scope |
+| --- | --- |
+| **8** | The hardware-independent **logical** input contract, and keyboard input as its first consumer. |
+| **9** | The generic **Gamepad** adapter and configurable mappings. |
+| **10** | **Sony Buzz!** detection, validation, a recommended profile, handset assignment, and the host setup UX. |
+
+**A final event vocabulary for secondary actions is deliberately NOT defined
+here.** It is defined only if and when the durable Slice 8 plan requires it —
+`ROADMAP-AMENDMENT-001` §5.1's "no speculative contract without its first
+consumer" rule applies to secondary actions exactly as it applied to the timer's
+interruption seam.
 
 ## Prohibited next actions until Slice 8 is explicitly authorized
 
