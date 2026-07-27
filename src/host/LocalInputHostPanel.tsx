@@ -6,7 +6,6 @@ import { categoryBoardStateFor, responsePhaseFor } from '../state/reducer'
 import { readCategoryBoardDefinition } from '../game/categoryBoard/definition'
 import { findTeamById } from '../game/teams/definition'
 import {
-  ACTIVE_RESPONSE_RESOLUTION_LABEL,
   activeRespondent,
   buzzQueueStatus,
   waitingRespondents,
@@ -461,6 +460,3 @@ const REFUSAL_MESSAGE: Partial<Record<string, string>> = {
   'round-mismatch': 'That press was for a round that is no longer current.',
   'game-already-ended': 'The game has ended.',
 }
-
-/** Re-exported for tests and for the panel's own copy. */
-export { ACTIVE_RESPONSE_RESOLUTION_LABEL }
