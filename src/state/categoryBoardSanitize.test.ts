@@ -343,11 +343,11 @@ describe('the public round guard rejects impossible payloads', () => {
 })
 
 describe('wire version', () => {
-  it('is 5 — bumped again because Slice 7 added the response field', () => {
+  it('is 6 — bumped again because Slice 8 added the buzz projection', () => {
     // Slice 5 took this from 2 → 3 for `round`, Slice 6 3 → 4 for `teams`, and
     // Slice 7 4 → 5 for `response`. An older version is never re-read as a newer
     // one; it is rejected.
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(5)
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(6)
   })
 
   it('rejects an older wire shape instead of reinterpreting it', () => {

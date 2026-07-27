@@ -1,0 +1,109 @@
+/*
+ * Local input & buzz-queue host controls (Slice 8).
+ *
+ * Host-side, private, utilitarian — the projector styling lives in the display
+ * component. It reuses the Slice 1 tokens so a real theme can replace it later.
+ *
+ * Accessibility notes baked into this file:
+ *  - every control is a real <button>, keyboard-reachable in DOM order, using
+ *    the shared global focus ring;
+ *  - a disabled control stays visible and legible rather than disappearing, so
+ *    the set of actions does not jump around under a teacher's cursor mid-lesson;
+ *  - on / off, armed / not armed, active team, waiting queue and every rejection
+ *    reason are all conveyed in TEXT — colour is never the carrier, and the
+ *    capture prompt is a live region rather than a colour change;
+ *  - the summaries are definition lists, so a screen reader reads term/value
+ *    pairs rather than a wall of words;
+ *  - the key list is a real <ul>, so the number of teams is announced;
+ *  - there is no motion at all in this panel. A private control surface has
+ *    nothing to animate, and a flashing "press a key" prompt would be exactly the
+ *    thing the accessibility rules forbid.
+ */
+
+.lih {
+  margin-top: var(--space-3);
+  padding: var(--space-2);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.lih h3 {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+.lih__heading {
+  margin: var(--space-2) 0 var(--space-1);
+  font-size: 0.95rem;
+}
+
+.foundation__tag--slice8 {
+  margin-top: var(--space-1);
+}
+
+.lih__summary {
+  display: grid;
+  grid-template-columns: minmax(7rem, max-content) 1fr;
+  gap: 0.2rem var(--space-2);
+  margin: 0 0 var(--space-2);
+}
+
+.lih__summary dt {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.lih__summary dd {
+  margin: 0;
+}
+
+.lih__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.lih__keys {
+  list-style: none;
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.lih__key-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.lih__key-team {
+  min-width: 8rem;
+  font-weight: 600;
+}
+
+/*
+ * The assigned key is rendered in a monospace box so a single character is still
+ * an obvious "key" rather than a stray letter beside a team name. The border and
+ * the surrounding label carry the meaning; the styling is only legibility.
+ */
+.lih__key-code {
+  min-width: 5rem;
+  padding: 0.1rem var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 4px);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  text-align: center;
+}
+
+.lih__issues {
+  margin: 0 0 var(--space-2);
+  padding-left: 1.2rem;
+  color: var(--color-text-muted);
+}
+
+.lih__hint {
+  margin-bottom: 0;
+}

@@ -1,9 +1,11 @@
 # Status
 
-**Current slice:** Slice 7 — Timers, arming & transitions
-**Slice state:** Complete (merged to `main` via PR #14, merge commit `3f9ae1c`)
-**Next slice:** Slice 8 — Local input contract & keyboard buzz-in (`Planned`,
-unstarted, owner-gated)
+**Current slice:** Slice 8 — Local input contract & keyboard buzz-in
+**Slice state:** In review (branch pushed, pull request **open and unmerged**)
+**Previous slice:** Slice 7 — Timers, arming & transitions (`Complete`, merged to
+`main` via PR #14, merge commit `3f9ae1c`)
+**Next slice:** Slice 9 — Generic Gamepad adapter (`Planned`, unstarted,
+owner-gated — **not started by Slice 8**)
 **Roadmap:** 18 slices, amended 2026-07-26 by
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 (**merged to `main` via PR #13**, merge commit `752a3fe`, 2026-07-26T20:02:13Z)
@@ -76,7 +78,96 @@ unstarted, owner-gated)
 > network policy denies `ricktron.github.io`. Post-merge reconciliation is
 > recorded in
 > [`receipts/2026-07-27-slice-7-post-merge-reconciliation.md`](receipts/2026-07-27-slice-7-post-merge-reconciliation.md).
-> **Slice 8 remains unstarted and owner-gated.**
+> Slice 8 is **In review**: owner-authorized and implemented on
+> `claude/slice-8-local-input-keyboard-thn7bn`, branched from `main` at
+> `004bf9d55d7d7a22b19414e11ffdd050d98fb31f` (the PR #15 merge commit). The pull
+> request is **open and unmerged**, and **no post-merge reconciliation has been
+> performed or claimed**. Local verification is recorded in
+> [`receipts/2026-07-27-slice-8-local-verification.md`](receipts/2026-07-27-slice-8-local-verification.md).
+> **Slices 9 and 10 remain unstarted and owner-gated**, and no Gamepad, WebHID or
+> Sony Buzz! runtime exists anywhere in the codebase.
+
+## Slice 8 work (In review)
+
+The hardware-independent **local input boundary** and keyboard buzz-in. Full
+rationale in
+[`architecture/ADR-008-local-input-keyboard-buzz.md`](architecture/ADR-008-local-input-keyboard-buzz.md);
+local evidence in
+[`receipts/2026-07-27-slice-8-local-verification.md`](receipts/2026-07-27-slice-8-local-verification.md).
+The pull request is **open and unmerged**; nothing about a merged state is claimed.
+
+| Item | State |
+| --- | --- |
+| Layered boundary: raw input → adapter → logical action → command → event → reducer → sanitized state | Implemented |
+| Domain receives no `KeyboardEvent`, key code, device id, vendor/product id or mapping | Implemented |
+| Physical input identity, logical action, team assignment and game command kept separate | Implemented |
+| Bounded logical action vocabulary: `primary-buzz` + four ORDINAL `secondary` slots | Implemented |
+| Secondary actions representable and mappable but **inert** — translation refuses them | Implemented |
+| No colour name, device model, vendor or button index anywhere in the engine (asserted by test) | Implemented |
+| Bounded, application-only input-source union (no plugin framework, no dynamic lookup) | Implemented |
+| `KeyboardEvent.code` (physical position) chosen over `key`, documented and tested | Implemented |
+| Reserved keys (`Tab`/`Enter`/`Space`/`Escape`/`F5`/modifiers) unbindable and unresolvable | Implemented |
+| Key repeat, held keys, IME composition, modifier chords and text entry never buzz | Implemented |
+| A focused `<button>` is NOT text entry (buzzing survives ordinary host clicking) | Implemented |
+| `preventDefault` only for an ACCEPTED buzz; bubble-phase listener; no global shortcut hijack | Implemented |
+| Mapping validation: duplicate keys, reserved keys, unknown teams, duplicate team primaries | Implemented |
+| No silent overwrite, no repair, no drop — structured issues addressed to the binding | Implemented |
+| Safe digit-row defaults, one key per team in authored order | Implemented |
+| Versioned browser-local mapping storage; validated on load; wholesale safe fallback | Implemented |
+| Removed teams pruned; renamed teams keep their key (id is identity) | Implemented |
+| Storage separate from game content, event log, export and Slice 13 persistence | Implemented |
+| Manual arming (`OG-1`) reused as the intake gate; **no second keyboard-arm flag** | Implemented |
+| Disarm stops acceptance immediately; expiry disarms and refuses later presses | Implemented |
+| Full ordered queue (`OG-2`); a team appears at most once per response opportunity | Implemented |
+| Queue order from the event log's `seq`; `occurredAt` is evidence, never authority | Implemented |
+| Explicit active respondent, waiting queue, empty, exhausted and closed states | Implemented |
+| First accepted buzz interrupts via Slice 7's typed seam — one new source member | Implemented |
+| Later buzzes cannot re-interrupt (structural); a rejected buzz never touches the timer | Implemented |
+| Promotion after incorrect / host pass (`OG-3`) as ONE typed command | Implemented |
+| Neither resolution moves a point; no automatic deduction invented | Implemented |
+| Response-opportunity identity `(roundId, tileId)`; stale presses inert | Implemented |
+| Queue cleared by selection, answer reveal, return, round change, reset, game end | Implemented |
+| `PublicState.response.buzz` allow-list DTO (active key + waiting count); wire version 5 → 6 | Implemented |
+| Ordered waiting list, team ids, resolved teams, keys, mappings and adapters never projected | Implemented |
+| Sync envelope unchanged at version 2 (no transport metadata needed) | Implemented |
+| Replay bit-exact; undo restores prior armed state, timer, active team and queue order | Implemented |
+| Host panel: mapping editor, key capture, conflict messaging, queue, incorrect/pass, reasons | Implemented |
+| Projector panel: active team + waiting count, in words, no animation | Implemented |
+| Accessibility: real buttons, polite live regions, no colour-only state, no key while typing | Implemented |
+| Unit, component and browser tests; docs (ADR-008, plan, handoff, receipt) | Implemented |
+| Scoring restricted to the active respondent (`OG-6`) | **Deferred — not implemented** |
+| Gamepad, WebHID, Bluetooth, Sony Buzz!, controller assignment, coloured defaults, setup UX | **Not implemented (Slices 9–10)** |
+
+### Commands / events / public fields (added in Slice 8)
+
+- **Commands (2):** `RECORD_TEAM_BUZZ` (`roundId` + `tileId` + `teamId`) ·
+  `RESOLVE_ACTIVE_RESPONSE` (`roundId` + `tileId` + typed `resolution`).
+- **Events (2, both reversible):** `TEAM_BUZZED` (`tileId`, `teamId`) ·
+  `ACTIVE_RESPONSE_RESOLVED` (`tileId`, `teamId`, `resolution`).
+- **Resolutions:** `incorrect` · `passed`. There is deliberately no `correct` —
+  a correct answer ends the opportunity through the existing answer reveal.
+- **Interruption sources:** `host` · **`team-buzz`** (new). Unrecognized values
+  still fail closed at the command boundary and again on event application.
+- **Logical actions:** `primary-buzz` · `secondary` with slots `secondary1`…
+  `secondary4` (representable, mappable, **inert**).
+- **Input sources:** `keyboard` (the only member; Slice 9 adds `gamepad` together
+  with its adapter).
+- **New rejection reasons:** `response-phase-not-armed`, `team-already-buzzed`,
+  `no-active-respondent`. Stale opportunities reuse `tile-mismatch`.
+- **`PublicState` (added):** `response.buzz: PublicBuzzState` — required, not
+  optional. Wire version **5 → 6**; version 5 is rejected, never reinterpreted.
+- **Sync envelope:** **unchanged** at `SYNC_SCHEMA_VERSION` 2.
+
+### Owner gates after Slice 8
+
+| Gate | Status |
+| --- | --- |
+| `OG-1` manual arming | Implemented (Slice 7), reused as the intake gate |
+| `OG-2` full ordered queue | **Implemented by Slice 8** |
+| `OG-3` promotion after incorrect / pass | **Implemented by Slice 8** |
+| `OG-4` tie handling | **Resolved** — sequence is the deterministic tiebreaker; stamps are evidence; no adjudication UI |
+| `OG-5` queue lifetime | **Resolved** — the queue belongs to one clue's response opportunity and never outlives it |
+| `OG-6` scoring restricted to the active respondent | **Deferred and not implemented** — scoring is unchanged for every team |
 
 ## Slice 7 work (Complete)
 
@@ -396,7 +487,21 @@ Neutral state/event/sync foundation — no gameplay. Full rationale in
 
 ## Verification state
 
-Local `verify:all` passed on the Slice 7 branch: lint, typecheck, unit tests
+Local `verify:all` passed on the Slice 8 branch: lint, typecheck, unit tests
+(**1,184 passed, 51 files**), production build, and Playwright e2e (**187 passed,
+2 skipped** — both skips are the one pre-existing desktop-only offline-shell
+test; nothing was skipped because it failed). `git diff --check` is clean.
+Details in
+[`receipts/2026-07-27-slice-8-local-verification.md`](receipts/2026-07-27-slice-8-local-verification.md).
+
+- Environment override: `PLAYWRIGHT_CHROMIUM_PATH` (the sandbox provides Chromium
+  build 1194 while Playwright 1.56 expects 1228), supplied **through the
+  environment only** — no machine-specific path is committed.
+- **PR CI, post-merge CI and the Pages deployment for Slice 8 are NOT claimed.**
+  The pull request is open and unmerged, and no CI run has been observed for it at
+  the time of writing. **No live-route verification was performed.**
+
+Earlier, local `verify:all` passed on the Slice 7 branch: lint, typecheck, unit tests
 (**947 passed, 42 files**), production build, and Playwright e2e (**175 passed,
 2 skipped** — both skips are the one desktop-only offline-shell test).
 `git diff --check` is clean. Details in

@@ -24,6 +24,7 @@ import {
   RESPONSE_TIMER_STATUSES,
   type ResponseTimerState,
 } from './responsePhase'
+import { EMPTY_BUZZ_QUEUE } from './buzzQueue'
 import { createGameDefinition } from '../gameDefinition'
 import { placeholderRound } from '../roundDefinition'
 import { describeRemaining, formatRemaining, remainingSeconds } from '../../time/duration'
@@ -173,10 +174,27 @@ describe('the response-phase model', () => {
   })
 
   it('starts disarmed with no timer', () => {
-    expect(INITIAL_RESPONSE_PHASE_STATE).toEqual({ armed: false, timer: { status: 'idle' } })
+    expect(INITIAL_RESPONSE_PHASE_STATE).toEqual({
+      armed: false,
+      timer: { status: 'idle' },
+      // Slice 8: a fresh phase also has an empty queue.
+      queue: { order: [], resolvedCount: 0 },
+    })
     expect(isInitialResponsePhase(INITIAL_RESPONSE_PHASE_STATE)).toBe(true)
-    expect(isInitialResponsePhase({ armed: true, timer: { status: 'idle' } })).toBe(false)
-    expect(isInitialResponsePhase({ armed: false, timer: running })).toBe(false)
+    expect(
+      isInitialResponsePhase({ armed: true, timer: { status: 'idle' }, queue: EMPTY_BUZZ_QUEUE }),
+    ).toBe(false)
+    expect(
+      isInitialResponsePhase({ armed: false, timer: running, queue: EMPTY_BUZZ_QUEUE }),
+    ).toBe(false)
+    // A phase holding a queue is not initial even when disarmed and un-timed.
+    expect(
+      isInitialResponsePhase({
+        armed: false,
+        timer: { status: 'idle' },
+        queue: { order: ['t-red'], resolvedCount: 0 },
+      }),
+    ).toBe(false)
   })
 
   it('knows which states are still live', () => {

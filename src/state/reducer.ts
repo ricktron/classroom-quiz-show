@@ -31,11 +31,20 @@ import {
 } from '../game/teams/scoring'
 import {
   INITIAL_RESPONSE_PHASE_STATE,
+  TEAM_BUZZ_INTERRUPTION,
   isInitialResponsePhase,
   isResponseInterruptionSource,
   type ResponsePhaseState,
   type ResponseTimerState,
 } from '../game/timing/responsePhase'
+import {
+  activeRespondent,
+  appendBuzz,
+  hasTeamBuzzed,
+  isActiveResponseResolution,
+  promoteNext,
+  type ActiveResponseResolution,
+} from '../game/timing/buzzQueue'
 import { EXPIRY_TOLERANCE_MS } from '../game/timing/limits'
 import { isResponseSeconds, responseDurationMs } from '../game/timing/timerConfig'
 import { isInstant } from '../time/clock'
@@ -90,6 +99,10 @@ export type RejectionReason =
   | 'invalid-timer-duration'
   | 'stale-timer-expiration'
   | 'premature-timer-expiration'
+  // Buzz-queue rejections (Slice 8).
+  | 'response-phase-not-armed'
+  | 'team-already-buzzed'
+  | 'no-active-respondent'
 
 /**
  * Dependencies the planner needs that live OUTSIDE the event history — currently
@@ -379,14 +392,45 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
           deadline: current.deadline,
         }
         // Expiry closes the window, so it also disarms: nothing may interrupt a
-        // window that has already ended. It moves no points.
-        return { armed: false, timer }
+        // window that has already ended, and (since Slice 8) no further buzz is
+        // accepted either — disarming IS the intake gate. It moves no points.
+        // The queue is KEPT: who buzzed before the clock ran out is still a fact,
+        // and the host may still resolve the active team's turn.
+        return { armed: false, timer, queue: phase.queue }
       })
 
     case 'RESPONSE_PHASE_RESET':
       return withResponsePhase(state, event.type, event.roundId, (phase) =>
         isInitialResponsePhase(phase) ? null : INITIAL_RESPONSE_PHASE_STATE,
       )
+
+    case 'TEAM_BUZZED':
+      return withResponsePhase(state, event.type, event.roundId, (phase) => {
+        // Arming is re-checked on APPLICATION as well as on planning, so a stored
+        // log that buzzes a disarmed clue degrades to "not applicable" rather
+        // than fabricating a respondent nobody let in.
+        if (!phase.armed) return null
+        const queue = appendBuzz(phase.queue, event.teamId)
+        // `null` means the team is already in the queue: the duplicate rule is
+        // structural in `appendBuzz`, so it holds on replay of any log at all.
+        if (queue === null) return null
+        return { ...phase, queue }
+      })
+
+    case 'ACTIVE_RESPONSE_RESOLVED':
+      return withResponsePhase(state, event.type, event.roundId, (phase) => {
+        // The event names the team whose turn ended, so a log that disagrees with
+        // the queue it is describing is not applied — that is a corrupt history,
+        // and advancing the pointer anyway would promote the wrong team.
+        if (activeRespondent(phase.queue) !== event.teamId) return null
+        if (!isActiveResponseResolution(event.resolution)) return null
+        const queue = promoteNext(phase.queue)
+        if (queue === null) return null
+        // Promotion moves the pointer and NOTHING else: arming is untouched (so a
+        // still-armed clue keeps taking buzzes), the timer is untouched, and no
+        // score moves.
+        return { ...phase, queue }
+      })
 
     // Undo markers change nothing directly; `replay` neutralizes their targets.
     case 'EVENT_UNDONE':
@@ -1222,6 +1266,119 @@ export function planCommand(
       }
     }
 
+    case 'RECORD_TEAM_BUZZ': {
+      const context = resolveResponsePhase(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      // Every gate below fails CLOSED and appends nothing, so a press that should
+      // not count is inert rather than partially applied.
+      if (!namesLiveOpportunity(command.tileId, context.tileId)) {
+        return { status: 'rejected', reason: 'tile-mismatch' }
+      }
+      // Arming is the intake gate (OG-1 + OG-2): while the clue is armed the
+      // queue keeps taking new teams, and disarming stops acceptance immediately.
+      if (!context.phase.armed) {
+        return { status: 'rejected', reason: 'response-phase-not-armed' }
+      }
+      if (context.game.definition.teams.length === 0) {
+        return { status: 'rejected', reason: 'no-teams-configured' }
+      }
+      if (typeof command.teamId !== 'string' || command.teamId.length === 0) {
+        return { status: 'rejected', reason: 'malformed-command' }
+      }
+      const team = findTeamById(context.game.definition.teams, command.teamId)
+      if (team === null) return { status: 'rejected', reason: 'unknown-team' }
+      // One entry per team per response opportunity: a team that is already
+      // active, already waiting, or has already had its turn cannot buzz again.
+      if (hasTeamBuzzed(context.phase.queue, team.id)) {
+        return { status: 'rejected', reason: 'team-already-buzzed' }
+      }
+      if (!isInstant(at)) return { status: 'rejected', reason: 'malformed-command' }
+
+      const buzz: SessionEvent = {
+        id,
+        type: 'TEAM_BUZZED',
+        seq,
+        occurredAt: at,
+        reversible: true,
+        roundId: context.round.id,
+        tileId: context.tileId,
+        teamId: team.id,
+      }
+
+      // The FIRST accepted buzz of a live countdown stops the clock, and it does
+      // so through Slice 7's typed interruption seam rather than through anything
+      // buzz-shaped: the same event, the same reducer transition, one new source
+      // member. A later buzz cannot interrupt again because the timer is no
+      // longer running or paused — that is structural, not a suppression rule.
+      const timer = context.phase.timer
+      if (timer.status !== 'running' && timer.status !== 'paused') {
+        return { status: 'accepted', events: [buzz] }
+      }
+      const remainingMs =
+        timer.status === 'running'
+          ? boundedRemaining(timer.deadline - at, timer.durationMs)
+          : timer.remainingMs
+      return {
+        status: 'accepted',
+        events: [
+          buzz,
+          {
+            // The pair is appended together and reads in causal order: the team
+            // buzzed, and therefore the clock stopped. Undo is still latest-only
+            // (ADR-002), so it peels the consequence off first and the buzz
+            // second — see ADR-008 "Replay and undo".
+            id: `evt-${seq + 1}`,
+            type: 'RESPONSE_TIMER_INTERRUPTED',
+            seq: seq + 1,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            timerId: timer.timerId,
+            source: TEAM_BUZZ_INTERRUPTION,
+            remainingMs,
+          },
+        ],
+      }
+    }
+
+    case 'RESOLVE_ACTIVE_RESPONSE': {
+      const context = resolveResponsePhase(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      if (!namesLiveOpportunity(command.tileId, context.tileId)) {
+        return { status: 'rejected', reason: 'tile-mismatch' }
+      }
+      if (!isActiveResponseResolution(command.resolution)) {
+        return { status: 'rejected', reason: 'malformed-command' }
+      }
+      // Nothing to promote from: an empty queue and an exhausted one both land
+      // here, and both are honest "there is no active respondent" rejections
+      // rather than a silent no-op that pads the log.
+      const active = activeRespondent(context.phase.queue)
+      if (active === null) return { status: 'rejected', reason: 'no-active-respondent' }
+      // Rebuilt rather than aliased, so the appended event cannot reference a
+      // caller object that is mutated later (the `ScoreSource` rule).
+      const resolution: ActiveResponseResolution = { kind: command.resolution.kind }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'ACTIVE_RESPONSE_RESOLVED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            tileId: context.tileId,
+            // Taken from the QUEUE, not from the command: the log records which
+            // team actually had the turn, so it can never name a team the host
+            // merely believed was active.
+            teamId: active,
+            resolution,
+          },
+        ],
+      }
+    }
+
     default:
       return { status: 'rejected', reason: 'malformed-command' }
   }
@@ -1277,6 +1434,13 @@ type ResponsePhaseContext =
       readonly game: PrivateGameState
       readonly round: RoundDefinition
       readonly phase: ResponsePhaseState
+      /**
+       * The tile whose prompt is live — the identity of this response
+       * OPPORTUNITY (Slice 8). A buzz naming a different tile is stale and is
+       * rejected, which is how a press that lands after the host moved on cannot
+       * affect the next clue.
+       */
+      readonly tileId: string
     }
   | { readonly reason: RejectionReason }
 
@@ -1302,14 +1466,32 @@ type ResponsePhaseContext =
 function resolveResponsePhase(state: PrivateState, roundId: unknown): ResponsePhaseContext {
   const context = resolveCategoryBoard(state, roundId)
   if ('reason' in context) return { reason: context.reason }
-  if (context.boardState.progress.stage !== 'prompt') {
+  const progress = context.boardState.progress
+  if (progress.stage !== 'prompt') {
     return { reason: 'invalid-board-stage' }
   }
   // `resolveCategoryBoard` already proved both, but the check is repeated rather
   // than asserted so the types stay honest with no non-null escape hatch.
   const game = state.session?.game
   if (!game) return { reason: 'game-not-initialized' }
-  return { game, round: context.round, phase: responsePhaseFor(game, context.round.id) }
+  return {
+    game,
+    round: context.round,
+    phase: responsePhaseFor(game, context.round.id),
+    tileId: progress.selectedTileId,
+  }
+}
+
+/**
+ * Does this command name the response opportunity that is actually live?
+ *
+ * The (round, tile) pair is the response-opportunity identity (Slice 8). It reuses
+ * identifiers that already exist rather than inventing a new one, and it is the
+ * same shape of defence the timer uses with `timerId` + `deadline` (ADR-007 §6):
+ * a command that names the previous clue appends nothing at all.
+ */
+function namesLiveOpportunity(tileId: unknown, liveTileId: string): boolean {
+  return typeof tileId === 'string' && tileId === liveTileId
 }
 
 export type { CommandType }

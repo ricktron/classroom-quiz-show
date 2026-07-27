@@ -7,11 +7,14 @@
  * append-only event log; nothing here is authored content and nothing here is
  * cached. It holds two facts:
  *
- *  - `armed` — whether an interrupting input would be accepted. Today nothing can
- *    interrupt except the host, because no input adapter exists; arming is
- *    nonetheless first-class durable state so that a later slice adds a *source*
- *    rather than a state machine.
+ *  - `armed` — whether an interrupting input would be accepted. Slice 7 built
+ *    this before any input existed so that Slice 8 would add a *source* rather
+ *    than a state machine; that is exactly what happened. Arming is still manual
+ *    and host-controlled (OG-1), and it is now also the INTAKE GATE for the buzz
+ *    queue: a press while disarmed appends nothing.
  *  - `timer` — the countdown, as a discriminated union of durable FACTS.
+ *  - `queue` — the ordered buzz queue for this response opportunity (Slice 8,
+ *    OG-2/OG-3). See `buzzQueue.ts`.
  *
  * ## Durable facts, derived countdown
  *
@@ -31,12 +34,15 @@
  *
  * ## What is deliberately NOT here
  *
- * No team, no queue, no queue position, no device, no button, no input adapter
- * and no buzz event. Slice 7 builds the seam an interrupting input will later
- * pass through; it does not build the input. See "Future compatibility" below.
+ * No device, no button, no key code, no mapping and no input adapter. Slice 8
+ * added the queue — a GAME fact about which teams claimed the clue and in what
+ * order — and deliberately nothing about the hardware that produced it. Physical
+ * input identity stays on the adapter side of the `ROADMAP-AMENDMENT-001` §5.6
+ * boundary, in `src/input/`.
  */
 
 import { clampDuration, remainingSeconds } from '../../time/duration'
+import { EMPTY_BUZZ_QUEUE, isEmptyBuzzQueue, type BuzzQueueState } from './buzzQueue'
 
 /**
  * WHY a timed response window stopped early — the typed interruption seam
@@ -47,24 +53,42 @@ import { clampDuration, remainingSeconds } from '../../time/duration'
  * slice must be able to add a cause without changing the event vocabulary or
  * re-cutting the seam.
  *
- * Slice 7 implements the only source that exists today — the host. A future
- * `{ kind: 'team-buzz', … }` member is an addition here plus its own resolution
- * rule; every event, reducer transition and public projection below already
- * treats "the window was interrupted" as a first-class outcome that does NOT
- * necessarily end the clue.
+ * Slice 7 implemented the only source that existed then — the host — and
+ * predicted that `{ kind: 'team-buzz' }` would be an ADDITION here rather than a
+ * rewrite. **Slice 8 is that addition, and it cost exactly one member:** no event
+ * type changed, no reducer transition changed, no public field changed, and the
+ * seam was not re-cut. That is the property ADR-007 §5 was built for.
+ *
+ * The source is deliberately NOT projected (ADR-007 §11): the class sees that a
+ * window stopped, and learns who is answering from the buzz queue projection
+ * instead — one public fact, from one place.
  *
  * Unrecognized values fail closed at the command boundary
  * ({@link isResponseInterruptionSource}), so an arbitrary string can never reach
  * a durable event.
  */
-export const RESPONSE_INTERRUPTION_KINDS = ['host'] as const
+export const RESPONSE_INTERRUPTION_KINDS = ['host', 'team-buzz'] as const
 
 export type ResponseInterruptionKind = (typeof RESPONSE_INTERRUPTION_KINDS)[number]
 
-export type ResponseInterruptionSource = {
-  /** `host` — the teacher stopped the response window from the host controls. */
-  readonly kind: 'host'
-}
+export type ResponseInterruptionSource =
+  | {
+      /** `host` — the teacher stopped the response window from the host controls. */
+      readonly kind: 'host'
+    }
+  | {
+      /**
+       * `team-buzz` — the FIRST accepted buzz of an armed response opportunity
+       * stopped the clock (Slice 8).
+       *
+       * It names no team, no device and no key: which team buzzed is recorded by
+       * the `TEAM_BUZZED` event beside it, and duplicating it here would create
+       * two sources of truth for the same fact. Subsequent buzzes do not
+       * interrupt again — the timer is already interrupted, so the transition is
+       * structurally unavailable rather than merely suppressed.
+       */
+      readonly kind: 'team-buzz'
+    }
 
 const RESPONSE_INTERRUPTION_KIND_SET: ReadonlySet<string> = new Set(RESPONSE_INTERRUPTION_KINDS)
 
@@ -77,12 +101,18 @@ export function isResponseInterruptionSource(
   return typeof v.kind === 'string' && RESPONSE_INTERRUPTION_KIND_SET.has(v.kind)
 }
 
-/** The one interruption source Slice 7 can produce. */
+/** The teacher stopped the window from the host controls. */
 export const HOST_INTERRUPTION: ResponseInterruptionSource = Object.freeze({ kind: 'host' })
+
+/** The first accepted buzz stopped the window (Slice 8). */
+export const TEAM_BUZZ_INTERRUPTION: ResponseInterruptionSource = Object.freeze({
+  kind: 'team-buzz',
+})
 
 /** Host-facing label for an interruption source. Host-only copy — never projected. */
 export const RESPONSE_INTERRUPTION_LABEL: Readonly<Record<ResponseInterruptionKind, string>> = {
   host: 'stopped by the host',
+  'team-buzz': 'stopped by a buzz',
 }
 
 /** Every timer status, as a bounded list. */
@@ -146,11 +176,26 @@ export type ResponseTimerState =
       readonly source: ResponseInterruptionSource
     }
 
-/** Arming plus the timer: the complete response phase for one clue. */
+/** Arming, the timer and the queue: the complete response phase for one clue. */
 export interface ResponsePhaseState {
-  /** Whether an interrupting input would be accepted. Host-controlled (OG-1). */
+  /**
+   * Whether an interrupting input would be accepted. Host-controlled (OG-1), and
+   * since Slice 8 also the intake gate for {@link ResponsePhaseState.queue}: a
+   * buzz while disarmed is rejected and appends nothing.
+   */
   readonly armed: boolean
   readonly timer: ResponseTimerState
+  /**
+   * The ordered buzz queue for THIS response opportunity (Slice 8).
+   *
+   * It lives inside the phase rather than beside it so that every rule the phase
+   * already has applies to it for free: the queue is cleared by exactly the
+   * transitions that clear the phase (a new tile, the answer reveal, a return to
+   * the board, a round change, a reset, the game ending — ADR-007 §8), it is
+   * derived by replay, and it undoes exactly. A queue can therefore never outlive
+   * the clue it belongs to.
+   */
+  readonly queue: BuzzQueueState
 }
 
 /** A clue that has not been armed and has no timer. */
@@ -159,14 +204,19 @@ export const IDLE_RESPONSE_TIMER: ResponseTimerState = Object.freeze({ status: '
 export const INITIAL_RESPONSE_PHASE_STATE: ResponsePhaseState = Object.freeze({
   armed: false,
   timer: IDLE_RESPONSE_TIMER,
+  queue: EMPTY_BUZZ_QUEUE,
 })
 
 /**
  * Is this phase in its initial state? Used to decide whether there is anything to
  * reset and whether there is anything worth projecting to the display.
+ *
+ * A phase holding a queue is NOT initial even if it was since disarmed and its
+ * clock never ran — somebody buzzed, and that is a fact worth showing and worth
+ * being able to reset.
  */
 export function isInitialResponsePhase(phase: ResponsePhaseState): boolean {
-  return !phase.armed && phase.timer.status === 'idle'
+  return !phase.armed && phase.timer.status === 'idle' && isEmptyBuzzQueue(phase.queue)
 }
 
 /** Does this timer state still describe a live countdown (running or paused)? */

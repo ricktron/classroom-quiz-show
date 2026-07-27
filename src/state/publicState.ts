@@ -18,12 +18,20 @@
 /**
  * Bump when the PublicState wire shape changes incompatibly. Slice 3 added the
  * `game` field (1 → 2); Slice 5 added the `round` field (2 → 3); Slice 6 added
- * the `teams` field (3 → 4); Slice 7 adds the `response` field (4 → 5). A display
- * expecting an older shape fails closed on the version mismatch — an old wire
- * shape is never reinterpreted, guessed at, or upgraded, and version 4 is never
- * re-read as though it were version 5.
+ * the `teams` field (3 → 4); Slice 7 added the `response` field (4 → 5); Slice 8
+ * adds the required `buzz` field INSIDE `response` (5 → 6). A display expecting
+ * an older shape fails closed on the version mismatch — an old wire shape is
+ * never reinterpreted, guessed at, or upgraded, and version 5 is never re-read as
+ * though it were version 6.
+ *
+ * The Slice 8 bump is deliberate rather than avoidable. `buzz` could have been
+ * made optional so a version-5 display still decoded the envelope, but that
+ * display would then silently show a running timer and no indication that a team
+ * had claimed the clue — a projector that is wrong without looking broken. That
+ * is exactly the implicit compatibility guessing ADR-004 forbids and ADR-007 §12
+ * rejected for `sentAt`. The field is required and the version moves.
  */
-export const PUBLIC_STATE_SCHEMA_VERSION = 5 as const
+export const PUBLIC_STATE_SCHEMA_VERSION = 6 as const
 
 /**
  * Coarse, public-safe lifecycle phase. This is intentionally NOT the private
@@ -269,11 +277,88 @@ export function isPublicTeamsState(value: unknown): value is PublicTeamsState | 
  * ## What it deliberately never carries
  *
  * The internal `timerId`, the interruption SOURCE, which host controls exist, the
- * authored timer block, the round id, the private phase map, or anything about a
- * future buzzer: no device, no mapping, no team, no queue, no raw input evidence.
- * "Stopped" is all a class needs to know; *who* stopped it is host knowledge
- * today and becomes public only when a slice deliberately makes it so.
+ * authored timer block, the round id, the private phase map, and — added in Slice
+ * 8 — every trace of the input that produced a buzz: no key code, no mapping, no
+ * device, no adapter name, no diagnostics. "Stopped" is all a class needs to know
+ * about the clock; who is answering arrives through {@link PublicBuzzState}
+ * instead, deliberately and separately.
  */
+
+/**
+ * ── Buzz-queue public DTO (Slice 8) ──────────────────────────────────────────
+ *
+ * **Who is answering IS public** — that is the whole point of a buzzer in a
+ * classroom, and a class that cannot see it will just shout. So the active
+ * respondent is projected.
+ *
+ * **The full waiting order is deliberately NOT public.** The projector carries the
+ * active team and a COUNT of teams waiting; the host panel carries the full
+ * ordered queue. Three reasons, and the decision is recorded rather than assumed:
+ *
+ * 1. *Smallest useful surface.* The class needs to know who has the floor. Naming
+ *    everyone who was a fraction slower adds no classroom value.
+ * 2. *It is a leaderboard by another name.* A public ranked list of who reacted
+ *    fastest is precisely the reaction-time claim this project refuses to make
+ *    (`ROADMAP-AMENDMENT-001` §5.7) — and the count still tells a class that
+ *    others are waiting, which is the useful part.
+ * 3. *Projector legibility.* One name plus "2 waiting" stays readable from the
+ *    back of a room; a five-row ordered list under a live clue does not.
+ *
+ * The active team is named by its POSITIONAL key (`t0`, `t1`, …), the same key
+ * {@link PublicTeam} already carries, so the display looks the name up from the
+ * scoreboard it already has. The authored team id never travels, and the name is
+ * never duplicated onto a second field that could drift from the first.
+ */
+
+/**
+ * The projector-visible buzz state, discriminated by status.
+ *
+ *  - `none`      — nobody has buzzed for this clue yet.
+ *  - `active`    — a team has the floor, with a count of teams still waiting.
+ *  - `exhausted` — every team that buzzed has had its turn, and none is left.
+ *
+ * `exhausted` is a distinct member rather than "active with nobody active",
+ * because a class seeing "no one is answering" after three teams tried is in a
+ * completely different situation from one where nobody has pressed anything, and
+ * a projector must not make the two look identical.
+ */
+export type PublicBuzzState =
+  | { readonly status: 'none' }
+  | {
+      readonly status: 'active'
+      /** Positional key of the team answering — matches {@link PublicTeam.key}. */
+      readonly activeTeamKey: string
+      /** How many teams are queued behind it. Never a list, never an order. */
+      readonly waitingCount: number
+    }
+  | { readonly status: 'exhausted' }
+
+/** Wire-level bound on the waiting count, mirroring `MAX_TEAMS`. A test asserts they match. */
+export const PUBLIC_MAX_WAITING_COUNT = 8
+
+/** Wire-level grammar for a positional team key. Deliberately not the authored id. */
+export const PUBLIC_TEAM_KEY_PATTERN = /^t[0-9]{1,2}$/
+
+function isPublicBuzzState(value: unknown): value is PublicBuzzState {
+  if (typeof value !== 'object' || value === null) return false
+  const v = value as Record<string, unknown>
+  switch (v.status) {
+    case 'none':
+    case 'exhausted':
+      return v.activeTeamKey === undefined && v.waitingCount === undefined
+    case 'active':
+      return (
+        typeof v.activeTeamKey === 'string' &&
+        PUBLIC_TEAM_KEY_PATTERN.test(v.activeTeamKey) &&
+        typeof v.waitingCount === 'number' &&
+        Number.isInteger(v.waitingCount) &&
+        v.waitingCount >= 0 &&
+        v.waitingCount <= PUBLIC_MAX_WAITING_COUNT
+      )
+    default:
+      return false
+  }
+}
 
 /** The projector-visible timer, discriminated by status. */
 export type PublicResponseTimer =
@@ -293,11 +378,16 @@ export type PublicResponseTimer =
       readonly remainingMs: number
     }
 
-/** The projector-visible response phase: the armed light plus the timer. */
+/** The projector-visible response phase: the armed light, the timer and the queue. */
 export interface PublicResponseState {
   /** Whether the clue is armed. Rendered as words, never as colour alone. */
   readonly armed: boolean
   readonly timer: PublicResponseTimer
+  /**
+   * Who has the floor (Slice 8). Required, not optional — see the version note on
+   * {@link PUBLIC_STATE_SCHEMA_VERSION}.
+   */
+  readonly buzz: PublicBuzzState
 }
 
 /**
@@ -354,6 +444,7 @@ export function isPublicResponseState(value: unknown): value is PublicResponseSt
   const v = value as Record<string, unknown>
   if (typeof v.armed !== 'boolean') return false
   if (!isPublicResponseTimer(v.timer)) return false
+  if (!isPublicBuzzState(v.buzz)) return false
   const timer = v.timer as Record<string, unknown>
   // Pairing checks: no field may be present that the status does not define.
   if (timer.status === 'running' && timer.remainingMs !== undefined) return false

@@ -206,6 +206,48 @@ input:
   whole seconds) that is additive on `schemaVersion: 1` — every existing game file
   is still valid and gets the documented 30-second default.
 
+**Slice 8 — local input contract & keyboard buzz-in. In review** — implemented on
+`claude/slice-8-local-input-keyboard-thn7bn`, with the pull request **open and
+unmerged** (see [`docs/STATUS.md`](docs/STATUS.md), the local-verification receipt
+[`docs/receipts/2026-07-27-slice-8-local-verification.md`](docs/receipts/2026-07-27-slice-8-local-verification.md),
+and [`docs/architecture/ADR-008-local-input-keyboard-buzz.md`](docs/architecture/ADR-008-local-input-keyboard-buzz.md)).
+Slice 8 gives teams a way to claim a clue, through a boundary that is deliberately
+hardware-shaped rather than keyboard-shaped:
+
+- **A layered, device-independent input boundary.** Raw browser input → a local
+  input adapter → a **logical action** → a validated command → an append-only
+  event → the reducer → sanitized public state. The domain never receives a
+  `KeyboardEvent`, a key code, a device identifier or a mapping table, and it
+  cannot: none of them is expressible in the value that crosses.
+- **A bounded logical action vocabulary** — `primary-buzz` plus four **ordinal**
+  `secondary` slots for future controller buttons. Secondary actions are
+  representable and mappable but **completely inert**: translation refuses them,
+  so no secondary action changes game state in this slice. No colour name, device
+  model or button index appears anywhere in the engine.
+- **Configurable keyboard mappings**, bound to a **physical key position**
+  (`KeyboardEvent.code`) so a mapping survives a different layout and a held
+  Shift. Conflicts, reserved keys, unknown teams and duplicates are refused with
+  structured messages — nothing is repaired, dropped or silently overwritten.
+- **A full ordered buzz queue** (owner decision `OG-2`): the first accepted buzz
+  becomes the **active respondent**, later buzzes queue behind it in order, and a
+  team may appear at most once per clue. Order is the event log's order — never a
+  clock — so identical arrival stamps are not an unresolved tie.
+- **Promotion after an incorrect response or a host pass** (`OG-3`), as one typed
+  command. Neither moves a point: awarding and deducting stay separate, deliberate
+  teacher actions, for every team (`OG-6` stays deferred).
+- **The first buzz stops the clock through Slice 7's typed seam** — one new source
+  member, no new event type, no new timer state. Later buzzes cannot interrupt
+  again, and a rejected buzz never touches the timer.
+- **Manual arming is the intake gate.** There is no separate keyboard-arm flag and
+  still exactly one arming control; disarming stops acceptance immediately, and
+  every transition that closes a clue closes its queue.
+- **The projector sees who is answering, and a count** (`PublicState.response.buzz`,
+  wire version 5 → 6) — never the ordered waiting list, a key, a mapping, a device
+  or the interruption source.
+- **Buzz keys are host-device settings**, stored in one versioned browser-local
+  entry, validated on load and falling back safely. They are not game content, not
+  session history, and **not the start of Slice 13 persistence**.
+
 The Slice 1 foundation is unchanged beneath it:
 
 - React + TypeScript + Vite app shell
@@ -218,13 +260,15 @@ The Slice 1 foundation is unchanged beneath it:
 - Lint, typecheck, unit/component tests (Vitest), and browser tests (Playwright)
 - Architecture and governance documentation
 
-There is **one playable round type**; it scores, and it can now be timed. There
-are still no buzzers of any kind, no wagers, media, themes, or durable
-persistence, and importing is still limited to pasting canonical JSON (no file
+There is **one playable round type**; it scores, it can be timed, and teams can now
+buzz in on it **from the host keyboard only**. There is no Gamepad, WebHID,
+Bluetooth or Sony Buzz! support of any kind (Slices 9 and 10), no networked or
+student-device buzzing, and no wagers, media, themes, or durable session
+persistence; importing is still limited to pasting canonical JSON (no file
 picker, spreadsheet, or remote import). The host "Foundation / testing controls"
 and the import harness remain diagnostics that prove the state core, the
 game/round model and the ingestion boundary — the category-board, teams &
-scoring, and response-window panels are the game controls. Those other systems
+scoring, response-window and buzz-in panels are the game controls. Those other systems
 arrive in later slices. See [`docs/STATUS.md`](docs/STATUS.md) and
 [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md).
 

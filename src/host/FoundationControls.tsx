@@ -6,6 +6,7 @@ import { GameImportPanel } from './GameImportPanel'
 import { CategoryBoardHostPanel } from './CategoryBoardHostPanel'
 import { TeamScoringPanel } from './TeamScoringPanel'
 import { ResponseTimerHostPanel } from './ResponseTimerHostPanel'
+import { LocalInputHostPanel } from './LocalInputHostPanel'
 import { useResponseTimerExpiry } from './useResponseTimerExpiry'
 import { systemClock, type Clock } from '../time/clock'
 import './FoundationControls.css'
@@ -277,6 +278,14 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
         the board panel and the scoring panel apart.
       */}
       {game && <ResponseTimerHostPanel dispatch={dispatch} game={game} clock={clock} />}
+
+      {/*
+        Local input & the buzz queue (Slice 8). A fourth bounded panel: it
+        configures keyboard input and runs the queue, and — like its siblings — it
+        reveals nothing, times nothing and scores nothing. Arming stays in the
+        timer panel above, so the application has exactly one arming control.
+      */}
+      {game && <LocalInputHostPanel dispatch={dispatch} game={game} clock={clock} />}
 
       {/*
         Teams & scoring (Slice 6). It sits BESIDE the board panel, not inside it,

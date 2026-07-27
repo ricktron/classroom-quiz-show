@@ -1,0 +1,57 @@
+/*
+ * Projector buzz queue (Slice 8). Read from across a classroom at 1280×720 and
+ * 1920×1080.
+ *
+ * Layout rules that matter:
+ *  - the answering team's NAME is the largest element on the panel, because it is
+ *    the only thing the class needs to read instantly;
+ *  - every state is carried by TEXT — "Answering", the name, "2 teams waiting",
+ *    "No one left to answer". Colour and the accent border are supplemental, and
+ *    removing every colour from this panel loses no information at all;
+ *  - it never pushes the page sideways: long team names wrap and the panel is
+ *    `overflow-x: hidden`, matching the timer panel beside it;
+ *  - there is NO animation and no transition on the name. A team taking the floor
+ *    is information, and information does not flash — that is both an
+ *    accessibility rule (no rapid flashing) and a legibility one (a name caught
+ *    mid-fade is unreadable from the back of a room).
+ *
+ * There is deliberately no reduced-motion block, because there is no motion to
+ * suppress.
+ */
+.bqd {
+  width: 100%;
+  overflow-x: hidden;
+  text-align: center;
+  padding: clamp(0.3rem, 0.8vw, 0.7rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.bqd--active {
+  border-color: var(--color-success);
+}
+
+.bqd__label {
+  margin: 0;
+  font-size: clamp(0.85rem, 1.3vw, 1.15rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.bqd__active {
+  margin: 0.1rem 0 0;
+  font-size: clamp(1.4rem, 3.2vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.1;
+  /* Long team names wrap rather than widening the projector. */
+  overflow-wrap: anywhere;
+}
+
+.bqd__waiting {
+  margin: 0.1rem 0 0;
+  font-size: clamp(0.85rem, 1.4vw, 1.25rem);
+  color: var(--color-text-muted);
+}

@@ -2,9 +2,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, render, screen } from '@testing-library/react'
 import { ResponseTimerDisplay } from './ResponseTimerDisplay'
 import { COUNTDOWN_TICK_MS } from './useResponseCountdown'
-import type { PublicResponseState } from '../state/publicState'
+import type { PublicBuzzState, PublicResponseState } from '../state/publicState'
 import { createManualClock } from '../time/clock'
 import { FORBIDDEN_DISPLAY_LABELS } from '../test/leakLabels'
+
+/**
+ * Slice 8 made `buzz` a required part of the response DTO. This panel renders the
+ * timer half only — the queue has its own component — so every case here supplies
+ * the "nobody has buzzed" member and the assertions are unchanged.
+ */
+const NO_BUZZ: PublicBuzzState = { status: 'none' }
 
 /**
  * The projector response timer — component behaviour (Slice 7).
@@ -39,6 +46,7 @@ function running(deadlineOffsetMs = 30_000, durationMs = 30_000): PublicResponse
   return {
     armed: false,
     timer: { status: 'running', durationMs, deadline: AT + deadlineOffsetMs },
+    buzz: NO_BUZZ,
   }
 }
 
@@ -79,7 +87,7 @@ describe('what the class can read', () => {
     const clock = createManualClock(AT)
     const { rerender } = render(
       <ResponseTimerDisplay
-        response={{ armed: false, timer: { status: 'paused', durationMs: 30_000, remainingMs: 12_000 } }}
+        response={{ armed: false, timer: { status: 'paused', durationMs: 30_000, remainingMs: 12_000 }, buzz: NO_BUZZ }}
         clock={clock}
       />,
     )
@@ -88,7 +96,7 @@ describe('what the class can read', () => {
 
     rerender(
       <ResponseTimerDisplay
-        response={{ armed: false, timer: { status: 'expired', durationMs: 30_000 } }}
+        response={{ armed: false, timer: { status: 'expired', durationMs: 30_000 }, buzz: NO_BUZZ }}
         clock={clock}
       />,
     )
@@ -99,6 +107,7 @@ describe('what the class can read', () => {
       <ResponseTimerDisplay
         response={{
           armed: false,
+          buzz: NO_BUZZ,
           timer: { status: 'interrupted', durationMs: 30_000, remainingMs: 9_000 },
         }}
         clock={clock}
@@ -111,7 +120,7 @@ describe('what the class can read', () => {
   it('shows an armed clue with no timer, and no clock', () => {
     render(
       <ResponseTimerDisplay
-        response={{ armed: true, timer: { status: 'idle' } }}
+        response={{ armed: true, timer: { status: 'idle' }, buzz: NO_BUZZ }}
         clock={createManualClock(AT)}
       />,
     )
@@ -144,7 +153,7 @@ describe('the display is never the authority', () => {
   it('only shows "Time up" when the host says so', () => {
     render(
       <ResponseTimerDisplay
-        response={{ armed: false, timer: { status: 'expired', durationMs: 30_000 } }}
+        response={{ armed: false, timer: { status: 'expired', durationMs: 30_000 }, buzz: NO_BUZZ }}
         clock={createManualClock(AT)}
       />,
     )
@@ -202,14 +211,14 @@ describe('accessibility', () => {
     const clock = createManualClock(AT)
     const { rerender } = render(
       <ResponseTimerDisplay
-        response={{ armed: true, timer: { status: 'paused', durationMs: 30_000, remainingMs: 5_000 } }}
+        response={{ armed: true, timer: { status: 'paused', durationMs: 30_000, remainingMs: 5_000 }, buzz: NO_BUZZ }}
         clock={clock}
       />,
     )
     expect(screen.getByRole('timer')).toHaveAttribute('aria-label', 'Paused: 5 seconds')
     rerender(
       <ResponseTimerDisplay
-        response={{ armed: false, timer: { status: 'interrupted', durationMs: 30_000, remainingMs: 5_000 } }}
+        response={{ armed: false, timer: { status: 'interrupted', durationMs: 30_000, remainingMs: 5_000 }, buzz: NO_BUZZ }}
         clock={clock}
       />,
     )
@@ -227,10 +236,10 @@ describe('privacy', () => {
     const clock = createManualClock(AT)
     const states: PublicResponseState[] = [
       running(),
-      { armed: true, timer: { status: 'idle' } },
-      { armed: false, timer: { status: 'paused', durationMs: 1_000, remainingMs: 500 } },
-      { armed: false, timer: { status: 'expired', durationMs: 1_000 } },
-      { armed: false, timer: { status: 'interrupted', durationMs: 1_000, remainingMs: 500 } },
+      { armed: true, timer: { status: 'idle' }, buzz: NO_BUZZ },
+      { armed: false, timer: { status: 'paused', durationMs: 1_000, remainingMs: 500 }, buzz: NO_BUZZ },
+      { armed: false, timer: { status: 'expired', durationMs: 1_000 }, buzz: NO_BUZZ },
+      { armed: false, timer: { status: 'interrupted', durationMs: 1_000, remainingMs: 500 }, buzz: NO_BUZZ },
     ]
     for (const response of states) {
       const { container, unmount } = render(

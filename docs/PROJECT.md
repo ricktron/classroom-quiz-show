@@ -130,12 +130,31 @@ audio, or board styling.
 - **Buzzer arming (`OG-1`, 2026-07-26):** arming is **manual and host-controlled**.
   Nothing arms a clue automatically. Implemented in Slice 7 as durable
   arming state; see [`architecture/ADR-007-timers-arming-transitions.md`](architecture/ADR-007-timers-arming-transitions.md) §4.
-- **Buzzer queue (`OG-2`, 2026-07-26):** future buzzer behaviour preserves a **full
-  ordered team queue**, not a first-only lockout. **Not implemented** — it belongs
-  to Slice 8. Recorded now because it constrains the Slice 7 interruption seam.
+- **Buzzer queue (`OG-2`, 2026-07-26):** buzzer behaviour preserves a **full
+  ordered team queue**, not a first-only lockout. **Implemented in Slice 8**; see
+  [`architecture/ADR-008-local-input-keyboard-buzz.md`](architecture/ADR-008-local-input-keyboard-buzz.md) §8.
 - **Promotion after a miss (`OG-3`, 2026-07-26):** after an incorrect response or a
-  host pass, the **next queued team is promoted**. **Not implemented** — Slice 8.
-  Recorded for the same reason.
+  host pass, the **next queued team is promoted**. **Implemented in Slice 8** as
+  one typed command that moves no points; see ADR-008 §11.
+- **Tie handling (`OG-4`, resolved in Slice 8):** observed timestamps are
+  **evidence**; the **event sequence** is the deterministic tiebreaker. The system
+  does not claim sub-millisecond fairness, and a disputed physical tie is resolved
+  by the host through the existing controls (undo, reset, reveal). No
+  tie-adjudication UI exists. See ADR-008 §13.
+- **Queue lifetime (`OG-5`, resolved in Slice 8):** a buzz queue belongs to **one
+  clue's response opportunity** and never outlives it — a new tile, the answer
+  reveal, a return to the board, a round change, a reset and the game ending all
+  clear it. See ADR-008 §12.
+- **Scoring and the active respondent (`OG-6`):** **still deferred and not
+  implemented.** Scoring is unchanged and stays available for every team,
+  including teams that never buzzed. See ADR-008 §17.
+- **Secondary controller actions (recorded, not implemented):** the local input
+  contract carries four **ordinal** secondary action slots so future coloured
+  controller buttons can be mapped. They are representable and mappable but
+  **inert** — no secondary action produces a command, an event or a state change.
+  A durable vocabulary is defined only when a slice supplies an authorized
+  consumer. Slot names are ordinal, never chromatic, and no device model, vendor
+  or button index appears anywhere in the engine.
 - **Timer pause/resume (`OG-8`, 2026-07-26):** explicit host pause and resume are
   **supported**. Pause records the remaining duration as a durable fact; resume
   derives a new deadline from the dispatch-edge clock. See ADR-007 §7.
@@ -147,8 +166,10 @@ audio, or board styling.
   of the amended roadmap. See the non-goal amendment above and
   [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md).
 
-(These are targets for the engine. As of Slice 7 the `category-board` round
+(These are targets for the engine. As of Slice 8 the `category-board` round
 implements the board, the first scoring strategy implements bounded integer
-points, partial credit and unrestricted manual correction, and the response phase
-implements host arming and a replay-safe timer; tie-breaks and buzzers remain
-targets for later slices.)
+points, partial credit and unrestricted manual correction, the response phase
+implements host arming and a replay-safe timer, and the local input boundary
+implements **keyboard** buzz-in with a full ordered queue and promotion.
+Controller hardware of every kind — generic gamepads, Sony Buzz!, coloured
+buttons — and sudden-death tie-breaks remain targets for later slices.)

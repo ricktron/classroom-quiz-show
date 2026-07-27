@@ -20,7 +20,17 @@ import {
   MAX_RESPONSE_SECONDS,
   MIN_RESPONSE_SECONDS,
 } from '../game/timing/limits'
+import { EMPTY_BUZZ_QUEUE } from '../game/timing/buzzQueue'
 import { createManualClock, isInstant } from '../time/clock'
+
+/**
+ * Slice 8 added the buzz queue to the response phase. Every whole-phase equality
+ * in this Slice 7 suite therefore names an EMPTY queue — none of these tests
+ * buzzes anything, and asserting the empty queue explicitly is what proves the
+ * timer path never populates one by accident. The buzz path has its own suite in
+ * `buzzQueueReducer.test.ts`.
+ */
+const NO_QUEUE = EMPTY_BUZZ_QUEUE
 
 /**
  * Response-phase commands, events, replay and undo (Slice 7).
@@ -211,7 +221,7 @@ describe('arming', () => {
   it('is independent of the timer — a clue can be armed with no clock at all', () => {
     const store = openStore()
     accept(store, arm())
-    expect(phaseOf(store)).toEqual({ armed: true, timer: { status: 'idle' } })
+    expect(phaseOf(store)).toEqual({ armed: true, timer: { status: 'idle' }, queue: NO_QUEUE })
   })
 
   it('never arms itself: revealing a prompt leaves the clue disarmed', () => {
@@ -394,8 +404,12 @@ describe('the typed interruption seam', () => {
   it('is bounded: an unrecognized source never reaches the log', () => {
     const store = openStore()
     startedTimer(store, AT, 30)
+    // Slice 8 added `team-buzz` as a real member, so the unrecognized examples
+    // are now other things. The CLAIM is unchanged: whatever is not a member
+    // fails closed at the command boundary and never reaches the log.
     for (const source of [
-      { kind: 'team-buzz' },
+      { kind: 'gamepad-buzz' },
+      { kind: 'student-phone' },
       { kind: '' },
       'host',
       null,
@@ -422,10 +436,20 @@ describe('the typed interruption seam', () => {
     }
   })
 
-  it('exposes exactly one source kind today, and a guard that says so', () => {
-    expect(RESPONSE_INTERRUPTION_KINDS).toEqual(['host'])
+  /**
+   * Slice 7 shipped one member and predicted the second would be an ADDITION.
+   * Slice 8 added it. This test is updated to the new membership rather than
+   * deleted, because the property it protects is the one that mattered: the union
+   * is BOUNDED and a non-member fails closed.
+   */
+  it('exposes exactly the two source kinds that have consumers, and a guard that says so', () => {
+    expect(RESPONSE_INTERRUPTION_KINDS).toEqual(['host', 'team-buzz'])
     expect(isResponseInterruptionSource({ kind: 'host' })).toBe(true)
-    expect(isResponseInterruptionSource({ kind: 'team-buzz' })).toBe(false)
+    expect(isResponseInterruptionSource({ kind: 'team-buzz' })).toBe(true)
+    // Nothing hardware-shaped is, or ever becomes, a member: Slice 9's and Slice
+    // 10's adapters produce a team buzz, not a source of their own.
+    expect(isResponseInterruptionSource({ kind: 'gamepad' })).toBe(false)
+    expect(isResponseInterruptionSource({ kind: 'sony-buzz' })).toBe(false)
     expect(isResponseInterruptionSource({})).toBe(false)
     expect(isResponseInterruptionSource(null)).toBe(false)
   })
@@ -450,6 +474,7 @@ describe('expiration — exactly one effective fact per countdown', () => {
         durationMs: 30_000,
         deadline: timer.deadline,
       },
+      queue: NO_QUEUE,
     })
   })
 
@@ -773,7 +798,7 @@ describe('replay and undo', () => {
     accept(store, expire(timer.deadline, timer.timerId, timer.deadline))
     store.dispatch(undo)
     // Arming is restored too, because the expiry event carried both effects.
-    expect(phaseOf(store)).toEqual({ armed: true, timer })
+    expect(phaseOf(store)).toEqual({ armed: true, timer, queue: NO_QUEUE })
     accept(store, expire(timer.deadline + 5_000, timer.timerId, timer.deadline))
   })
 
@@ -783,7 +808,7 @@ describe('replay and undo', () => {
     const timer = startedTimer(store, AT, 30)
     accept(store, reset())
     store.dispatch(undo)
-    expect(phaseOf(store)).toEqual({ armed: true, timer })
+    expect(phaseOf(store)).toEqual({ armed: true, timer, queue: NO_QUEUE })
   })
 
   it('undoes an answer reveal back to the window it closed', () => {
@@ -793,7 +818,7 @@ describe('replay and undo', () => {
     store.dispatch({ type: 'REVEAL_CATEGORY_BOARD_ANSWER', issuedAt: AT + 1, roundId: ROUND })
     expect(phaseOf(store)).toEqual(INITIAL_RESPONSE_PHASE_STATE)
     store.dispatch(undo)
-    expect(phaseOf(store)).toEqual({ armed: true, timer })
+    expect(phaseOf(store)).toEqual({ armed: true, timer, queue: NO_QUEUE })
   })
 
   it('keeps undo latest-only — an older window is not reachable directly', () => {
@@ -802,7 +827,7 @@ describe('replay and undo', () => {
     startedTimer(store, AT, 30)
     // One undo reaches the START, not the ARM. That limit is documented, not new.
     store.dispatch(undo)
-    expect(phaseOf(store)).toEqual({ armed: true, timer: { status: 'idle' } })
+    expect(phaseOf(store)).toEqual({ armed: true, timer: { status: 'idle' }, queue: NO_QUEUE })
   })
 })
 
@@ -856,7 +881,7 @@ describe('a corrupt log degrades safely rather than throwing', () => {
       reversible: true,
       roundId: ROUND,
       timerId: timer.status === 'running' ? timer.timerId : '',
-      source: { kind: 'team-buzz' } as never,
+      source: { kind: 'gamepad-buzz' } as never,
       remainingMs: 1_000,
     }
     const state = replay([...store.getHistory(), forged])
