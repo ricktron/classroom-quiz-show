@@ -1,13 +1,13 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with **Slices 1–8 all `Complete` and merged to `main`** (Slice 8 —
+the repository with **Slices 1–9 all `Complete` and merged to `main`** (Slice 8 —
 Local input contract & keyboard buzz-in — merged via PR #16 at `167128d` on
 2026-07-27T02:46:24Z; its reconciliation merged via PR #18 at `5cc81d4` on
-2026-07-27T03:48:25Z), and **Slice 9 — Generic Gamepad adapter & configurable
-mappings — `In review`**: owner-authorized, implemented on
-`claude/slice-9-gamepad-adapter-wfiue4` from `main` at `5cc81d4`, **open and
-unmerged**. **Slice 10 remains unstarted and owner-gated.**
+2026-07-27T03:48:25Z; **Slice 9 — Generic Gamepad adapter & configurable
+mappings — merged via [PR #19](https://github.com/ricktron/classroom-quiz-show/pull/19)
+at `d16f90d` on 2026-07-27T05:33:05Z**). **Slice 10 remains `Planned`, unstarted
+and owner-gated.**
 
 > **Repository hygiene (2026-07-27).** `main` is the GitHub **default branch**.
 > **PR #17 was closed without merging** — an erroneous *reversed* pull request
@@ -116,16 +116,29 @@ unmerged**. **Slice 10 remains unstarted and owner-gated.**
   [`../receipts/2026-07-27-slice-8-post-merge-reconciliation.md`](../receipts/2026-07-27-slice-8-post-merge-reconciliation.md).
   **Slice 10 remains unstarted and owner-gated, and no Sony Buzz!, vendor-matching,
   WebHID or Bluetooth runtime exists.**
-- **Slice 9 (current): `In review`.** Owner-authorized and delivered on
+- **Slice 9 (current): `Complete`.** Owner-authorized and delivered on
   `claude/slice-9-gamepad-adapter-wfiue4`, based on `main` at
   `5cc81d448f9558e914dd5da497232f071d58b10c` (the merge commit of PR #18, the
-  Slice 8 post-merge reconciliation). The pull request is **open and unmerged**;
-  no CI conclusion is claimed. Local evidence in
+  Slice 8 post-merge reconciliation); single implementation commit and final
+  reviewed head `f63d5c190d7747f3a48a3e91a1358868229a170a`. **Merged to `main` via
+  [PR #19](https://github.com/ricktron/classroom-quiz-show/pull/19)** (merge
+  commit `d16f90de94bcbed9a83dfed5e7259a9da5e6a618`, merged
+  **2026-07-27T05:33:05Z** by `ricktron`). The merge commit's **second parent is
+  the reviewed head**, and the merge tree is identical to the reviewed head's
+  tree, so the head that was reviewed is exactly the head that merged. All three
+  PR checks were green at that head; **post-merge CI on `main` at `d16f90d`
+  concluded success**, and the **GitHub Pages deployment succeeded**. The document
+  root was later reachable by HTTP HEAD (**200**; `Last-Modified` consistent with
+  that deploy); the response body was not inspected, `/host` and `/display` were
+  not exercised, Gamepad behavior was not tested on the deployed application, and
+  **no live-route or application-behavior claim is made**. Local evidence in
   [`../receipts/2026-07-27-slice-9-local-verification.md`](../receipts/2026-07-27-slice-9-local-verification.md);
+  post-merge reconciliation in
+  [`../receipts/2026-07-27-slice-9-post-merge-reconciliation.md`](../receipts/2026-07-27-slice-9-post-merge-reconciliation.md);
   rationale in
   [`../architecture/ADR-009-generic-gamepad-adapter.md`](../architecture/ADR-009-generic-gamepad-adapter.md).
-  **Slice 9 is NOT `Complete` and must not be marked so before merge and
-  post-merge reconciliation.**
+  **No physical controller was tested**, so no device compatibility is claimed;
+  physical hardware validation remains Slice 10.
 - **What Slice 9 adds:** generic USB controller input **through the Slice 8
   boundary**, and the most important thing about it is the list of things it did
   not change — no schema, no `PublicState` (wire version stays 6), no sync
@@ -412,10 +425,17 @@ npm run verify:all   # verify + build + e2e (merge gate)
 
 Latest local results (Slice 9): `verify:all` green — **1,349 unit tests (57
 files), 199 e2e passed / 2 skipped** (both skips are the one desktop-only
-offline-shell test); `git diff --check` clean. **Slice 9 PR CI has NOT been
-observed** — the pull request is open and unmerged, and no check conclusion is
-claimed. **No physical controller was tested**; none is available in this
-environment.
+offline-shell test); `git diff --check` clean. **Slice 9 PR CI was observed
+green** on PR #19 at the final reviewed head `f63d5c1`: all three checks concluded
+success. Sonar's detailed findings were not inspected (`sonarcloud.io` is
+unreachable from the sandbox). **Post-merge on `main` (`d16f90d`)** the `CI`
+workflow (run `30240064570`) and the `Deploy to GitHub Pages` workflow (run
+`30240064595`) both concluded **success**; the document root was reachable by
+HTTP HEAD (**200**; `Last-Modified` consistent with that deploy), but the
+response body was not inspected, `/host` and `/display` were not exercised,
+Gamepad behavior was not tested on the deployed application, and **no live-route
+or application-behavior claim is made**. **No physical controller was tested**;
+none is available in this environment.
 
 Earlier, on the Slice 8 branch: `verify:all` green — **1,184 unit tests (51
 files), 187 e2e passed / 2 skipped** (both skips are the one desktop-only
@@ -573,10 +593,10 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Next action
 
-**Review the Slice 9 pull request** (`claude/slice-9-gamepad-adapter-wfiue4` →
-`main`). It is open and unmerged. Wait for CI to conclude, review the diff, and
-merge only if the checks are green — then perform the post-merge reconciliation
-that marks Slice 9 `Complete`. Nothing else is in flight.
+**Review and merge the Slice 9 post-merge reconciliation pull request**
+(`docs/slice-9-post-merge-reconciliation` → `main`). It is **open and unmerged**,
+is documentation-only, and is the change that records Slice 9 as `Complete`.
+Nothing else is in flight.
 
 After that, the next slice is **Slice 10 — Sony Buzz! mapping, validation & host
 setup UX**, whose record is in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md). It is
@@ -611,7 +631,7 @@ Slice allocation is unchanged by this direction:
 | Slice | Scope | State |
 | --- | --- | --- |
 | **8** | The hardware-independent **logical** input contract, and keyboard input as its first consumer. | `Complete` (PR #16, `167128d`) |
-| **9** | The generic **Gamepad** adapter and configurable mappings. | **`In review`** — implemented, open and unmerged |
+| **9** | The generic **Gamepad** adapter and configurable mappings. | `Complete` (PR #19, `d16f90d`) |
 | **10** | **Sony Buzz!** detection, validation, a recommended profile, handset assignment, and the host setup UX. | `Planned`, unstarted |
 
 **A final event vocabulary for secondary actions was deliberately NOT defined in
@@ -651,11 +671,56 @@ anticipates or reserves space for a response mode.
 
 Recording this direction authorizes no work of any kind.
 
+## Owner direction — optional team buzz-in sounds are DEFERRED (2026-07-27)
+
+**Recorded only. Deferred. Not a slice, not scheduled, not authorized, and not
+implemented.** This was **not** inserted into the active roadmap, which remains
+**18 slices**. Nothing in the codebase implements, anticipates or reserves space
+for audio.
+
+The owner wants **optional team buzz-in audio cues** eventually, potentially
+including farm-animal sounds, funny voices, generic game-show sounds, comic or
+funny sound packs, and **custom local audio uploads** — with one sound per team,
+randomized selection from a chosen pack, and preview, volume and mute controls.
+
+**Architectural direction, for whenever it is authorized:**
+
+- Sound is a **presentation response to a newly accepted `TEAM_BUZZED` event** —
+  never gameplay authority.
+- Sound must not alter scoring, queue order, replay, undo, timers, controller
+  mappings or the reducer.
+- Sound assignment belongs to a **team or a presentation profile** — never to a
+  physical keyboard key, controller index, handset, button index or device model.
+  (This is the same boundary `ROADMAP-AMENDMENT-001` §5.6 and ADR-008 fix for
+  input: the physical side stays on the adapter side.)
+- **Visual indication remains required**; sound may never be the only indication
+  of a successful buzz.
+- A stale snapshot, replay, refresh, reconnect, resynchronization or undo must
+  **not** replay old audio.
+- Custom audio should remain **local and offline by default**.
+
+**Licensing and distribution boundary — recorded, not a legal determination.**
+The owner identifies the **BBC Sound Effects library** as a preferred potential
+source for personal, non-commercial classroom use. Independently of that:
+
+- **No BBC audio file is authorized for commitment to this public repository.**
+- **No BBC audio file is authorized for inclusion in the public GitHub Pages
+  build.**
+- **No BBC audio file is authorized for redistribution through the application.**
+- A future implementation should support **teacher-supplied local files**.
+- **Attribution and licence requirements must be reviewed before use.**
+- Broader redistribution, public bundling or commercial use requires **separately
+  verified permission**.
+
+No BBC asset was browsed, downloaded, added or referenced as a file by this
+reconciliation. Recording this direction authorizes no work of any kind.
+
 ## Prohibited next actions until Slice 10 is explicitly authorized
 
-Do **not**: merge the Slice 9 PR yourself; mark Slice 9 `Complete` before it is
-actually merged; perform a Slice 9 post-merge reconciliation before the PR is
-actually merged; begin Slice 10 or any later slice; add WebHID, Bluetooth, USB or
+Do **not**: merge the Slice 9 post-merge reconciliation PR yourself; amend the
+Slice 9 implementation receipt or any older receipt; claim live-route behaviour
+that was not directly inspected; claim any physical-controller compatibility;
+begin Slice 10 or any later slice; add WebHID, Bluetooth, USB or
 HID code; add Sony Buzz! detection, vendor/product identification, button
 numbering, handset assignment, coloured-button default mappings or a controller
 setup wizard (Slice 10 owns all of it, and Slice 9's generic adapter being ready
@@ -671,6 +736,9 @@ student-owned contestant devices, networked buzzers, or remote team input — th
 remain **excluded**, not merely deferred; add durable
 persistence/IndexedDB/session recovery/leader coordination; add a final wager, Daily Double, or Final Jeopardy; add a media
 pipeline, a theme engine, or team colours beyond the application palette; add
+buzz-in audio, an audio file, playback code, an audio schema, an audio event, a
+sound-pack manifest, a custom-upload path or an attribution asset (see the
+deferred buzz-sound direction below — it authorizes none of it); add
 spreadsheet/CSV/XLSX/Google Sheets import, an authoring UI, pack management, a saved
 game library, or remote URL import; add a backend, accounts, cross-device sync,
 analytics, or AI services; add any further playable round type; weaken fail-closed
