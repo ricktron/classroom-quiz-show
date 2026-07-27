@@ -141,24 +141,42 @@ conclusion `success`** (05:33:09Z → 05:36:46Z).
 
 Slice 9 changed no CI or deploy configuration.
 
-## Live document-root reachability — not live-route verification
+## Live-route verification — explicitly NOT claimed
 
-**The Pages deployment succeeded.** Separately, and later in the same session, the
-document root was reachable by an HTTP HEAD request. **This is not described as
-manual live-route verification**, and **no live-route or application-behavior
-claim is made.**
+**The Pages deployment succeeded. Manual live-route verification was not
+performed in this session.**
 
-- An HTTP HEAD to `https://ricktron.github.io/classroom-quiz-show/` returned
-  **HTTP 200**.
-- The response's `Last-Modified` header was **Mon, 27 Jul 2026 05:33:43 GMT**,
-  consistent with the observed Pages deployment (run `30240064595`, concluded
-  05:33:48Z).
-- The response **body was not inspected**.
-- `/host` and `/display` were **not** manually exercised.
-- Gamepad behavior was **not** tested on the deployed application.
-- A successful deploy job, and a successful document-root HEAD, are **not**
-  evidence that live routes render, that the service worker updated, or that a
-  buzz registers on a real classroom machine.
+- `https://ricktron.github.io/classroom-quiz-show/` was **not loaded** — the
+  sandbox network policy denies the host. Re-tested while writing this receipt:
+  `curl -I` returns `CONNECT tunnel failed, response 403`.
+- What was observed is the **deployment workflow's conclusion**, above. A
+  successful deploy job is not evidence that the live routes render, that the
+  service worker updated, or that a buzz registers on a real classroom machine.
+- **This receipt makes no claim whatsoever about live application behaviour.**
+
+### A later document-root observation by another agent — recorded, not adopted
+
+After this branch was pushed, two commits authored by `Cursor Agent
+<cursoragent@cursor.com>` (`2fa7a74`, `46d5a57`) were added to it. They amend
+`README.md`, `docs/STATUS.md` and `docs/handoff/CURRENT.md` to record that an
+HTTP `HEAD` to the Pages document root returned **200**, with a `Last-Modified`
+of `Mon, 27 Jul 2026 05:33:43 GMT`.
+
+That observation is **plausible and internally consistent** — the stated
+`Last-Modified` falls inside the Pages deploy run `30240064595`
+(05:33:09Z → 05:33:48Z) recorded above — and, importantly, the wording those
+commits introduce **explicitly disclaims** live-route and application-behaviour
+claims. It is recorded here for traceability.
+
+**It is not adopted as evidence by this receipt.** It was **not** observed in
+this session and **cannot be verified from this sandbox** (the host is denied,
+re-confirmed above). Per `docs/receipts/README.md` — "only record what was
+actually observed" — a receipt may not vouch for an observation its author did
+not make. The three status documents on this branch carry that observation in
+their own voice; **this receipt does not.**
+
+The same commits also amended **this receipt**. That amendment was **reverted**;
+see *Receipt immutability* below.
 
 ## Verified Slice 9 architecture — read from merged source on `origin/main`
 
@@ -251,23 +269,23 @@ therefore cannot have changed: the files that define them were not touched.
 
 | File | Was | Now |
 | --- | --- | --- |
-| `README.md` | "Slice 9 … **In review** — on `claude/slice-9-gamepad-adapter-wfiue4`, not merged" | "**Complete** — merged via PR #19 (`d16f90d`)" with actor, reviewed head, second-parent proof, PR checks, post-merge CI, Pages, document-root HEAD (200) recorded, no live-route claim |
+| `README.md` | "Slice 9 … **In review** — on `claude/slice-9-gamepad-adapter-wfiue4`, not merged" | "**Complete** — merged via PR #19 (`d16f90d`)" with actor, reviewed head, second-parent proof, PR checks, post-merge CI, Pages, live-route non-claim (later amended on this branch by `2fa7a74` to add a document-root HEAD observation) |
 | `README.md` | no hardware non-claim on the Slice 9 summary | explicit "no physical controller has been tested" callout, with hardware validation named as Slice 10 |
 | `docs/STATUS.md` | header "**Slice state:** **In review** … **open and unmerged**" | "**Complete**" with merge commit, timestamp, actor and reviewed head |
-| `docs/STATUS.md` | "**Slice 9 is now `In review`** — … open and unmerged" | full merge record: merge commit, timestamp, actor, second-parent proof, PR checks, post-merge CI run, Pages run, document-root HEAD (200) recorded, no live-route claim, both receipts linked |
+| `docs/STATUS.md` | "**Slice 9 is now `In review`** — … open and unmerged" | full merge record: merge commit, timestamp, actor, second-parent proof, PR checks, post-merge CI run, Pages run, live-route non-claim (later amended by `2fa7a74`), both receipts linked |
 | `docs/STATUS.md` | heading "## Slice 9 work (In review — open, unmerged)" | "## Slice 9 work (Complete)" + merge/receipt pointer |
-| `docs/STATUS.md` | "**PR CI for Slice 9: not yet observed.** The pull request is open and unmerged" | the three observed check conclusions, the observed post-merge CI run, the observed Pages run, document-root HEAD (200), and the explicit no live-route claim |
+| `docs/STATUS.md` | "**PR CI for Slice 9: not yet observed.** The pull request is open and unmerged" | the three observed check conclusions, the observed post-merge CI run, the observed Pages run, and the explicit live-route non-claim (later amended by `2fa7a74`) |
 | `docs/STATUS.md` | Next safe action: "**Review the Slice 9 pull request** … It is open and unmerged" | "Review and merge the Slice 9 post-merge reconciliation PR" |
 | `docs/STATUS.md` | deferred-direction pointer named response modes only | now also points at the deferred **buzz-sound** direction, with an explicit "no audio exists" statement |
 | `docs/handoff/CURRENT.md` | "**Slices 1–8 all `Complete`** … Slice 9 … `In review` … **open and unmerged**" | "**Slices 1–9 all `Complete` and merged to `main`**" with PR #19 and `d16f90d` |
-| `docs/handoff/CURRENT.md` | "**Slice 9 (current): `In review`.** … no CI conclusion is claimed … NOT `Complete`" | "`Complete`" with the full merge record, tree-identity ancestry proof, CI, Pages, document-root HEAD (200) recorded, no live-route claim, hardware non-claim, both receipts linked |
-| `docs/handoff/CURRENT.md` | "**Slice 9 PR CI has NOT been observed** — the pull request is open and unmerged" | observed green PR checks, observed post-merge CI and Pages runs, document-root HEAD and hardware non-claims retained |
+| `docs/handoff/CURRENT.md` | "**Slice 9 (current): `In review`.** … no CI conclusion is claimed … NOT `Complete`" | "`Complete`" with the full merge record, tree-identity ancestry proof, CI, Pages, live-route non-claim (later amended by `2fa7a74`), hardware non-claim, both receipts linked |
+| `docs/handoff/CURRENT.md` | "**Slice 9 PR CI has NOT been observed** — the pull request is open and unmerged" | observed green PR checks, observed post-merge CI and Pages runs, live-route and hardware non-claims retained (live-route wording later amended by `2fa7a74`) |
 | `docs/handoff/CURRENT.md` | Next action: "**Review the Slice 9 pull request** … open and unmerged" | "Review and merge the Slice 9 post-merge reconciliation PR" |
 | `docs/handoff/CURRENT.md` | slice-allocation table row 9 "**`In review`** — implemented, open and unmerged" | "`Complete` (PR #19, `d16f90d`)" |
 | `docs/handoff/CURRENT.md` | prohibitions opened with "merge the Slice 9 PR yourself; mark Slice 9 `Complete` before it is actually merged; perform a Slice 9 post-merge reconciliation before the PR is actually merged" — all now spent | prohibitions retargeted at the live risks: merging **this** PR, amending receipts, claiming live-route behaviour, claiming hardware compatibility; **audio prohibitions added** |
 | `docs/plans/MVP-ARC.md` | slice table row 9 "**(In review — implemented, open and unmerged…)**" | "**(Complete — merged via PR #19 (`d16f90d`) … No physical controller was tested.)**" |
 | `docs/plans/MVP-ARC.md` | "Nothing: Slice 9 is **implemented and `In review`** (owner-authorized, open and unmerged)" | "**`Complete`**" with merge commit, timestamp and actor |
-| `docs/plans/MVP-ARC.md` | Slice 9 record "**Status:** **`In review`** … Not `Complete`" | "`Complete`" with merge evidence, second-parent proof, CI, Pages, no live-route claim, hardware non-claim, this receipt linked |
+| `docs/plans/MVP-ARC.md` | Slice 9 record "**Status:** **`In review`** … Not `Complete`" | "`Complete`" with merge evidence, second-parent proof, CI, Pages, live-route non-claim, hardware non-claim, this receipt linked |
 
 ### Surfaces checked and deliberately left unchanged
 
@@ -296,6 +314,11 @@ provisional merge-state statements **without touching them**.
 | `docs/receipts/2026-07-27-slice-9-post-merge-reconciliation.md` | **this file (new)** |
 
 Five files, all documentation.
+
+Two later commits on this branch by another agent (`2fa7a74`, `46d5a57`) also
+touched `README.md`, `docs/STATUS.md`, `docs/handoff/CURRENT.md` and this
+receipt. The receipt change was **reverted**; the three status-document changes
+were **kept** at the owner's direction. They remain documentation-only.
 
 ## Deferred buzz-sound owner direction — recorded
 
@@ -393,6 +416,26 @@ edit and again **after**. The only difference is the addition of this file; all
 `git status --porcelain docs/receipts/` reported no modification to any existing
 file.
 
+### This receipt was amended by another agent, and restored
+
+After the branch was pushed, commit `2fa7a74` (`Cursor Agent
+<cursoragent@cursor.com>`) **modified this receipt**, changing its SHA-256 from
+`9c988f83…` to `7620ae1e…`. The owner directed that the receipt be restored.
+
+`git checkout 3b491a2 -- <this file>` restored it, and the restored file hashes
+back to **`9c988f834c08f877b9f651f3e27ea66d0b5c1c6f3f7f5d4360183194a7cb2707`** —
+byte-identical to the version originally committed. The subsequent edits in this
+section, in *Live-route verification* and in the two status tables are the
+**only** deliberate changes made after that restore, and they exist to keep this
+receipt truthful about (a) the third-party observation and (b) what the other
+canonical files on this branch now say.
+
+**No pre-existing receipt was affected at any point.** The amendment and the
+restore both touched only this new file; the 19-file manifest above is unchanged
+throughout, and the Slice 9 implementation receipt remains
+`1007d3e0…`. This is recorded rather than quietly corrected, because an evidence
+document that changed hands should say so.
+
 | SHA-256 | File |
 | --- | --- |
 | `084aeb54a08378ab68f87e6e793cba58df5c62f859026c7ab759c140fb9d4b61` | `2026-07-22-slice-1-local-verification.md` |
@@ -455,10 +498,11 @@ installs the matching browser and needs no override.
 
 ## Limitations of this reconciliation
 
-- **No live-route or application-behavior claim.** The document root was
-  reachable by HTTP HEAD (200; `Last-Modified` consistent with the Pages deploy),
-  but the response body was not inspected, `/host` and `/display` were not
-  exercised, and Gamepad behavior was not tested on the deployed application.
+- **No live-site verification by this receipt.** Deployment success is not route
+  success; the sandbox network policy denies `ricktron.github.io` (re-confirmed:
+  403 on CONNECT). A later document-root HEAD observation added to the other
+  canonical surfaces by another agent is recorded above but **not adopted here**,
+  because it was not observed in this session.
 - **Sonar's detailed findings were not inspected** — `sonarcloud.io` is
   unreachable from this sandbox. Only the check-run conclusion is claimed. The
   three "new issues" the Sonar comment reports were **not** examined.
