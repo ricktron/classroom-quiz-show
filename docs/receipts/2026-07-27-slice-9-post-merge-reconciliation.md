@@ -251,23 +251,23 @@ therefore cannot have changed: the files that define them were not touched.
 
 | File | Was | Now |
 | --- | --- | --- |
-| `README.md` | "Slice 9 … **In review** — on `claude/slice-9-gamepad-adapter-wfiue4`, not merged" | "**Complete** — merged via PR #19 (`d16f90d`)" with actor, reviewed head, second-parent proof, PR checks, post-merge CI, Pages, live-route non-claim |
+| `README.md` | "Slice 9 … **In review** — on `claude/slice-9-gamepad-adapter-wfiue4`, not merged" | "**Complete** — merged via PR #19 (`d16f90d`)" with actor, reviewed head, second-parent proof, PR checks, post-merge CI, Pages, document-root HEAD (200) recorded, no live-route claim |
 | `README.md` | no hardware non-claim on the Slice 9 summary | explicit "no physical controller has been tested" callout, with hardware validation named as Slice 10 |
 | `docs/STATUS.md` | header "**Slice state:** **In review** … **open and unmerged**" | "**Complete**" with merge commit, timestamp, actor and reviewed head |
-| `docs/STATUS.md` | "**Slice 9 is now `In review`** — … open and unmerged" | full merge record: merge commit, timestamp, actor, second-parent proof, PR checks, post-merge CI run, Pages run, live-route non-claim, both receipts linked |
+| `docs/STATUS.md` | "**Slice 9 is now `In review`** — … open and unmerged" | full merge record: merge commit, timestamp, actor, second-parent proof, PR checks, post-merge CI run, Pages run, document-root HEAD (200) recorded, no live-route claim, both receipts linked |
 | `docs/STATUS.md` | heading "## Slice 9 work (In review — open, unmerged)" | "## Slice 9 work (Complete)" + merge/receipt pointer |
-| `docs/STATUS.md` | "**PR CI for Slice 9: not yet observed.** The pull request is open and unmerged" | the three observed check conclusions, the observed post-merge CI run, the observed Pages run, and the explicit live-route non-claim |
+| `docs/STATUS.md` | "**PR CI for Slice 9: not yet observed.** The pull request is open and unmerged" | the three observed check conclusions, the observed post-merge CI run, the observed Pages run, document-root HEAD (200), and the explicit no live-route claim |
 | `docs/STATUS.md` | Next safe action: "**Review the Slice 9 pull request** … It is open and unmerged" | "Review and merge the Slice 9 post-merge reconciliation PR" |
 | `docs/STATUS.md` | deferred-direction pointer named response modes only | now also points at the deferred **buzz-sound** direction, with an explicit "no audio exists" statement |
 | `docs/handoff/CURRENT.md` | "**Slices 1–8 all `Complete`** … Slice 9 … `In review` … **open and unmerged**" | "**Slices 1–9 all `Complete` and merged to `main`**" with PR #19 and `d16f90d` |
-| `docs/handoff/CURRENT.md` | "**Slice 9 (current): `In review`.** … no CI conclusion is claimed … NOT `Complete`" | "`Complete`" with the full merge record, tree-identity ancestry proof, CI, Pages, live-route non-claim, hardware non-claim, both receipts linked |
-| `docs/handoff/CURRENT.md` | "**Slice 9 PR CI has NOT been observed** — the pull request is open and unmerged" | observed green PR checks, observed post-merge CI and Pages runs, live-route and hardware non-claims retained |
+| `docs/handoff/CURRENT.md` | "**Slice 9 (current): `In review`.** … no CI conclusion is claimed … NOT `Complete`" | "`Complete`" with the full merge record, tree-identity ancestry proof, CI, Pages, document-root HEAD (200) recorded, no live-route claim, hardware non-claim, both receipts linked |
+| `docs/handoff/CURRENT.md` | "**Slice 9 PR CI has NOT been observed** — the pull request is open and unmerged" | observed green PR checks, observed post-merge CI and Pages runs, document-root HEAD and hardware non-claims retained |
 | `docs/handoff/CURRENT.md` | Next action: "**Review the Slice 9 pull request** … open and unmerged" | "Review and merge the Slice 9 post-merge reconciliation PR" |
 | `docs/handoff/CURRENT.md` | slice-allocation table row 9 "**`In review`** — implemented, open and unmerged" | "`Complete` (PR #19, `d16f90d`)" |
 | `docs/handoff/CURRENT.md` | prohibitions opened with "merge the Slice 9 PR yourself; mark Slice 9 `Complete` before it is actually merged; perform a Slice 9 post-merge reconciliation before the PR is actually merged" — all now spent | prohibitions retargeted at the live risks: merging **this** PR, amending receipts, claiming live-route behaviour, claiming hardware compatibility; **audio prohibitions added** |
 | `docs/plans/MVP-ARC.md` | slice table row 9 "**(In review — implemented, open and unmerged…)**" | "**(Complete — merged via PR #19 (`d16f90d`) … No physical controller was tested.)**" |
 | `docs/plans/MVP-ARC.md` | "Nothing: Slice 9 is **implemented and `In review`** (owner-authorized, open and unmerged)" | "**`Complete`**" with merge commit, timestamp and actor |
-| `docs/plans/MVP-ARC.md` | Slice 9 record "**Status:** **`In review`** … Not `Complete`" | "`Complete`" with merge evidence, second-parent proof, CI, Pages, live-route non-claim, hardware non-claim, this receipt linked |
+| `docs/plans/MVP-ARC.md` | Slice 9 record "**Status:** **`In review`** … Not `Complete`" | "`Complete`" with merge evidence, second-parent proof, CI, Pages, no live-route claim, hardware non-claim, this receipt linked |
 
 ### Surfaces checked and deliberately left unchanged
 
