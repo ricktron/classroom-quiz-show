@@ -1,7 +1,7 @@
 # Status
 
 **Current slice:** Slice 7 — Timers, arming & transitions
-**Slice state:** In review (branch pushed, PR open and unmerged)
+**Slice state:** Complete (merged to `main` via PR #14, merge commit `3f9ae1c`)
 **Next slice:** Slice 8 — Local input contract & keyboard buzz-in (`Planned`,
 unstarted, owner-gated)
 **Roadmap:** 18 slices, amended 2026-07-26 by
@@ -62,17 +62,31 @@ unstarted, owner-gated)
 > (merge commit `752a3fe0f45fdc1ee687339134023c3811facd91`, merged
 > 2026-07-26T20:02:13Z by `ricktron`; reviewed head `2524e745`), with all three PR
 > checks green.
-> **Slice 7 is now In review**: owner-authorized, implemented on
-> `claude/slice-7-timers-arming-transitions-wd7cmf` from `main` at `752a3fe`, with
-> the PR open and unmerged. **Slice 8 remains unstarted and owner-gated.**
+> Slice 7 is **Complete**: owner-authorized and implemented on
+> `claude/slice-7-timers-arming-transitions-wd7cmf` from `main` at `752a3fe`
+> (implementation commit `f804430`, final reviewed head
+> `43cc66c5fc2a01cdb46daa1b52b7df08184b0448`). Merged to `main` via
+> **[PR #14](https://github.com/ricktron/classroom-quiz-show/pull/14)** (merge
+> commit `3f9ae1c4c7f9f6e37bac08bf519dbd8ef68af42a`, merged
+> 2026-07-26T23:43:51Z by `ricktron`) with all three PR checks green. The merge
+> commit's second parent **is** the reviewed head, so the head that was reviewed
+> is the head that merged. **Post-merge CI on `main` at `3f9ae1c` concluded
+> success for both jobs**, and the **Pages deployment succeeded (build +
+> deploy)**. **Manual live-route verification was not performed** — the sandbox
+> network policy denies `ricktron.github.io`. Post-merge reconciliation is
+> recorded in
+> [`receipts/2026-07-27-slice-7-post-merge-reconciliation.md`](receipts/2026-07-27-slice-7-post-merge-reconciliation.md).
+> **Slice 8 remains unstarted and owner-gated.**
 
-## Slice 7 work (In review)
+## Slice 7 work (Complete)
 
 Timers, arming and transitions — the engine's first **non-deterministic input**,
 contained. Full rationale in
 [`architecture/ADR-007-timers-arming-transitions.md`](architecture/ADR-007-timers-arming-transitions.md);
 local evidence in
-[`receipts/2026-07-26-slice-7-local-verification.md`](receipts/2026-07-26-slice-7-local-verification.md).
+[`receipts/2026-07-26-slice-7-local-verification.md`](receipts/2026-07-26-slice-7-local-verification.md);
+merged-state evidence in
+[`receipts/2026-07-27-slice-7-post-merge-reconciliation.md`](receipts/2026-07-27-slice-7-post-merge-reconciliation.md).
 
 | Item | State |
 | --- | --- |
@@ -395,8 +409,19 @@ Local `verify:all` passed on the Slice 7 branch: lint, typecheck, unit tests
   with the Quality Gate **passed** and **0 Security Hotspots**. Sonar's 12 new
   non-blocking issues were **not inspected**: `sonarcloud.io` is unreachable from
   the sandbox (HTTP 403 on CONNECT).
-- **Post-merge CI and Pages deployment for Slice 7: not applicable yet** — the PR
-  is open and unmerged. No live-URL verification is claimed.
+- **Post-merge CI on `main` for Slice 7: observed green.** On merge commit
+  `3f9ae1c` the `CI` workflow (run `30225863653`) concluded **success** for both
+  jobs — "Lint, typecheck, unit tests, build" and "Playwright e2e". This is
+  post-merge observation on `main`, not a restatement of the pre-merge PR checks.
+- **GitHub Pages deployment for Slice 7: succeeded.** The `Deploy to GitHub Pages`
+  workflow (run `30225863654`) on `main` at `3f9ae1c` concluded success for both
+  the build and deploy jobs (deploy completed 2026-07-26T23:44:35Z). Slice 7
+  changes no CI or deploy configuration.
+- **Manual live-route verification was not performed** for Slice 7. The sandbox
+  network policy denies `ricktron.github.io`, so
+  `https://ricktron.github.io/classroom-quiz-show/#/host` and `#/display` were not
+  loaded and no live application behaviour is claimed. A successful deployment
+  workflow is not evidence that the live routes were exercised.
 
 Earlier, local `verify:all` passed on the Slice 6 branch and again on the
 reconciliation branch: lint, typecheck, unit tests (**740 passed, 35 files**),

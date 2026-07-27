@@ -169,10 +169,11 @@ Slice 6 makes the board **score**:
   that exact adjustment has already been submitted. Negative or large manual
   adjustments need an explicit confirmation.
 
-**Slice 7 — timers, arming & transitions. In review** — implemented on
-`claude/slice-7-timers-arming-transitions-wd7cmf`, PR open and unmerged (see
-[`docs/STATUS.md`](docs/STATUS.md), the local-verification receipt
-[`docs/receipts/2026-07-26-slice-7-local-verification.md`](docs/receipts/2026-07-26-slice-7-local-verification.md),
+**Slice 7 — timers, arming & transitions. Complete** — merged to `main` via
+**PR #14** (merge commit `3f9ae1c`), with post-merge CI on `main` green and the
+Pages deployment succeeded (see [`docs/STATUS.md`](docs/STATUS.md), the
+reconciliation receipt
+[`docs/receipts/2026-07-27-slice-7-post-merge-reconciliation.md`](docs/receipts/2026-07-27-slice-7-post-merge-reconciliation.md),
 and [`docs/architecture/ADR-007-timers-arming-transitions.md`](docs/architecture/ADR-007-timers-arming-transitions.md)).
 Slice 7 gives a clue a clock, and contains the engine's first non-deterministic
 input:

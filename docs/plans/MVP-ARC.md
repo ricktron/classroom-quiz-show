@@ -50,7 +50,7 @@ systems.
 | 4   | **Validation & import pipeline** | Canonical versioned JSON, one Zod-based validation/normalization pipeline, actionable errors, no silent repair. **(Complete.)** | 3          |
 | 5   | **Category-board round**       | First playable round type: configurable categories/rows/ladder, multiplier, used-tile state, prompt/answer reveal, alternates, notes. **(Complete.)** | 3, 4       |
 | 6   | **Teams & scoring**            | Teams, typed scoring strategy (points first), awards/deductions, partial credit, unrestricted manual correction, audit history, undo. **(Complete.)** | 2, 5       |
-| 7   | **Timers, arming & transitions** | Timer config, a deadline-projected public timer, host arming/disarming, host-controlled undoable round transitions, reduced-motion-safe. The interrupt seam must be typed so buzz-in is a later addition, not a rewrite. **(In review.)** | 5, 6 |
+| 7   | **Timers, arming & transitions** | Timer config, a deadline-projected public timer, host arming/disarming, host-controlled undoable round transitions, reduced-motion-safe. The interrupt seam must be typed so buzz-in is a later addition, not a rewrite. **(Complete.)** | 5, 6 |
 | 8   | **Local input contract & keyboard buzz-in** | The device-independent input-adapter boundary + registry, buzz-in domain semantics, one command/event pair, replay-derived queue state, sanitized public projection — with the **keyboard adapter** as its first consumer. | 2, 6, 7 |
 | 9   | **Generic Gamepad adapter**    | Gamepad API adapter behind the slice 8 boundary; connect/disconnect handling, polling isolation, host diagnostics. No model-specific assumptions. | 8 |
 | 10  | **Sony Buzz! mapping, validation & host setup UX** | Configurable controller mapping, Sony Buzz! validation as the preferred target, host setup/test surface, fallback when no controller is present. | 9 |
@@ -505,13 +505,20 @@ top of the scoring events this slice produces. Slice 7 was subsequently
 
 ## Slice 7 — scope, acceptance, non-goals
 
-**State: In review.** Owner-authorized and implemented on
+**State: Complete.** Owner-authorized and implemented on
 `claude/slice-7-timers-arming-transitions-wd7cmf` on top of `main` at
 `752a3fe0f45fdc1ee687339134023c3811facd91` (the merge commit of PR #13, the
-roadmap amendment). Full technical rationale in
+roadmap amendment); implementation commit `f804430`, final reviewed head
+`43cc66c5fc2a01cdb46daa1b52b7df08184b0448`. **Merged to `main` via PR #14**
+(merge commit `3f9ae1c4c7f9f6e37bac08bf519dbd8ef68af42a`, merged
+2026-07-26T23:43:51Z), with post-merge CI on `main` green for both jobs and the
+**GitHub Pages deployment succeeded. Manual live-route verification was not
+performed.** Full technical rationale in
 [`../architecture/ADR-007-timers-arming-transitions.md`](../architecture/ADR-007-timers-arming-transitions.md);
 local evidence in
-[`../receipts/2026-07-26-slice-7-local-verification.md`](../receipts/2026-07-26-slice-7-local-verification.md).
+[`../receipts/2026-07-26-slice-7-local-verification.md`](../receipts/2026-07-26-slice-7-local-verification.md);
+merged-state evidence in
+[`../receipts/2026-07-27-slice-7-post-merge-reconciliation.md`](../receipts/2026-07-27-slice-7-post-merge-reconciliation.md).
 
 ### Scope (implemented)
 
@@ -617,7 +624,8 @@ changes schema, runtime, UI, storage or hardware support.
   and undo across host and projector at all three viewports.
 - **Impact:** schema **yes** (additive, authored timer config, `schemaVersion: 1`)
   · runtime **yes** · UI **yes** · storage no · hardware no.
-- **Status:** `In review` — owner-authorized and implemented. Delivered on
+- **Status:** `Complete` — owner-authorized, implemented and **merged to `main`
+  via PR #14** (merge commit `3f9ae1c`, merged 2026-07-26T23:43:51Z). Delivered on
   `claude/slice-7-timers-arming-transitions-wd7cmf` from `main` at `752a3fe`; the
   scope, acceptance evidence and non-goals are recorded in "Slice 7 — scope,
   acceptance, non-goals" above, and the rationale in
@@ -650,6 +658,17 @@ changes schema, runtime, UI, storage or hardware support.
   display; e2e keyboard buzz-in across host and projector.
 - **Impact:** schema no · runtime **yes** · UI **yes** · storage no · hardware
   **no** (keyboard only).
+- **Owner direction (2026-07-27) — colored buttons.** The hardware-independent
+  input contract must be able to represent a **primary buzz action**, **secondary
+  logical actions** suitable for coloured controller buttons, and **configurable
+  mappings independent of any particular device model**. The engine must stay
+  **button-agnostic**: only a mapped LOGICAL action crosses into the command
+  layer, and a physical button, its index, its colour and its handset stay on the
+  adapter side of the §5.6 boundary. A final event vocabulary for secondary
+  actions is **not** defined in advance — it is defined only if and when this
+  slice's durable plan requires it, following the same "no speculative contract
+  without its first consumer" rule that shaped Slice 7's interruption seam.
+  **Recorded, not implemented.**
 - **Status:** `Planned` — unstarted.
 - **Owner gate:** `OG-1`, `OG-2` and `OG-3` are now **answered** (2026-07-26;
   recorded in `docs/PROJECT.md` and ADR-007 §16): arming is manual, a full ordered
@@ -673,6 +692,12 @@ changes schema, runtime, UI, storage or hardware support.
 - **Completion evidence:** `verify:all` green; adapter unit tests against a fake
   gamepad source; a test proving disconnect mid-arming produces no event; e2e
   coverage of the no-controller fallback path.
+- **Owner direction (2026-07-27) — colored buttons.** This slice owns
+  **configurable mappings**, still with no model-specific assumption: it maps
+  physical buttons to the LOGICAL actions Slice 8 defines, and the engine stays
+  button-agnostic. Sony-specific detection, button numbering, default colour
+  mappings, handset assignment and setup UX are **not** here — they are Slice 10.
+  **Recorded, not implemented.**
 - **Impact:** schema no · runtime **yes** · UI **yes** (diagnostics) · storage no
   · hardware **yes** (generic USB gamepads).
 - **Status:** `Planned` — unstarted.
@@ -696,6 +721,12 @@ changes schema, runtime, UI, storage or hardware support.
   coverage of the setup surface and the no-controller fallback. **Physical
   hardware validation is owner-performed and must be recorded as such — it
   cannot be claimed from CI.**
+- **Owner direction (2026-07-27) — colored buttons.** Sony Buzz! is confirmed as
+  the **preferred initial hardware validation target**, and everything
+  Sony-specific belongs HERE and nowhere earlier: detection, button numbering,
+  default colour mappings, handset assignment, the recommended profile, and the
+  host setup UX. Slices 8 and 9 must remain usable and complete without any of
+  it. **Recorded, not implemented; no hardware has been tested.**
 - **Impact:** schema no · runtime **yes** · UI **yes** · storage **possibly**
   (mapping persistence may defer to slice 13) · hardware **yes** (Sony Buzz! USB).
 - **Status:** `Planned` — unstarted.
