@@ -41,4 +41,16 @@ export const FORBIDDEN_DISPLAY_LABELS: readonly string[] = [
   'Manual correction',
   'Last score change',
   'Undo last score change',
+  // Slice 8: the host local-input & buzz-queue panel. The projector shows the
+  // ACTIVE team and a waiting COUNT (both public by design) and nothing else —
+  // never a buzz key, never the mapping editor, never the ordered waiting queue,
+  // and never the host's queue controls.
+  'Buzz key',
+  'Buzz keys',
+  'Change the buzz key',
+  'Reset buzz keys to defaults',
+  'Keyboard buzzing',
+  'Waiting queue',
+  'Mark incorrect and advance',
+  'Pass and advance',
 ]

@@ -38,6 +38,17 @@ This project separates two kinds of durable decision records:
      strategy and its limits, the public response DTO and wire version 5, sync
      envelope version 2, and the additive `timer` block on `schemaVersion: 1`
      (Slice 7).
+   - [`ADR-008-local-input-keyboard-buzz.md`](../architecture/ADR-008-local-input-keyboard-buzz.md)
+     — the hardware-independent local input boundary (raw input → adapter →
+     logical action → command → event → reducer → sanitized state), the bounded
+     logical action vocabulary with inert ordinal secondary slots, the
+     `KeyboardEvent.code` decision, configurable keyboard mappings and their
+     versioned device-local persistence, manual arming as the queue's intake gate,
+     the full ordered buzz queue and the explicit active respondent, promotion
+     after an incorrect response or a host pass, buzz interruption through the
+     Slice 7 seam, the response-opportunity identity, the tie policy, the public
+     buzz DTO and wire version 6, and the resolution of `OG-2`, `OG-3`, `OG-4` and
+     `OG-5` with `OG-6` still deferred (Slice 8).
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).

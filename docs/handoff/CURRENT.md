@@ -2,8 +2,10 @@
 
 This is the entry point for the next contributor or coding agent. It reflects
 the repository with **Slices 1–7 all `Complete` and merged to `main`** (Slice 7,
-timers, arming & transitions, merged via PR #14 at `3f9ae1c`). **Slice 8 — Local
-input contract & keyboard buzz-in — is unstarted and owner-gated.**
+timers, arming & transitions, merged via PR #14 at `3f9ae1c`; the Slice 7
+reconciliation merged via PR #15 at `004bf9d`), and **Slice 8 — Local input
+contract & keyboard buzz-in — `In review`, with its pull request open and
+unmerged.** **Slices 9 and 10 are unstarted and owner-gated.**
 
 > **Roadmap amended 2026-07-26, and that amendment is MERGED.** The owner
 > authorized a planning-only amendment,
@@ -86,7 +88,34 @@ input contract & keyboard buzz-in — is unstarted and owner-gated.**
   [`../receipts/2026-07-26-slice-7-local-verification.md`](../receipts/2026-07-26-slice-7-local-verification.md);
   post-merge reconciliation in
   [`../receipts/2026-07-27-slice-7-post-merge-reconciliation.md`](../receipts/2026-07-27-slice-7-post-merge-reconciliation.md).
-  **Slice 8 is unstarted and owner-gated.**
+- **Slice 8 (current): `In review`.** Owner-authorized and delivered on
+  `claude/slice-8-local-input-keyboard-thn7bn`, based on `main` at
+  `004bf9d55d7d7a22b19414e11ffdd050d98fb31f` (the merge commit of PR #15, the
+  Slice 7 post-merge reconciliation). The pull request is **open and unmerged**;
+  **no CI run, no post-merge state and no deployment is claimed for it**. Local
+  evidence in
+  [`../receipts/2026-07-27-slice-8-local-verification.md`](../receipts/2026-07-27-slice-8-local-verification.md).
+  **Slices 9 and 10 are unstarted and owner-gated, and no Gamepad, WebHID or Sony
+  Buzz! runtime exists.**
+- **What Slice 8 adds:** the hardware-independent **local input boundary** and
+  keyboard buzz-in through it. A layered chain — raw browser input → a local input
+  adapter (`src/input/`) → a **logical action** → a validated command → an
+  append-only event → the reducer → sanitized public state — in which the domain
+  never receives a `KeyboardEvent`, a key code, a device identifier or a mapping
+  table. A bounded logical action vocabulary (`primary-buzz` plus four **ordinal**
+  `secondary` slots that are representable, mappable and **inert**). Configurable
+  keyboard mappings bound to a physical key POSITION (`KeyboardEvent.code`), with
+  structured validation, safe defaults and versioned browser-local persistence that
+  is **not** the start of Slice 13. A **full ordered buzz queue** (`OG-2`) whose
+  order is the event log's, an explicit **active respondent**, and promotion after
+  an incorrect response or a host pass (`OG-3`) as one typed command that moves no
+  points. The first accepted buzz stops the clock through Slice 7's typed
+  interruption seam — one new source member, no new event type. Two reversible
+  commands and events; `PublicState.response` gained a required `buzz` field (wire
+  version 5 → 6); the sync envelope is unchanged at 2. `OG-4` and `OG-5` are
+  resolved; **`OG-6` remains deferred and scoring is unchanged for every team**.
+  See
+  [`../architecture/ADR-008-local-input-keyboard-buzz.md`](../architecture/ADR-008-local-input-keyboard-buzz.md).
 - **What Slice 7 adds:** the clock boundary and the response window. An explicit
   `Clock` seam (`src/time/clock.ts`) read only at the dispatch edge and the
   presentation edge — never in `reduce`, `replay`, the planner's decision logic or
@@ -437,20 +466,23 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Next action
 
-**Await explicit owner authorization for Slice 8 — Local input contract &
-keyboard buzz-in**, whose record is in
-[`../plans/MVP-ARC.md`](../plans/MVP-ARC.md). Slice 7 is merged and reconciled;
-nothing is in flight.
+**Review the Slice 8 pull request.** It is open and unmerged on
+`claude/slice-8-local-input-keyboard-thn7bn`. Nothing else is in flight, and no
+post-merge reconciliation has been performed — that is a separate, later step and
+must not be assumed.
 
-Slice 8's vocabulary gates `OG-1`, `OG-2` and `OG-3` are answered, and the owner
-has additionally given the **colored-button input direction** recorded below — but
-the slice is still `Planned`, unstarted and **owner-gated**. Answering a gate and
-recording a direction are not authorization to implement.
+After Slice 8 merges, the next slice is **Slice 9 — Generic Gamepad adapter**,
+whose record is in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md). It is `Planned`,
+unstarted and **owner-gated**: Slice 8 shipping the boundary it will plug into is
+not authorization to begin it.
 
 ## Owner direction — colored buttons and the local input contract (2026-07-27)
 
-Recorded for Slices 8–10. **Nothing here is implemented, and this direction
-authorizes no work.**
+Recorded for Slices 8–10. **Slice 8 has now implemented the CONTRACT half of this
+direction** (a primary buzz action, four ordinal secondary slots that are
+representable and inert, and configurable device-independent mappings). Everything
+below that concerns Slices 9 and 10 remains recorded and **unimplemented**, and
+this direction authorizes no further work.
 
 The hardware-independent local input contract must be capable of representing:
 
@@ -469,26 +501,33 @@ tested in this repository.
 
 Slice allocation is unchanged by this direction:
 
-| Slice | Scope |
-| --- | --- |
-| **8** | The hardware-independent **logical** input contract, and keyboard input as its first consumer. |
-| **9** | The generic **Gamepad** adapter and configurable mappings. |
-| **10** | **Sony Buzz!** detection, validation, a recommended profile, handset assignment, and the host setup UX. |
+| Slice | Scope | State |
+| --- | --- | --- |
+| **8** | The hardware-independent **logical** input contract, and keyboard input as its first consumer. | `In review` |
+| **9** | The generic **Gamepad** adapter and configurable mappings. | `Planned`, unstarted |
+| **10** | **Sony Buzz!** detection, validation, a recommended profile, handset assignment, and the host setup UX. | `Planned`, unstarted |
 
-**A final event vocabulary for secondary actions is deliberately NOT defined
-here.** It is defined only if and when the durable Slice 8 plan requires it —
+**A final event vocabulary for secondary actions was deliberately NOT defined in
+advance, and Slice 8 did not define one.** Secondary slots exist at the
+input-contract and mapping layers; command translation refuses them, so no
+secondary action produces a command, an event or a state change. A durable
+vocabulary is defined only when a slice supplies an authorized consumer —
 `ROADMAP-AMENDMENT-001` §5.1's "no speculative contract without its first
-consumer" rule applies to secondary actions exactly as it applied to the timer's
-interruption seam.
+consumer" rule, applied to secondary actions exactly as it was applied to the
+timer's interruption seam. See
+[`../architecture/ADR-008-local-input-keyboard-buzz.md`](../architecture/ADR-008-local-input-keyboard-buzz.md) §3.
 
-## Prohibited next actions until Slice 8 is explicitly authorized
+## Prohibited next actions until Slice 9 is explicitly authorized
 
-Do **not**: merge the Slice 7 PR yourself; begin Slice 8 or any later slice;
-add local buzzer support, keyboard buzz-in handling, or Gamepad API code (the
-roadmap plans these for Slices 8–10, and answering `OG-1`/`OG-2`/`OG-3` is **not**
-authorization to write them); add a buzz queue, first-only lockout, or
-pass-to-next-team promotion; restrict scoring to an active respondent (`OG-6`,
-still deferred); add automatic timeout scoring or make a timer move a point; add
+Do **not**: merge the Slice 8 PR yourself; perform a Slice 8 post-merge
+reconciliation before the PR is actually merged; begin Slice 9, Slice 10 or any
+later slice; add Gamepad API, WebHID, Bluetooth, USB or HID code; add Sony Buzz!
+detection, vendor/product identification, button numbering, handset assignment,
+coloured-button default mappings or a controller setup wizard (Slice 10 owns all
+of it, and Slice 8's contract being ready is **not** authorization to write them);
+give a secondary logical action any gameplay meaning or any durable event; add
+first-only lockout; restrict scoring to an active respondent (`OG-6`,
+still deferred); add automatic timeout scoring or make a timer or a buzz move a point; add
 student-owned contestant devices, networked buzzers, or remote team input — these
 remain **excluded**, not merely deferred; add durable
 persistence/IndexedDB/session recovery/leader coordination; add a final wager, Daily Double, or Final Jeopardy; add a media

@@ -6,6 +6,7 @@ import {
   isPublicResponseState,
   isPublicState,
   publicRemainingMsAt,
+  type PublicBuzzState,
   type PublicResponseTimer,
 } from './publicState'
 import { createSessionStore, type SessionStore } from './store'
@@ -26,7 +27,14 @@ import { clampOffset, MAX_CLOCK_OFFSET_CORRECTION_MS } from '../sync/receiver'
  *    and the private phase map never cross;
  *  - a clue that was never armed and never timed projects nothing at all;
  *  - the wire version moved 4 → 5 and an older payload is rejected, not guessed.
+ *
+ * Slice 8 added the buzz projection beside the timer. The timer-side claims above
+ * are unchanged and still asserted; the buzz-side privacy claims live in
+ * `buzzSanitize.test.ts`.
  */
+
+/** The "nobody has buzzed" member, used by every timer-only case below. */
+const NO_BUZZ: PublicBuzzState = { status: 'none' }
 
 const AT = 1_000_000
 const ROUND = 'board-round'
@@ -67,7 +75,12 @@ describe('what the projector receives', () => {
   it('projects the armed flag on its own, with no timer', () => {
     const store = openStore()
     store.dispatch({ type: 'ARM_RESPONSE_PHASE', issuedAt: AT, roundId: ROUND })
-    expect(store.getPublicState().response).toEqual({ armed: true, timer: { status: 'idle' } })
+    expect(store.getPublicState().response).toEqual({
+      armed: true,
+      timer: { status: 'idle' },
+      // Slice 8: arming alone publishes an empty queue, never a team.
+      buzz: { status: 'none' },
+    })
   })
 
   it('projects a running window as an ABSOLUTE deadline plus the duration', () => {
@@ -75,6 +88,7 @@ describe('what the projector receives', () => {
     expect(store.getPublicState().response).toEqual({
       armed: false,
       timer: { status: 'running', durationMs: 30_000, deadline: AT + 30_000 },
+      buzz: { status: 'none' },
     })
   })
 
@@ -96,7 +110,11 @@ describe('what the projector receives', () => {
       deadline: AT + 30_000,
     })
     const response = store.getPublicState().response
-    expect(response).toEqual({ armed: false, timer: { status: 'expired', durationMs: 30_000 } })
+    expect(response).toEqual({
+      armed: false,
+      timer: { status: 'expired', durationMs: 30_000 },
+      buzz: { status: 'none' },
+    })
   })
 
   it('projects an interruption WITHOUT saying who or why', () => {
@@ -136,13 +154,44 @@ describe('what never crosses the boundary', () => {
     }
   })
 
-  it('never carries anything about a future buzzer', () => {
+  /**
+   * Slice 8 makes SOME buzz information public on purpose — a class must be able
+   * to see who has the floor — so the old blanket "no buzz word anywhere"
+   * assertion would now be false. It is replaced rather than deleted, and the
+   * claim it protected survives intact and is in fact stronger: nothing about the
+   * INPUT that produced a buzz is public, and nothing about a queue is public
+   * until a team actually buzzes.
+   */
+  it('carries no device, key, mapping or adapter information at all', () => {
     const store = startedStore(30)
     store.dispatch({ type: 'ARM_RESPONSE_PHASE', issuedAt: AT, roundId: ROUND })
     const serialized = JSON.stringify(store.getPublicState()).toLowerCase()
-    for (const forbidden of ['buzz', 'queue', 'device', 'gamepad', 'controller', 'button', 'teamid']) {
+    for (const forbidden of [
+      'device',
+      'gamepad',
+      'webhid',
+      'sony',
+      'controller',
+      'handset',
+      'button',
+      'keyboard',
+      'keycode',
+      'digit1',
+      'mapping',
+      'binding',
+      'teamid',
+      'resolvedcount',
+      'primary-buzz',
+      'secondary',
+    ]) {
       expect(serialized, `must not contain ${forbidden}`).not.toContain(forbidden)
     }
+  })
+
+  it('projects an empty queue for an armed clue nobody has buzzed on', () => {
+    const store = startedStore(30)
+    store.dispatch({ type: 'ARM_RESPONSE_PHASE', issuedAt: AT, roundId: ROUND })
+    expect(store.getPublicState().response?.buzz).toEqual({ status: 'none' })
   })
 
   it('never leaks the answer just because a timer is running', () => {
@@ -206,16 +255,23 @@ describe('the public response guard', () => {
 
   it('accepts every well-formed status', () => {
     expect(isPublicResponseState(null)).toBe(true)
-    expect(isPublicResponseState({ armed: false, timer: { status: 'idle' } })).toBe(true)
-    expect(isPublicResponseState({ armed: true, timer: running })).toBe(true)
+    expect(isPublicResponseState({ armed: false, timer: { status: 'idle' }, buzz: NO_BUZZ })).toBe(
+      true,
+    )
+    expect(isPublicResponseState({ armed: true, timer: running, buzz: NO_BUZZ })).toBe(true)
     expect(
       isPublicResponseState({
         armed: false,
         timer: { status: 'paused', durationMs: 1_000, remainingMs: 500 },
+        buzz: NO_BUZZ,
       }),
     ).toBe(true)
     expect(
-      isPublicResponseState({ armed: false, timer: { status: 'expired', durationMs: 1_000 } }),
+      isPublicResponseState({
+        armed: false,
+        timer: { status: 'expired', durationMs: 1_000 },
+        buzz: NO_BUZZ,
+      }),
     ).toBe(true)
   })
 
@@ -294,8 +350,8 @@ describe('the derived countdown', () => {
 })
 
 describe('the wire protocol', () => {
-  it('is at public-state version 5 and envelope version 2', () => {
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(5)
+  it('is at public-state version 6 and envelope version 2', () => {
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(6)
     expect(SYNC_SCHEMA_VERSION).toBe(2)
   })
 

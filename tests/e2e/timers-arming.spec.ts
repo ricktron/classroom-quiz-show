@@ -268,9 +268,22 @@ test('the projector leaks nothing new, and scoring still works alongside a windo
   // And the projector is still read-only.
   await expect(display.getByRole('button')).toHaveCount(0)
 
-  // ── No buzzer input exists anywhere, on either surface ────────────────────
+  // ── No HARDWARE input exists anywhere, on either surface ──────────────────
+  // Slice 8 added keyboard buzz-in, so the old blanket "no buzz-in anywhere"
+  // assertion would now be false. The claim that survives — and that Slices 9 and
+  // 10 own — is the one asserted here: no controller, gamepad, WebHID, Bluetooth
+  // or Sony surface exists, and there is still no first-only lockout.
   const hostHtml = (await host.content()).toLowerCase()
-  for (const absent of ['gamepad', 'buzz-in', 'controller', 'lockout', 'buzzer queue']) {
+  for (const absent of [
+    'gamepad',
+    'webhid',
+    'bluetooth',
+    'controller',
+    'handset',
+    'sony',
+    'playstation',
+    'lockout',
+  ]) {
     expect(hostHtml, `host must not contain "${absent}"`).not.toContain(absent)
   }
 

@@ -590,11 +590,80 @@ pack management. No backend, accounts, cross-device sync, analytics or AI. No
 additional playable round type. `OG-2`, `OG-3` and `OG-6` are recorded but **not
 implemented**.
 
-### What remains for Slice 8
+### What remains for Slice 9
 
-Local input contract & keyboard buzz-in. `OG-1`, `OG-2` and `OG-3` are now
-answered, so its event vocabulary is unblocked. **Slice 8 is `Planned`, unstarted,
-and owner-gated — it must not begin until the owner explicitly authorizes it.**
+Generic Gamepad adapter. Slice 8 shipped the boundary it plugs into. **Slice 9 is
+`Planned`, unstarted, and owner-gated — it must not begin until the owner
+explicitly authorizes it, and Slice 8's contract being ready is not that
+authorization.**
+
+## Slice 8 — scope, acceptance, non-goals
+
+Slice 8 is **In review**: implemented on
+`claude/slice-8-local-input-keyboard-thn7bn` from `main` at `004bf9d`, with the
+pull request **open and unmerged**. Rationale in
+[`../architecture/ADR-008-local-input-keyboard-buzz.md`](../architecture/ADR-008-local-input-keyboard-buzz.md).
+
+### Delivered
+
+1. **A layered, hardware-independent input boundary** (`src/input/`): raw browser
+   input → adapter → logical action → validated command → append-only event →
+   reducer → sanitized public state. The domain cannot receive a `KeyboardEvent`,
+   a key code, a device identifier or a mapping table.
+2. **A bounded logical action vocabulary**: `primary-buzz` plus four **ordinal**
+   `secondary` slots. Secondary actions are representable and mappable but
+   **inert** — translation refuses them, so none produces a command or an event.
+3. **A bounded, application-only input-source union** rather than a speculative
+   plugin registry: no dynamic lookup, no content-controlled registration.
+4. **Configurable keyboard mappings** on `KeyboardEvent.code` (physical position),
+   with structured validation (duplicates, reserved keys, unknown teams, duplicate
+   team primaries), safe digit-row defaults, and no silent repair or overwrite.
+5. **Versioned browser-local mapping persistence**, validated on load, falling
+   back wholesale on anything invalid — explicitly NOT Slice 13 persistence.
+6. **Manual arming reused as the intake gate** (`OG-1`), with no second flag and
+   still exactly one arming control.
+7. **A full ordered buzz queue** (`OG-2`), ordered by the event log's `seq`, with
+   each team appearing at most once per response opportunity.
+8. **An explicit active respondent**, distinct from waiting, empty, exhausted and
+   closed.
+9. **Promotion after an incorrect response or a host pass** (`OG-3`) as one typed
+   command that moves no points.
+10. **Timer interruption through Slice 7's typed seam** — one new source member,
+    exactly once per window, structurally unrepeatable.
+11. **`PublicState.response.buzz`** (active positional key + waiting count), wire
+    version 5 → 6; the sync envelope unchanged at 2.
+12. **Host and projector surfaces**: a mapping editor with key capture and
+    conflict messaging, the active team and full ordered queue, incorrect/pass
+    actions and per-press rejection reasons on the host; the active team and a
+    waiting count on the projector.
+
+### Acceptance criteria
+
+| Criterion (from the roadmap record) | Evidence |
+| --- | --- |
+| An input-adapter boundary; application-only registration; mapped logical team input as the only thing crossing | `src/input/*`; `src/input/localInputContract.test.ts` |
+| One buzz command/event pair | `RECORD_TEAM_BUZZ` → `TEAM_BUZZED`; `src/state/buzzQueueReducer.test.ts` |
+| Buzz queue state derived only by replay, order from `seq` | `src/game/timing/buzzQueue.ts`; "orders buzzes by the event log" and the replay suite |
+| Duplicate suppression derived from the effective log | `hasTeamBuzzed` + the duplicate/corrupt-log suites |
+| A sanitized public buzz projection | `PublicBuzzState`; `src/state/buzzSanitize.test.ts` |
+| The keyboard adapter and host mapping surface | `src/input/keyboardAdapter.ts`, `src/host/LocalInputHostPanel.tsx` and their tests |
+| An ADR | [`ADR-008`](../architecture/ADR-008-local-input-keyboard-buzz.md) |
+| `verify:all` green | Slice 8 local-verification receipt |
+| Replay determinism tests for buzz order | "replay and undo" suite in `buzzQueueReducer.test.ts` |
+| Undo-restores-queue-exactly tests | same suite |
+| A privacy test proving no device identifier, button index or mapping reaches `PublicState` or the display DOM | `buzzSanitize.test.ts`, `BuzzQueueDisplay.test.tsx`, `tests/e2e/buzz-in.spec.ts` |
+| e2e keyboard buzz-in across host and projector | `tests/e2e/buzz-in.spec.ts` (4 tests × 3 viewport projects) |
+
+### Explicit non-goals (Slice 8)
+
+No Gamepad API, WebHID, Bluetooth, USB or HID handling. No Sony Buzz! detection,
+vendor/product identification, button numbering, handset assignment, coloured
+default mappings or controller setup wizard — all Slice 10. No secondary-action
+gameplay. No phone, networked or student-device buzzing. No automatic scoring, no
+reaction-time claim. No session persistence or recovery. No portable
+export/import, media, theme engine, authoring, packs, wagering, reporting or
+leaderboards. No backend, accounts, cloud, analytics or AI. No additional playable
+round type. **`OG-6` remains deferred and scoring is unchanged.**
 
 ## Amended slice records (7–18)
 
@@ -669,13 +738,17 @@ changes schema, runtime, UI, storage or hardware support.
   slice's durable plan requires it, following the same "no speculative contract
   without its first consumer" rule that shaped Slice 7's interruption seam.
   **Recorded, not implemented.**
-- **Status:** `Planned` — unstarted.
-- **Owner gate:** `OG-1`, `OG-2` and `OG-3` are now **answered** (2026-07-26;
-  recorded in `docs/PROJECT.md` and ADR-007 §16): arming is manual, a full ordered
-  queue is preserved rather than a first-only lockout, and the next queued team is
-  promoted after an incorrect response or a host pass. Slice 8's vocabulary is
-  therefore unblocked; it still requires explicit authorization to begin, and
-  **none of those queue behaviours is implemented anywhere in the codebase.**
+- **Status:** `In review` — owner-authorized, implemented on
+  `claude/slice-8-local-input-keyboard-thn7bn` from `main` at `004bf9d`, with the
+  pull request **open and unmerged**. The scope, acceptance evidence and non-goals
+  are recorded in "Slice 8 — scope, acceptance, non-goals" above, and the rationale
+  in
+  [`../architecture/ADR-008-local-input-keyboard-buzz.md`](../architecture/ADR-008-local-input-keyboard-buzz.md).
+- **Owner gate:** authorization to begin — **granted**. `OG-1` (implemented in
+  Slice 7) is reused as the queue's intake gate; **`OG-2` and `OG-3` are
+  implemented by this slice**; `OG-4` (ties) and `OG-5` (queue lifetime) were
+  **resolved** during it; **`OG-6` remains deferred and is not implemented** —
+  scoring stays available for every team.
 
 ### Slice 9 — Generic Gamepad adapter
 

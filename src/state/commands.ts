@@ -2,6 +2,7 @@ import type { PublicStatusCode } from './status'
 import type { GameDefinition } from '../game/gameDefinition'
 import type { ScoreAdjustmentMode, ScoreSource } from '../game/teams/scoring'
 import type { ResponseInterruptionSource } from '../game/timing/responsePhase'
+import type { ActiveResponseResolution } from '../game/timing/buzzQueue'
 
 /**
  * COMMANDS express *intent* — a request to change state that the reducer may
@@ -12,9 +13,9 @@ import type { ResponseInterruptionSource } from '../game/timing/responsePhase'
  * The foundation vocabulary started deliberately small and has grown one slice at
  * a time: Slice 3 added the round-level lifecycle (`INITIALIZE_GAME`,
  * `SELECT_ROUND`, `ADVANCE_TO_NEXT_ROUND`, `END_GAME_SESSION`), Slice 5 the board
- * reveals, Slice 6 the one scoring command, and Slice 7 the response phase —
- * arming, the timer, and its transitions. There are still no buzz-in, wager or
- * persistence commands.
+ * reveals, Slice 6 the one scoring command, Slice 7 the response phase —
+ * arming, the timer, and its transitions — and Slice 8 the buzz queue. There are
+ * still no wager or persistence commands.
  *
  * Determinism note: every command carries `issuedAt` (a host-supplied wall-clock
  * stamp). The reducer copies it onto the resulting event and never reads the
@@ -45,6 +46,8 @@ export const COMMAND_TYPES = [
   'INTERRUPT_RESPONSE_TIMER',
   'EXPIRE_RESPONSE_TIMER',
   'RESET_RESPONSE_PHASE',
+  'RECORD_TEAM_BUZZ',
+  'RESOLVE_ACTIVE_RESPONSE',
 ] as const
 
 export type CommandType = (typeof COMMAND_TYPES)[number]
@@ -178,10 +181,9 @@ export interface AdjustTeamScoreCommand extends CommandBase<'ADJUST_TEAM_SCORE'>
  *
  * None of them scores. Expiry awards and deducts nothing — a timer running out is
  * a fact about the window, not a decision about points, and the teacher makes the
- * scoring decision separately (ADR-006 §9, ADR-007 §14).
- *
- * There is deliberately NO buzz-in command. Arming records that an interrupting
- * input *would* be accepted; no such input exists in this slice.
+ * scoring decision separately (ADR-006 §9, ADR-007 §14). Slice 8's two buzz
+ * commands keep that rule exactly: buzzing scores nothing and a promotion scores
+ * nothing.
  */
 interface ResponsePhaseCommandBase<T extends CommandType> extends CommandBase<T> {
   /** The round this command targets. Must equal the current round. */
@@ -243,8 +245,76 @@ export interface ExpireResponseTimerCommand
   readonly deadline: number
 }
 
-/** Clear arming and the timer for the live clue, back to the initial phase. */
+/** Clear arming, the timer AND the queue for the live clue, back to the initial phase. */
 export type ResetResponsePhaseCommand = ResponsePhaseCommandBase<'RESET_RESPONSE_PHASE'>
+
+/**
+ * Buzz-queue commands (Slice 8) — the first commands with an INPUT-ADAPTER
+ * origin, and the implementation of owner decisions OG-2 and OG-3.
+ *
+ * ## What crosses the boundary
+ *
+ * A buzz command carries a TEAM and a response-opportunity identity, and nothing
+ * else. No key code, no device, no button index, no vendor id, no mapping table
+ * and no browser event: those are host-private by `ROADMAP-AMENDMENT-001` §5.6
+ * and stop at `src/input/`. The adapter maps a physical press to a logical action
+ * and a team; the planner then re-validates the team against the loaded game,
+ * exactly as the scoring panel is never trusted for an amount (ADR-006).
+ *
+ * ## Response-opportunity identity
+ *
+ * Both commands carry `roundId` AND `tileId` — the clue they believe they are
+ * acting on. That pair is the smallest stable identifier that already exists, and
+ * it is the same technique the timer uses with `timerId` (ADR-007 §6): a press
+ * that lands after the host moved to another clue names the previous tile, fails
+ * the match, and appends nothing. No new identity had to be invented.
+ *
+ * ## Neither one scores
+ *
+ * A buzz moves no points. A promotion moves no points, and `incorrect`
+ * deliberately does not deduct — inventing an automatic penalty would break
+ * ADR-006 §9's reveal/score independence and take a judgement out of the
+ * teacher's hands. Scoring stays the separate `ADJUST_TEAM_SCORE` command, and it
+ * stays available for every team (OG-6 remains deferred).
+ */
+
+/**
+ * Record that a team buzzed for the live clue.
+ *
+ * Accepted only while the response phase is ARMED (OG-1's manual arming is the
+ * intake gate), the clue is at the `prompt` stage, the team exists in the loaded
+ * game, and the team has not already buzzed for this response opportunity.
+ *
+ * When it is the FIRST accepted buzz of a live countdown it also stops the clock,
+ * through Slice 7's typed interruption seam rather than through anything
+ * buzz-specific — see `planCommand`.
+ */
+export interface RecordTeamBuzzCommand extends ResponsePhaseCommandBase<'RECORD_TEAM_BUZZ'> {
+  /** The clue this buzz is for. Must be the tile currently at the `prompt` stage. */
+  readonly tileId: string
+  /** The team that buzzed. Must be a team of the loaded game. */
+  readonly teamId: string
+}
+
+/**
+ * End the active team's turn and promote the next queued team (OG-3).
+ *
+ * ONE command for both host intents rather than two near-identical ones, because
+ * they perform the identical transition and differ only in what the teacher meant
+ * — the same reasoning that made `ADJUST_TEAM_SCORE` one command with a typed
+ * `mode` (ADR-006 §7). One click is one command is one event is one promotion:
+ * there is no multi-step state manipulation for a host to get wrong mid-lesson.
+ *
+ * If the queue empties, the state says so explicitly (`exhausted`) rather than
+ * looking like nobody ever buzzed.
+ */
+export interface ResolveActiveResponseCommand
+  extends ResponsePhaseCommandBase<'RESOLVE_ACTIVE_RESPONSE'> {
+  /** The clue this resolution is for. Must be the tile at the `prompt` stage. */
+  readonly tileId: string
+  /** Why the active team's turn ended. Bounded and typed — never a free string. */
+  readonly resolution: ActiveResponseResolution
+}
 
 export type SessionCommand =
   | InitSessionCommand
@@ -270,3 +340,5 @@ export type SessionCommand =
   | InterruptResponseTimerCommand
   | ExpireResponseTimerCommand
   | ResetResponsePhaseCommand
+  | RecordTeamBuzzCommand
+  | ResolveActiveResponseCommand

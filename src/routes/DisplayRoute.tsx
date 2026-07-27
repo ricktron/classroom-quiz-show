@@ -2,6 +2,7 @@ import { usePublicState } from '../display/usePublicState'
 import { CategoryBoardDisplay } from '../display/CategoryBoardDisplay'
 import { TeamScoreboard } from '../display/TeamScoreboard'
 import { ResponseTimerDisplay } from '../display/ResponseTimerDisplay'
+import { BuzzQueueDisplay } from '../display/BuzzQueueDisplay'
 import type { PublicGameView } from '../state/publicState'
 import './DisplayRoute.css'
 
@@ -98,6 +99,14 @@ export function DisplayRoute() {
             response={publicState.response}
             hostClockOffsetMs={hostClockOffsetMs}
           />
+          {/*
+            Who has the floor (Slice 8), directly under the clock, because a class
+            reads "who is answering" and "how long is left" as one thing. It
+            renders nothing until a team actually buzzes, so an armed clue with no
+            buzz shows the clock alone. It carries the active team and a WAITING
+            COUNT — never the ordered queue, never a key, never a device.
+          */}
+          <BuzzQueueDisplay buzz={publicState.response.buzz} teams={publicState.teams} />
         </div>
       )}
       {/*

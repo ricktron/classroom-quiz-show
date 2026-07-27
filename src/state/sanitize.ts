@@ -10,6 +10,7 @@ import {
   isPublicState,
   type PublicCategoryBoardCategory,
   type PublicCategoryBoardTile,
+  type PublicBuzzState,
   type PublicGameView,
   type PublicPhase,
   type PublicResponseState,
@@ -23,7 +24,9 @@ import {
 import { PUBLIC_STATUS_COPY, PUBLIC_STATUS_PHASE } from './status'
 import { categoryBoardStateFor, responsePhaseFor, teamScoreFor } from './reducer'
 import { isInitialResponsePhase } from '../game/timing/responsePhase'
+import { buzzQueueStatus, type BuzzQueueState } from '../game/timing/buzzQueue'
 import { isTeamAccent } from '../game/teams/accents'
+import { teamIndexById } from '../game/teams/definition'
 import { isTeamScore } from '../game/teams/scoring'
 import {
   findTileLocation,
@@ -195,11 +198,15 @@ function toPublicTeams(game: PrivateGameState | null): PublicTeamsState | null {
  *
  * What it deliberately never reads:
  *  - `timerId` — an internal token the projector has no use for;
- *  - the interruption `source` — "stopped" is public, *why* is not (a later slice
- *    makes a buzz source public deliberately, not by inheritance);
+ *  - the interruption `source` — "stopped" is public, *why* is not. Slice 8 keeps
+ *    this exactly: a buzz-interrupted window still publishes only "stopped", and
+ *    who is answering arrives through the separate buzz projection below, which
+ *    is a deliberate decision rather than something inherited from the timer;
  *  - a running timer's `startedAt` — the deadline is the fact the display needs,
  *    and publishing both would invite the display to recompute the window;
- *  - the private per-round phase map, or any other round's phase.
+ *  - the private per-round phase map, or any other round's phase;
+ *  - the queue's raw `order` array, its authored team ids, its `resolvedCount`,
+ *    and every team that has already had a turn.
  *
  * It is PURE: it reads no clock. A running timer is projected as its absolute
  * deadline, and "how long is left" is derived by the display against its own
@@ -252,7 +259,44 @@ function toPublicResponse(game: PrivateGameState | null): PublicResponseState | 
       break
   }
 
-  return { armed: phase.armed, timer: publicTimer }
+  return { armed: phase.armed, timer: publicTimer, buzz: toPublicBuzz(game, phase.queue) }
+}
+
+/**
+ * Project the ordered buzz queue to the tiny public DTO (Slice 8).
+ *
+ * ALLOW-LIST, like every sibling: it names a positional key and a count, and it
+ * reads nothing else. The private queue is `{ order: TeamId[], resolvedCount }`;
+ * what leaves is at most `{ status, activeTeamKey, waitingCount }`.
+ *
+ * What it deliberately never reads:
+ *  - the authored team id of ANY queue member — the active team is named by the
+ *    same positional key the scoreboard already publishes, so the display resolves
+ *    the name from data it already has and no id ever travels;
+ *  - the ORDER of the waiting teams, or their identities at all — only how many
+ *    (see the DTO's header for why that decision was made);
+ *  - the teams whose turn is already over;
+ *  - `resolvedCount`, or anything from which it could be reconstructed;
+ *  - the key, device, adapter or mapping that produced any buzz — none of which
+ *    is reachable from here in the first place, because none of it is in the
+ *    durable state.
+ *
+ * Fails closed: an active team id that is not on the loaded game (an impossible
+ * private state) projects `none` rather than an unresolvable key.
+ */
+function toPublicBuzz(game: PrivateGameState, queue: BuzzQueueState): PublicBuzzState {
+  const status = buzzQueueStatus(queue)
+  if (status.status === 'empty') return { status: 'none' }
+  if (status.status === 'exhausted') return { status: 'exhausted' }
+  const index = teamIndexById(game.definition.teams, status.activeTeamId)
+  if (index < 0) return { status: 'none' }
+  return {
+    status: 'active',
+    // Positional, opaque, deterministic — never the authored team id, and exactly
+    // the key `toPublicTeams` assigns, so the two cannot disagree.
+    activeTeamKey: `t${index}`,
+    waitingCount: status.waitingTeamIds.length,
+  }
 }
 
 /** Outcome of projecting the current round: a DTO, nothing to show, or a failure. */

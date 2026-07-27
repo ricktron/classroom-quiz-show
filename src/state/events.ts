@@ -2,6 +2,7 @@ import type { PublicStatusCode } from './status'
 import type { GameDefinition } from '../game/gameDefinition'
 import type { ScoreAdjustmentMode, ScoreSource } from '../game/teams/scoring'
 import type { ResponseInterruptionSource } from '../game/timing/responsePhase'
+import type { ActiveResponseResolution } from '../game/timing/buzzQueue'
 
 /**
  * EVENTS record *accepted facts* — things that actually happened, in order. The
@@ -47,6 +48,8 @@ export const EVENT_TYPES = [
   'RESPONSE_TIMER_INTERRUPTED',
   'RESPONSE_TIMER_EXPIRED',
   'RESPONSE_PHASE_RESET',
+  'TEAM_BUZZED',
+  'ACTIVE_RESPONSE_RESOLVED',
 ] as const
 
 export type EventType = (typeof EVENT_TYPES)[number]
@@ -302,8 +305,74 @@ export interface ResponseTimerExpiredEvent
   readonly deadline: number
 }
 
-/** The phase was cleared back to disarmed with no timer, without leaving the clue. */
+/** The phase was cleared back to disarmed, no timer and no queue, without leaving the clue. */
 export type ResponsePhaseResetEvent = ResponsePhaseEventBase<'RESPONSE_PHASE_RESET'>
+
+/**
+ * Buzz-queue events (Slice 8) — the durable record of who claimed a clue, in what
+ * order, and how each turn ended.
+ *
+ * ## Game facts, never input facts
+ *
+ * `TEAM_BUZZED` records that **a team buzzed**. It deliberately does NOT record
+ * which key was pressed, which device produced it, which adapter was in use, or
+ * what the mapping said, because none of those is a fact about the game — they
+ * are facts about one teacher's laptop, and `ROADMAP-AMENDMENT-001` §5.6 keeps
+ * them host-private. A history exported, replayed or read a year later answers
+ * "who buzzed first on the tectonics clue", which is the question that matters,
+ * and it answers it identically whether the press came from a keyboard, a gamepad
+ * (Slice 9) or a Sony Buzz! handset (Slice 10).
+ *
+ * A bounded `source: 'keyboard'` field was considered and rejected: no consumer
+ * in this slice needs it, ADR-004's "never a speculative entry" rule applies, and
+ * a field nobody reads is a field that acquires meaning by accident. Slice 9 may
+ * add it *with* its consumer.
+ *
+ * ## Order comes from `seq`, not from the clock
+ *
+ * There is no position, index or rank on the event. Queue order IS the order
+ * these events appear in the log, so it cannot disagree with the log, cannot be
+ * re-derived differently by two readers, and survives undo exactly. `occurredAt`
+ * is the arrival stamp the command carried; it is EVIDENCE, never the tiebreaker,
+ * and it is never presented as a reaction time.
+ *
+ * ## Both reversible
+ *
+ * A mis-press, a teacher who meant to press the other button, a promotion made
+ * one team too early: all ordinary classroom mistakes, all undoable. Undo is
+ * exact for free because the queue is replayed, not cached.
+ */
+
+/**
+ * A team was accepted into the ordered queue for the live clue.
+ *
+ * Carries `tileId`, resolved at plan time, so replay never has to ask which clue
+ * was open — the same technique the board events use.
+ */
+export interface TeamBuzzedEvent extends ResponsePhaseEventBase<'TEAM_BUZZED'> {
+  /** The clue this buzz was for. */
+  readonly tileId: string
+  /** The team that buzzed, by stable authored id. */
+  readonly teamId: string
+}
+
+/**
+ * The active team's turn ended and the next queued team was promoted (OG-3).
+ *
+ * It names the team whose turn ended — resolved at plan time from the queue, not
+ * taken from the command — so the log reads as a sequence of statements about
+ * specific teams rather than a sequence of anonymous pointer moves. It awards and
+ * deducts nothing.
+ */
+export interface ActiveResponseResolvedEvent
+  extends ResponsePhaseEventBase<'ACTIVE_RESPONSE_RESOLVED'> {
+  /** The clue this resolution was for. */
+  readonly tileId: string
+  /** The team whose turn ended. Frozen at plan time from the live queue. */
+  readonly teamId: string
+  /** Why it ended: judged incorrect, or passed by the host. Scores nothing. */
+  readonly resolution: ActiveResponseResolution
+}
 
 export type SessionEvent =
   | SessionInitializedEvent
@@ -329,3 +398,5 @@ export type SessionEvent =
   | ResponseTimerInterruptedEvent
   | ResponseTimerExpiredEvent
   | ResponsePhaseResetEvent
+  | TeamBuzzedEvent
+  | ActiveResponseResolvedEvent

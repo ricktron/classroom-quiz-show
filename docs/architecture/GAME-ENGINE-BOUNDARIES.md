@@ -181,6 +181,19 @@ while one exists, and a round whose projection failed publishes no timer either.
 The sync envelope also moved 1 → 2 (a required `sentAt` stamp used to estimate the
 host/display clock offset); both versions fail closed rather than being guessed at.
 
+**Status (Slice 8).** `PublicState.response` gained exactly one new field,
+`buzz: PublicBuzzState` (wire version 5 → 6), carrying **who is answering** — by
+the same positional render key the scoreboard already uses — and **how many teams
+are waiting**. The ordered waiting list is deliberately host-only: a public ranked
+list of who reacted fastest is a reaction-time claim this project refuses to make,
+and the count carries the useful part. Never projected: raw keys, key mappings,
+browser event data, input-source identifiers, adapter diagnostics, the queue's
+`order` array or `resolvedCount`, the teams whose turn is over, the authored team
+id of any queue member, or the interruption **source** — a buzz-stopped window
+still publishes only "Stopped". The `buzz` field is **required**, not optional: a
+version-5 display that silently omitted "Red Team is answering" would be wrong
+without looking broken, so the version moved instead.
+
 **Status (Slice 6).** The scoreboard is the first DELIBERATELY public gameplay
 data, and the allow-list still holds. `PublicState` gained exactly one new field,
 `teams: PublicTeamsState | null` (wire version 3 → 4), carrying per team a
@@ -297,6 +310,26 @@ boundary as everything else and carries the timer identity and deadline it
 believes it is expiring, so a stale callback appends nothing. Buzzers and wagers
 remain deferred; arming records only that an interrupting input *would* be
 accepted.
+
+**Status (Slice 8).** The core took its first EXTERNAL input, and the boundary is
+the decision — see
+[`ADR-008-local-input-keyboard-buzz.md`](ADR-008-local-input-keyboard-buzz.md).
+Raw browser input reaches a local input adapter (`src/input/`), which maps it to a
+bounded **logical action** plus a team; only that crosses into the command layer.
+**The domain never receives a `KeyboardEvent`, a key code, a device or vendor
+identifier, a button index or a mapping table**, and cannot: none of them is
+expressible in the value that crosses. Two reversible commands/events cover the
+whole capability — `RECORD_TEAM_BUZZ` → `TEAM_BUZZED` and
+`RESOLVE_ACTIVE_RESPONSE` → `ACTIVE_RESPONSE_RESOLVED` — and both carry the
+`(roundId, tileId)` response opportunity they believe is live, so a press that
+lands after the host moved on appends nothing. The buzz queue is derived purely by
+replay with its order taken from the log's `seq`; the reducer still reads no clock,
+no mapping and no random source, so replay stays bit-exact and undo restores a
+prior queue exactly. Slice 7's typed interruption seam absorbed buzz-in for the
+cost of **one union member** — no event type, reducer transition or public field
+changed. Secondary logical actions are representable and mappable but produce no
+command, and therefore no event: the contract is ready for later hardware while
+the game gains no speculative behaviour. Wagers and persistence remain deferred.
 
 ## 7. Scoring-strategy boundary (future)
 
