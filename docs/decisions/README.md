@@ -69,6 +69,11 @@ This project separates two kinds of durable decision records:
      lifetime, and the privacy boundary; **`PublicState` and the sync protocol do
      not change** (Slice 10 hardware-independent portion — physical certification
      deferred before any supported-hardware claim).
+   - [`ADR-011-media-contract.md`](../architecture/ADR-011-media-contract.md)
+     — typed prompt content for text and same-origin static images, additive
+     authored compatibility on game-file schema version 1, strict source policy,
+     fail-closed import/projection/rendering, and `PublicState` wire version 7
+     (Slice 11, in review).
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).

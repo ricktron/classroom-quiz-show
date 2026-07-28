@@ -54,8 +54,8 @@ systems.
 | 8   | **Local input contract & keyboard buzz-in** | The device-independent input-adapter boundary + registry, buzz-in domain semantics, one command/event pair, replay-derived queue state, sanitized public projection — with the **keyboard adapter** as its first consumer. **(Complete — delivered without the anticipated adapter *registry* object; a bounded application-only input-source union ships its guarantees instead. See ADR-008 §3.)** | 2, 6, 7 |
 | 9   | **Generic Gamepad adapter**    | Gamepad API adapter behind the slice 8 boundary; connect/disconnect handling, polling isolation, host diagnostics. No model-specific assumptions. **(Complete — merged via PR #19 (`d16f90d`). No schema, `PublicState`, protocol, command, event or reducer change. No physical controller was tested. See ADR-009.)** | 8 |
 | 10  | **Sony Buzz! mapping, validation & host setup UX** | Configurable controller mapping, Sony Buzz! candidate classification and capture recipe, host setup/test surface, fallback when no controller is present. **(Complete — squash-merged via PR #21 (`5575be3`) from reviewed head `2885933`. Hardware-independent scope; physical certification deferred; no compatibility claim. See ADR-010.)** | 9 |
-| 11  | **Media contract**             | Typed media model (beyond plain-string prompts), fail-closed on unsupported media, additive on `schemaVersion: 1`. **Must precede any new round type.** | 4, 5 |
-| 12  | **Portable export & round-trip import** | Export a game to the canonical portable document and re-import it losslessly; reproducible game identity; round-trip equality as an acceptance criterion. | 4, 11 |
+| 11  | **Media contract**             | Typed media model (beyond plain-string prompts), fail-closed on unsupported media, additive on `schemaVersion: 1`. **In review; must precede any new round type.** | 4, 5 |
+| 12  | **Portable export & round-trip import** | Export a game to the canonical portable document and re-import it losslessly; reproducible game identity; round-trip equality as an acceptance criterion. **Planned; unstarted.** | 4, 11 |
 | 13  | **Local persistence & recovery** | IndexedDB durable local storage, session recovery after refresh, saved definitions kept distinct from active session state, lightweight leader coordination. | 2, 12 |
 | 14  | **Final-wager round**          | Public prompt, host-entered/private wagers, timed response, reveal, settlement, tie handling. | 5, 6, 7, 11 |
 | 15  | **Session summary & compatible-profile reporting** | Per-session result summary from replay; normalized metrics; cross-session comparison behind a stable competitive-profile identifier. | 6, 13 |
@@ -605,9 +605,9 @@ remains deferred; no compatibility claim is made. See
 [`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md)
 and
 [`../receipts/2026-07-28-slice-10-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-10-post-merge-reconciliation.md).
-**Slice 11 is `Planned`, unstarted.** A separate Slice 11 planning/orchestration
-lane is authorized; **implementation is not**. Its dependencies remain Slices 4
-and 5.
+**Slice 11 is `In review`** on `claude/slice-11-media-contract`; its open PR is
+unmerged. Review and merge that PR next. **Slice 12 remains `Planned` and
+unstarted.**
 
 ## Slice 8 — scope, acceptance, non-goals
 
@@ -939,8 +939,9 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   for unsupported media; privacy tests unchanged and green.
 - **Impact:** schema **yes** (additive on v1) · runtime **yes** · UI **yes** ·
   storage no · hardware no.
-- **Status:** `Planned` — unstarted.
-- **Owner gate:** authorization to begin.
+- **Status:** **`In review`** — implemented on
+  `claude/slice-11-media-contract`; open PR unmerged as of 2026-07-27.
+- **Next action:** review and merge the Slice 11 PR.
 
 ### Slice 12 — Portable export & round-trip import
 

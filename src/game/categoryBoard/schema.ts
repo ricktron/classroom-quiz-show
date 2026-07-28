@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { authoredPromptSchema, checkAuthoredPromptSemantics } from '../media/schema'
 import {
   MAX_ALTERNATES,
   MAX_ALTERNATE_LENGTH,
@@ -7,7 +8,6 @@ import {
   MAX_CATEGORY_TITLE_LENGTH,
   MAX_MULTIPLIER,
   MAX_NOTES_LENGTH,
-  MAX_PROMPT_LENGTH,
   MAX_TILES_PER_CATEGORY,
   MAX_TILE_VALUE,
   MAX_TOTAL_TILES,
@@ -83,10 +83,11 @@ const tileSchema = z.strictObject({
     .int('a tile value must be a whole number')
     .min(0, 'a tile value must not be negative')
     .max(MAX_TILE_VALUE, `a tile value must be at most ${MAX_TILE_VALUE}`),
-  prompt: z
-    .string()
-    .min(1, 'a prompt must not be empty')
-    .max(MAX_PROMPT_LENGTH, `a prompt must be at most ${MAX_PROMPT_LENGTH} characters`),
+  /**
+   * Prompt content (Slice 11): a legacy non-empty string (text) or a strict
+   * image object. Answers, alternates, and notes remain plain strings.
+   */
+  prompt: authoredPromptSchema,
   answer: z
     .string()
     .min(1, 'an answer must not be empty')
@@ -220,13 +221,13 @@ function checkBoardSemantics(config: CategoryBoardConfigInput, ctx: z.Refinement
         )
       }
 
-      if (tile.prompt.trim().length === 0) {
-        add(
-          'blank-text',
-          ['categories', categoryIndex, 'tiles', tileIndex, 'prompt'],
-          'contains only whitespace. Write the question text — the pipeline will not invent one.',
-        )
-      }
+      checkAuthoredPromptSemantics(tile.prompt, ctx, [
+        'categories',
+        categoryIndex,
+        'tiles',
+        tileIndex,
+        'prompt',
+      ])
 
       if (tile.answer.trim().length === 0) {
         add(

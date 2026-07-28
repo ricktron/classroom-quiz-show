@@ -1,6 +1,11 @@
 import { deepFreeze } from '../deepFreeze'
 import { roundType, type RoundType } from '../ids'
 import type { RoundDefinition } from '../roundDefinition'
+import {
+  freezePromptContent,
+  normalizeAuthoredPrompt,
+  type PromptContent,
+} from '../media/definition'
 import { DEFAULT_MULTIPLIER } from './limits'
 import { categoryBoardConfigSchema } from './schema'
 
@@ -56,9 +61,13 @@ export interface CategoryBoardTile {
   readonly multiplier: number
   /** `value × multiplier` — the number shown on the board. Always an integer. */
   readonly effectiveValue: number
-  /** The question text. PRIVATE until the host reveals it. */
-  readonly prompt: string
-  /** The canonical answer. PRIVATE until the host reveals it. */
+  /**
+   * The question content (text or image). PRIVATE until the host reveals it.
+   * Normalized at construction — a legacy authored string becomes
+   * `{ kind: 'text', text }`. Never assume a bare string.
+   */
+  readonly prompt: PromptContent
+  /** The canonical answer. PRIVATE until the host reveals it. Plain string. */
   readonly answer: string
   /**
    * Additional answers the host may accept. HOST-ONLY in Slice 5 — they are a
@@ -120,6 +129,12 @@ export function createCategoryBoardDefinition(config: unknown): CategoryBoardDef
   const categories: CategoryBoardCategory[] = source.categories.map((category) => {
     const tiles: CategoryBoardTile[] = category.tiles.map((tile) => {
       const multiplier = tile.multiplier ?? DEFAULT_MULTIPLIER
+      const prompt = normalizeAuthoredPrompt(tile.prompt)
+      if (prompt === null) {
+        throw new CategoryBoardConfigError(
+          'category-board prompt could not be normalized to trusted media content',
+        )
+      }
       return {
         id: tile.id,
         categoryId: category.id,
@@ -128,7 +143,7 @@ export function createCategoryBoardDefinition(config: unknown): CategoryBoardDef
         // Both operands are validated integers inside bounded ranges, so this
         // is exact integer arithmetic — never a floating-point approximation.
         effectiveValue: tile.value * multiplier,
-        prompt: tile.prompt,
+        prompt: freezePromptContent(prompt),
         answer: tile.answer,
         alternates: tile.alternates === undefined ? [] : [...tile.alternates],
         notes: tile.notes === undefined ? null : tile.notes,
@@ -152,7 +167,8 @@ interface CategoryBoardConfigShape {
     readonly tiles: readonly {
       readonly id: string
       readonly value: number
-      readonly prompt: string
+      /** Legacy string or authored image object — normalized by the constructor. */
+      readonly prompt: unknown
       readonly answer: string
       readonly alternates?: readonly string[]
       readonly notes?: string

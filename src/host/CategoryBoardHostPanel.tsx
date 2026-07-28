@@ -7,6 +7,11 @@ import {
   readCategoryBoardDefinition,
   type CategoryBoardTile,
 } from '../game/categoryBoard/definition'
+import {
+  assertNeverPromptKind,
+  type PromptContent,
+} from '../game/media/definition'
+import { resolveSameOriginMediaSrc } from '../display/resolveSameOriginMediaSrc'
 import { systemClock, type Clock } from '../time/clock'
 import './CategoryBoardHostPanel.css'
 
@@ -159,9 +164,7 @@ export function CategoryBoardHostPanel({
             )}
           </p>
 
-          <HostOnlyBlock label="Prompt" testId="cbh-prompt">
-            {location.tile.prompt}
-          </HostOnlyBlock>
+          <HostOnlyPrompt prompt={location.tile.prompt} />
 
           <HostOnlyBlock label="Correct answer" testId="cbh-answer">
             {location.tile.answer}
@@ -242,11 +245,53 @@ function HostOnlyBlock({
         <span className="cbh__private-badge">Host only</span>
         {label}
       </p>
-      <p className="cbh__private-body" data-testid={testId}>
+      {/*
+        A <div>, not a <p>: image prompts render an <img>, and HTML forbids
+        interactive / replaced media inside a paragraph.
+      */}
+      <div className="cbh__private-body" data-testid={testId}>
         {children}
-      </p>
+      </div>
     </div>
   )
+}
+
+/** Private host preview of typed prompt content (text or image). */
+function HostOnlyPrompt({ prompt }: { readonly prompt: PromptContent }) {
+  switch (prompt.kind) {
+    case 'text':
+      return (
+        <HostOnlyBlock label="Prompt" testId="cbh-prompt">
+          {prompt.text}
+        </HostOnlyBlock>
+      )
+    case 'image':
+      return (
+        <HostOnlyBlock label="Prompt" testId="cbh-prompt">
+          <img
+            className="cbh__prompt-image"
+            src={resolveSameOriginMediaSrc(prompt.source.path)}
+            alt={prompt.alt}
+            data-testid="cbh-prompt-image"
+          />
+          <p className="cbh__prompt-alt" data-testid="cbh-prompt-alt">
+            {prompt.alt}
+          </p>
+          {prompt.caption !== null && (
+            <p className="cbh__prompt-caption" data-testid="cbh-prompt-caption">
+              {prompt.caption}
+            </p>
+          )}
+          {prompt.attribution !== null && (
+            <p className="cbh__prompt-attribution" data-testid="cbh-prompt-attribution">
+              {prompt.attribution}
+            </p>
+          )}
+        </HostOnlyBlock>
+      )
+    default:
+      return assertNeverPromptKind(prompt)
+  }
 }
 
 function HostOnlyAlternates({ tile }: { readonly tile: CategoryBoardTile }) {

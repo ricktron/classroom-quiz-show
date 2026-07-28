@@ -6,6 +6,7 @@ import type { PrivateState } from './privateState'
 import {
   INITIAL_PUBLIC_STATE,
   PUBLIC_STATE_SCHEMA_VERSION,
+  isPublicPromptContent,
   isPublicRoundState,
   isPublicState,
   type PublicState,
@@ -15,7 +16,13 @@ import { decodeEnvelope, encodeEnvelope } from '../sync/protocol'
 import { importGameFromUnknown } from '../import/importGame'
 import { createGameDefinition } from '../game/gameDefinition'
 import { placeholderRound } from '../game/roundDefinition'
-import { boardGameFile, richBoardConfig } from '../test/categoryBoardFixtures'
+import {
+  boardGameFile,
+  category,
+  imagePrompt,
+  richBoardConfig,
+  tile,
+} from '../test/categoryBoardFixtures'
 
 /**
  * The category-board private → public boundary (Slice 5).
@@ -159,7 +166,7 @@ describe('prompt stage projects the prompt only', () => {
       selection: {
         categoryTitle: 'Alpha Category',
         value: 100,
-        prompt: 'Alpha one hundred prompt',
+        prompt: { kind: 'text', text: 'Alpha one hundred prompt' },
         answer: null,
       },
     })
@@ -188,7 +195,7 @@ describe('answer stage projects the answer, and still nothing private', () => {
       selection: {
         categoryTitle: 'Beta Category',
         value: 100,
-        prompt: 'Beta one hundred prompt',
+        prompt: { kind: 'text', text: 'Beta one hundred prompt' },
         answer: 'Beta one hundred answer',
       },
     })
@@ -343,11 +350,11 @@ describe('the public round guard rejects impossible payloads', () => {
 })
 
 describe('wire version', () => {
-  it('is 6 — bumped again because Slice 8 added the buzz projection', () => {
-    // Slice 5 took this from 2 → 3 for `round`, Slice 6 3 → 4 for `teams`, and
-    // Slice 7 4 → 5 for `response`. An older version is never re-read as a newer
-    // one; it is rejected.
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(6)
+  it('is 7 — bumped because Slice 11 changed prompt to PublicPromptContent', () => {
+    // Slice 5 took this from 2 → 3 for `round`, Slice 6 3 → 4 for `teams`,
+    // Slice 7 4 → 5 for `response`, Slice 8 5 → 6 for `buzz`, Slice 11 6 → 7
+    // for typed prompt media. An older version is never re-read as a newer one.
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(7)
   })
 
   it('rejects an older wire shape instead of reinterpreting it', () => {
@@ -390,5 +397,134 @@ describe('projection is a pure function of replayed state', () => {
     const b = toPublicState(replay(history))
     expect(a).toEqual(b)
     expect(a).toEqual(store.getPublicState())
+  })
+})
+
+describe('image prompt projection (Slice 11)', () => {
+  function imageBoardStore(): SessionStore {
+    const result = importGameFromUnknown(
+      boardGameFile({
+        categories: [
+          category('media', {
+            title: 'Media',
+            tiles: [
+              tile('media-100', {
+                prompt: imagePrompt({
+                  alt: 'PUBLIC-ALT-TEXT',
+                  caption: 'PUBLIC-CAPTION',
+                  attribution: 'PUBLIC-ATTRIBUTION',
+                }),
+                answer: 'IMAGE-ANSWER-SECRET',
+                notes: 'IMAGE-NOTE-SECRET',
+                alternates: ['IMAGE-ALT-SECRET'],
+              }),
+            ],
+          }),
+        ],
+      }),
+    )
+    if (result.status !== 'success') throw new Error('image fixture failed to import')
+    const store = createSessionStore()
+    store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 'SECRET-SESSION' })
+    store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT, definition: result.definition })
+    store.dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: AT })
+    return store
+  }
+
+  it('keeps image media off the wire at selected stage', () => {
+    const publicState = drive(imageBoardStore(), {
+      type: 'SELECT_CATEGORY_BOARD_TILE',
+      issuedAt: AT,
+      roundId: ROUND,
+      tileId: 'media-100',
+    })
+    const serialized = JSON.stringify(publicState)
+    expect(serialized).not.toContain('media-fixtures')
+    expect(serialized).not.toContain('PUBLIC-ALT-TEXT')
+    expect(serialized).not.toContain('IMAGE-ANSWER-SECRET')
+    expect(serialized).not.toContain('IMAGE-NOTE-SECRET')
+    expect(serialized).not.toContain('IMAGE-ALT-SECRET')
+  })
+
+  it('projects the allow-listed image DTO at prompt stage, never notes/alternates', () => {
+    const publicState = drive(
+      imageBoardStore(),
+      {
+        type: 'SELECT_CATEGORY_BOARD_TILE',
+        issuedAt: AT,
+        roundId: ROUND,
+        tileId: 'media-100',
+      },
+      revealPrompt,
+    )
+    expect(publicState.round).toEqual({
+      kind: 'board',
+      stage: 'prompt',
+      selection: {
+        categoryTitle: 'Media',
+        value: 100,
+        prompt: {
+          kind: 'image',
+          source: { kind: 'same-origin-path', path: 'media-fixtures/slice-11-clue.png' },
+          alt: 'PUBLIC-ALT-TEXT',
+          caption: 'PUBLIC-CAPTION',
+          attribution: 'PUBLIC-ATTRIBUTION',
+        },
+        answer: null,
+      },
+    })
+    const serialized = JSON.stringify(publicState)
+    expect(serialized).not.toContain('IMAGE-ANSWER-SECRET')
+    expect(serialized).not.toContain('IMAGE-NOTE-SECRET')
+    expect(serialized).not.toContain('IMAGE-ALT-SECRET')
+  })
+
+  it('retains prompt media when the answer is revealed as a plain string', () => {
+    const publicState = drive(
+      imageBoardStore(),
+      {
+        type: 'SELECT_CATEGORY_BOARD_TILE',
+        issuedAt: AT,
+        roundId: ROUND,
+        tileId: 'media-100',
+      },
+      revealPrompt,
+      revealAnswer,
+    )
+    expect(publicState.round?.stage).toBe('answer')
+    if (publicState.round?.stage !== 'answer') return
+    expect(publicState.round.selection.prompt).toEqual({
+      kind: 'image',
+      source: { kind: 'same-origin-path', path: 'media-fixtures/slice-11-clue.png' },
+      alt: 'PUBLIC-ALT-TEXT',
+      caption: 'PUBLIC-CAPTION',
+      attribution: 'PUBLIC-ATTRIBUTION',
+    })
+    expect(publicState.round.selection.answer).toBe('IMAGE-ANSWER-SECRET')
+  })
+
+  it('rejects a bare string prompt on the wire guard (version 7)', () => {
+    expect(isPublicPromptContent('legacy string')).toBe(false)
+    expect(
+      isPublicPromptContent({
+        kind: 'image',
+        source: { kind: 'https', path: 'https://evil.example/x.png' },
+        alt: 'x',
+        caption: null,
+        attribution: null,
+      }),
+    ).toBe(false)
+    expect(
+      isPublicRoundState({
+        kind: 'board',
+        stage: 'prompt',
+        selection: {
+          categoryTitle: 'C',
+          value: 1,
+          prompt: 'bare',
+          answer: null,
+        },
+      }),
+    ).toBe(false)
   })
 })

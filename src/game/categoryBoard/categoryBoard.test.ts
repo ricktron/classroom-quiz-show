@@ -148,7 +148,10 @@ describe('board shape decisions', () => {
     })
     expect(allTiles(board).map((t) => t.value)).toEqual([200, 200, 200])
     // Identity still comes from the id, never the displayed value.
-    expect(findTileById(board, 'a-2')?.prompt).toBe('Prompt for a-2')
+    expect(findTileById(board, 'a-2')?.prompt).toEqual({
+      kind: 'text',
+      text: 'Prompt for a-2',
+    })
   })
 
   it('rejects a board with no categories and a category with no tiles', () => {

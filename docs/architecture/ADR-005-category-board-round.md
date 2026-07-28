@@ -74,6 +74,11 @@ private→public boundary stays in exactly one place.
 }
 ```
 
+> **Slice 11 editorial note (2026-07-27):** the string prompt shown above remains
+> a valid authored form, but the trusted tile now stores `PromptContent` per
+> [ADR-011](ADR-011-media-contract.md): normalized text or a same-origin static
+> image. Answers, alternates and notes remain strings.
+
 ### 3. Ordering and identity
 
 - **Authored array order is the canonical order.** `categories[i]` is column
@@ -277,7 +282,7 @@ blanked out:
   a `used` flag. Nothing else.
 - `selected` — the selected tile's category title and value. `prompt` and
   `answer` are `null`.
-- `prompt` — adds the prompt. `answer` is still `null`.
+- `prompt` — adds the typed public prompt content. `answer` is still `null`.
 - `answer` — adds the canonical answer. The prompt is **retained** (documented
   design: a class needs the question in view while discussing the answer).
 

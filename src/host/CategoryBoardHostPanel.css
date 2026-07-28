@@ -180,6 +180,22 @@
   overflow-wrap: anywhere; /* a long unbroken answer must never overflow */
 }
 
+.cbh__prompt-image {
+  display: block;
+  max-width: min(100%, 20rem);
+  max-height: 12rem;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 0.4rem;
+}
+
+.cbh__prompt-alt,
+.cbh__prompt-caption,
+.cbh__prompt-attribution {
+  margin: 0.25rem 0 0;
+}
+
 .cbh__alternates {
   margin: 0;
   padding-left: 1.2rem;
