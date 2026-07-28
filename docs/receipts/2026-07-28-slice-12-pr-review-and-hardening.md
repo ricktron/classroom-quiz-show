@@ -30,8 +30,9 @@ Preflight confirmed clean working tree, matching remote tracking branch, CI gree
 
 ## 4. Final head
 
-`7b5dc47fd98cedb347bc2b1ba6e277d706ed3976` — review hardening commit on
-`claude/slice-12-portable-export`. PR body updated to this exact OID.
+PR tip of `claude/slice-12-portable-export` after review hardening and the Sonar
+S7778 follow-up (avoid multiple `Array#push` in
+`serializeCanonicalDocument`). Exact OID is recorded in the PR body.
 
 ## 5. Authorized base
 
@@ -176,10 +177,14 @@ the actual reviewed/hardened final head and command-authoritative totals
 On starting head `86cce88`: Quality Gate **passed**, **0** new issues, **0**
 security hotspots, reported new-code coverage **0.0%**.
 
+On the first hardened tip, Sonar reported **1** new minor maintainability issue
+(`typescript:S7778` — multiple `Array#push` in `serializeCanonicalJson.ts`).
+Fixed by constructing the parts array in one expression. Quality Gate remained
+passed throughout; re-check on the final tip should return **0** new issues.
+
 Treat Sonar’s 0.0% new-code coverage as an **advisory measurement gap**, not as
 evidence of missing tests. Repository unit + Playwright suites are green and are
-the authoritative execution evidence. Re-check Sonar on the final hardened head
-after CI completes.
+the authoritative execution evidence.
 
 ## 22. Review/thread disposition
 

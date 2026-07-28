@@ -15,34 +15,36 @@ import { compareCanonicalKeys } from './canonicalizeData'
  * Callers append the single trailing LF required by the portable byte contract.
  */
 export function serializeCanonicalDocument(document: CanonicalGameFile): string {
-  const parts: string[] = [
-    `"format":${JSON.stringify(document.format)}`,
-    `"schemaVersion":${JSON.stringify(document.schemaVersion)}`,
-    `"id":${JSON.stringify(document.id)}`,
-    `"title":${JSON.stringify(document.title)}`,
-  ]
-
-  if (Object.hasOwn(document, 'teams') && Array.isArray(document.teams)) {
-    parts.push(
-      `"teams":[${document.teams
-        .map((team) => {
-          // Exporter always emits explicit accents (ADR-012); never omit.
-          if (typeof team.accent !== 'string') {
-            throw new TypeError('Canonical export team is missing a required accent.')
-          }
-          return serializeTeam({ id: team.id, name: team.name, accent: team.accent })
-        })
-        .join(',')}]`,
-    )
-  }
-
   // Exporter always emits an explicit timer envelope (ADR-012).
   const timer = document.timer
   if (timer === undefined) {
     throw new TypeError('Canonical export document is missing the required timer envelope.')
   }
-  parts.push(`"timer":${serializeTimer(timer)}`)
-  parts.push(`"rounds":[${document.rounds.map(serializeRound).join(',')}]`)
+
+  const teamsField =
+    Object.hasOwn(document, 'teams') && Array.isArray(document.teams)
+      ? [
+          `"teams":[${document.teams
+            .map((team) => {
+              // Exporter always emits explicit accents (ADR-012); never omit.
+              if (typeof team.accent !== 'string') {
+                throw new TypeError('Canonical export team is missing a required accent.')
+              }
+              return serializeTeam({ id: team.id, name: team.name, accent: team.accent })
+            })
+            .join(',')}]`,
+        ]
+      : []
+
+  const parts = [
+    `"format":${JSON.stringify(document.format)}`,
+    `"schemaVersion":${JSON.stringify(document.schemaVersion)}`,
+    `"id":${JSON.stringify(document.id)}`,
+    `"title":${JSON.stringify(document.title)}`,
+    ...teamsField,
+    `"timer":${serializeTimer(timer)}`,
+    `"rounds":[${document.rounds.map(serializeRound).join(',')}]`,
+  ]
   return `{${parts.join(',')}}`
 }
 
