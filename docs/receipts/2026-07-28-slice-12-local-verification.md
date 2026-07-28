@@ -3,7 +3,8 @@
 - **Date:** 2026-07-28
 - **Branch:** `claude/slice-12-portable-export`
 - **Authorized base:** `7c1a35c096d1d0654ea951f29aa49d0910f4c429` (`origin/main`)
-- **Final commit:** `de59d6787b9b92776a4e2dd1d95a15fee92e9e55`
+- **Final commit:** `41167e8198088539e749e4186b9291f041f8d3d1`
+- **Implementation commit:** `de59d6787b9b92776a4e2dd1d95a15fee92e9e55`
 - **PR:** https://github.com/ricktron/classroom-quiz-show/pull/25
 - **Slice state after this work:** `In review` (unmerged)
 - **Slice 13 state:** `Planned`, unstarted
@@ -141,7 +142,8 @@ sync, input, `public/**`, package manifests, Vite/Playwright config, or
 
 ## 22. Full unit totals
 
-**1540** passed / **67** files (baseline before Slice 12: **1485** / **63**).
+**1541** passed / **67** files (baseline before Slice 12: **1485** / **63**;
+includes Sonar reliability follow-up).
 
 ## 23. E2E totals and skips
 
@@ -166,7 +168,9 @@ Green (`lint` + `typecheck` + `test:run` + `build` + `test:e2e`).
 
 ## 28. Sonar result
 
-Observed on PR after push (not available pre-PR).
+**Pass** on PR #25 head `41167e8` after reliability follow-up (explicit
+UTF-16 key compare; cognitive-complexity split; matcher cleanups). CI lint /
+typecheck / unit / build and Playwright e2e also green.
 
 ## 29. Explicit non-goals
 
