@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CanonicalizeError, canonicalizeData } from './canonicalizeData'
+import { CanonicalizeError, canonicalizeData, compareCanonicalKeys } from './canonicalizeData'
 
 describe('canonicalizeData', () => {
   it('passes through scalar values', () => {
@@ -103,5 +103,10 @@ describe('canonicalizeData', () => {
       expect(error).toBeInstanceOf(CanonicalizeError)
       expect((error as CanonicalizeError).path).toBe('outer.inner')
     }
+  })
+
+  it('compareCanonicalKeys matches JavaScript default string ordering', () => {
+    const keys = ['zebra', 'Alpha', 'alpha', 'note', 'Note']
+    expect([...keys].sort(compareCanonicalKeys)).toEqual([...keys].sort())
   })
 })

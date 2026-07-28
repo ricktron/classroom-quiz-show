@@ -25,7 +25,7 @@ import { createDefaultRegistry } from '../game/defaultRegistry'
 import type { RoundRegistry } from '../game/registry'
 import type { DataValue } from '../game/roundDefinition'
 import type { TeamDefinition } from '../game/teams/definition'
-import { CanonicalizeError, canonicalizeData } from './canonicalizeData'
+import { CanonicalizeError, canonicalizeData, compareCanonicalKeys } from './canonicalizeData'
 
 export interface ExportGameOptions {
   readonly registry?: RoundRegistry
@@ -312,34 +312,42 @@ function definitionsStructurallyEqual(a: GameDefinition, b: GameDefinition): boo
 
 function dataValuesEqual(a: DataValue, b: DataValue): boolean {
   if (a === b) return true
-  if (a === null || b === null) return a === b
+  if (a === null || b === null) return false
   if (typeof a !== typeof b) return false
-
-  if (typeof a === 'number' && typeof b === 'number') {
-    // Spec: numbers compare with ===, so -0 and 0 are equivalent.
-    return a === b
+  // Numbers compare with ===, so -0 and 0 are equivalent.
+  if (typeof a === 'number') return a === b
+  if (typeof a !== 'object') return false
+  if (Array.isArray(a)) {
+    return Array.isArray(b) && dataArraysEqual(a, b)
   }
+  if (Array.isArray(b)) return false
+  return dataObjectsEqual(
+    a as { readonly [key: string]: DataValue },
+    b as { readonly [key: string]: DataValue },
+  )
+}
 
-  if (typeof a !== 'object' || typeof b !== 'object') return false
-
-  if (Array.isArray(a) || Array.isArray(b)) {
-    if (!Array.isArray(a) || !Array.isArray(b)) return false
-    if (a.length !== b.length) return false
-    for (let i = 0; i < a.length; i += 1) {
-      if (!dataValuesEqual(a[i] as DataValue, b[i] as DataValue)) return false
-    }
-    return true
+function dataArraysEqual(a: readonly DataValue[], b: readonly DataValue[]): boolean {
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i += 1) {
+    if (!dataValuesEqual(a[i] as DataValue, b[i] as DataValue)) return false
   }
+  return true
+}
 
-  const aKeys = Object.keys(a).sort()
-  const bKeys = Object.keys(b).sort()
+function dataObjectsEqual(
+  a: { readonly [key: string]: DataValue },
+  b: { readonly [key: string]: DataValue },
+): boolean {
+  const aKeys = Object.keys(a).sort(compareCanonicalKeys)
+  const bKeys = Object.keys(b).sort(compareCanonicalKeys)
   if (aKeys.length !== bKeys.length) return false
   for (let i = 0; i < aKeys.length; i += 1) {
     if (aKeys[i] !== bKeys[i]) return false
   }
   for (const key of aKeys) {
-    const left = (a as Record<string, DataValue>)[key]
-    const right = (b as Record<string, DataValue>)[key]
+    const left = a[key]
+    const right = b[key]
     if (left === undefined || right === undefined) return false
     if (!dataValuesEqual(left, right)) return false
   }

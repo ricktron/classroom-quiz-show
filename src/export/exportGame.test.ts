@@ -38,7 +38,7 @@ async function loadDefinition(text: string) {
 function parseExported(jsonText: string): Record<string, unknown> {
   expect(jsonText.endsWith('\n')).toBe(true)
   expect(jsonText.endsWith('\n\n')).toBe(false)
-  expect(jsonText.includes('\r')).toBe(false)
+  expect(jsonText).not.toContain('\r')
   return JSON.parse(jsonText) as Record<string, unknown>
 }
 
@@ -312,7 +312,7 @@ describe('exportGameDefinition', () => {
     expect(result.metadata.gameId).toBe('ecology-review')
     expect(result.jsonText.endsWith('\n')).toBe(true)
     expect(result.jsonText.indexOf('\n')).toBe(result.jsonText.length - 1)
-    expect(result.jsonText.includes('\r')).toBe(false)
+    expect(result.jsonText).not.toContain('\r')
     expect(result.jsonText.startsWith('\uFEFF')).toBe(false)
     const withoutLf = result.jsonText.slice(0, -1)
     expect(withoutLf).toBe(JSON.stringify(JSON.parse(withoutLf)))

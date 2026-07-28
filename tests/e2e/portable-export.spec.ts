@@ -119,7 +119,7 @@ test('portable export downloads, re-imports, and stays host-only', async ({ brow
 
   expect(jsonText.endsWith('\n')).toBe(true)
   expect(jsonText.indexOf('\n')).toBe(jsonText.length - 1)
-  expect(jsonText.includes('\r')).toBe(false)
+  expect(jsonText).not.toContain('\r')
   const withoutLf = jsonText.slice(0, -1)
   expect(withoutLf).toBe(JSON.stringify(JSON.parse(withoutLf)))
 

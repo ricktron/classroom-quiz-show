@@ -80,7 +80,9 @@ function walk(value: unknown, path: string, ancestors: Set<object>): unknown {
 
   ancestors.add(value)
   try {
-    const keys = Object.keys(value).sort()
+    // Explicit UTF-16 code-unit ordering (same as default JS string `<`/`>`),
+    // not localeCompare — locale collation would break byte-deterministic export.
+    const keys = Object.keys(value).sort(compareCanonicalKeys)
     const out: Record<string, unknown> = Object.create(null) as Record<string, unknown>
     for (const key of keys) {
       // Own enumerable string keys only — Object.keys already filters that.
@@ -112,4 +114,10 @@ function joinPath(base: string, segment: string | number): string {
     return base.length === 0 ? `[${segment}]` : `${base}[${segment}]`
   }
   return base.length === 0 ? segment : `${base}.${segment}`
+}
+
+/** Lexicographic compare matching JavaScript’s default string ordering. */
+export function compareCanonicalKeys(a: string, b: string): number {
+  if (a === b) return 0
+  return a < b ? -1 : 1
 }
