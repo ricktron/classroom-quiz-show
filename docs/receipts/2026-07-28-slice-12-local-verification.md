@@ -3,7 +3,8 @@
 - **Date:** 2026-07-28
 - **Branch:** `claude/slice-12-portable-export`
 - **Authorized base:** `7c1a35c096d1d0654ea951f29aa49d0910f4c429` (`origin/main`)
-- **Final commit:** recorded at push (see PR head SHA)
+- **Final commit:** `de59d6787b9b92776a4e2dd1d95a15fee92e9e55`
+- **PR:** https://github.com/ricktron/classroom-quiz-show/pull/25
 - **Slice state after this work:** `In review` (unmerged)
 - **Slice 13 state:** `Planned`, unstarted
 
