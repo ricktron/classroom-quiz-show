@@ -8,21 +8,32 @@ import {
   type GamepadBaseline,
   type GamepadIgnoreReason,
 } from '../input/gamepadAdapter'
-import type { GamepadControlRef, GamepadMapping } from '../input/gamepadMapping'
+import {
+  resolveGamepadBinding,
+  type GamepadControlRef,
+  type GamepadMapping,
+} from '../input/gamepadMapping'
 import {
   browserGamepadSource,
   type GamepadReadStatus,
+  type GamepadReportedId,
+  type GamepadReportedMapping,
   type GamepadSource,
 } from '../input/gamepadSource'
+import {
+  classifyGamepadReportedId,
+  type GamepadDeviceClassification,
+} from '../input/gamepadDeviceProfile'
 import {
   translateLocalInput,
   type LocalInputTranslationRejection,
   type ResponseOpportunityTarget,
 } from '../input/commandTranslation'
+import type { LocalInputAction } from '../input/logicalAction'
 import { systemClock, type Clock } from '../time/clock'
 
 /**
- * The Gamepad polling LIFECYCLE OWNER (Slice 9).
+ * The Gamepad polling LIFECYCLE OWNER (Slices 9–10).
  *
  * There is exactly one of these in the application, it is host-only, and it is
  * the sibling of `useResponseTimerExpiry` (the one scheduled clock read) and
@@ -36,6 +47,10 @@ import { systemClock, type Clock } from '../time/clock'
  *                → translateGamepadEdge → LocalInputSignal
  *                → translateLocalInput  → RECORD_TEAM_BUZZ → planner
  * ```
+ *
+ * Slice 10 adds an explicit **setup/test mode** on this same path: while active,
+ * fresh edges are resolved against the applied mapping and reported to the host
+ * setup surface, and `translateLocalInput` / `dispatch` are never called.
  *
  * ## Where polling may NOT happen
  *
@@ -64,6 +79,7 @@ import { systemClock, type Clock } from '../time/clock'
  * - the adapter being enabled or disabled;
  * - the mapping changing (including a capture completing);
  * - capture mode starting or ending;
+ * - setup/test mode starting or ending;
  * - `gamepadconnected` / `gamepaddisconnected`;
  * - the tab becoming visible again;
  * - the window regaining or losing focus.
@@ -77,7 +93,8 @@ import { systemClock, type Clock } from '../time/clock'
  *
  * `clock.now()` is read once per accepted edge and becomes the command's
  * `issuedAt` (ADR-007 §1). A poll that produces no edge reads no clock at all, so
- * polling adds no clock read to the reducer, the replay path or the timer.
+ * polling adds no clock read to the reducer, the replay path or the timer. Test
+ * mode also reads no clock — it never dispatches.
  */
 
 /** What happened to one physical press, end to end. Host-only diagnostics. */
@@ -86,21 +103,31 @@ export type GamepadBuzzOutcome =
   | { readonly kind: 'ignored'; readonly reason: GamepadIgnoreReason }
   | { readonly kind: 'untranslated'; readonly reason: LocalInputTranslationRejection }
   | { readonly kind: 'refused'; readonly reason: RejectionReason }
+  | {
+      readonly kind: 'test-observation'
+      readonly teamId: string
+      readonly action: LocalInputAction
+      readonly control: GamepadControlRef
+    }
 
 /** One connected controller, as the host panel needs to describe it. */
 export interface GamepadControllerInfo {
   readonly controllerIndex: number
   readonly buttonCount: number
+  /** Host-private bounded id observation. Never gameplay identity. */
+  readonly reportedId: GamepadReportedId
+  /** Host-private bounded mapping observation. */
+  readonly reportedMapping: GamepadReportedMapping
+  /** Derived candidate/unrecognized classification. Host-private. */
+  readonly classification: GamepadDeviceClassification
 }
 
 /**
  * What the host panel is told about the browser and the attached hardware.
  *
- * Deliberately the STABLE facts only — availability, which controllers exist and
- * how many buttons each has. Live button state is **not** here and is not
- * rendered anywhere: a display that changed every frame would defeat a screen
- * reader and would repaint the panel under a teacher's cursor sixty times a
- * second for no benefit.
+ * Deliberately the STABLE facts only — availability, which controllers exist,
+ * how many buttons each has, and bounded identity/classification. Live button
+ * state is **not** here and is not rendered anywhere.
  */
 export interface GamepadDiagnostics {
   readonly status: GamepadReadStatus
@@ -160,6 +187,11 @@ export interface UseGamepadBuzzInputOptions {
   readonly enabled: boolean
   /** True while the mapping editor is capturing a button — buzzing is suspended. */
   readonly capturing: boolean
+  /**
+   * Explicit setup/test mode (Slice 10). While active, edges resolve against the
+   * applied mapping and are reported — never translated or dispatched.
+   */
+  readonly testMode?: boolean
   readonly mapping: GamepadMapping
   /** The live response opportunity, or `null` when no clue is open. */
   readonly target: ResponseOpportunityTarget | null
@@ -181,6 +213,7 @@ export interface UseGamepadBuzzInputOptions {
 export function useGamepadBuzzInput({
   enabled,
   capturing,
+  testMode = false,
   mapping,
   target,
   dispatch,
@@ -198,6 +231,7 @@ export function useGamepadBuzzInput({
   const latest = useRef({
     enabled,
     capturing,
+    testMode,
     mapping,
     target,
     dispatch,
@@ -209,6 +243,7 @@ export function useGamepadBuzzInput({
   latest.current = {
     enabled,
     capturing,
+    testMode,
     mapping,
     target,
     dispatch,
@@ -224,6 +259,22 @@ export function useGamepadBuzzInput({
   const lastDiagnosticsKey = useRef<string | null>(null)
   /** Non-null while a loop is registered. Makes a duplicate loop impossible. */
   const stop = useRef<(() => void) | null>(null)
+  /**
+   * Gate props that force a re-prime. Cleared synchronously during the render
+   * that publishes the new gate into `latest`, so a rAF poll between commit and
+   * the passive effect cannot treat a held or just-pressed button as a fresh
+   * gameplay edge after leaving capture/test mode (or after enable/mapping change).
+   */
+  const gate = useRef({ enabled, capturing, testMode, mapping })
+  if (
+    gate.current.enabled !== enabled ||
+    gate.current.capturing !== capturing ||
+    gate.current.testMode !== testMode ||
+    gate.current.mapping !== mapping
+  ) {
+    baseline.current = null
+    gate.current = { enabled, capturing, testMode, mapping }
+  }
 
   // Resolved once each. Defaults are built here rather than in the parameter list
   // so a new object identity per render cannot restart the loop.
@@ -238,9 +289,10 @@ export function useGamepadBuzzInput({
 
   // ── Re-prime on every transition that could otherwise fabricate a press ─────
   // A held button must be RELEASED and pressed again after any of these.
+  // (Defense in depth beside the synchronous gate clear above.)
   useEffect(() => {
     baseline.current = null
-  }, [enabled, capturing, mapping])
+  }, [enabled, capturing, testMode, mapping])
 
   useEffect(() => {
     const reprime = () => {
@@ -288,9 +340,12 @@ export function useGamepadBuzzInput({
 
       publishDiagnostics(current.onDiagnostics, lastDiagnosticsKey, {
         status: 'ok',
-        controllers: read.snapshot.controllers.map((controller) => ({
-          controllerIndex: controller.controllerIndex,
-          buttonCount: controller.pressed.length,
+        controllers: read.snapshot.controllers.map((pad) => ({
+          controllerIndex: pad.controllerIndex,
+          buttonCount: pad.pressed.length,
+          reportedId: pad.reportedId,
+          reportedMapping: pad.reportedMapping,
+          classification: classifyGamepadReportedId(pad.reportedId),
         })),
       })
 
@@ -300,41 +355,20 @@ export function useGamepadBuzzInput({
       // reaches gameplay while a button is being assigned, and the rising edge
       // means a held button is captured once rather than continuously.
       if (current.capturing) {
-        current.onCapture?.(scan.edges[0])
-        current.onOutcome?.({ kind: 'ignored', reason: 'capture-mode' })
+        consumeCaptureEdge(scan.edges[0], current.onCapture, current.onOutcome)
+        return
+      }
+
+      // Setup/test mode: resolve against the applied mapping and report only.
+      // No translateLocalInput, no dispatch, no timer/queue/score side effects.
+      if (current.testMode) {
+        reportTestModeEdges(scan.edges, current.mapping, current.onOutcome)
         return
       }
 
       // Deterministic order: ascending controller index, then ascending button
       // index (`scanGamepadEdges`). The accepted order remains the event log's.
-      for (const edge of scan.edges) {
-        const translation = translateGamepadEdge(
-          edge,
-          current.mapping,
-          { enabled: current.enabled, capturing: false },
-          // The ONE clock read on this path, at the dispatch edge, and only when
-          // there is genuinely an edge to stamp.
-          current.clock.now(),
-        )
-
-        if (translation.status === 'ignored') {
-          current.onOutcome?.({ kind: 'ignored', reason: translation.reason })
-          continue
-        }
-
-        const command = translateLocalInput(translation.signal, current.target)
-        if (command.status === 'rejected') {
-          current.onOutcome?.({ kind: 'untranslated', reason: command.reason })
-          continue
-        }
-
-        const result = current.dispatch(command.command)
-        if (result.status === 'rejected') {
-          current.onOutcome?.({ kind: 'refused', reason: result.reason })
-          continue
-        }
-        current.onOutcome?.({ kind: 'accepted', teamId: translation.signal.teamId })
-      }
+      dispatchGameplayEdges(scan.edges, current)
     }
 
     stop.current = resolvedScheduler.current?.start(poll) ?? null
@@ -347,14 +381,92 @@ export function useGamepadBuzzInput({
   }, [])
 }
 
+/** Capture mode: one edge, no gameplay. */
+function consumeCaptureEdge(
+  edge: GamepadControlRef,
+  onCapture: ((control: GamepadControlRef) => void) | undefined,
+  onOutcome: ((outcome: GamepadBuzzOutcome) => void) | undefined,
+): void {
+  onCapture?.(edge)
+  onOutcome?.({ kind: 'ignored', reason: 'capture-mode' })
+}
+
+/**
+ * Setup/test mode: resolve mapping and report host-private observations only.
+ * Never calls translateLocalInput or dispatch.
+ */
+function reportTestModeEdges(
+  edges: readonly GamepadControlRef[],
+  mapping: GamepadMapping,
+  onOutcome: ((outcome: GamepadBuzzOutcome) => void) | undefined,
+): void {
+  for (const edge of edges) {
+    const binding = resolveGamepadBinding(mapping, edge)
+    if (binding === null) {
+      onOutcome?.({ kind: 'ignored', reason: 'unmapped-button' })
+      continue
+    }
+    onOutcome?.({
+      kind: 'test-observation',
+      teamId: binding.teamId,
+      action: binding.action,
+      control: edge,
+    })
+  }
+}
+
+type GameplayPollContext = {
+  readonly enabled: boolean
+  readonly mapping: GamepadMapping
+  readonly target: ResponseOpportunityTarget | null
+  readonly dispatch: (command: SessionCommand) => DispatchResult
+  readonly clock: Clock
+  readonly onOutcome: ((outcome: GamepadBuzzOutcome) => void) | undefined
+}
+
+/** Normal gameplay path for rising edges (not capture, not test mode). */
+function dispatchGameplayEdges(
+  edges: readonly GamepadControlRef[],
+  current: GameplayPollContext,
+): void {
+  for (const edge of edges) {
+    const translation = translateGamepadEdge(
+      edge,
+      current.mapping,
+      { enabled: current.enabled, capturing: false },
+      // The ONE clock read on this path, at the dispatch edge, and only when
+      // there is genuinely an edge to stamp.
+      current.clock.now(),
+    )
+
+    if (translation.status === 'ignored') {
+      current.onOutcome?.({ kind: 'ignored', reason: translation.reason })
+      continue
+    }
+
+    const command = translateLocalInput(translation.signal, current.target)
+    if (command.status === 'rejected') {
+      current.onOutcome?.({ kind: 'untranslated', reason: command.reason })
+      continue
+    }
+
+    const result = current.dispatch(command.command)
+    if (result.status === 'rejected') {
+      current.onOutcome?.({ kind: 'refused', reason: result.reason })
+      continue
+    }
+    current.onOutcome?.({ kind: 'accepted', teamId: translation.signal.teamId })
+  }
+}
+
 /**
  * Tell the host about the stable picture, and only when it actually changed.
  *
  * Called on every poll, so the comparison matters: without it the host panel
  * would set state sixty times a second, repaint under the teacher's cursor, move
  * focus, and give a screen reader a stream of identical announcements. The
- * signature covers availability, the controller indices and their button counts —
- * never a button's state.
+ * signature covers availability, controller indices, button counts, and bounded
+ * identity/classification — never a button's pressed state.
  */
 function publishDiagnostics(
   onDiagnostics: ((diagnostics: GamepadDiagnostics) => void) | undefined,
@@ -363,7 +475,13 @@ function publishDiagnostics(
 ): void {
   if (onDiagnostics === undefined) return
   const key = `${diagnostics.status}|${diagnostics.controllers
-    .map((controller) => `${controller.controllerIndex}:${controller.buttonCount}`)
+    .map((pad) => {
+      const idPart =
+        pad.reportedId.status === 'available' ? pad.reportedId.value : 'unavailable'
+      const mappingPart =
+        pad.reportedMapping.status === 'available' ? pad.reportedMapping.value : 'unavailable'
+      return `${pad.controllerIndex}:${pad.buttonCount}:${idPart}:${mappingPart}:${pad.classification}`
+    })
     .join(',')}`
   if (key === lastKey.current) return
   lastKey.current = key

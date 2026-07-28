@@ -368,8 +368,19 @@ capture completion, tab restoration or focus restoration cannot buzz until it is
 released and pressed again. Connect and disconnect append nothing. Controller
 mappings are session-local host configuration and are deliberately not persisted:
 a browser controller index is a session-local locator, not a durable identity.
-Sony-specific handling, WebHID, Bluetooth, axes, haptics, wagers and persistence
-all remain deferred or excluded.
+**Status (Slice 10).** The host-private Sony Buzz! setup boundary is implemented
+(`In review` — hardware-independent portion complete; owner physical Sony Buzz!
+validation pending). See
+[`ADR-010-sony-buzz-profile-and-setup.md`](ADR-010-sony-buzz-profile-and-setup.md).
+Host-private identity observation and candidate classification
+(`gamepadDeviceProfile`), a capture-based recommended profile with no hard-coded
+browser indices (`sonyBuzzProfile`), and a setup test mode plus host setup
+surface (`SonyBuzzSetupSection`, `useGamepadBuzzInput` `testMode`) sit entirely
+on the adapter side. Test mode resolves rising edges against the applied mapping
+only — no command, no event, no score. **`PublicState`, the sync protocol, and
+the display route are unchanged.** No physical Sony Buzz! compatibility is
+claimed; WebHID, Bluetooth, axes, haptics, wagers and persistence remain deferred
+or excluded.
 
 ## 7. Scoring-strategy boundary (future)
 

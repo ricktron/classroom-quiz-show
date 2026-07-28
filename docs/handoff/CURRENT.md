@@ -1,13 +1,19 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with **Slices 1–9 all `Complete` and merged to `main`** (Slice 8 —
-Local input contract & keyboard buzz-in — merged via PR #16 at `167128d` on
-2026-07-27T02:46:24Z; its reconciliation merged via PR #18 at `5cc81d4` on
-2026-07-27T03:48:25Z; **Slice 9 — Generic Gamepad adapter & configurable
-mappings — merged via [PR #19](https://github.com/ricktron/classroom-quiz-show/pull/19)
-at `d16f90d` on 2026-07-27T05:33:05Z**). **Slice 10 remains `Planned`, unstarted
-and owner-gated.**
+the repository with **Slices 1–9 all `Complete` and merged to `main`**. **Slice 10
+is `In review — owner-accepted (hardware-independent); merge-ready`** — physical
+hardware certification is deferred; it becomes `Complete` only after PR #21
+merges and post-merge reconciliation succeeds (branch
+`claude/slice-10-sony-buzz-mapping`; see
+[`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md)).
+(Slice 8 — Local input contract & keyboard buzz-in — merged via PR #16 at
+`167128d` on 2026-07-27T02:46:24Z; its reconciliation merged via PR #18 at
+`5cc81d4` on 2026-07-27T03:48:25Z; **Slice 9 — Generic Gamepad adapter &
+configurable mappings — merged via
+[PR #19](https://github.com/ricktron/classroom-quiz-show/pull/19) at `d16f90d`
+on 2026-07-27T05:33:05Z**; Slice 9 post-merge reconciliation merged via PR #20
+at `0bcfed11`.)
 
 > **Repository hygiene (2026-07-27).** `main` is the GitHub **default branch**.
 > **PR #17 was closed without merging** — an erroneous *reversed* pull request
@@ -114,8 +120,6 @@ and owner-gated.**
   [`../receipts/2026-07-27-slice-8-local-verification.md`](../receipts/2026-07-27-slice-8-local-verification.md);
   post-merge reconciliation in
   [`../receipts/2026-07-27-slice-8-post-merge-reconciliation.md`](../receipts/2026-07-27-slice-8-post-merge-reconciliation.md).
-  **Slice 10 remains unstarted and owner-gated, and no Sony Buzz!, vendor-matching,
-  WebHID or Bluetooth runtime exists.**
 - **Slice 9 (current): `Complete`.** Owner-authorized and delivered on
   `claude/slice-9-gamepad-adapter-wfiue4`, based on `main` at
   `5cc81d448f9558e914dd5da497232f071d58b10c` (the merge commit of PR #18, the
@@ -137,8 +141,21 @@ and owner-gated.**
   [`../receipts/2026-07-27-slice-9-post-merge-reconciliation.md`](../receipts/2026-07-27-slice-9-post-merge-reconciliation.md);
   rationale in
   [`../architecture/ADR-009-generic-gamepad-adapter.md`](../architecture/ADR-009-generic-gamepad-adapter.md).
-  **No physical controller was tested**, so no device compatibility is claimed;
-  physical hardware validation remains Slice 10.
+  **No physical controller was tested**, so no device compatibility is claimed.
+- **Slice 10 (current): `In review — owner-accepted (hardware-independent);
+  merge-ready`.** Hardware-independent implementation on
+  `claude/slice-10-sony-buzz-mapping`: host-private identity observation,
+  candidate classification (`gamepadDeviceProfile`), capture recipe
+  (`sonyBuzzProfile`), setup test mode, and host setup surface
+  (`SonyBuzzSetupSection`). Physical hardware certification is explicitly
+  deferred — Slice 10 is **not** `Complete` until PR #21 merges and post-merge
+  reconciliation succeeds, and no compatibility is claimed.
+  Rationale in
+  [`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md);
+  receipts
+  [`../receipts/2026-07-27-slice-10-hardware-independent-local-verification.md`](../receipts/2026-07-27-slice-10-hardware-independent-local-verification.md),
+  [`../receipts/2026-07-28-slice-10-pr-review-and-sonar-disposition.md`](../receipts/2026-07-28-slice-10-pr-review-and-sonar-disposition.md),
+  [`../receipts/2026-07-28-slice-10-owner-acceptance-amendment.md`](../receipts/2026-07-28-slice-10-owner-acceptance-amendment.md).
 - **What Slice 9 adds:** generic USB controller input **through the Slice 8
   boundary**, and the most important thing about it is the list of things it did
   not change — no schema, no `PublicState` (wire version stays 6), no sync
@@ -167,6 +184,17 @@ and owner-gated.**
   the panel states plainly. Buttons only: no axes, analog, motion or haptics.
   Secondary slots are assignable and **still inert**. See
   [`../architecture/ADR-009-generic-gamepad-adapter.md`](../architecture/ADR-009-generic-gamepad-adapter.md).
+- **What Slice 10 adds:** the host-private Sony Buzz! **setup boundary** on top of
+  the Slice 9 adapter — identity observation on the bounded snapshot, candidate
+  classification from USB VID/PID tokens only (`gamepadDeviceProfile`), a
+  capture-based recommended profile with no hard-coded browser indices
+  (`sonyBuzzProfile`), setup test mode on the existing poll path, and a host setup
+  surface (`SonyBuzzSetupSection`). Test mode resolves edges against the applied
+  mapping only — no dispatch, no event, no score. **`PublicState`, the sync
+  envelope, commands, events and the reducer are unchanged.** Session-local mapping
+  lifetime is unchanged. Physical hardware certification is deferred; no
+  compatibility is claimed. See
+  [`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md).
 - **What Slice 8 adds:** the hardware-independent **local input boundary** and
   keyboard buzz-in through it. A layered chain — raw browser input → a local input
   adapter (`src/input/`) → a **logical action** → a validated command → an
@@ -380,6 +408,9 @@ src/input/         (Slice 8) localInput, logicalAction, commandTranslation,
                                             action; the baseline/re-prime rule
                              gamepadMapping generic controller/button ↔ team ↔
                                             action, validation, session-local only
+                   (Slice 10) gamepadDeviceProfile host-private candidate
+                                            classification from reported id
+                             sonyBuzzProfile capture recipe + staged profile
 src/host/          useSessionStore, useHostSync, FoundationControls,
                    GameImportPanel (host-only import harness),
                    CategoryBoardHostPanel (reveals; scores nothing),
@@ -390,6 +421,7 @@ src/host/          useSessionStore, useHostSync, FoundationControls,
                    KeyboardEvent is touched),
                    GamepadInputHostPanel + useGamepadBuzzInput (the ONE polling
                    lifecycle owner; injectable source and scheduler),
+                   SonyBuzzSetupSection (host-private Sony Buzz! setup/test),
                    responseOpportunity (the ONE derivation of the live target,
                    shared by both local-input panels)
 src/display/       usePublicState (PublicState + receiver + clock offset),
@@ -398,6 +430,11 @@ src/display/       usePublicState (PublicState + receiver + clock offset),
                    ResponseTimerDisplay + useResponseCountdown (derived countdown)
 src/test/          leakLabels, gameFileFixtures, categoryBoardFixtures, teamFixtures
 ```
+
+> **Module map note (Slice 10).** `gamepadDeviceProfile`, `sonyBuzzProfile`, and
+> `SonyBuzzSetupSection` are host-private setup surfaces only. They do not change
+> commands, events, `PublicState`, sync, or the display route. See
+> [`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md).
 
 > **Module map note (Slice 4).** `src/game/sampleGame.ts` builds *trusted
 > in-memory* fixtures through the domain constructor; `src/import/sampleGameFile.ts`
@@ -593,23 +630,25 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Next action
 
-**Review and merge the Slice 9 post-merge reconciliation pull request**
-(`docs/slice-9-post-merge-reconciliation` → `main`). It is **open and unmerged**,
-is documentation-only, and is the change that records Slice 9 as `Complete`.
-Nothing else is in flight.
+**Confirm PR #21's amended head and green checks, then merge it.** Slice 10 is
+owner-accepted for its hardware-independent scope and merge-ready. Do **not**
+claim physical compatibility; physical hardware certification is deferred.
 
-After that, the next slice is **Slice 10 — Sony Buzz! mapping, validation & host
-setup UX**, whose record is in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md). It is
-`Planned`, unstarted and **owner-gated**: Slice 9 having shipped the generic
-adapter it builds on is **not** authorization to begin it.
+Then perform separate post-merge reconciliation. Slice 10 becomes `Complete`
+only after that succeeds. Begin **Slice 11 — Media contract** only after the
+reconciliation and explicit owner authorization; its dependencies remain Slices 4
+and 5. Slice 11's record is in
+[`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).
 
 ## Owner direction — colored buttons and the local input contract (2026-07-27)
 
 Recorded for Slices 8–10. **Slice 8 has now implemented the CONTRACT half of this
 direction** (a primary buzz action, four ordinal secondary slots that are
-representable and inert, and configurable device-independent mappings). Everything
-below that concerns Slices 9 and 10 remains recorded and **unimplemented**, and
-this direction authorizes no further work.
+representable and inert, and configurable device-independent mappings). **Slice 9
+has implemented the generic Gamepad adapter.** **Slice 10's hardware-independent
+portion is `In review — owner-accepted; merge-ready`**; physical hardware
+certification is deferred.
+This direction authorizes no work beyond what those slices already record.
 
 The hardware-independent local input contract must be capable of representing:
 
@@ -621,10 +660,11 @@ The hardware-independent local input contract must be capable of representing:
 the command layer; a physical button, its index, its colour and its handset stay
 on the adapter side of the boundary that `ROADMAP-AMENDMENT-001` §5.6 fixes.
 
-**Sony Buzz! controllers are the preferred initial hardware validation target**,
-but Sony-specific detection, button numbering, default colour mappings, handset
-assignment and setup UX **remain deferred to Slice 10**. No hardware has been
-tested in this repository.
+**Sony Buzz! controllers are the preferred initial hardware validation target.**
+Slice 10's host-private setup boundary (candidate classification, capture recipe,
+setup test mode) is **`In review — owner-accepted; merge-ready`** —
+hardware-independent implementation complete; physical certification deferred;
+no compatibility claim.
 
 Slice allocation is unchanged by this direction:
 
@@ -632,7 +672,7 @@ Slice allocation is unchanged by this direction:
 | --- | --- | --- |
 | **8** | The hardware-independent **logical** input contract, and keyboard input as its first consumer. | `Complete` (PR #16, `167128d`) |
 | **9** | The generic **Gamepad** adapter and configurable mappings. | `Complete` (PR #19, `d16f90d`) |
-| **10** | **Sony Buzz!** detection, validation, a recommended profile, handset assignment, and the host setup UX. | `Planned`, unstarted |
+| **10** | **Sony Buzz!** detection, validation, a recommended profile, handset assignment, and the host setup UX. | `In review — owner-accepted (hardware-independent); merge-ready` — `Complete` only after PR #21 merges and reconciliation succeeds; certification deferred |
 
 **A final event vocabulary for secondary actions was deliberately NOT defined in
 advance, and neither Slice 8 nor Slice 9 defined one.** Slice 9 made the four
@@ -665,9 +705,10 @@ open-answer and buzz-first multiple-choice clues may coexist within a single gam
 **No schema, event vocabulary, scoring formula, acceptance criteria, roadmap
 insertion or implementation is authorized now**, and none exists. Nothing in the
 codebase implements, anticipates or reserves space for a response mode or a
-multiple-choice question type. **The immediate frontier is now Slice 10**, which
-is `Planned`, unstarted and owner-gated. Slice 9 introduced nothing that
-anticipates or reserves space for a response mode.
+multiple-choice question type. **The immediate frontier is PR #21 merge and
+Slice 10 post-merge reconciliation**. Slice 10 is **`In review — owner-accepted
+(hardware-independent); merge-ready`** and is not `Complete` until that
+reconciliation succeeds; physical certification is deferred.
 
 Recording this direction authorizes no work of any kind.
 
@@ -715,16 +756,14 @@ source for personal, non-commercial classroom use. Independently of that:
 No BBC asset was browsed, downloaded, added or referenced as a file by this
 reconciliation. Recording this direction authorizes no work of any kind.
 
-## Prohibited next actions until Slice 10 is explicitly authorized
+## Prohibited next actions while Slice 10 is In review
 
-Do **not**: merge the Slice 9 post-merge reconciliation PR yourself; amend the
-Slice 9 implementation receipt or any older receipt; claim live-route behaviour
-that was not directly inspected; claim any physical-controller compatibility;
-begin Slice 10 or any later slice; add WebHID, Bluetooth, USB or
-HID code; add Sony Buzz! detection, vendor/product identification, button
-numbering, handset assignment, coloured-button default mappings or a controller
-setup wizard (Slice 10 owns all of it, and Slice 9's generic adapter being ready
-is **not** authorization to write them); persist a Gamepad mapping to
+Do **not**: claim live-route behaviour that was not directly inspected; claim any
+physical Sony Buzz! compatibility or mark Slice 10 `Complete` before PR #21
+merges and post-merge reconciliation succeeds; begin Slice 11 or any later slice
+before that reconciliation and authorization; add WebHID,
+Bluetooth, USB or HID code beyond what Slice 10's host-private boundary already
+uses; persist a Gamepad mapping to
 localStorage, IndexedDB, a game file or the sync channel; map axes, sticks, analog
 triggers, motion or haptics; use a browser controller index or device `id` as a
 durable identity; poll the Gamepad API from the reducer, a render, the sanitizer,

@@ -1,16 +1,14 @@
 # Status
 
-**Current slice:** Slice 9 — Generic Gamepad adapter & configurable mappings
-**Slice state:** **Complete** — merged to `main` via PR #19, merge commit
-`d16f90de94bcbed9a83dfed5e7259a9da5e6a618`, 2026-07-27T05:33:05Z, by `ricktron`
-(final reviewed head `f63d5c190d7747f3a48a3e91a1358868229a170a`, the merge
-commit's second parent). Post-merge reconciliation:
-[`receipts/2026-07-27-slice-9-post-merge-reconciliation.md`](receipts/2026-07-27-slice-9-post-merge-reconciliation.md).
-**Previous slice:** Slice 8 — Local input contract & keyboard buzz-in
-(`Complete`, merged to `main` via PR #16, merge commit `167128d`,
-2026-07-27T02:46:24Z)
-**Next slice:** Slice 10 — Sony Buzz! mapping, validation & host setup UX
-(`Planned`, unstarted, owner-gated — **not started by Slice 9**)
+**Current slice:** Slice 10 — Sony Buzz! mapping, validation & host setup UX
+**Slice state:** **In review — owner-accepted (hardware-independent);
+merge-ready** — physical hardware certification deferred; `Complete` only after
+PR #21 merges and post-merge reconciliation succeeds.
+**Previous slice:** Slice 9 — Generic Gamepad adapter & configurable mappings
+(`Complete`, merged to `main` via PR #19, merge commit `d16f90d`,
+2026-07-27T05:33:05Z)
+**Next slice:** Slice 11 — Media contract (`Planned`, unstarted — only after PR
+#21 merges and Slice 10 post-merge reconciliation succeeds, with authorization)
 **Roadmap:** 18 slices, amended 2026-07-26 by
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 (**merged to `main` via PR #13**, merge commit `752a3fe`, 2026-07-26T20:02:13Z)
@@ -117,8 +115,19 @@ commit's second parent). Post-merge reconciliation:
 > [`receipts/2026-07-27-slice-9-local-verification.md`](receipts/2026-07-27-slice-9-local-verification.md);
 > post-merge reconciliation in
 > [`receipts/2026-07-27-slice-9-post-merge-reconciliation.md`](receipts/2026-07-27-slice-9-post-merge-reconciliation.md).
-> **Slice 10 remains `Planned`, unstarted and owner-gated**, and **no Sony Buzz!,
-> vendor-matching, WebHID or Bluetooth runtime exists anywhere in the codebase.**
+> **Slice 10 is `In review — owner-accepted (hardware-independent);
+> merge-ready`**: the hardware-independent portion is implemented on
+> `claude/slice-10-sony-buzz-mapping` (host-private identity observation,
+> candidate classification, capture recipe, setup test mode, host setup surface).
+> Physical hardware certification is explicitly deferred — no compatibility
+> claim is made. Slice 10 becomes **`Complete` only after PR #21 merges and
+> post-merge reconciliation succeeds.** See
+> [`architecture/ADR-010-sony-buzz-profile-and-setup.md`](architecture/ADR-010-sony-buzz-profile-and-setup.md)
+> and receipts
+> [`receipts/2026-07-27-slice-10-hardware-independent-local-verification.md`](receipts/2026-07-27-slice-10-hardware-independent-local-verification.md),
+> [`receipts/2026-07-28-slice-10-pr-review-and-sonar-disposition.md`](receipts/2026-07-28-slice-10-pr-review-and-sonar-disposition.md),
+> [`receipts/2026-07-28-slice-10-owner-acceptance-amendment.md`](receipts/2026-07-28-slice-10-owner-acceptance-amendment.md).
+> WebHID and Bluetooth remain excluded.
 >
 > **Repository hygiene (2026-07-27).** `main` is the repository's GitHub default
 > branch. **PR #17 was closed without merging**: it was an erroneous reversed pull
@@ -261,17 +270,49 @@ Merged to `main` via PR #19 (merge commit `d16f90d`); post-merge evidence is in
 | Persistent Gamepad mappings | **Not implemented (deliberate — storage impact is none)** |
 | Scoring restricted to the active respondent (`OG-6`) | **Still deferred — not implemented** |
 
+## Slice 10 work (In review — owner-accepted, merge-ready)
+
+The Sony Buzz! **host-private setup boundary** behind the Slice 9 adapter. Full
+rationale in
+[`architecture/ADR-010-sony-buzz-profile-and-setup.md`](architecture/ADR-010-sony-buzz-profile-and-setup.md);
+local evidence in
+[`receipts/2026-07-27-slice-10-hardware-independent-local-verification.md`](receipts/2026-07-27-slice-10-hardware-independent-local-verification.md);
+review disposition in
+[`receipts/2026-07-28-slice-10-pr-review-and-sonar-disposition.md`](receipts/2026-07-28-slice-10-pr-review-and-sonar-disposition.md);
+owner-acceptance amendment in
+[`receipts/2026-07-28-slice-10-owner-acceptance-amendment.md`](receipts/2026-07-28-slice-10-owner-acceptance-amendment.md).
+Implemented on `claude/slice-10-sony-buzz-mapping`; owner-accepted for its
+hardware-independent scope and merge-ready. **Not merged; not `Complete` until
+PR #21 merges and post-merge reconciliation succeeds.**
+
+> **The headline is what did NOT change:** no schema, no `PublicState`, no sync
+> protocol version, no command, no event, no reducer, no queue logic, no timer
+> transition and no scoring behaviour. **No physical Sony Buzz! compatibility is
+> claimed.**
+
+| Item | State |
+| --- | --- |
+| Host-private identity observation (`reportedId`, `reportedMapping`) on the bounded snapshot | Implemented |
+| Candidate classification from USB VID/PID tokens only (`gamepadDeviceProfile`) | Implemented |
+| Capture-based recommended profile — no hard-coded browser button indices (`sonyBuzzProfile`) | Implemented |
+| Host setup/test surface with non-gameplay test mode (`SonyBuzzSetupSection`, `useGamepadBuzzInput` `testMode`) | Implemented |
+| Staged bindings validated through existing Gamepad mapping discipline; Apply/Discard; session-local | Implemented |
+| Test mode resolves edges against applied mapping only — no dispatch, no event, no score | Implemented |
+| One polling lifecycle owner unchanged; no second loop or global service | Implemented |
+| Device identity, classification, capture state and button indices host-private — never projected | Implemented |
+| **`PublicState` unchanged; wire version unchanged at 6; sync envelope unchanged at 2** | Implemented |
+| ADR-010 recorded | Implemented |
+| **Physical Sony Buzz! validation on owner hardware** | **Deferred certification — required before any supported-hardware claim** |
+| Supported/compatibility/certified language | **Not used — not claimed** |
+| WebHID, Bluetooth, USB drivers | **Not implemented** |
+| Scoring restricted to the active respondent (`OG-6`) | **Still deferred — not implemented** |
+
 ### Commands / events / public fields (added in Slice 9)
 
 **None.** No command, no event, no `PublicState` field, no wire-version change and
 no sync-envelope change. The only vocabulary change anywhere is one member added
 to `LOCAL_INPUT_SOURCE_KINDS` (`gamepad`), which is host-private and never
 projected.
-- **New rejection reasons:** `response-phase-not-armed`, `team-already-buzzed`,
-  `no-active-respondent`. Stale opportunities reuse `tile-mismatch`.
-- **`PublicState` (added):** `response.buzz: PublicBuzzState` — required, not
-  optional. Wire version **5 → 6**; version 5 is rejected, never reinterpreted.
-- **Sync envelope:** **unchanged** at `SYNC_SCHEMA_VERSION` 2.
 
 ### Owner gates after Slice 8
 
@@ -855,17 +896,14 @@ None.
 
 ## Next safe action
 
-**Review and merge the Slice 9 post-merge reconciliation pull request**
-(`docs/slice-9-post-merge-reconciliation` → `main`). It is **open and unmerged**,
-is documentation-only, and is the change that records Slice 9 as `Complete`.
-Nothing else is in flight.
+**Confirm PR #21's amended head and green checks, then merge it.** Slice 10 is
+owner-accepted for its hardware-independent scope and merge-ready. Do **not**
+claim physical compatibility; physical hardware certification is deferred.
 
-Do **not** begin **Slice 10 — Sony Buzz! mapping, validation & host setup UX**
-without explicit owner authorization. It is `Planned` and unstarted, and Slice 9
-having shipped the generic adapter it builds on is **not** that authorization. No
-Sony Buzz! detection, vendor/product matching, coloured-button profile, handset
-grouping, controller wizard, WebHID or Bluetooth runtime exists anywhere in the
-codebase, and none may be added.
+Then complete separate post-merge reconciliation. Slice 10 becomes `Complete`
+only after that succeeds. Begin **Slice 11 — Media contract** only after the
+reconciliation and explicit owner authorization; its dependency remains Slices 4
+and 5, not physical Buzz validation.
 
 **Additional response modes are deferred until after the functional MVP** — see
 the owner direction recorded in

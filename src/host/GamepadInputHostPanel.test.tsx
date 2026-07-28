@@ -34,7 +34,7 @@ import {
  *  - capture suspends buzzing, so a button pressed to assign it cannot fire it;
  *  - a real press buzzes the mapped team through the ordinary command path, and a
  *    held button does not buzz twice;
- *  - no Sony, vendor, colour, handset, axis or raw device surface exists;
+ *  - no supported-hardware claim, and no axis/analog/raw device telemetry;
  *  - the panel scores nothing and arms nothing.
  *
  * Every test drives a MANUAL clock, a fake source and a hand-driven poll driver.
@@ -457,36 +457,32 @@ describe('buzzing', () => {
 })
 
 describe('scope and privacy', () => {
-  it('names no vendor, model, colour, handset, axis or raw device anywhere', () => {
+  it('keeps hardware claims honest and never shows raw device telemetry', () => {
     const panel = renderPanel()
     attach(panel, 0, 12)
     assign(panel, 'red', 0, 0)
     const html = panel.view.container.innerHTML.toLowerCase()
+    // Slice 10 owns a host-private Sony Buzz! setup section — those words may appear
+    // there — but the panel must never claim support or show raw telemetry.
     for (const forbidden of [
-      'sony',
+      'supported hardware',
       'playstation',
-      'buzz!',
-      'handset',
-      'vendor',
-      'product',
       'webhid',
       'bluetooth',
-      'hid',
       'axis',
       'axes',
       'analog',
-      'trigger',
-      'stick',
       'vibrat',
       'haptic',
-      'red button',
-      'blue button',
-      'orange',
-      'yellow',
       'standard gamepad',
+      '"pressed"',
+      '054c',
+      '0002',
     ]) {
       expect(html, `must not contain ${forbidden}`).not.toContain(forbidden)
     }
+    expect(screen.getByTestId('sbs')).toBeInTheDocument()
+    expect(screen.getByTestId('sbs-intro')).toHaveTextContent(/candidate match is not proof/i)
   })
 
   it('renders no raw array and no JSON', () => {

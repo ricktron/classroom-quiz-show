@@ -33,6 +33,10 @@ import {
   type GamepadDiagnostics,
   type GamepadPollScheduler,
 } from './useGamepadBuzzInput'
+import {
+  SonyBuzzSetupSection,
+  type SonyBuzzTestObservation,
+} from './SonyBuzzSetupSection'
 import { systemClock, type Clock } from '../time/clock'
 import './GamepadInputHostPanel.css'
 
@@ -56,11 +60,11 @@ import './GamepadInputHostPanel.css'
  *
  * ## Never here
  *
- * No model name, no vendor or product id, no colour, no handset number, no
- * "supported hardware" claim, no raw array, no raw JSON, no axis, no analog
+ * No "supported hardware" claim, no raw array, no raw JSON, no axis, no analog
  * reading, no vibration, and no live per-frame button display. A controller is
- * "Controller 1"; a button is "button 3". Slice 10 owns device recognition, and
- * none of it exists yet.
+ * "Controller 1"; a button is "button 3". Device candidate classification and the
+ * guided Sony Buzz! capture recipe live in the bounded child setup section —
+ * still host-private, still session-local, still never claimed as physical proof.
  *
  * ## Off by default
  *
@@ -85,6 +89,8 @@ export interface GamepadInputHostPanelProps {
 type CaptureState =
   | { readonly mode: 'idle' }
   | { readonly mode: 'capturing'; readonly teamId: string; readonly action: LocalInputAction }
+  /** Guided Sony Buzz! setup capture — edges stage in the child, not the active mapping. */
+  | { readonly mode: 'sony-setup' }
 
 /** The actions a teacher may bind, in the order they are offered. */
 const BINDABLE_ACTIONS: readonly LocalInputAction[] = [
@@ -129,6 +135,10 @@ export function GamepadInputHostPanel({
   )
   /** Which action the next capture assigns. Host UI state, per panel. */
   const [pendingActionKey, setPendingActionKey] = useState<string>('primary-buzz')
+  const [testMode, setTestMode] = useState(false)
+  const [sonyPendingCapture, setSonyPendingCapture] = useState<GamepadControlRef | null>(null)
+  const [lastTestObservation, setLastTestObservation] =
+    useState<SonyBuzzTestObservation | null>(null)
 
   // The loaded game can change under the panel. Bindings for teams that no longer
   // exist are pruned rather than left pointing at nothing; a RENAMED team keeps
@@ -141,10 +151,13 @@ export function GamepadInputHostPanel({
     setMapping((current) => pruneUnknownGamepadTeams(current, teams))
     setIssues([])
     setCapture({ mode: 'idle' })
+    setTestMode(false)
+    setSonyPendingCapture(null)
+    setLastTestObservation(null)
   }, [loadedTeamsKey, teams])
 
   const target = useMemo(() => responseOpportunityFor(game), [game])
-  const capturing = capture.mode === 'capturing'
+  const capturing = capture.mode === 'capturing' || capture.mode === 'sony-setup'
 
   // The poll loop holds `onCapture` across renders, so what it needs is read from
   // refs at CALL time rather than closed over at render time. Deliberately not
@@ -158,6 +171,12 @@ export function GamepadInputHostPanel({
   const onCapture = useCallback(
     (control: GamepadControlRef) => {
       const pending = latestCapture.current
+      if (pending.mode === 'sony-setup') {
+        // End capture immediately so the next guided prompt can start cleanly.
+        setCapture({ mode: 'idle' })
+        setSonyPendingCapture(control)
+        return
+      }
       if (pending.mode !== 'capturing') return
       setCapture({ mode: 'idle' })
 
@@ -185,16 +204,28 @@ export function GamepadInputHostPanel({
     [teams],
   )
 
+  const onOutcome = useCallback((outcome: GamepadBuzzOutcome) => {
+    setLastOutcome(outcome)
+    if (outcome.kind === 'test-observation') {
+      setLastTestObservation({
+        teamId: outcome.teamId,
+        action: outcome.action,
+        control: outcome.control,
+      })
+    }
+  }, [])
+
   useGamepadBuzzInput({
     enabled,
     capturing,
+    testMode,
     mapping,
     target,
     dispatch,
     clock,
     source,
     scheduler,
-    onOutcome: setLastOutcome,
+    onOutcome,
     onDiagnostics: setDiagnostics,
     onCapture,
   })
@@ -212,6 +243,25 @@ export function GamepadInputHostPanel({
     },
     [teams],
   )
+
+  const onSonyCapturingChange = useCallback((next: boolean) => {
+    if (next) {
+      setCapture({ mode: 'sony-setup' })
+      setTestMode(false)
+      return
+    }
+    setCapture((current) => (current.mode === 'sony-setup' ? { mode: 'idle' } : current))
+  }, [])
+
+  const onSonyTestModeChange = useCallback((next: boolean) => {
+    setTestMode(next)
+    if (next) setCapture({ mode: 'idle' })
+    if (!next) setLastTestObservation(null)
+  }, [])
+
+  const onSonyPendingCaptureConsumed = useCallback(() => {
+    setSonyPendingCapture(null)
+  }, [])
 
   if (game.gameLifecycle !== 'active') return null
   if (teams.length === 0) return null
@@ -316,7 +366,7 @@ export function GamepadInputHostPanel({
           id="gih-action"
           data-testid="gih-action"
           value={pendingActionKey}
-          disabled={capturing}
+          disabled={capturing || testMode}
           onChange={(event) => setPendingActionKey(event.target.value)}
         >
           {BINDABLE_ACTIONS.map((action) => (
@@ -330,7 +380,8 @@ export function GamepadInputHostPanel({
       <ul className="gih__bindings" data-testid="gih-bindings">
         {teams.map((team) => {
           const control = gamepadControlForTeamAction(mapping, team.id, pendingAction)
-          const isCapturing = capturing && capture.teamId === team.id
+          const isCapturing =
+            capture.mode === 'capturing' && capture.teamId === team.id
           return (
             <li key={team.id} className="gih__binding-row">
               <span className="gih__binding-team">{team.name}</span>
@@ -345,7 +396,12 @@ export function GamepadInputHostPanel({
                 type="button"
                 className="btn btn--secondary"
                 data-testid={`gih-capture-${team.id}`}
-                disabled={!supported || (capturing && !isCapturing)}
+                disabled={
+                  !supported ||
+                  testMode ||
+                  capture.mode === 'sony-setup' ||
+                  (capturing && !isCapturing)
+                }
                 aria-label={
                   isCapturing
                     ? `Cancel assigning a controller button for ${team.name}`
@@ -407,6 +463,21 @@ export function GamepadInputHostPanel({
         while the clue is armed, the first accepted team answers, and the rest
         queue up. Keyboard buzzing works whether or not a controller is attached.
       </p>
+
+      <SonyBuzzSetupSection
+        teams={teams}
+        controllers={controllers}
+        diagnosticsStatus={diagnostics.status}
+        activeMapping={mapping}
+        onApplyMapping={applyMapping}
+        capturing={capture.mode === 'sony-setup'}
+        onCapturingChange={onSonyCapturingChange}
+        testMode={testMode}
+        onTestModeChange={onSonyTestModeChange}
+        lastTestObservation={lastTestObservation}
+        pendingCapture={sonyPendingCapture}
+        onPendingCaptureConsumed={onSonyPendingCaptureConsumed}
+      />
     </section>
   )
 }
@@ -445,6 +516,8 @@ function describeOutcome(
       return LOCAL_INPUT_TRANSLATION_MESSAGE[outcome.reason]
     case 'refused':
       return REFUSAL_MESSAGE[outcome.reason] ?? 'That press was not accepted.'
+    case 'test-observation':
+      return `Test mode observed ${nameOf(outcome.teamId)} — no gameplay change.`
     default:
       return 'That press was not accepted.'
   }

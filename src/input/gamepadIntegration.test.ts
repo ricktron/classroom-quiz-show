@@ -10,7 +10,7 @@ import { GAMEPAD_MAPPING_VERSION, type GamepadMapping } from './gamepadMapping'
 import { translateLocalInput } from './commandTranslation'
 import { PRIMARY_BUZZ, SECONDARY_ACTION_SLOTS } from './logicalAction'
 import { isLocalInputSourceKind } from './localInput'
-import { buttons, controller, snapshot } from '../test/gamepadFixtures'
+import { buttons, controller, reportedId, snapshot } from '../test/gamepadFixtures'
 import type { GamepadBaseline } from './gamepadAdapter'
 
 /**
@@ -112,12 +112,28 @@ function runFrames(
 
 /** Press then release button `buttonIndex` on `controllerIndex`, from cold. */
 function press(controllerIndex: number, buttonIndex: number, buttonCount = 4) {
+  const pad = controller(controllerIndex, buttons(buttonCount), {
+    reportedId: reportedId('Vendor: 054c Product: 0002'),
+    reportedMapping: { status: 'available', value: 'standard' },
+  })
   return [
-    snapshot(controller(controllerIndex, buttons(buttonCount))),
-    snapshot(controller(controllerIndex, buttons(buttonCount, buttonIndex))),
-    snapshot(controller(controllerIndex, buttons(buttonCount))),
+    snapshot(pad),
+    snapshot({ ...pad, pressed: buttons(buttonCount, buttonIndex) }),
+    snapshot(pad),
   ]
 }
+
+const IDENTITY_FORBIDDEN = [
+  'reportedid',
+  'reportedmapping',
+  'classification',
+  'candidate',
+  '054c',
+  '0002',
+  'sony-buzz',
+  'profile',
+  'identity-unavailable',
+] as const
 
 function queueOf(store: SessionStore) {
   const game = store.getState().session?.game
@@ -167,8 +183,33 @@ describe('a primary controller buzz through the existing chain', () => {
       'mapping',
       'device',
       'poll',
+      ...IDENTITY_FORBIDDEN,
     ]) {
       expect(serialized, `event log must not contain ${forbidden}`).not.toContain(forbidden)
+    }
+  })
+
+  it('translates edges into LocalInputSignal with no identity or profile data', () => {
+    const translation = translateGamepadEdge(
+      { controllerIndex: 0, buttonIndex: 0 },
+      MAPPING,
+      { enabled: true, capturing: false },
+      AT,
+    )
+    expect(translation.status).toBe('action')
+    if (translation.status !== 'action') return
+    const serialized = JSON.stringify(translation.signal).toLowerCase()
+    for (const forbidden of [
+      'controller',
+      'button',
+      '054c',
+      'reported',
+      'classification',
+      'candidate',
+      'profile',
+      ...IDENTITY_FORBIDDEN,
+    ]) {
+      expect(serialized, `signal must not contain ${forbidden}`).not.toContain(forbidden)
     }
   })
 
@@ -385,6 +426,7 @@ describe('replay, undo and the public projection', () => {
       'capture',
       'connected',
       'diagnostic',
+      ...IDENTITY_FORBIDDEN,
     ]) {
       expect(serialized, `public state must not contain ${forbidden}`).not.toContain(forbidden)
     }
