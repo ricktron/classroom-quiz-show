@@ -1,7 +1,7 @@
 # ADR-010 — Sony Buzz! candidate profile, capture recipe, and host setup UX
 
-- **Status:** Accepted for the hardware-independent portion (Slice 10) — **owner
-  physical Sony Buzz! validation still pending**
+- **Status:** Accepted for the hardware-independent portion (Slice 10);
+  **owner-accepted and merge-ready** — physical hardware certification deferred
 - **Date:** 2026-07-27
 - **Slice:** 10 — Sony Buzz! mapping, validation & host setup UX
 - **Depends on:** [ADR-002](ADR-002-state-event-sync-core.md),
@@ -28,7 +28,7 @@ phase. Therefore this ADR records a hardware-independent design that:
   `controllerIndex + buttonIndex` values;
 - can exercise a non-gameplay test mode;
 - must **not** invent macOS/Chrome button indices, claim detection of a physical
-  unit, claim wired/wireless compatibility, or mark Slice 10 Complete.
+  unit, or claim wired/wireless compatibility.
 
 ### Known hardware facts (primary source)
 
@@ -39,7 +39,7 @@ phase. Therefore this ADR records a hardware-independent design that:
 | Wireless Buzz product ID | `1000` |
 | Physical layout (motivating) | large red buzzer + blue, orange, green, yellow |
 
-### Unknown facts (owner physical validation gate)
+### Unknown facts (deferred physical certification)
 
 | Unknown | Why it matters |
 | --- | --- |
@@ -189,13 +189,14 @@ permanent fallback. Domain, protocol, scoring, timers, queues, and projector
 privacy are unchanged.
 
 **Costs and limits.** No physical controller was available; browser button
-indices remain unknown; wired/wireless compatibility is unproven; Slice 10 is
-**not Complete** until owner physical validation and an explicit Complete
-decision. Merge of this work does not by itself complete the slice.
+indices remain unknown; wired/wireless compatibility is unproven. Physical
+certification is required before any supported-hardware claim, but is not a
+prerequisite for merge or Slice 10 completion. Slice 10 becomes **Complete** only
+after PR #21 merges and post-merge reconciliation succeeds.
 
-## Physical validation gate (owner)
+## Deferred physical certification (owner)
 
-Owner steps after this hardware-independent work merges (or on a review build):
+Owner steps for any future supported-hardware claim:
 
 1. Plug in the wired and/or wireless Sony Buzz! unit on the intended macOS/Chrome.
 2. Record the exact `Gamepad.id` / mapping / button counts observed (host-only).
@@ -205,7 +206,7 @@ Owner steps after this hardware-independent work merges (or on a review build):
 6. Confirm test mode reports without scoring; confirm keyboard fallback.
 7. Write a **physical-validation receipt** — separate from the CI/local
    hardware-independent receipt.
-8. Only then consider marking Slice 10 Complete.
+8. Only then consider a supported-hardware claim for the observed configuration.
 
 ## Explicit non-goals (this phase)
 

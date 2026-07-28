@@ -306,10 +306,11 @@ strongest thing to say about it is what it did **not** change: no schema, no
 - **Sony Buzz!-specific setup was not in Slice 9** — see Slice 10 below. No WebHID,
   Bluetooth, axes, analog, haptics or persistent mappings in Slice 9.
 
-**Slice 10 — Sony Buzz! mapping, validation & host setup UX. In review** —
-hardware-independent implementation complete on
-`claude/slice-10-sony-buzz-mapping`; owner physical Sony Buzz! validation
-pending. See
+**Slice 10 — Sony Buzz! mapping, validation & host setup UX. In review —
+owner-accepted (hardware-independent); merge-ready** — implementation accepted
+on `claude/slice-10-sony-buzz-mapping`. Physical hardware certification is
+explicitly deferred; Slice 10 becomes `Complete` only after PR #21 merges and
+post-merge reconciliation succeeds. See
 [`docs/architecture/ADR-010-sony-buzz-profile-and-setup.md`](docs/architecture/ADR-010-sony-buzz-profile-and-setup.md).
 No schema, `PublicState`, sync protocol, command, event or reducer change. No
 physical compatibility is claimed.
@@ -322,8 +323,8 @@ physical compatibility is claimed.
   (`sonyBuzzProfile`).
 - **Setup test mode** and host setup surface (`SonyBuzzSetupSection`) that resolve
   presses without dispatching gameplay.
-- **Owner-gated remainder:** physical Sony Buzz! validation on owner hardware
-  before Slice 10 may be marked `Complete`.
+- **Deferred certification:** future physical Sony Buzz! validation is required
+  before any supported-hardware claim, not before merge or Slice 10 completion.
 
 > ⚠️ **No physical Sony Buzz! controller has been tested.** CI and simulated
 > Gamepad sources prove the hardware-independent boundary only. There is no
@@ -349,9 +350,9 @@ The Slice 1 foundation is unchanged beneath it:
 There is **one playable round type**; it scores, it can be timed, and teams can now
 buzz in on it **from the host keyboard, or from a generic USB controller through
 the same boundary**. Slice 10 adds a **host-private Sony Buzz! setup surface**
-(candidate classification, capture recipe, setup test mode) — **In review**,
-hardware-independent portion complete, **owner physical validation pending; no
-compatibility claim**. No WebHID or Bluetooth of any kind, no networked or
+(candidate classification, capture recipe, setup test mode) — **In review —
+owner-accepted (hardware-independent); merge-ready**, with physical certification
+deferred and **no compatibility claim**. No WebHID or Bluetooth of any kind, no networked or
 student-device buzzing, and no wagers,
 media, themes, or durable session persistence — **including no persistence of
 controller mappings, which are session-local by design**; importing is still limited to pasting canonical JSON (no file

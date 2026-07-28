@@ -67,8 +67,8 @@ This project separates two kinds of durable decision records:
      VID/PID tokens, capture-based recommended profile with no hard-coded browser
      indices, setup test mode and host setup surface, session-local mapping
      lifetime, and the privacy boundary; **`PublicState` and the sync protocol do
-     not change** (Slice 10 hardware-independent portion — owner physical Sony
-     Buzz! validation still pending).
+     not change** (Slice 10 hardware-independent portion — physical certification
+     deferred before any supported-hardware claim).
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).
