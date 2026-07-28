@@ -306,14 +306,18 @@ strongest thing to say about it is what it did **not** change: no schema, no
 - **Sony Buzz!-specific setup was not in Slice 9** — see Slice 10 below. No WebHID,
   Bluetooth, axes, analog, haptics or persistent mappings in Slice 9.
 
-**Slice 10 — Sony Buzz! mapping, validation & host setup UX. In review —
-owner-accepted (hardware-independent); merge-ready** — implementation accepted
-on `claude/slice-10-sony-buzz-mapping`. Physical hardware certification is
-explicitly deferred; Slice 10 becomes `Complete` only after PR #21 merges and
-post-merge reconciliation succeeds. See
-[`docs/architecture/ADR-010-sony-buzz-profile-and-setup.md`](docs/architecture/ADR-010-sony-buzz-profile-and-setup.md).
-No schema, `PublicState`, sync protocol, command, event or reducer change. No
-physical compatibility is claimed.
+**Slice 10 — Sony Buzz! mapping, validation & host setup UX. Complete** — PR #21
+was squash-merged at `5575be35d76ae0f0d3b36394431b7873883b78ac` (merged
+**2026-07-28T02:35:09Z**) from final reviewed head
+`288593391776be1d89b7f5ab9820e147946e56f9`. Exact PR-path blob equality confirmed
+that the reviewed content is what landed (28 paths). Post-merge verification
+succeeded on clean `main` at that squash tip. Completion covers the
+owner-accepted hardware-independent scope; physical Sony Buzz! certification
+remains deferred, and no compatibility claim is made. See
+[`docs/architecture/ADR-010-sony-buzz-profile-and-setup.md`](docs/architecture/ADR-010-sony-buzz-profile-and-setup.md)
+and
+[`docs/receipts/2026-07-28-slice-10-post-merge-reconciliation.md`](docs/receipts/2026-07-28-slice-10-post-merge-reconciliation.md).
+No schema, `PublicState`, sync protocol, command, event or reducer change.
 
 - **Host-private identity observation** on the bounded Gamepad snapshot
   (`reportedId`, `reportedMapping`).
@@ -350,8 +354,8 @@ The Slice 1 foundation is unchanged beneath it:
 There is **one playable round type**; it scores, it can be timed, and teams can now
 buzz in on it **from the host keyboard, or from a generic USB controller through
 the same boundary**. Slice 10 adds a **host-private Sony Buzz! setup surface**
-(candidate classification, capture recipe, setup test mode) — **In review —
-owner-accepted (hardware-independent); merge-ready**, with physical certification
+(candidate classification, capture recipe, setup test mode) — **`Complete`** under
+the owner-accepted hardware-independent boundary, with physical certification
 deferred and **no compatibility claim**. No WebHID or Bluetooth of any kind, no networked or
 student-device buzzing, and no wagers,
 media, themes, or durable session persistence — **including no persistence of
