@@ -1,5 +1,5 @@
 import { deepFreeze } from '../deepFreeze'
-import { isValidSameOriginPath } from './schema'
+import { isValidSameOriginPath } from './limits'
 
 /**
  * Trusted prompt content (Slice 11).
@@ -72,6 +72,26 @@ export function isImagePrompt(
  * The input is never mutated and never retained: every value is copied into a
  * fresh object (then deep-frozen by the board constructor).
  */
+function normalizeImagePrompt(value: Record<string, unknown>): PromptContent | null {
+  const source = value.source
+  if (typeof source !== 'object' || source === null || Array.isArray(source)) return null
+  const sourceRecord = source as Record<string, unknown>
+  if (sourceRecord.kind !== 'same-origin-path') return null
+  if (typeof sourceRecord.path !== 'string') return null
+  if (!isValidSameOriginPath(sourceRecord.path)) return null
+  if (typeof value.alt !== 'string' || value.alt.length === 0) return null
+  if (value.caption !== undefined && typeof value.caption !== 'string') return null
+  if (value.attribution !== undefined && typeof value.attribution !== 'string') return null
+
+  return {
+    kind: 'image',
+    source: { kind: 'same-origin-path', path: sourceRecord.path },
+    alt: value.alt,
+    caption: typeof value.caption === 'string' ? value.caption : null,
+    attribution: typeof value.attribution === 'string' ? value.attribution : null,
+  }
+}
+
 export function normalizeAuthoredPrompt(prompt: unknown): PromptContent | null {
   if (typeof prompt === 'string') {
     if (prompt.length === 0) return null
@@ -84,26 +104,7 @@ export function normalizeAuthoredPrompt(prompt: unknown): PromptContent | null {
 
   const value = prompt as Record<string, unknown>
   if (value.kind !== 'image') return null
-
-  const source = value.source
-  if (typeof source !== 'object' || source === null || Array.isArray(source)) return null
-  const sourceRecord = source as Record<string, unknown>
-  if (sourceRecord.kind !== 'same-origin-path') return null
-  if (typeof sourceRecord.path !== 'string') return null
-  if (!isValidSameOriginPath(sourceRecord.path)) return null
-
-  if (typeof value.alt !== 'string' || value.alt.length === 0) return null
-
-  if (value.caption !== undefined && typeof value.caption !== 'string') return null
-  if (value.attribution !== undefined && typeof value.attribution !== 'string') return null
-
-  return {
-    kind: 'image',
-    source: { kind: 'same-origin-path', path: sourceRecord.path },
-    alt: value.alt,
-    caption: typeof value.caption === 'string' ? value.caption : null,
-    attribution: typeof value.attribution === 'string' ? value.attribution : null,
-  }
+  return normalizeImagePrompt(value)
 }
 
 /**

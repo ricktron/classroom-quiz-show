@@ -4,9 +4,11 @@ import {
   MAX_MEDIA_ATTRIBUTION_LENGTH,
   MAX_MEDIA_CAPTION_LENGTH,
   MAX_MEDIA_PATH_LENGTH,
-  SAME_ORIGIN_PATH_PATTERN,
+  isValidSameOriginPath,
 } from './limits'
 import { MAX_PROMPT_LENGTH } from '../categoryBoard/limits'
+
+export { isValidSameOriginPath } from './limits'
 
 /**
  * Strict authored prompt / media schemas (Slice 11).
@@ -39,19 +41,6 @@ function addIssue(
   ctx.addIssue({ code: 'custom', path: [...path], message, params: { importCode } })
 }
 
-/**
- * Is this path a legal same-origin relative locator?
- *
- * Rejects `..`, schemes, query/hash, backslashes, whitespace, and a leading `/`
- * (the pattern already forbids the last four classes of character).
- */
-export function isValidSameOriginPath(path: string): boolean {
-  if (path.length < 1 || path.length > MAX_MEDIA_PATH_LENGTH) return false
-  if (!SAME_ORIGIN_PATH_PATTERN.test(path)) return false
-  if (path.includes('..')) return false
-  return true
-}
-
 const sameOriginPathSourceSchema = z
   .strictObject({
     kind: z.string().min(1, 'a media source kind must not be empty'),
@@ -78,7 +67,7 @@ const sameOriginPathSourceSchema = z
         ctx,
         'invalid-media-source',
         ['path'],
-        `is not a safe same-origin relative path (${quote(source.path)}). Use a path like "media-fixtures/slice-11-clue.png" — no leading slash, no "..", and no ":", "?", "#", "\\\\", or whitespace.`,
+        `is not a safe same-origin relative path (${quote(source.path)}). Use a path like "media-fixtures/slice-11-clue.png" — no leading slash, no "..", and no ":", "?", "#", backslash, whitespace, empty segments, or percent-encoding.`,
       )
     }
   })

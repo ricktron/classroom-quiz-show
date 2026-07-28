@@ -36,14 +36,26 @@ describe('same-origin path grammar', () => {
 
   it.each([
     ['leading slash', '/media-fixtures/x.png'],
+    ['absolute windows-style', '\\windows.png'],
     ['parent segment', 'media/../secret.png'],
-    ['scheme colon', 'https://evil.example/x.png'],
-    ['query', 'x.png?x=1'],
-    ['hash', 'x.png#y'],
+    ['nested parent', 'a/../secret.png'],
+    ['scheme colon https', 'https://evil.example/x.png'],
+    ['scheme colon http', 'http://evil.example/x.png'],
+    ['javascript scheme', 'javascript:alert(1)'],
+    ['data uri', 'data:image/png;base64,aaa'],
+    ['blob uri', 'blob:https://example.com/uuid'],
+    ['file uri', 'file:///etc/passwd'],
+    ['query', 'media.png?x=1'],
+    ['hash', 'media.png#fragment'],
     ['backslash', 'a\\b.png'],
-    ['whitespace', 'a b.png'],
+    ['whitespace', 'media image.png'],
     ['empty', ''],
     ['leading dot', './x.png'],
+    ['percent-encoded parent', '%2e%2e/secret.png'],
+    ['mixed percent parent', '.%2e/secret.png'],
+    ['percent-encoded slash', 'media/%2Fsecret.png'],
+    ['empty segment', 'media//image.png'],
+    ['trailing slash', 'media/'],
   ])('rejects %s', (_label, path) => {
     expect(isValidSameOriginPath(path)).toBe(false)
   })

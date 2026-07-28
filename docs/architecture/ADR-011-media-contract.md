@@ -58,10 +58,18 @@ source kind or path → `invalid-media-source`.
 
 The only implemented source kind is `same-origin-path`. Paths must match
 `^[A-Za-z0-9][A-Za-z0-9._/-]*$`, length 1…500, and must not contain `..`, `:`,
-`?`, `#`, `\`, whitespace, or a leading `/`. Remote schemes (`https:`, `http:`,
-`data:`, `blob:`, `file:`, `javascript:`) are refused at import. **No remote MIME
-validation is claimed** — the browser loads a same-origin URL; content-type is
-not inspected by the engine.
+`?`, `#`, `\`, whitespace, a leading `/`, a trailing `/`, or empty segments
+(`//`). Remote schemes (`https:`, `http:`, `data:`, `blob:`, `file:`,
+`javascript:`) are refused at import.
+
+**Percent-encoding policy:** `%` is outside the path alphabet, so encoded
+traversal (`%2e%2e/…`), encoded separators, and other percent-forms are rejected
+at validation. The resolver concatenates the validated path onto `BASE_URL`
+without decoding, so the browser never receives a path whose decoded form could
+disagree with the validator.
+
+**No remote MIME validation is claimed** — the browser loads a same-origin URL;
+content-type is not inspected by the engine.
 
 ### 4. Trusted domain
 

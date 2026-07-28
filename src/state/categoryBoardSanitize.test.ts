@@ -376,6 +376,24 @@ describe('wire version', () => {
     if (!decoded.ok) expect(decoded.reason).toBe('malformed-payload')
   })
 
+  it('rejects a version-6 public snapshot rather than reinterpreting string prompts', () => {
+    const current = boardStore().getPublicState()
+    const version6 = { ...current, schemaVersion: 6 }
+    expect(isPublicState(version6)).toBe(false)
+    const decoded = decodeEnvelope({
+      protocol: 'classroom-quiz-show/sync',
+      schemaVersion: 2,
+      message: {
+        type: 'public-state',
+        sentAt: 1_700_000_000_000,
+        revision: current.revision,
+        payload: version6,
+      },
+    })
+    expect(decoded.ok).toBe(false)
+    if (!decoded.ok) expect(decoded.reason).toBe('malformed-payload')
+  })
+
   it('round-trips a current-version board payload through the sync envelope', () => {
     const publicState = drive(boardStore(), select('alpha-100'), revealPrompt)
     const decoded = decodeEnvelope(
@@ -526,5 +544,38 @@ describe('image prompt projection (Slice 11)', () => {
         },
       }),
     ).toBe(false)
+  })
+
+  it('rejects unknown nested public-media keys on the whole snapshot', () => {
+    const valid = drive(
+      imageBoardStore(),
+      {
+        type: 'SELECT_CATEGORY_BOARD_TILE',
+        issuedAt: AT,
+        roundId: ROUND,
+        tileId: 'media-100',
+      },
+      revealPrompt,
+    )
+    expect(isPublicState(valid)).toBe(true)
+
+    const withExtraPromptKey = structuredClone(valid) as {
+      round: {
+        stage: 'prompt'
+        selection: { prompt: Record<string, unknown> }
+      }
+    }
+    withExtraPromptKey.round.selection.prompt.mime = 'image/png'
+    expect(isPublicPromptContent(withExtraPromptKey.round.selection.prompt)).toBe(false)
+    expect(isPublicState(withExtraPromptKey)).toBe(false)
+
+    const withExtraSourceKey = structuredClone(valid) as {
+      round: {
+        stage: 'prompt'
+        selection: { prompt: { source: Record<string, unknown> } }
+      }
+    }
+    withExtraSourceKey.round.selection.prompt.source.host = 'evil.example'
+    expect(isPublicState(withExtraSourceKey)).toBe(false)
   })
 })

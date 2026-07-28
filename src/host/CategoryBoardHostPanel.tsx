@@ -265,15 +265,22 @@ function HostOnlyPrompt({ prompt }: { readonly prompt: PromptContent }) {
           {prompt.text}
         </HostOnlyBlock>
       )
-    case 'image':
+    case 'image': {
+      const src = resolveSameOriginMediaSrc(prompt.source.path)
       return (
         <HostOnlyBlock label="Prompt" testId="cbh-prompt">
-          <img
-            className="cbh__prompt-image"
-            src={resolveSameOriginMediaSrc(prompt.source.path)}
-            alt={prompt.alt}
-            data-testid="cbh-prompt-image"
-          />
+          {src !== null ? (
+            <img
+              className="cbh__prompt-image"
+              src={src}
+              alt={prompt.alt}
+              data-testid="cbh-prompt-image"
+            />
+          ) : (
+            <p className="cbh__prompt-alt" data-testid="cbh-prompt-image-unavailable">
+              Image unavailable
+            </p>
+          )}
           <p className="cbh__prompt-alt" data-testid="cbh-prompt-alt">
             {prompt.alt}
           </p>
@@ -289,6 +296,7 @@ function HostOnlyPrompt({ prompt }: { readonly prompt: PromptContent }) {
           )}
         </HostOnlyBlock>
       )
+    }
     default:
       return assertNeverPromptKind(prompt)
   }

@@ -11,12 +11,12 @@ export {
   MAX_MEDIA_CAPTION_LENGTH,
   MAX_MEDIA_PATH_LENGTH,
   SAME_ORIGIN_PATH_PATTERN,
+  isValidSameOriginPath,
 } from './limits'
 
 export {
   authoredPromptSchema,
   checkAuthoredPromptSemantics,
-  isValidSameOriginPath,
   type AuthoredPromptInput,
 } from './schema'
 

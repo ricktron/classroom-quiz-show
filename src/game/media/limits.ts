@@ -56,5 +56,28 @@ export const MAX_MEDIA_ATTRIBUTION_LENGTH = 200
  * `/`, `-`. Rejects schemes (`:`), query/hash (`?`/`#`), backslashes, whitespace,
  * and empty segments introduced by `..` (checked separately). Content cannot
  * point at `https:`, `http:`, `data:`, `blob:`, `file:`, or `javascript:`.
+ *
+ * **Percent-encoding policy:** `%` is not in the alphabet. Encoded traversal
+ * (`%2e%2e/…`), encoded separators (`%2F`), and other percent-forms are rejected
+ * at validation so the browser never receives a path whose decoded form could
+ * disagree with the validator. The resolver concatenates the validated path
+ * without decoding.
  */
 export const SAME_ORIGIN_PATH_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/
+
+/**
+ * Is this path a legal same-origin relative locator?
+ *
+ * Shared by authored import validation and the public-wire guard so the two
+ * boundaries cannot drift. Lives here (not in `schema.ts`) so the display
+ * bundle can reuse it without pulling Zod.
+ */
+export function isValidSameOriginPath(path: string): boolean {
+  if (path.length < 1 || path.length > MAX_MEDIA_PATH_LENGTH) return false
+  if (!SAME_ORIGIN_PATH_PATTERN.test(path)) return false
+  if (path.includes('..')) return false
+  // Empty segments and a trailing slash are malformed locators — refuse them
+  // so URL normalization cannot invent a different interpretation later.
+  if (path.includes('//') || path.endsWith('/')) return false
+  return true
+}

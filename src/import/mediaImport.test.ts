@@ -132,6 +132,66 @@ describe('media import (Slice 11)', () => {
     expect(issue?.code).toBe('invalid-media-source')
   })
 
+  it.each([
+    ['percent-encoded parent', '%2e%2e/secret.png'],
+    ['empty segment', 'media//image.png'],
+    ['query string', 'media.png?x=1'],
+    ['data uri shape', 'data:image/png;base64,aaa'],
+  ])('fails %s as invalid-media-source', (_label, path) => {
+    const issue = at(
+      boardGameFile({
+        categories: [
+          category('a', {
+            tiles: [
+              tile('a-1', {
+                prompt: {
+                  kind: 'image',
+                  source: { kind: 'same-origin-path', path },
+                  alt: 'bad',
+                },
+              }),
+            ],
+          }),
+        ],
+      }),
+      'rounds[0].config.categories[0].tiles[0].prompt.source.path',
+    )
+    expect(issue?.code).toBe('invalid-media-source')
+  })
+
+  it('failed import leaves a previously loaded game definition untouched', () => {
+    const good = importGameFromUnknown(
+      boardGameFile({
+        categories: [category('a', { tiles: [tile('a-1', { prompt: 'Keep me' })] })],
+      }),
+    )
+    expect(good.status).toBe('success')
+    if (good.status !== 'success') return
+    const before = JSON.stringify(good.definition)
+
+    const bad = importGameFromUnknown(
+      boardGameFile({
+        categories: [
+          category('a', {
+            tiles: [
+              tile('a-1', {
+                prompt: {
+                  kind: 'audio',
+                  source: { kind: 'same-origin-path', path: 'x.mp3' },
+                  alt: 'nope',
+                },
+              }),
+            ],
+          }),
+        ],
+      }),
+    )
+    expect(bad.status).toBe('failure')
+    // The earlier successful result object is an immutable snapshot — a later
+    // failure must not mutate it (and callers never load failure into the store).
+    expect(JSON.stringify(good.definition)).toBe(before)
+  })
+
   it('fails a missing alt as missing-field', () => {
     const issue = at(
       boardGameFile({

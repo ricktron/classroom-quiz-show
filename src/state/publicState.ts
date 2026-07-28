@@ -3,9 +3,13 @@
  *
  * This module is the ONLY state-shape module the display surface is allowed to
  * import. It deliberately imports nothing from the private state, the store, the
- * reducer, commands, or events. Keeping it dependency-free is a structural
- * guarantee that a display component cannot accidentally pull a private type (or
- * a private value along with it) into the projector bundle.
+ * reducer, commands, or events. Keeping it free of those dependencies is a
+ * structural guarantee that a display component cannot accidentally pull a
+ * private type (or a private value along with it) into the projector bundle.
+ *
+ * Slice 11 adds one narrow, Zod-free import from `game/media/limits` so the
+ * public prompt guard shares the same same-origin path grammar as import —
+ * without pulling the authored Zod schema into the projector path.
  *
  * `PublicState` is an explicit allow-list: every field here is safe to show on a
  * classroom projector. There is no `[key: string]` index signature and no
@@ -14,6 +18,8 @@
  *
  * See docs/architecture/GAME-ENGINE-BOUNDARIES.md (§4) and ADR-002.
  */
+
+import { isValidSameOriginPath } from '../game/media/limits'
 
 /**
  * Bump when the PublicState wire shape changes incompatibly. Slice 3 added the
@@ -587,35 +593,68 @@ function isNullableString(value: unknown): value is string | null {
   return value === null || typeof value === 'string'
 }
 
+const PUBLIC_TEXT_PROMPT_KEYS = ['kind', 'text'] as const
+const PUBLIC_IMAGE_PROMPT_KEYS = ['kind', 'source', 'alt', 'caption', 'attribution'] as const
+const PUBLIC_IMAGE_SOURCE_KEYS = ['kind', 'path'] as const
+
+/** Exact-key check — unknown nested media fields reject the snapshot. */
+function hasExactOwnKeys(
+  value: Record<string, unknown>,
+  keys: readonly string[],
+): boolean {
+  const actual = Object.keys(value)
+  if (actual.length !== keys.length) return false
+  for (const key of keys) {
+    if (!Object.prototype.hasOwnProperty.call(value, key)) return false
+  }
+  return true
+}
+
+function isPublicTextPrompt(v: Record<string, unknown>): boolean {
+  return (
+    hasExactOwnKeys(v, PUBLIC_TEXT_PROMPT_KEYS) &&
+    typeof v.text === 'string' &&
+    v.text.length > 0
+  )
+}
+
+function isPublicImageSource(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+  const source = value as Record<string, unknown>
+  return (
+    hasExactOwnKeys(source, PUBLIC_IMAGE_SOURCE_KEYS) &&
+    source.kind === 'same-origin-path' &&
+    typeof source.path === 'string' &&
+    isValidSameOriginPath(source.path)
+  )
+}
+
+function isPublicImagePrompt(v: Record<string, unknown>): boolean {
+  return (
+    hasExactOwnKeys(v, PUBLIC_IMAGE_PROMPT_KEYS) &&
+    typeof v.alt === 'string' &&
+    v.alt.length > 0 &&
+    (v.caption === null || typeof v.caption === 'string') &&
+    (v.attribution === null || typeof v.attribution === 'string') &&
+    isPublicImageSource(v.source)
+  )
+}
+
 /**
- * Strict guard for public prompt content. Unknown kinds, unknown keys at the
- * source level, and illegal paths fail closed — a bare string is NOT accepted
- * on wire version 7 (legacy strings are normalized before projection).
+ * Strict guard for public prompt content. Unknown kinds, unknown nested keys,
+ * and illegal paths fail closed — a bare string is NOT accepted on wire
+ * version 7 (legacy strings are normalized before projection).
+ *
+ * Path validation uses the same `isValidSameOriginPath` helper as import so
+ * the authored and public boundaries cannot drift. `limits.ts` is Zod-free, so
+ * the display bundle does not pull the schema module.
  */
 export function isPublicPromptContent(value: unknown): value is PublicPromptContent {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
   const v = value as Record<string, unknown>
 
-  if (v.kind === 'text') {
-    return typeof v.text === 'string' && v.text.length > 0
-  }
-
-  if (v.kind === 'image') {
-    if (typeof v.alt !== 'string' || v.alt.length === 0) return false
-    if (!(v.caption === null || typeof v.caption === 'string')) return false
-    if (!(v.attribution === null || typeof v.attribution === 'string')) return false
-    if (typeof v.source !== 'object' || v.source === null || Array.isArray(v.source)) {
-      return false
-    }
-    const source = v.source as Record<string, unknown>
-    if (source.kind !== 'same-origin-path') return false
-    if (typeof source.path !== 'string' || source.path.length === 0) return false
-    // Fail closed on the same path grammar the import boundary enforces.
-    if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(source.path)) return false
-    if (source.path.includes('..')) return false
-    return true
-  }
-
+  if (v.kind === 'text') return isPublicTextPrompt(v)
+  if (v.kind === 'image') return isPublicImagePrompt(v)
   return false
 }
 

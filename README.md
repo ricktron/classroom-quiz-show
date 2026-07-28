@@ -465,7 +465,11 @@ everything after `#` is handled in the client. Full rationale and alternatives:
   base-path-correct `start_url`/`scope`.
 - **Offline app shell:** after the first successful load, the service worker
   precaches the app shell so the host and display **routes** load offline. This
-  is validated by a Playwright offline smoke test.
+  is validated by a Playwright offline smoke test. Media assets present in the
+  deployed build and matched by the existing Workbox asset glob (for example the
+  Slice 11 CI fixture PNG under `public/media-fixtures/`) may also be precached;
+  arbitrary authored paths and separately distributed files are not packaged or
+  guaranteed offline.
 - **Update behavior:** `registerType: 'autoUpdate'`. A new deployment is picked
   up and activated on the next reload/navigation, and the open tab also polls
   for updates hourly, so the app shell never stays indefinitely stale.
