@@ -73,7 +73,12 @@ This project separates two kinds of durable decision records:
      — typed prompt content for text and same-origin static images, additive
      authored compatibility on game-file schema version 1, strict source policy,
      fail-closed import/projection/rendering, and `PublicState` wire version 7
-     (Slice 11, in review).
+     (Slice 11, Complete).
+   - [`ADR-012-portable-export-round-trip.md`](../architecture/ADR-012-portable-export-round-trip.md)
+     — deterministic export of the loaded `GameDefinition` to the existing
+     canonical version-1 document, re-import and structural-equality gates,
+     host-only download, answer-key warning, and media-path-only portability
+     (Slice 12, In review).
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).
