@@ -53,7 +53,7 @@ systems.
 | 7   | **Timers, arming & transitions** | Timer config, a deadline-projected public timer, host arming/disarming, host-controlled undoable round transitions, reduced-motion-safe. The interrupt seam must be typed so buzz-in is a later addition, not a rewrite. **(Complete.)** | 5, 6 |
 | 8   | **Local input contract & keyboard buzz-in** | The device-independent input-adapter boundary + registry, buzz-in domain semantics, one command/event pair, replay-derived queue state, sanitized public projection — with the **keyboard adapter** as its first consumer. **(Complete — delivered without the anticipated adapter *registry* object; a bounded application-only input-source union ships its guarantees instead. See ADR-008 §3.)** | 2, 6, 7 |
 | 9   | **Generic Gamepad adapter**    | Gamepad API adapter behind the slice 8 boundary; connect/disconnect handling, polling isolation, host diagnostics. No model-specific assumptions. **(Complete — merged via PR #19 (`d16f90d`). No schema, `PublicState`, protocol, command, event or reducer change. No physical controller was tested. See ADR-009.)** | 8 |
-| 10  | **Sony Buzz! mapping, validation & host setup UX** | Configurable controller mapping, Sony Buzz! validation as the preferred target, host setup/test surface, fallback when no controller is present. | 9 |
+| 10  | **Sony Buzz! mapping, validation & host setup UX** | Configurable controller mapping, Sony Buzz! candidate classification and capture recipe, host setup/test surface, fallback when no controller is present. **(`In review` — hardware-independent implementation complete; owner physical Sony Buzz! validation pending. See ADR-010.)** | 9 |
 | 11  | **Media contract**             | Typed media model (beyond plain-string prompts), fail-closed on unsupported media, additive on `schemaVersion: 1`. **Must precede any new round type.** | 4, 5 |
 | 12  | **Portable export & round-trip import** | Export a game to the canonical portable document and re-import it losslessly; reproducible game identity; round-trip equality as an acceptance criterion. | 4, 11 |
 | 13  | **Local persistence & recovery** | IndexedDB durable local storage, session recovery after refresh, saved definitions kept distinct from active session state, lightweight leader coordination. | 2, 12 |
@@ -597,9 +597,12 @@ Nothing: Slice 9 is **`Complete`** — merged to `main` via
 `d16f90d`, 2026-07-27T05:33:05Z, by `ricktron`). Its scope record is below, and
 its rationale is in
 [`../architecture/ADR-009-generic-gamepad-adapter.md`](../architecture/ADR-009-generic-gamepad-adapter.md).
-**Slice 10 is `Planned`, unstarted, and owner-gated — it must not begin until the
-owner explicitly authorizes it, and Slice 9 having shipped the generic adapter is
-not that authorization.**
+**Slice 10 is `In review`** — hardware-independent implementation complete on
+`claude/slice-10-sony-buzz-mapping`; owner physical Sony Buzz! validation pending.
+Slice 10 is **not** `Complete`. See
+[`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md).
+**Slice 11 is `Planned`, unstarted, and must not start without authorization**
+while Slice 10 remains incomplete.
 
 ## Slice 8 — scope, acceptance, non-goals
 
@@ -893,11 +896,18 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   Sony-specific belongs HERE and nowhere earlier: detection, button numbering,
   default colour mappings, handset assignment, the recommended profile, and the
   host setup UX. Slices 8 and 9 must remain usable and complete without any of
-  it. **Recorded, not implemented; no hardware has been tested.**
+  it. **Hardware-independent portion delivered (`In review`); owner physical
+  Sony Buzz! validation still pending — not `Complete`.**
 - **Impact:** schema no · runtime **yes** · UI **yes** · storage **possibly**
   (mapping persistence may defer to slice 13) · hardware **yes** (Sony Buzz! USB).
-- **Status:** `Planned` — unstarted.
-- **Owner gate:** authorization to begin; owner-performed hardware validation.
+- **Status:** **`In review`** — hardware-independent implementation complete;
+  owner physical Sony Buzz! validation pending. Implemented on
+  `claude/slice-10-sony-buzz-mapping`; **not merged; not `Complete`.** Rationale
+  in
+  [`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md).
+  Physical hardware validation is owner-performed and must be recorded before
+  Slice 10 may be marked `Complete`.
+- **Owner gate:** owner-performed hardware validation still pending for `Complete`.
 
 ### Slice 11 — Media contract
 

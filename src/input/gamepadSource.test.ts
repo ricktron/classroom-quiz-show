@@ -10,12 +10,17 @@ import {
   MAX_GAMEPAD_BUTTON_INDEX,
   MAX_GAMEPAD_CONTROLLER_INDEX,
   MAX_GAMEPAD_CONTROLLERS,
+  MAX_GAMEPAD_REPORTED_ID_LENGTH,
+  readReportedId,
+  readReportedMapping,
   snapshotFromRawGamepads,
+  UNAVAILABLE_GAMEPAD_REPORTED_ID,
+  UNAVAILABLE_GAMEPAD_REPORTED_MAPPING,
 } from './gamepadSource'
 import { rawPad } from '../test/gamepadFixtures'
 
 /**
- * The browser Gamepad BOUNDARY (Slice 9).
+ * The browser Gamepad BOUNDARY (Slices 9–10).
  *
  * The claims proved here:
  *  - a browser return value is treated as UNTRUSTED input, exactly as a pasted
@@ -23,16 +28,30 @@ import { rawPad } from '../test/gamepadFixtures'
  *    never to a repaired one and never to a throw;
  *  - the documented `null` holes in `getGamepads()` are handled, and they are the
  *    normal disconnect representation rather than an error;
- *  - a snapshot carries a controller index and pressed booleans and NOTHING else
- *    — no id, no mapping, no axes, no analog value, no vendor, no timestamp;
+ *  - a snapshot carries a controller index, pressed booleans, and bounded
+ *    host-private `reportedId` / `reportedMapping` observations — never browser
+ *    object fields such as axes, analog value, timestamp, or vibration;
  *  - indices and button counts are bounded, so a hostile value cannot produce an
  *    unbounded loop;
  *  - an absent API and a throwing API are two different, typed, host-visible
  *    outcomes, and neither of them can produce a press.
  *
- * Nothing here needs a browser or a physical controller: the guard is pure and is
- * handed the shapes a real browser, a shim or a defect can actually produce.
+ * Identity observations are host-private setup evidence only — not gameplay
+ * identity, not persisted, and never projected downstream.
  */
+
+const UNAVAILABLE = {
+  reportedId: UNAVAILABLE_GAMEPAD_REPORTED_ID,
+  reportedMapping: UNAVAILABLE_GAMEPAD_REPORTED_MAPPING,
+} as const
+
+const FORBIDDEN_BROWSER_SNAPSHOT_KEYS = ['axes', 'timestamp', 'vibration', 'touched'] as const
+
+function expectNoBrowserFieldKeys(controller: Record<string, unknown>) {
+  for (const key of FORBIDDEN_BROWSER_SNAPSHOT_KEYS) {
+    expect(controller, `must not expose browser field ${key}`).not.toHaveProperty(key)
+  }
+}
 
 describe('bounded index vocabulary', () => {
   it('accepts non-negative bounded integers and nothing else', () => {
@@ -69,7 +88,7 @@ describe('reading a raw gamepad list', () => {
       rawPad({ index: 0, buttons: [{ pressed: true }, { pressed: false }] }),
     ])
     expect(result).toEqual({
-      controllers: [{ controllerIndex: 0, pressed: [true, false] }],
+      controllers: [{ controllerIndex: 0, pressed: [true, false], ...UNAVAILABLE }],
     })
   })
 
@@ -84,7 +103,7 @@ describe('reading a raw gamepad list', () => {
       null,
       null,
     ])
-    expect(result.controllers).toEqual([{ controllerIndex: 1, pressed: [true] }])
+    expect(result.controllers).toEqual([{ controllerIndex: 1, pressed: [true], ...UNAVAILABLE }])
   })
 
   it('reads the all-null list a browser with no controller returns', () => {
@@ -103,7 +122,7 @@ describe('reading a raw gamepad list', () => {
   it('reads an array-LIKE, because the API is not guaranteed to hand back an Array', () => {
     const arrayLike = { length: 1, 0: rawPad({ index: 2, buttons: [{ pressed: true }] }) }
     expect(snapshotFromRawGamepads(arrayLike).controllers).toEqual([
-      { controllerIndex: 2, pressed: [true] },
+      { controllerIndex: 2, pressed: [true], ...UNAVAILABLE },
     ])
   })
 
@@ -130,7 +149,7 @@ describe('reading a raw gamepad list', () => {
       rawPad({ index: 0, buttons: [{ pressed: true }] }),
       rawPad({ index: 0, buttons: [{ pressed: false }, { pressed: false }] }),
     ])
-    expect(result.controllers).toEqual([{ controllerIndex: 0, pressed: [true] }])
+    expect(result.controllers).toEqual([{ controllerIndex: 0, pressed: [true], ...UNAVAILABLE }])
   })
 
   it('orders controllers by ascending index whatever order they arrived in', () => {
@@ -145,7 +164,7 @@ describe('reading a raw gamepad list', () => {
   it('represents a zero-button controller rather than dropping it', () => {
     const result = snapshotFromRawGamepads([rawPad({ buttons: [] })])
     // It is visible in diagnostics, and nothing on it can ever be mapped.
-    expect(result.controllers).toEqual([{ controllerIndex: 0, pressed: [] }])
+    expect(result.controllers).toEqual([{ controllerIndex: 0, pressed: [], ...UNAVAILABLE }])
   })
 
   it('reads a malformed buttons list as zero buttons', () => {
@@ -199,7 +218,67 @@ describe('reading a raw gamepad list', () => {
     expect(result.controllers[0]?.controllerIndex).toBe(0)
   })
 
-  it('carries no device identity of any kind into the snapshot', () => {
+  it('freezes the snapshot so nothing downstream can mutate what it was given', () => {
+    const result = snapshotFromRawGamepads([rawPad()])
+    expect(Object.isFrozen(result)).toBe(true)
+    expect(Object.isFrozen(result.controllers)).toBe(true)
+    expect(Object.isFrozen(result.controllers[0])).toBe(true)
+  })
+})
+
+describe('bounded host-private identity observations (Slice 10)', () => {
+  it('observes a well-formed reported id and mapping token', () => {
+    const result = snapshotFromRawGamepads([
+      rawPad({
+        id: 'Vendor: 054c Product: 0002',
+        mapping: 'standard',
+        buttons: [{ pressed: false }],
+      }),
+    ])
+    expect(result.controllers[0]?.reportedId).toEqual({
+      status: 'available',
+      value: 'Vendor: 054c Product: 0002',
+    })
+    expect(result.controllers[0]?.reportedMapping).toEqual({
+      status: 'available',
+      value: 'standard',
+    })
+  })
+
+  it('accepts every WebIDL mapping token', () => {
+    for (const mapping of ['', 'standard', 'xr-standard'] as const) {
+      expect(readReportedMapping(mapping)).toEqual({ status: 'available', value: mapping })
+    }
+  })
+
+  it('marks malformed, empty, oversized, and non-string ids unavailable', () => {
+    expect(readReportedId(null)).toBe(UNAVAILABLE_GAMEPAD_REPORTED_ID)
+    expect(readReportedId(undefined)).toBe(UNAVAILABLE_GAMEPAD_REPORTED_ID)
+    expect(readReportedId(42)).toBe(UNAVAILABLE_GAMEPAD_REPORTED_ID)
+    expect(readReportedId('')).toBe(UNAVAILABLE_GAMEPAD_REPORTED_ID)
+    expect(readReportedId('x'.repeat(MAX_GAMEPAD_REPORTED_ID_LENGTH + 1))).toBe(
+      UNAVAILABLE_GAMEPAD_REPORTED_ID,
+    )
+  })
+
+  it('marks unknown mapping tokens unavailable without coercion', () => {
+    for (const mapping of ['standard ', 'STANDARD', 'custom', 'xr', null, 0]) {
+      expect(readReportedMapping(mapping), JSON.stringify(mapping) ?? 'undefined').toBe(
+        UNAVAILABLE_GAMEPAD_REPORTED_MAPPING,
+      )
+    }
+  })
+
+  it('defaults identity to unavailable when rawPad carries no id or mapping', () => {
+    const result = snapshotFromRawGamepads([rawPad({ buttons: [{ pressed: true }] })])
+    expect(result.controllers[0]).toMatchObject(UNAVAILABLE)
+  })
+
+  /**
+   * Browser object fields stay out of the snapshot. Host-private observations use
+   * their own bounded field names — never raw `id` / `mapping` keys.
+   */
+  it('carries host-private identity without leaking browser object fields', () => {
     const result = snapshotFromRawGamepads([
       rawPad({
         id: 'Some Vendor Some Product (STANDARD GAMEPAD Vendor: 054c Product: 0002)',
@@ -210,30 +289,35 @@ describe('reading a raw gamepad list', () => {
         buttons: [{ pressed: true, touched: true, value: 1 }],
       }),
     ])
-    const serialized = JSON.stringify(result).toLowerCase()
-    for (const forbidden of [
-      'id',
-      'mapping',
-      'axes',
-      'timestamp',
-      'vibration',
-      'touched',
-      'value',
-      'vendor',
-      'product',
-      '054c',
-      'standard',
-    ]) {
-      expect(serialized, `must not contain ${forbidden}`).not.toContain(forbidden)
-    }
+    const controller = result.controllers[0] as unknown as Record<string, unknown>
+    expectNoBrowserFieldKeys(controller)
+    expect(controller).not.toHaveProperty('id')
+    expect(controller).not.toHaveProperty('mapping')
+    expect(result.controllers[0]?.reportedId.status).toBe('available')
+    expect(result.controllers[0]?.reportedMapping.status).toBe('available')
     expect(result.controllers[0]?.pressed).toEqual([true])
   })
 
-  it('freezes the snapshot so nothing downstream can mutate what it was given', () => {
-    const result = snapshotFromRawGamepads([rawPad()])
-    expect(Object.isFrozen(result)).toBe(true)
-    expect(Object.isFrozen(result.controllers)).toBe(true)
-    expect(Object.isFrozen(result.controllers[0])).toBe(true)
+  it('never exposes browser field keys anywhere in the serialized snapshot', () => {
+    const serialized = JSON.stringify(
+      snapshotFromRawGamepads([
+        rawPad({
+          id: 'Vendor: 054c Product: 0002',
+          mapping: 'standard',
+          axes: [1],
+          timestamp: 9,
+          vibrationActuator: {},
+          buttons: [{ pressed: false, touched: true, value: 0.5 }],
+        }),
+      ]),
+    ).toLowerCase()
+    for (const forbidden of FORBIDDEN_BROWSER_SNAPSHOT_KEYS) {
+      expect(serialized, `serialized snapshot must not contain ${forbidden}`).not.toContain(
+        `"${forbidden}"`,
+      )
+    }
+    expect(serialized).toContain('reportedid')
+    expect(serialized).toContain('reportedmapping')
   })
 })
 
@@ -265,7 +349,7 @@ describe('the production source', () => {
     } as unknown as Navigator
     expect(browserGamepadSource(fake).read()).toEqual({
       status: 'ok',
-      snapshot: { controllers: [{ controllerIndex: 1, pressed: [true] }] },
+      snapshot: { controllers: [{ controllerIndex: 1, pressed: [true], ...UNAVAILABLE }] },
     })
     expect(isGamepadApiAvailable(fake)).toBe(true)
   })

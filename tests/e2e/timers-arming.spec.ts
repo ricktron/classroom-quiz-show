@@ -268,27 +268,27 @@ test('the projector leaks nothing new, and scoring still works alongside a windo
   // And the projector is still read-only.
   await expect(display.getByRole('button')).toHaveCount(0)
 
-  // ── No VENDOR-SPECIFIC hardware surface exists, on either surface ─────────
-  // Slice 8 added keyboard buzz-in and Slice 9 added a GENERIC controller panel,
-  // so the older blanket assertions would now be false for the neutral words
-  // "gamepad" and "controller" on the host. The claim that survives — and that
-  // Slice 10 owns — is the one asserted here: no WebHID, Bluetooth, handset or
-  // Sony surface exists, and there is still no first-only lockout.
+  // ── Hardware vocabulary: host may show Slice 10 Sony setup; display must not ─
+  // Slice 8–10 added keyboard buzz-in, a generic controller panel, and a
+  // host-private Sony Buzz! setup section. The host may therefore contain
+  // "sony"/"handset". Neither surface may offer WebHID, Bluetooth, or first-only
+  // lockout, and the projector must still show no controller/Sony surface.
   const hostHtml = (await host.content()).toLowerCase()
-  for (const absent of [
-    'webhid',
-    'bluetooth',
-    'handset',
-    'sony',
-    'playstation',
-    'vendor',
-    'lockout',
-  ]) {
+  for (const absent of ['webhid', 'bluetooth', 'playstation', 'lockout']) {
     expect(hostHtml, `host must not contain "${absent}"`).not.toContain(absent)
   }
-  // The projector's claim is unchanged and complete: no controller surface at all.
   const projectorHtml = (await display.content()).toLowerCase()
-  for (const absent of ['gamepad', 'controller', 'webhid', 'bluetooth', 'sony', 'lockout']) {
+  for (const absent of [
+    'gamepad',
+    'controller',
+    'webhid',
+    'bluetooth',
+    'sony',
+    'handset',
+    'candidate',
+    'lockout',
+    '054c',
+  ]) {
     expect(projectorHtml, `display must not contain "${absent}"`).not.toContain(absent)
   }
 

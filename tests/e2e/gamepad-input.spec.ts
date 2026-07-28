@@ -2,19 +2,19 @@ import { test, expect, type Page } from '@playwright/test'
 import { FORBIDDEN_DISPLAY_LABELS } from '../../src/test/leakLabels'
 
 /**
- * Slice 9 — the generic controller adapter's NO-CONTROLLER path, end to end in a
- * real browser.
+ * Slice 9–10 — controller adapter paths, end to end in a real browser.
  *
- * The roadmap's named e2e evidence for this slice is "the no-controller fallback
- * path", and that is deliberately all this file covers. There is no physical
- * controller in CI or in this sandbox, and **no fake production global or
- * test-only backdoor is introduced to pretend there is one** — every physical
- * behaviour (rising edges, held buttons, connect/disconnect, multi-edge order)
- * is proved deterministically in `src/input/gamepadAdapter.test.ts`,
- * `src/host/useGamepadBuzzInput.test.tsx` and their siblings, against a fake
- * source. Simulating hardware here would prove less and cost more.
+ * The no-controller path is the roadmap's baseline e2e evidence. Slice 10 adds a
+ * **simulated** Sony Buzz! candidate via `page.addInitScript` patching
+ * `navigator.getGamepads` before navigation. That simulation is test instrumentation
+ * only — it is **NOT** physical compatibility evidence and proves nothing about
+ * real Buzz! hardware on this machine.
  *
- * What a real browser genuinely adds, and what this file therefore asserts:
+ * The production app reads `navigator.getGamepads` and nothing else. No app
+ * backdoor is introduced; Playwright may manipulate the fake pads through a
+ * page-local hook the application never reads.
+ *
+ * What a real browser genuinely adds:
  *
  *  1. the host loads with no controller and the panel says so, calmly;
  *  2. keyboard buzzing remains fully usable with the panel present;
@@ -22,7 +22,8 @@ import { FORBIDDEN_DISPLAY_LABELS } from '../../src/test/leakLabels'
  *  4. the DISPLAY route never calls `navigator.getGamepads` and registers no
  *     gamepad listener — observed by instrumenting the page, not by trusting the
  *     layering;
- *  5. no Sony, vendor, WebHID or Bluetooth surface exists anywhere.
+ *  5. the host may show the bounded Sony Buzz! setup surface; the projector must
+ *     never show Sony/Buzz/candidate/profile/handset/VID/PID/diagnostic copy.
  */
 
 // Sync tabs share process-global BroadcastChannel state, so run this file serially.
@@ -30,6 +31,111 @@ test.describe.configure({ mode: 'serial' })
 
 const TEAM_ONE = 'Blue Basalts'
 const TEAM_TWO = 'Red Rhyolites'
+
+/** Labels that must never appear on the projector — even when the host has Sony setup. */
+const FORBIDDEN_PROJECTOR_GAMEPAD_LABELS = [
+  ...FORBIDDEN_DISPLAY_LABELS,
+  'gamepad',
+  'controller',
+  'no controller detected',
+  'button 1',
+  'controller buzzing',
+  'assign a button',
+  'not assigned',
+  'press a button',
+  'connected',
+  'unsupported',
+  'diagnostic',
+  'polling',
+  'sony',
+  'playstation',
+  'buzz!',
+  // Do NOT forbid bare "buzz" — the public timer copy says "Buzzers armed".
+  'handset',
+  'candidate',
+  'sony buzz',
+  'device identifier',
+  'product id',
+  '054c',
+  '0002',
+  '1000',
+  'controller index',
+  'button index',
+  'webhid',
+  'bluetooth',
+  'axis',
+  'axes',
+  'analog',
+  'vibrat',
+  'haptic',
+  'supported hardware',
+  'red button',
+  'blue button',
+  'gih-',
+  'sbs-',
+] as const
+
+/**
+ * Install a simulated Sony Buzz! wired candidate BEFORE navigation.
+ *
+ * NOT physical compatibility evidence — browser-only simulation for workflow
+ * coverage. The app reads only `navigator.getGamepads`.
+ */
+async function installSimulatedSonyBuzzCandidate(page: Page) {
+  await page.addInitScript(() => {
+    const state = {
+      pads: [
+        {
+          index: 0,
+          connected: true,
+          mapping: 'standard',
+          id: 'Vendor: 054c Product: 0002',
+          buttons: Array.from({ length: 12 }, () => ({
+            pressed: false,
+            value: 0,
+            touched: false,
+          })),
+          axes: [] as number[],
+          timestamp: 0,
+        },
+      ],
+    }
+    ;(window as unknown as { __cqsFakeGamepads?: typeof state }).__cqsFakeGamepads = state
+
+    const nav = navigator as Navigator & { getGamepads?: () => readonly Gamepad[] | null[] }
+    nav.getGamepads = function patched() {
+      state.pads[0].timestamp = performance.now()
+      return state.pads as unknown as Gamepad[]
+    }
+  })
+}
+
+/** Press and release one simulated gamepad button; allows rAF polls to observe edges. */
+async function pressSimulatedGamepadButton(page: Page, buttonIndex: number) {
+  await page.evaluate((idx) => {
+    const state = (
+      window as unknown as {
+        __cqsFakeGamepads?: { pads: { buttons: { pressed: boolean; value: number }[] }[] }
+      }
+    ).__cqsFakeGamepads
+    if (!state) throw new Error('fake gamepads not installed')
+    state.pads[0].buttons[idx].pressed = true
+    state.pads[0].buttons[idx].value = 1
+  }, buttonIndex)
+  // Two frames at 60 Hz is ~32 ms; wait longer so the host poll loop observes the edge.
+  await page.waitForTimeout(250)
+  await page.evaluate((idx) => {
+    const state = (
+      window as unknown as {
+        __cqsFakeGamepads?: { pads: { buttons: { pressed: boolean; value: number }[] }[] }
+      }
+    ).__cqsFakeGamepads
+    if (!state) throw new Error('fake gamepads not installed')
+    state.pads[0].buttons[idx].pressed = false
+    state.pads[0].buttons[idx].value = 0
+  }, buttonIndex)
+  await page.waitForTimeout(150)
+}
 
 /**
  * Count Gamepad API touches on a page, from before any application code runs.
@@ -202,23 +308,7 @@ test('the projector shows no controller surface and never touches the Gamepad AP
 
   // ── …and shows nothing about controllers, devices or the host's panel ─────
   const html = (await display.content()).toLowerCase()
-  for (const secret of [
-    ...FORBIDDEN_DISPLAY_LABELS,
-    // Slice 9 additions: no device availability, count, label, button, mapping,
-    // capture state, adapter error or source kind reaches the projector.
-    'gamepad',
-    'controller',
-    'no controller detected',
-    'button 1',
-    'controller buzzing',
-    'assign a button',
-    'not assigned',
-    'press a button',
-    'connected',
-    'unsupported',
-    'diagnostic',
-    'polling',
-  ]) {
+  for (const secret of FORBIDDEN_PROJECTOR_GAMEPAD_LABELS) {
     expect(html, `display must not contain "${secret}"`).not.toContain(secret.toLowerCase())
   }
   // The projector is still read-only, and still shows a COUNT not a name.
@@ -229,41 +319,106 @@ test('the projector shows no controller surface and never touches the Gamepad AP
   await display.close()
 })
 
-test('no Sony, vendor, WebHID or Bluetooth surface exists on either screen', async ({
+test('the host may show Sony Buzz setup; the projector must not leak setup vocabulary', async ({
   context,
 }) => {
   test.slow()
   const host = await context.newPage()
   const display = await context.newPage()
+  await installSimulatedSonyBuzzCandidate(host)
   await openHost(host)
   await openDisplay(display)
   await startBoard(host)
 
-  for (const [label, page] of [
-    ['host', host],
-    ['display', display],
-  ] as const) {
-    const html = (await page.content()).toLowerCase()
-    for (const absent of [
-      'sony',
-      'playstation',
-      'buzz!',
-      'handset',
-      'vendor',
-      'product id',
-      'webhid',
-      'bluetooth',
-      'axis',
-      'axes',
-      'analog',
-      'vibrat',
-      'haptic',
-      'supported hardware',
-      'red button',
-      'blue button',
-    ]) {
-      expect(html, `${label} must not contain "${absent}"`).not.toContain(absent)
-    }
+  // Host-private setup surface is present and honest — not a supported-hardware claim.
+  await expect(host.getByTestId('sbs')).toBeVisible()
+  await expect(host.getByTestId('sbs-intro')).toContainText(/candidate match is not proof/i)
+  await expect(host.getByTestId('sbs-intro')).toContainText(/lost when this page reloads/i)
+  await expect(host.getByTestId('sbs-keyboard-fallback')).toContainText(
+    /keyboard buzzing remains available/i,
+  )
+
+  const hostHtml = (await host.content()).toLowerCase()
+  expect(hostHtml).not.toContain('supported hardware')
+
+  const displayHtml = (await display.content()).toLowerCase()
+  for (const absent of FORBIDDEN_PROJECTOR_GAMEPAD_LABELS) {
+    expect(displayHtml, `display must not contain "${absent}"`).not.toContain(absent.toLowerCase())
+  }
+
+  await host.close()
+  await display.close()
+})
+
+test('simulated Sony Buzz candidate supports setup capture, apply, and test mode without scoring', async ({
+  context,
+}) => {
+  test.slow()
+  const host = await context.newPage()
+  const display = await context.newPage()
+  await watchGamepadApi(display)
+  await installSimulatedSonyBuzzCandidate(host)
+  await openHost(host)
+  await openDisplay(display)
+  await startBoard(host)
+  await openClue(host)
+  await host.getByTestId('rth-arm').click()
+
+  // Candidate diagnostics appear on the host only.
+  await expect(host.getByTestId('gih-count')).not.toHaveText('None detected')
+  await expect(host.getByTestId('sbs-surface-state')).toContainText(/candidate Sony Buzz/i)
+  await expect(host.getByTestId('sbs-class-0')).toContainText(/Candidate Sony Buzz/i)
+
+  // Setup is keyboard-operable.
+  const capture = host.getByTestId('sbs-capture')
+  await capture.focus()
+  await expect(capture).toBeFocused()
+
+  // Guided capture: five prompts with colour words, then preview and apply.
+  // After each Capture click the poll loop re-primes; wait one frame so the
+  // baseline is taken with buttons UP before the simulated press, otherwise the
+  // held-at-baseline button never produces a rising edge.
+  for (let buttonIndex = 0; buttonIndex < 5; buttonIndex += 1) {
+    await host.getByTestId('sbs-capture').click()
+    await expect(host.getByTestId('sbs-capture')).toHaveText('Cancel capture')
+    await host.waitForTimeout(100)
+    await pressSimulatedGamepadButton(host, buttonIndex)
+    await expect(host.getByTestId('sbs-progress')).toContainText(`${buttonIndex + 1} of 5`, {
+      timeout: 10_000,
+    })
+  }
+  await expect(host.getByTestId('sbs-progress')).toContainText('complete')
+
+  await host.getByTestId('sbs-preview').click()
+  await expect(host.getByTestId('sbs-preview-list')).toBeVisible()
+  for (const colour of ['red', 'blue', 'orange', 'green', 'yellow']) {
+    await expect(host.getByTestId('sbs-preview-list')).toContainText(colour)
+  }
+
+  await host.getByTestId('sbs-apply').click()
+  await expect(host.getByTestId('sbs-status')).toContainText(/Applied handset profile/i)
+  await expect(host.getByTestId('gih-control-basalts')).toContainText('Controller 1 · button 1')
+
+  // Test mode reports presses and does not change gameplay on host or display.
+  // Entering test mode re-primes — wait for a baseline poll before pressing.
+  await host.getByTestId('sbs-test-mode').click()
+  await expect(host.getByTestId('sbs-test-outcome')).toContainText(/Test mode is on/i)
+  await host.waitForTimeout(100)
+  await pressSimulatedGamepadButton(host, 0)
+  await expect(host.getByTestId('sbs-test-outcome')).toContainText(/Test:/i, { timeout: 10_000 })
+  await expect(host.getByTestId('gih-outcome')).toContainText(/no gameplay change/i)
+  // Test mode must not accept a buzz into the queue or project an active respondent.
+  await expect(host.getByTestId('lih-active')).toContainText(/Nobody has buzzed yet/i)
+  await expect(display.getByTestId('bqd-active')).toHaveCount(0)
+  await expect(display.getByTestId('tsb-score-t0')).toHaveText('0')
+
+  const displayWatch = await gamepadWatch(display)
+  expect(displayWatch.getGamepads).toBe(0)
+  expect(displayWatch.listeners).toBe(0)
+
+  const displayHtml = (await display.content()).toLowerCase()
+  for (const absent of FORBIDDEN_PROJECTOR_GAMEPAD_LABELS) {
+    expect(displayHtml, `display must not contain "${absent}"`).not.toContain(absent.toLowerCase())
   }
 
   await host.close()

@@ -303,15 +303,36 @@ strongest thing to say about it is what it did **not** change: no schema, no
   remains available."*
 - **Secondary actions stay inert.** The four ordinal slots can be assigned and still
   terminate at the existing typed rejection: no event, no state change, no score.
-- **No Sony Buzz! detection, vendor matching, colour defaults, handset grouping or
-  setup wizard** — all Slice 10, and none of it exists. No WebHID, Bluetooth, axes,
-  analog, haptics or persistent mappings.
+- **Sony Buzz!-specific setup was not in Slice 9** — see Slice 10 below. No WebHID,
+  Bluetooth, axes, analog, haptics or persistent mappings in Slice 9.
 
-> ⚠️ **No physical controller has been tested.** Every physical behaviour is
-> proved by deterministic unit tests against a fake Gamepad source; the browser
-> tests cover the **no-controller** path only. There is no supported-hardware list
-> and no compatibility claim for any specific device. **Physical hardware
-> validation remains Slice 10**, which is `Planned`, unstarted and owner-gated.
+**Slice 10 — Sony Buzz! mapping, validation & host setup UX. In review** —
+hardware-independent implementation complete on
+`claude/slice-10-sony-buzz-mapping`; owner physical Sony Buzz! validation
+pending. See
+[`docs/architecture/ADR-010-sony-buzz-profile-and-setup.md`](docs/architecture/ADR-010-sony-buzz-profile-and-setup.md).
+No schema, `PublicState`, sync protocol, command, event or reducer change. No
+physical compatibility is claimed.
+
+- **Host-private identity observation** on the bounded Gamepad snapshot
+  (`reportedId`, `reportedMapping`).
+- **Candidate classification** from USB VID/PID tokens only — never compatibility
+  proof (`gamepadDeviceProfile`).
+- **Capture-based recommended profile** with no hard-coded browser button indices
+  (`sonyBuzzProfile`).
+- **Setup test mode** and host setup surface (`SonyBuzzSetupSection`) that resolve
+  presses without dispatching gameplay.
+- **Owner-gated remainder:** physical Sony Buzz! validation on owner hardware
+  before Slice 10 may be marked `Complete`.
+
+> ⚠️ **No physical Sony Buzz! controller has been tested.** CI and simulated
+> Gamepad sources prove the hardware-independent boundary only. There is no
+> supported-hardware list and no compatibility claim.
+
+> ⚠️ **No physical controller has been tested** (Slice 9 generic adapter). Every
+> physical behaviour is proved by deterministic unit tests against a fake Gamepad
+> source; the browser tests cover the **no-controller** path only. There is no
+> supported-hardware list and no compatibility claim for any specific device.
 
 The Slice 1 foundation is unchanged beneath it:
 
@@ -327,9 +348,11 @@ The Slice 1 foundation is unchanged beneath it:
 
 There is **one playable round type**; it scores, it can be timed, and teams can now
 buzz in on it **from the host keyboard, or from a generic USB controller through
-the same boundary**. There is no **Sony Buzz!-specific** support, vendor matching,
-colour profile, handset grouping or controller setup wizard (Slice 10), no WebHID
-or Bluetooth of any kind, no networked or student-device buzzing, and no wagers,
+the same boundary**. Slice 10 adds a **host-private Sony Buzz! setup surface**
+(candidate classification, capture recipe, setup test mode) — **In review**,
+hardware-independent portion complete, **owner physical validation pending; no
+compatibility claim**. No WebHID or Bluetooth of any kind, no networked or
+student-device buzzing, and no wagers,
 media, themes, or durable session persistence — **including no persistence of
 controller mappings, which are session-local by design**; importing is still limited to pasting canonical JSON (no file
 picker, spreadsheet, or remote import). The host "Foundation / testing controls"

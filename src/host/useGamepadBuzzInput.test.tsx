@@ -8,7 +8,11 @@ import {
   type UseGamepadBuzzInputOptions,
 } from './useGamepadBuzzInput'
 import { GAMEPAD_MAPPING_VERSION, type GamepadMapping } from '../input/gamepadMapping'
-import { PRIMARY_BUZZ } from '../input/logicalAction'
+import { PRIMARY_BUZZ, type LocalInputAction } from '../input/logicalAction'
+import {
+  UNAVAILABLE_GAMEPAD_REPORTED_ID,
+  UNAVAILABLE_GAMEPAD_REPORTED_MAPPING,
+} from '../input/gamepadSource'
 import type { SessionCommand } from '../state/commands'
 import type { DispatchResult } from '../state/store'
 import { createManualClock } from '../time/clock'
@@ -46,6 +50,33 @@ const MAPPING: GamepadMapping = {
     { controllerIndex: 0, buttonIndex: 0, teamId: 'red', action: PRIMARY_BUZZ },
     { controllerIndex: 1, buttonIndex: 2, teamId: 'blue', action: PRIMARY_BUZZ },
   ],
+}
+
+const SECONDARY_MAPPING: GamepadMapping = {
+  version: GAMEPAD_MAPPING_VERSION,
+  bindings: [
+    { controllerIndex: 0, buttonIndex: 0, teamId: 'red', action: PRIMARY_BUZZ },
+    {
+      controllerIndex: 0,
+      buttonIndex: 1,
+      teamId: 'red',
+      action: { kind: 'secondary', slot: 'secondary1' },
+    },
+  ],
+}
+
+function controllerInfo(
+  controllerIndex: number,
+  buttonCount: number,
+  classification: 'identity-unavailable' | 'candidate-sony-buzz-wired' = 'identity-unavailable',
+) {
+  return {
+    controllerIndex,
+    buttonCount,
+    reportedId: UNAVAILABLE_GAMEPAD_REPORTED_ID,
+    reportedMapping: UNAVAILABLE_GAMEPAD_REPORTED_MAPPING,
+    classification,
+  }
 }
 
 interface Harness {
@@ -87,6 +118,7 @@ function harness(initial: Partial<UseGamepadBuzzInputOptions> = {}): Harness {
     useGamepadBuzzInput({
       enabled: true,
       capturing: false,
+      testMode: false,
       mapping: MAPPING,
       target: TARGET,
       dispatch,
@@ -372,7 +404,7 @@ describe('connect and disconnect', () => {
     probe.source.set(snapshot(controller(0, buttons(4))))
     probe.poll(5)
     expect(probe.diagnostics).toEqual([
-      { status: 'ok', controllers: [{ controllerIndex: 0, buttonCount: 4 }] },
+      { status: 'ok', controllers: [controllerInfo(0, 4)] },
     ])
 
     // Pressing a button changes NOTHING in the diagnostics — the picture is
@@ -386,9 +418,82 @@ describe('connect and disconnect', () => {
     probe.poll(5)
     expect(probe.diagnostics).toHaveLength(2)
     expect(probe.diagnostics[1]?.controllers).toEqual([
-      { controllerIndex: 0, buttonCount: 4 },
-      { controllerIndex: 1, buttonCount: 8 },
+      controllerInfo(0, 4),
+      controllerInfo(1, 8),
     ])
+  })
+})
+
+describe('setup test mode (Slice 10)', () => {
+  it('never dispatches while test mode is active', () => {
+    const probe = harness({ testMode: true, mapping: MAPPING, target: TARGET })
+    probe.source.set(snapshot(controller(0, buttons(2))))
+    probe.poll()
+    probe.source.set(snapshot(controller(0, buttons(2, 0))))
+    probe.poll(3)
+    expect(probe.commands).toEqual([])
+  })
+
+  it('reports primary and secondary bindings as test observations', () => {
+    const probe = harness({ testMode: true, mapping: SECONDARY_MAPPING })
+    probe.source.set(snapshot(controller(0, buttons(4))))
+    probe.poll()
+    probe.source.set(snapshot(controller(0, buttons(4, 0, 1))))
+    probe.poll()
+    expect(probe.commands).toEqual([])
+    expect(probe.outcomes).toEqual([
+      {
+        kind: 'test-observation',
+        teamId: 'red',
+        action: PRIMARY_BUZZ,
+        control: { controllerIndex: 0, buttonIndex: 0 },
+      },
+      {
+        kind: 'test-observation',
+        teamId: 'red',
+        action: { kind: 'secondary', slot: 'secondary1' } satisfies LocalInputAction,
+        control: { controllerIndex: 0, buttonIndex: 1 },
+      },
+    ])
+  })
+
+  it('re-primes when test mode starts and ends, so a held button cannot observe', () => {
+    const probe = harness({ testMode: false })
+    probe.source.set(snapshot(controller(0, buttons(2, 0))))
+    probe.poll(2)
+    act(() => probe.rerender({ testMode: true }))
+    probe.poll(3)
+    expect(probe.outcomes).toEqual([])
+    act(() => probe.rerender({ testMode: false }))
+    probe.poll(3)
+    expect(probe.commands).toEqual([])
+  })
+
+  it('includes classification fields in stable diagnostics', () => {
+    const probe = harness()
+    probe.source.set(
+      snapshot(
+        controller(0, buttons(4), {
+          reportedId: { status: 'available', value: 'Vendor: 054c Product: 0002' },
+          reportedMapping: { status: 'available', value: 'standard' },
+        }),
+      ),
+    )
+    probe.poll(3)
+    expect(probe.diagnostics.at(-1)?.controllers[0]).toEqual({
+      controllerIndex: 0,
+      buttonCount: 4,
+      reportedId: { status: 'available', value: 'Vendor: 054c Product: 0002' },
+      reportedMapping: { status: 'available', value: 'standard' },
+      classification: 'candidate-sony-buzz-wired',
+    })
+  })
+
+  it('never registers a second poll loop when test mode toggles', () => {
+    const probe = harness({ testMode: true })
+    probe.rerender({ testMode: false })
+    probe.rerender({ testMode: true })
+    expect(probe.driver.starts()).toBe(1)
   })
 })
 

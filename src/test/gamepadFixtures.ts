@@ -1,36 +1,60 @@
 import type { GamepadPollScheduler } from '../host/useGamepadBuzzInput'
 import type {
+  GamepadControllerSnapshot,
   GamepadRead,
+  GamepadReportedId,
+  GamepadReportedMapping,
   GamepadSnapshot,
   GamepadSource,
 } from '../input/gamepadSource'
+import {
+  UNAVAILABLE_GAMEPAD_REPORTED_ID,
+  UNAVAILABLE_GAMEPAD_REPORTED_MAPPING,
+} from '../input/gamepadSource'
 
 /**
- * Shared FAKE Gamepad source and poll driver (Slice 9).
+ * Shared FAKE Gamepad source and poll driver (Slices 9–10).
  *
  * The point of this file is that **no test in this repository needs a physical
  * controller, a real browser or a real animation frame.** Every rising-edge,
- * connect/disconnect, held-button, re-prime and multi-edge claim is proved by
- * handing the adapter a scripted sequence of snapshots and stepping the poll
- * driver by hand.
+ * connect/disconnect, held-button, re-prime, multi-edge, identity and profile
+ * claim is proved by handing the adapter a scripted sequence of snapshots and
+ * stepping the poll driver by hand.
  *
  * These build plain data on purpose — exactly as the Slice 4/5/6 fixtures build
  * untrusted plain objects — so the real `snapshotFromRawGamepads` guard, the real
  * adapter and the real hook are the things under test.
  */
 
+export function reportedId(value: string): GamepadReportedId {
+  return { status: 'available', value }
+}
+
+export function reportedMapping(
+  value: '' | 'standard' | 'xr-standard',
+): GamepadReportedMapping {
+  return { status: 'available', value }
+}
+
 /** A controller's pressed states, as the adapter's snapshot model sees them. */
 export function controller(
   controllerIndex: number,
   pressed: readonly boolean[],
-): { controllerIndex: number; pressed: readonly boolean[] } {
-  return { controllerIndex, pressed }
+  identity: {
+    readonly reportedId?: GamepadReportedId
+    readonly reportedMapping?: GamepadReportedMapping
+  } = {},
+): GamepadControllerSnapshot {
+  return {
+    controllerIndex,
+    pressed,
+    reportedId: identity.reportedId ?? UNAVAILABLE_GAMEPAD_REPORTED_ID,
+    reportedMapping: identity.reportedMapping ?? UNAVAILABLE_GAMEPAD_REPORTED_MAPPING,
+  }
 }
 
 /** A snapshot from a list of controllers. Already in ascending index order. */
-export function snapshot(
-  ...controllers: { controllerIndex: number; pressed: readonly boolean[] }[]
-): GamepadSnapshot {
+export function snapshot(...controllers: GamepadControllerSnapshot[]): GamepadSnapshot {
   return { controllers }
 }
 

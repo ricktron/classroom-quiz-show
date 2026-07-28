@@ -330,32 +330,36 @@ test('buzz keys survive a refresh, and the projector receives only sanitized sta
   // And the projector is still read-only.
   await expect(display.getByRole('button')).toHaveCount(0)
 
-  // ── No WebHID, Bluetooth or Sony runtime exists on either surface ─────────
+  // ── No WebHID / Bluetooth on either surface; Sony setup is host-only ──────
   //
-  // Slice 9 added a GENERIC controller panel to the host, so the host half of
-  // this assertion no longer forbids the neutral words "gamepad"/"controller" —
-  // that surface is now real, and `gamepad-input.spec.ts` asserts what it may
-  // and may not say. Every other term is unchanged, and the DISPLAY half is
-  // unchanged AND strengthened below: the projector still has no controller
-  // surface of any kind.
-  for (const [label, page] of [
-    ['host', host],
-    ['display', display],
-  ] as const) {
-    const html = (await page.content()).toLowerCase()
-    for (const absent of ['webhid', 'sony', 'playstation', 'bluetooth', 'handset']) {
-      expect(html, `${label} must not contain "${absent}"`).not.toContain(absent)
-    }
+  // Slice 9 added a GENERIC controller panel; Slice 10 added a host-private Sony
+  // Buzz! setup section. The host may therefore contain "sony"/"handset". The
+  // DISPLAY must still show none of that vocabulary, and neither surface may
+  // offer WebHID or Bluetooth.
+  const hostHtml = (await host.content()).toLowerCase()
+  for (const absent of ['webhid', 'bluetooth', 'playstation']) {
+    expect(hostHtml, `host must not contain "${absent}"`).not.toContain(absent)
+  }
+  for (const absent of [
+    'webhid',
+    'sony',
+    'playstation',
+    'bluetooth',
+    'handset',
+    'gamepad',
+    'controller',
+    'button index',
+    'no controller detected',
+    'candidate',
+    '054c',
+  ]) {
+    expect(displayHtml, `display must not contain "${absent}"`).not.toContain(absent)
+  }
+  for (const page of [host, display]) {
     const hid = await page.evaluate(() =>
       (navigator as { hid?: unknown }).hid === undefined ? 'absent' : 'present-unused',
     )
-    // WebHID is Slice 10's question at the earliest, and nothing calls it here.
     expect(['absent', 'present-unused']).toContain(hid)
-  }
-
-  const displayHtmlAgain = (await display.content()).toLowerCase()
-  for (const absent of ['gamepad', 'controller', 'button index', 'no controller detected']) {
-    expect(displayHtmlAgain, `display must not contain "${absent}"`).not.toContain(absent)
   }
 
   await host.close()
