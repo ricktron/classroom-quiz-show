@@ -14,6 +14,7 @@ import {
 import { gameFileText, roundFile } from '../test/gameFileFixtures'
 import { teamBoardGameFile, teamBoardGameFileText, twoTeams } from '../test/teamFixtures'
 import { exportGameDefinition } from './exportGame'
+import * as serializeModule from './serializeCanonicalJson'
 
 vi.mock('../import/importGame', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../import/importGame')>()
@@ -606,29 +607,29 @@ describe('exportGameDefinition failures', () => {
     )
     mockedImport.mockImplementation((text, options) => actual.importGameFromJsonText(text, options))
 
-    const stringify = JSON.stringify
+    const original = serializeModule.serializeCanonicalDocument
     let documentSerializations = 0
-    const spy = vi.spyOn(JSON, 'stringify').mockImplementation((value, ...rest) => {
-      const text = stringify(value, ...rest)
-      if (
-        typeof value === 'object' &&
-        value !== null &&
-        Object.prototype.hasOwnProperty.call(value, 'format') &&
-        Object.prototype.hasOwnProperty.call(value, 'schemaVersion')
-      ) {
+    const spy = vi
+      .spyOn(serializeModule, 'serializeCanonicalDocument')
+      .mockImplementation((document) => {
         documentSerializations += 1
-        if (documentSerializations >= 2) {
-          return `${text} `
-        }
-      }
-      return text
-    })
+        const text = original(document)
+        return documentSerializations >= 2 ? `${text} ` : text
+      })
 
     const result = exportGameDefinition(definition)
     expect(result.status).toBe('failure')
     if (result.status !== 'failure') return
     expect(result.issues[0]!.code).toBe('round-trip-mismatch')
     spy.mockRestore()
+  })
+
+  it('performs exactly one re-import per successful export (bounded second-export gate)', async () => {
+    const definition = await loadDefinition(gameFileText({ id: 'bounded-gate' }))
+    mockedImport.mockClear()
+    const result = exportGameDefinition(definition)
+    expect(result.status).toBe('success')
+    expect(mockedImport).toHaveBeenCalledTimes(1)
   })
 
   it('contains internal exceptions', async () => {

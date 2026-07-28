@@ -109,4 +109,29 @@ describe('canonicalizeData', () => {
     const keys = ['zebra', 'Alpha', 'alpha', 'note', 'Note']
     expect([...keys].sort(compareCanonicalKeys)).toEqual([...keys].sort())
   })
+
+  it('rejects objects with own symbol keys without reading their values', () => {
+    const key = Symbol('secret')
+    const input: Record<string | symbol, unknown> = { a: 1 }
+    Object.defineProperty(input, key, {
+      value: () => {
+        throw new Error('symbol value must not be read')
+      },
+      enumerable: true,
+    })
+    expect(() => canonicalizeData(input)).toThrow(/symbol keys/i)
+  })
+
+  it('rejects accessor properties without invoking getters', () => {
+    let getterCalls = 0
+    const input = {
+      a: 1,
+      get trap() {
+        getterCalls += 1
+        return 'leaked'
+      },
+    }
+    expect(() => canonicalizeData(input)).toThrow(/Accessor properties/i)
+    expect(getterCalls).toBe(0)
+  })
 })

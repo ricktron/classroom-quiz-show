@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { GameDefinition } from '../game/gameDefinition'
 import type { RoundRegistry } from '../game/registry'
 import {
@@ -47,6 +47,11 @@ export function GameExportPanel({
   downloadEnvironment,
 }: GameExportPanelProps) {
   const [status, setStatus] = useState<PanelStatus>({ kind: 'idle' })
+
+  // A prior success/failure must not describe a different active game.
+  useEffect(() => {
+    setStatus({ kind: 'idle' })
+  }, [definition])
 
   const loaded = definition !== null
   const mediaWarning = loaded && definitionHasMediaReferences(definition)

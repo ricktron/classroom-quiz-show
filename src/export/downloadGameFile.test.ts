@@ -199,4 +199,107 @@ describe('downloadGameFile', () => {
     expect(captured.urls).toEqual(['blob:test-1'])
     expect(vi.isMockFunction(env.createObjectURL)).toBe(false)
   })
+
+  it('revokes the URL when createAnchor throws after createObjectURL', () => {
+    installCapturingBlob()
+    const { env, captured } = fakeEnvironment({
+      createAnchor: () => {
+        throw new Error('createAnchor failed')
+      },
+    })
+    expect(() =>
+      downloadGameFile({ filename: 'g.classroom-quiz-show.json', text: 'x\n' }, env),
+    ).toThrow(/createAnchor failed/)
+    expect(captured.urls).toEqual(['blob:test-1'])
+    expect(captured.cleanups).toHaveLength(1)
+    captured.cleanups[0]!()
+    expect(captured.revoked).toEqual(['blob:test-1'])
+  })
+
+  it('revokes the URL when appendAnchor throws', () => {
+    installCapturingBlob()
+    const { env, captured } = fakeEnvironment({
+      appendAnchor: () => {
+        throw new Error('append failed')
+      },
+    })
+    expect(() =>
+      downloadGameFile({ filename: 'g.classroom-quiz-show.json', text: 'x\n' }, env),
+    ).toThrow(/append failed/)
+    expect(captured.removed).toHaveLength(0)
+    expect(captured.cleanups).toHaveLength(1)
+    captured.cleanups[0]!()
+    expect(captured.revoked).toEqual(['blob:test-1'])
+  })
+
+  it('still revokes when removeAnchor throws', () => {
+    installCapturingBlob()
+    const { env, captured } = fakeEnvironment({
+      removeAnchor: () => {
+        throw new Error('remove failed')
+      },
+    })
+    expect(() =>
+      downloadGameFile({ filename: 'g.classroom-quiz-show.json', text: 'x\n' }, env),
+    ).not.toThrow()
+    expect(captured.cleanups).toHaveLength(1)
+    captured.cleanups[0]!()
+    expect(captured.revoked).toEqual(['blob:test-1'])
+  })
+
+  it('revokes synchronously when scheduleCleanup throws', () => {
+    installCapturingBlob()
+    const { env, captured } = fakeEnvironment({
+      scheduleCleanup: () => {
+        throw new Error('schedule failed')
+      },
+    })
+    expect(() =>
+      downloadGameFile({ filename: 'g.classroom-quiz-show.json', text: 'x\n' }, env),
+    ).not.toThrow()
+    expect(captured.cleanups).toHaveLength(0)
+    expect(captured.revoked).toEqual(['blob:test-1'])
+  })
+
+  it('contains revokeObjectURL failures inside scheduled cleanup', () => {
+    installCapturingBlob()
+    const { env, captured } = fakeEnvironment({
+      revokeObjectURL: () => {
+        throw new Error('revoke failed')
+      },
+    })
+    expect(() =>
+      downloadGameFile({ filename: 'g.classroom-quiz-show.json', text: 'x\n' }, env),
+    ).not.toThrow()
+    expect(captured.cleanups).toHaveLength(1)
+    expect(() => captured.cleanups[0]!()).not.toThrow()
+  })
+
+  it('propagates Blob construction failure without creating a URL', () => {
+    globalThis.Blob = class FailingBlob {
+      constructor() {
+        throw new Error('blob failed')
+      }
+    } as unknown as typeof Blob
+    const { env, captured } = fakeEnvironment()
+    expect(() =>
+      downloadGameFile({ filename: 'g.classroom-quiz-show.json', text: 'x\n' }, env),
+    ).toThrow(/blob failed/)
+    expect(captured.urls).toHaveLength(0)
+    expect(captured.cleanups).toHaveLength(0)
+  })
+
+  it('propagates createObjectURL failure without scheduling cleanup', () => {
+    installCapturingBlob()
+    const { env, captured } = fakeEnvironment({
+      createObjectURL: () => {
+        throw new Error('url failed')
+      },
+    })
+    expect(() =>
+      downloadGameFile({ filename: 'g.classroom-quiz-show.json', text: 'x\n' }, env),
+    ).toThrow(/url failed/)
+    expect(captured.urls).toHaveLength(0)
+    expect(captured.cleanups).toHaveLength(0)
+  })
 })

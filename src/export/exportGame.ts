@@ -26,6 +26,7 @@ import type { RoundRegistry } from '../game/registry'
 import type { DataValue } from '../game/roundDefinition'
 import type { TeamDefinition } from '../game/teams/definition'
 import { CanonicalizeError, canonicalizeData, compareCanonicalKeys } from './canonicalizeData'
+import { serializeCanonicalDocument } from './serializeCanonicalJson'
 
 export interface ExportGameOptions {
   readonly registry?: RoundRegistry
@@ -115,7 +116,10 @@ export function exportGameDefinition(
 
     let jsonText: string
     try {
-      jsonText = JSON.stringify(document) + '\n'
+      // Deterministic serializer: envelope field order is explicit; config keys
+      // are UTF-16-sorted in the emitted bytes (JSON.stringify alone would
+      // reorder integer-index keys).
+      jsonText = serializeCanonicalDocument(document) + '\n'
     } catch (error) {
       options.onInternalError?.(error)
       return failure([
@@ -210,7 +214,7 @@ function exportWithoutRoundTrip(
 ): ExportResult {
   try {
     const document = buildCanonicalDocument(definition)
-    const jsonText = JSON.stringify(document) + '\n'
+    const jsonText = serializeCanonicalDocument(document) + '\n'
     if (jsonText.length > MAX_IMPORT_TEXT_LENGTH) {
       return failure([
         issue(

@@ -7,6 +7,7 @@
  * scalars passed through (with `-0` normalized to `0`).
  *
  * Unsupported or unsafe values fail closed — nothing is dropped or repaired.
+ * Own symbol keys and accessor properties are rejected without invoking getters.
  */
 
 export class CanonicalizeError extends Error {
@@ -78,6 +79,13 @@ function walk(value: unknown, path: string, ancestors: Set<object>): unknown {
     )
   }
 
+  if (Object.getOwnPropertySymbols(value).length > 0) {
+    throw new CanonicalizeError(
+      path,
+      'Objects with symbol keys cannot be exported.',
+    )
+  }
+
   ancestors.add(value)
   try {
     // Explicit UTF-16 code-unit ordering (same as default JS string `<`/`>`),
@@ -85,15 +93,39 @@ function walk(value: unknown, path: string, ancestors: Set<object>): unknown {
     const keys = Object.keys(value).sort(compareCanonicalKeys)
     const out: Record<string, unknown> = Object.create(null) as Record<string, unknown>
     for (const key of keys) {
-      // Own enumerable string keys only — Object.keys already filters that.
-      // Reject undefined property values rather than omitting them.
-      const child = (value as Record<string, unknown>)[key]
-      out[key] = walk(child, joinPath(path, key), ancestors)
+      out[key] = walk(readOwnDataProperty(value, key, path), joinPath(path, key), ancestors)
     }
     return out
   } finally {
     ancestors.delete(value)
   }
+}
+
+/**
+ * Read an own data property without invoking accessors. Rejects getters/setters
+ * and missing descriptors rather than silently altering meaning.
+ */
+function readOwnDataProperty(value: object, key: string, objectPath: string): unknown {
+  const descriptor = Object.getOwnPropertyDescriptor(value, key)
+  if (descriptor === undefined) {
+    throw new CanonicalizeError(
+      joinPath(objectPath, key),
+      'Missing own property descriptor cannot be exported.',
+    )
+  }
+  if (typeof descriptor.get === 'function' || typeof descriptor.set === 'function') {
+    throw new CanonicalizeError(
+      joinPath(objectPath, key),
+      'Accessor properties cannot be exported.',
+    )
+  }
+  if (!Object.hasOwn(descriptor, 'value')) {
+    throw new CanonicalizeError(
+      joinPath(objectPath, key),
+      'Non-data properties cannot be exported.',
+    )
+  }
+  return descriptor.value
 }
 
 function isCanonicalizableObject(value: object): boolean {

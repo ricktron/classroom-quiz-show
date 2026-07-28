@@ -95,18 +95,26 @@ Generic `config` content is recursively canonicalized:
 - arrays preserve order and are never sorted
 - plain/`null`-prototype objects get lexicographically sorted own enumerable
   string keys into a fresh null-prototype object
+- own symbol keys and accessor properties fail closed without invoking getters
 - unsupported values (`undefined`, non-finite numbers, functions, exotic
   objects, cycles) fail closed
+
+Emitted config-object bytes use that same UTF-16 key order. The exporter does
+**not** rely on `JSON.stringify` for nested config objects, because the engine
+reorders integer-index keys (`"0"`, `"1"`, `"10"`, …) into ascending numeric
+order and would otherwise violate this contract.
 
 ### 9. JSON byte format
 
 ```ts
-JSON.stringify(canonicalDocument) + '\n'
+serializeCanonicalDocument(canonicalDocument) + '\n'
 ```
 
-Compact JSON, UTF-8 in the Blob, exactly one trailing LF, no CR, no BOM, no
-timestamps, no randomness. Repeated export of an equivalent definition produces
-identical text.
+Compact JSON (same scalar escaping/number rules as `JSON.stringify`), UTF-8 in
+the Blob, exactly one trailing LF, no CR, no BOM, no timestamps, no randomness.
+Root / team / timer / round envelopes keep their explicit field order; generic
+config keys are UTF-16-sorted in the emitted text. Repeated export of an
+equivalent definition produces identical text.
 
 ### 10. Stable identity
 

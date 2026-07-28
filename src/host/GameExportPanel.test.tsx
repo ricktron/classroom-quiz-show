@@ -166,6 +166,42 @@ describe('GameExportPanel', () => {
     expect(download.mock.calls[0]![0]).toEqual(download.mock.calls[1]![0])
   })
 
+  it('clears prior export status when the active game changes', () => {
+    const first = loadDefinition(gameFileText({ id: 'first-game' }))
+    const second = loadDefinition(gameFileText({ id: 'second-game' }))
+    const download = vi.fn()
+    const store = createSessionStore()
+    store.dispatch({ type: 'INIT_SESSION', issuedAt: 1, sessionId: 'session-1' })
+
+    const { rerender } = render(
+      <GameExportPanel definition={first} registry={store.getRegistry()} download={download} />,
+    )
+    fireEvent.click(screen.getByTestId('export-download'))
+    expect(screen.getByTestId('export-result')).toHaveTextContent(
+      'Export ready: first-game.classroom-quiz-show.json',
+    )
+
+    rerender(
+      <GameExportPanel definition={second} registry={store.getRegistry()} download={download} />,
+    )
+    expect(screen.getByTestId('export-result')).toHaveTextContent('No export attempted yet.')
+    expect(screen.getByTestId('export-game-id')).toHaveTextContent('second-game')
+  })
+
+  it('each rapid click exports the captured definition independently', () => {
+    const definition = loadDefinition(gameFileText({ id: 'rapid' }))
+    const download = vi.fn()
+    renderExport({ definition, download })
+    fireEvent.click(screen.getByTestId('export-download'))
+    fireEvent.click(screen.getByTestId('export-download'))
+    fireEvent.click(screen.getByTestId('export-download'))
+    expect(download).toHaveBeenCalledTimes(3)
+    for (const call of download.mock.calls) {
+      expect(call[0]!.filename).toBe('rapid.classroom-quiz-show.json')
+      expect(call[0]!.text).toBe(download.mock.calls[0]![0]!.text)
+    }
+  })
+
   it('exposes an accessible heading and live status region', () => {
     renderExport({ definition: null })
     expect(screen.getByRole('heading', { name: /export portable game file/i })).toBeVisible()

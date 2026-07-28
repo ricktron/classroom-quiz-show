@@ -187,6 +187,16 @@ test('portable export downloads, re-imports, and stays host-only', async ({ brow
   await expect(host.getByTestId('export-game-id')).toHaveText('ecology-review')
   await expect(host.getByTestId('export-team-count')).toHaveText('2')
 
+  // Prove authored private content survived through an observable host boundary
+  // (not only by inspecting the downloaded JSON text).
+  await host.getByRole('button', { name: /advance to next round/i }).click()
+  await expect(host.getByTestId('cbh-grid')).toBeVisible()
+  await host.getByTestId('cbh-tile-habitats-100').click()
+  await expect(host.getByTestId('cbh-notes')).toContainText('HOST-ONLY-EXPORT-NOTE')
+  await expect(host.getByTestId('cbh-alternates')).toContainText('Prairie')
+  await expect(host.getByTestId('cbh-alternates')).toContainText('Savanna')
+  await host.getByTestId('cbh-return').click()
+
   const secondDownloadPromise = host.waitForEvent('download')
   await host.getByTestId('export-download').click()
   const secondDownload = await secondDownloadPromise
