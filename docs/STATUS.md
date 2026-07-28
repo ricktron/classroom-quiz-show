@@ -2,7 +2,9 @@
 
 **Current slice:** Slice 11 — Media contract
 **Slice state:** **In review** — implemented on
-`claude/slice-11-media-contract`; unmerged. The open PR is the review boundary.
+`claude/slice-11-media-contract`; unmerged. Open PR
+[#23](https://github.com/ricktron/classroom-quiz-show/pull/23) is the review
+boundary.
 **Previous slice:** Slice 10 — Sony Buzz! mapping, validation & host setup UX
 (`Complete`, squash-merged via PR #21 at `5575be3`; physical certification
 deferred, no compatibility claim)

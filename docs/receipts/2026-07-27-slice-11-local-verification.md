@@ -3,8 +3,9 @@
 - **Date:** 2026-07-27
 - **Branch:** `claude/slice-11-media-contract`
 - **Base SHA:** `ce1dc61d8a10cea16c91331fa04da8b04dfdeecd` (authorized `main`)
+- **Implementation commit:** `258cb0a565eff0b69f115f05886b2daec4f32515`
 - **Slice state after this work:** `In review` (unmerged)
-- **PR:** see open PR from `claude/slice-11-media-contract` against `main`
+- **PR:** https://github.com/ricktron/classroom-quiz-show/pull/23
 
 ## Commands run
 

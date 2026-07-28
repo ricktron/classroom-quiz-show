@@ -663,7 +663,8 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 ## Next action
 
 **Review and merge the open Slice 11 PR on
-`claude/slice-11-media-contract`.** Slice 11 is `In review`, not `Complete`, and
+[PR #23](https://github.com/ricktron/classroom-quiz-show/pull/23).** Slice 11 is
+`In review`, not `Complete`, and
 remains unmerged. **Slice 12 remains `Planned` and unstarted.** Slice 11's record
 is in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).
 
