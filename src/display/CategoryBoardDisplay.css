@@ -118,12 +118,10 @@
   color: var(--color-accent);
 }
 
+/* Wrapper for MediaContentDisplay — presentation lives on `.mcd*` classes. */
 .cbd__prompt {
   margin: 0;
-  max-width: 40ch;
-  font-size: clamp(1.3rem, 3.2vw, 3rem);
-  line-height: 1.25;
-  overflow-wrap: anywhere;
+  max-width: 100%;
 }
 
 .cbd__answer {

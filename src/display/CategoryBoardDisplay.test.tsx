@@ -172,12 +172,21 @@ describe('fail-closed rendering', () => {
     ['an unknown round kind', { kind: 'mystery', stage: 'board', categories: [] }],
     ['an empty board', { kind: 'board', stage: 'board', categories: [] }],
     [
-      'a prompt stage with no prompt text',
+      'a prompt stage with no prompt content',
       { kind: 'board', stage: 'prompt', selection: { categoryTitle: 'C', value: 1, prompt: null, answer: null } },
     ],
     [
       'an answer stage with no answer text',
-      { kind: 'board', stage: 'answer', selection: { categoryTitle: 'C', value: 1, prompt: 'P', answer: null } },
+      {
+        kind: 'board',
+        stage: 'answer',
+        selection: {
+          categoryTitle: 'C',
+          value: 1,
+          prompt: { kind: 'text', text: 'P' },
+          answer: null,
+        },
+      },
     ],
   ]
 
@@ -204,14 +213,19 @@ describe('long content wraps rather than overflowing', () => {
         round={{
           kind: 'board',
           stage: 'answer',
-          selection: { categoryTitle: longWord, value: 100, prompt: longWord, answer: longWord },
+          selection: {
+            categoryTitle: longWord,
+            value: 100,
+            prompt: { kind: 'text', text: longWord },
+            answer: longWord,
+          },
         }}
       />,
     )
-    // The wrap rule lives in CategoryBoardDisplay.css (`overflow-wrap: anywhere`
-    // on .cbd__prompt / .cbd__answer-text / .cbd__selection-category). Vitest
-    // does not load CSS, so this asserts the elements carry those classes.
+    // Text wrap lives on `.mcd__text`; answer wrap on `.cbd__answer-text`.
+    // Vitest does not load CSS, so this asserts the elements carry those classes.
     expect(screen.getByTestId('cbd-prompt')).toHaveClass('cbd__prompt')
+    expect(screen.getByTestId('mcd-text')).toHaveClass('mcd__text')
     expect(screen.getByTestId('cbd-answer').querySelector('.cbd__answer-text')).not.toBeNull()
     expect(screen.getByTestId('cbd-category')).toHaveClass('cbd__selection-category')
   })

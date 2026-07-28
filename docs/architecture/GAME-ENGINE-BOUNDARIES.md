@@ -368,9 +368,9 @@ capture completion, tab restoration or focus restoration cannot buzz until it is
 released and pressed again. Connect and disconnect append nothing. Controller
 mappings are session-local host configuration and are deliberately not persisted:
 a browser controller index is a session-local locator, not a durable identity.
-**Status (Slice 10).** The host-private Sony Buzz! setup boundary is implemented
-(`In review` — hardware-independent portion complete; owner physical Sony Buzz!
-validation pending). See
+**Status (Slice 10).** The host-private Sony Buzz! setup boundary is `Complete`
+under the owner-accepted hardware-independent scope; physical Sony Buzz!
+certification remains deferred. See
 [`ADR-010-sony-buzz-profile-and-setup.md`](ADR-010-sony-buzz-profile-and-setup.md).
 Host-private identity observation and candidate classification
 (`gamepadDeviceProfile`), a capture-based recommended profile with no hard-coded
@@ -436,7 +436,7 @@ boundary, validation, event semantics, or answer-reveal authorization.
 Slice 1 ships a restrained, token-driven visual identity (`src/styles`) that a
 real theme engine can later replace. No theme engine is implemented.
 
-## 9. Media boundary (future)
+## 9. Media boundary
 
 Prompts are **not** only strings. A prompt may reference typed media (text,
 image, animated image, audio, video, diagram, graph, chart, document excerpt, 3D
@@ -446,6 +446,19 @@ preload behavior, and fallback behavior.
 
 **Invariant:** no type or component may assume a prompt is a plain string. No
 media pipeline is implemented in Slice 1.
+
+**Status (Slice 11 — `In review`).** The first bounded media contract is
+implemented on `claude/slice-11-media-contract` and awaits review/merge; see
+[`ADR-011-media-contract.md`](ADR-011-media-contract.md). Category-board prompts
+are now trusted `PromptContent`: normalized text or a static image whose source
+is a validated same-origin relative path. Bare authored strings remain valid and
+mean text on game-file `schemaVersion: 1`; answers, alternates and notes remain
+strings. Unsupported kinds, unsafe sources, malformed trusted content and unknown
+public media fail closed. `MediaContentDisplay` renders only the allow-listed
+public DTO, including alt text, optional caption/attribution and an explicit
+load-failure fallback. `PUBLIC_STATE_SCHEMA_VERSION` moves **6 → 7**; the sync
+envelope remains version 2. Audio, video, remote media and timer/media coupling
+remain deferred.
 
 ## 10. Game-pack format (future)
 

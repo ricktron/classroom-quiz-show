@@ -20,6 +20,18 @@ export function tile(id: string, overrides: Record<string, unknown> = {}): Recor
   }
 }
 
+/** A valid Slice 11 image prompt pointing at the committed fixture PNG. */
+export function imagePrompt(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    kind: 'image',
+    source: { kind: 'same-origin-path', path: 'media-fixtures/slice-11-clue.png' },
+    alt: 'Slice 11 clue fixture image',
+    caption: 'CI media fixture',
+    attribution: 'Test asset',
+    ...overrides,
+  }
+}
+
 /** A minimal valid category, with overrides applied on top. */
 export function category(
   id: string,

@@ -1,8 +1,9 @@
 import { PUBLIC_BOARD_KIND, type PublicRoundState } from '../state/publicState'
+import { MediaContentDisplay } from './MediaContentDisplay'
 import './CategoryBoardDisplay.css'
 
 /**
- * The projector view of a `category-board` round (Slice 5).
+ * The projector view of a `category-board` round (Slice 5 + Slice 11 media).
  *
  * This component renders sanitized `PublicState` and nothing else. It has no
  * access to the private definition, cannot request more data, and does not
@@ -13,10 +14,11 @@ import './CategoryBoardDisplay.css'
  *
  *  - `board`    — category headers and tile values only. No prompt, no answer.
  *  - `selected` — the chosen category and value. No prompt yet.
- *  - `prompt`   — the prompt. `answer` is `null`, so no answer element exists.
+ *  - `prompt`   — the prompt (text or image). `answer` is `null`, so no answer
+ *                 element exists.
  *  - `answer`   — the prompt is RETAINED above the answer (documented design:
  *                 a class needs the question in view while discussing the
- *                 answer) plus the canonical answer.
+ *                 answer) plus the canonical answer string.
  *
  * Teacher notes and alternate answers are not in the DTO at all, at any stage.
  *
@@ -76,8 +78,9 @@ export function CategoryBoardDisplay({ round }: CategoryBoardDisplayProps) {
   }
 
   const { selection } = round
-  // Impossible stage/payload pairing (prompt text missing at the prompt stage,
-  // answer missing at the answer stage) → neutral panel, never a half-render.
+  // Impossible stage/payload pairing (prompt content missing at the prompt
+  // stage, answer missing at the answer stage) → neutral panel, never a
+  // half-render.
   if (round.stage !== 'selected' && selection.prompt === null) return <Unavailable />
   if (round.stage === 'answer' && selection.answer === null) return <Unavailable />
 
@@ -93,9 +96,9 @@ export function CategoryBoardDisplay({ round }: CategoryBoardDisplayProps) {
       </p>
 
       {selection.prompt !== null && (
-        <p className="cbd__prompt" data-testid="cbd-prompt">
-          {selection.prompt}
-        </p>
+        <div className="cbd__prompt" data-testid="cbd-prompt">
+          <MediaContentDisplay content={selection.prompt} />
+        </div>
       )}
 
       {selection.answer !== null && (

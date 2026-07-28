@@ -6,7 +6,13 @@ import type { SessionCommand } from '../state/commands'
 import { importGameFromUnknown } from '../import/importGame'
 import { createGameDefinition } from '../game/gameDefinition'
 import { placeholderRound } from '../game/roundDefinition'
-import { boardGameFile, richBoardConfig } from '../test/categoryBoardFixtures'
+import {
+  boardGameFile,
+  category,
+  imagePrompt,
+  richBoardConfig,
+  tile,
+} from '../test/categoryBoardFixtures'
 
 /**
  * Host controls — component behaviour (Slice 5).
@@ -163,6 +169,39 @@ describe('the private preview', () => {
     expect(screen.getByTestId('cbh-public-stage')).toHaveTextContent(/the answer is NOT shown/i)
     fireEvent.click(screen.getByTestId('cbh-reveal-answer'))
     expect(screen.getByTestId('cbh-public-stage')).toHaveTextContent(/the prompt and the answer/i)
+  })
+
+  it('renders an image prompt preview without nesting <img> inside a paragraph', () => {
+    const result = importGameFromUnknown(
+      boardGameFile({
+        categories: [
+          category('media', {
+            title: 'Media',
+            tiles: [
+              tile('media-100', {
+                prompt: imagePrompt({ alt: 'Host preview alt' }),
+                answer: 'Host answer',
+              }),
+            ],
+          }),
+        ],
+      }),
+    )
+    if (result.status !== 'success') throw new Error('image fixture failed to import')
+    const store = createSessionStore()
+    store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 's' })
+    store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT, definition: result.definition })
+    store.dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: AT })
+    renderPanel(store)
+    fireEvent.click(screen.getByTestId('cbh-tile-media-100'))
+
+    const prompt = screen.getByTestId('cbh-prompt')
+    expect(prompt.tagName).toBe('DIV')
+    const img = screen.getByTestId('cbh-prompt-image')
+    expect(img.tagName).toBe('IMG')
+    expect(img).toHaveAttribute('alt', 'Host preview alt')
+    expect(img.closest('p')).toBeNull()
+    expect(within(prompt).getByTestId('cbh-prompt-alt')).toHaveTextContent('Host preview alt')
   })
 })
 

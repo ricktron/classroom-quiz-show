@@ -1,16 +1,15 @@
 # Status
 
-**Current slice:** Slice 10 — Sony Buzz! mapping, validation & host setup UX
-**Slice state:** **Complete** — squash-merged via PR #21 at `5575be3` from final
-reviewed head `2885933` (merged **2026-07-28T02:35:09Z**); exact PR-path blob
-equality confirmed; post-merge verification succeeded. Completion covers the
-owner-accepted hardware-independent scope; physical Sony Buzz! certification
-remains deferred; no compatibility claim is made.
-**Previous slice:** Slice 9 — Generic Gamepad adapter & configurable mappings
-(`Complete`, merged to `main` via PR #19, merge commit `d16f90d`,
-2026-07-27T05:33:05Z)
-**Next slice:** Slice 11 — Media contract (`Planned`, unstarted — a separate
-Slice 11 planning/orchestration lane is authorized; implementation is not)
+**Current slice:** Slice 11 — Media contract
+**Slice state:** **In review** — implemented on
+`claude/slice-11-media-contract`; unmerged. Open PR
+[#23](https://github.com/ricktron/classroom-quiz-show/pull/23) is the review
+boundary.
+**Previous slice:** Slice 10 — Sony Buzz! mapping, validation & host setup UX
+(`Complete`, squash-merged via PR #21 at `5575be3`; physical certification
+deferred, no compatibility claim)
+**Next slice:** Slice 12 — Portable export & round-trip import (`Planned`,
+unstarted)
 **Roadmap:** 18 slices, amended 2026-07-26 by
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 (**merged to `main` via PR #13**, merge commit `752a3fe`, 2026-07-26T20:02:13Z)
@@ -317,6 +316,27 @@ remains deferred; no compatibility claim is made.
 | Supported/compatibility/certified language | **Not used — not claimed** |
 | WebHID, Bluetooth, USB drivers | **Not implemented** |
 | Scoring restricted to the active respondent (`OG-6`) | **Still deferred — not implemented** |
+
+## Slice 11 work (In review)
+
+Implemented on `claude/slice-11-media-contract` and awaiting review/merge. See
+[`architecture/ADR-011-media-contract.md`](architecture/ADR-011-media-contract.md).
+
+| Item | State |
+| --- | --- |
+| Typed `PromptContent`: normalized text or static image | Implemented |
+| Additive image prompt form on game-file `schemaVersion: 1` | Implemented |
+| Same-origin relative-path source policy; remote/unsafe sources rejected | Implemented |
+| Exact import diagnostics for unsupported media kinds and invalid sources | Implemented |
+| Allow-listed `PublicPromptContent`; `PublicState` wire version 6 → 7 | Implemented |
+| `MediaContentDisplay` with caption, attribution, alt text and load-failure fallback | Implemented |
+| Fail-closed trusted/public media handling; privacy boundary preserved | Implemented |
+| Audio, video, remote media, media answers and timer/media coupling | **Not implemented — deferred** |
+
+### Commands / events / public fields (Slice 11)
+
+No command, event, reducer or sync-envelope change. Public prompt content becomes
+a typed text/image DTO and the `PublicState` wire version moves **6 → 7**.
 
 ### Commands / events / public fields (added in Slice 9)
 
@@ -831,7 +851,7 @@ None.
 - **Undoing an expiry restores an already-overdue running timer**, which the host
   adapter then expires again on the next tick unless the host acts. Undo restores
   the prior durable state exactly; it does not invent a friendlier one.
-- **`PublicState` wire version is now 5 and the sync envelope version is 2.** A
+- **`PublicState` wire version is now 7 and the sync envelope version is 2.** A
   consumer pinned to either older version fails closed; there is no migration.
 - **Expiry awards and deducts nothing.** A window ending is a fact about the
   window, never a scoring decision.
@@ -907,14 +927,10 @@ None.
 
 ## Next safe action
 
-**Review and merge the Slice 10 post-merge reconciliation PR.** Slice 10 is
-`Complete` under the owner-approved hardware-independent boundary. Physical Sony
-Buzz! certification remains deferred; no compatibility claim is made.
-
-**Slice 11 — Media contract** is `Planned` and unstarted. The next safe action
-after this reconciliation merges is a **separate Slice 11 planning/orchestration
-lane**. No Slice 11 implementation is authorized by this reconciliation. Slice
-11's dependencies remain Slices 4 and 5, not physical Buzz validation.
+**Review and merge [PR #23](https://github.com/ricktron/classroom-quiz-show/pull/23)
+on `claude/slice-11-media-contract`.** Slice 11 remains `In review` and unmerged;
+do not mark it `Complete` until merge and reconciliation evidence exist.
+**Slice 12 remains `Planned` and unstarted.**
 
 **Additional response modes are deferred until after the functional MVP** — see
 the owner direction recorded in

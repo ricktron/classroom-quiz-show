@@ -13,6 +13,7 @@ import {
   type PublicBuzzState,
   type PublicGameView,
   type PublicPhase,
+  type PublicPromptContent,
   type PublicResponseState,
   type PublicResponseTimer,
   type PublicRoundAvailability,
@@ -33,6 +34,11 @@ import {
   readCategoryBoardDefinition,
   type CategoryBoardDefinition,
 } from '../game/categoryBoard/definition'
+import {
+  assertNeverPromptKind,
+  readTrustedPrompt,
+  type PromptContent,
+} from '../game/media/definition'
 import type { RoundDefinition } from '../game/roundDefinition'
 
 /**
@@ -79,6 +85,34 @@ function currentRoundOf(game: PrivateGameState): RoundDefinition | null {
 }
 
 /**
+ * Project trusted prompt content to the allow-listed public DTO.
+ *
+ * Every field is NAMED and copied individually — nothing is spread — so a
+ * future media kind added to the private model is NOT exposed by default.
+ * Impossible / unrecognized private media returns `null` so the round fails
+ * closed to unavailable rather than fabricating clue content.
+ */
+function toPublicPromptContent(prompt: PromptContent): PublicPromptContent | null {
+  const trusted = readTrustedPrompt(prompt)
+  if (trusted === null) return null
+
+  switch (trusted.kind) {
+    case 'text':
+      return { kind: 'text', text: trusted.text }
+    case 'image':
+      return {
+        kind: 'image',
+        source: { kind: 'same-origin-path', path: trusted.source.path },
+        alt: trusted.alt,
+        caption: trusted.caption,
+        attribution: trusted.attribution,
+      }
+    default:
+      return assertNeverPromptKind(trusted)
+  }
+}
+
+/**
  * Project one category-board round to its public DTO.
  *
  * This is the gameplay half of the private→public boundary, and it is
@@ -97,8 +131,8 @@ function currentRoundOf(game: PrivateGameState): RoundDefinition | null {
  *  - authored category/tile ids — the projector gets positional keys instead.
  *
  * Returns `null` when there is nothing safe to publish (an impossible private
- * state, e.g. a selected tile id that is not on the board). The caller turns
- * that into the neutral "unavailable" projection.
+ * state, e.g. a selected tile id that is not on the board, or malformed media).
+ * The caller turns that into the neutral "unavailable" projection.
  */
 function toPublicCategoryBoardState(
   board: CategoryBoardDefinition,
@@ -126,16 +160,22 @@ function toPublicCategoryBoardState(
   // Impossible private state (a selection that is not on this board) → fail closed.
   if (location === null) return null
 
+  let publicPrompt: PublicPromptContent | null = null
+  if (progress.stage === 'prompt' || progress.stage === 'answer') {
+    // The prompt becomes public only from the prompt stage on. Before that the
+    // content is not sent at all — there is no hidden field to inspect.
+    publicPrompt = toPublicPromptContent(location.tile.prompt)
+    // Malformed trusted media at a reveal stage → unavailable, never a guess.
+    if (publicPrompt === null) return null
+  }
+
   return {
     kind: PUBLIC_BOARD_KIND,
     stage: progress.stage,
     selection: {
       categoryTitle: location.category.title,
       value: location.tile.effectiveValue,
-      // The prompt becomes public only from the prompt stage on. Before that the
-      // text is not sent at all — there is no hidden field to inspect.
-      prompt:
-        progress.stage === 'prompt' || progress.stage === 'answer' ? location.tile.prompt : null,
+      prompt: publicPrompt,
       // The answer becomes public only after an explicit answer reveal
       // (GAME-ENGINE-BOUNDARIES §4). `alternates` and `notes` are never read.
       answer: progress.stage === 'answer' ? location.tile.answer : null,

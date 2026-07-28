@@ -330,6 +330,12 @@ No schema, `PublicState`, sync protocol, command, event or reducer change.
 - **Deferred certification:** future physical Sony Buzz! validation is required
   before any supported-hardware claim, not before merge or Slice 10 completion.
 
+**Slice 11 — Media contract. In review** — implemented on
+`claude/slice-11-media-contract` and not yet merged. It adds typed text and
+same-origin image prompts and moves the public-state wire version to **7**; see
+[`docs/architecture/ADR-011-media-contract.md`](docs/architecture/ADR-011-media-contract.md).
+Slice 12 remains Planned and unstarted.
+
 > ⚠️ **No physical Sony Buzz! controller has been tested.** CI and simulated
 > Gamepad sources prove the hardware-independent boundary only. There is no
 > supported-hardware list and no compatibility claim.
@@ -357,8 +363,8 @@ the same boundary**. Slice 10 adds a **host-private Sony Buzz! setup surface**
 (candidate classification, capture recipe, setup test mode) — **`Complete`** under
 the owner-accepted hardware-independent boundary, with physical certification
 deferred and **no compatibility claim**. No WebHID or Bluetooth of any kind, no networked or
-student-device buzzing, and no wagers,
-media, themes, or durable session persistence — **including no persistence of
+student-device buzzing, and no wagers, audio/video/remote media, themes, or
+durable session persistence — **including no persistence of
 controller mappings, which are session-local by design**; importing is still limited to pasting canonical JSON (no file
 picker, spreadsheet, or remote import). The host "Foundation / testing controls"
 and the import harness remain diagnostics that prove the state core, the
@@ -459,7 +465,11 @@ everything after `#` is handled in the client. Full rationale and alternatives:
   base-path-correct `start_url`/`scope`.
 - **Offline app shell:** after the first successful load, the service worker
   precaches the app shell so the host and display **routes** load offline. This
-  is validated by a Playwright offline smoke test.
+  is validated by a Playwright offline smoke test. Media assets present in the
+  deployed build and matched by the existing Workbox asset glob (for example the
+  Slice 11 CI fixture PNG under `public/media-fixtures/`) may also be precached;
+  arbitrary authored paths and separately distributed files are not packaged or
+  guaranteed offline.
 - **Update behavior:** `registerType: 'autoUpdate'`. A new deployment is picked
   up and activated on the next reload/navigation, and the open tab also polls
   for updates hourly, so the app shell never stays indefinitely stale.

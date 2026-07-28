@@ -350,8 +350,8 @@ describe('the derived countdown', () => {
 })
 
 describe('the wire protocol', () => {
-  it('is at public-state version 6 and envelope version 2', () => {
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(6)
+  it('is at public-state version 7 and envelope version 2', () => {
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(7)
     expect(SYNC_SCHEMA_VERSION).toBe(2)
   })
 
