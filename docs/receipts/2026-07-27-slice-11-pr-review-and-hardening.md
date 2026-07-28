@@ -166,10 +166,11 @@ Observed via SonarCloud API on PR #23 at starting head:
 | 2 | `typescript:S3776` cognitive complexity | `definition.ts` `normalizeAuthoredPrompt` | **FIXED** | Extracted `normalizeImagePrompt` |
 | 3 | `typescript:S7780` prefer `String.raw` | `schema.ts` message | **FIXED** | Rewrote message to say “backslash” (no escaped `\\`) |
 | 4 | `typescript:S3776` cognitive complexity | `publicState.ts` `isPublicPromptContent` | **FIXED** | Extracted exact-key helpers + shared path validator |
+| 5 | `typescript:S6653` prefer `Object.hasOwn` | `publicState.ts` `hasExactOwnKeys` | **FIXED** | Introduced by the exact-key helper on the first review tip; switched to `Object.hasOwn` |
 
 Stale issue-comment “The last analysis has failed” from an earlier PR push is
-superseded by the successful SonarCloud check conclusion on `0607ece`. Fresh
-analysis on the final head must be re-observed after push.
+superseded by later successful SonarCloud check conclusions. Final-head Quality
+Gate and issue count are re-observed after the tip that includes this fix.
 
 GitHub review submissions / inline threads: **none** (empty). Bugbot: not
 enabled (upsell comment only).

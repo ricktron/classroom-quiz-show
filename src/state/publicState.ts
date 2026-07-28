@@ -605,7 +605,7 @@ function hasExactOwnKeys(
   const actual = Object.keys(value)
   if (actual.length !== keys.length) return false
   for (const key of keys) {
-    if (!Object.prototype.hasOwnProperty.call(value, key)) return false
+    if (!Object.hasOwn(value, key)) return false
   }
   return true
 }
