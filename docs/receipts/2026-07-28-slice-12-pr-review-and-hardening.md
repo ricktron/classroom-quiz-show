@@ -5,8 +5,7 @@
 - **PR:** https://github.com/ricktron/classroom-quiz-show/pull/25
 - **Authorized base:** `7c1a35c096d1d0654ea951f29aa49d0910f4c429`
 - **Starting head (review):** `86cce889e0b93bdec82573f0ad3f0d138663fc91`
-- **Final head (after hardening):** recorded at push time in this receipt’s
-  “Final head” section and the PR body
+- **Final head (after hardening):** `7b5dc47fd98cedb347bc2b1ba6e277d706ed3976`
 - **Slice 12 state:** **In review** (unmerged)
 - **Slice 13 state:** **Planned**, unstarted
 
@@ -31,8 +30,8 @@ Preflight confirmed clean working tree, matching remote tracking branch, CI gree
 
 ## 4. Final head
 
-See git tip of `claude/slice-12-portable-export` after the hardening commit
-pushed by this review. PR body updated to that exact OID.
+`7b5dc47fd98cedb347bc2b1ba6e277d706ed3976` — review hardening commit on
+`claude/slice-12-portable-export`. PR body updated to this exact OID.
 
 ## 5. Authorized base
 
