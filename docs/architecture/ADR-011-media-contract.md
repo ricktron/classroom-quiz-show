@@ -1,7 +1,10 @@
 # ADR-011 — Media contract for prompts (text + same-origin image)
 
-- **Status:** Accepted (Slice 11) — implementation open for review
-- **Date:** 2026-07-27
+- **Status:** Accepted (Slice 11) — **Complete**; squash-merged via PR #23 at
+  `5d47b2f` from reviewed head `bb8bd94` (**2026-07-28T04:56:27Z**). Exact
+  40-path blob equality confirmed; post-merge verification succeeded. See
+  [`../receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
+- **Date:** 2026-07-27 (landed 2026-07-28)
 - **Slice:** 11 — Media contract
 - **Depends on:** [ADR-002](ADR-002-state-event-sync-core.md),
   [ADR-004](ADR-004-canonical-validation-import.md),

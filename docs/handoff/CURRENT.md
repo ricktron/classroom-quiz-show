@@ -1,26 +1,29 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with **Slices 1–10 all `Complete` and merged to `main`**. **Slice
-11 — Media contract is `In review`** on `claude/slice-11-media-contract` and is
-not merged. **Slice 10 is `Complete`** under the owner-approved
-hardware-independent boundary (PR #21
-squash-merged at `5575be3` from reviewed head `2885933`,
-**2026-07-28T02:35:09Z**); physical Sony Buzz! certification remains deferred and
-no compatibility claim is made (see
-[`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md)
+the repository with **Slices 1–11 all `Complete` and merged to `main`**. **Slice
+11 — Media contract is `Complete`** (PR #23 squash-merged at `5d47b2f` from
+reviewed head `bb8bd94`, **2026-07-28T04:56:27Z**; exact 40-path blob equality
+confirmed; post-merge verification succeeded — see
+[`../architecture/ADR-011-media-contract.md`](../architecture/ADR-011-media-contract.md)
 and
-[`../receipts/2026-07-28-slice-10-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-10-post-merge-reconciliation.md)).
-The next action is to review and merge the open Slice 11 PR; **Slice 12 remains
-`Planned` and unstarted**. (Slice 8 — Local input contract & keyboard buzz-in —
-merged via PR #16 at `167128d` on 2026-07-27T02:46:24Z; its
+[`../receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-11-post-merge-reconciliation.md)).
+**Slice 10 remains `Complete`** under the owner-approved hardware-independent
+boundary (PR #21 squash-merged at `5575be3` from reviewed head `2885933`,
+**2026-07-28T02:35:09Z**); physical Sony Buzz! certification remains deferred and
+no compatibility claim is made. **Slice 12 — Portable export & round-trip import
+remains `Planned` and unstarted.** The next safe action is a separate Slice 12
+planning/orchestration lane only. (Slice 8 — Local input contract & keyboard
+buzz-in — merged via PR #16 at `167128d` on 2026-07-27T02:46:24Z; its
 reconciliation merged via PR #18 at `5cc81d4` on 2026-07-27T03:48:25Z; **Slice 9 —
 Generic Gamepad adapter & configurable mappings — merged via
 [PR #19](https://github.com/ricktron/classroom-quiz-show/pull/19) at `d16f90d`
 on 2026-07-27T05:33:05Z**; Slice 9 post-merge reconciliation merged via PR #20
 at `0bcfed11`; **Slice 10 — Sony Buzz! mapping, validation & host setup UX —
 merged via [PR #21](https://github.com/ricktron/classroom-quiz-show/pull/21) at
-`5575be3` on 2026-07-28T02:35:09Z**.)
+`5575be3` on 2026-07-28T02:35:09Z**; **Slice 11 — Media contract — merged via
+[PR #23](https://github.com/ricktron/classroom-quiz-show/pull/23) at `5d47b2f`
+on 2026-07-28T04:56:27Z**.)
 
 > **Repository hygiene (2026-07-27).** `main` is the GitHub **default branch**.
 > **PR #17 was closed without merging** — an erroneous *reversed* pull request
@@ -165,11 +168,20 @@ merged via [PR #21](https://github.com/ricktron/classroom-quiz-show/pull/21) at
   [`../receipts/2026-07-28-slice-10-pr-review-and-sonar-disposition.md`](../receipts/2026-07-28-slice-10-pr-review-and-sonar-disposition.md),
   [`../receipts/2026-07-28-slice-10-owner-acceptance-amendment.md`](../receipts/2026-07-28-slice-10-owner-acceptance-amendment.md),
   [`../receipts/2026-07-28-slice-10-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-10-post-merge-reconciliation.md).
-- **Slice 11 (current): `In review`.** Implemented on
-  `claude/slice-11-media-contract`; the open PR is unmerged. It adds typed text
-  and same-origin image prompts, fail-closed import/projection/rendering,
-  `MediaContentDisplay`, and `PublicState` wire version 7. Rationale in
-  [`../architecture/ADR-011-media-contract.md`](../architecture/ADR-011-media-contract.md).
+- **Slice 11 (current): `Complete`.** Squash-merged via
+  **[PR #23](https://github.com/ricktron/classroom-quiz-show/pull/23)** at
+  `5d47b2f641e1a96c2066ec22731f4e751288b39a` (merged **2026-07-28T04:56:27Z**;
+  single parent `ce1dc61d`; final reviewed head
+  `bb8bd94b016a99f9782793f3eda6b6fd2d59a0b5`). Exact PR-path blob equality
+  confirmed (**40** paths). Typed text and same-origin image prompts,
+  fail-closed import/projection/rendering, `MediaContentDisplay`, game-file
+  `schemaVersion` **1**, `PublicState` wire version **7**, sync envelope **2**.
+  Rationale in
+  [`../architecture/ADR-011-media-contract.md`](../architecture/ADR-011-media-contract.md);
+  receipts
+  [`../receipts/2026-07-27-slice-11-local-verification.md`](../receipts/2026-07-27-slice-11-local-verification.md),
+  [`../receipts/2026-07-27-slice-11-pr-review-and-hardening.md`](../receipts/2026-07-27-slice-11-pr-review-and-hardening.md),
+  [`../receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
 - **Slice 12:** `Planned`, unstarted.
 - **What Slice 9 adds:** generic USB controller input **through the Slice 8
   boundary**, and the most important thing about it is the list of things it did
@@ -662,11 +674,11 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Next action
 
-**Review and merge the open Slice 11 PR on
-[PR #23](https://github.com/ricktron/classroom-quiz-show/pull/23).** Slice 11 is
-`In review`, not `Complete`, and
-remains unmerged. **Slice 12 remains `Planned` and unstarted.** Slice 11's record
-is in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).
+**Slice 12 — Portable export and round-trip import is `Planned` and unstarted.**
+The next safe action is a **separate Slice 12 planning/orchestration lane**.
+This reconciliation does not authorize Slice 12 implementation. Slice 11 is
+`Complete` (PR #23, `5d47b2f`). Slice 12's record is in
+[`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).
 
 ## Owner direction — colored buttons and the local input contract (2026-07-27)
 
@@ -732,9 +744,10 @@ open-answer and buzz-first multiple-choice clues may coexist within a single gam
 **No schema, event vocabulary, scoring formula, acceptance criteria, roadmap
 insertion or implementation is authorized now**, and none exists. Nothing in the
 codebase implements, anticipates or reserves space for a response mode or a
-multiple-choice question type. **The immediate frontier is review and merge
-of the open Slice 11 PR.** Slice 10 is **`Complete`** under the owner-accepted
-hardware-independent boundary; physical certification remains deferred.
+multiple-choice question type. **The immediate frontier is a separate Slice 12
+planning/orchestration lane.** Slice 11 is **`Complete`** (PR #23, `5d47b2f`).
+Slice 10 remains **`Complete`** under the owner-accepted hardware-independent
+boundary; physical certification remains deferred.
 
 Recording this direction authorizes no work of any kind.
 
@@ -784,33 +797,34 @@ reconciliation. Recording this direction authorizes no work of any kind.
 
 ## Prohibited next actions
 
-Do **not**: merge the Slice 11 PR without review; claim live-route
-behaviour that was not directly inspected; claim any physical Sony Buzz!
-compatibility or treat deferred physical certification as incomplete Slice 10
-work; mark Slice 11 `Complete` before it merges and is reconciled; begin Slice 12
-or any later slice without authorization; add WebHID,
-Bluetooth, USB or HID code beyond what Slice 10's host-private boundary already
-uses; persist a Gamepad mapping to
-localStorage, IndexedDB, a game file or the sync channel; map axes, sticks, analog
-triggers, motion or haptics; use a browser controller index or device `id` as a
-durable identity; poll the Gamepad API from the reducer, a render, the sanitizer,
-replay, command planning or the display route; add a global polling service;
-give a secondary logical action any gameplay meaning or any durable event; add
-first-only lockout; restrict scoring to an active respondent (`OG-6`,
-still deferred); add automatic timeout scoring or make a timer or a buzz move a point; add
-student-owned contestant devices, networked buzzers, or remote team input — these
-remain **excluded**, not merely deferred; add durable
-persistence/IndexedDB/session recovery/leader coordination; add a final wager, Daily Double, or Final Jeopardy; extend the Slice 11 media contract beyond text and
-same-origin static images, add a theme engine, or add team colours beyond the application palette; add
-buzz-in audio, an audio file, playback code, an audio schema, an audio event, a
-sound-pack manifest, a custom-upload path or an attribution asset (see the
-deferred buzz-sound direction — it authorizes none of it); add
-spreadsheet/CSV/XLSX/Google Sheets import, an authoring UI, pack management, a saved
-game library, or remote URL import; add a backend, accounts, cross-device sync,
-analytics, or AI services; add any further playable round type; weaken fail-closed
-display behavior; project teacher notes, alternates, unrevealed content, the score
-event history, undo metadata, the host's scoring target, an internal timer id, or
-an interruption source; read a clock inside `reduce`, `replay`, the planner's
-decision logic, or the sanitizer; publish a per-second or per-frame revision; permit executable
-imported game code or imported style values; add dynamic module/plugin loading based
-on game content; or move implementation truth into NightWatch or Obsidian.
+Do **not**: begin Slice 12 implementation without a separate authorized
+planning/orchestration outcome; claim live-route behaviour that was not directly
+inspected; claim any physical Sony Buzz! compatibility or treat deferred physical
+certification as incomplete Slice 10 work; add WebHID, Bluetooth, USB or HID code
+beyond what Slice 10's host-private boundary already uses; persist a Gamepad
+mapping to localStorage, IndexedDB, a game file or the sync channel; map axes,
+sticks, analog triggers, motion or haptics; use a browser controller index or
+device `id` as a durable identity; poll the Gamepad API from the reducer, a
+render, the sanitizer, replay, command planning or the display route; add a
+global polling service; give a secondary logical action any gameplay meaning or
+any durable event; add first-only lockout; restrict scoring to an active
+respondent (`OG-6`, still deferred); add automatic timeout scoring or make a
+timer or a buzz move a point; add student-owned contestant devices, networked
+buzzers, or remote team input — these remain **excluded**, not merely deferred;
+add durable persistence/IndexedDB/session recovery/leader coordination; add a
+final wager, Daily Double, or Final Jeopardy; extend the Slice 11 media contract
+beyond text and same-origin static images, add remote media, audio/video, or
+timer/media coupling; add a theme engine, or add team colours beyond the
+application palette; add buzz-in audio, an audio file, playback code, an audio
+schema, an audio event, a sound-pack manifest, a custom-upload path or an
+attribution asset (see the deferred buzz-sound direction — it authorizes none of
+it); add spreadsheet/CSV/XLSX/Google Sheets import, an authoring UI, pack
+management, a saved game library, or remote URL import; add a backend, accounts,
+cross-device sync, analytics, or AI services; add any further playable round type;
+weaken fail-closed display behavior; project teacher notes, alternates,
+unrevealed content, the score event history, undo metadata, the host's scoring
+target, an internal timer id, or an interruption source; read a clock inside
+`reduce`, `replay`, the planner's decision logic, or the sanitizer; publish a
+per-second or per-frame revision; permit executable imported game code or
+imported style values; add dynamic module/plugin loading based on game content;
+or move implementation truth into NightWatch or Obsidian.

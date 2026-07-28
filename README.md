@@ -330,11 +330,19 @@ No schema, `PublicState`, sync protocol, command, event or reducer change.
 - **Deferred certification:** future physical Sony Buzz! validation is required
   before any supported-hardware claim, not before merge or Slice 10 completion.
 
-**Slice 11 — Media contract. In review** — implemented on
-`claude/slice-11-media-contract` and not yet merged. It adds typed text and
-same-origin image prompts and moves the public-state wire version to **7**; see
-[`docs/architecture/ADR-011-media-contract.md`](docs/architecture/ADR-011-media-contract.md).
-Slice 12 remains Planned and unstarted.
+**Slice 11 — Media contract. Complete** — PR #23 was squash-merged at
+`5d47b2f641e1a96c2066ec22731f4e751288b39a` (merged **2026-07-28T04:56:27Z**) from
+final reviewed head `bb8bd94b016a99f9782793f3eda6b6fd2d59a0b5`. Exact 40-path
+file-list and blob equality confirmed that the reviewed content is what landed.
+Post-merge verification succeeded on clean `main` at that squash tip (**1485**
+unit tests / **63** files; **214** e2e passed / **2** skipped). The completed
+contract supports legacy text and strict same-origin static-image prompts on
+canonical schema version **1**, with public-state wire version **7** and
+sync-envelope version **2**. See
+[`docs/architecture/ADR-011-media-contract.md`](docs/architecture/ADR-011-media-contract.md)
+and
+[`docs/receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](docs/receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
+**Slice 12 — Portable export & round-trip import** remains Planned and unstarted.
 
 > ⚠️ **No physical Sony Buzz! controller has been tested.** CI and simulated
 > Gamepad sources prove the hardware-independent boundary only. There is no

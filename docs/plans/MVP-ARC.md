@@ -54,7 +54,7 @@ systems.
 | 8   | **Local input contract & keyboard buzz-in** | The device-independent input-adapter boundary + registry, buzz-in domain semantics, one command/event pair, replay-derived queue state, sanitized public projection — with the **keyboard adapter** as its first consumer. **(Complete — delivered without the anticipated adapter *registry* object; a bounded application-only input-source union ships its guarantees instead. See ADR-008 §3.)** | 2, 6, 7 |
 | 9   | **Generic Gamepad adapter**    | Gamepad API adapter behind the slice 8 boundary; connect/disconnect handling, polling isolation, host diagnostics. No model-specific assumptions. **(Complete — merged via PR #19 (`d16f90d`). No schema, `PublicState`, protocol, command, event or reducer change. No physical controller was tested. See ADR-009.)** | 8 |
 | 10  | **Sony Buzz! mapping, validation & host setup UX** | Configurable controller mapping, Sony Buzz! candidate classification and capture recipe, host setup/test surface, fallback when no controller is present. **(Complete — squash-merged via PR #21 (`5575be3`) from reviewed head `2885933`. Hardware-independent scope; physical certification deferred; no compatibility claim. See ADR-010.)** | 9 |
-| 11  | **Media contract**             | Typed media model (beyond plain-string prompts), fail-closed on unsupported media, additive on `schemaVersion: 1`. **In review; must precede any new round type.** | 4, 5 |
+| 11  | **Media contract**             | Typed media model (beyond plain-string prompts), fail-closed on unsupported media, additive on `schemaVersion: 1`. **(Complete — squash-merged via PR #23 (`5d47b2f`) from reviewed head `bb8bd94`. Public wire 7; sync 2; schema 1. See ADR-011.)** | 4, 5 |
 | 12  | **Portable export & round-trip import** | Export a game to the canonical portable document and re-import it losslessly; reproducible game identity; round-trip equality as an acceptance criterion. **Planned; unstarted.** | 4, 11 |
 | 13  | **Local persistence & recovery** | IndexedDB durable local storage, session recovery after refresh, saved definitions kept distinct from active session state, lightweight leader coordination. | 2, 12 |
 | 14  | **Final-wager round**          | Public prompt, host-entered/private wagers, timed response, reveal, settlement, tie handling. | 5, 6, 7, 11 |
@@ -605,9 +605,14 @@ remains deferred; no compatibility claim is made. See
 [`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md)
 and
 [`../receipts/2026-07-28-slice-10-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-10-post-merge-reconciliation.md).
-**Slice 11 is `In review`** on `claude/slice-11-media-contract`; its open PR is
-unmerged. Review and merge that PR next. **Slice 12 remains `Planned` and
-unstarted.**
+**Slice 11 is `Complete`** — squash-merged via
+[PR #23](https://github.com/ricktron/classroom-quiz-show/pull/23) (merge commit
+`5d47b2f`, 2026-07-28T04:56:27Z) from final reviewed head `bb8bd94`. Exact
+40-path blob equality confirmed; post-merge verification succeeded. See
+[`../architecture/ADR-011-media-contract.md`](../architecture/ADR-011-media-contract.md)
+and
+[`../receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
+**Slice 12 remains `Planned` and unstarted.**
 
 ## Slice 8 — scope, acceptance, non-goals
 
@@ -939,9 +944,16 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   for unsupported media; privacy tests unchanged and green.
 - **Impact:** schema **yes** (additive on v1) · runtime **yes** · UI **yes** ·
   storage no · hardware no.
-- **Status:** **`In review`** — implemented on
-  `claude/slice-11-media-contract`; open PR unmerged as of 2026-07-27.
-- **Next action:** review and merge the Slice 11 PR.
+- **Status:** **`Complete`** — squash-merged via
+  [PR #23](https://github.com/ricktron/classroom-quiz-show/pull/23) at
+  `5d47b2f641e1a96c2066ec22731f4e751288b39a` (merged **2026-07-28T04:56:27Z**;
+  final reviewed head `bb8bd94b016a99f9782793f3eda6b6fd2d59a0b5`; exact PR-path
+  blob equality confirmed). Rationale in
+  [`../architecture/ADR-011-media-contract.md`](../architecture/ADR-011-media-contract.md);
+  post-merge evidence in
+  [`../receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
+- **Next action:** separate Slice 12 planning/orchestration lane only — no
+  Slice 12 implementation is authorized by this reconciliation.
 
 ### Slice 12 — Portable export & round-trip import
 
@@ -960,7 +972,8 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
 - **Impact:** schema no (uses the existing format) · runtime **yes** · UI **yes**
   · storage no · hardware no.
 - **Status:** `Planned` — unstarted.
-- **Owner gate:** authorization to begin.
+- **Owner gate:** authorization to begin (separate planning/orchestration lane
+  only; this reconciliation does not authorize implementation).
 
 ### Slice 13 — Local persistence & recovery
 

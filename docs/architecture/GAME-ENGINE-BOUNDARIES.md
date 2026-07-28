@@ -447,18 +447,20 @@ preload behavior, and fallback behavior.
 **Invariant:** no type or component may assume a prompt is a plain string. No
 media pipeline is implemented in Slice 1.
 
-**Status (Slice 11 — `In review`).** The first bounded media contract is
-implemented on `claude/slice-11-media-contract` and awaits review/merge; see
-[`ADR-011-media-contract.md`](ADR-011-media-contract.md). Category-board prompts
-are now trusted `PromptContent`: normalized text or a static image whose source
-is a validated same-origin relative path. Bare authored strings remain valid and
-mean text on game-file `schemaVersion: 1`; answers, alternates and notes remain
-strings. Unsupported kinds, unsafe sources, malformed trusted content and unknown
-public media fail closed. `MediaContentDisplay` renders only the allow-listed
-public DTO, including alt text, optional caption/attribution and an explicit
-load-failure fallback. `PUBLIC_STATE_SCHEMA_VERSION` moves **6 → 7**; the sync
-envelope remains version 2. Audio, video, remote media and timer/media coupling
-remain deferred.
+**Status (Slice 11 — `Complete`).** The first bounded media contract landed via
+PR #23 (squash `5d47b2f`, reviewed head `bb8bd94`, merged
+**2026-07-28T04:56:27Z**); see
+[`ADR-011-media-contract.md`](ADR-011-media-contract.md) and
+[`../receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
+Category-board prompts are trusted `PromptContent`: normalized text or a static
+image whose source is a validated same-origin relative path. Bare authored
+strings remain valid and mean text on game-file `schemaVersion: 1`; answers,
+alternates and notes remain strings. Unsupported kinds, unsafe sources,
+malformed trusted content and unknown public media fail closed.
+`MediaContentDisplay` renders only the allow-listed public DTO, including alt
+text, optional caption/attribution and an explicit load-failure fallback.
+`PUBLIC_STATE_SCHEMA_VERSION` is **7**; the sync envelope remains version **2**.
+Audio, video, remote media and timer/media coupling remain deferred.
 
 ## 10. Game-pack format (future)
 
