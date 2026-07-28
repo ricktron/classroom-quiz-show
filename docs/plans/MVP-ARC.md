@@ -53,7 +53,7 @@ systems.
 | 7   | **Timers, arming & transitions** | Timer config, a deadline-projected public timer, host arming/disarming, host-controlled undoable round transitions, reduced-motion-safe. The interrupt seam must be typed so buzz-in is a later addition, not a rewrite. **(Complete.)** | 5, 6 |
 | 8   | **Local input contract & keyboard buzz-in** | The device-independent input-adapter boundary + registry, buzz-in domain semantics, one command/event pair, replay-derived queue state, sanitized public projection — with the **keyboard adapter** as its first consumer. **(Complete — delivered without the anticipated adapter *registry* object; a bounded application-only input-source union ships its guarantees instead. See ADR-008 §3.)** | 2, 6, 7 |
 | 9   | **Generic Gamepad adapter**    | Gamepad API adapter behind the slice 8 boundary; connect/disconnect handling, polling isolation, host diagnostics. No model-specific assumptions. **(Complete — merged via PR #19 (`d16f90d`). No schema, `PublicState`, protocol, command, event or reducer change. No physical controller was tested. See ADR-009.)** | 8 |
-| 10  | **Sony Buzz! mapping, validation & host setup UX** | Configurable controller mapping, Sony Buzz! candidate classification and capture recipe, host setup/test surface, fallback when no controller is present. **(`In review — owner-accepted (hardware-independent); merge-ready` — `Complete` only after PR #21 merges and post-merge reconciliation succeeds; physical certification deferred. See ADR-010.)** | 9 |
+| 10  | **Sony Buzz! mapping, validation & host setup UX** | Configurable controller mapping, Sony Buzz! candidate classification and capture recipe, host setup/test surface, fallback when no controller is present. **(Complete — squash-merged via PR #21 (`5575be3`) from reviewed head `2885933`. Hardware-independent scope; physical certification deferred; no compatibility claim. See ADR-010.)** | 9 |
 | 11  | **Media contract**             | Typed media model (beyond plain-string prompts), fail-closed on unsupported media, additive on `schemaVersion: 1`. **Must precede any new round type.** | 4, 5 |
 | 12  | **Portable export & round-trip import** | Export a game to the canonical portable document and re-import it losslessly; reproducible game identity; round-trip equality as an acceptance criterion. | 4, 11 |
 | 13  | **Local persistence & recovery** | IndexedDB durable local storage, session recovery after refresh, saved definitions kept distinct from active session state, lightweight leader coordination. | 2, 12 |
@@ -597,13 +597,17 @@ Nothing: Slice 9 is **`Complete`** — merged to `main` via
 `d16f90d`, 2026-07-27T05:33:05Z, by `ricktron`). Its scope record is below, and
 its rationale is in
 [`../architecture/ADR-009-generic-gamepad-adapter.md`](../architecture/ADR-009-generic-gamepad-adapter.md).
-**Slice 10 is `In review — owner-accepted (hardware-independent); merge-ready`**
-on `claude/slice-10-sony-buzz-mapping`; physical hardware certification is
-deferred. Slice 10 is **not** `Complete` until PR #21 merges and post-merge
-reconciliation succeeds. See
-[`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md).
-**Slice 11 is `Planned`, unstarted, and may begin only after that reconciliation
-and explicit owner authorization.** Its dependencies remain Slices 4 and 5.
+**Slice 10 is `Complete`** — squash-merged via
+[PR #21](https://github.com/ricktron/classroom-quiz-show/pull/21) (merge commit
+`5575be3`, 2026-07-28T02:35:09Z) from final reviewed head `2885933`. Completion
+covers the owner-accepted hardware-independent scope; physical certification
+remains deferred; no compatibility claim is made. See
+[`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md)
+and
+[`../receipts/2026-07-28-slice-10-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-10-post-merge-reconciliation.md).
+**Slice 11 is `Planned`, unstarted.** A separate Slice 11 planning/orchestration
+lane is authorized; **implementation is not**. Its dependencies remain Slices 4
+and 5.
 
 ## Slice 8 — scope, acceptance, non-goals
 
@@ -897,19 +901,23 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   Sony-specific belongs HERE and nowhere earlier: detection, button numbering,
   default colour mappings, handset assignment, the recommended profile, and the
   host setup UX. Slices 8 and 9 must remain usable and complete without any of
-  it. **Hardware-independent portion owner-accepted (`In review`; merge-ready);
-  physical certification deferred — not `Complete` until PR #21 merges and
-  post-merge reconciliation succeeds.**
+  it. **Hardware-independent portion owner-accepted and now `Complete` after
+  PR #21 squash-merge and post-merge reconciliation; physical certification
+  remains deferred.**
 - **Impact:** schema no · runtime **yes** · UI **yes** · storage **possibly**
   (mapping persistence may defer to slice 13) · hardware **yes** (Sony Buzz! USB).
-- **Status:** **`In review — owner-accepted (hardware-independent); merge-ready`**.
-  Implemented on `claude/slice-10-sony-buzz-mapping`; **not merged; not
-  `Complete` until PR #21 merges and post-merge reconciliation succeeds.**
-  Physical certification is deferred. Rationale in
-  [`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md).
+- **Status:** **`Complete`** — squash-merged via
+  [PR #21](https://github.com/ricktron/classroom-quiz-show/pull/21) at
+  `5575be35d76ae0f0d3b36394431b7873883b78ac` (merged **2026-07-28T02:35:09Z**;
+  final reviewed head `288593391776be1d89b7f5ab9820e147946e56f9`; exact PR-path
+  blob equality confirmed). Physical certification remains deferred; no
+  compatibility claim is made. Rationale in
+  [`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md);
+  post-merge evidence in
+  [`../receipts/2026-07-28-slice-10-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-10-post-merge-reconciliation.md).
 - **Deferred follow-up:** owner-performed physical validation is required before
-  any supported-hardware claim; it is not a prerequisite for merge, Slice 10
-  completion, or Slice 11's media contract.
+  any supported-hardware claim; it is deferred certification, not incomplete
+  Slice 10 work, and is not a prerequisite for Slice 11's media contract.
 
 ### Slice 11 — Media contract
 
