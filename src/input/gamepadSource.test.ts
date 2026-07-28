@@ -343,6 +343,24 @@ describe('the production source', () => {
     expect(browserGamepadSource(hostile).read()).toEqual({ status: 'unreadable' })
   })
 
+  it('contains a throwing getter inside the API return as `unreadable`', () => {
+    const hostilePad = new Proxy(
+      {},
+      {
+        get() {
+          throw new Error('hostile pad getter')
+        },
+      },
+    )
+    const hostile = {
+      getGamepads() {
+        return [hostilePad]
+      },
+    } as unknown as Navigator
+    expect(() => browserGamepadSource(hostile).read()).not.toThrow()
+    expect(browserGamepadSource(hostile).read()).toEqual({ status: 'unreadable' })
+  })
+
   it('reads a supported API through the same untrusted guard', () => {
     const fake = {
       getGamepads: () => [null, rawPad({ index: 1, buttons: [{ pressed: true }] })],

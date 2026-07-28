@@ -56,6 +56,10 @@ const FORBIDDEN_PROJECTOR_GAMEPAD_LABELS = [
   'sony buzz',
   'device identifier',
   'product id',
+  'vendor',
+  'profile',
+  'mapping',
+  'capture',
   '054c',
   '0002',
   '1000',
@@ -110,6 +114,27 @@ async function installSimulatedSonyBuzzCandidate(page: Page) {
   })
 }
 
+/**
+ * Wait for several animation frames so the host Gamepad poll owner can observe
+ * the current simulated pad state. Synchronizes on `requestAnimationFrame`
+ * rather than a fixed wall-clock timeout.
+ */
+async function settleGamepadPolls(page: Page, frames = 8): Promise<void> {
+  await page.evaluate(
+    (count) =>
+      new Promise<void>((resolve) => {
+        let remaining = count
+        const tick = () => {
+          remaining -= 1
+          if (remaining <= 0) resolve()
+          else requestAnimationFrame(tick)
+        }
+        requestAnimationFrame(tick)
+      }),
+    frames,
+  )
+}
+
 /** Press and release one simulated gamepad button; allows rAF polls to observe edges. */
 async function pressSimulatedGamepadButton(page: Page, buttonIndex: number) {
   await page.evaluate((idx) => {
@@ -122,8 +147,7 @@ async function pressSimulatedGamepadButton(page: Page, buttonIndex: number) {
     state.pads[0].buttons[idx].pressed = true
     state.pads[0].buttons[idx].value = 1
   }, buttonIndex)
-  // Two frames at 60 Hz is ~32 ms; wait longer so the host poll loop observes the edge.
-  await page.waitForTimeout(250)
+  await settleGamepadPolls(page)
   await page.evaluate((idx) => {
     const state = (
       window as unknown as {
@@ -134,7 +158,7 @@ async function pressSimulatedGamepadButton(page: Page, buttonIndex: number) {
     state.pads[0].buttons[idx].pressed = false
     state.pads[0].buttons[idx].value = 0
   }, buttonIndex)
-  await page.waitForTimeout(150)
+  await settleGamepadPolls(page, 4)
 }
 
 /**
@@ -381,7 +405,7 @@ test('simulated Sony Buzz candidate supports setup capture, apply, and test mode
   for (let buttonIndex = 0; buttonIndex < 5; buttonIndex += 1) {
     await host.getByTestId('sbs-capture').click()
     await expect(host.getByTestId('sbs-capture')).toHaveText('Cancel capture')
-    await host.waitForTimeout(100)
+    await settleGamepadPolls(host)
     await pressSimulatedGamepadButton(host, buttonIndex)
     await expect(host.getByTestId('sbs-progress')).toContainText(`${buttonIndex + 1} of 5`, {
       timeout: 10_000,
@@ -403,7 +427,7 @@ test('simulated Sony Buzz candidate supports setup capture, apply, and test mode
   // Entering test mode re-primes — wait for a baseline poll before pressing.
   await host.getByTestId('sbs-test-mode').click()
   await expect(host.getByTestId('sbs-test-outcome')).toContainText(/Test mode is on/i)
-  await host.waitForTimeout(100)
+  await settleGamepadPolls(host)
   await pressSimulatedGamepadButton(host, 0)
   await expect(host.getByTestId('sbs-test-outcome')).toContainText(/Test:/i, { timeout: 10_000 })
   await expect(host.getByTestId('gih-outcome')).toContainText(/no gameplay change/i)

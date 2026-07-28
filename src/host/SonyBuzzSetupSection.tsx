@@ -217,7 +217,8 @@ export function SonyBuzzSetupSection({
           : ' — complete'}
       </p>
 
-      <div className="sbs__actions" role="group" aria-label="Sony Buzz setup actions">
+      <fieldset className="sbs__actions">
+        <legend className="visually-hidden">Sony Buzz setup actions</legend>
         <button
           type="button"
           className="btn btn--secondary"
@@ -341,7 +342,7 @@ export function SonyBuzzSetupSection({
         >
           {testMode ? 'Leave test mode' : 'Enter test mode'}
         </button>
-      </div>
+      </fieldset>
 
       {previewLines !== null && (
         <ul className="sbs__preview" data-testid="sbs-preview-list">
@@ -356,11 +357,7 @@ export function SonyBuzzSetupSection({
       </p>
 
       <p className="host__note" data-testid="sbs-test-outcome" aria-live="polite">
-        {lastTestObservation === null
-          ? testMode
-            ? 'Test mode is on. Press a mapped button to see its team and action. Nothing is scored.'
-            : 'Test mode is off.'
-          : `Test: ${nameOf(lastTestObservation.teamId)} · ${actionWords(lastTestObservation.action)} · ${controllerLabel(lastTestObservation.control.controllerIndex)} · button ${lastTestObservation.control.buttonIndex + 1}`}
+        {describeTestOutcome(lastTestObservation, testMode, nameOf)}
       </p>
 
       <p className="host__note" data-testid="sbs-keyboard-fallback">
@@ -369,6 +366,20 @@ export function SonyBuzzSetupSection({
       </p>
     </section>
   )
+}
+
+function describeTestOutcome(
+  observation: SonyBuzzTestObservation | null,
+  testMode: boolean,
+  nameOf: (teamId: string) => string,
+): string {
+  if (observation !== null) {
+    return `Test: ${nameOf(observation.teamId)} · ${actionWords(observation.action)} · ${controllerLabel(observation.control.controllerIndex)} · button ${observation.control.buttonIndex + 1}`
+  }
+  if (testMode) {
+    return 'Test mode is on. Press a mapped button to see its team and action. Nothing is scored.'
+  }
+  return 'Test mode is off.'
 }
 
 function describeSurfaceState(

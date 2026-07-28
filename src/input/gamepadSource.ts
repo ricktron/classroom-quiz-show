@@ -332,7 +332,13 @@ export function browserGamepadSource(
         // the same answer: the host is told, and nothing buzzes.
         return { status: 'unreadable' }
       }
-      return { status: 'ok', snapshot: snapshotFromRawGamepads(raw) }
+      try {
+        // Snapshot conversion also fails closed: throwing getters / Proxies in a
+        // shimmed return value must not escape into the host poll loop.
+        return { status: 'ok', snapshot: snapshotFromRawGamepads(raw) }
+      } catch {
+        return { status: 'unreadable' }
+      }
     },
   }
 }

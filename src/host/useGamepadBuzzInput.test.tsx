@@ -469,6 +469,24 @@ describe('setup test mode (Slice 10)', () => {
     expect(probe.commands).toEqual([])
   })
 
+  it('re-primes when leaving test mode even if a fresh press is already staged', () => {
+    // Contract: a press that appears in the source before the first poll after
+    // leaving test mode must not become a gameplay edge. The gate clear runs
+    // synchronously with the render that publishes testMode=false into `latest`.
+    const probe = harness({ testMode: true })
+    probe.source.set(snapshot(controller(0, buttons(2))))
+    probe.poll()
+    probe.source.set(snapshot(controller(0, buttons(2, 0))))
+    act(() => probe.rerender({ testMode: false }))
+    probe.poll(3)
+    expect(probe.commands).toEqual([])
+    probe.source.set(snapshot(controller(0, buttons(2))))
+    probe.poll()
+    probe.source.set(snapshot(controller(0, buttons(2, 0))))
+    probe.poll()
+    expect(probe.commands).toHaveLength(1)
+  })
+
   it('includes classification fields in stable diagnostics', () => {
     const probe = harness()
     probe.source.set(

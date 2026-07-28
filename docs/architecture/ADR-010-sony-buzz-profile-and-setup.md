@@ -129,7 +129,11 @@ leaves the active mapping unchanged.
 
 Entering and leaving test mode re-primes. A button held across the transition
 requires release and a new press. Capture, enable/disable, mapping, focus, blur,
-and visibility transitions continue to re-prime as in ADR-009.
+and visibility transitions continue to re-prime as in ADR-009. Gate changes that
+affect enable/capture/test-mode/mapping clear the baseline **synchronously during
+the render that publishes the new gate** into the poll owner’s `latest` ref, so a
+`requestAnimationFrame` tick between commit and the passive effect cannot treat a
+just-pressed or held button as a fresh gameplay edge.
 
 ### 6. One-polling-owner rule
 

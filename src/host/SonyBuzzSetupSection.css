@@ -43,7 +43,10 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1);
-  margin-bottom: var(--space-2);
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
 }
 
 .sbs__preview {

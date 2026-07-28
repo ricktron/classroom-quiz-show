@@ -259,6 +259,22 @@ export function useGamepadBuzzInput({
   const lastDiagnosticsKey = useRef<string | null>(null)
   /** Non-null while a loop is registered. Makes a duplicate loop impossible. */
   const stop = useRef<(() => void) | null>(null)
+  /**
+   * Gate props that force a re-prime. Cleared synchronously during the render
+   * that publishes the new gate into `latest`, so a rAF poll between commit and
+   * the passive effect cannot treat a held or just-pressed button as a fresh
+   * gameplay edge after leaving capture/test mode (or after enable/mapping change).
+   */
+  const gate = useRef({ enabled, capturing, testMode, mapping })
+  if (
+    gate.current.enabled !== enabled ||
+    gate.current.capturing !== capturing ||
+    gate.current.testMode !== testMode ||
+    gate.current.mapping !== mapping
+  ) {
+    baseline.current = null
+    gate.current = { enabled, capturing, testMode, mapping }
+  }
 
   // Resolved once each. Defaults are built here rather than in the parameter list
   // so a new object identity per render cannot restart the loop.
@@ -273,6 +289,7 @@ export function useGamepadBuzzInput({
 
   // ── Re-prime on every transition that could otherwise fabricate a press ─────
   // A held button must be RELEASED and pressed again after any of these.
+  // (Defense in depth beside the synchronous gate clear above.)
   useEffect(() => {
     baseline.current = null
   }, [enabled, capturing, testMode, mapping])
@@ -338,60 +355,20 @@ export function useGamepadBuzzInput({
       // reaches gameplay while a button is being assigned, and the rising edge
       // means a held button is captured once rather than continuously.
       if (current.capturing) {
-        current.onCapture?.(scan.edges[0])
-        current.onOutcome?.({ kind: 'ignored', reason: 'capture-mode' })
+        consumeCaptureEdge(scan.edges[0], current.onCapture, current.onOutcome)
         return
       }
 
       // Setup/test mode: resolve against the applied mapping and report only.
       // No translateLocalInput, no dispatch, no timer/queue/score side effects.
       if (current.testMode) {
-        for (const edge of scan.edges) {
-          const binding = resolveGamepadBinding(current.mapping, edge)
-          if (binding === null) {
-            current.onOutcome?.({ kind: 'ignored', reason: 'unmapped-button' })
-            continue
-          }
-          current.onOutcome?.({
-            kind: 'test-observation',
-            teamId: binding.teamId,
-            action: binding.action,
-            control: edge,
-          })
-        }
+        reportTestModeEdges(scan.edges, current.mapping, current.onOutcome)
         return
       }
 
       // Deterministic order: ascending controller index, then ascending button
       // index (`scanGamepadEdges`). The accepted order remains the event log's.
-      for (const edge of scan.edges) {
-        const translation = translateGamepadEdge(
-          edge,
-          current.mapping,
-          { enabled: current.enabled, capturing: false },
-          // The ONE clock read on this path, at the dispatch edge, and only when
-          // there is genuinely an edge to stamp.
-          current.clock.now(),
-        )
-
-        if (translation.status === 'ignored') {
-          current.onOutcome?.({ kind: 'ignored', reason: translation.reason })
-          continue
-        }
-
-        const command = translateLocalInput(translation.signal, current.target)
-        if (command.status === 'rejected') {
-          current.onOutcome?.({ kind: 'untranslated', reason: command.reason })
-          continue
-        }
-
-        const result = current.dispatch(command.command)
-        if (result.status === 'rejected') {
-          current.onOutcome?.({ kind: 'refused', reason: result.reason })
-          continue
-        }
-        current.onOutcome?.({ kind: 'accepted', teamId: translation.signal.teamId })
-      }
+      dispatchGameplayEdges(scan.edges, current)
     }
 
     stop.current = resolvedScheduler.current?.start(poll) ?? null
@@ -402,6 +379,84 @@ export function useGamepadBuzzInput({
       lastDiagnosticsKey.current = null
     }
   }, [])
+}
+
+/** Capture mode: one edge, no gameplay. */
+function consumeCaptureEdge(
+  edge: GamepadControlRef,
+  onCapture: ((control: GamepadControlRef) => void) | undefined,
+  onOutcome: ((outcome: GamepadBuzzOutcome) => void) | undefined,
+): void {
+  onCapture?.(edge)
+  onOutcome?.({ kind: 'ignored', reason: 'capture-mode' })
+}
+
+/**
+ * Setup/test mode: resolve mapping and report host-private observations only.
+ * Never calls translateLocalInput or dispatch.
+ */
+function reportTestModeEdges(
+  edges: readonly GamepadControlRef[],
+  mapping: GamepadMapping,
+  onOutcome: ((outcome: GamepadBuzzOutcome) => void) | undefined,
+): void {
+  for (const edge of edges) {
+    const binding = resolveGamepadBinding(mapping, edge)
+    if (binding === null) {
+      onOutcome?.({ kind: 'ignored', reason: 'unmapped-button' })
+      continue
+    }
+    onOutcome?.({
+      kind: 'test-observation',
+      teamId: binding.teamId,
+      action: binding.action,
+      control: edge,
+    })
+  }
+}
+
+type GameplayPollContext = {
+  readonly enabled: boolean
+  readonly mapping: GamepadMapping
+  readonly target: ResponseOpportunityTarget | null
+  readonly dispatch: (command: SessionCommand) => DispatchResult
+  readonly clock: Clock
+  readonly onOutcome: ((outcome: GamepadBuzzOutcome) => void) | undefined
+}
+
+/** Normal gameplay path for rising edges (not capture, not test mode). */
+function dispatchGameplayEdges(
+  edges: readonly GamepadControlRef[],
+  current: GameplayPollContext,
+): void {
+  for (const edge of edges) {
+    const translation = translateGamepadEdge(
+      edge,
+      current.mapping,
+      { enabled: current.enabled, capturing: false },
+      // The ONE clock read on this path, at the dispatch edge, and only when
+      // there is genuinely an edge to stamp.
+      current.clock.now(),
+    )
+
+    if (translation.status === 'ignored') {
+      current.onOutcome?.({ kind: 'ignored', reason: translation.reason })
+      continue
+    }
+
+    const command = translateLocalInput(translation.signal, current.target)
+    if (command.status === 'rejected') {
+      current.onOutcome?.({ kind: 'untranslated', reason: command.reason })
+      continue
+    }
+
+    const result = current.dispatch(command.command)
+    if (result.status === 'rejected') {
+      current.onOutcome?.({ kind: 'refused', reason: result.reason })
+      continue
+    }
+    current.onOutcome?.({ kind: 'accepted', teamId: translation.signal.teamId })
+  }
 }
 
 /**
