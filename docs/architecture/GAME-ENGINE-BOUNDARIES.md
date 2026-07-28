@@ -491,6 +491,19 @@ state only through the existing `INITIALIZE_GAME` command.
 
 Import diagnostics are host-only and, per §4, are never projected.
 
+**Status (Slice 12 — `In review`).** Portable export of a loaded immutable
+`GameDefinition` now exists — see
+[`ADR-012-portable-export-round-trip.md`](ADR-012-portable-export-round-trip.md).
+Export builds the same canonical version-1 document, serializes deterministic
+compact JSON with one trailing LF, re-imports through the existing
+`importGameFromJsonText` pipeline, and succeeds only when the re-imported
+definition is structurally equal and a second export is byte-identical. Runtime
+session state is never exported. Same-origin media paths are preserved unchanged;
+media files are not bundled. Complete self-contained packs remain deferred.
+Portable game files contain answer keys, alternates, and teacher notes and must
+be treated as host-owned material, not projector-safe output. The download
+surface is host-only.
+
 Standards use free-text namespaced tags (e.g. `teks:ESS.1A`, `ngss:HS-ESS2-1`,
 `unit:plate-tectonics`). TEKS/NGSS are **not** required by the MVP.
 

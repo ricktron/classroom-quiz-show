@@ -3,6 +3,7 @@ import { useHostSync } from './useHostSync'
 import { PUBLIC_STATUS_CODES } from '../state/status'
 import { createSampleGame, createSampleGameWithUnsupportedRound } from '../game/sampleGame'
 import { GameImportPanel } from './GameImportPanel'
+import { GameExportPanel } from './GameExportPanel'
 import { CategoryBoardHostPanel } from './CategoryBoardHostPanel'
 import { TeamScoringPanel } from './TeamScoringPanel'
 import { ResponseTimerHostPanel } from './ResponseTimerHostPanel'
@@ -312,6 +313,11 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
         registry={registry}
         hasSession={hasSession}
         activeGame={game}
+      />
+
+      <GameExportPanel
+        definition={game?.definition ?? null}
+        registry={registry}
       />
     </section>
   )

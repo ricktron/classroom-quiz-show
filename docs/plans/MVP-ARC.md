@@ -952,8 +952,8 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   [`../architecture/ADR-011-media-contract.md`](../architecture/ADR-011-media-contract.md);
   post-merge evidence in
   [`../receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
-- **Next action:** separate Slice 12 planning/orchestration lane only — no
-  Slice 12 implementation is authorized by this reconciliation.
+- **Next action:** review Slice 12 (In review); Slice 13 remains Planned and
+  unstarted.
 
 ### Slice 12 — Portable export & round-trip import
 
@@ -971,9 +971,13 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   criterion; determinism test on export byte output.
 - **Impact:** schema no (uses the existing format) · runtime **yes** · UI **yes**
   · storage no · hardware no.
-- **Status:** `Planned` — unstarted.
-- **Owner gate:** authorization to begin (separate planning/orchestration lane
-  only; this reconciliation does not authorize implementation).
+- **Status:** `In review` — implementation on `claude/slice-12-portable-export`;
+  unmerged. See
+  [`../architecture/ADR-012-portable-export-round-trip.md`](../architecture/ADR-012-portable-export-round-trip.md)
+  and
+  [`../receipts/2026-07-28-slice-12-local-verification.md`](../receipts/2026-07-28-slice-12-local-verification.md).
+- **Owner gate:** review and merge only after verification; do not mark Complete
+  until post-merge reconciliation. Slice 13 remains unauthorized.
 
 ### Slice 13 — Local persistence & recovery
 

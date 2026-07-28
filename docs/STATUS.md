@@ -1,17 +1,14 @@
 # Status
 
-**Current slice:** Slice 11 — Media contract
-**Slice state:** **Complete** — squash-merged via PR #23 at `5d47b2f` from final
-reviewed head `bb8bd94` (merged **2026-07-28T04:56:27Z**); exact 40-path file-list
-and blob equality confirmed; post-merge verification succeeded. Legacy text and
-strict same-origin static-image prompts on schema version **1**; public-state
-wire **7**; sync-envelope **2**.
-**Previous slice:** Slice 10 — Sony Buzz! mapping, validation & host setup UX
-(`Complete`, squash-merged via PR #21 at `5575be3`; physical certification
-deferred, no compatibility claim)
-**Next slice:** Slice 12 — Portable export & round-trip import (`Planned`,
-unstarted — a separate Slice 12 planning/orchestration lane is authorized;
-implementation is not)
+**Current slice:** Slice 12 — Portable export & round-trip import
+**Slice state:** **In review** — deterministic export of the loaded
+`GameDefinition` to canonical `classroom-quiz-show/game` schema version **1**,
+with production re-import and structural-equality gates, host-only download UI,
+and no media bundling. Public-state wire remains **7**; sync-envelope remains
+**2**. See [`architecture/ADR-012-portable-export-round-trip.md`](architecture/ADR-012-portable-export-round-trip.md).
+**Previous slice:** Slice 11 — Media contract (`Complete`, squash-merged via
+PR #23 at `5d47b2f`; legacy text + same-origin image prompts; wire **7**)
+**Next slice:** Slice 13 — Local persistence & recovery (`Planned`, unstarted)
 **Roadmap:** 18 slices, amended 2026-07-26 by
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 (**merged to `main` via PR #13**, merge commit `752a3fe`, 2026-07-26T20:02:13Z)
@@ -956,18 +953,13 @@ None.
 
 ## Next safe action
 
-**Review and merge the Slice 11 post-merge reconciliation PR.** Slice 11 is
-`Complete`. PR #23 was squash-merged at `5d47b2f` from final reviewed head
-`bb8bd94`. Exact 40-path file-list and blob equality confirmed that the reviewed
-content is what landed. Post-merge verification succeeded. The completed
-contract supports legacy text and strict same-origin static-image prompts on
-canonical schema version 1, with public-state wire version 7 and sync-envelope
-version 2.
-
-**Slice 12 — Portable export & round-trip import** is `Planned` and unstarted.
-The next safe action after this reconciliation merges is a **separate Slice 12
-planning/orchestration lane**. This reconciliation does not authorize Slice 12
-implementation.
+**Review the Slice 12 portable-export PR.** Slice 12 is **In review** — not
+Complete, not merged. It exports the loaded immutable `GameDefinition` to the
+existing canonical version-1 document, proves byte-deterministic round-trip
+re-import through `importGameFromJsonText`, and provides a host-only download
+surface. Schema remains **1**, public wire remains **7**, sync remains **2**.
+Slice 13 remains `Planned` and unstarted. Do not merge until review completes;
+do not start Slice 13 from this lane.
 
 **Additional response modes are deferred until after the functional MVP** — see
 the owner direction recorded in

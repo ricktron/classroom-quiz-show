@@ -342,7 +342,16 @@ sync-envelope version **2**. See
 [`docs/architecture/ADR-011-media-contract.md`](docs/architecture/ADR-011-media-contract.md)
 and
 [`docs/receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](docs/receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
-**Slice 12 — Portable export & round-trip import** remains Planned and unstarted.
+**Slice 12 — Portable export & round-trip import. In review** — exports the
+loaded immutable `GameDefinition` to the existing canonical
+`classroom-quiz-show/game` schema version **1** document with deterministic
+compact JSON (trailing LF), production re-import through
+`importGameFromJsonText`, structural equality and byte-stability gates, and a
+host-only download surface. Same-origin media paths are preserved; media files
+are not bundled. Answer keys / teacher notes remain host-owned. Public-state
+wire stays **7**; sync envelope stays **2**. See
+[`docs/architecture/ADR-012-portable-export-round-trip.md`](docs/architecture/ADR-012-portable-export-round-trip.md).
+**Slice 13** remains Planned and unstarted.
 
 > ⚠️ **No physical Sony Buzz! controller has been tested.** CI and simulated
 > Gamepad sources prove the hardware-independent boundary only. There is no
