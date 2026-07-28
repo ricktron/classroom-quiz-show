@@ -1,15 +1,17 @@
 # Status
 
 **Current slice:** Slice 11 — Media contract
-**Slice state:** **In review** — implemented on
-`claude/slice-11-media-contract`; unmerged. Open PR
-[#23](https://github.com/ricktron/classroom-quiz-show/pull/23) is the review
-boundary.
+**Slice state:** **Complete** — squash-merged via PR #23 at `5d47b2f` from final
+reviewed head `bb8bd94` (merged **2026-07-28T04:56:27Z**); exact 40-path file-list
+and blob equality confirmed; post-merge verification succeeded. Legacy text and
+strict same-origin static-image prompts on schema version **1**; public-state
+wire **7**; sync-envelope **2**.
 **Previous slice:** Slice 10 — Sony Buzz! mapping, validation & host setup UX
 (`Complete`, squash-merged via PR #21 at `5575be3`; physical certification
 deferred, no compatibility claim)
 **Next slice:** Slice 12 — Portable export & round-trip import (`Planned`,
-unstarted)
+unstarted — a separate Slice 12 planning/orchestration lane is authorized;
+implementation is not)
 **Roadmap:** 18 slices, amended 2026-07-26 by
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 (**merged to `main` via PR #13**, merge commit `752a3fe`, 2026-07-26T20:02:13Z)
@@ -136,6 +138,25 @@ unstarted)
 > [`receipts/2026-07-28-slice-10-owner-acceptance-amendment.md`](receipts/2026-07-28-slice-10-owner-acceptance-amendment.md),
 > [`receipts/2026-07-28-slice-10-post-merge-reconciliation.md`](receipts/2026-07-28-slice-10-post-merge-reconciliation.md).
 > WebHID and Bluetooth remain excluded.
+> **Slice 11 is `Complete`**: implementation PR #23 was **squash-merged** to
+> `main` at `5d47b2f641e1a96c2066ec22731f4e751288b39a` (merged
+> **2026-07-28T04:56:27Z**; single parent `ce1dc61d8a10cea16c91331fa04da8b04dfdeecd`;
+> final reviewed head `bb8bd94b016a99f9782793f3eda6b6fd2d59a0b5`). Exact
+> changed-file lists match (**40** paths) and every reviewed blob equals the
+> merged blob (stable patch IDs also identical). PR checks at that head were
+> green (`Lint, typecheck, unit tests, build`; `Playwright e2e`; `SonarCloud
+> Code Analysis`). **Post-merge CI on `main` at `5d47b2f` concluded success**
+> (`CI` run `30330154643`; **214** e2e passed / **2** skipped), and the **Pages
+> deployment succeeded** (run `30330154633`). Local post-merge `verify:all` on
+> clean `main` at `5d47b2f` passed (**1485** unit tests / **63** files; **214**
+> e2e passed / **2** skipped). Typed prompt media contract (legacy text +
+> same-origin static image) landed on game-file `schemaVersion: 1` with
+> `PUBLIC_STATE_SCHEMA_VERSION` **7** and `SYNC_SCHEMA_VERSION` **2**. See
+> [`architecture/ADR-011-media-contract.md`](architecture/ADR-011-media-contract.md)
+> and receipts
+> [`receipts/2026-07-27-slice-11-local-verification.md`](receipts/2026-07-27-slice-11-local-verification.md),
+> [`receipts/2026-07-27-slice-11-pr-review-and-hardening.md`](receipts/2026-07-27-slice-11-pr-review-and-hardening.md),
+> [`receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
 >
 > **Repository hygiene (2026-07-27).** `main` is the repository's GitHub default
 > branch. **PR #17 was closed without merging**: it was an erroneous reversed pull
@@ -317,10 +338,18 @@ remains deferred; no compatibility claim is made.
 | WebHID, Bluetooth, USB drivers | **Not implemented** |
 | Scoring restricted to the active respondent (`OG-6`) | **Still deferred — not implemented** |
 
-## Slice 11 work (In review)
+## Slice 11 work (Complete)
 
-Implemented on `claude/slice-11-media-contract` and awaiting review/merge. See
-[`architecture/ADR-011-media-contract.md`](architecture/ADR-011-media-contract.md).
+Typed prompt media contract (legacy text + same-origin static image). Full
+rationale in
+[`architecture/ADR-011-media-contract.md`](architecture/ADR-011-media-contract.md);
+local evidence in
+[`receipts/2026-07-27-slice-11-local-verification.md`](receipts/2026-07-27-slice-11-local-verification.md);
+review hardening in
+[`receipts/2026-07-27-slice-11-pr-review-and-hardening.md`](receipts/2026-07-27-slice-11-pr-review-and-hardening.md);
+post-merge reconciliation in
+[`receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
+Squash-merged via PR #23 at `5d47b2f` from reviewed head `bb8bd94`.
 
 | Item | State |
 | --- | --- |
@@ -927,10 +956,18 @@ None.
 
 ## Next safe action
 
-**Review and merge [PR #23](https://github.com/ricktron/classroom-quiz-show/pull/23)
-on `claude/slice-11-media-contract`.** Slice 11 remains `In review` and unmerged;
-do not mark it `Complete` until merge and reconciliation evidence exist.
-**Slice 12 remains `Planned` and unstarted.**
+**Review and merge the Slice 11 post-merge reconciliation PR.** Slice 11 is
+`Complete`. PR #23 was squash-merged at `5d47b2f` from final reviewed head
+`bb8bd94`. Exact 40-path file-list and blob equality confirmed that the reviewed
+content is what landed. Post-merge verification succeeded. The completed
+contract supports legacy text and strict same-origin static-image prompts on
+canonical schema version 1, with public-state wire version 7 and sync-envelope
+version 2.
+
+**Slice 12 — Portable export & round-trip import** is `Planned` and unstarted.
+The next safe action after this reconciliation merges is a **separate Slice 12
+planning/orchestration lane**. This reconciliation does not authorize Slice 12
+implementation.
 
 **Additional response modes are deferred until after the functional MVP** — see
 the owner direction recorded in
