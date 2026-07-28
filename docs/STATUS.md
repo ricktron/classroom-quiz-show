@@ -927,8 +927,8 @@ None.
 
 ## Next safe action
 
-**Review and merge the open Slice 11 PR on
-`claude/slice-11-media-contract`.** Slice 11 remains `In review` and unmerged;
+**Review and merge [PR #23](https://github.com/ricktron/classroom-quiz-show/pull/23)
+on `claude/slice-11-media-contract`.** Slice 11 remains `In review` and unmerged;
 do not mark it `Complete` until merge and reconciliation evidence exist.
 **Slice 12 remains `Planned` and unstarted.**
 
