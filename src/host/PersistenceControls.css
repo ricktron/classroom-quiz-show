@@ -1,0 +1,64 @@
+.persistence {
+  margin: var(--space-3) 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+}
+
+.persistence h3,
+.persistence h4 {
+  margin-top: 0;
+}
+
+.persistence__status {
+  font-weight: 600;
+}
+
+.persistence__warning,
+.persistence__notice {
+  padding: var(--space-1);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-host-accent);
+  background: rgba(242, 169, 0, 0.12);
+}
+
+.persistence__recovery {
+  margin-bottom: var(--space-2);
+}
+
+.persistence__library {
+  margin-top: var(--space-2);
+}
+
+.persistence__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+.persistence__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-left: 1.25rem;
+}
+
+.persistence__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+}
+
+.persistence__item-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.persistence__message {
+  margin-bottom: 0;
+}

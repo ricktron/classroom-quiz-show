@@ -40,8 +40,26 @@ async function openDisplay(page: Page) {
   await expect(page.getByRole('heading', { name: /game display ready/i })).toBeVisible()
 }
 
+/**
+ * Slice 13 may present Resume/Discard after a host refresh. Keyboard-mapping
+ * survival tests intentionally start a fresh session, so discard any unfinished
+ * recovery first. Session command buttons stay disabled until persistence boot
+ * finishes (or recovery is resolved).
+ */
+async function ensureHostCommandsEnabled(host: Page) {
+  await expect(host.getByTestId('persistence-status')).toBeVisible()
+  await expect(host.getByTestId('persistence-status')).not.toContainText(/loading/i)
+  const discard = host.getByTestId('persistence-discard')
+  if (await discard.isVisible()) {
+    await discard.click()
+    await expect(host.getByTestId('persistence-recovery')).toHaveCount(0)
+  }
+  await expect(host.getByRole('button', { name: /initialize \/ reset session/i })).toBeEnabled()
+}
+
 /** Import the built-in board sample (two teams) and open its round. */
 async function startBoard(host: Page) {
+  await ensureHostCommandsEnabled(host)
   await host.getByRole('button', { name: /initialize \/ reset session/i }).click()
   await host.getByRole('button', { name: /load category-board sample file/i }).click()
   await host.getByTestId('import-run').click()
@@ -283,7 +301,9 @@ test('buzz keys survive a refresh, and the projector receives only sanitized sta
   await expect(host.getByTestId('lih-key-basalts')).toHaveText('Q')
   await expect(host.getByTestId('lih-key-rhyolites')).toHaveText('2')
 
-  // ── The mapping survives a refresh; the in-memory game does not ───────────
+  // ── Keyboard mapping survives a refresh; unfinished session is discarded ──
+  // Slice 13 offers Resume/Discard after refresh. This test proves buzz KEYS
+  // (device-local) survive independently of session recovery, so discard first.
   await host.reload()
   await expect(host.getByRole('heading', { name: /host control/i })).toBeVisible()
   await startBoard(host)

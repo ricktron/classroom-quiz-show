@@ -55,8 +55,8 @@ systems.
 | 9   | **Generic Gamepad adapter**    | Gamepad API adapter behind the slice 8 boundary; connect/disconnect handling, polling isolation, host diagnostics. No model-specific assumptions. **(Complete — merged via PR #19 (`d16f90d`). No schema, `PublicState`, protocol, command, event or reducer change. No physical controller was tested. See ADR-009.)** | 8 |
 | 10  | **Sony Buzz! mapping, validation & host setup UX** | Configurable controller mapping, Sony Buzz! candidate classification and capture recipe, host setup/test surface, fallback when no controller is present. **(Complete — squash-merged via PR #21 (`5575be3`) from reviewed head `2885933`. Hardware-independent scope; physical certification deferred; no compatibility claim. See ADR-010.)** | 9 |
 | 11  | **Media contract**             | Typed media model (beyond plain-string prompts), fail-closed on unsupported media, additive on `schemaVersion: 1`. **(Complete — squash-merged via PR #23 (`5d47b2f`) from reviewed head `bb8bd94`. Public wire 7; sync 2; schema 1. See ADR-011.)** | 4, 5 |
-| 12  | **Portable export & round-trip import** | Export a game to the canonical portable document and re-import it losslessly; reproducible game identity; round-trip equality as an acceptance criterion. **Planned; unstarted.** | 4, 11 |
-| 13  | **Local persistence & recovery** | IndexedDB durable local storage, session recovery after refresh, saved definitions kept distinct from active session state, lightweight leader coordination. | 2, 12 |
+| 12  | **Portable export & round-trip import** | Export a game to the canonical portable document and re-import it losslessly; reproducible game identity; round-trip equality as an acceptance criterion. **Complete — squash-merged via PR #25 (`cdb499a…`).** | 4, 11 |
+| 13  | **Local persistence & recovery** | IndexedDB durable local storage with three stores (`savedDefinitions`, `activeSessions`, `coordination`); explicit Resume/Discard recovery; saved-definition Save/Replace/Delete/Load; private persistence-session wire; lightweight host lease coordination; nothing new projected to the display. | 2, 12 |
 | 14  | **Final-wager round**          | Public prompt, host-entered/private wagers, timed response, reveal, settlement, tie handling. | 5, 6, 7, 11 |
 | 15  | **Session summary & compatible-profile reporting** | Per-session result summary from replay; normalized metrics; cross-session comparison behind a stable competitive-profile identifier. | 6, 13 |
 | 16  | **Theme engine**               | Presentation-only theme system, accessibility/high-contrast theme. Never alters scoring, validation, event semantics or the privacy boundary. | 5 |
@@ -612,7 +612,12 @@ and
 [`../architecture/ADR-011-media-contract.md`](../architecture/ADR-011-media-contract.md)
 and
 [`../receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
-**Slice 12 remains `Planned` and unstarted.**
+**Slice 12 is `Complete`** — squash-merged via
+[PR #25](https://github.com/ricktron/classroom-quiz-show/pull/25) at
+`cdb499a1a1924ceb12014d37741b500fd9346214` from final reviewed head
+`e63ef7f19aac7b1cf72ccd5cc640e3296550dae7`. **Slice 13 remains `Planned`**
+under the amended roadmap; its contract is refined below, but this plan does
+not claim Slice 13 delivery.
 
 ## Slice 8 — scope, acceptance, non-goals
 
@@ -952,8 +957,9 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   [`../architecture/ADR-011-media-contract.md`](../architecture/ADR-011-media-contract.md);
   post-merge evidence in
   [`../receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
-- **Next action:** review Slice 12 (In review); Slice 13 remains Planned and
-  unstarted.
+- **Next action:** Slice 12 is `Complete`. Slice 13 remains `Planned` with the
+  refined local-persistence contract below; delivery status belongs in STATUS /
+  handoff only after observed merge.
 
 ### Slice 12 — Portable export & round-trip import
 
@@ -971,32 +977,49 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   criterion; determinism test on export byte output.
 - **Impact:** schema no (uses the existing format) · runtime **yes** · UI **yes**
   · storage no · hardware no.
-- **Status:** `In review` — implementation on `claude/slice-12-portable-export`;
-  unmerged. See
+- **Status:** `Complete` — squash-merged via
+  [PR #25](https://github.com/ricktron/classroom-quiz-show/pull/25) at
+  `cdb499a1a1924ceb12014d37741b500fd9346214` (merged
+  2026-07-28T19:36:25Z) from final reviewed head
+  `e63ef7f19aac7b1cf72ccd5cc640e3296550dae7`. See
   [`../architecture/ADR-012-portable-export-round-trip.md`](../architecture/ADR-012-portable-export-round-trip.md)
   and
   [`../receipts/2026-07-28-slice-12-local-verification.md`](../receipts/2026-07-28-slice-12-local-verification.md).
-- **Owner gate:** review and merge only after verification; do not mark Complete
-  until post-merge reconciliation. Slice 13 remains unauthorized.
+- **Public wire / sync:** public-state wire remains **7**; sync envelope remains
+  **2**.
 
 ### Slice 13 — Local persistence & recovery
 
 - **Identifier:** `CQS-SLICE-13-PERSISTENCE`
-- **Purpose:** survive an accidental refresh or tab close without losing a
-  lesson.
-- **Primary deliverables:** IndexedDB local storage; **saved game definitions
-  kept strictly distinct from active session state**; event-log durability;
-  session recovery; lightweight leader coordination; offline-only storage with
-  nothing new projected to the display.
-- **Major exclusions:** no cloud sync; no accounts; no cross-device sync; no new
-  public state; no student data.
+- **Purpose:** survive an accidental refresh or tab close without losing an
+  unfinished local lesson, while keeping authored definitions separate from
+  runtime session recovery.
+- **Primary deliverables:** IndexedDB v1 local storage with three stores
+  (`savedDefinitions`, `activeSessions`, `coordination`); **saved game
+  definitions kept strictly distinct from active session state**; saved-definition
+  Save / Replace / Delete / Load controls; active-session durability as a private
+  versioned event-history envelope (`classroom-quiz-show/persistence-session`
+  v1); explicit recovery UX (**Resume session** or **Discard recovery**, no
+  silent resume); recovery reconstruction by replay through the trusted
+  `initialHistory` store seam; `GAME_INITIALIZED` reconstruction only through
+  `importGameFromJsonText`; serialized async writes where accepted commands stay
+  in memory if durability fails; cleanup after `GAME_SESSION_ENDED`; lightweight
+  host-writer lease coordination with IndexedDB as authority and BroadcastChannel
+  advisory only; offline-only storage with nothing new projected to the display.
+- **Major exclusions:** no cloud sync; no accounts; no cross-device sync; no
+  backend; no student devices; no controller mapping persistence; no public
+  persistence protocol; no `PublicState` field; no display persistence UI; no
+  public wire or sync-version change.
 - **Prerequisites:** slices 2 and 12.
 - **Completion evidence:** `verify:all` green; recovery-after-refresh e2e as the
   headline criterion; a test proving persisted session state is re-derived by
-  replay rather than trusted as state; privacy tests green.
+  replay rather than trusted as state; privacy tests proving persistence status,
+  recovery prompts, saved-library contents, private notes, answers, event
+  history and persistence envelopes do not reach `PublicState` or the display.
 - **Impact:** schema no · runtime **yes** · UI **yes** · storage **yes** ·
   hardware no.
-- **Status:** `Planned` — unstarted.
+- **Status:** `Planned` — contract refined for the Slice 13 implementation work
+  underway on `cursor/cqs-slice-13-persistence`; not complete.
 - **Owner gate:** authorization to begin.
 
 ### Slice 14 — Final-wager round

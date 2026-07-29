@@ -387,14 +387,19 @@ the same boundary**. Slice 10 adds a **host-private Sony Buzz! setup surface**
 (candidate classification, capture recipe, setup test mode) — **`Complete`** under
 the owner-accepted hardware-independent boundary, with physical certification
 deferred and **no compatibility claim**. No WebHID or Bluetooth of any kind, no networked or
-student-device buzzing, and no wagers, audio/video/remote media, themes, or
-durable session persistence — **including no persistence of
-controller mappings, which are session-local by design**; importing is still limited to pasting canonical JSON (no file
-picker, spreadsheet, or remote import). The host "Foundation / testing controls"
-and the import harness remain diagnostics that prove the state core, the
-game/round model and the ingestion boundary — the category-board, teams &
-scoring, response-window and buzz-in panels are the game controls. Those other systems
-arrive in later slices. See [`docs/STATUS.md`](docs/STATUS.md) and
+student-device buzzing, and no wagers, audio/video/remote media, or themes.
+The host has local IndexedDB persistence for the active event history and a saved
+definitions library: after a refresh with an unfinished session, the teacher gets
+an explicit **Resume session** or **Discard recovery** choice, and saved
+definitions can be saved and loaded later on the same device. A second host tab
+uses read-only follower mode while another host tab owns local persistence. None
+of this persistence UI or saved-library content is projected to the display, and
+controller mappings remain session-local by design. Importing is still limited to
+pasting canonical JSON (no file picker, spreadsheet, or remote import). The host
+"Foundation / testing controls" and the import harness remain diagnostics that
+prove the state core, the game/round model and the ingestion boundary — the
+category-board, teams & scoring, response-window and buzz-in panels are the game
+controls. Those other systems arrive in later slices. See [`docs/STATUS.md`](docs/STATUS.md) and
 [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md).
 
 ## Requirements

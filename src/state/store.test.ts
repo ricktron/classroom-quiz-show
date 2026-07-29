@@ -20,6 +20,20 @@ describe('createSessionStore', () => {
     expect(store.getState().session?.counter).toBe(1)
   })
 
+  it('hydrates from trusted initial history', () => {
+    const source = createSessionStore()
+    source.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 'recovered-session' })
+    source.dispatch({ type: 'ADVANCE_SEQUENCE', issuedAt: AT + 1 })
+
+    const history = source.getHistory()
+    const hydrated = createSessionStore({ initialHistory: history })
+
+    expect(hydrated.getHistory()).toEqual(history)
+    expect(hydrated.getHistory()).not.toBe(history)
+    expect(hydrated.getState()).toEqual(replay(history))
+    expect(hydrated.getState()).toEqual(replay(hydrated.getHistory()))
+  })
+
   it('does not mutate state or history on a rejected command', () => {
     const store = createSessionStore()
     const result = store.dispatch({ type: 'ADVANCE_SEQUENCE', issuedAt: AT })
