@@ -77,20 +77,18 @@ export class IndexedDbPersistenceAdapter implements PersistenceAdapter {
       const transaction = db.transaction([...new Set(stores)], 'readwrite')
       const completion = transactionCompletion(transaction)
       const tx: PersistenceTx = {
-        get: async (store, key) =>
-          requestResult<unknown | undefined>(transaction.objectStore(store).get(key)),
+        get: async (store, key) => requestResult(transaction.objectStore(store).get(key)),
         put: async (store, key, value) => {
-          await requestResult<IDBValidKey>(transaction.objectStore(store).put(value, key))
+          await requestResult(transaction.objectStore(store).put(value, key))
         },
         delete: async (store, key) => {
-          await requestResult<undefined>(transaction.objectStore(store).delete(key))
+          await requestResult(transaction.objectStore(store).delete(key))
         },
         getAllKeys: async (store) =>
-          requestResult<IDBValidKey[]>(transaction.objectStore(store).getAllKeys()).then((keys) =>
+          requestResult(transaction.objectStore(store).getAllKeys()).then((keys) =>
             keys.filter((key): key is string => typeof key === 'string'),
           ),
-        getAll: async (store) =>
-          requestResult<unknown[]>(transaction.objectStore(store).getAll()),
+        getAll: async (store) => requestResult(transaction.objectStore(store).getAll()),
       }
 
       await work(tx)
@@ -119,22 +117,32 @@ function openDatabase(factory: IDBFactory, dbName: string): Promise<IDBDatabase>
       db.onversionchange = () => db.close()
       resolve(db)
     }
-    request.onerror = () => reject(request.error)
-    request.onblocked = () => reject(request.error)
+    request.onerror = () => rejectIdbError(reject, request.error, 'IndexedDB open failed.')
+    request.onblocked = () => rejectIdbError(reject, request.error, 'IndexedDB open blocked.')
   })
 }
 
 function requestResult<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise((resolve, reject) => {
     request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(request.error)
+    request.onerror = () => rejectIdbError(reject, request.error, 'IndexedDB request failed.')
   })
 }
 
 function transactionCompletion(transaction: IDBTransaction): Promise<void> {
   return new Promise((resolve, reject) => {
     transaction.oncomplete = () => resolve()
-    transaction.onerror = () => reject(transaction.error)
-    transaction.onabort = () => reject(transaction.error)
+    transaction.onerror = () =>
+      rejectIdbError(reject, transaction.error, 'IndexedDB transaction failed.')
+    transaction.onabort = () =>
+      rejectIdbError(reject, transaction.error, 'IndexedDB transaction aborted.')
   })
+}
+
+function rejectIdbError(
+  reject: (reason: Error) => void,
+  error: DOMException | null,
+  fallbackMessage: string,
+): void {
+  reject(error ?? new Error(fallbackMessage))
 }

@@ -10,11 +10,11 @@ export interface MemoryPersistenceAdapterOptions {
 type StoreMap = Map<string, unknown>
 type DatabaseMap = Record<PersistenceStoreName, StoreMap>
 
-const STORE_NAMES: readonly PersistenceStoreName[] = [
+const STORE_NAMES: ReadonlySet<PersistenceStoreName> = new Set([
   'savedDefinitions',
   'activeSessions',
   'coordination',
-]
+])
 
 /**
  * Deterministic in-memory adapter for tests and non-browser callers.
@@ -71,7 +71,7 @@ export class MemoryPersistenceAdapter implements PersistenceAdapter {
 
     const uniqueStores = [...new Set(stores)]
     for (const store of uniqueStores) {
-      if (!STORE_NAMES.includes(store)) {
+      if (!STORE_NAMES.has(store)) {
         return persistenceErr('invalid', `Unknown persistence store: ${store}.`)
       }
     }

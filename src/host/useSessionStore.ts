@@ -26,10 +26,14 @@ export interface UseSessionStoreOptions {
  */
 export function useSessionStore(options: UseSessionStoreOptions = {}): UseSessionStore {
   const { initialHistory, storeEpoch = 0 } = options
-  const store = useMemo(() => {
-    void storeEpoch
-    return createSessionStore({ initialHistory })
-  }, [initialHistory, storeEpoch])
+  const remountBoundHistory = useMemo(
+    () => ({ storeEpoch, initialHistory }),
+    [storeEpoch, initialHistory],
+  )
+  const store = useMemo(
+    () => createSessionStore({ initialHistory: remountBoundHistory.initialHistory }),
+    [remountBoundHistory],
+  )
   const [state, setState] = useState<PrivateState>(store.getState())
   const [history, setHistory] = useState<readonly SessionEvent[]>(store.getHistory())
 

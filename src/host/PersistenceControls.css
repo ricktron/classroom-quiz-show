@@ -25,6 +25,12 @@
 
 .persistence__recovery {
   margin-bottom: var(--space-2);
+  min-inline-size: 0;
+}
+
+.persistence__recovery legend {
+  padding: 0;
+  font-weight: 600;
 }
 
 .persistence__library {

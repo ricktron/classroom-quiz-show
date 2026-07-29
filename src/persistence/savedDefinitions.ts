@@ -42,7 +42,8 @@ export async function listSavedDefinitions(
         savedAt: checked.value.savedAt,
       })
     }
-    summaries = parsed.sort((a, b) => a.title.localeCompare(b.title) || a.gameId.localeCompare(b.gameId))
+    parsed.sort((a, b) => a.title.localeCompare(b.title) || a.gameId.localeCompare(b.gameId))
+    summaries = parsed
   })
   if (!result.ok) {
     return result.code === 'transaction-failed'

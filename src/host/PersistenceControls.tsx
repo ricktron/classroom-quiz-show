@@ -31,12 +31,7 @@ export function PersistenceControls({
   const readOnly = persistence.leadership === 'follower'
   const controlsReady = persistence.bootPhase === 'ready' && !readOnly
   const statusText = useMemo(() => statusLine(persistence), [persistence])
-  const warning =
-    persistence.durabilityStatus === 'unavailable'
-      ? 'Local storage is unavailable. The host remains usable, but recent changes might not survive refresh.'
-      : persistence.durabilityStatus === 'failed'
-        ? 'Local persistence failed. The host remains usable, but recent changes might not survive refresh.'
-        : null
+  const warning = durabilityWarning(persistence.durabilityStatus)
 
   async function save(): Promise<void> {
     const result = await persistence.saveCurrentDefinition(activeDefinition, registry)
@@ -94,8 +89,11 @@ export function PersistenceControls({
       )}
 
       {persistence.bootPhase === 'recovery' && persistence.recovery && (
-        <div className="foundation__panel persistence__recovery" data-testid="persistence-recovery" role="group" aria-label="Recovery choices">
-          <h4>Unfinished session found</h4>
+        <fieldset
+          className="foundation__panel persistence__recovery"
+          data-testid="persistence-recovery"
+        >
+          <legend>Unfinished session found</legend>
           <p className="host__note">
             A local unfinished active session was saved with {persistence.recovery.events.length}{' '}
             {persistence.recovery.events.length === 1 ? 'event' : 'events'}. Resume it or discard it before continuing.
@@ -120,7 +118,7 @@ export function PersistenceControls({
               Discard recovery
             </button>
           </div>
-        </div>
+        </fieldset>
       )}
 
       {persistence.bootPhase === 'invalid-recovery' && persistence.invalidRecovery && (
@@ -212,6 +210,18 @@ export function PersistenceControls({
       </div>
     </section>
   )
+}
+
+function durabilityWarning(
+  durabilityStatus: UseHostPersistence['durabilityStatus'],
+): string | null {
+  if (durabilityStatus === 'unavailable') {
+    return 'Local storage is unavailable. The host remains usable, but recent changes might not survive refresh.'
+  }
+  if (durabilityStatus === 'failed') {
+    return 'Local persistence failed. The host remains usable, but recent changes might not survive refresh.'
+  }
+  return null
 }
 
 function statusLine(persistence: UseHostPersistence): string {

@@ -228,7 +228,7 @@ describe('useHostPersistence', () => {
       })
       expect(result.ok).toBe(true)
     })
-    expect(api().session.store.getHistory().length).toBe(beforeLoad + 1)
+    expect(api().session.store.getHistory()).toHaveLength(beforeLoad + 1)
 
     await act(async () => {
       const result = await api().persistence.deleteSaved('sample-game')

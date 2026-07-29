@@ -44,6 +44,30 @@ describe('IndexedDbPersistenceAdapter', () => {
     expect(await adapter.open()).toMatchObject({ ok: false, code: 'unavailable' })
   })
 
+  it('rejects IndexedDB failures with Error instances', async () => {
+    const openRequest = {
+      result: null as IDBDatabase | null,
+      error: null as DOMException | null,
+      onupgradeneeded: null as ((event: Event) => void) | null,
+      onsuccess: null as ((event: Event) => void) | null,
+      onerror: null as ((event: Event) => void) | null,
+      onblocked: null as ((event: Event) => void) | null,
+    }
+    const factory = {
+      open: () => {
+        queueMicrotask(() => {
+          openRequest.onerror?.(new Event('error'))
+        })
+        return openRequest
+      },
+    } as unknown as IDBFactory
+
+    const adapter = createIndexedDbPersistenceAdapter({ indexedDB: factory })
+    const result = await adapter.open()
+
+    expect(result).toMatchObject({ ok: false, code: 'unavailable' })
+  })
+
   it.runIf(typeof globalThis.indexedDB !== 'undefined')('opens the browser IndexedDB factory', async () => {
     const adapter = createIndexedDbPersistenceAdapter({
       dbName: `cqs-test-${crypto.randomUUID()}`,

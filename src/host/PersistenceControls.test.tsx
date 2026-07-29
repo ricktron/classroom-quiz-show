@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createDefaultRegistry } from '../game/defaultRegistry'
 import type { GameDefinition } from '../game/gameDefinition'
 import { importGameFromJsonText } from '../import/importGame'
@@ -86,10 +86,11 @@ describe('PersistenceControls', () => {
 
     expect(screen.getByTestId('persistence-recovery')).toHaveTextContent(/could not be used/i)
     expect(screen.getByTestId('persistence-warning')).toHaveTextContent(/might not survive refresh/i)
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('persistence-discard'))
+    fireEvent.click(screen.getByTestId('persistence-discard'))
+    await waitFor(() => {
+      expect(discardRecovery).toHaveBeenCalledTimes(1)
+      expect(screen.getByText('Discarded.')).toBeInTheDocument()
     })
-    expect(discardRecovery).toHaveBeenCalledTimes(1)
   })
 
   it('shows follower notice and disables library mutation controls', () => {

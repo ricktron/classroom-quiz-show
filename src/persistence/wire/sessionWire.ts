@@ -97,8 +97,7 @@ export function isResumableHistory(events: readonly SessionEvent[]): boolean {
   if (events.length === 0) return false
   const state = replay(events)
   if (!state.session) return false
-  const game = state.session.game
-  return game === null || game.gameLifecycle !== 'ended'
+  return state.session.game?.gameLifecycle !== 'ended'
 }
 
 function encodeEvent(
@@ -501,9 +500,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+function compareKeys(a: string, b: string): number {
+  return a.localeCompare(b)
+}
+
 function hasExactKeys(record: Record<string, unknown>, keys: readonly string[]): boolean {
-  const actual = Object.keys(record).sort()
-  const expected = [...keys].sort()
+  const actual = Object.keys(record).sort(compareKeys)
+  const expected = [...keys].sort(compareKeys)
   return actual.length === expected.length && actual.every((key, index) => key === expected[index])
 }
 

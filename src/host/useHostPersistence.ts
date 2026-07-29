@@ -202,15 +202,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
 
       storageReadyRef.current = true
       const lease = await acquireOrRenewHostLease(leadershipOptions)
-      if (!cancelled) {
-        if (lease.ok) {
-          setLeadership(lease.value)
-        } else {
-          setLeadership('unknown')
-          setDurabilityStatus(lease.code === 'unavailable' ? 'unavailable' : 'failed')
-          setMessage('Could not claim a persistence lease. The host remains usable in memory.')
-        }
-      }
+      if (!cancelled) applyBootLease(lease)
 
       const active = await readActiveSession(adapter, registry)
       if (cancelled) return
@@ -228,6 +220,16 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         setDurabilityStatus(listed.code === 'unavailable' ? 'unavailable' : 'failed')
         setMessage('Saved definitions could not be listed. The host remains usable in memory.')
       }
+    }
+
+    function applyBootLease(lease: PersistenceResult<'leader' | 'follower'>): void {
+      if (lease.ok) {
+        setLeadership(lease.value)
+        return
+      }
+      setLeadership('unknown')
+      setDurabilityStatus(lease.code === 'unavailable' ? 'unavailable' : 'failed')
+      setMessage('Could not claim a persistence lease. The host remains usable in memory.')
     }
 
     void boot()

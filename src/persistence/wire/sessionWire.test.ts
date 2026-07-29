@@ -59,6 +59,22 @@ describe('session persistence wire', () => {
     expect(decoded).toMatchObject({ ok: false, code: 'corrupt' })
   })
 
+  it('rejects events that carry unexpected extra keys', () => {
+    const encoded = encodeSessionHistory(createBasicHistory(), AT)
+    expect(encoded.ok).toBe(true)
+    if (!encoded.ok) return
+    const [first] = encoded.value.events
+    expect(typeof first).toBe('object')
+    if (typeof first !== 'object' || first === null) return
+
+    const decoded = decodeSessionHistory({
+      ...encoded.value,
+      events: [{ ...first, unexpected: true }],
+    })
+
+    expect(decoded).toMatchObject({ ok: false, code: 'corrupt' })
+  })
+
   it('rejects corrupt GAME_INITIALIZED definition JSON', () => {
     const encoded = encodeSessionHistory(createInitializedGameHistory(), AT)
     expect(encoded.ok).toBe(true)

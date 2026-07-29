@@ -6,7 +6,7 @@ export type PersistenceStoreName =
   | 'coordination'
 
 export interface PersistenceTx {
-  get(store: PersistenceStoreName, key: string): Promise<unknown | undefined>
+  get(store: PersistenceStoreName, key: string): Promise<unknown>
   put(store: PersistenceStoreName, key: string, value: unknown): Promise<void>
   delete(store: PersistenceStoreName, key: string): Promise<void>
   getAllKeys(store: PersistenceStoreName): Promise<string[]>
