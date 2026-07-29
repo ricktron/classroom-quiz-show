@@ -1,24 +1,36 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with **Slices 1–11 all `Complete` and merged to `main`**, and
-**Slice 12 — Portable export & round-trip import `In review`** on
-`claude/slice-12-portable-export` (unmerged — see
+the repository with **Slices 1–12 all `Complete` and merged to `main`**.
+**Slice 12 — Portable export & round-trip import is `Complete`** (PR #25
+squash-merged at `cdb499a1a1924ceb12014d37741b500fd9346214` from reviewed head
+`e63ef7f19aac7b1cf72ccd5cc640e3296550dae7`, merged **2026-07-28T19:36:25Z** —
+see
 [`../architecture/ADR-012-portable-export-round-trip.md`](../architecture/ADR-012-portable-export-round-trip.md)
 and
-[`../receipts/2026-07-28-slice-12-local-verification.md`](../receipts/2026-07-28-slice-12-local-verification.md)).
-**Slice 11 — Media contract is `Complete`** (PR #23 squash-merged at `5d47b2f`
-from reviewed head `bb8bd94`, **2026-07-28T04:56:27Z**). **Slice 13 remains
-`Planned` and unstarted.** The next safe action is review of the Slice 12 PR
-only — no merge by the implementer, no Slice 13 start.
+[`../STATUS.md`](../STATUS.md)).
+**Slice 13 remains `Planned` and unstarted.** The next safe product action
+requires a **separate** Slice 13 planning/readiness decision — this handoff
+does **not** authorize Slice 13 implementation.
+
+Coding agents and contributors should read root
+[`../../AGENTS.md`](../../AGENTS.md) before changing the repository. Claude
+sessions may start at pointer-only [`../../CLAUDE.md`](../../CLAUDE.md), which
+defers to `AGENTS.md` and adds no separate authority.
+
+> **CQS authority.** This repository remains the single source of
+> implementation truth for Classroom Quiz Show. NightWatch, Notion, Obsidian,
+> chat, and other external summaries may route or summarize work but grant no
+> authority over CQS product scope, implementation, architecture, tests,
+> deployment, or status.
 
 > **Repository hygiene (2026-07-27).** `main` is the GitHub **default branch**.
 > **PR #17 was closed without merging** — an erroneous *reversed* pull request
 > (head `main`, base `claude/classroom-quiz-show-slice-1-a6ogu4`) created only
 > because the abandoned Slice 1 branch was still the configured default. That
-> abandoned branch has been **deleted**; `main` is the only remote branch. No
-> further action is needed, and no new pull request involving that branch may be
-> created.
+> abandoned branch has been **deleted**. Do not assert the current number of
+> remote branches from this historical note. No further action is needed on that
+> abandoned Slice 1 branch, and no new pull request involving it may be created.
 
 > **Roadmap amended 2026-07-26, and that amendment is MERGED.** The owner
 > authorized a planning-only amendment,
@@ -169,14 +181,20 @@ only — no merge by the implementer, no Slice 13 start.
   [`../receipts/2026-07-27-slice-11-local-verification.md`](../receipts/2026-07-27-slice-11-local-verification.md),
   [`../receipts/2026-07-27-slice-11-pr-review-and-hardening.md`](../receipts/2026-07-27-slice-11-pr-review-and-hardening.md),
   [`../receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
-- **Slice 12 (current): `In review`.** Branch `claude/slice-12-portable-export`
-  from authorized base `7c1a35c096d1d0654ea951f29aa49d0910f4c429`. Deterministic
-  export of `GameDefinition` to canonical schema version **1**, re-import gate
-  through `importGameFromJsonText`, structural equality + byte-stability,
-  host-only download UI, media paths preserved without bundling. Rationale in
+- **Slice 12 (current): `Complete`.** Squash-merged via
+  **[PR #25](https://github.com/ricktron/classroom-quiz-show/pull/25)** at
+  `cdb499a1a1924ceb12014d37741b500fd9346214` (merged **2026-07-28T19:36:25Z**;
+  authorized base `7c1a35c096d1d0654ea951f29aa49d0910f4c429`; final reviewed
+  head `e63ef7f19aac7b1cf72ccd5cc640e3296550dae7`). Deterministic export of
+  `GameDefinition` to canonical schema version **1**, re-import gate through
+  `importGameFromJsonText`, structural equality + byte-stability, host-only
+  download UI, media paths preserved without bundling. Public-state wire stays
+  **7**; sync envelope stays **2**. Slice 12 did **not** implement persistence.
+  Rationale in
   [`../architecture/ADR-012-portable-export-round-trip.md`](../architecture/ADR-012-portable-export-round-trip.md);
-  receipt
-  [`../receipts/2026-07-28-slice-12-local-verification.md`](../receipts/2026-07-28-slice-12-local-verification.md).
+  receipts
+  [`../receipts/2026-07-28-slice-12-local-verification.md`](../receipts/2026-07-28-slice-12-local-verification.md),
+  [`../receipts/2026-07-28-slice-12-pr-review-and-hardening.md`](../receipts/2026-07-28-slice-12-pr-review-and-hardening.md).
 - **Slice 13:** `Planned`, unstarted.
 - **What Slice 9 adds:** generic USB controller input **through the Slice 8
   boundary**, and the most important thing about it is the list of things it did
@@ -669,9 +687,10 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Next action
 
-**Slice 12 — Portable export and round-trip import is `In review`.** Review the
-open PR; do not merge from this lane; do not mark Slice 12 Complete until
-post-merge reconciliation. **Slice 13 remains `Planned` and unstarted.**
+**Slices 1–12 are `Complete` and merged.** **Slice 13 — Local persistence &
+recovery remains `Planned` and unstarted.** The next safe product action
+requires a separate Slice 13 planning/readiness decision. This handoff does
+**not** authorize Slice 13 implementation.
 
 ## Owner direction — colored buttons and the local input contract (2026-07-27)
 
@@ -737,8 +756,10 @@ open-answer and buzz-first multiple-choice clues may coexist within a single gam
 **No schema, event vocabulary, scoring formula, acceptance criteria, roadmap
 insertion or implementation is authorized now**, and none exists. Nothing in the
 codebase implements, anticipates or reserves space for a response mode or a
-multiple-choice question type. **The immediate frontier is review of Slice 12
-(In review, unmerged).** Slice 11 is **`Complete`** (PR #23, `5d47b2f`).
+multiple-choice question type. **The immediate frontier is a separate Slice 13
+planning/readiness decision** — Slice 13 remains `Planned` and unstarted, and
+this direction does not authorize it. Slice 12 is **`Complete`** (PR #25,
+`cdb499a…`). Slice 11 is **`Complete`** (PR #23, `5d47b2f`).
 Slice 10 remains **`Complete`** under the owner-accepted hardware-independent
 boundary; physical certification remains deferred.
 
@@ -790,8 +811,9 @@ reconciliation. Recording this direction authorizes no work of any kind.
 
 ## Prohibited next actions
 
-Do **not**: merge Slice 12 without review; begin Slice 13 without a separate
-authorized planning/orchestration outcome; claim live-route behaviour that was
+Do **not**: begin Slice 13 without a separate authorized planning/orchestration
+outcome; claim Child B guidance/onboarding delivery is merged from this handoff;
+claim live-route behaviour that was
 not directly inspected; claim any physical Sony Buzz! compatibility or treat
 deferred physical certification as incomplete Slice 10 work; add WebHID,
 Bluetooth, USB or HID code beyond what Slice 10's host-private boundary already
