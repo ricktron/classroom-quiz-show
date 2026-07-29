@@ -4,6 +4,9 @@ A local-first, projector-friendly **classroom game-show engine** for the
 classroom. A teacher runs a private **host** screen; students watch a public
 **display** screen on the projector.
 
+Coding agents and contributors should read
+[`AGENTS.md`](AGENTS.md) before changing the repository.
+
 > **Not a Jeopardy clone.** The category-and-point-value board is the _first_
 > round type this engine supports, not the whole product. See
 > [`docs/architecture/GAME-ENGINE-BOUNDARIES.md`](docs/architecture/GAME-ENGINE-BOUNDARIES.md).
@@ -342,14 +345,18 @@ sync-envelope version **2**. See
 [`docs/architecture/ADR-011-media-contract.md`](docs/architecture/ADR-011-media-contract.md)
 and
 [`docs/receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](docs/receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
-**Slice 12 — Portable export & round-trip import. In review** — exports the
-loaded immutable `GameDefinition` to the existing canonical
-`classroom-quiz-show/game` schema version **1** document with deterministic
-compact JSON (trailing LF), production re-import through
-`importGameFromJsonText`, structural equality and byte-stability gates, and a
-host-only download surface. Same-origin media paths are preserved; media files
-are not bundled. Answer keys / teacher notes remain host-owned. Public-state
-wire stays **7**; sync envelope stays **2**. See
+**Slice 12 — Portable export & round-trip import. Complete** — PR #25 was
+squash-merged at `cdb499a1a1924ceb12014d37741b500fd9346214` (merged
+**2026-07-28T19:36:25Z**) from final reviewed head
+`e63ef7f19aac7b1cf72ccd5cc640e3296550dae7` (authorized base
+`7c1a35c096d1d0654ea951f29aa49d0910f4c429`). Exports the loaded immutable
+`GameDefinition` to the existing canonical `classroom-quiz-show/game` schema
+version **1** document with deterministic compact JSON (trailing LF),
+production re-import through `importGameFromJsonText`, structural equality and
+byte-stability gates, and a host-only download surface. Same-origin media paths
+are preserved; media files are not bundled. Answer keys / teacher notes remain
+host-owned. Public-state wire stays **7**; sync envelope stays **2**. Slice 12
+did not implement persistence. See
 [`docs/architecture/ADR-012-portable-export-round-trip.md`](docs/architecture/ADR-012-portable-export-round-trip.md).
 **Slice 13** remains Planned and unstarted.
 

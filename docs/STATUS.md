@@ -1,17 +1,58 @@
 # Status
 
-**Current slice:** Slice 12 — Portable export & round-trip import
-**Slice state:** **In review** — deterministic export of the loaded
-`GameDefinition` to canonical `classroom-quiz-show/game` schema version **1**,
-with production re-import and structural-equality gates, host-only download UI,
-and no media bundling. Public-state wire remains **7**; sync-envelope remains
-**2**. See [`architecture/ADR-012-portable-export-round-trip.md`](architecture/ADR-012-portable-export-round-trip.md).
+**Current completed product slice:** Slice 12 — Portable export & round-trip
+import
+**Slice state:** **Complete** — PR #25 was squash-merged at
+`cdb499a1a1924ceb12014d37741b500fd9346214` (merged **2026-07-28T19:36:25Z**)
+from final reviewed head `e63ef7f19aac7b1cf72ccd5cc640e3296550dae7` (authorized
+base `7c1a35c096d1d0654ea951f29aa49d0910f4c429`). Deterministic export of the
+loaded `GameDefinition` to canonical `classroom-quiz-show/game` schema version
+**1**, with production re-import and structural-equality gates, host-only
+download UI, and no media bundling. Public-state wire remains **7**;
+sync-envelope remains **2**. Slice 12 did not implement persistence. See
+[`architecture/ADR-012-portable-export-round-trip.md`](architecture/ADR-012-portable-export-round-trip.md).
 **Previous slice:** Slice 11 — Media contract (`Complete`, squash-merged via
 PR #23 at `5d47b2f`; legacy text + same-origin image prompts; wire **7**)
-**Next slice:** Slice 13 — Local persistence & recovery (`Planned`, unstarted)
+**Next planned product slice:** Slice 13 — Local persistence & recovery
+**Slice 13 state:** Planned and unstarted
 **Roadmap:** 18 slices, amended 2026-07-26 by
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 (**merged to `main` via PR #13**, merge commit `752a3fe`, 2026-07-26T20:02:13Z)
+
+## Slice 12 merge evidence
+
+| Fact | Value |
+| --- | --- |
+| PR | [#25](https://github.com/ricktron/classroom-quiz-show/pull/25) |
+| Authorized base | `7c1a35c096d1d0654ea951f29aa49d0910f4c429` |
+| Final reviewed head | `e63ef7f19aac7b1cf72ccd5cc640e3296550dae7` |
+| Squash commit | `cdb499a1a1924ceb12014d37741b500fd9346214` |
+| Merged | **2026-07-28T19:36:25Z** |
+| Game-file schema | version **1** |
+| Public-state wire | version **7** |
+| Sync envelope | version **2** |
+| Host-only export | yes |
+| Media paths | preserved; files not bundled |
+| Persistence | **not** implemented (Slice 13) |
+
+### PR-head verification (observed on PR #25)
+
+At final reviewed head `e63ef7f…`:
+
+- `Lint, typecheck, unit tests, build` — **pass**
+- `Playwright e2e` — **pass**
+- `SonarCloud Code Analysis` — **pass**
+
+### Observed post-merge workflows (on squash `cdb499a…`)
+
+- `CI` run `30392677918` — **success** (completed; ~3m28s)
+- `Deploy to GitHub Pages` run `30392677910` — **success** (completed; ~52s)
+
+### Child B local verification
+
+Child B (guidance onboarding) local verification is recorded in the matching
+receipt under `docs/receipts/` when that packet is finalized. This STATUS
+surface does not claim that the Child B delivery branch or PR is merged.
 
 ## State vocabulary
 
@@ -159,8 +200,8 @@ PR #23 at `5d47b2f`; legacy text + same-origin image prompts; wire **7**)
 > branch. **PR #17 was closed without merging**: it was an erroneous reversed pull
 > request (head `main`, base the abandoned `claude/classroom-quiz-show-slice-1-a6ogu4`)
 > created only because that abandoned Slice 1 branch was still configured as the
-> default branch. The abandoned branch has been **deleted** — `main` is the only
-> remote branch.
+> default branch. The abandoned branch has been **deleted**. Do not assert the
+> current number of remote branches from this historical note.
 
 ## Slice 8 work (Complete)
 
@@ -953,13 +994,14 @@ None.
 
 ## Next safe action
 
-**Review the Slice 12 portable-export PR.** Slice 12 is **In review** — not
-Complete, not merged. It exports the loaded immutable `GameDefinition` to the
-existing canonical version-1 document, proves byte-deterministic round-trip
-re-import through `importGameFromJsonText`, and provides a host-only download
-surface. Schema remains **1**, public wire remains **7**, sync remains **2**.
-Slice 13 remains `Planned` and unstarted. Do not merge until review completes;
-do not start Slice 13 from this lane.
+**Slice 12 is `Complete` and merged.** The next planned product slice is
+**Slice 13 — Local persistence & recovery**, which remains `Planned` and
+unstarted. Starting Slice 13 requires a **separate** planning/readiness
+decision; this STATUS surface does not authorize Slice 13 implementation.
+
+Coding agents and contributors should read root [`../AGENTS.md`](../AGENTS.md)
+(and pointer-only [`../CLAUDE.md`](../CLAUDE.md) for Claude sessions) before
+mutating the repository.
 
 **Additional response modes are deferred until after the functional MVP** — see
 the owner direction recorded in
