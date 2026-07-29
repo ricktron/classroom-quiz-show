@@ -78,7 +78,13 @@ This project separates two kinds of durable decision records:
      — deterministic export of the loaded `GameDefinition` to the existing
      canonical version-1 document, re-import and structural-equality gates,
      host-only download, answer-key warning, and media-path-only portability
-     (Slice 12, In review).
+     (Slice 12, Complete — merged via PR #25).
+   - [`ADR-013-local-persistence-recovery.md`](../architecture/ADR-013-local-persistence-recovery.md)
+     — local IndexedDB persistence and recovery: saved definitions kept
+     separate from active-session event history and coordination, private
+     persistence-session wire version 1, canonical definition encoding through
+     export/import, explicit Resume/Discard recovery, serialized writes, host
+     lease coordination, and no `PublicState` or sync-version change (Slice 13).
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).

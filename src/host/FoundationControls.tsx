@@ -11,6 +11,8 @@ import { LocalInputHostPanel } from './LocalInputHostPanel'
 import { GamepadInputHostPanel } from './GamepadInputHostPanel'
 import { useResponseTimerExpiry } from './useResponseTimerExpiry'
 import { systemClock, type Clock } from '../time/clock'
+import { useHostPersistence } from './useHostPersistence'
+import { PersistenceControls } from './PersistenceControls'
 import './FoundationControls.css'
 
 /**
@@ -46,7 +48,16 @@ export interface FoundationControlsProps {
 }
 
 export function FoundationControls({ clock = systemClock }: FoundationControlsProps = {}) {
-  const { store, state, history, dispatch } = useSessionStore()
+  const persistence = useHostPersistence({ clock })
+  const {
+    store,
+    state,
+    history,
+    dispatch: storeDispatch,
+  } = useSessionStore({
+    initialHistory: persistence.initialHistory,
+    storeEpoch: persistence.storeEpoch,
+  })
   useHostSync(store, clock)
 
   const now = () => clock.now()
@@ -54,6 +65,8 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
   const registry = store.getRegistry()
   const game = state.session?.game ?? null
   const hasGame = game !== null
+  const dispatch = (command: Parameters<typeof storeDispatch>[0]) =>
+    persistence.dispatchSessionCommand(command, storeDispatch, () => store.getHistory(), registry)
 
   // The ONE scheduled clock read in the application. It turns a deadline into a
   // COMMAND; it never mutates state, and a stale callback is rejected by the
@@ -68,6 +81,22 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
         These controls demonstrate the command → event → replay core and the
         private→public boundary. They are diagnostics, not a game.
       </p>
+
+      <PersistenceControls
+        persistence={persistence}
+        activeGame={game}
+        activeDefinition={game?.definition ?? null}
+        registry={registry}
+        dispatch={dispatch}
+        getHistory={() => store.getHistory()}
+      />
+
+      <fieldset
+        className="foundation__session-controls"
+        disabled={!persistence.canDispatchSessionCommands}
+        aria-label="Session command controls"
+      >
+        <legend className="foundation__session-legend">Session commands</legend>
 
       <div className="foundation__actions" role="group" aria-label="Foundation commands">
         <button
@@ -314,6 +343,8 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
         hasSession={hasSession}
         activeGame={game}
       />
+
+      </fieldset>
 
       <GameExportPanel
         definition={game?.definition ?? null}

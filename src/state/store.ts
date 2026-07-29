@@ -9,15 +9,16 @@ import type { RoundRegistry } from '../game/registry'
 import type { PlanDeps } from './reducer'
 
 /**
- * In-memory authoritative session store (Slice 2).
+ * In-memory authoritative session store (Slice 13).
  *
  * The host owns exactly one of these. It holds the append-only event history as
  * the source of truth and derives authoritative state by replaying it after
  * every accepted command — so `getState()` is, by construction, always equal to
  * `replay(getHistory())`.
  *
- * There is NO durable persistence here (no IndexedDB); that is Slice 8. History
- * lives only in memory for the lifetime of the tab.
+ * Durable persistence stays outside this store. Slice 13 may provide a trusted,
+ * already-validated initial history, and the store still derives state only by
+ * replaying that append-only history.
  */
 
 export type DispatchResult =
@@ -42,12 +43,17 @@ export interface SessionStoreOptions {
    * only). Injectable so tests can supply a registry with unknown types.
    */
   readonly registry?: RoundRegistry
+  /**
+   * Trusted recovery seam. The caller must have already decoded and validated the
+   * recovered history; the store does not accept untrusted persistence records.
+   */
+  readonly initialHistory?: readonly SessionEvent[]
 }
 
 export function createSessionStore(options: SessionStoreOptions = {}): SessionStore {
   const registry = options.registry ?? createDefaultRegistry()
   const planDeps: PlanDeps = { isKnownRoundType: (type) => registry.isKnown(type) }
-  let history: readonly SessionEvent[] = []
+  let history: readonly SessionEvent[] = [...(options.initialHistory ?? [])]
   let state: PrivateState = replay(history)
   const listeners = new Set<() => void>()
 

@@ -12,13 +12,28 @@ export interface UseSessionStore {
   dispatch: (command: SessionCommand) => DispatchResult
 }
 
+export interface UseSessionStoreOptions {
+  readonly initialHistory?: readonly SessionEvent[]
+  /** Remount key — when changed, recreate the store from the current initialHistory. */
+  readonly storeEpoch?: number
+}
+
 /**
  * Host-side hook that owns exactly one authoritative `SessionStore` and
- * re-renders the host UI whenever it changes. The store instance is stable for
- * the component's lifetime; the returned `state`/`history` are snapshots.
+ * re-renders the host UI whenever it changes. The store instance is stable for a
+ * given epoch; changing `storeEpoch` intentionally creates a fresh store from
+ * the supplied trusted `initialHistory`.
  */
-export function useSessionStore(): UseSessionStore {
-  const store = useMemo(() => createSessionStore(), [])
+export function useSessionStore(options: UseSessionStoreOptions = {}): UseSessionStore {
+  const { initialHistory, storeEpoch = 0 } = options
+  const remountBoundHistory = useMemo(
+    () => ({ storeEpoch, initialHistory }),
+    [storeEpoch, initialHistory],
+  )
+  const store = useMemo(
+    () => createSessionStore({ initialHistory: remountBoundHistory.initialHistory }),
+    [remountBoundHistory],
+  )
   const [state, setState] = useState<PrivateState>(store.getState())
   const [history, setHistory] = useState<readonly SessionEvent[]>(store.getHistory())
 
