@@ -1,20 +1,20 @@
 # Status
 
-**Current completed product slice:** Slice 12 — Portable export & round-trip
-import
-**Slice state:** **Complete** — PR #25 was squash-merged at
-`cdb499a1a1924ceb12014d37741b500fd9346214` (merged **2026-07-28T19:36:25Z**)
-from final reviewed head `e63ef7f19aac7b1cf72ccd5cc640e3296550dae7` (authorized
-base `7c1a35c096d1d0654ea951f29aa49d0910f4c429`). Deterministic export of the
-loaded `GameDefinition` to canonical `classroom-quiz-show/game` schema version
-**1**, with production re-import and structural-equality gates, host-only
-download UI, and no media bundling. Public-state wire remains **7**;
-sync-envelope remains **2**. Slice 12 did not implement persistence. See
-[`architecture/ADR-012-portable-export-round-trip.md`](architecture/ADR-012-portable-export-round-trip.md).
-**Previous slice:** Slice 11 — Media contract (`Complete`, squash-merged via
-PR #23 at `5d47b2f`; legacy text + same-origin image prompts; wire **7**)
-**Next planned product slice:** Slice 13 — Local persistence & recovery
-**Slice 13 state:** Planned and unstarted
+**Current completed product slice:** Slice 13 — Local persistence & recovery
+**Slice state:** **Complete** — PR #27 was squash-merged at
+`6cf4d2579ab558f8c4b7eabca0b94df4acc6f20c` (merged **2026-07-29T21:27:59Z**)
+from final reviewed head `ad0867ab6d7e00f397de51dfad2363f35bc181d7` (authorized
+base `3fd212994c0e8b651193460de633995fe80a25df`). Host-local IndexedDB
+persistence with three stores (`savedDefinitions`, `activeSessions`,
+`coordination`), explicit Resume/Discard recovery, saved-definition library
+controls, private persistence-session wire v1, and lightweight host-writer
+lease coordination. Public-state wire remains **7**; sync-envelope remains
+**2**; game-file schema remains **1**. No dependency added. See
+[`architecture/ADR-013-local-persistence-recovery.md`](architecture/ADR-013-local-persistence-recovery.md).
+**Previous slice:** Slice 12 — Portable export & round-trip import (`Complete`,
+squash-merged via PR #25 at `cdb499a…`; wire **7**)
+**Next planned product slice:** Slice 14 — Final-wager round
+**Slice 14 state:** Planned and unstarted
 **Roadmap:** 18 slices, amended 2026-07-26 by
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 (**merged to `main` via PR #13**, merge commit `752a3fe`, 2026-07-26T20:02:13Z)
@@ -47,6 +47,51 @@ At final reviewed head `e63ef7f…`:
 
 - `CI` run `30392677918` — **success** (completed; ~3m28s)
 - `Deploy to GitHub Pages` run `30392677910` — **success** (completed; ~52s)
+
+## Slice 13 merge evidence
+
+| Fact | Value |
+| --- | --- |
+| PR | [#27](https://github.com/ricktron/classroom-quiz-show/pull/27) |
+| Slice ID | `CQS-SLICE-13-PERSISTENCE` |
+| OADL contribution | `OADL-S06-CQS-PERSISTENCE-PILOT` |
+| Authorized base | `3fd212994c0e8b651193460de633995fe80a25df` |
+| Final reviewed head | `ad0867ab6d7e00f397de51dfad2363f35bc181d7` |
+| Squash commit | `6cf4d2579ab558f8c4b7eabca0b94df4acc6f20c` |
+| Squash parent | `3fd212994c0e8b651193460de633995fe80a25df` (exactly one parent) |
+| Merged | **2026-07-29T21:27:59Z** |
+| Reviewed-head / squash tree | identical (`e0434e45b5b51e281e8833cbf9c3293466aa6ce1`) |
+| PR totals | **39** files; **+4,128** / **−38**; **2** pre-squash commits |
+| Game-file schema | version **1** |
+| Public-state wire | version **7** |
+| Sync envelope | version **2** |
+| Dependencies | **unchanged** |
+| Live-route verification | **not** manually performed |
+
+### PR-head verification (observed on PR #27 at `ad0867a…`)
+
+- `Lint, typecheck, unit tests, build` — **pass**
+- `Playwright e2e` — **pass**
+- `SonarCloud Code Analysis` — **pass**
+- Sonar quality gate — **OK** (Reliability **A**, Security **A**, Maintainability **A**)
+- One non-gate-driving `typescript:S3776` decoder-complexity advisory remains
+  deferred (`sessionWire` decode)
+
+### Observed post-merge workflows (on squash `6cf4d25…`)
+
+- `CI` run `30492479720` — **success** (completed **2026-07-29T21:33:24Z**)
+- `Deploy to GitHub Pages` run `30492480593` — **success** (completed
+  **2026-07-29T21:28:53Z**)
+
+### Local verification (from immutable Slice 13 receipts)
+
+- Unit: **1,604** passed / **1** skipped
+- E2E: **235** passed / **2** skipped
+- Sonar findings inspected: **20**; true positives fixed: **19**; deferred: **1**
+- Implementation repair loops: **2**; Sonar polish loops: **1**
+
+Post-merge reconciliation receipt:
+[`receipts/2026-07-29-slice-13-post-merge-reconciliation.md`](receipts/2026-07-29-slice-13-post-merge-reconciliation.md).
 
 ### Child B local verification
 
@@ -983,10 +1028,11 @@ None.
   no migration and none is implied.
 - **Un-ending a game is not supported** — `GAME_SESSION_ENDED` is irreversible;
   re-initialize a game to start over.
-- **Event history and definitions are in-memory only** — lost on tab close.
-  Durable IndexedDB persistence/recovery is **Slice 13** under the amended
-  18-slice roadmap. (Slice 8's keyboard-mapping storage is host-device
-  configuration, not session persistence.)
+- **Host-local IndexedDB persistence exists (Slice 13)** for saved definitions
+  and active-session recovery on the same browser profile. It is not cloud sync,
+  not cross-device, and not a second gameplay authority. Controller Gamepad
+  mappings remain session-local. (Slice 8's keyboard-mapping storage is still
+  host-device configuration, separate from session persistence.)
 - **Sync is same-browser only** (BroadcastChannel, same origin). No cross-device
   sync, backend, or leader election — later/out of scope.
 - The host "Foundation / testing controls" are diagnostics to prove the model,
@@ -994,10 +1040,10 @@ None.
 
 ## Next safe action
 
-**Slice 12 is `Complete` and merged.** The next planned product slice is
-**Slice 13 — Local persistence & recovery**, which remains `Planned` and
-unstarted. Starting Slice 13 requires a **separate** planning/readiness
-decision; this STATUS surface does not authorize Slice 13 implementation.
+**Slice 13 is `Complete` and merged.** The next planned product slice is
+**Slice 14 — Final-wager round**, which remains `Planned` and unstarted.
+Starting Slice 14 requires a **separate** owner-approved planning/readiness
+decision; this STATUS surface does not authorize Slice 14 implementation.
 
 Coding agents and contributors should read root [`../AGENTS.md`](../AGENTS.md)
 (and pointer-only [`../CLAUDE.md`](../CLAUDE.md) for Claude sessions) before
