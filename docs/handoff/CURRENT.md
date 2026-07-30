@@ -1,17 +1,17 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with **Slices 1–12 all `Complete` and merged to `main`**.
-**Slice 12 — Portable export & round-trip import is `Complete`** (PR #25
-squash-merged at `cdb499a1a1924ceb12014d37741b500fd9346214` from reviewed head
-`e63ef7f19aac7b1cf72ccd5cc640e3296550dae7`, merged **2026-07-28T19:36:25Z** —
+the repository with **Slices 1–13 all `Complete` and merged to `main`**.
+**Slice 13 — Local persistence & recovery is `Complete`** (PR #27
+squash-merged at `6cf4d2579ab558f8c4b7eabca0b94df4acc6f20c` from reviewed head
+`ad0867ab6d7e00f397de51dfad2363f35bc181d7`, merged **2026-07-29T21:27:59Z** —
 see
-[`../architecture/ADR-012-portable-export-round-trip.md`](../architecture/ADR-012-portable-export-round-trip.md)
+[`../architecture/ADR-013-local-persistence-recovery.md`](../architecture/ADR-013-local-persistence-recovery.md)
 and
 [`../STATUS.md`](../STATUS.md)).
-**Slice 13 remains `Planned` and unstarted.** The next safe product action
-requires a **separate** Slice 13 planning/readiness decision — this handoff
-does **not** authorize Slice 13 implementation.
+**Slice 14 remains `Planned` and unstarted.** The next safe product action
+requires a **separate** Slice 14 planning/readiness decision — this handoff
+does **not** authorize Slice 14 implementation.
 
 Coding agents and contributors should read root
 [`../../AGENTS.md`](../../AGENTS.md) before changing the repository. Claude
@@ -195,7 +195,33 @@ defers to `AGENTS.md` and adds no separate authority.
   receipts
   [`../receipts/2026-07-28-slice-12-local-verification.md`](../receipts/2026-07-28-slice-12-local-verification.md),
   [`../receipts/2026-07-28-slice-12-pr-review-and-hardening.md`](../receipts/2026-07-28-slice-12-pr-review-and-hardening.md).
-- **Slice 13:** `Planned`, unstarted.
+- **Slice 13 (current): `Complete`.** Squash-merged via
+  **[PR #27](https://github.com/ricktron/classroom-quiz-show/pull/27)** at
+  `6cf4d2579ab558f8c4b7eabca0b94df4acc6f20c` (merged **2026-07-29T21:27:59Z**;
+  authorized base `3fd212994c0e8b651193460de633995fe80a25df`; final reviewed
+  head `ad0867ab6d7e00f397de51dfad2363f35bc181d7`). Reviewed-head and squash
+  trees identical. Host-local IndexedDB persistence (saved definitions, active
+  session recovery with explicit Resume/Discard, lightweight host-writer lease).
+  Public-state wire stays **7**; sync envelope stays **2**; game-file schema
+  stays **1**. No dependency added. Live-route behaviour was **not** manually
+  verified. Rationale in
+  [`../architecture/ADR-013-local-persistence-recovery.md`](../architecture/ADR-013-local-persistence-recovery.md);
+  receipts
+  [`../receipts/2026-07-29-slice-13-local-verification.md`](../receipts/2026-07-29-slice-13-local-verification.md),
+  [`../receipts/2026-07-29-slice-13-sonar-polish.md`](../receipts/2026-07-29-slice-13-sonar-polish.md),
+  [`../receipts/2026-07-29-slice-13-post-merge-reconciliation.md`](../receipts/2026-07-29-slice-13-post-merge-reconciliation.md).
+- **Slice 14:** `Planned`, unstarted.
+- **What Slice 13 adds:** host-local IndexedDB durability for **saved
+  definitions** and **active-session recovery**, kept strictly distinct from each
+  other and from coordination. Active sessions recover through an explicit
+  Resume/Discard choice (no silent resume). Saved definitions round-trip through
+  the existing export/import pipeline. A lightweight host-writer lease keeps a
+  second local host tab read-only. Persistence envelopes and library contents stay
+  host-private — **nothing new is projected** to the display. Public-state wire
+  stays **7**; sync envelope stays **2**; game-file schema stays **1**. No
+  backend, cloud account, cross-device sync, student-device behaviour, or
+  controller-mapping persistence was introduced. See
+  [`../architecture/ADR-013-local-persistence-recovery.md`](../architecture/ADR-013-local-persistence-recovery.md).
 - **What Slice 9 adds:** generic USB controller input **through the Slice 8
   boundary**, and the most important thing about it is the list of things it did
   not change — no schema, no `PublicState` (wire version stays 6), no sync
@@ -388,7 +414,7 @@ defers to `AGENTS.md` and adds no separate authority.
   decode failure, public projection failure) each have a defined fail-safe
   behavior; unknown-round-type is handled fail-closed at every layer.
 
-## Module map (Slices 2–11)
+## Module map (Slices 2–13)
 
 ```
 src/game/
@@ -487,6 +513,12 @@ src/display/       usePublicState (PublicState + receiver + clock offset),
                    ResponseTimerDisplay + useResponseCountdown (derived countdown)
 src/test/          leakLabels, gameFileFixtures, categoryBoardFixtures, teamFixtures
 ```
+
+> **Module map note (Slice 13).** `src/persistence/` owns host-local IndexedDB
+> adapters, saved definitions, active-session wire, write queue, and coordination.
+> Host UI lives in `PersistenceControls` / `useHostPersistence`. Nothing in this
+> tree is projected to the display. See
+> [`../architecture/ADR-013-local-persistence-recovery.md`](../architecture/ADR-013-local-persistence-recovery.md).
 
 > **Module map note (Slice 10).** `gamepadDeviceProfile`, `sonyBuzzProfile`, and
 > `SonyBuzzSetupSection` are host-private setup surfaces only. They do not change
@@ -653,9 +685,10 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 - **Duplicate JSON keys are not observable** (`JSON.parse` keeps the last).
 - **Un-ending a game is unsupported** — `GAME_SESSION_ENDED` is irreversible;
   re-initialize to start over.
-- **In-memory history/definitions only** — no durable persistence yet (Slice 13
-  in the amended plan; portable export lands first, in Slice 12). State is lost on
-  tab close.
+- **Host-local IndexedDB persistence (Slice 13)** survives refresh for saved
+  definitions and unfinished active sessions on the same browser profile, with
+  explicit Resume/Discard. It is not cloud sync and not cross-device. Gamepad
+  mappings remain session-local.
 - **Same-browser sync only** — BroadcastChannel, same origin. No cross-device
   sync, backend, or leader election (later/out of scope).
 - **PWA icons remain placeholders** (carried from Slice 1).
@@ -687,10 +720,10 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 
 ## Next action
 
-**Slices 1–12 are `Complete` and merged.** **Slice 13 — Local persistence &
-recovery remains `Planned` and unstarted.** The next safe product action
-requires a separate Slice 13 planning/readiness decision. This handoff does
-**not** authorize Slice 13 implementation.
+**Slices 1–13 are `Complete` and merged.** **Slice 14 — Final-wager round
+remains `Planned` and unstarted.** The next safe product action requires a
+separate Slice 14 planning/readiness decision. This handoff does **not**
+authorize Slice 14 implementation.
 
 ## Owner direction — colored buttons and the local input contract (2026-07-27)
 
@@ -756,12 +789,13 @@ open-answer and buzz-first multiple-choice clues may coexist within a single gam
 **No schema, event vocabulary, scoring formula, acceptance criteria, roadmap
 insertion or implementation is authorized now**, and none exists. Nothing in the
 codebase implements, anticipates or reserves space for a response mode or a
-multiple-choice question type. **The immediate frontier is a separate Slice 13
-planning/readiness decision** — Slice 13 remains `Planned` and unstarted, and
-this direction does not authorize it. Slice 12 is **`Complete`** (PR #25,
-`cdb499a…`). Slice 11 is **`Complete`** (PR #23, `5d47b2f`).
-Slice 10 remains **`Complete`** under the owner-accepted hardware-independent
-boundary; physical certification remains deferred.
+multiple-choice question type. **The immediate frontier is a separate Slice 14
+planning/readiness decision** — Slice 14 remains `Planned` and unstarted, and
+this direction does not authorize it. Slice 13 is **`Complete`** (PR #27,
+`6cf4d25…`). Slice 12 is **`Complete`** (PR #25, `cdb499a…`). Slice 11 is
+**`Complete`** (PR #23, `5d47b2f`). Slice 10 remains **`Complete`** under the
+owner-accepted hardware-independent boundary; physical certification remains
+deferred.
 
 Recording this direction authorizes no work of any kind.
 
@@ -811,7 +845,7 @@ reconciliation. Recording this direction authorizes no work of any kind.
 
 ## Prohibited next actions
 
-Do **not**: begin Slice 13 without a separate authorized planning/orchestration
+Do **not**: begin Slice 14 without a separate authorized planning/orchestration
 outcome; claim Child B guidance/onboarding delivery is merged from this handoff;
 claim live-route behaviour that was
 not directly inspected; claim any physical Sony Buzz! compatibility or treat
@@ -826,8 +860,8 @@ gameplay meaning or any durable event; add first-only lockout; restrict scoring
 to an active respondent (`OG-6`, still deferred); add automatic timeout scoring
 or make a timer or a buzz move a point; add student-owned contestant devices,
 networked buzzers, or remote team input — these remain **excluded**, not merely
-deferred; add durable persistence/IndexedDB/session recovery/leader
-coordination; add a final wager, Daily Double, or Final Jeopardy; extend the
+deferred; widen Slice 13 persistence into cloud sync, accounts, cross-device
+recovery, or a public persistence protocol; add a final wager, Daily Double, or Final Jeopardy; extend the
 Slice 11 media contract beyond text and same-origin static images, add remote
 media, audio/video, or timer/media coupling; add a theme engine, or add team
 colours beyond the application palette; add buzz-in audio, an audio file,

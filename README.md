@@ -358,7 +358,19 @@ are preserved; media files are not bundled. Answer keys / teacher notes remain
 host-owned. Public-state wire stays **7**; sync envelope stays **2**. Slice 12
 did not implement persistence. See
 [`docs/architecture/ADR-012-portable-export-round-trip.md`](docs/architecture/ADR-012-portable-export-round-trip.md).
-**Slice 13** remains Planned and unstarted.
+**Slice 13 — Local persistence & recovery. Complete** — PR #27 was
+squash-merged at `6cf4d2579ab558f8c4b7eabca0b94df4acc6f20c` (merged
+**2026-07-29T21:27:59Z**) from final reviewed head
+`ad0867ab6d7e00f397de51dfad2363f35bc181d7` (authorized base
+`3fd212994c0e8b651193460de633995fe80a25df`). Host-local IndexedDB persistence
+for saved definitions and active-session recovery (explicit Resume/Discard),
+plus a lightweight host-writer lease. Public-state wire stays **7**; sync
+envelope stays **2**; game-file schema stays **1**. No dependency added.
+Live-route behaviour was **not** manually verified. See
+[`docs/architecture/ADR-013-local-persistence-recovery.md`](docs/architecture/ADR-013-local-persistence-recovery.md)
+and
+[`docs/receipts/2026-07-29-slice-13-post-merge-reconciliation.md`](docs/receipts/2026-07-29-slice-13-post-merge-reconciliation.md).
+**Slice 14** remains Planned and unstarted.
 
 > ⚠️ **No physical Sony Buzz! controller has been tested.** CI and simulated
 > Gamepad sources prove the hardware-independent boundary only. There is no

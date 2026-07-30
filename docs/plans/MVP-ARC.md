@@ -56,7 +56,7 @@ systems.
 | 10  | **Sony Buzz! mapping, validation & host setup UX** | Configurable controller mapping, Sony Buzz! candidate classification and capture recipe, host setup/test surface, fallback when no controller is present. **(Complete — squash-merged via PR #21 (`5575be3`) from reviewed head `2885933`. Hardware-independent scope; physical certification deferred; no compatibility claim. See ADR-010.)** | 9 |
 | 11  | **Media contract**             | Typed media model (beyond plain-string prompts), fail-closed on unsupported media, additive on `schemaVersion: 1`. **(Complete — squash-merged via PR #23 (`5d47b2f`) from reviewed head `bb8bd94`. Public wire 7; sync 2; schema 1. See ADR-011.)** | 4, 5 |
 | 12  | **Portable export & round-trip import** | Export a game to the canonical portable document and re-import it losslessly; reproducible game identity; round-trip equality as an acceptance criterion. **Complete — squash-merged via PR #25 (`cdb499a…`).** | 4, 11 |
-| 13  | **Local persistence & recovery** | IndexedDB durable local storage with three stores (`savedDefinitions`, `activeSessions`, `coordination`); explicit Resume/Discard recovery; saved-definition Save/Replace/Delete/Load; private persistence-session wire; lightweight host lease coordination; nothing new projected to the display. | 2, 12 |
+| 13  | **Local persistence & recovery** | IndexedDB durable local storage with three stores (`savedDefinitions`, `activeSessions`, `coordination`); explicit Resume/Discard recovery; saved-definition Save/Replace/Delete/Load; private persistence-session wire; lightweight host lease coordination; nothing new projected to the display. **(Complete — squash-merged via PR #27 (`6cf4d25…`) from reviewed head `ad0867a…`.)** | 2, 12 |
 | 14  | **Final-wager round**          | Public prompt, host-entered/private wagers, timed response, reveal, settlement, tie handling. | 5, 6, 7, 11 |
 | 15  | **Session summary & compatible-profile reporting** | Per-session result summary from replay; normalized metrics; cross-session comparison behind a stable competitive-profile identifier. | 6, 13 |
 | 16  | **Theme engine**               | Presentation-only theme system, accessibility/high-contrast theme. Never alters scoring, validation, event semantics or the privacy boundary. | 5 |
@@ -615,9 +615,12 @@ and
 **Slice 12 is `Complete`** — squash-merged via
 [PR #25](https://github.com/ricktron/classroom-quiz-show/pull/25) at
 `cdb499a1a1924ceb12014d37741b500fd9346214` from final reviewed head
-`e63ef7f19aac7b1cf72ccd5cc640e3296550dae7`. **Slice 13 remains `Planned`**
-under the amended roadmap; its contract is refined below, but this plan does
-not claim Slice 13 delivery.
+`e63ef7f19aac7b1cf72ccd5cc640e3296550dae7`. **Slice 13 is `Complete`** —
+squash-merged via
+[PR #27](https://github.com/ricktron/classroom-quiz-show/pull/27) at
+`6cf4d2579ab558f8c4b7eabca0b94df4acc6f20c` from final reviewed head
+`ad0867ab6d7e00f397de51dfad2363f35bc181d7` (merged **2026-07-29T21:27:59Z**).
+**Slice 14 remains `Planned` and unstarted.**
 
 ## Slice 8 — scope, acceptance, non-goals
 
@@ -957,9 +960,9 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   [`../architecture/ADR-011-media-contract.md`](../architecture/ADR-011-media-contract.md);
   post-merge evidence in
   [`../receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
-- **Next action:** Slice 12 is `Complete`. Slice 13 remains `Planned` with the
-  refined local-persistence contract below; delivery status belongs in STATUS /
-  handoff only after observed merge.
+- **Next action:** Slice 12 and Slice 13 are both `Complete`. Slice 14 remains
+  `Planned` and unstarted; starting it requires separate owner-approved
+  planning/readiness authority.
 
 ### Slice 12 — Portable export & round-trip import
 
@@ -1018,9 +1021,21 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   history and persistence envelopes do not reach `PublicState` or the display.
 - **Impact:** schema no · runtime **yes** · UI **yes** · storage **yes** ·
   hardware no.
-- **Status:** `Planned` — contract refined for the Slice 13 implementation work
-  underway on `cursor/cqs-slice-13-persistence`; not complete.
-- **Owner gate:** authorization to begin.
+- **Status:** `Complete` — squash-merged via
+  [PR #27](https://github.com/ricktron/classroom-quiz-show/pull/27) at
+  `6cf4d2579ab558f8c4b7eabca0b94df4acc6f20c` (merged **2026-07-29T21:27:59Z**;
+  authorized base `3fd212994c0e8b651193460de633995fe80a25df`; final reviewed
+  head `ad0867ab6d7e00f397de51dfad2363f35bc181d7`; reviewed-head/squash trees
+  identical). Local verification: **1,604** unit passed / **1** skipped;
+  **235** e2e passed / **2** skipped. Sonar quality gate **OK** (Reliability A,
+  Security A, Maintainability A) with one deferred non-gate-driving
+  `typescript:S3776` decoder-complexity advisory. Post-merge `CI` run
+  `30492479720` and Pages deploy run `30492480593` both **success**. See
+  [`../architecture/ADR-013-local-persistence-recovery.md`](../architecture/ADR-013-local-persistence-recovery.md)
+  and
+  [`../receipts/2026-07-29-slice-13-post-merge-reconciliation.md`](../receipts/2026-07-29-slice-13-post-merge-reconciliation.md).
+- **Public wire / sync / schema:** public-state wire remains **7**; sync
+  envelope remains **2**; game-file schema remains **1**.
 
 ### Slice 14 — Final-wager round
 
