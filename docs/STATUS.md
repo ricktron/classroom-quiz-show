@@ -212,10 +212,11 @@ surface does not claim that the Child B delivery branch or PR is merged.
 > deployment succeeded** (run `30323528437`). Local post-merge `verify:all` on
 > clean `main` at `5575be3` passed (**1415** unit tests; **202** e2e passed /
 > **2** skipped). Completion covers the owner-accepted hardware-independent
-> scope; **physical Sony Buzz! certification remains incomplete**. An OADL2-S07
-> attempt on the correct host (`macdaddy` / `Ricks-MacBook-Air.local`, wireless
-> Namtai `Wbuzz` `054c:1000` enumerated) hard-stopped without handset Gamepad
-> presses — see
+> scope; **physical Sony Buzz! certification remains incomplete**. OADL2-S07 on
+> the correct host (`macdaddy` / `Ricks-MacBook-Air.local`, wireless Namtai
+> `Wbuzz` `054c:1000`) established that handsets need a host HID **output**
+> keep-alive to stay alive after pairing; browser Gamepad API cannot supply it,
+> so the 4×5 / CQS matrices remain unfinished — see
 > [`receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md);
 > **no compatibility claim is made**. See
 > [`architecture/ADR-010-sony-buzz-profile-and-setup.md`](architecture/ADR-010-sony-buzz-profile-and-setup.md)
@@ -420,7 +421,7 @@ remains deferred; no compatibility claim is made.
 | Device identity, classification, capture state and button indices host-private — never projected | Implemented |
 | **`PublicState` unchanged; wire version unchanged at 6; sync envelope unchanged at 2** | Implemented |
 | ADR-010 recorded | Implemented |
-| **Physical Sony Buzz! validation on owner hardware** | **Attempted 2026-08-01 (OADL2-S07); hard-stopped — no handset presses observed; still required before any supported-hardware claim** |
+| **Physical Sony Buzz! validation on owner hardware** | **Attempted 2026-08-01/02 (OADL2-S07); Lane C — wireless keep-alive required; full matrices unfinished; still required before any supported-hardware claim** |
 | Supported/compatibility/certified language | **Not used — not claimed** |
 | WebHID, Bluetooth, USB drivers | **Not implemented** |
 | Scoring restricted to the active respondent (`OG-6`) | **Still deferred — not implemented** |
@@ -989,11 +990,10 @@ None.
   is touched. This is browser behaviour, not a defect in the panel.
 - **No physical controller has been certified.** Generic USB controller support is
   implemented and unit-proven against a fake source; no specific device is claimed
-  to work, and there is no supported-hardware list. OADL2-S07 reached the correct
-  host with a live wireless Buzz receiver (`Wbuzz` / `054c:1000`) and confirmed
-  CQS no-controller UI, but observed **zero** browser Gamepad presses across timed
-  captures — physical certification remains blocked pending handset wake/battery
-  confirmation
+  to work, and there is no supported-hardware list. OADL2-S07 on this host
+  enumerated wireless `Wbuzz` / `054c:1000`, completed official Namtai pairing
+  signals, and showed that durable presses require a host HID output keep-alive
+  the Gamepad API cannot send — physical certification remains blocked
   ([receipt](receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md)).
 - **Controller buzzing starts switched OFF** and nothing is bound by default —
   there is deliberately no assumed "buzz button".
