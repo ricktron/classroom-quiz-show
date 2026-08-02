@@ -159,7 +159,8 @@ defers to `AGENTS.md` and adds no separate authority.
   confirmed (28 paths). Host-private identity observation, candidate
   classification (`gamepadDeviceProfile`), capture recipe (`sonyBuzzProfile`),
   setup test mode, and host setup surface (`SonyBuzzSetupSection`). Physical
-  hardware certification remains deferred — **no compatibility is claimed**.
+  hardware certification remains incomplete after OADL2-S07 hard stop —
+  **no compatibility is claimed**.
   Rationale in
   [`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md);
   receipts
@@ -258,9 +259,11 @@ defers to `AGENTS.md` and adds no separate authority.
   surface (`SonyBuzzSetupSection`). Test mode resolves edges against the applied
   mapping only — no dispatch, no event, no score. **`PublicState`, the sync
   envelope, commands, events and the reducer are unchanged.** Session-local mapping
-  lifetime is unchanged. Physical hardware certification is deferred; no
-  compatibility is claimed. See
-  [`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md).
+  lifetime is unchanged. Physical hardware certification remains incomplete
+  after the OADL2-S07 hard stop; no compatibility is claimed. See
+  [`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md)
+  and
+  [`../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md).
 - **What Slice 11 adds:** a typed prompt contract (`PromptContent`) with legacy
   strings normalized to text and a bounded static-image form using validated
   same-origin relative paths. Import, trusted-domain, public projection and
@@ -646,9 +649,11 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 - **Most browsers do not expose a controller until a button on it is pressed**, so
   a freshly plugged-in controller can legitimately read as "None detected" until it
   is touched. Browser behaviour, not a panel defect.
-- **No physical controller has been tested.** Generic support is implemented and
-  unit-proven against a fake source; no specific device is claimed to work, and
-  there is no supported-hardware list.
+- **No physical controller has been certified.** Generic support is implemented
+  and unit-proven against a fake source; no specific device is claimed to work,
+  and there is no supported-hardware list. OADL2-S07 (2026-08-01) enumerated the
+  wireless receiver on this host but observed no handset Gamepad presses — see
+  [`../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md).
 - **Controller buzzing starts switched OFF** and nothing is bound by default —
   there is deliberately no assumed "buzz button".
 - **Slice 9 maps BUTTONS only** — no axes, sticks, analog triggers, motion,
@@ -748,7 +753,10 @@ on the adapter side of the boundary that `ROADMAP-AMENDMENT-001` §5.6 fixes.
 **Sony Buzz! controllers are the preferred initial hardware validation target.**
 Slice 10's host-private setup boundary (candidate classification, capture recipe,
 setup test mode) is **`Complete`** under the owner-accepted hardware-independent
-boundary; physical certification remains deferred; no compatibility claim.
+boundary; physical certification was attempted 2026-08-01 (OADL2-S07) and
+hard-stopped without handset presses — see
+[`../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md);
+no compatibility claim.
 
 Slice allocation is unchanged by this direction:
 
@@ -756,7 +764,7 @@ Slice allocation is unchanged by this direction:
 | --- | --- | --- |
 | **8** | The hardware-independent **logical** input contract, and keyboard input as its first consumer. | `Complete` (PR #16, `167128d`) |
 | **9** | The generic **Gamepad** adapter and configurable mappings. | `Complete` (PR #19, `d16f90d`) |
-| **10** | **Sony Buzz!** detection, validation, a recommended profile, handset assignment, and the host setup UX. | `Complete` (PR #21, `5575be3`) — hardware-independent scope; physical certification deferred; no compatibility claim |
+| **10** | **Sony Buzz!** detection, validation, a recommended profile, handset assignment, and the host setup UX. | `Complete` (PR #21, `5575be3`) — hardware-independent scope; physical certification attempted/blocked (OADL2-S07 receipt); no compatibility claim |
 
 **A final event vocabulary for secondary actions was deliberately NOT defined in
 advance, and neither Slice 8 nor Slice 9 defined one.** Slice 9 made the four
@@ -795,7 +803,7 @@ this direction does not authorize it. Slice 13 is **`Complete`** (PR #27,
 `6cf4d25…`). Slice 12 is **`Complete`** (PR #25, `cdb499a…`). Slice 11 is
 **`Complete`** (PR #23, `5d47b2f`). Slice 10 remains **`Complete`** under the
 owner-accepted hardware-independent boundary; physical certification remains
-deferred.
+incomplete after the OADL2-S07 hard stop (no handset Gamepad presses observed).
 
 Recording this direction authorizes no work of any kind.
 

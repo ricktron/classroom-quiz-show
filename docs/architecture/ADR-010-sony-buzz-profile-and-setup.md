@@ -198,17 +198,26 @@ the owner-accepted hardware-independent scope after PR #21 squash-merge
 
 ## Deferred physical certification (owner)
 
+**2026-08-01 OADL2-S07 attempt (hard stop, not a compatibility claim).** On the
+correct host (`macdaddy` / `Ricks-MacBook-Air.local`), a wireless Namtai `Wbuzz`
+receiver (`054c` / `1000`) was enumerated and CQS showed the expected
+no-controller Sony setup surface after a teams-bearing import. No handset button
+events appeared in raw HID callbacks or `navigator.getGamepads()` across timed
+captures, so the four-handset matrix could not be completed. Durable evidence:
+[`../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md).
+
 Owner steps for any future supported-hardware claim:
 
 1. Plug in the wired and/or wireless Sony Buzz! unit on the intended macOS/Chrome.
-2. Record the exact `Gamepad.id` / mapping / button counts observed (host-only).
-3. Confirm whether the unit appears as one Gamepad or several.
-4. Run guided capture for each handset/team; record observed button indices.
-5. Confirm all intended controls are visible and map to the intended actions.
-6. Confirm test mode reports without scoring; confirm keyboard fallback.
-7. Write a **physical-validation receipt** — separate from the CI/local
+2. Wake handsets (press red buzzer; verify batteries) until a `Gamepad` appears.
+3. Record the exact `Gamepad.id` / mapping / button counts observed (host-only).
+4. Confirm whether the unit appears as one Gamepad or several.
+5. Run guided capture for each handset/team; record observed button indices.
+6. Confirm all intended controls are visible and map to the intended actions.
+7. Confirm test mode reports without scoring; confirm keyboard fallback.
+8. Write or amend a **physical-validation receipt** — separate from the CI/local
    hardware-independent receipt.
-8. Only then consider a supported-hardware claim for the observed configuration.
+9. Only then consider a supported-hardware claim for the observed configuration.
 
 ## Explicit non-goals (this phase)
 
