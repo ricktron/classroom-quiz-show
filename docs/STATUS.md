@@ -212,8 +212,17 @@ surface does not claim that the Child B delivery branch or PR is merged.
 > deployment succeeded** (run `30323528437`). Local post-merge `verify:all` on
 > clean `main` at `5575be3` passed (**1415** unit tests; **202** e2e passed /
 > **2** skipped). Completion covers the owner-accepted hardware-independent
-> scope; **physical Sony Buzz! certification remains deferred**, and **no
-> compatibility claim is made**. See
+> scope; **physical Sony Buzz! certification has a bounded host claim under a
+> temporary keep-alive** (permanent keep-alive architecture still unresolved).
+> OADL2-S07 on the correct host (`macdaddy` / `Ricks-MacBook-Air.local`, wireless
+> Namtai `Wbuzz` `054c:1000`) showed that, on this macOS/Chrome configuration, a
+> temporary external HID **output** keep-alive kept handsets responsive, enabled
+> a complete serial 4×5 browser matrix, and — via Playwright-assisted CQS —
+> completed guided setup A–D, test mode, primary-Red gameplay, and keyboard
+> fallback; Gamepad API cannot send that keep-alive; hot-plug recovery without
+> helper restart was not shown — see
+> [`receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md).
+> See
 > [`architecture/ADR-010-sony-buzz-profile-and-setup.md`](architecture/ADR-010-sony-buzz-profile-and-setup.md)
 > and receipts
 > [`receipts/2026-07-27-slice-10-hardware-independent-local-verification.md`](receipts/2026-07-27-slice-10-hardware-independent-local-verification.md),
@@ -396,13 +405,16 @@ owner-acceptance amendment in
 post-merge reconciliation in
 [`receipts/2026-07-28-slice-10-post-merge-reconciliation.md`](receipts/2026-07-28-slice-10-post-merge-reconciliation.md).
 Squash-merged via PR #21 at `5575be3` from reviewed head `2885933`. Completion
-covers the owner-accepted hardware-independent scope; physical certification
-remains deferred; no compatibility claim is made.
+covers the owner-accepted hardware-independent scope. Physical validation on
+owner wireless hardware was completed under OADL2-S07 with a **temporary**
+external keep-alive; see the bounded claim in the S07 receipt. Permanent
+keep-alive architecture remains unresolved; no wired claim; no SKU list.
 
 > **The headline is what did NOT change:** no schema, no `PublicState`, no sync
 > protocol version, no command, no event, no reducer, no queue logic, no timer
-> transition and no scoring behaviour. **No physical Sony Buzz! compatibility is
-> claimed.**
+> transition and no scoring behaviour. Physical Sony Buzz! evidence is
+> **bounded** (temporary keep-alive; this host/receiver only) — not a permanent
+> product keep-alive architecture.
 
 | Item | State |
 | --- | --- |
@@ -416,8 +428,8 @@ remains deferred; no compatibility claim is made.
 | Device identity, classification, capture state and button indices host-private — never projected | Implemented |
 | **`PublicState` unchanged; wire version unchanged at 6; sync envelope unchanged at 2** | Implemented |
 | ADR-010 recorded | Implemented |
-| **Physical Sony Buzz! validation on owner hardware** | **Deferred certification — required before any supported-hardware claim** |
-| Supported/compatibility/certified language | **Not used — not claimed** |
+| **Physical Sony Buzz! validation on owner hardware** | **OADL2-S07 (2026-08-01/02): browser 4×5 + Playwright-assisted CQS setup/test/gameplay/keyboard PASS under temporary keep-alive; bounded claim only; permanent keep-alive unresolved** |
+| Supported/compatibility/certified language | **Bounded host claim only — see S07 receipt; no permanent keep-alive claim** |
 | WebHID, Bluetooth, USB drivers | **Not implemented** |
 | Scoring restricted to the active respondent (`OG-6`) | **Still deferred — not implemented** |
 
@@ -983,9 +995,14 @@ None.
 - **Most browsers do not expose a controller until a button on it is pressed**, so
   a freshly plugged-in controller can legitimately read as "None detected" until it
   is touched. This is browser behaviour, not a defect in the panel.
-- **No physical controller has been tested.** Generic USB controller support is
-  implemented and unit-proven against a fake source; no specific device is claimed
-  to work, and there is no supported-hardware list.
+- **Physical controller certification is bounded, not a SKU list.** Generic USB
+  controller support is unit-proven against a fake source. OADL2-S07 on this host
+  enumerated wireless `Wbuzz` / `054c:1000`, completed a serial browser 4×5 map
+  and Playwright-assisted CQS setup/test/gameplay/keyboard under a **temporary**
+  external HID output keep-alive (Gamepad API cannot send that keep-alive). See
+  the bounded claim and non-claims in
+  ([receipt](receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md)).
+  Permanent keep-alive architecture remains unresolved.
 - **Controller buzzing starts switched OFF** and nothing is bound by default —
   there is deliberately no assumed "buzz button".
 - **Slice 9 maps BUTTONS only.** No axes, sticks, analog triggers, motion,
