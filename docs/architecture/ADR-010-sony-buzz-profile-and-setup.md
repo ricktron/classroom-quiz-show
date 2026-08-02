@@ -2,7 +2,8 @@
 
 - **Status:** Accepted for the hardware-independent portion (Slice 10);
   **`Complete`** after PR #21 squash-merge and post-merge reconciliation —
-  physical hardware certification remains deferred; no compatibility claim
+  OADL2-S07 recorded a **bounded** physical claim under a temporary external
+  keep-alive; permanent keep-alive architecture remains unresolved
 - **Date:** 2026-07-27
 - **Slice:** 10 — Sony Buzz! mapping, validation & host setup UX
 - **Depends on:** [ADR-002](ADR-002-state-event-sync-core.md),
@@ -189,51 +190,45 @@ or discard, and test mappings without touching gameplay. Keyboard remains the
 permanent fallback. Domain, protocol, scoring, timers, queues, and projector
 privacy are unchanged.
 
-**Costs and limits.** No physical controller was available; browser button
-indices remain unknown; wired/wireless compatibility is unproven. Physical
-certification is required before any supported-hardware claim, but is deferred
-certification rather than incomplete Slice 10 work. Slice 10 is **Complete** for
-the owner-accepted hardware-independent scope after PR #21 squash-merge
-(`5575be3` from reviewed head `2885933`) and post-merge reconciliation.
+**Costs and limits.** Browser button indices were unknown at Slice 10 design
+time and must remain capture-based. Wired Buzz was not tested in OADL2-S07.
+Wireless operation on this host required a temporary external HID output
+keep-alive; permanent product architecture for that keep-alive is unresolved.
+Slice 10 remains **Complete** for the owner-accepted hardware-independent scope
+after PR #21 squash-merge (`5575be3` from reviewed head `2885933`) and
+post-merge reconciliation.
 
-## Deferred physical certification (owner)
+## Physical certification (owner) — OADL2-S07
 
-**2026-08-01/02 OADL2-S07 attempt (Lane C — not a compatibility claim).** On
-the correct host (`macdaddy` / `Ricks-MacBook-Air.local`), a wireless Namtai
+**2026-08-01/02 OADL2-S07 (Lane C — bounded claim under temporary keep-alive).**
+On the correct host (`macdaddy` / `Ricks-MacBook-Air.local`), a wireless Namtai
 `Wbuzz` receiver (`054c` / `1000`) enumerates. On this tested macOS/Chrome
 configuration, periodic seven-byte HID **output** reports from a temporary
-external helper kept paired handsets responsive and enabled raw-HID and browser
-Gamepad input. The Gamepad API cannot send arbitrary HID output reports; Chrome
-WebHID was not authorized or tested. A corrected serial harness captured all
-twenty physical buttons (unique indices `0`–`19`) and bound labeled handsets
-A–D to red indices `0` / `10` / `5` / `15`. CQS guided setup becomes visible
-only for games with teams (the foundation sample has zero teams). CQS capture /
-test-mode / gameplay certification was **not** finished (operator Stop). Exact
-minimum keep-alive cadence and permanent product architecture remain
-unverified. Durable evidence:
+external helper kept paired handsets responsive and enabled raw-HID, browser
+Gamepad input, and Playwright-assisted CQS matrices. The Gamepad API cannot send
+arbitrary HID output reports; Chrome WebHID was not authorized or tested. A
+corrected serial harness captured all twenty physical buttons (unique indices
+`0`–`19`) and bound labeled handsets A–D to red indices `0` / `10` / `5` /
+`15`. CQS guided setup requires a teams-bearing game (the foundation sample has
+zero teams) and an advanced category-board round for local-input/timer panels.
+Playwright-assisted CQS completed guided setup A–D, test mode, primary-Red
+gameplay (including hold/rising-edge and simultaneous A+B ordering), and
+keyboard fallback. Session-local mappings are lost on reload. Hot-plug recovery
+without restarting the temporary helper was not shown. Exact minimum keep-alive
+cadence and permanent product architecture remain unverified. Durable evidence:
 [`../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md).
 
-Owner steps for any future supported-hardware claim:
+Remaining owner/product decisions before any **broader** supported-hardware
+list:
 
-1. Plug in the wired and/or wireless Sony Buzz! unit on the intended macOS/Chrome.
-2. For **wireless**: decide how host keep-alive will be supplied (out-of-band
-   helper vs separately authorized WebHID/output path). Pair per Namtai manual
-   (4 s solid blue on all four, then receiver BIND).
-3. Wake handsets until a `Gamepad` appears and stays alive under the chosen
-   keep-alive approach.
-4. Record the exact `Gamepad.id` / mapping / button counts observed (host-only).
-5. Confirm whether the unit appears as one Gamepad or several.
-6. Load a **teams-bearing** game (Controllers / Sony Buzz setup do not render
-   for zero-team foundation samples); run guided capture for each handset/team.
-7. Confirm all intended controls are visible and map to the intended actions.
-8. Confirm test mode reports without scoring; confirm keyboard fallback.
-9. Write or amend a **physical-validation receipt** — separate from the CI/local
-   hardware-independent receipt.
-10. Only then consider a supported-hardware claim for the observed configuration.
+1. Decide permanent wireless keep-alive (out-of-band helper vs separately
+   authorized WebHID/output path).
+2. Repeat matrices for wired Buzz (`0002`) and any other OS/browser targets.
+3. Decide whether hot-plug recovery is in scope for the chosen keep-alive path.
 
 ## Explicit non-goals (this phase)
 
 No WebHID, Bluetooth pairing UX, USB drivers, haptics, axes, analog tuning,
 persistent mappings, phone/networked buzzers, secondary-action gameplay, scoring
 changes, schema/`PublicState`/protocol changes, Slice 11 media work, or any
-physical-compatibility claim.
+compatibility claim beyond the bounded OADL2-S07 receipt.

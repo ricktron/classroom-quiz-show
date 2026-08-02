@@ -159,9 +159,10 @@ defers to `AGENTS.md` and adds no separate authority.
   confirmed (28 paths). Host-private identity observation, candidate
   classification (`gamepadDeviceProfile`), capture recipe (`sonyBuzzProfile`),
   setup test mode, and host setup surface (`SonyBuzzSetupSection`). Physical
-  hardware certification remains incomplete after OADL2-S07 (browser 4×5 matrix
-  completed under temporary external keep-alive; CQS matrices unfinished) —
-  **no compatibility is claimed**.
+  hardware certification after OADL2-S07 has a **bounded host claim** under a
+  temporary external keep-alive (Playwright-assisted CQS setup/test/gameplay/
+  keyboard); permanent keep-alive architecture remains unresolved — see the S07
+  receipt.
   Rationale in
   [`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md);
   receipts
@@ -652,13 +653,13 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
 - **Most browsers do not expose a controller until a button on it is pressed**, so
   a freshly plugged-in controller can legitimately read as "None detected" until it
   is touched. Browser behaviour, not a panel defect.
-- **No physical controller has been certified.** Generic support is implemented
-  and unit-proven against a fake source; no specific device is claimed to work,
-  and there is no supported-hardware list. OADL2-S07 (2026-08-01/02) completed
-  a serial browser 4×5 map for wireless `Wbuzz` under a temporary external HID
-  output keep-alive (Gamepad API cannot send it) and stopped before finished
-  CQS matrices — see
+- **Physical controller certification is bounded, not a SKU list.** Generic
+  support is unit-proven against a fake source. OADL2-S07 (2026-08-01/02)
+  completed a serial browser 4×5 map and Playwright-assisted CQS matrices for
+  wireless `Wbuzz` under a temporary external HID output keep-alive (Gamepad API
+  cannot send it) — see the bounded claim in
   [`../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md).
+  Permanent keep-alive architecture remains unresolved.
 - **Controller buzzing starts switched OFF** and nothing is bound by default —
   there is deliberately no assumed "buzz button".
 - **Slice 9 maps BUTTONS only** — no axes, sticks, analog triggers, motion,
@@ -758,11 +759,10 @@ on the adapter side of the boundary that `ROADMAP-AMENDMENT-001` §5.6 fixes.
 **Sony Buzz! controllers are the preferred initial hardware validation target.**
 Slice 10's host-private setup boundary (candidate classification, capture recipe,
 setup test mode) is **`Complete`** under the owner-accepted hardware-independent
-boundary; physical certification was attempted 2026-08-01/02 (OADL2-S07):
-browser matrix completed under temporary external keep-alive; CQS matrices
-unfinished — see
-[`../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md);
-no compatibility claim.
+boundary; physical certification was completed 2026-08-01/02 (OADL2-S07) under a
+temporary external keep-alive with a **bounded** host claim — see
+[`../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md).
+Permanent keep-alive architecture remains unresolved.
 
 Slice allocation is unchanged by this direction:
 
@@ -770,7 +770,7 @@ Slice allocation is unchanged by this direction:
 | --- | --- | --- |
 | **8** | The hardware-independent **logical** input contract, and keyboard input as its first consumer. | `Complete` (PR #16, `167128d`) |
 | **9** | The generic **Gamepad** adapter and configurable mappings. | `Complete` (PR #19, `d16f90d`) |
-| **10** | **Sony Buzz!** detection, validation, a recommended profile, handset assignment, and the host setup UX. | `Complete` (PR #21, `5575be3`) — hardware-independent scope; physical certification incomplete after OADL2-S07 (browser matrix done under temp keep-alive; CQS unfinished); no compatibility claim |
+| **10** | **Sony Buzz!** detection, validation, a recommended profile, handset assignment, and the host setup UX. | `Complete` (PR #21, `5575be3`) — hardware-independent scope; OADL2-S07 bounded physical claim under temp keep-alive (see receipt); permanent keep-alive unresolved |
 
 **A final event vocabulary for secondary actions was deliberately NOT defined in
 advance, and neither Slice 8 nor Slice 9 defined one.** Slice 9 made the four
@@ -808,9 +808,8 @@ planning/readiness decision** — Slice 14 remains `Planned` and unstarted, and
 this direction does not authorize it. Slice 13 is **`Complete`** (PR #27,
 `6cf4d25…`). Slice 12 is **`Complete`** (PR #25, `cdb499a…`). Slice 11 is
 **`Complete`** (PR #23, `5d47b2f`). Slice 10 remains **`Complete`** under the
-owner-accepted hardware-independent boundary; physical certification remains
-incomplete after OADL2-S07 (browser 4×5 under temporary keep-alive; CQS
-matrices unfinished).
+owner-accepted hardware-independent boundary; OADL2-S07 recorded a bounded
+physical claim under temporary keep-alive (permanent keep-alive unresolved).
 
 Recording this direction authorizes no work of any kind.
 
@@ -863,8 +862,8 @@ reconciliation. Recording this direction authorizes no work of any kind.
 Do **not**: begin Slice 14 without a separate authorized planning/orchestration
 outcome; claim Child B guidance/onboarding delivery is merged from this handoff;
 claim live-route behaviour that was
-not directly inspected; claim any physical Sony Buzz! compatibility or treat
-deferred physical certification as incomplete Slice 10 work; add WebHID,
+not directly inspected; over-claim Sony Buzz! beyond the bounded OADL2-S07
+receipt (or treat physical certification as incomplete Slice 10 work); add WebHID,
 Bluetooth, USB or HID code beyond what Slice 10's host-private boundary already
 uses; persist a Gamepad mapping to localStorage, IndexedDB, a game file or the
 sync channel; map axes, sticks, analog triggers, motion or haptics; use a
