@@ -261,10 +261,10 @@ defers to `AGENTS.md` and adds no separate authority.
   surface (`SonyBuzzSetupSection`). Test mode resolves edges against the applied
   mapping only — no dispatch, no event, no score. **`PublicState`, the sync
   envelope, commands, events and the reducer are unchanged.** Session-local mapping
-  lifetime is unchanged. Physical hardware certification remains incomplete
-  after OADL2-S07: temporary external keep-alive enabled a complete serial
-  browser matrix; CQS guided/gameplay certification was not finished; no
-  compatibility is claimed. See
+  lifetime is unchanged. Physical hardware certification after OADL2-S07 has a
+  **bounded host claim** under a temporary external keep-alive (Playwright-
+  assisted CQS setup/test/gameplay/keyboard); permanent keep-alive architecture
+  remains unresolved. See
   [`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md)
   and
   [`../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md).
