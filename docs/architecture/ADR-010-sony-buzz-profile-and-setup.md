@@ -198,14 +198,19 @@ the owner-accepted hardware-independent scope after PR #21 squash-merge
 
 ## Deferred physical certification (owner)
 
-**2026-08-01/02 OADL2-S07 attempt (Lane C hard stop, not a compatibility
-claim).** On the correct host (`macdaddy` / `Ricks-MacBook-Air.local`), a
-wireless Namtai `Wbuzz` receiver (`054c` / `1000`) enumerates. Official Namtai
-pairing can show RF success, but handsets power off unless the host writes a HID
-**output** keep-alive to the receiver. With an external keep-alive, Chrome
-exposed one device `Wbuzz (Vendor: 054c Product: 1000)` (20 buttons, 2 axes).
-The browser Gamepad API cannot send that keep-alive, so the four-handset matrix
-and CQS gameplay certification were not completed. Durable evidence:
+**2026-08-01/02 OADL2-S07 attempt (Lane C — not a compatibility claim).** On
+the correct host (`macdaddy` / `Ricks-MacBook-Air.local`), a wireless Namtai
+`Wbuzz` receiver (`054c` / `1000`) enumerates. On this tested macOS/Chrome
+configuration, periodic seven-byte HID **output** reports from a temporary
+external helper kept paired handsets responsive and enabled raw-HID and browser
+Gamepad input. The Gamepad API cannot send arbitrary HID output reports; Chrome
+WebHID was not authorized or tested. A corrected serial harness captured all
+twenty physical buttons (unique indices `0`–`19`) and bound labeled handsets
+A–D to red indices `0` / `10` / `5` / `15`. CQS guided setup becomes visible
+only for games with teams (the foundation sample has zero teams). CQS capture /
+test-mode / gameplay certification was **not** finished (operator Stop). Exact
+minimum keep-alive cadence and permanent product architecture remain
+unverified. Durable evidence:
 [`../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md).
 
 Owner steps for any future supported-hardware claim:
@@ -214,10 +219,12 @@ Owner steps for any future supported-hardware claim:
 2. For **wireless**: decide how host keep-alive will be supplied (out-of-band
    helper vs separately authorized WebHID/output path). Pair per Namtai manual
    (4 s solid blue on all four, then receiver BIND).
-3. Wake handsets until a `Gamepad` appears and stays alive.
+3. Wake handsets until a `Gamepad` appears and stays alive under the chosen
+   keep-alive approach.
 4. Record the exact `Gamepad.id` / mapping / button counts observed (host-only).
 5. Confirm whether the unit appears as one Gamepad or several.
-6. Run guided capture for each handset/team; record observed button indices.
+6. Load a **teams-bearing** game (Controllers / Sony Buzz setup do not render
+   for zero-team foundation samples); run guided capture for each handset/team.
 7. Confirm all intended controls are visible and map to the intended actions.
 8. Confirm test mode reports without scoring; confirm keyboard fallback.
 9. Write or amend a **physical-validation receipt** — separate from the CI/local

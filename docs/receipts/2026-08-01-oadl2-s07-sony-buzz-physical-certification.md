@@ -1,4 +1,4 @@
-# OADL2-S07 — Sony Buzz! physical certification (Lane C — keep-alive block)
+# OADL2-S07 — Sony Buzz! physical certification (serial matrix + CQS stop)
 
 | Field | Value |
 | --- | --- |
@@ -6,32 +6,41 @@
 | Parent authorization | `AUTHORIZE OADL2-S07-COMPLEX-REPAIR-AND-QA-PILOT` |
 | Recovery authorization | `AUTHORIZE OADL2-S07-CORRECT-HOST-RECOVERY-AND-CONDITIONAL-CLONE` |
 | Continuation authorization | `AUTHORIZE OADL2-S07-HANDSET-SYNC-AND-PHYSICAL-MATRIX-CONTINUATION` |
-| Dates (local host) | 2026-08-01 (initial hard stop); 2026-08-02 (handset sync continuation) |
-| Lane | **C — hardware / platform keep-alive block** (no runtime repair; no compatibility claim) |
+| Retry authorization | `AUTHORIZE OADL2-S07-SERIAL-HARNESS-AND-CQS-MATRIX-RETRY` |
+| Dates (local host) | 2026-08-01 (initial); 2026-08-02 (sync, serial harness, CQS attempt) |
+| Lane | **C — platform keep-alive + incomplete CQS certification** (docs-only; no compatibility claim) |
 | Repository | `ricktron/classroom-quiz-show` |
 | Local root | `/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show` |
 | Live base SHA | `5fe6eb39dd107c24e4ae1bad8d091cf5c83ed007` (`origin/main`) |
 | Branch / PR | `fix/oadl2-s07-sony-buzz-certification` / [#29](https://github.com/ricktron/classroom-quiz-show/pull/29) |
+| Tested CQS commit | docs branch head on `5fe6eb39…` base (runtime unchanged) |
 
 ## Verdict
 
-Physical certification on the correct host **did not complete**. The wireless
-receiver enumerates. Official Namtai pairing can produce visible RF success
-(receiver LED flashes on handset press). Handsets nevertheless **power off /
-become unresponsive** unless the host periodically writes a HID **output**
-keep-alive to the `Wbuzz` receiver. With an external keep-alive probe, raw HID
-input reports and Chrome Gamepad exposure were observed. The browser Gamepad API
-**cannot** send that keep-alive. The four-handset / five-button capture matrix
-and the CQS gameplay matrix were **not** completed under the docs-only Branch
-Lease.
+On this tested macOS/Chrome configuration, periodic seven-byte HID output
+reports from a **temporary external helper** kept paired Namtai wireless
+handsets responsive and enabled raw-HID and browser Gamepad input. The Gamepad
+API reads browser-exposed controller state but cannot send arbitrary HID output
+reports. Chrome WebHID may support explicit HID output reports, but **no WebHID
+implementation was authorized or tested**.
 
-**No Sony Buzz! compatibility is claimed.**
+A corrected **serial** human-operated browser harness captured all twenty
+physical controls (press + release) with unique browser button indices `0`–`19`.
+Physical handsets were later labeled **A–D** and bound to the four established
+red-index groups via one Red press each. The earlier overlapping-prompt harness
+failure was harness concurrency/auto-advance, **not** a controller-detection
+failure.
+
+CQS guided setup became reachable after a **teams-bearing** import. Operator
+**Stop** ended testing before complete CQS capture / test-mode / gameplay
+matrices. **No Sony Buzz! compatibility is claimed.**
 
 ## Authorization lineage
 
 1. `AUTHORIZE OADL2-S07-COMPLEX-REPAIR-AND-QA-PILOT`
 2. `AUTHORIZE OADL2-S07-CORRECT-HOST-RECOVERY-AND-CONDITIONAL-CLONE`
-3. `AUTHORIZE OADL2-S07-HANDSET-SYNC-AND-PHYSICAL-MATRIX-CONTINUATION` (this session)
+3. `AUTHORIZE OADL2-S07-HANDSET-SYNC-AND-PHYSICAL-MATRIX-CONTINUATION`
+4. `AUTHORIZE OADL2-S07-SERIAL-HARNESS-AND-CQS-MATRIX-RETRY` (this continuation)
 
 ## Host environment
 
@@ -43,7 +52,7 @@ Lease.
 | Browser | Google Chrome `151.0.7922.71` |
 | CQS version (package) | `0.1.0` at live base `5fe6eb39…` |
 | Clone | Existing clean clone; origin `https://github.com/ricktron/classroom-quiz-show.git` |
-| Hub note | Initial work used Anker 332 USB-C hub; controlled retry used **direct USB-C** |
+| Temporary harness root | `/private/tmp/oadl2-s07-serial-retry/` (not committed) |
 
 ## Hardware enumeration
 
@@ -51,127 +60,139 @@ Lease.
 | --- | --- |
 | USB product | `Wbuzz` |
 | USB vendor string | `Namtai` |
-| `idVendor` | `1356` (`0x054c`) |
-| `idProduct` | `4096` (`0x1000`) |
-| Transport | USB |
-| HID Usage Page / Usage | `1` / `4` (Generic Desktop / Joystick) |
-| Max input report size | `5` |
-| Max output report size | `7` |
+| `idVendor` / `idProduct` | `1356` / `4096` (`0x054c` / `0x1000`) |
+| Max input / output report size | `5` / `7` |
 
-Receiver was absent at session start; after one owner unplug/replug it
-re-enumerated. Remained present for subsequent probes.
+## Keep-alive (temporary external helper)
 
-## Observed hardware controls (not invented)
-
-| Control | Observation |
+| Fact | Observed |
 | --- | --- |
-| Receiver | Unlabeled side **BIND** button; blue LED (off until bind / activity) |
-| Handset | Ridged side **POWER/LOCK** switch; no separate sync button |
-| Handset LED | Blue LED near base; red buzzer can also flash during pairing |
-| Markings | PlayStation symbol; handsets not numbered |
+| Mechanism | Swift/IOKit `IOHIDDeviceSetReport` output, **7** zero bytes, ~**2 s** interval |
+| Result on this host | Writes succeeded (`status=0`); handsets remained responsive; input reports observed |
+| Permanent product architecture | **Unverified** — exact minimum cadence and cross-platform requirement not claimed |
 
-### Official Namtai LED / pairing meanings (FCC ID VZVBUZZ01 manual)
+Bounded claim:
 
-| Pattern | Meaning |
-| --- | --- |
-| Blue LED rapid flash ×8 | Powering **ON** |
-| Blue LED slow flash ×4 | Powering **OFF** |
-| Hold POWER 4 s until solid blue (all four), then hold receiver BIND | Re-pair all four |
-| Success | Handset blue LED + red button flash; receiver LED flashes once per pair |
-| Link test | Any button → handset **and** receiver blue LEDs flash briefly |
-| LOCK position | Keeps powered handset from accidental power toggle |
+> On this tested macOS/Chrome configuration, periodic HID output reports from
+> the temporary helper kept the paired handsets responsive and enabled input
+> observation.
 
-## Four-handset synchronization matrix
+## Prior harness root cause (overlapping prompts)
 
-| Handset | Powers on (8 blinks) | Sync attempted | Handset LED | Receiver LED | Red buzzer response |
-| ------- | -------------------: | -------------: | ----------- | ------------ | ------------------- |
-| 1 | yes | yes (official sequence) | solid blue during pair; then often dark | flashes during BIND / on successful test press | RF flash observed once after official pair; later unresponsive without keep-alive |
-| 2 | yes | yes | same | same | same |
-| 3 | yes | yes | same | same | same |
-| 4 | yes | yes | same | same | same |
+The previous `/tmp` matrix used (a) an in-page capture loop that **auto-advanced**
+on rising edge without Accept, and (b) blocking native `osascript` dialogs from
+Playwright. Page text could show the next cell (e.g. Orange) while a native
+dialog still named the previous cell (e.g. Blue). Two result artifacts also
+indicated multiple harness invocations. Replacement serial harness: one in-page
+prompt, Accept/Retry required, single-instance server lock, no native matrix
+dialogs.
 
-| Question | Result |
-| --- | --- |
-| Distinct player assignment LEDs? | Not observed as durable numbered assignment |
-| All four connected simultaneously? | Pairing flashes yes; sustained usable link **no** without keep-alive |
-| Survives brief idle? | **No** — handsets power off / go unresponsive after BIND without host output keep-alive |
-
-## Raw-HID result
-
-Bounded Swift/IOKit probes (temporary `/tmp` tools only; **no** CQS package install):
-
-| Condition | Result |
-| --- | --- |
-| Open device, no keep-alive | Open OK; `IOHIDDeviceGetReport` len `0`; **0** input-report callbacks across long windows |
-| Output keep-alive (`IOHIDDeviceSetReport` output, 7× `0x00`, every ~2 s) | Open OK; handsets stay on; input reports arrive |
-| Report size | `5` |
-| Idle / release pattern | `00 00 00 00 f0` |
-| Example pressed patterns observed | `00 00 01 00 f0`, `00 00 10 00 f0`, `00 00 20 00 f0`, `00 00 00 80 f0`, `00 00 00 04 f0` |
-| Distinguishable handsets? | **Likely** (distinct changed bits) — full stable map **not** certified |
-| Community corroboration | PCGamingWiki / Mac HID helpers: wireless Buzz requires host write so controllers do not instantly turn off |
-
-## Chrome Gamepad result
+## Complete serial browser matrix
 
 | Observation | Result |
 | --- | --- |
-| `typeof navigator.getGamepads` | `"function"` |
-| Without keep-alive | Device often absent / presses `0` after handsets die |
-| With external keep-alive | Device present: **`Wbuzz (Vendor: 054c Product: 1000)`** |
-| Topology | **One** logical Gamepad (index `0`), not four devices |
-| Button count / axes | **20** buttons, **2** axes, `mapping: ""` |
-| Owner-confirmed Detected while keep-alive ran | Yes — red presses registered in probe UI |
-| Complete structured 4×5 matrix | **Not completed** (interactive capture abandoned at owner request after UX friction; `Document & stop`) |
-| Held / release / reconnect / reload / Chrome restart matrix | **Not completed** |
+| Gamepad | One device: `Wbuzz (Vendor: 054c Product: 1000)`, index `0` |
+| Topology | 20 buttons, 2 axes, empty mapping token |
+| Reliability gate | Controller Red (then labeled group red-0) detected **3/3** at browser button **0** |
+| Full matrix | **20/20** accepted with press + release timestamps |
+| Unique indices | **Yes** — `0`–`19` all used once |
+| Contiguous groups | Yes — four blocks of five |
 
-### Partial browser matrix (incomplete)
+### Color → browser index within each red group
 
-| Handset | Button | Browser device/index | Browser button index | Detected |
-| ------- | ------ | -------------------- | -------------------: | -------: |
-| 1–4 | Red / colors | `Wbuzz…` / `0` when keep-alive live | **Unverified map** | Partial only — full 20-cell table not recorded |
+| Physical | Indices relative to group red R |
+| --- | --- |
+| Red | R |
+| Yellow | R+1 |
+| Green | R+2 |
+| Orange | R+3 |
+| Blue | R+4 |
 
-## CQS physical matrix
+### Label binding (A–D) — red presses only
 
-**Not run** in this continuation. Blocked on durable browser input without an
-authorized in-app keep-alive path. Prior session already showed expected
-no-controller Sony setup UI after teams-bearing import; that UI finding is
-unchanged and is not a compatibility claim.
+Owner clarification: an earlier “Controller 1 Red → index 15” observation was
+Rick pressing a **different physical handset**, not index instability. Labels
+A–D were then bound:
+
+| Label | Red browser index | Established color group |
+| ----- | ----------------: | ----------------------- |
+| A | 0 | 0–4 (Y1 G2 O3 B4) |
+| B | 10 | 10–14 |
+| C | 5 | 5–9 |
+| D | 15 | 15–19 |
+
+Session log: `/private/tmp/oadl2-s07-serial-retry/logs/` (uncommitted).
+
+### Browser lifecycle (operator)
+
+Operator selected **All lifecycle checks OK** for reload / tab background /
+focus / unplug-replug / idle-wake / Chrome restart while the temporary helper
+remained active. JSONL recorded visibility/focus and at least one
+`gamepadconnected` event. Helper restart was **not** required in that operator
+report. Mappings are session-local in CQS and were not under test in the raw
+browser harness.
+
+## CQS physical matrix (partial — operator Stop)
+
+| Step | Result |
+| --- | --- |
+| Host route | `#/host` required (`Open Host`) |
+| `Initialize sample game` | Loads **0-team** foundation sample → Controllers / Sony Buzz section **does not render** (`teams.length === 0` early return) |
+| Category-board sample import | Controllers + `Sony Buzz! setup (session-local)` appear; stock sample has **2** teams |
+| Runtime 4-team import (UI only) | Blue Basalts, Red Rhyolites, Green Granites, Yellow Schists — setup visible |
+| Wbuzz in controller surface | Operator confirmed after wake press with helper active |
+| A1 Handset team | Blue Basalts selected (Done) |
+| A2–A8 / B–D guided capture | **Not completed** — operator **Stop** |
+| Test mode / gameplay / keyboard matrices | **Not completed** |
+
+### Setup-path observation (not a completed defect isolation)
+
+A reasonable teacher who only clicks **Initialize sample game** never sees
+Controllers / Sony Buzz setup, because that sample has no teams. Certification
+required a teams-bearing import (category-board sample, then a temporary
+4-team JSON edit in the import textarea). This is recorded as a **setup-path /
+usability observation**. No runtime mutation was authorized; no APPLICATION
+defect was formally isolated before Stop.
 
 ## Failure classifications
 
-### F1 — Wireless keep-alive required (primary)
+### F1 — Wireless keep-alive platform requirement
 
 | Field | Value |
 | --- | --- |
-| Class | `LOCAL_ENVIRONMENT_FAILURE` / platform HID contract gap (not CQS Gamepad dispatch bug) |
-| Evidence | Official pair → visible RF; without output writes handsets die; with 7-byte zero output keep-alive, HID reports + Chrome `Wbuzz` exposure |
-| Confidence | High |
-| Competing explanations | Exhausted for “dead batteries / never paired”: batteries present; official pair LEDs observed |
-| Repair | **Not ordinary application repair** under docs-only lease. Requires owner decision on WebHID (or other) output keep-alive vs out-of-band helper vs defer wireless |
+| Class | `OS_OR_HID_FAILURE` / unresolved platform integration requirement |
+| Evidence | Without output writes, handsets die; with temporary 7-byte output keep-alive, raw HID + Chrome Gamepad work on this host |
+| Not used | `LOCAL_ENVIRONMENT_FAILURE` merely because a helper is required |
 
-### F2 — Full certification matrices incomplete
+### F2 — CQS certification incomplete
 
 | Field | Value |
 | --- | --- |
-| Class | `UNKNOWN` for app correctness; **blocked** for certification |
-| Evidence | 4×5 browser matrix and CQS gameplay matrix not completed |
-| Confidence | High that certification is incomplete |
-| Repair | Lane C stop — no runtime mutation |
+| Class | `UNKNOWN` for full app correctness; certification **incomplete** |
+| Evidence | Operator Stop before complete guided capture / test mode / gameplay |
 
 ## Application defect found?
 
-**No attributable CQS application defect was isolated.** Chrome can expose the
-receiver once keep-alive is supplied externally; CQS was not exercised on a
-complete matrix. The current docs-only Branch Lease does **not** authorize
-WebHID/runtime keep-alive work.
+**No attributable CQS runtime defect was isolated** against the stable browser
+matrix. CQS matrices were not completed. A setup-path usability observation
+(Controllers hidden for 0-team foundation sample) is noted above but was not
+promoted to a Branch Lease amendment in this docs-only slice.
 
-## Repair performed
+## API distinction (evidence-bounded)
 
-None in application code. Documentation/receipt update only.
+| Path | Status in this slice |
+| --- | --- |
+| Gamepad API | Reads browser-exposed state; **cannot** send arbitrary HID output reports |
+| Chrome WebHID | May support HID output; **not authorized / not tested** |
+| Temporary external helper | Demonstrated HID output writes on this host + receiver |
 
 ## Compatibility claim
 
 **None.** Explicit non-claim for wired and wireless Sony Buzz! on this
-host/browser/CQS version.
+host/browser/CQS version. Any future claim must name wireless Namtai
+`Wbuzz` `054c:1000`, this Mac class, observed macOS/Chrome versions, the
+external or in-product keep-alive requirement, the tested CQS commit, exact
+behaviors, and remaining limits.
 
 ## Branch Lease (docs continuation)
 
@@ -180,7 +201,7 @@ host/browser/CQS version.
 | Branch | `fix/oadl2-s07-sony-buzz-certification` |
 | Base | `5fe6eb39dd107c24e4ae1bad8d091cf5c83ed007` |
 | Owned paths | this receipt; `docs/STATUS.md`; `docs/handoff/CURRENT.md`; `docs/architecture/ADR-010-sony-buzz-profile-and-setup.md` |
-| Forbidden | runtime/code, tests, lockfiles, `.github/**`, NightWatch, S08, merge |
+| Forbidden | runtime/code, tests, lockfiles, `.github/**`, NightWatch, S08, merge, WebHID, permanent native helper |
 
 ## Explicit non-claims
 
@@ -188,4 +209,4 @@ host/browser/CQS version.
 - Does not authorize WebHID, native bridges, drivers, or dependency changes.
 - Does not register S07 in NightWatch.
 - Does not authorize merge or S08.
-- Does not claim a complete button-index map or CQS gameplay certification.
+- Does not claim CQS gameplay certification or a permanent keep-alive architecture.
