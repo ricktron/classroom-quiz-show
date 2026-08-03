@@ -37,7 +37,7 @@ Planned round types include category-board, final-wager, sequential-prompts,
 image-identification, timeline-ordering, matching, data-interpretation,
 concept-map, claim-evidence-reasoning, whiteboard-challenge, and custom. Two are
 implemented: **`category-board`** (Slice 5, `Complete`) and **`final-wager`**
-(Slice 14, **`In review`** — not merged and not `Complete`; see
+(Slice 14, `Complete` — squash-merged via PR #32 at `ce2e103…`; see
 [`architecture/ADR-014-final-wager-round.md`](architecture/ADR-014-final-wager-round.md)). The
 full vision (scoring strategies, themes, media, game packs, AI copilot) is
 captured in [`architecture/GAME-ENGINE-BOUNDARIES.md`](architecture/GAME-ENGINE-BOUNDARIES.md)
