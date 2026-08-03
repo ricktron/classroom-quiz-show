@@ -40,7 +40,18 @@ The **second playable round type** — `final-wager`, the closing wager round. F
 rationale in
 [`architecture/ADR-014-final-wager-round.md`](architecture/ADR-014-final-wager-round.md);
 local evidence in
-[`receipts/2026-08-03-slice-14-local-verification.md`](receipts/2026-08-03-slice-14-local-verification.md).
+[`receipts/2026-08-03-slice-14-local-verification.md`](receipts/2026-08-03-slice-14-local-verification.md),
+review evidence in
+[`receipts/2026-08-03-slice-14-pr-review-and-hardening.md`](receipts/2026-08-03-slice-14-pr-review-and-hardening.md).
+
+The review's browser acceptance found one blocker, and it was **inherited from
+the authorized base, not introduced by Slice 14**: an authored image prompt that
+omitted `caption` or `attribution` could not be re-read by the trusted media
+normalizer, so the whole round projected nothing. It was repaired under
+`AUTHORIZE-CQS-MEDIA-NORMALIZED-PROMPT-REREAD-REPAIR-1`
+([receipt](receipts/2026-08-03-media-normalized-prompt-reread-repair.md)) — a
+two-guard fix in `src/game/media/definition.ts` that also repairs
+`category-board`. **All 24 required browser-acceptance scenarios now pass.**
 
 > **The headline is what it is NOT:** not a game mode, not a preset or policy
 > engine, not an extension of `category-board`, and not a parallel store or a

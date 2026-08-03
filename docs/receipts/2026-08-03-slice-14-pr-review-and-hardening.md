@@ -92,13 +92,31 @@ Ten scenarios, all observed to a terminal result.
 | 23 | Reduced motion | PASS — countdown remains legible, no state hidden |
 | 24 | Final prompt image failure | **FAIL — see the pre-existing defect below** |
 
-**23 of 24 pass. Scenario 24 does not**, so full Final image-fallback acceptance
-is NOT claimed.
+**At review time, 23 of 24 passed and scenario 24 did not**, so full Final
+image-fallback acceptance was not claimed by this review.
+
+> **Superseded:** scenario 24 was re-run and **passes** after the repair recorded
+> in [`2026-08-03-media-normalized-prompt-reread-repair.md`](2026-08-03-media-normalized-prompt-reread-repair.md).
+> **All 24 required scenarios now pass.**
 
 Explicitly **not** claimed: physical Buzz-controller behaviour, and any deployed
 or live-route behaviour. Neither was exercised.
 
-## Confirmed defect — PRE-EXISTING on the authorized base, NOT repaired here
+## Confirmed defect — PRE-EXISTING on the authorized base
+
+> **Status update — REPAIRED.** This defect was subsequently repaired under
+> `AUTHORIZE-CQS-MEDIA-NORMALIZED-PROMPT-REREAD-REPAIR-1` (evidence state
+> `CQS-MEDIA-NORMALIZED-PROMPT-REREAD-REPAIR-ES-1`); see
+> [`2026-08-03-media-normalized-prompt-reread-repair.md`](2026-08-03-media-normalized-prompt-reread-repair.md).
+> **Browser-acceptance scenario 24 now passes, so all 24 required scenarios pass.**
+> The finding below is retained unedited as the review-time record: it was found
+> during this review and it was inherited from the authorized base, not
+> introduced by Slice 14. One correction from the repair's own reproduction — the
+> attribution-only combination fails too, so **three** of the four legal
+> combinations were affected, not two.
+>
+> Everything from here to the end of this section describes the state **at review
+> time**, before the repair.
 
 **A normalized image prompt whose `caption` or `attribution` is absent cannot be
 re-read, so the round projects nothing at all.**
@@ -319,10 +337,12 @@ dependency or lockfile changed. Slice 14 remains **`In review`**.
 2. **Deployed / live-route behaviour is not claimed.** No deployed URL was
    exercised.
 3. **The per-rule Sonar breakdown is not claimed** — see above.
-4. **Scenario 24 (Final prompt image fallback) does not pass**, because of the
-   pre-existing media defect recorded above. It is reported, not repaired, and
-   not worked around. **Full Final image-fallback acceptance is NOT claimed, and
-   it is not claimed that all 24 scenarios passed.**
+4. **Scenario 24 (Final prompt image fallback) did not pass at review time**,
+   because of the pre-existing media defect recorded above. This review reported
+   it rather than repairing or working around it. ~~Full Final image-fallback
+   acceptance is NOT claimed.~~ **Superseded — it was repaired under
+   `AUTHORIZE-CQS-MEDIA-NORMALIZED-PROMPT-REREAD-REPAIR-1` and scenario 24 now
+   passes; all 24 required scenarios pass.**
 5. The local `test:e2e` gamepad failure attribution recorded in the
    implementation receipt was re-confirmed unchanged; that test was not touched.
    `npm run verify:all` therefore cannot pass locally and is **not** claimed.
@@ -338,8 +358,12 @@ The single unmet acceptance requirement is scenario 24, and its cause is
 image-fallback acceptance scenario and that scenario fails, this review does
 **not** certify acceptance as complete.
 
-**Smallest repair boundary** that would close it — offered as scope, not
-performed here:
+> **Resolved after this review.** The owner authorized the bounded repair below,
+> it was performed exactly as scoped, and scenario 24 now passes. See
+> [`2026-08-03-media-normalized-prompt-reread-repair.md`](2026-08-03-media-normalized-prompt-reread-repair.md).
+
+**Smallest repair boundary** that would close it — offered as scope, and
+subsequently the scope that was actually authorized and performed:
 
 - `src/game/media/definition.ts`, `normalizeImagePrompt`: accept `null` as well
   as `undefined` for `caption` and `attribution`, so the function accepts its own

@@ -242,6 +242,80 @@ describe('trusted normalization', () => {
   })
 })
 
+/**
+ * Regression: normalization must accept its OWN normalized output.
+ *
+ * `caption` and `attribution` are optional in the authored schema, and
+ * normalization turns an omitted one into an explicit `null`. `readTrustedPrompt`
+ * re-reads an already-trusted prompt through that same normalizer, so a guard
+ * that accepted only `undefined` rejected the very value normalization produced.
+ * Three of the four legal combinations were affected, and the consequence was not
+ * a missing caption — the sanitizer failed closed and the ENTIRE round projected
+ * nothing.
+ */
+describe('optional image annotations survive a re-read (idempotent normalization)', () => {
+  const imageBase = {
+    kind: 'image' as const,
+    source: { kind: 'same-origin-path' as const, path: 'media-fixtures/slice-11-clue.png' },
+    alt: 'Earth cross-section',
+  }
+
+  const COMBINATIONS = [
+    ['caption absent, attribution absent', {}, null, null],
+    ['caption present, attribution absent', { caption: 'Layers' }, 'Layers', null],
+    ['caption absent, attribution present', { attribution: 'Fixture' }, null, 'Fixture'],
+    [
+      'caption present, attribution present',
+      { caption: 'Layers', attribution: 'Fixture' },
+      'Layers',
+      'Fixture',
+    ],
+  ] as const
+
+  for (const [label, optionals, caption, attribution] of COMBINATIONS) {
+    it(`accepts the authored form, normalizes and re-reads — ${label}`, () => {
+      const authored = { ...imageBase, ...optionals }
+
+      // The authored form is schema-valid: both optionals really are optional.
+      expect(authoredPromptSchema.safeParse(authored).success).toBe(true)
+
+      const normalized = normalizeAuthoredPrompt(authored)
+      expect(normalized).toEqual({ ...imageBase, caption, attribution })
+
+      // The point of the regression: a re-read must succeed and be equal.
+      const reread = readTrustedPrompt(normalized)
+      expect(reread).not.toBeNull()
+      expect(reread).toEqual(normalized)
+
+      // Idempotent: normalizing a normalized prompt changes nothing.
+      expect(normalizeAuthoredPrompt(normalized)).toEqual(normalized)
+    })
+  }
+
+  it('still fails closed on optional annotations that are neither string nor absent', () => {
+    for (const bad of [123, true, {}, [], () => 'x']) {
+      expect(normalizeAuthoredPrompt({ ...imageBase, caption: bad })).toBeNull()
+      expect(normalizeAuthoredPrompt({ ...imageBase, attribution: bad })).toBeNull()
+      expect(readTrustedPrompt({ ...imageBase, caption: bad, attribution: null })).toBeNull()
+      expect(readTrustedPrompt({ ...imageBase, caption: null, attribution: bad })).toBeNull()
+    }
+  })
+
+  it('widens only the accepted ABSENCE — every other guard is untouched', () => {
+    const nulls = { caption: null, attribution: null }
+    // a bad source kind, a bad path, and a missing/blank alt are all still refused
+    expect(
+      readTrustedPrompt({ ...imageBase, ...nulls, source: { kind: 'https', path: 'x' } }),
+    ).toBeNull()
+    expect(
+      readTrustedPrompt({ ...imageBase, ...nulls, source: { kind: 'same-origin-path', path: '../x.png' } }),
+    ).toBeNull()
+    expect(readTrustedPrompt({ ...imageBase, ...nulls, alt: '' })).toBeNull()
+    // and a null ALT is still refused — null is permitted for annotations only
+    expect(readTrustedPrompt({ ...imageBase, ...nulls, alt: null })).toBeNull()
+  })
+})
+
 describe('category-board construction with media', () => {
   it('builds a board whose string prompt is normalized to text', () => {
     const board = createCategoryBoardDefinition(boardConfig())
@@ -284,5 +358,38 @@ describe('category-board construction with media', () => {
         categories: [category('a', { tiles: [tile('a-1', { media: 'x.png' })] })],
       }),
     ).toThrow()
+  })
+
+  /**
+   * The board half of the re-read regression. A tile prompt reaches the public
+   * wire via `readTrustedPrompt`, so a board built with any legal optional-field
+   * combination must still hand back a readable trusted prompt.
+   */
+  it.each([
+    ['caption absent, attribution absent', {}],
+    ['caption present, attribution absent', { caption: 'Layers' }],
+    ['caption absent, attribution present', { attribution: 'Fixture' }],
+    ['caption present, attribution present', { caption: 'Layers', attribution: 'Fixture' }],
+  ])('keeps a tile image prompt re-readable — %s', (_label, optionals) => {
+    const board = createCategoryBoardDefinition({
+      categories: [
+        category('a', {
+          tiles: [
+            tile('a-1', {
+              prompt: {
+                kind: 'image',
+                source: { kind: 'same-origin-path', path: 'media-fixtures/slice-11-clue.png' },
+                alt: 'Earth cross-section',
+                ...optionals,
+              },
+            }),
+          ],
+        }),
+      ],
+    })
+    const stored = board.categories[0].tiles[0].prompt
+    const reread = readTrustedPrompt(stored)
+    expect(reread).not.toBeNull()
+    expect(reread).toEqual(stored)
   })
 })

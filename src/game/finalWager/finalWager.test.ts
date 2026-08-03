@@ -52,6 +52,7 @@ import { MAX_TEAM_SCORE, MIN_TEAM_SCORE } from '../teams/scoring'
 import { roundId, roundType } from '../ids'
 import type { RoundDefinition } from '../roundDefinition'
 import type { TeamDefinition } from '../teams/definition'
+import { readTrustedPrompt } from '../media/definition'
 import { finalConfig, finalDefinition, precedingBoard } from '../../test/finalWagerFixtures'
 
 /**
@@ -194,6 +195,48 @@ describe('the trusted final-wager definition', () => {
     }
     expect(readFinalWagerDefinition(board)).toBeNull()
     expect(isFinalWagerRound(board)).toBe(false)
+  })
+
+  /**
+   * Regression: a Final image prompt must stay RE-READABLE for every legal
+   * combination of the optional annotations.
+   *
+   * The sanitizer projects a Final prompt through `readTrustedPrompt`, and it
+   * returns `null` for the whole stage if that read fails — so an unreadable
+   * prompt does not merely lose its caption, it takes the entire round off the
+   * projector. `caption` and `attribution` are both optional in the schema, so
+   * three of these four combinations are what a teacher would actually author.
+   */
+  it.each([
+    ['caption absent, attribution absent', {}],
+    ['caption present, attribution absent', { caption: 'Layers' }],
+    ['caption absent, attribution present', { attribution: 'Fixture' }],
+    ['caption present, attribution present', { caption: 'Layers', attribution: 'Fixture' }],
+  ])('keeps a Final image prompt re-readable — %s', (_label, optionals) => {
+    const config = finalConfig({
+      prompt: {
+        kind: 'image',
+        source: { kind: 'same-origin-path', path: 'media-fixtures/slice-11-clue.png' },
+        alt: 'Earth cross-section',
+        ...optionals,
+      },
+    })
+
+    // The authored config is schema-valid — both annotations really are optional.
+    expect(finalWagerConfigSchema.safeParse(config).success).toBe(true)
+
+    const built = createFinalWagerDefinition(config)
+    expect(built.prompt.kind).toBe('image')
+
+    // The load-bearing assertion: the projection path can read it back.
+    const reread = readTrustedPrompt(built.prompt)
+    expect(reread).not.toBeNull()
+    expect(reread).toEqual(built.prompt)
+
+    // And the same holds through the fail-closed round reader the planner uses.
+    const viaRound = readFinalWagerDefinition(roundOf(config))
+    expect(viaRound).not.toBeNull()
+    expect(readTrustedPrompt(viaRound?.prompt)).toEqual(built.prompt)
   })
 })
 

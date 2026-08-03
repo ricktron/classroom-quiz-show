@@ -305,3 +305,217 @@ test('a refresh mid-Final resumes every committed wager', async ({ context }) =>
   // The unsaved draft is gone, exactly as the panel says it will be.
   await expect(host.getByTestId('fwh-wager-input-basalts')).toHaveValue('')
 })
+
+/**
+ * REGRESSION (inherited defect, repaired under
+ * `AUTHORIZE-CQS-MEDIA-NORMALIZED-PROMPT-REREAD-REPAIR-1`).
+ *
+ * `caption` and `attribution` are both OPTIONAL on an authored image prompt, and
+ * normalization turns an omitted one into an explicit `null`. The trusted
+ * re-read used by the sanitizer rejected that `null`, so the whole Final round
+ * projected nothing at all — the class saw "This round is not available yet"
+ * from the moment the question opened until the game ended, while the host
+ * played on unaware.
+ *
+ * These tests pin the previously-failing combination — BOTH annotations absent —
+ * end to end.
+ */
+
+const IMAGE_FINAL_PRIVATE = {
+  answer: 'IMAGE-FINAL-ANSWER-PRIVATE',
+  alternate: 'IMAGE-FINAL-ALTERNATE-PRIVATE',
+  notes: 'IMAGE-FINAL-HOST-NOTE-PRIVATE',
+}
+
+/** A terminal Final whose image prompt omits BOTH optional annotations. */
+function imageFinalGame(path: string) {
+  return {
+    format: 'classroom-quiz-show/game',
+    schemaVersion: 1,
+    id: 'e2e-final-image',
+    title: 'E2E Final Image',
+    teams: [{ id: 'solo', name: 'Solo Team', accent: 'azure' }],
+    timer: { responseSeconds: 30 },
+    rounds: [
+      {
+        id: 'final-round',
+        type: 'final-wager',
+        title: 'Final Wager',
+        config: {
+          // No `caption`, no `attribution` — the combination that used to break.
+          prompt: {
+            kind: 'image',
+            source: { kind: 'same-origin-path', path },
+            alt: 'Teal fixture pixel for the Final round',
+          },
+          answer: IMAGE_FINAL_PRIVATE.answer,
+          alternates: [IMAGE_FINAL_PRIVATE.alternate],
+          notes: IMAGE_FINAL_PRIVATE.notes,
+        },
+      },
+    ],
+  }
+}
+
+async function importAndOpenFinal(host: Page, document: unknown) {
+  await host.getByRole('button', { name: /initialize \/ reset session/i }).click()
+  await host.getByTestId('import-json').fill(JSON.stringify(document, null, 2))
+  await host.getByTestId('import-run').click()
+  await expect(host.getByTestId('import-result')).toContainText(/import succeeded/i)
+  await host.getByRole('button', { name: /advance to next round/i }).click()
+  await expect(host.getByRole('heading', { name: /^final wager$/i })).toBeVisible()
+}
+
+/** Drive an Inclusive Final with a single zero-wager team up to the answer reveal. */
+async function runImageFinalToAnswer(host: Page) {
+  await host.getByTestId('fwh-mode-inclusive').check()
+  await host.getByTestId('fwh-begin').click()
+  await host.getByTestId('fwh-wager-input-solo').fill('0')
+  await host.getByTestId('fwh-save-wager-solo').click()
+  await host.getByTestId('fwh-lock-wagers').click()
+  await host.getByTestId('fwh-capture-host-only').check()
+  await host.getByTestId('fwh-start-response').click()
+}
+
+test('a Final image prompt with NO caption and NO attribution stays projectable end to end', async ({
+  context,
+}) => {
+  test.slow()
+  const host = await context.newPage()
+  const display = await context.newPage()
+  await openHost(host)
+  await openDisplay(display)
+  // A path that does not exist, so the image load genuinely fails.
+  await importAndOpenFinal(host, imageFinalGame('media-fixtures/missing-final-image.png'))
+
+  await runImageFinalToAnswer(host)
+
+  // The round is AVAILABLE and the Final DTO arrived — this is what regressed.
+  await expect(display.getByTestId('fwd-response-entry')).toBeVisible()
+  await expect(display.getByTestId('display-game')).not.toContainText(
+    /this round is not available yet/i,
+  )
+  await expect(display.getByTestId('fwd-prompt')).toBeVisible()
+
+  // The image failed to load, so the authored-alt fallback renders — and it can
+  // only come from an image DTO that actually reached the projector.
+  await expect(display.getByTestId('mcd-image-fallback')).toBeVisible()
+  await expect(display.getByTestId('mcd-alt-fallback')).toContainText(
+    'Teal fixture pixel for the Final round',
+  )
+  // Nothing is invented in place of the missing picture.
+  await expect(display.getByTestId('mcd-caption')).toHaveCount(0)
+  await expect(display.getByTestId('mcd-attribution')).toHaveCount(0)
+  await expectNoPrivateContent(display)
+  await expect(display.getByTestId('fwd-answer')).toHaveCount(0)
+
+  // …and the round stays available through every remaining stage.
+  await host.getByTestId('fwh-save-responded-solo').click()
+  await host.getByTestId('fwh-lock-responses').click()
+  await expect(display.getByTestId('fwd-responses-locked')).toBeVisible()
+
+  await host.getByTestId('fwh-reveal-answer').click()
+  await expect(display.getByTestId('fwd-answer')).toContainText(IMAGE_FINAL_PRIVATE.answer)
+
+  await host.getByTestId('fwh-reveal-solo').click()
+  await expect(display.getByTestId('fwd-team-reveal')).toBeVisible()
+  await expect(display.getByTestId('fwd-reveal-team')).toContainText('Solo Team')
+  await expect(display.getByTestId('fwd-reveal-outcome')).toHaveCount(0)
+
+  await host.getByTestId('fwh-settle-correct').click()
+  await expect(display.getByTestId('fwd-reveal-outcome')).toContainText(/correct/i)
+  await expect(display.getByTestId('fwd-resolution')).toBeVisible()
+
+  // The alternate and the host note never became public at any stage.
+  const html = (await display.content()).toLowerCase()
+  expect(html).not.toContain(IMAGE_FINAL_PRIVATE.alternate.toLowerCase())
+  expect(html).not.toContain(IMAGE_FINAL_PRIVATE.notes.toLowerCase())
+
+  await host.close()
+  await display.close()
+})
+
+test('the same annotation-free Final renders the real image when it loads', async ({ context }) => {
+  test.slow()
+  const host = await context.newPage()
+  const display = await context.newPage()
+  await openHost(host)
+  await openDisplay(display)
+  await importAndOpenFinal(host, imageFinalGame('media-fixtures/slice-11-clue.png'))
+
+  await runImageFinalToAnswer(host)
+
+  await expect(display.getByTestId('fwd-response-entry')).toBeVisible()
+  const image = display.getByTestId('fwd-prompt').locator('img')
+  await expect(image).toBeVisible()
+  await expect(image).toHaveAttribute('alt', 'Teal fixture pixel for the Final round')
+  await expect(display.getByTestId('mcd-image-fallback')).toHaveCount(0)
+  await expectNoPrivateContent(display)
+
+  await host.close()
+  await display.close()
+})
+
+test('a category-board image tile with NO caption and NO attribution still projects', async ({
+  context,
+}) => {
+  test.slow()
+  const host = await context.newPage()
+  const display = await context.newPage()
+  await openHost(host)
+  await openDisplay(display)
+
+  await host.getByRole('button', { name: /initialize \/ reset session/i }).click()
+  await host.getByTestId('import-json').fill(
+    JSON.stringify({
+      format: 'classroom-quiz-show/game',
+      schemaVersion: 1,
+      id: 'e2e-board-image-bare',
+      title: 'E2E Board Image Bare',
+      rounds: [
+        {
+          id: 'board-round',
+          type: 'category-board',
+          title: 'Image Board',
+          config: {
+            categories: [
+              {
+                id: 'c',
+                title: 'Clues',
+                tiles: [
+                  {
+                    id: 'c-100',
+                    value: 100,
+                    prompt: {
+                      kind: 'image',
+                      source: { kind: 'same-origin-path', path: 'media-fixtures/slice-11-clue.png' },
+                      alt: 'Teal fixture pixel with no annotations',
+                    },
+                    answer: 'BOARD-IMAGE-ANSWER-PRIVATE',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      ],
+    }),
+  )
+  await host.getByTestId('import-run').click()
+  await expect(host.getByTestId('import-result')).toContainText(/import succeeded/i)
+  await host.getByRole('button', { name: /advance to next round/i }).click()
+
+  await host.getByTestId('cbh-tile-c-100').click()
+  await host.getByTestId('cbh-reveal-prompt').click()
+
+  await expect(display.getByTestId('display-game')).not.toContainText(
+    /this round is not available yet/i,
+  )
+  const image = display.locator('img')
+  await expect(image).toBeVisible()
+  await expect(image).toHaveAttribute('alt', 'Teal fixture pixel with no annotations')
+  expect((await display.content()).toLowerCase()).not.toContain('board-image-answer-private')
+
+  await host.close()
+  await display.close()
+})

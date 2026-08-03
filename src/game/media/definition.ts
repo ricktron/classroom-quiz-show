@@ -10,6 +10,11 @@ import { isValidSameOriginPath } from './limits'
  *
  * Construction never mutates the input. Image fields are copied; optional
  * caption/attribution become explicit `null` when absent.
+ *
+ * Because that normalized `null` is itself a value this module must be able to
+ * read back — `readTrustedPrompt` re-reads an already-trusted prompt through the
+ * same normalizer — normalization is IDEMPOTENT: normalizing a normalized prompt
+ * yields an equal prompt. See {@link isOptionalAnnotation}.
  */
 
 /** Same-origin path source — the only source kind implemented in Slice 11. */
@@ -65,13 +70,26 @@ export function isImagePrompt(
 }
 
 /**
- * Normalize an authored prompt (string or image object) into trusted
- * `PromptContent`. Returns `null` when the value cannot be trusted — callers
- * fail closed rather than inventing clue content.
+ * Is this an acceptable value for an optional image annotation?
  *
- * The input is never mutated and never retained: every value is copied into a
- * fresh object (then deep-frozen by the board constructor).
+ * TWO absences are legitimate, and both must be accepted for
+ * {@link normalizeImagePrompt} to accept its own output:
+ *
+ *  - `undefined` — the AUTHORED form, where the field was simply omitted;
+ *  - `null`      — the NORMALIZED form this module itself produces for an
+ *                  omitted field (see the header note above).
+ *
+ * Accepting only `undefined` made normalization non-idempotent: a trusted prompt
+ * built from an authored image without a caption or attribution could not be
+ * re-read by {@link readTrustedPrompt}, so the sanitizer failed closed and the
+ * whole round projected nothing. Anything that is neither a string nor an
+ * explicit absence is still refused — this widens the accepted absence, not the
+ * accepted content.
  */
+function isOptionalAnnotation(value: unknown): value is string | null | undefined {
+  return value === undefined || value === null || typeof value === 'string'
+}
+
 function normalizeImagePrompt(value: Record<string, unknown>): PromptContent | null {
   const source = value.source
   if (typeof source !== 'object' || source === null || Array.isArray(source)) return null
@@ -80,8 +98,8 @@ function normalizeImagePrompt(value: Record<string, unknown>): PromptContent | n
   if (typeof sourceRecord.path !== 'string') return null
   if (!isValidSameOriginPath(sourceRecord.path)) return null
   if (typeof value.alt !== 'string' || value.alt.length === 0) return null
-  if (value.caption !== undefined && typeof value.caption !== 'string') return null
-  if (value.attribution !== undefined && typeof value.attribution !== 'string') return null
+  if (!isOptionalAnnotation(value.caption)) return null
+  if (!isOptionalAnnotation(value.attribution)) return null
 
   return {
     kind: 'image',
@@ -92,6 +110,14 @@ function normalizeImagePrompt(value: Record<string, unknown>): PromptContent | n
   }
 }
 
+/**
+ * Normalize an authored prompt (string or image object) into trusted
+ * `PromptContent`. Returns `null` when the value cannot be trusted — callers
+ * fail closed rather than inventing clue content.
+ *
+ * The input is never mutated and never retained: every value is copied into a
+ * fresh object (then deep-frozen by the board constructor).
+ */
 export function normalizeAuthoredPrompt(prompt: unknown): PromptContent | null {
   if (typeof prompt === 'string') {
     if (prompt.length === 0) return null
