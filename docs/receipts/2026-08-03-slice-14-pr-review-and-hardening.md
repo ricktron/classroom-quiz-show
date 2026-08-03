@@ -92,6 +92,9 @@ Ten scenarios, all observed to a terminal result.
 | 23 | Reduced motion | PASS — countdown remains legible, no state hidden |
 | 24 | Final prompt image failure | **FAIL — see the pre-existing defect below** |
 
+**23 of 24 pass. Scenario 24 does not**, so full Final image-fallback acceptance
+is NOT claimed.
+
 Explicitly **not** claimed: physical Buzz-controller behaviour, and any deployed
 or live-route behaviour. Neither was exercised.
 
@@ -117,6 +120,35 @@ Attribution was established by experiment, not assumption:
 | Final round, image prompt without `attribution`, host + projector | this branch | projector blank for the round |
 | `createFinalWagerDefinition` → `readTrustedPrompt` | this branch | returns `null` |
 | `createCategoryBoardDefinition` → `readTrustedPrompt`, image tile without `attribution` | **authorized base `4de1454`, clean worktree** | returns `null` — **identical** |
+
+**Both optional fields are permitted absent by the current schema**, so this is
+reachable from fully valid authored content. The observed matrix for a Final
+image prompt:
+
+| Authored image prompt | Schema accepts | Projects |
+| --- | --- | --- |
+| `caption` and `attribution` both absent | **yes** | **NO** |
+| `caption` present, `attribution` absent | **yes** | **NO** |
+| both present | yes | yes |
+
+Only an image prompt carrying **both** optional fields projects at all.
+
+**Effect on Final-wager operation, stated precisely.** The failure is not
+confined to the image: `toPublicFinalWagerState` returns `null` for every stage
+that carries a prompt (`response-entry`, `responses-locked`, `answer-revealed`,
+`team-reveal`, and `resolution` once a team has been revealed), so
+`roundAvailability` becomes `unavailable` and **no Final DTO is published at
+all**. The projector shows "This round is not available yet" from the moment the
+question is opened until the game ends — no question, no answer, no team reveal,
+no wager, no outcome, and no image fallback. The host panel is unaffected and
+plays through normally, so a teacher gets no warning. Privacy still holds in the
+failure mode: nothing private leaks.
+
+**"Not introduced by Slice 14" is not the same as "does not affect Slice 14."**
+The first is true and proven above. The second is false: Slice 14 is where the
+consequence is most severe, because a Final round is a single terminal round
+whose entire public surface is lost, whereas on the board the loss is scoped to
+one tile's prompt stages.
 
 **The same defect reproduces on `main` through `category-board` with zero
 Slice 14 code present.** It dates from Slice 11's media contract. It was never
@@ -219,6 +251,54 @@ large decoder would broaden this pass into unrelated refactoring. No rule was
 silenced, no exclusion was added, and the missing coverage upload was **not**
 repaired and is not claimed to be.
 
+## Commands & results
+
+Every command was run to a **terminal exit status** on the final review tree.
+Nothing below is reported as passing on inference.
+
+| Command | Exit | Result |
+| --- | ---: | --- |
+| `git diff --check origin/main...HEAD` | **0** | clean |
+| `npm run lint` | **0** | pass — no errors, no warnings |
+| `npm run typecheck` | **0** | pass |
+| `npm run test:run` | **0** | **1,928 passed · 1 skipped · 87 files** |
+| `npm run build` | **0** | pass |
+| `npm run test:e2e` | **1** | **247 passed · 2 skipped · 3 failed** (21.5 min) |
+| `npm run verify` | — | its three constituents each exited **0**; the aggregate was not separately re-run |
+| `npm run verify:all` | — | **not separately re-run**; it necessarily fails while `test:e2e` exits 1 |
+
+The three e2e failures are **one test**, once per Playwright project:
+
+```
+tests/e2e/gamepad-input.spec.ts:377
+  simulated Sony Buzz candidate supports setup capture, apply, and test mode
+```
+
+This is the same pre-existing failure recorded in the implementation receipt,
+re-observed unchanged. The prior clean-base attribution is retained: this slice
+changes **zero** paths under `tests/e2e/gamepad-input.spec.ts`, `src/input/`,
+`GamepadInputHostPanel` or `useGamepadBuzzInput`, and the sandbox ships Chromium
+**1194** against Playwright 1.56's expected **1228**. The test was **not**
+touched. **Exact-head CI, which installs the matching browser, runs this suite
+green** — see below.
+
+**Correction to earlier evidence.** The implementation receipt and the PR
+description record **1,927** unit tests. The observed count is **1,928 passed /
+1 skipped**, verified at both `fca170e` and the review head; the review repairs
+added no tests. The earlier figure was off by one.
+
+## Exact-head CI
+
+Workflow run [`30824538025`](https://github.com/ricktron/classroom-quiz-show/actions/runs/30824538025),
+`head_sha` `b694b99566baa68093cf1e1826652a32dc64f219`, conclusion **success**.
+
+| Check | Conclusion |
+| --- | --- |
+| Lint, typecheck, unit tests, build | **success** |
+| Playwright e2e | **success** |
+| SonarCloud Code Analysis | **success** |
+| Sonar Quality Gate | **passed** |
+
 ## Repairs made
 
 Five paths, all bounded:
@@ -241,6 +321,32 @@ dependency or lockfile changed. Slice 14 remains **`In review`**.
 3. **The per-rule Sonar breakdown is not claimed** — see above.
 4. **Scenario 24 (Final prompt image fallback) does not pass**, because of the
    pre-existing media defect recorded above. It is reported, not repaired, and
-   not worked around.
+   not worked around. **Full Final image-fallback acceptance is NOT claimed, and
+   it is not claimed that all 24 scenarios passed.**
 5. The local `test:e2e` gamepad failure attribution recorded in the
    implementation receipt was re-confirmed unchanged; that test was not touched.
+   `npm run verify:all` therefore cannot pass locally and is **not** claimed.
+
+## Review conclusion
+
+Slice 14's own contract is met: the round is registered, the state machine, the
+privacy boundary, the persistence contract and every version decision hold under
+independent review and under live host+projector operation.
+
+The single unmet acceptance requirement is scenario 24, and its cause is
+**inherited**, not introduced. Because the authorization explicitly required an
+image-fallback acceptance scenario and that scenario fails, this review does
+**not** certify acceptance as complete.
+
+**Smallest repair boundary** that would close it — offered as scope, not
+performed here:
+
+- `src/game/media/definition.ts`, `normalizeImagePrompt`: accept `null` as well
+  as `undefined` for `caption` and `attribution`, so the function accepts its own
+  normalized output.
+- One regression test asserting `readTrustedPrompt(createXDefinition(...).prompt)`
+  round-trips for all four caption/attribution combinations.
+
+No schema change, no version change, no Slice 14 code change, no dependency
+change. It repairs `category-board` and `final-wager` at the same time, because
+both reach the identical function.
