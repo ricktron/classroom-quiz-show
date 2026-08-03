@@ -88,6 +88,11 @@ This project separates two kinds of durable decision records:
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).
+   The **expanded-vision owner decisions** (`CQS-OD-001`…`CQS-OD-086`,
+   recorded 2026-08-03 by planning slice `CQS-PLAN-S01`) live in
+   [`EXPANDED-VISION-OWNER-DECISIONS.md`](EXPANDED-VISION-OWNER-DECISIONS.md),
+   which is canonical for their acceptance and activation state; decision
+   66 is deliberately unresolved there.
 3. **Roadmap amendments** — owner-authorized changes to the slice sequence
    itself, stored here as `ROADMAP-AMENDMENT-NNN-<slug>.md`. An amendment is
    required because the slice sequence in
@@ -103,6 +108,18 @@ This project separates two kinds of durable decision records:
      ahead of any new round type; export/import before persistence; the schema
      migration policy; reporting placement and the rejection of raw-score
      leaderboards; and the 11-slice plan amended to 18 slices (2026-07-26).
+   - [`ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md`](ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md)
+     — future-architecture lineage for the expanded gameplay, authoring,
+     analytics, and operator vision (2026-08-03, planning slice
+     `CQS-PLAN-S01`): every existing ADR decision preserved for the current
+     implementation; future direction (timer-triggered arming, richer
+     public team-card state, ordinal secondary-action consumers, telemetry
+     separation, historical archives, presentation-only leaderboard
+     motion, spreadsheet/LLM authoring over the canonical pipeline,
+     question-family identity, logical-team/controller parking) recorded
+     as explicit amendment clauses (`CQS-RA2-…`) that supersede nothing
+     until a named future arc is separately authorized and implemented.
+     **It changes the current 18-slice MVP plan in no way.**
 
 ## When an ADR is required
 

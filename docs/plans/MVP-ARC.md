@@ -5,6 +5,18 @@ direction, and the slice sequence. It is the durable plan of record in this
 repository. It does **not** silently rewrite the approved plan; it incorporates
 the round-based engine direction into it.
 
+> **Expanded-vision planning exists and changes nothing here (2026-08-03).**
+> A planning-only documentation slice (`CQS-PLAN-S01`) recorded the owner's
+> expanded post-MVP vision — see
+> [`EXPANDED-CQS-VISION-ARC.md`](EXPANDED-CQS-VISION-ARC.md),
+> [`../decisions/EXPANDED-VISION-OWNER-DECISIONS.md`](../decisions/EXPANDED-VISION-OWNER-DECISIONS.md),
+> [`../decisions/ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md`](../decisions/ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md),
+> and
+> [`POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md).
+> **This 18-slice plan remains the current MVP sequence, unmodified**: no
+> slice was added, removed, reordered, or re-scoped; Slice 14 remains
+> `Planned` and unstarted; post-MVP arcs require separate authorization.
+
 ## Product direction (approved)
 
 Classroom Quiz Show is a **reusable, local-first classroom game-show engine**,
