@@ -239,9 +239,11 @@ cleanup remains **pending** and requires separate owner authority.
 
 ## Reconciliation pull request
 
+- **PR:** [#33](https://github.com/ricktron/classroom-quiz-show/pull/33)
 - **Branch:** `docs/cqs-s14-post-merge-reconciliation`
-- **PR number and exact head:** recorded in the follow-up commit on this branch,
-  once the pull request exists. This receipt is committed first so the pull
-  request can reference it.
-- **State:** opened non-draft and **not merged** — merging it requires separate
-  owner authority.
+- **Base:** `main` at `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d`
+- **First commit:** `63641f2306dd5f804449f0a91374f7b862ad78da` (the
+  documentation reconciliation); this commit records the pull-request identity
+  it could not know before the pull request existed.
+- **State:** open, non-draft, and **not merged**. No auto-merge was enabled.
+  Merging it requires separate owner authority.
