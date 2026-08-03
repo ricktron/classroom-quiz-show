@@ -729,11 +729,22 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
   `OG-3` unblock Slice 8's event vocabulary; Slice 8 itself still needs explicit
   authorization to begin.
 
-## Expanded-vision planning documentation (CQS-PLAN-S01, 2026-08-03)
+## Expanded-vision planning documentation (CQS-PLAN-S01) — Complete
 
 A planning-only documentation slice recorded the owner's **expanded
 gameplay, authoring, analytics, and operator vision** as durable
-repository truth. Read before planning any expanded-vision work:
+repository truth. **CQS-PLAN-S01 is `Complete`: squash-merged via
+[PR #30](https://github.com/ricktron/classroom-quiz-show/pull/30)** at
+`44e835cd2b349cd55d4bfc84a34015cb3694b821` (merged 2026-08-03T01:44:11Z)
+from reviewed head `df832f6c091852cec419ca0e2faedd7b8fa07724`, with
+**identical reviewed/squash trees** and **post-merge `CI` (run
+`30777582632`) and Pages deploy (run `30777582624`) both success** —
+see [`../STATUS.md`](../STATUS.md) and
+[`../receipts/2026-08-03-cqs-plan-s01-post-merge-reconciliation.md`](../receipts/2026-08-03-cqs-plan-s01-post-merge-reconciliation.md).
+**Its documentation and merge authority are exhausted** — no additional
+CQS-PLAN-S01 work is authorized, and no expanded-vision capability may be
+implemented from this handoff. Read before planning any expanded-vision
+work:
 
 - **Owner decisions (canonical):**
   [`../decisions/EXPANDED-VISION-OWNER-DECISIONS.md`](../decisions/EXPANDED-VISION-OWNER-DECISIONS.md)
@@ -764,15 +775,21 @@ repository truth. Read before planning any expanded-vision work:
 **That slice implemented nothing.** The current MVP (18-slice plan) is
 unchanged; no runtime code, schema, test, or dependency changed;
 implementation authority for every expanded-vision capability remains
-with the Program Orchestrator and future slice authorizations.
+with the Program Orchestrator and future slice authorizations. Post-MVP
+arcs remain inactive; **decision 66 (`CQS-OD-066`) remains unresolved**.
 
 ## Next action
 
-**Slices 1–13 are `Complete` and merged.** **Slice 14 — Final-wager round
-remains `Planned` and unstarted.** The next safe product action requires a
-separate Slice 14 planning/readiness decision. This handoff does **not**
-authorize Slice 14 implementation, and the expanded-vision planning
-documentation above does not change that routing.
+**Slices 1–13 and planning slice CQS-PLAN-S01 are `Complete` and
+merged.** **Slice 14 — Final-wager round remains `Planned` and
+unstarted** and is the current product route. Slice 14 must receive its
+own bounded planning/readiness authorization before any work begins —
+this handoff does **not** authorize it. When that authorization is
+drafted, the accepted Final Wager decisions (`CQS-OD-005`…`CQS-OD-008`,
+`CQS-OD-011`) now provide **acceptance-design input** for Slice 14's
+already-recorded deliverables (eligibility, wager validation, response
+capture, reveal sequencing, tie handling) without having begun any
+implementation.
 
 ## Owner direction — colored buttons and the local input contract (2026-07-27)
 
