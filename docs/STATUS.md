@@ -1129,9 +1129,11 @@ None.
 
 ## Limitations
 
-- **One playable round type.** `category-board` reveals prompts and answers and
+- **Two playable round types.** `category-board` reveals prompts and answers and
   tracks used tiles; Slice 6 added teams and scoring on top of it, and Slice 7 adds
-  the response window. No buzzer or wager exists.
+  the response window. Slice 14 adds `final-wager` — a terminal, at-most-one,
+  per-team wager round — and it is **`In review`, not merged**, so on `main` there
+  is still only `category-board`.
 - **A response window exists only at the `prompt` stage.** Before the prompt is
   public there is nothing to respond to; once the answer is public the window is
   over and is cleared.
@@ -1147,8 +1149,9 @@ None.
 - **Undoing an expiry restores an already-overdue running timer**, which the host
   adapter then expires again on the next tick unless the host acts. Undo restores
   the prior durable state exactly; it does not invent a friendlier one.
-- **`PublicState` wire version is now 7 and the sync envelope version is 2.** A
-  consumer pinned to either older version fails closed; there is no migration.
+- **`PublicState` wire version is now 8 (Slice 14) and the sync envelope version
+  is 2.** A consumer pinned to either older version fails closed; there is no
+  migration. Version 7 is rejected, never reinterpreted as 8.
 - **Expiry awards and deducts nothing.** A window ending is a fact about the
   window, never a scoring decision.
 - **Timer durations are 5–600 whole seconds**, authored per game or chosen per
@@ -1229,10 +1232,16 @@ None.
 
 ## Next safe action
 
-**Slice 13 is `Complete` and merged.** The next planned product slice is
-**Slice 14 — Final-wager round**, which remains `Planned` and unstarted.
-Starting Slice 14 requires a **separate** owner-approved planning/readiness
-decision; this STATUS surface does not authorize Slice 14 implementation.
+**Slice 14 — Final-wager round is `In review`** on branch
+`claude/cqs-slice-14-final-wager` (PR
+[#32](https://github.com/ricktron/classroom-quiz-show/pull/32)), based on
+`4de1454181ed58bdb282accd136129c3c0eb0f2b`. It is **not merged and not
+`Complete`**, and this STATUS surface does not authorize merging it. The next
+safe action is the owner's merge decision on that pull request.
+
+**Slice 15 remains `Planned` and unstarted.** Starting it requires a
+**separate** owner-approved planning/readiness decision; this STATUS surface
+does not authorize Slice 15 implementation.
 
 Coding agents and contributors should read root [`../AGENTS.md`](../AGENTS.md)
 (and pointer-only [`../CLAUDE.md`](../CLAUDE.md) for Claude sessions) before

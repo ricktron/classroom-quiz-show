@@ -4,6 +4,8 @@ import type { PrivateGameState } from '../state/privateState'
 import type { DispatchResult } from '../state/store'
 import { finalWagerStateFor } from '../state/reducer'
 import { readFinalWagerDefinition } from '../game/finalWager/definition'
+import type { FinalWagerRoundState } from '../game/finalWager/finalState'
+import type { ResponseTimerState } from '../game/timing/responsePhase'
 import { systemClock, type Clock } from '../time/clock'
 
 /**
@@ -51,6 +53,30 @@ export interface UseFinalWagerExpiryOptions {
   readonly clock?: Clock
 }
 
+/** Which Final window, if any, is currently running. */
+type LiveFinalWindow = {
+  readonly kind: 'wager' | 'response'
+  readonly timer: Extract<ResponseTimerState, { status: 'running' }>
+}
+
+/**
+ * The one Final window that is counting down, or `null`.
+ *
+ * Written as guarded returns rather than a chain of conditional expressions so
+ * the precedence — wager window first, response window second — is a statement
+ * a reader can follow, not a nesting depth they have to unpick.
+ */
+function liveFinalWindow(final: FinalWagerRoundState | null): LiveFinalWindow | null {
+  if (final === null) return null
+  if (final.wagerWindow.status === 'running') {
+    return { kind: 'wager', timer: final.wagerWindow }
+  }
+  if (final.responseWindow.status === 'running') {
+    return { kind: 'response', timer: final.responseWindow }
+  }
+  return null
+}
+
 export function useFinalWagerExpiry({
   game,
   dispatch,
@@ -61,16 +87,9 @@ export function useFinalWagerExpiry({
   const isFinal = round !== null && readFinalWagerDefinition(round) !== null
   const final = game && round && isFinal ? finalWagerStateFor(game, round.id) : null
 
-  const wagerWindow = final?.wagerWindow ?? null
-  const responseWindow = final?.responseWindow ?? null
   // Whichever window is actually counting down. At most one can be, because the
   // phase machine runs wager entry strictly before the response window.
-  const live =
-    wagerWindow !== null && wagerWindow.status === 'running'
-      ? ({ kind: 'wager' as const, timer: wagerWindow })
-      : responseWindow !== null && responseWindow.status === 'running'
-        ? ({ kind: 'response' as const, timer: responseWindow })
-        : null
+  const live = liveFinalWindow(final)
 
   const roundId = round?.id ?? null
   const kind = live?.kind ?? null

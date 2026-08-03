@@ -242,8 +242,9 @@ anywhere else.
 
 ## 8. What the current implementation does (for contrast)
 
-One playable round type (`category-board`) with manual arming, a full
-ordered buzz queue, promotion after incorrect/pass, manual scoring presets
-bound to tile values, a single public response timer, text/image prompts,
-export, and recovery. Everything else in this document is future planning
-under the activation states shown.
+On `main`, one playable round type (`category-board`) with manual arming, a
+full ordered buzz queue, promotion after incorrect/pass, manual scoring
+presets bound to tile values, a single public response timer, text/image
+prompts, export, and recovery. Slice 14 adds a second registered round type,
+`final-wager`, and is **`In review`, not merged**. Everything else in this
+document is future planning under the activation states shown.
