@@ -535,6 +535,10 @@ function toPublicFinalWagerState(
         stage: 'resolution',
         prompt: publicPrompt,
         answer: played ? answer : null,
+        // The last team judged stays on screen beside the result — settling the
+        // final team is the climax, and blanking it at that instant would take
+        // the moment away from the class.
+        reveal: played ? toPublicFinalReveal(game, final) : null,
         outcome: finalOutcomeOf(game),
       }
     }

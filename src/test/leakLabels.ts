@@ -53,4 +53,24 @@ export const FORBIDDEN_DISPLAY_LABELS: readonly string[] = [
   'Waiting queue',
   'Mark incorrect and advance',
   'Pass and advance',
+  // Slice 14: the host Final Wager panel. The projector shows a generic wager
+  // status, the question and answer after their explicit reveals, and ONE
+  // revealed team at a time — never the eligibility choice, never a wager cap,
+  // never the save/lock controls, never the adjudication buttons, and never the
+  // irreversible completion controls.
+  'Who plays Final?',
+  'Begin Final',
+  'Maximum wager',
+  'Save wager',
+  'Correct wager',
+  'Lock all wagers',
+  'How will you record responses?',
+  'Answered (no wording)',
+  'Save wording',
+  'Lock all responses',
+  'Reveal the answer',
+  'Play sudden death',
+  'Accept the tie',
+  'End the game session',
+  'On screen:',
 ]

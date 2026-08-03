@@ -287,6 +287,11 @@ export function FinalWagerDisplay({
               <span className="fwd__value">{round.answer}</span>
             </p>
           )}
+          {/*
+            The last team judged stays in view beside the result, so the moment
+            the final wager is settled is not blanked out from under the class.
+          */}
+          {round.reveal !== null && <RevealPanel reveal={round.reveal} teams={teams} />}
           <p className="fwd__status" data-testid="fwd-outcome">
             {round.outcome === 'tied' ? 'The lead is tied' : 'All wagers settled'}
           </p>

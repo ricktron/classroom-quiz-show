@@ -296,6 +296,15 @@ export type PublicFinalWagerState =
        */
       readonly prompt: PublicPromptContent | null
       readonly answer: string | null
+      /**
+       * The LAST team revealed, kept on screen beside the result.
+       *
+       * Settling the final team is the climax of the whole game, and blanking
+       * that team the instant it is judged — exactly when a class is looking at
+       * it — would be the projector taking the moment away. It is `null` only
+       * when no team was ever revealed.
+       */
+      readonly reveal: PublicFinalReveal | null
       readonly outcome: PublicFinalOutcome
     }
   | { readonly kind: typeof PUBLIC_FINAL_KIND; readonly stage: 'sudden-death' }
@@ -844,7 +853,7 @@ const PUBLIC_FINAL_STAGE_KEYS: Readonly<Record<string, readonly string[]>> = {
   'responses-locked': ['kind', 'stage', 'prompt'],
   'answer-revealed': ['kind', 'stage', 'prompt', 'answer'],
   'team-reveal': ['kind', 'stage', 'prompt', 'answer', 'reveal'],
-  resolution: ['kind', 'stage', 'prompt', 'answer', 'outcome'],
+  resolution: ['kind', 'stage', 'prompt', 'answer', 'reveal', 'outcome'],
   'sudden-death': ['kind', 'stage'],
   complete: ['kind', 'stage', 'outcome'],
 }
@@ -946,6 +955,7 @@ function isPublicFinalWagerState(v: Record<string, unknown>): boolean {
       return (
         isNullablePublicPrompt(v.prompt) &&
         isNullableString(v.answer) &&
+        (v.reveal === null || isPublicFinalReveal(v.reveal)) &&
         typeof v.outcome === 'string' &&
         PUBLIC_FINAL_OUTCOMES.includes(v.outcome)
       )
