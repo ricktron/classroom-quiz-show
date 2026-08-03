@@ -14,8 +14,9 @@ the round-based engine direction into it.
 > and
 > [`POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md).
 > **This 18-slice plan remains the current MVP sequence, unmodified**: no
-> slice was added, removed, reordered, or re-scoped; Slice 14 remains
-> `Planned` and unstarted; post-MVP arcs require separate authorization.
+> slice was added, removed, reordered, or re-scoped; Slice 14 is now
+> `Complete` and merged, Slice 15 remains `Planned` and unstarted; post-MVP
+> arcs require separate authorization.
 
 ## Product direction (approved)
 
@@ -632,10 +633,11 @@ squash-merged via
 [PR #27](https://github.com/ricktron/classroom-quiz-show/pull/27) at
 `6cf4d2579ab558f8c4b7eabca0b94df4acc6f20c` from final reviewed head
 `ad0867ab6d7e00f397de51dfad2363f35bc181d7` (merged **2026-07-29T21:27:59Z**).
-**Slice 14 is `In review`** — implemented on
-`claude/slice-14-authorization-3bm0ju` from the authorized base
-`4de1454181ed58bdb282accd136129c3c0eb0f2b`, not merged. **Slice 15 remains
-`Planned` and unstarted.**
+**Slice 14 is `Complete`** — squash-merged via PR #32 at
+`ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` from the final reviewed-and-repaired
+head `c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26` (authorized base
+`4de1454181ed58bdb282accd136129c3c0eb0f2b`, merged **2026-08-03T17:08:37Z**).
+**Slice 15 remains `Planned` and unstarted.**
 
 ## Slice 8 — scope, acceptance, non-goals
 
@@ -975,10 +977,10 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   [`../architecture/ADR-011-media-contract.md`](../architecture/ADR-011-media-contract.md);
   post-merge evidence in
   [`../receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
-- **Next action:** Slices 12 and 13 are both `Complete`. **Slice 14 is
-  `In review`** and awaiting owner review of its delivery pull request; it is not
-  merged and not `Complete`. Slice 15 remains `Planned` and unstarted, and
-  starting it requires separate owner-approved authority.
+- **Next action:** Slices 12, 13 and 14 are all `Complete` and merged. Slice 15
+  remains `Planned` and unstarted, and starting it requires separate
+  owner-approved authority; the next product action returns to the Program
+  Orchestrator for Slice 15 readiness and sequencing.
 
 ### Slice 12 — Portable export & round-trip import
 
@@ -1067,7 +1069,7 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   never projected before reveal; full replay/undo coverage.
 - **Impact:** schema **yes** (additive round config) · runtime **yes** · UI
   **yes** · storage no · hardware no.
-- **Status:** **`In review`** — implemented under
+- **Status:** **`Complete`** — implemented under
   `AUTHORIZE-CQS-S14-FINAL-WAGER-IMPLEMENTATION-1` from authorized base
   `4de1454181ed58bdb282accd136129c3c0eb0f2b`. Delivered as a registered
   `final-wager` round type inside the existing command/event/replay core, with
@@ -1079,9 +1081,14 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   all stay **1**; no dependency added. Rationale in
   [`../architecture/ADR-014-final-wager-round.md`](../architecture/ADR-014-final-wager-round.md);
   local evidence in
-  [`../receipts/2026-08-03-slice-14-local-verification.md`](../receipts/2026-08-03-slice-14-local-verification.md).
-  **Not merged, and not `Complete`.**
-- **Owner gate:** review of the delivery pull request.
+  [`../receipts/2026-08-03-slice-14-local-verification.md`](../receipts/2026-08-03-slice-14-local-verification.md);
+  merge and post-merge evidence in
+  [`../receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](../receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
+  **Squash-merged via PR #32 at `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d`
+  (2026-08-03T17:08:37Z).** Browser acceptance covered **24 of 24** required
+  scenarios.
+- **Owner gate:** review of the delivery pull request — **satisfied**; merged
+  under `AUTHORIZE-CQS-S14-EXACT-HEAD-SQUASH-MERGE-1`.
 
 ### Slice 15 — Session summary & compatible-profile reporting
 

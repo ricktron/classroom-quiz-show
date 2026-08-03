@@ -1,7 +1,15 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with **Slices 1–13 all `Complete` and merged to `main`**.
+the repository with **Slices 1–14 all `Complete` and merged to `main`**.
+**Slice 14 — Final-wager round is `Complete`** (PR
+[#32](https://github.com/ricktron/classroom-quiz-show/pull/32) squash-merged at
+`ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` from reviewed-and-repaired head
+`c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26`, merged **2026-08-03T17:08:37Z**,
+post-merge CI and Pages both green — see
+[`../architecture/ADR-014-final-wager-round.md`](../architecture/ADR-014-final-wager-round.md)
+and
+[`../receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](../receipts/2026-08-03-slice-14-post-merge-reconciliation.md)).
 **Slice 13 — Local persistence & recovery is `Complete`** (PR #27
 squash-merged at `6cf4d2579ab558f8c4b7eabca0b94df4acc6f20c` from reviewed head
 `ad0867ab6d7e00f397de51dfad2363f35bc181d7`, merged **2026-07-29T21:27:59Z** —
@@ -9,13 +17,10 @@ see
 [`../architecture/ADR-013-local-persistence-recovery.md`](../architecture/ADR-013-local-persistence-recovery.md)
 and
 [`../STATUS.md`](../STATUS.md)).
-**Slice 14 — Final-wager round is `In review`** (PR open, **not merged**,
-**not `Complete`**) — see
-[`../architecture/ADR-014-final-wager-round.md`](../architecture/ADR-014-final-wager-round.md).
 **Slice 15 remains `Planned` and unstarted.** The next safe product action
 requires a **separate** Slice 15 planning/readiness decision — this handoff
-does **not** authorize Slice 15 implementation, and it does not authorize
-merging Slice 14.
+does **not** authorize Slice 15 implementation. The next product action returns
+to the Program Orchestrator for Slice 15 readiness and sequencing.
 
 Coding agents and contributors should read root
 [`../../AGENTS.md`](../../AGENTS.md) before changing the repository. Claude
@@ -217,17 +222,25 @@ defers to `AGENTS.md` and adds no separate authority.
   [`../receipts/2026-07-29-slice-13-local-verification.md`](../receipts/2026-07-29-slice-13-local-verification.md),
   [`../receipts/2026-07-29-slice-13-sonar-polish.md`](../receipts/2026-07-29-slice-13-sonar-polish.md),
   [`../receipts/2026-07-29-slice-13-post-merge-reconciliation.md`](../receipts/2026-07-29-slice-13-post-merge-reconciliation.md).
-- **Slice 14 (current): `In review`.** Owner-authorized under
+- **Slice 14 (current): `Complete`.** Owner-authorized under
   `AUTHORIZE-CQS-S14-FINAL-WAGER-IMPLEMENTATION-1` and delivered on
-  `claude/slice-14-authorization-3bm0ju`, based on `main` at
+  `claude/cqs-slice-14-final-wager`, based on `main` at
   `4de1454181ed58bdb282accd136129c3c0eb0f2b`. The `final-wager` round is the
   SECOND playable registered round type. Public-state wire moves **7 → 8**; sync
   envelope stays **2**; game-file schema, `GameDefinition` model, private
   persistence wire and IndexedDB schema all stay **1**; no dependency added.
-  **Not merged. Not `Complete`.** Rationale in
+  **Merged** via PR
+  [#32](https://github.com/ricktron/classroom-quiz-show/pull/32) at
+  `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` (2026-08-03T17:08:37Z) from
+  reviewed-and-repaired head `c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26`.
+  Rationale in
   [`../architecture/ADR-014-final-wager-round.md`](../architecture/ADR-014-final-wager-round.md);
-  local evidence in
-  [`../receipts/2026-08-03-slice-14-local-verification.md`](../receipts/2026-08-03-slice-14-local-verification.md).
+  evidence in
+  [`../receipts/2026-08-03-slice-14-local-verification.md`](../receipts/2026-08-03-slice-14-local-verification.md),
+  [`../receipts/2026-08-03-slice-14-pr-review-and-hardening.md`](../receipts/2026-08-03-slice-14-pr-review-and-hardening.md),
+  [`../receipts/2026-08-03-media-normalized-prompt-reread-repair.md`](../receipts/2026-08-03-media-normalized-prompt-reread-repair.md)
+  and
+  [`../receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](../receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
 - **Slice 15:** `Planned`, unstarted.
 - **What Slice 14 adds:** the SECOND playable round type, `final-wager` — and
   the important thing about it is where it lives. It is registered by application
@@ -848,18 +861,21 @@ arcs remain inactive; **decision 66 (`CQS-OD-066`) remains unresolved**.
 
 ## Next action
 
-**Slices 1–13 and planning slice CQS-PLAN-S01 are `Complete` and
-merged.** **Slice 14 — Final-wager round is `In review`**: implemented
+**Slices 1–14 and planning slice CQS-PLAN-S01 are `Complete` and
+merged.** **Slice 14 — Final-wager round is `Complete`**: implemented
 under `AUTHORIZE-CQS-S14-FINAL-WAGER-IMPLEMENTATION-1` on
-`claude/slice-14-authorization-3bm0ju` from the authorized base
-`4de1454181ed58bdb282accd136129c3c0eb0f2b`, with a delivery pull request
-open. It is **not merged** and **not `Complete`**. The accepted Final
-Wager decisions (`CQS-OD-005`…`CQS-OD-008`, `CQS-OD-011`) were the
-acceptance-design input and are implemented as recorded.
+`claude/cqs-slice-14-final-wager` from the authorized base
+`4de1454181ed58bdb282accd136129c3c0eb0f2b`, reviewed under
+`AUTHORIZE-CQS-S14-PR-REVIEW-AND-HARDENING-1`, and squash-merged via PR
+[#32](https://github.com/ricktron/classroom-quiz-show/pull/32) at
+`ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` on 2026-08-03T17:08:37Z. The
+accepted Final Wager decisions (`CQS-OD-005`…`CQS-OD-008`,
+`CQS-OD-011`) were the acceptance-design input and are implemented as
+recorded. Browser acceptance covered **24 of 24** required scenarios.
 
-**The next action is owner review of that pull request.** This handoff
-does **not** authorize merging it, post-merge reconciliation, branch
-cleanup, or Slice 15. **Slice 15 — Session summary & compatible-profile
+**The next action returns to the Program Orchestrator for Slice 15
+readiness and sequencing.** This handoff does **not** authorize Slice 15
+implementation. **Slice 15 — Session summary & compatible-profile
 reporting remains `Planned` and unstarted** and must receive its own
 bounded authorization before any work begins.
 
@@ -930,10 +946,11 @@ open-answer and buzz-first multiple-choice clues may coexist within a single gam
 **No schema, event vocabulary, scoring formula, acceptance criteria, roadmap
 insertion or implementation is authorized now**, and none exists. Nothing in the
 codebase implements, anticipates or reserves space for a response mode or a
-multiple-choice question type. **The immediate frontier is a separate Slice 14
-planning/readiness decision** — Slice 14 remains `Planned` and unstarted, and
-this direction does not authorize it. Slice 13 is **`Complete`** (PR #27,
-`6cf4d25…`). Slice 12 is **`Complete`** (PR #25, `cdb499a…`). Slice 11 is
+multiple-choice question type. When this direction was recorded the immediate
+frontier was a separate Slice 14 planning/readiness decision, and this direction
+did not authorize it; **Slice 14 is now `Complete`** (PR #32, `ce2e103…`), and
+the frontier has moved to a separate Slice 15 readiness decision. Slice 13 is
+**`Complete`** (PR #27, `6cf4d25…`). Slice 12 is **`Complete`** (PR #25, `cdb499a…`). Slice 11 is
 **`Complete`** (PR #23, `5d47b2f`). Slice 10 remains **`Complete`** under the
 owner-accepted hardware-independent boundary; OADL2-S07 recorded a bounded
 physical claim under temporary keep-alive (permanent keep-alive unresolved).

@@ -1,40 +1,33 @@
 # Status
 
-**Current completed product slice:** Slice 13 — Local persistence & recovery
-**Slice state:** **Complete** — PR #27 was squash-merged at
-`6cf4d2579ab558f8c4b7eabca0b94df4acc6f20c` (merged **2026-07-29T21:27:59Z**)
-from final reviewed head `ad0867ab6d7e00f397de51dfad2363f35bc181d7` (authorized
-base `3fd212994c0e8b651193460de633995fe80a25df`). Host-local IndexedDB
-persistence with three stores (`savedDefinitions`, `activeSessions`,
-`coordination`), explicit Resume/Discard recovery, saved-definition library
-controls, private persistence-session wire v1, and lightweight host-writer
-lease coordination. Public-state wire remains **7**; sync-envelope remains
-**2**; game-file schema remains **1**. No dependency added. See
-[`architecture/ADR-013-local-persistence-recovery.md`](architecture/ADR-013-local-persistence-recovery.md).
-**Previous slice:** Slice 12 — Portable export & round-trip import (`Complete`,
-squash-merged via PR #25 at `cdb499a…`; wire **7**)
-**Slice in review:** Slice 14 — Final-wager round
-**Slice 14 state:** **In review** — implemented under
-`AUTHORIZE-CQS-S14-FINAL-WAGER-IMPLEMENTATION-1` on branch
-`claude/slice-14-authorization-3bm0ju` from authorized base
-`4de1454181ed58bdb282accd136129c3c0eb0f2b`. **Not merged, and not `Complete`.**
-The `final-wager` round is the second playable registered round type: frozen
-eligibility/cap/reveal-order snapshot, host-private wagers, optional exact-text
-response capture, two Final windows on ADR-007's clock discipline, explicit
-team-by-team reveal, reversible atomic settlement, and bounded tie handling with
-sudden death. Public-state wire moves **7 → 8**; sync envelope remains **2**;
-game-file schema, `GameDefinition` model, private persistence wire and IndexedDB
-schema all remain **1**; no dependency added. See
+**Current completed product slice:** Slice 14 — Final-wager round
+**Slice state:** **Complete** — PR
+[#32](https://github.com/ricktron/classroom-quiz-show/pull/32) was squash-merged
+at `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` (merged
+**2026-08-03T17:08:37Z**) from final reviewed-and-repaired head
+`c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26` (authorized base
+`4de1454181ed58bdb282accd136129c3c0eb0f2b`, the squash commit's **sole**
+parent). Reviewed-head and squash trees are identical
+(`50caaa392d99ceaf057f184af4d049a5bcd3feba`) and the direct diff between them is
+empty. The `final-wager` round is the **second playable registered round type**:
+frozen eligibility/cap/reveal-order snapshot, host-private wagers, optional
+exact-text response capture, two Final windows on ADR-007's clock discipline,
+explicit team-by-team reveal, reversible atomic settlement, and bounded tie
+handling with sudden death. Public-state wire moves **7 → 8**; sync envelope
+remains **2**; game-file schema, `GameDefinition` model, private persistence
+wire and IndexedDB schema all remain **1**; no dependency added. See
 [`architecture/ADR-014-final-wager-round.md`](architecture/ADR-014-final-wager-round.md)
 and
-[`receipts/2026-08-03-slice-14-local-verification.md`](receipts/2026-08-03-slice-14-local-verification.md).
+[`receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
+**Previous slice:** Slice 13 — Local persistence & recovery (`Complete`,
+squash-merged via PR #27 at `6cf4d25…`; wire **7**)
 **Next planned product slice:** Slice 15 — Session summary & compatible-profile
 reporting (`Planned`, unstarted)
 **Roadmap:** 18 slices, amended 2026-07-26 by
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 (**merged to `main` via PR #13**, merge commit `752a3fe`, 2026-07-26T20:02:13Z)
 
-## Slice 14 work (In review)
+## Slice 14 work (Complete)
 
 The **second playable round type** — `final-wager`, the closing wager round. Full
 rationale in
@@ -42,7 +35,9 @@ rationale in
 local evidence in
 [`receipts/2026-08-03-slice-14-local-verification.md`](receipts/2026-08-03-slice-14-local-verification.md),
 review evidence in
-[`receipts/2026-08-03-slice-14-pr-review-and-hardening.md`](receipts/2026-08-03-slice-14-pr-review-and-hardening.md).
+[`receipts/2026-08-03-slice-14-pr-review-and-hardening.md`](receipts/2026-08-03-slice-14-pr-review-and-hardening.md),
+merge and post-merge evidence in
+[`receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
 
 The review's browser acceptance found one blocker, and it was **inherited from
 the authorized base, not introduced by Slice 14**: an authored image prompt that
@@ -172,9 +167,11 @@ at `44e835cd2b349cd55d4bfc84a34015cb3694b821` (merged
 The slice recorded the expanded gameplay, authoring, analytics, and
 operator vision as durable repository truth. **It changed documentation
 only**: no runtime code, schema, test, dependency, workflow, or
-deployment configuration changed; public-state wire remains **7**, sync
-envelope **2**, game-file schema **1**. **The current MVP is unchanged
-and Slice 14 remains `Planned` and unstarted** — no expanded-vision
+deployment configuration changed; public-state wire was **7** at that
+time, sync envelope **2**, game-file schema **1**. **The MVP was
+unchanged and Slice 14 was still `Planned` and unstarted when this
+planning slice merged** (Slice 14 has since been implemented, reviewed
+and merged — see the Slice 14 merge evidence above) — no expanded-vision
 capability was implemented or promoted into current scope, and
 implementation authority remains with the Program Orchestrator and
 future slice authorizations. The first post-MVP arc remains spreadsheet
@@ -201,6 +198,34 @@ Delivery evidence:
 [`receipts/2026-08-03-cqs-expanded-vision-planning-repair-1.md`](receipts/2026-08-03-cqs-expanded-vision-planning-repair-1.md)
 (ES-2); post-merge reconciliation:
 [`receipts/2026-08-03-cqs-plan-s01-post-merge-reconciliation.md`](receipts/2026-08-03-cqs-plan-s01-post-merge-reconciliation.md).
+
+## Slice 14 merge evidence
+
+| Fact | Value |
+| --- | --- |
+| PR | [#32](https://github.com/ricktron/classroom-quiz-show/pull/32) (merged and closed) |
+| Authorized base / sole squash parent | `4de1454181ed58bdb282accd136129c3c0eb0f2b` (exactly one parent) |
+| Final reviewed-and-repaired head | `c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26` |
+| Squash commit | `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` |
+| Merged | **2026-08-03T17:08:37Z** |
+| Reviewed-head / squash tree | identical (`50caaa392d99ceaf057f184af4d049a5bcd3feba`); direct diff empty |
+| Changed paths | 56 (+11,672 / −100) |
+| Pre-merge CI run (exact head) | `30832657245` — **success** (both jobs); Sonar quality gate **passed** |
+| Post-merge `CI` run | `30835406335` — **success** (Lint/typecheck/unit/build **success**; Playwright e2e **success**) |
+| Post-merge Pages deploy run | `30835407341` — **success** |
+| Browser acceptance | **24 of 24** required scenarios passed |
+
+Slice 14 delivers the second playable registered round type. Its review surfaced
+one blocker that was **inherited from the authorized base, not introduced by
+this slice**: `normalizeImagePrompt` rejected its own normalized output when an
+optional `caption` or `attribution` was omitted, so an authored image round
+published no public DTO at all. It was repaired before merge under
+`AUTHORIZE-CQS-MEDIA-NORMALIZED-PROMPT-REREAD-REPAIR-1`
+([receipt](receipts/2026-08-03-media-normalized-prompt-reread-repair.md)), and
+the repair also fixes `category-board`. Public-state wire is now **8**; sync
+envelope **2**; game-file schema **1**; `GameDefinition` model **1**; private
+persistence wire **1**; IndexedDB schema **1**. No dependency, lockfile or
+workflow change.
 
 ## Slice 12 merge evidence
 
@@ -1142,9 +1167,9 @@ None.
 
 - **Two playable round types.** `category-board` reveals prompts and answers and
   tracks used tiles; Slice 6 added teams and scoring on top of it, and Slice 7 adds
-  the response window. Slice 14 adds `final-wager` — a terminal, at-most-one,
-  per-team wager round — and it is **`In review`, not merged**, so on `main` there
-  is still only `category-board`.
+  the response window. Slice 14 added `final-wager` — a terminal, at-most-one,
+  per-team wager round — now **`Complete` and merged to `main`**. There is no
+  third playable type.
 - **A response window exists only at the `prompt` stage.** Before the prompt is
   public there is nothing to respond to; once the answer is public the window is
   over and is cleared.
@@ -1243,16 +1268,15 @@ None.
 
 ## Next safe action
 
-**Slice 14 — Final-wager round is `In review`** on branch
-`claude/cqs-slice-14-final-wager` (PR
-[#32](https://github.com/ricktron/classroom-quiz-show/pull/32)), based on
-`4de1454181ed58bdb282accd136129c3c0eb0f2b`. It is **not merged and not
-`Complete`**, and this STATUS surface does not authorize merging it. The next
-safe action is the owner's merge decision on that pull request.
+**Slice 14 — Final-wager round is `Complete` and merged** (PR
+[#32](https://github.com/ricktron/classroom-quiz-show/pull/32), squash commit
+`ce2e103377c5d86c8e0946346cb4cf05dfe7d58d`), with post-merge CI and Pages both
+observed green.
 
 **Slice 15 remains `Planned` and unstarted.** Starting it requires a
 **separate** owner-approved planning/readiness decision; this STATUS surface
-does not authorize Slice 15 implementation.
+does not authorize Slice 15 implementation. The next product action returns to
+the Program Orchestrator for Slice 15 readiness and sequencing.
 
 Coding agents and contributors should read root [`../AGENTS.md`](../AGENTS.md)
 (and pointer-only [`../CLAUDE.md`](../CLAUDE.md) for Claude sessions) before

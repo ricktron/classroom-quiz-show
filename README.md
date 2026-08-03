@@ -370,11 +370,14 @@ Live-route behaviour was **not** manually verified. See
 [`docs/architecture/ADR-013-local-persistence-recovery.md`](docs/architecture/ADR-013-local-persistence-recovery.md)
 and
 [`docs/receipts/2026-07-29-slice-13-post-merge-reconciliation.md`](docs/receipts/2026-07-29-slice-13-post-merge-reconciliation.md).
-**Slice 14 — Final-wager round. In review** — implemented under
+**Slice 14 — Final-wager round. Complete** — implemented under
 `AUTHORIZE-CQS-S14-FINAL-WAGER-IMPLEMENTATION-1` on
 `claude/cqs-slice-14-final-wager` from the authorized base
-`4de1454181ed58bdb282accd136129c3c0eb0f2b`, with a delivery pull request open.
-**Not merged, and not `Complete`.** `final-wager` is the **second playable
+`4de1454181ed58bdb282accd136129c3c0eb0f2b`, and squash-merged via PR
+[#32](https://github.com/ricktron/classroom-quiz-show/pull/32) at
+`ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` (2026-08-03T17:08:37Z) from the final
+reviewed-and-repaired head `c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26`.
+`final-wager` is the **second playable
 registered round type**: eligibility (Classic or Inclusive), each team's wager
 cap and the default low-to-high reveal order are frozen when Final begins;
 wagers and response states are host-private, validated and rejected rather than
@@ -383,10 +386,12 @@ records only that a window ended; reveal and settlement are explicit, atomic and
 reversible; and a tied lead offers sudden death or an explicit, irreversible
 accepted tie. **Public-state wire moves 7 → 8**; sync envelope stays **2**;
 game-file schema, `GameDefinition` model, private persistence wire and IndexedDB
-schema all stay **1**; no dependency added. See
-[`docs/architecture/ADR-014-final-wager-round.md`](docs/architecture/ADR-014-final-wager-round.md)
+schema all stay **1**; no dependency added. Browser acceptance covered **24 of
+24** required scenarios. See
+[`docs/architecture/ADR-014-final-wager-round.md`](docs/architecture/ADR-014-final-wager-round.md),
+[`docs/receipts/2026-08-03-slice-14-local-verification.md`](docs/receipts/2026-08-03-slice-14-local-verification.md)
 and
-[`docs/receipts/2026-08-03-slice-14-local-verification.md`](docs/receipts/2026-08-03-slice-14-local-verification.md).
+[`docs/receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](docs/receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
 **Slice 15** remains Planned and unstarted.
 
 > ⚠️ **No physical Sony Buzz! controller has been tested.** CI and simulated
@@ -412,7 +417,7 @@ The Slice 1 foundation is unchanged beneath it:
 
 There are **two playable round types**. `category-board` scores, can be timed,
 and teams can buzz in on it **from the host keyboard, or from a generic USB
-controller through the same boundary**; `final-wager` (Slice 14, in review) is
+controller through the same boundary**; `final-wager` (Slice 14) is
 the closing wager round, host-entered and private until each explicit reveal. Slice 10 adds a **host-private Sony Buzz! setup surface**
 (candidate classification, capture recipe, setup test mode) — **`Complete`** under
 the owner-accepted hardware-independent boundary, with physical certification
