@@ -17,6 +17,7 @@ import type { SessionCommand } from '../state/commands'
 import type { SessionEvent } from '../state/events'
 import type { DispatchResult } from '../state/store'
 import { createSessionStore } from '../state/store'
+import { CANONICAL_SAMPLE_FINAL_WAGER_FILE } from '../import/sampleGameFile'
 import { boardGameFileText } from '../test/categoryBoardFixtures'
 import { gameFileText } from '../test/gameFileFixtures'
 import { createManualClock } from '../time/clock'
@@ -42,6 +43,19 @@ function activeHistory(): readonly SessionEvent[] {
   const store = createSessionStore()
   store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 'session-1' })
   store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT, definition: definition() })
+  return store.getHistory()
+}
+
+/** A history with the board + Final sample loaded and the Final round selected. */
+function finalHistory(): readonly SessionEvent[] {
+  const store = createSessionStore()
+  store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 'session-final' })
+  store.dispatch({
+    type: 'INITIALIZE_GAME',
+    issuedAt: AT,
+    definition: definition(CANONICAL_SAMPLE_FINAL_WAGER_FILE),
+  })
+  store.dispatch({ type: 'SELECT_ROUND', issuedAt: AT, roundId: 'final-round' })
   return store.getHistory()
 }
 
@@ -159,6 +173,39 @@ describe('useHostPersistence', () => {
 
     expect(result).toEqual({ status: 'rejected', reason: 'malformed-command' })
     expect(api().session.store.getHistory()).toEqual([])
+    expect(api().persistence.canDispatchSessionCommands).toBe(false)
+  })
+
+  it('blocks a follower tab from mutating a Final round (Slice 14)', async () => {
+    // Final commands travel the SAME dispatch gate as every other session
+    // command — there is no Final-specific write path — so the host-writer lease
+    // covers them without Final knowing the lease exists. This proves it rather
+    // than assuming it.
+    const adapter = createMemoryPersistenceAdapter()
+    const clock = createManualClock(AT)
+    await adapter.open()
+    await seedActiveSession(adapter, finalHistory())
+    await acquireOrRenewHostLease({
+      adapter,
+      tabId: 'tab-owner',
+      clock,
+      leaseTtlMs: 1_000,
+      broadcastChannel: null,
+    })
+
+    const { api } = renderHarness(adapter, 'tab-follower')
+    await waitFor(() => expect(api().persistence.leadership).toBe('follower'))
+    const before = api().session.store.getHistory()
+
+    const result = api().dispatch({
+      type: 'BEGIN_FINAL_WAGER',
+      issuedAt: AT,
+      roundId: 'final-round',
+      mode: 'classic',
+    })
+
+    expect(result.status).toBe('rejected')
+    expect(api().session.store.getHistory()).toEqual(before)
     expect(api().persistence.canDispatchSessionCommands).toBe(false)
   })
 

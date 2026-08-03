@@ -62,6 +62,12 @@ export const IMPORT_ISSUE_CODES = [
   // semantic — content checks (post-Zod)
   'duplicate-round-id',
   'blank-title',
+  // semantic — cross-round Final Wager rules (Slice 14). They are relationships
+  // BETWEEN rounds (and between rounds and teams), so no per-round config schema
+  // can express them and they belong at the document level.
+  'duplicate-final-round',
+  'final-round-not-terminal',
+  'final-round-requires-teams',
   // semantic — round-config content checks contributed by a round type's own
   // schema (Slice 5). They are reported at the `schema` stage, because the
   // registry decided *which* schema applies and the schema produced them.

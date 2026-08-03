@@ -1,0 +1,175 @@
+/*
+ * Projector Final Wager round. Read from across a classroom at 1280×720 and
+ * 1920×1080.
+ *
+ * Layout rules that matter:
+ *  - the question, the answer and the revealed response are the largest elements,
+ *    because they are what a class is actually looking at;
+ *  - every state is carried by TEXT ("Correct", "No response", "Wagers are
+ *    locked"); colour is supplemental and never the only signal;
+ *  - it never pushes the page sideways — long responses wrap, and the panel is
+ *    `overflow-x: hidden` so a pasted single-word 300-character string cannot
+ *    widen the projector;
+ *  - the only motion is the shared last-ten-seconds pulse on the countdown, and
+ *    reduced-motion users get none of it.
+ */
+.fwd {
+  width: 100%;
+  overflow-x: hidden;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.4rem, 1vw, 1rem);
+  padding: clamp(0.4rem, 1vw, 1rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.fwd__heading {
+  margin: 0;
+  font-size: clamp(0.85rem, 1.3vw, 1.15rem);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.fwd__status {
+  margin: 0;
+  font-size: clamp(1.3rem, 3.2vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.fwd__substatus {
+  margin: 0;
+  font-size: clamp(0.9rem, 1.5vw, 1.3rem);
+  color: var(--color-text-muted);
+}
+
+.fwd__prompt {
+  /* The question owns the vertical space when one is on screen. */
+  font-size: clamp(1.2rem, 2.8vw, 2.4rem);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.fwd__answer {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: clamp(1.1rem, 2.4vw, 2rem);
+  overflow-wrap: anywhere;
+}
+
+.fwd__label {
+  font-size: clamp(0.7rem, 1.1vw, 0.95rem);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.fwd__value {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.fwd__reveal {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.3rem, 0.8vw, 0.7rem);
+  padding: clamp(0.4rem, 1vw, 0.9rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.fwd__reveal-team {
+  margin: 0;
+  font-size: clamp(1.2rem, 2.6vw, 2.2rem);
+  font-weight: 700;
+}
+
+.fwd__reveal-response,
+.fwd__reveal-wager,
+.fwd__reveal-outcome {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: clamp(1rem, 2vw, 1.7rem);
+}
+
+/*
+ * Outcome colour is SUPPLEMENTAL. The word "Correct" / "Incorrect" / "No
+ * response" and the signed number are always present, so a washed-out projector
+ * and a colour-blind viewer lose nothing.
+ */
+.fwd__reveal-outcome--correct .fwd__value {
+  color: var(--color-success);
+}
+
+.fwd__reveal-outcome--incorrect .fwd__value,
+.fwd__reveal-outcome--no-response .fwd__value {
+  color: var(--color-danger);
+}
+
+.fwd__timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.fwd__timer-status {
+  margin: 0;
+  font-size: clamp(0.85rem, 1.4vw, 1.25rem);
+  color: var(--color-text-muted);
+}
+
+.fwd__timer-clock {
+  margin: 0;
+  font-size: clamp(2.2rem, 7vw, 5rem);
+  font-weight: 700;
+  line-height: 1;
+  /* Tabular figures so the digits do not shift width as they change. */
+  font-variant-numeric: tabular-nums;
+}
+
+.fwd__timer--urgent .fwd__timer-clock {
+  color: var(--color-danger);
+  animation: fwd-pulse 1s ease-in-out infinite;
+}
+
+.fwd--unavailable {
+  justify-content: center;
+  min-height: 8rem;
+}
+
+.fwd__unavailable-text {
+  margin: 0;
+  font-size: clamp(1.1rem, 2.4vw, 2rem);
+  color: var(--color-text-muted);
+}
+
+@keyframes fwd-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/*
+ * Removed OUTRIGHT rather than run at 0.001 ms, so nothing flickers at all. The
+ * urgency is still carried by colour and by the number itself.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .fwd__timer--urgent .fwd__timer-clock {
+    animation: none;
+  }
+}

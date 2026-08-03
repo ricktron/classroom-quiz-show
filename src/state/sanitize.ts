@@ -6,11 +6,15 @@ import type {
 import {
   INITIAL_PUBLIC_STATE,
   PUBLIC_BOARD_KIND,
+  PUBLIC_FINAL_KIND,
   PUBLIC_STATE_SCHEMA_VERSION,
   isPublicState,
   type PublicCategoryBoardCategory,
   type PublicCategoryBoardTile,
   type PublicBuzzState,
+  type PublicFinalOutcome,
+  type PublicFinalResponse,
+  type PublicFinalReveal,
   type PublicGameView,
   type PublicPhase,
   type PublicPromptContent,
@@ -23,8 +27,22 @@ import {
   type PublicTeamsState,
 } from './publicState'
 import { PUBLIC_STATUS_COPY, PUBLIC_STATUS_PHASE } from './status'
-import { categoryBoardStateFor, responsePhaseFor, teamScoreFor } from './reducer'
-import { isInitialResponsePhase } from '../game/timing/responsePhase'
+import { categoryBoardStateFor, finalWagerStateFor, responsePhaseFor, teamScoreFor } from './reducer'
+import { readFinalWagerDefinition } from '../game/finalWager/definition'
+import {
+  committedResponse,
+  committedWager,
+  currentRevealTeamId,
+  finalLeaders,
+  isInitialFinalWagerState,
+  settlementFor,
+  type FinalResponseState,
+  type FinalWagerRoundState,
+} from '../game/finalWager/finalState'
+import {
+  isInitialResponsePhase,
+  type ResponseTimerState,
+} from '../game/timing/responsePhase'
 import { buzzQueueStatus, type BuzzQueueState } from '../game/timing/buzzQueue'
 import { isTeamAccent } from '../game/teams/accents'
 import { teamIndexById } from '../game/teams/definition'
@@ -266,40 +284,44 @@ function toPublicResponse(game: PrivateGameState | null): PublicResponseState | 
   const phase = responsePhaseFor(game, current.id)
   if (isInitialResponsePhase(phase)) return null
 
-  const timer = phase.timer
-  let publicTimer: PublicResponseTimer
+  return {
+    armed: phase.armed,
+    timer: toPublicTimer(phase.timer),
+    buzz: toPublicBuzz(game, phase.queue),
+  }
+}
+
+/**
+ * Project durable timer facts to the allow-listed public timer DTO.
+ *
+ * Shared by the board's response phase and by both Final windows, so a projected
+ * countdown means the same thing everywhere and the privacy rules cannot drift
+ * between them. It never reads `timerId`, `startedAt`, or an interruption
+ * `source`, and it reads no clock — a running window travels as its absolute
+ * deadline and the display derives the countdown locally.
+ */
+function toPublicTimer(timer: ResponseTimerState): PublicResponseTimer {
   switch (timer.status) {
     case 'running':
-      publicTimer = {
-        status: 'running',
-        durationMs: timer.durationMs,
-        deadline: timer.deadline,
-      }
-      break
+      return { status: 'running', durationMs: timer.durationMs, deadline: timer.deadline }
     case 'paused':
-      publicTimer = {
+      return {
         status: 'paused',
         durationMs: timer.durationMs,
         remainingMs: timer.remainingMs,
       }
-      break
     case 'expired':
-      publicTimer = { status: 'expired', durationMs: timer.durationMs }
-      break
+      return { status: 'expired', durationMs: timer.durationMs }
     case 'interrupted':
-      publicTimer = {
+      return {
         status: 'interrupted',
         durationMs: timer.durationMs,
         remainingMs: timer.remainingMs,
       }
-      break
     case 'idle':
     default:
-      publicTimer = { status: 'idle' }
-      break
+      return { status: 'idle' }
   }
-
-  return { armed: phase.armed, timer: publicTimer, buzz: toPublicBuzz(game, phase.queue) }
 }
 
 /**
@@ -339,6 +361,198 @@ function toPublicBuzz(game: PrivateGameState, queue: BuzzQueueState): PublicBuzz
   }
 }
 
+/**
+ * Project one team's Final response to the public DTO (Slice 14).
+ *
+ * Every field is NAMED and copied individually — nothing is spread — so a field
+ * added to the private response model is NOT exposed by default. This is called
+ * ONLY for the team currently being revealed; no other team's response is ever
+ * passed to it.
+ */
+function toPublicFinalResponse(response: FinalResponseState): PublicFinalResponse {
+  return response.kind === 'exact'
+    ? { kind: 'exact', text: response.text }
+    : { kind: response.kind }
+}
+
+/**
+ * Project the currently revealed team, or `null` when nobody is mid-reveal.
+ *
+ * Returns `null` (fail closed) rather than a partial payload when the private
+ * state is impossible: a revealed team that is not on the loaded game, or one
+ * with no committed wager or recorded response. A projector showing a reveal with
+ * a missing wager would be worse than showing nothing.
+ */
+function toPublicFinalReveal(
+  game: PrivateGameState,
+  final: FinalWagerRoundState,
+): PublicFinalReveal | null {
+  const teamId = currentRevealTeamId(final) ?? lastSettledTeamId(final)
+  if (teamId === null) return null
+  const index = teamIndexById(game.definition.teams, teamId)
+  if (index < 0) return null
+  const wager = committedWager(final, teamId)
+  const response = committedResponse(final, teamId)
+  if (wager === null || response === null) return null
+  const settlement = settlementFor(final, teamId)
+  return {
+    // Positional, opaque, deterministic — never the authored team id, and exactly
+    // the key `toPublicTeams` assigns, so the two cannot disagree.
+    teamKey: `t${index}`,
+    response: toPublicFinalResponse(response),
+    wager,
+    // `null` until the host has adjudicated: correctness is not public before the
+    // settlement action, and there is no field holding it in the meantime.
+    settlement:
+      settlement === null
+        ? null
+        : { outcome: settlement.outcome, delta: settlement.delta },
+  }
+}
+
+/**
+ * The most recently settled team, so a just-settled reveal STAYS on screen until
+ * the host reveals the next team.
+ *
+ * Without this the projector would blank the moment a team was adjudicated —
+ * exactly when a class most wants to look at the result. It reads the reveal
+ * ORDER, never the settlement map's key order, so it cannot depend on object
+ * enumeration.
+ */
+function lastSettledTeamId(final: FinalWagerRoundState): string | null {
+  for (let index = final.revealedTeamIds.length - 1; index >= 0; index -= 1) {
+    const teamId = final.revealedTeamIds[index]
+    if (settlementFor(final, teamId) !== null) return teamId
+  }
+  return null
+}
+
+/** Did Final finish with one team ahead, or a shared lead? */
+function finalOutcomeOf(game: PrivateGameState): PublicFinalOutcome {
+  return finalLeaders(game.definition.teams, (teamId) => teamScoreFor(game, teamId)).length > 1
+    ? 'tied'
+    : 'unique-leader'
+}
+
+/**
+ * Project the Final round to its public DTO (Slice 14).
+ *
+ * ALLOW-LIST based in exactly the same way as its siblings: every public field is
+ * NAMED and copied individually. Nothing is spread, cloned-and-deleted, or
+ * serialized, so a field added to `FinalWagerRoundState` later is NOT exposed by
+ * default.
+ *
+ * What it deliberately never reads:
+ *  - the eligibility `snapshot` — the mode, the pre-final scores, the wager caps,
+ *    the eligible team ids and the reveal order are all host-private planning
+ *    data, and publishing any of them would tell a class what other teams can
+ *    risk before they risk it;
+ *  - `wagers` and `responses` for any team other than the one being revealed;
+ *  - the `captureMode` — the class sees a response or "not captured", not the
+ *    host's transcription policy;
+ *  - `definition.alternates` and `definition.notes`, at EVERY stage;
+ *  - the prompt before the response window opens, or the answer before the
+ *    explicit answer reveal;
+ *  - `revealedTeamIds` as a list, or the settlement map as a whole;
+ *  - the window `timerId`s, `startedAt`, or the private per-round Final map.
+ *
+ * Returns `null` when there is nothing safe to publish — an impossible private
+ * state — and the caller turns that into the neutral "unavailable" projection.
+ */
+function toPublicFinalWagerState(
+  game: PrivateGameState,
+  final: FinalWagerRoundState,
+  answer: string,
+  prompt: PromptContent,
+): PublicRoundState | null {
+  // A Final that has not begun projects the neutral setup panel: the class sees
+  // that Final is next, and nothing about who qualifies for it.
+  if (isInitialFinalWagerState(final)) {
+    return { kind: PUBLIC_FINAL_KIND, stage: 'setup' }
+  }
+
+  switch (final.phase) {
+    case 'setup':
+      return { kind: PUBLIC_FINAL_KIND, stage: 'setup' }
+    case 'wager-entry':
+      return {
+        kind: PUBLIC_FINAL_KIND,
+        stage: 'wager-entry',
+        timer: toPublicTimer(final.wagerWindow),
+      }
+    case 'wagers-locked':
+      return { kind: PUBLIC_FINAL_KIND, stage: 'wagers-locked' }
+    case 'response-entry': {
+      // Opening the response window is what makes the prompt public — so this is
+      // the first stage at which the prompt is sent at all.
+      const publicPrompt = toPublicPromptContent(prompt)
+      if (publicPrompt === null) return null
+      return {
+        kind: PUBLIC_FINAL_KIND,
+        stage: 'response-entry',
+        prompt: publicPrompt,
+        timer: toPublicTimer(final.responseWindow),
+      }
+    }
+    case 'responses-locked': {
+      const publicPrompt = toPublicPromptContent(prompt)
+      if (publicPrompt === null) return null
+      return { kind: PUBLIC_FINAL_KIND, stage: 'responses-locked', prompt: publicPrompt }
+    }
+    case 'answer-revealed': {
+      const publicPrompt = toPublicPromptContent(prompt)
+      if (publicPrompt === null) return null
+      return {
+        kind: PUBLIC_FINAL_KIND,
+        stage: 'answer-revealed',
+        prompt: publicPrompt,
+        answer,
+      }
+    }
+    case 'team-reveal': {
+      const publicPrompt = toPublicPromptContent(prompt)
+      if (publicPrompt === null) return null
+      const reveal = toPublicFinalReveal(game, final)
+      // A reveal stage with nobody safely projectable is impossible private state.
+      if (reveal === null) return null
+      return {
+        kind: PUBLIC_FINAL_KIND,
+        stage: 'team-reveal',
+        prompt: publicPrompt,
+        answer,
+        reveal,
+      }
+    }
+    case 'resolution':
+    case 'ready-to-complete': {
+      // A Classic Final in which nobody qualified never published a question, so
+      // none is fabricated for the result screen.
+      const played = final.revealedTeamIds.length > 0
+      const publicPrompt = played ? toPublicPromptContent(prompt) : null
+      if (played && publicPrompt === null) return null
+      return {
+        kind: PUBLIC_FINAL_KIND,
+        stage: 'resolution',
+        prompt: publicPrompt,
+        answer: played ? answer : null,
+        // The last team judged stays on screen beside the result — settling the
+        // final team is the climax, and blanking it at that instant would take
+        // the moment away from the class.
+        reveal: played ? toPublicFinalReveal(game, final) : null,
+        outcome: finalOutcomeOf(game),
+      }
+    }
+    case 'sudden-death':
+      // Neutral by design: the class sees that a tiebreak is happening and reads
+      // the tied totals from the scoreboard, which is public anyway.
+      return { kind: PUBLIC_FINAL_KIND, stage: 'sudden-death' }
+    case 'ended':
+      return { kind: PUBLIC_FINAL_KIND, stage: 'complete', outcome: finalOutcomeOf(game) }
+    default:
+      return null
+  }
+}
+
 /** Outcome of projecting the current round: a DTO, nothing to show, or a failure. */
 interface RoundProjection {
   readonly round: PublicRoundState | null
@@ -346,12 +560,28 @@ interface RoundProjection {
 }
 
 function projectCurrentRound(game: PrivateGameState | null): RoundProjection {
-  if (!game || game.gameLifecycle !== 'active') return { round: null, failed: false }
+  if (!game) return { round: null, failed: false }
   const current = currentRoundOf(game)
   if (!current) return { round: null, failed: false }
 
+  const final = readFinalWagerDefinition(current)
+  if (final !== null) {
+    // Final is the ONE round that still projects after the game ends: its
+    // `complete` stage is the closing screen a class looks at while the final
+    // scoreboard is read out.
+    const projected = toPublicFinalWagerState(
+      game,
+      finalWagerStateFor(game, current.id),
+      final.answer,
+      final.prompt,
+    )
+    return { round: projected, failed: projected === null }
+  }
+
+  if (game.gameLifecycle !== 'active') return { round: null, failed: false }
+
   const board = readCategoryBoardDefinition(current)
-  // Not a category board (e.g. the non-gameplay placeholder, or an unregistered
+  // Not a playable round (e.g. the non-gameplay placeholder, or an unregistered
   // type). There is simply no round DTO — that is not a failure.
   if (board === null) return { round: null, failed: false }
 

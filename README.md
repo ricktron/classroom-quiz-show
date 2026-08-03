@@ -370,7 +370,24 @@ Live-route behaviour was **not** manually verified. See
 [`docs/architecture/ADR-013-local-persistence-recovery.md`](docs/architecture/ADR-013-local-persistence-recovery.md)
 and
 [`docs/receipts/2026-07-29-slice-13-post-merge-reconciliation.md`](docs/receipts/2026-07-29-slice-13-post-merge-reconciliation.md).
-**Slice 14** remains Planned and unstarted.
+**Slice 14 — Final-wager round. In review** — implemented under
+`AUTHORIZE-CQS-S14-FINAL-WAGER-IMPLEMENTATION-1` on
+`claude/cqs-slice-14-final-wager` from the authorized base
+`4de1454181ed58bdb282accd136129c3c0eb0f2b`, with a delivery pull request open.
+**Not merged, and not `Complete`.** `final-wager` is the **second playable
+registered round type**: eligibility (Classic or Inclusive), each team's wager
+cap and the default low-to-high reveal order are frozen when Final begins;
+wagers and response states are host-private, validated and rejected rather than
+clamped; two Final windows reuse the existing clock discipline and expiry
+records only that a window ended; reveal and settlement are explicit, atomic and
+reversible; and a tied lead offers sudden death or an explicit, irreversible
+accepted tie. **Public-state wire moves 7 → 8**; sync envelope stays **2**;
+game-file schema, `GameDefinition` model, private persistence wire and IndexedDB
+schema all stay **1**; no dependency added. See
+[`docs/architecture/ADR-014-final-wager-round.md`](docs/architecture/ADR-014-final-wager-round.md)
+and
+[`docs/receipts/2026-08-03-slice-14-local-verification.md`](docs/receipts/2026-08-03-slice-14-local-verification.md).
+**Slice 15** remains Planned and unstarted.
 
 > ⚠️ **No physical Sony Buzz! controller has been tested.** CI and simulated
 > Gamepad sources prove the hardware-independent boundary only. There is no
@@ -393,9 +410,10 @@ The Slice 1 foundation is unchanged beneath it:
 - Lint, typecheck, unit/component tests (Vitest), and browser tests (Playwright)
 - Architecture and governance documentation
 
-There is **one playable round type**; it scores, it can be timed, and teams can now
-buzz in on it **from the host keyboard, or from a generic USB controller through
-the same boundary**. Slice 10 adds a **host-private Sony Buzz! setup surface**
+There are **two playable round types**. `category-board` scores, can be timed,
+and teams can buzz in on it **from the host keyboard, or from a generic USB
+controller through the same boundary**; `final-wager` (Slice 14, in review) is
+the closing wager round, host-entered and private until each explicit reveal. Slice 10 adds a **host-private Sony Buzz! setup surface**
 (candidate classification, capture recipe, setup test mode) — **`Complete`** under
 the owner-accepted hardware-independent boundary, with physical certification
 deferred and **no compatibility claim**. No WebHID or Bluetooth of any kind, no networked or

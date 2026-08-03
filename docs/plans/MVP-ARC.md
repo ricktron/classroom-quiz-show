@@ -632,7 +632,10 @@ squash-merged via
 [PR #27](https://github.com/ricktron/classroom-quiz-show/pull/27) at
 `6cf4d2579ab558f8c4b7eabca0b94df4acc6f20c` from final reviewed head
 `ad0867ab6d7e00f397de51dfad2363f35bc181d7` (merged **2026-07-29T21:27:59Z**).
-**Slice 14 remains `Planned` and unstarted.**
+**Slice 14 is `In review`** — implemented on
+`claude/slice-14-authorization-3bm0ju` from the authorized base
+`4de1454181ed58bdb282accd136129c3c0eb0f2b`, not merged. **Slice 15 remains
+`Planned` and unstarted.**
 
 ## Slice 8 — scope, acceptance, non-goals
 
@@ -972,9 +975,10 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   [`../architecture/ADR-011-media-contract.md`](../architecture/ADR-011-media-contract.md);
   post-merge evidence in
   [`../receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
-- **Next action:** Slice 12 and Slice 13 are both `Complete`. Slice 14 remains
-  `Planned` and unstarted; starting it requires separate owner-approved
-  planning/readiness authority.
+- **Next action:** Slices 12 and 13 are both `Complete`. **Slice 14 is
+  `In review`** and awaiting owner review of its delivery pull request; it is not
+  merged and not `Complete`. Slice 15 remains `Planned` and unstarted, and
+  starting it requires separate owner-approved authority.
 
 ### Slice 12 — Portable export & round-trip import
 
@@ -1063,9 +1067,21 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   never projected before reveal; full replay/undo coverage.
 - **Impact:** schema **yes** (additive round config) · runtime **yes** · UI
   **yes** · storage no · hardware no.
-- **Status:** `Planned` — unstarted.
-- **Owner gate:** authorization to begin; default tie-break already an approved
-  product decision.
+- **Status:** **`In review`** — implemented under
+  `AUTHORIZE-CQS-S14-FINAL-WAGER-IMPLEMENTATION-1` from authorized base
+  `4de1454181ed58bdb282accd136129c3c0eb0f2b`. Delivered as a registered
+  `final-wager` round type inside the existing command/event/replay core, with
+  the frozen eligibility/cap/reveal-order snapshot (`CQS-OD-005`/`006`/`008`),
+  optional exact-text response capture (`CQS-OD-007`), reversible atomic
+  settlement, and bounded tie handling with sudden death (`CQS-OD-011`).
+  `PublicState` wire moves **7 → 8**; sync envelope stays **2**; game-file
+  schema, `GameDefinition` model, private persistence wire and IndexedDB schema
+  all stay **1**; no dependency added. Rationale in
+  [`../architecture/ADR-014-final-wager-round.md`](../architecture/ADR-014-final-wager-round.md);
+  local evidence in
+  [`../receipts/2026-08-03-slice-14-local-verification.md`](../receipts/2026-08-03-slice-14-local-verification.md).
+  **Not merged, and not `Complete`.**
+- **Owner gate:** review of the delivery pull request.
 
 ### Slice 15 — Session summary & compatible-profile reporting
 

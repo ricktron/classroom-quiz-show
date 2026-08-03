@@ -1,0 +1,164 @@
+/*
+ * Host Final Wager panel. Private — never projected.
+ *
+ * Layout rules that matter:
+ *  - a teacher scans this mid-lesson, so per-team blocks are separated and the
+ *    committed value sits directly beside the control that commits it;
+ *  - host-only content (the answer, alternates, notes) is visibly tagged, so it
+ *    can never be mistaken for something the class can already see;
+ *  - nothing depends on colour: every state is a word;
+ *  - irreversible actions are two-step, and the confirmation states the
+ *    consequence in its own accessible name.
+ */
+.fwh {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.fwh h3 {
+  margin: 0.5rem 0 0.25rem;
+}
+
+.fwh__phase {
+  margin: 0 0 0.75rem;
+  font-weight: 600;
+}
+
+.fwh__actions,
+.fwh__window {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.fwh__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fwh__window-status {
+  margin: 0;
+  font-weight: 600;
+}
+
+.fwh__teams {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.fwh__team {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.fwh__team-name {
+  margin: 0;
+  font-weight: 700;
+}
+
+.fwh__team-meta {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.fwh__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.fwh__field-label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.fwh__input {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: inherit;
+  font: inherit;
+  min-width: 0;
+}
+
+.fwh__committed {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.fwh__choice {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  margin: 0;
+}
+
+.fwh__choice legend {
+  padding: 0 0.35rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.fwh__radio {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0;
+}
+
+/*
+ * Host-only content carries a visible tag as well as a colour, so a glance at
+ * the screen never leaves a teacher wondering whether the class can see it.
+ */
+.fwh__private {
+  margin: 0;
+  padding: 0.4rem 0.55rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+}
+
+.fwh__private-tag {
+  display: inline-block;
+  margin-right: 0.4rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: var(--radius);
+  background: var(--color-border);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.fwh__leader {
+  margin: 0;
+  font-weight: 700;
+}
+
+.fwh__settled {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+/* The confirmation step of an irreversible action. Text carries the meaning. */
+.fwh__confirm {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}

@@ -3,6 +3,13 @@ import type { GameDefinition } from '../game/gameDefinition'
 import type { ScoreAdjustmentMode, ScoreSource } from '../game/teams/scoring'
 import type { ResponseInterruptionSource } from '../game/timing/responsePhase'
 import type { ActiveResponseResolution } from '../game/timing/buzzQueue'
+import type { FinalEligibilitySnapshot } from '../game/finalWager/eligibility'
+import type {
+  FinalOutcome,
+  FinalResponseCaptureMode,
+  FinalResponseState,
+  FinalTieResolution,
+} from '../game/finalWager/finalState'
 
 /**
  * EVENTS record *accepted facts* — things that actually happened, in order. The
@@ -50,6 +57,23 @@ export const EVENT_TYPES = [
   'RESPONSE_PHASE_RESET',
   'TEAM_BUZZED',
   'ACTIVE_RESPONSE_RESOLVED',
+  'FINAL_WAGER_STARTED',
+  'FINAL_WAGER_WINDOW_STARTED',
+  'FINAL_WAGER_WINDOW_PAUSED',
+  'FINAL_WAGER_WINDOW_RESUMED',
+  'FINAL_WAGER_WINDOW_EXPIRED',
+  'FINAL_TEAM_WAGER_RECORDED',
+  'FINAL_WAGERS_LOCKED',
+  'FINAL_RESPONSE_WINDOW_STARTED',
+  'FINAL_RESPONSE_WINDOW_PAUSED',
+  'FINAL_RESPONSE_WINDOW_RESUMED',
+  'FINAL_RESPONSE_WINDOW_EXPIRED',
+  'FINAL_TEAM_RESPONSE_RECORDED',
+  'FINAL_RESPONSES_LOCKED',
+  'FINAL_ANSWER_REVEALED',
+  'FINAL_TEAM_REVEALED',
+  'FINAL_TEAM_SETTLED',
+  'FINAL_TIE_RESOLUTION_SELECTED',
 ] as const
 
 export type EventType = (typeof EVENT_TYPES)[number]
@@ -374,6 +398,194 @@ export interface ActiveResponseResolvedEvent
   readonly resolution: ActiveResponseResolution
 }
 
+/**
+ * Final Wager events (Slice 14) — the durable record of a closing wager round.
+ *
+ * ## Facts, never derivations
+ *
+ * Each event records exactly one thing that happened: Final began with these
+ * frozen conditions; this team committed this wager; the wagers were locked; the
+ * prompt went public with this capture mode; this team was revealed; this team
+ * was settled with this outcome and this signed delta. Nothing here stores a
+ * running total, a derived leader, a remaining count, or a "phase" value — the
+ * phase is derived by replaying these events, so it cannot disagree with them.
+ *
+ * ## All reversible except the accepted tie
+ *
+ * Every Final fact is an ordinary classroom action that a teacher can get wrong
+ * mid-lesson, so every one of them is reversible and undo is exact for free.
+ * {@link FinalTieResolutionSelectedEvent} is the one exception when it names
+ * `accepted-tie`: accepting a tied finish ends the game, and ending a game has
+ * been irreversible since Slice 3 (`GAME_SESSION_ENDED`). Making the acceptance
+ * reversible while the completion beside it is not would leave the two able to
+ * disagree.
+ *
+ * ## Corrections never rewrite
+ *
+ * A corrected wager or response is a NEW `FINAL_TEAM_WAGER_RECORDED` /
+ * `FINAL_TEAM_RESPONSE_RECORDED` event. The earlier one stays in the log and
+ * stays true about what the host first entered; the later one wins on replay
+ * because it is applied later. No event is ever edited in place.
+ */
+interface FinalWagerEventBase<T extends EventType> extends EventBase<T> {
+  readonly reversible: true
+  readonly roundId: string
+}
+
+/**
+ * Final began, with the complete frozen snapshot of eligibility mode, pre-final
+ * scores, eligible team ids, wager caps and the default reveal order.
+ *
+ * The whole snapshot travels on the event — the same technique `RoundSupport`
+ * uses (ADR-003) — so replay reproduces it without consulting the definition, the
+ * registry, or the score map as they stand later. That is what makes "these
+ * values do not drift after Final begins" structural rather than a convention.
+ */
+export interface FinalWagerStartedEvent extends FinalWagerEventBase<'FINAL_WAGER_STARTED'> {
+  readonly snapshot: FinalEligibilitySnapshot
+}
+
+/** A Final window countdown began. Same durable description as ADR-007's timer. */
+interface FinalWindowStartedBase<T extends EventType> extends FinalWagerEventBase<T> {
+  /** Stable identity for this countdown, kept across a pause and resume. */
+  readonly timerId: string
+  readonly durationMs: number
+  readonly startedAt: number
+  readonly deadline: number
+}
+
+/** The wager window began. */
+export type FinalWagerWindowStartedEvent =
+  FinalWindowStartedBase<'FINAL_WAGER_WINDOW_STARTED'>
+
+/** The wager window was frozen; `remainingMs` is the durable fact it froze at. */
+export interface FinalWagerWindowPausedEvent
+  extends FinalWagerEventBase<'FINAL_WAGER_WINDOW_PAUSED'> {
+  readonly timerId: string
+  readonly remainingMs: number
+}
+
+/** The wager window resumed with a NEW deadline derived at the dispatch edge. */
+export interface FinalWagerWindowResumedEvent
+  extends FinalWagerEventBase<'FINAL_WAGER_WINDOW_RESUMED'> {
+  readonly timerId: string
+  readonly resumedAt: number
+  readonly deadline: number
+}
+
+/**
+ * The wager window reached its deadline. It records the expiry and NOTHING else:
+ * no wager is locked, no missing team is given a zero, and nothing advances.
+ */
+export interface FinalWagerWindowExpiredEvent
+  extends FinalWagerEventBase<'FINAL_WAGER_WINDOW_EXPIRED'> {
+  readonly timerId: string
+  readonly deadline: number
+}
+
+/** One team committed (or corrected) its wager. Zero is a real committed value. */
+export interface FinalTeamWagerRecordedEvent
+  extends FinalWagerEventBase<'FINAL_TEAM_WAGER_RECORDED'> {
+  readonly teamId: string
+  /** A whole number in `0 … maxWager`, validated against the frozen snapshot. */
+  readonly wager: number
+}
+
+/** Wager entry closed. Only possible once every eligible team has a wager. */
+export type FinalWagersLockedEvent = FinalWagerEventBase<'FINAL_WAGERS_LOCKED'>
+
+/**
+ * Response entry opened — and this is the event that makes the Final prompt
+ * PUBLIC. It carries the chosen capture mode alongside the countdown facts,
+ * because the two were one host decision.
+ */
+export interface FinalResponseWindowStartedEvent
+  extends FinalWindowStartedBase<'FINAL_RESPONSE_WINDOW_STARTED'> {
+  readonly captureMode: FinalResponseCaptureMode
+}
+
+/** The response window was frozen. */
+export interface FinalResponseWindowPausedEvent
+  extends FinalWagerEventBase<'FINAL_RESPONSE_WINDOW_PAUSED'> {
+  readonly timerId: string
+  readonly remainingMs: number
+}
+
+/** The response window resumed with a NEW deadline. */
+export interface FinalResponseWindowResumedEvent
+  extends FinalWagerEventBase<'FINAL_RESPONSE_WINDOW_RESUMED'> {
+  readonly timerId: string
+  readonly resumedAt: number
+  readonly deadline: number
+}
+
+/**
+ * The response window reached its deadline. It marks no team absent: a team with
+ * no recorded state is still "not recorded yet", and the host must say what
+ * actually happened before responses can be locked.
+ */
+export interface FinalResponseWindowExpiredEvent
+  extends FinalWagerEventBase<'FINAL_RESPONSE_WINDOW_EXPIRED'> {
+  readonly timerId: string
+  readonly deadline: number
+}
+
+/** One team's response state was recorded (or corrected). */
+export interface FinalTeamResponseRecordedEvent
+  extends FinalWagerEventBase<'FINAL_TEAM_RESPONSE_RECORDED'> {
+  readonly teamId: string
+  readonly response: FinalResponseState
+}
+
+/** Response entry closed. Only possible once every eligible team has a state. */
+export type FinalResponsesLockedEvent = FinalWagerEventBase<'FINAL_RESPONSES_LOCKED'>
+
+/** The canonical Final answer became public. */
+export type FinalAnswerRevealedEvent = FinalWagerEventBase<'FINAL_ANSWER_REVEALED'>
+
+/**
+ * One team's wager and response became public.
+ *
+ * It names the team the host ACTUALLY chose, so the log records the real reveal
+ * order — default or alternate — rather than the order somebody assumed.
+ */
+export interface FinalTeamRevealedEvent extends FinalWagerEventBase<'FINAL_TEAM_REVEALED'> {
+  readonly teamId: string
+}
+
+/**
+ * One team was adjudicated and settled — the whole Final score audit trail.
+ *
+ * It carries the wager, the outcome and the signed delta, and deliberately NOT
+ * the resulting total, for exactly the reason `TEAM_SCORE_ADJUSTED` does not: a
+ * frozen total would be a lie the moment an earlier settlement is undone. A ZERO
+ * wager still produces one of these, with a zero delta, because "this team
+ * wagered nothing and answered correctly" is a fact worth recording even though
+ * no points moved.
+ */
+export interface FinalTeamSettledEvent extends FinalWagerEventBase<'FINAL_TEAM_SETTLED'> {
+  readonly teamId: string
+  /** The wager as committed, re-read from frozen state — never from the command. */
+  readonly wager: number
+  readonly outcome: FinalOutcome
+  /** `+wager` for `correct`, `−wager` otherwise. Derived once, stored once. */
+  readonly delta: number
+}
+
+/**
+ * The host chose what to do about a tied lead.
+ *
+ * `sudden-death` is reversible: entering it changes nothing but the phase, and a
+ * host who chose it by accident must be able to take it back. `accepted-tie` is
+ * IRREVERSIBLE and is always appended together with `GAME_SESSION_ENDED`, so the
+ * two facts can never disagree about whether the game is over.
+ */
+export interface FinalTieResolutionSelectedEvent
+  extends EventBase<'FINAL_TIE_RESOLUTION_SELECTED'> {
+  readonly roundId: string
+  readonly resolution: FinalTieResolution
+}
+
 export type SessionEvent =
   | SessionInitializedEvent
   | PublicStatusSetEvent
@@ -400,3 +612,20 @@ export type SessionEvent =
   | ResponsePhaseResetEvent
   | TeamBuzzedEvent
   | ActiveResponseResolvedEvent
+  | FinalWagerStartedEvent
+  | FinalWagerWindowStartedEvent
+  | FinalWagerWindowPausedEvent
+  | FinalWagerWindowResumedEvent
+  | FinalWagerWindowExpiredEvent
+  | FinalTeamWagerRecordedEvent
+  | FinalWagersLockedEvent
+  | FinalResponseWindowStartedEvent
+  | FinalResponseWindowPausedEvent
+  | FinalResponseWindowResumedEvent
+  | FinalResponseWindowExpiredEvent
+  | FinalTeamResponseRecordedEvent
+  | FinalResponsesLockedEvent
+  | FinalAnswerRevealedEvent
+  | FinalTeamRevealedEvent
+  | FinalTeamSettledEvent
+  | FinalTieResolutionSelectedEvent

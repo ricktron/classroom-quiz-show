@@ -350,11 +350,12 @@ describe('the public round guard rejects impossible payloads', () => {
 })
 
 describe('wire version', () => {
-  it('is 7 — bumped because Slice 11 changed prompt to PublicPromptContent', () => {
+  it('is 8 — bumped because Slice 14 added the Final member to PublicRoundState', () => {
     // Slice 5 took this from 2 → 3 for `round`, Slice 6 3 → 4 for `teams`,
     // Slice 7 4 → 5 for `response`, Slice 8 5 → 6 for `buzz`, Slice 11 6 → 7
-    // for typed prompt media. An older version is never re-read as a newer one.
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(7)
+    // for typed prompt media, and Slice 14 7 → 8 for the Final round DTO. An
+    // older version is never re-read as a newer one.
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(8)
   })
 
   it('rejects an older wire shape instead of reinterpreting it', () => {

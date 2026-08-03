@@ -27,16 +27,25 @@ import { isValidSameOriginPath } from '../game/media/limits'
  * the `teams` field (3 → 4); Slice 7 added the `response` field (4 → 5); Slice 8
  * added the required `buzz` field INSIDE `response` (5 → 6); Slice 11 changes
  * `PublicCategoryBoardSelection.prompt` from a bare string to
- * `PublicPromptContent` (6 → 7). A display expecting an older shape fails closed
- * on the version mismatch — an old wire shape is never reinterpreted, guessed
- * at, or upgraded, and version 6 is never re-read as though it were version 7.
+ * `PublicPromptContent` (6 → 7); Slice 14 adds a second member to
+ * `PublicRoundState` — the Final Wager DTO (7 → 8). A display expecting an older
+ * shape fails closed on the version mismatch — an old wire shape is never
+ * reinterpreted, guessed at, or upgraded, and version 7 is never re-read as
+ * though it were version 8.
  *
  * The Slice 11 bump is deliberate: a version-6 display that received an image
  * object in `prompt` would coerce it to `"[object Object]"` or crash, and a
  * version-7 display that received a bare string would treat media as missing.
  * That is exactly the implicit compatibility guessing ADR-004 forbids.
+ *
+ * The Slice 14 bump is deliberate for the same class of reason: a version-7
+ * display validates `round` with a guard that accepts only `kind: 'board'`, so a
+ * Final payload would fail that guard and freeze the projector on its last board
+ * snapshot — a class would watch a stale board through the whole Final round with
+ * no indication anything was wrong. Failing closed on the VERSION instead makes
+ * the mismatch visible and unambiguous.
  */
-export const PUBLIC_STATE_SCHEMA_VERSION = 7 as const
+export const PUBLIC_STATE_SCHEMA_VERSION = 8 as const
 
 /**
  * Coarse, public-safe lifecycle phase. This is intentionally NOT the private
@@ -177,10 +186,140 @@ export type PublicCategoryBoardState =
     }
 
 /**
- * The public state of the current round. A union of one today; further playable
- * round types add members here, each with its own allow-listed DTO.
+ * ── Final Wager public DTO (Slice 14) ────────────────────────────────────────
+ *
+ * The projector's view of the closing wager round. Like the board DTO this is a
+ * **current-stage-only** payload, not the Final definition with private fields
+ * blanked out: the prompt is not sent until the host opens the response window,
+ * the answer is not sent until the host reveals it, and a team's wager and
+ * response are not sent until that team is revealed. There is therefore no hidden
+ * wager, response or answer sitting in the projector's memory waiting to be
+ * inspected — the content is simply never sent.
+ *
+ * Never present at any stage, by construction: unrevealed wagers, unrevealed
+ * responses, host notes, alternate answers, pending correctness, the eligibility
+ * mode, the wager caps, the pre-final score snapshot, authored team or round ids,
+ * the round-type identifier, the reveal order, event history, undo metadata,
+ * timer ids, `issuedAt`/`occurredAt`, or host-writer lease data.
  */
-export type PublicRoundState = PublicCategoryBoardState
+
+/**
+ * The PRESENTATION discriminator for a Final round.
+ *
+ * Deliberately NOT the registry round-type string (`final-wager`), for the same
+ * reason {@link PUBLIC_BOARD_KIND} is not `category-board`: the projector must
+ * never carry an internal round-type identifier, and a wire discriminator kept
+ * separate from the registry means a future round type with the same
+ * presentation can reuse this renderer without the wire naming a registry entry.
+ */
+export const PUBLIC_FINAL_KIND = 'final' as const
+
+/** One revealed team's response, as the projector sees it. */
+export type PublicFinalResponse =
+  | { readonly kind: 'exact'; readonly text: string }
+  | { readonly kind: 'not-captured' }
+  | { readonly kind: 'no-response' }
+
+/** A settled team's outcome and the points it moved. Present only after settlement. */
+export interface PublicFinalSettlement {
+  readonly outcome: 'correct' | 'incorrect' | 'no-response'
+  /** The signed change applied to that team's score. Never a resulting total. */
+  readonly delta: number
+}
+
+/**
+ * The team currently on screen in the reveal sequence.
+ *
+ * It names the team by its POSITIONAL key (`t0`, `t1`, …) — the same key
+ * {@link PublicTeam} carries — so the display looks the name up from the
+ * scoreboard it already has and no authored team id ever travels.
+ *
+ * `settlement` is `null` between the reveal and the host's adjudication, which is
+ * what makes "correctness is not public until the host settles" a shape-level
+ * fact rather than a rendering convention.
+ */
+export interface PublicFinalReveal {
+  readonly teamKey: string
+  readonly response: PublicFinalResponse
+  readonly wager: number
+  readonly settlement: PublicFinalSettlement | null
+}
+
+/** How Final finished: one team ahead, or a shared lead. */
+export type PublicFinalOutcome = 'unique-leader' | 'tied'
+
+/**
+ * The public Final state, discriminated by stage. The variants carry disjoint
+ * data, which is what makes "the prompt is not sent before the response window"
+ * and "no wager is sent before its team's reveal" type-level facts.
+ */
+export type PublicFinalWagerState =
+  | { readonly kind: typeof PUBLIC_FINAL_KIND; readonly stage: 'setup' }
+  | {
+      readonly kind: typeof PUBLIC_FINAL_KIND
+      readonly stage: 'wager-entry'
+      /** Generic countdown only. The class sees time, never anyone's wager. */
+      readonly timer: PublicResponseTimer
+    }
+  | { readonly kind: typeof PUBLIC_FINAL_KIND; readonly stage: 'wagers-locked' }
+  | {
+      readonly kind: typeof PUBLIC_FINAL_KIND
+      readonly stage: 'response-entry'
+      readonly prompt: PublicPromptContent
+      readonly timer: PublicResponseTimer
+    }
+  | {
+      readonly kind: typeof PUBLIC_FINAL_KIND
+      readonly stage: 'responses-locked'
+      readonly prompt: PublicPromptContent
+    }
+  | {
+      readonly kind: typeof PUBLIC_FINAL_KIND
+      readonly stage: 'answer-revealed'
+      readonly prompt: PublicPromptContent
+      readonly answer: string
+    }
+  | {
+      readonly kind: typeof PUBLIC_FINAL_KIND
+      readonly stage: 'team-reveal'
+      readonly prompt: PublicPromptContent
+      readonly answer: string
+      readonly reveal: PublicFinalReveal
+    }
+  | {
+      readonly kind: typeof PUBLIC_FINAL_KIND
+      readonly stage: 'resolution'
+      /**
+       * `null` when Final resolved without a question ever going public — a
+       * Classic Final in which no team qualified. The class sees the result, and
+       * no prompt is fabricated for a round nobody played.
+       */
+      readonly prompt: PublicPromptContent | null
+      readonly answer: string | null
+      /**
+       * The LAST team revealed, kept on screen beside the result.
+       *
+       * Settling the final team is the climax of the whole game, and blanking
+       * that team the instant it is judged — exactly when a class is looking at
+       * it — would be the projector taking the moment away. It is `null` only
+       * when no team was ever revealed.
+       */
+      readonly reveal: PublicFinalReveal | null
+      readonly outcome: PublicFinalOutcome
+    }
+  | { readonly kind: typeof PUBLIC_FINAL_KIND; readonly stage: 'sudden-death' }
+  | {
+      readonly kind: typeof PUBLIC_FINAL_KIND
+      readonly stage: 'complete'
+      readonly outcome: PublicFinalOutcome
+    }
+
+/**
+ * The public state of the current round. Two members: the board (Slice 5) and
+ * Final (Slice 14). Further playable round types add members here, each with its
+ * own allow-listed DTO and its own exact-key guard.
+ */
+export type PublicRoundState = PublicCategoryBoardState | PublicFinalWagerState
 
 /**
  * ── Team scoreboard public DTO (Slice 6) ─────────────────────────────────────
@@ -697,16 +836,151 @@ function isPublicCategoryBoardSelection(value: unknown): value is PublicCategory
 }
 
 /**
+ * The EXACT key set each Final stage is allowed to carry.
+ *
+ * Final has more stages than the board, and its variants differ by one field at a
+ * time (a timer here, an answer there), so an "everything optional" guard would
+ * happily accept a `wagers-locked` payload that carried a prompt. Naming the keys
+ * per stage makes every impossible payload a hard reject — and it makes adding a
+ * field to a private Final state a deliberate, reviewable wire edit rather than
+ * something that leaks the moment somebody spreads an object.
+ */
+const PUBLIC_FINAL_STAGE_KEYS: Readonly<Record<string, readonly string[]>> = {
+  setup: ['kind', 'stage'],
+  'wager-entry': ['kind', 'stage', 'timer'],
+  'wagers-locked': ['kind', 'stage'],
+  'response-entry': ['kind', 'stage', 'prompt', 'timer'],
+  'responses-locked': ['kind', 'stage', 'prompt'],
+  'answer-revealed': ['kind', 'stage', 'prompt', 'answer'],
+  'team-reveal': ['kind', 'stage', 'prompt', 'answer', 'reveal'],
+  resolution: ['kind', 'stage', 'prompt', 'answer', 'reveal', 'outcome'],
+  'sudden-death': ['kind', 'stage'],
+  complete: ['kind', 'stage', 'outcome'],
+}
+
+const PUBLIC_FINAL_RESPONSE_EXACT_KEYS = ['kind', 'text'] as const
+const PUBLIC_FINAL_RESPONSE_BARE_KEYS = ['kind'] as const
+const PUBLIC_FINAL_SETTLEMENT_KEYS = ['outcome', 'delta'] as const
+const PUBLIC_FINAL_REVEAL_KEYS = ['teamKey', 'response', 'wager', 'settlement'] as const
+
+const PUBLIC_FINAL_OUTCOMES: readonly string[] = ['unique-leader', 'tied']
+const PUBLIC_SETTLEMENT_OUTCOMES: readonly string[] = ['correct', 'incorrect', 'no-response']
+
+function isPublicFinalResponse(value: unknown): value is PublicFinalResponse {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+  const v = value as Record<string, unknown>
+  if (v.kind === 'exact') {
+    return (
+      hasExactOwnKeys(v, PUBLIC_FINAL_RESPONSE_EXACT_KEYS) &&
+      typeof v.text === 'string' &&
+      v.text.length > 0
+    )
+  }
+  if (v.kind === 'not-captured' || v.kind === 'no-response') {
+    return hasExactOwnKeys(v, PUBLIC_FINAL_RESPONSE_BARE_KEYS)
+  }
+  return false
+}
+
+function isBoundedPublicWager(value: unknown): value is number {
+  return (
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= 0 &&
+    value <= PUBLIC_TEAM_SCORE_LIMIT
+  )
+}
+
+function isPublicFinalSettlement(value: unknown): value is PublicFinalSettlement | null {
+  if (value === null) return true
+  if (typeof value !== 'object' || Array.isArray(value)) return false
+  const v = value as Record<string, unknown>
+  return (
+    hasExactOwnKeys(v, PUBLIC_FINAL_SETTLEMENT_KEYS) &&
+    typeof v.outcome === 'string' &&
+    PUBLIC_SETTLEMENT_OUTCOMES.includes(v.outcome) &&
+    typeof v.delta === 'number' &&
+    Number.isInteger(v.delta) &&
+    Math.abs(v.delta) <= PUBLIC_TEAM_SCORE_LIMIT
+  )
+}
+
+function isPublicFinalReveal(value: unknown): value is PublicFinalReveal {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+  const v = value as Record<string, unknown>
+  return (
+    hasExactOwnKeys(v, PUBLIC_FINAL_REVEAL_KEYS) &&
+    typeof v.teamKey === 'string' &&
+    PUBLIC_TEAM_KEY_PATTERN.test(v.teamKey) &&
+    isPublicFinalResponse(v.response) &&
+    isBoundedPublicWager(v.wager) &&
+    isPublicFinalSettlement(v.settlement)
+  )
+}
+
+/**
+ * Strict guard for the Final DTO. It validates the stage/payload PAIRING through
+ * an exact key set per stage, so a `wagers-locked` payload carrying a prompt, or
+ * a `team-reveal` payload missing its reveal, is rejected outright rather than
+ * rendered partially.
+ */
+function isPublicFinalWagerState(v: Record<string, unknown>): boolean {
+  const stage = v.stage
+  if (typeof stage !== 'string') return false
+  const keys = PUBLIC_FINAL_STAGE_KEYS[stage]
+  if (keys === undefined) return false
+  if (!hasExactOwnKeys(v, keys)) return false
+
+  switch (stage) {
+    case 'setup':
+    case 'wagers-locked':
+    case 'sudden-death':
+      return true
+    case 'wager-entry':
+      return isPublicResponseTimer(v.timer)
+    case 'response-entry':
+      return isPublicPromptContent(v.prompt) && isPublicResponseTimer(v.timer)
+    case 'responses-locked':
+      return isPublicPromptContent(v.prompt)
+    case 'answer-revealed':
+      return isPublicPromptContent(v.prompt) && typeof v.answer === 'string' && v.answer.length > 0
+    case 'team-reveal':
+      return (
+        isPublicPromptContent(v.prompt) &&
+        typeof v.answer === 'string' &&
+        v.answer.length > 0 &&
+        isPublicFinalReveal(v.reveal)
+      )
+    case 'resolution':
+      return (
+        isNullablePublicPrompt(v.prompt) &&
+        isNullableString(v.answer) &&
+        (v.reveal === null || isPublicFinalReveal(v.reveal)) &&
+        typeof v.outcome === 'string' &&
+        PUBLIC_FINAL_OUTCOMES.includes(v.outcome)
+      )
+    case 'complete':
+      return typeof v.outcome === 'string' && PUBLIC_FINAL_OUTCOMES.includes(v.outcome)
+    default:
+      return false
+  }
+}
+
+/**
  * Strict guard for the round DTO (or `null`). It validates the stage/payload
  * PAIRING, not just the field types: a `board` stage carrying a `selection`, or
  * a `prompt` stage carrying `categories`, is rejected outright rather than
  * rendered partially. That is what makes an impossible reveal stage fail closed
  * at the display instead of being guessed at.
+ *
+ * Dispatch is on the PRESENTATION `kind`, so a payload whose kind this build does
+ * not know fails closed rather than being tried against every guard in turn.
  */
 export function isPublicRoundState(value: unknown): value is PublicRoundState | null {
   if (value === null) return true
   if (typeof value !== 'object') return false
   const v = value as Record<string, unknown>
+  if (v.kind === PUBLIC_FINAL_KIND) return isPublicFinalWagerState(v)
   if (v.kind !== PUBLIC_BOARD_KIND) return false
 
   if (v.stage === 'board') {

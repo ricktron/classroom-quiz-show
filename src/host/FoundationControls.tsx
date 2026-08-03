@@ -7,9 +7,11 @@ import { GameExportPanel } from './GameExportPanel'
 import { CategoryBoardHostPanel } from './CategoryBoardHostPanel'
 import { TeamScoringPanel } from './TeamScoringPanel'
 import { ResponseTimerHostPanel } from './ResponseTimerHostPanel'
+import { FinalWagerHostPanel } from './FinalWagerHostPanel'
 import { LocalInputHostPanel } from './LocalInputHostPanel'
 import { GamepadInputHostPanel } from './GamepadInputHostPanel'
 import { useResponseTimerExpiry } from './useResponseTimerExpiry'
+import { useFinalWagerExpiry } from './useFinalWagerExpiry'
 import { systemClock, type Clock } from '../time/clock'
 import { useHostPersistence } from './useHostPersistence'
 import { PersistenceControls } from './PersistenceControls'
@@ -72,6 +74,9 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
   // COMMAND; it never mutates state, and a stale callback is rejected by the
   // planner rather than being defended against here (Slice 7).
   useResponseTimerExpiry({ game, dispatch, clock })
+  // The Final round's own scheduled clock read (Slice 14). Same discipline: it
+  // turns a deadline into a COMMAND and decides nothing.
+  useFinalWagerExpiry({ game, dispatch, clock })
 
   return (
     <section className="foundation" aria-labelledby="foundation-title">
@@ -309,6 +314,13 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
         the board panel and the scoring panel apart.
       */}
       {game && <ResponseTimerHostPanel dispatch={dispatch} game={game} clock={clock} />}
+
+      {/*
+        The Final wager round (Slice 14) — the second playable round type. Like
+        its siblings it is a bounded panel: it owns Final and nothing else, and it
+        renders only when the current round IS a playable Final.
+      */}
+      {game && <FinalWagerHostPanel dispatch={dispatch} game={game} clock={clock} />}
 
       {/*
         Local input & the buzz queue (Slice 8). A fourth bounded panel: it

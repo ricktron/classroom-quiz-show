@@ -7,6 +7,7 @@ import { importGameFromJsonText } from '../import/importGame'
 import type { ImportResult } from '../import/result'
 import {
   CANONICAL_SAMPLE_CATEGORY_BOARD_FILE,
+  CANONICAL_SAMPLE_FINAL_WAGER_FILE,
   CANONICAL_SAMPLE_GAME_FILE,
   CANONICAL_SAMPLE_WITH_DUPLICATE_TEAM_ID,
   CANONICAL_SAMPLE_WITH_DUPLICATE_TILE_ID,
@@ -129,6 +130,13 @@ export function GameImportPanel({
           onClick={() => setText(CANONICAL_SAMPLE_CATEGORY_BOARD_FILE)}
         >
           Load category-board sample file
+        </button>
+        <button
+          type="button"
+          className="btn btn--secondary"
+          onClick={() => setText(CANONICAL_SAMPLE_FINAL_WAGER_FILE)}
+        >
+          Load board + final-wager sample file
         </button>
         <button
           type="button"

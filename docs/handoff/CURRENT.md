@@ -9,9 +9,13 @@ see
 [`../architecture/ADR-013-local-persistence-recovery.md`](../architecture/ADR-013-local-persistence-recovery.md)
 and
 [`../STATUS.md`](../STATUS.md)).
-**Slice 14 remains `Planned` and unstarted.** The next safe product action
-requires a **separate** Slice 14 planning/readiness decision — this handoff
-does **not** authorize Slice 14 implementation.
+**Slice 14 — Final-wager round is `In review`** (PR open, **not merged**,
+**not `Complete`**) — see
+[`../architecture/ADR-014-final-wager-round.md`](../architecture/ADR-014-final-wager-round.md).
+**Slice 15 remains `Planned` and unstarted.** The next safe product action
+requires a **separate** Slice 15 planning/readiness decision — this handoff
+does **not** authorize Slice 15 implementation, and it does not authorize
+merging Slice 14.
 
 Coding agents and contributors should read root
 [`../../AGENTS.md`](../../AGENTS.md) before changing the repository. Claude
@@ -213,7 +217,45 @@ defers to `AGENTS.md` and adds no separate authority.
   [`../receipts/2026-07-29-slice-13-local-verification.md`](../receipts/2026-07-29-slice-13-local-verification.md),
   [`../receipts/2026-07-29-slice-13-sonar-polish.md`](../receipts/2026-07-29-slice-13-sonar-polish.md),
   [`../receipts/2026-07-29-slice-13-post-merge-reconciliation.md`](../receipts/2026-07-29-slice-13-post-merge-reconciliation.md).
-- **Slice 14:** `Planned`, unstarted.
+- **Slice 14 (current): `In review`.** Owner-authorized under
+  `AUTHORIZE-CQS-S14-FINAL-WAGER-IMPLEMENTATION-1` and delivered on
+  `claude/slice-14-authorization-3bm0ju`, based on `main` at
+  `4de1454181ed58bdb282accd136129c3c0eb0f2b`. The `final-wager` round is the
+  SECOND playable registered round type. Public-state wire moves **7 → 8**; sync
+  envelope stays **2**; game-file schema, `GameDefinition` model, private
+  persistence wire and IndexedDB schema all stay **1**; no dependency added.
+  **Not merged. Not `Complete`.** Rationale in
+  [`../architecture/ADR-014-final-wager-round.md`](../architecture/ADR-014-final-wager-round.md);
+  local evidence in
+  [`../receipts/2026-08-03-slice-14-local-verification.md`](../receipts/2026-08-03-slice-14-local-verification.md).
+- **Slice 15:** `Planned`, unstarted.
+- **What Slice 14 adds:** the SECOND playable round type, `final-wager` — and
+  the important thing about it is where it lives. It is registered by application
+  code in the same registry as `category-board`, validated by the same import
+  pipeline, exported by the same canonical exporter, persisted by the same
+  private codec, and played entirely through the existing command → event →
+  replay core. It is **not** a game mode, a preset engine, a policy object, an
+  extension of the board, or a screen outside that core. Its state is one more
+  per-round map on `PrivateGameState` (`finalWagers`), a sibling of
+  `categoryBoards` and `responsePhases`; its public form is one more member of
+  the allow-listed `PublicRoundState` union.
+  Eligibility (Classic or Inclusive), each team's wager cap, and the default
+  low-to-high reveal order are FROZEN onto the start event and never drift.
+  Wagers and response states are host-private and validated — zero is explicit
+  and real, and anything outside `0 … cap` is rejected, never clamped. The prompt
+  becomes public only when the host opens the response window; the answer only on
+  an explicit reveal; a team's wager and response only at that team's reveal; and
+  correctness only at settlement. Two Final windows reuse ADR-007's clock
+  discipline, and **expiry records only that the window ended** — it locks
+  nothing, marks nobody absent, reveals nothing, adjudicates nothing, settles
+  nothing and ends nothing. Settlement is atomic and reversible, stores a signed
+  delta and never a resulting total, and a zero wager still produces an auditable
+  zero-delta fact. A tied lead presents both choices; sudden death keeps the game
+  active and narrows manual correction to tied leaders; accepting the tie is
+  irreversible and appends the existing `GAME_SESSION_ENDED` beside it.
+  `PublicState` moves 7 → 8, and every Final stage has an exact-key wire guard.
+  See
+  [`../architecture/ADR-014-final-wager-round.md`](../architecture/ADR-014-final-wager-round.md).
 - **What Slice 13 adds:** host-local IndexedDB durability for **saved
   definitions** and **active-session recovery**, kept strictly distinct from each
   other and from coordination. Active sessions recover through an explicit
@@ -521,6 +563,16 @@ src/display/       usePublicState (PublicState + receiver + clock offset),
 src/test/          leakLabels, gameFileFixtures, categoryBoardFixtures, teamFixtures
 ```
 
+> **Module map note (Slice 14).** `src/game/finalWager/` owns the Final round's
+> limits, strict schema, trusted definition, eligibility/cap/reveal-order rules
+> and replay-derived state. Host UI lives in `FinalWagerHostPanel` /
+> `useFinalWagerExpiry`; the projector renderer is `FinalWagerDisplay`. Final
+> gameplay behaviour lives in the pure reducer and its projection in the
+> allow-list sanitizer — the registry entry supplies identity, the single config
+> validation path, and the neutral Slice 3 runtime seam, exactly as
+> `category-board` does. See
+> [`../architecture/ADR-014-final-wager-round.md`](../architecture/ADR-014-final-wager-round.md).
+
 > **Module map note (Slice 13).** `src/persistence/` owns host-local IndexedDB
 > adapters, saved definitions, active-session wire, write queue, and coordination.
 > Host UI lives in `PersistenceControls` / `useHostPersistence`. Nothing in this
@@ -615,9 +667,25 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
   **manual live-route verification was not performed** — a successful deploy
   workflow is not the same evidence as loading the site. Slice 6 changes no CI or
   deploy configuration.
-- **`PublicState` wire version is now 7 and the sync envelope version is 2.** A
-  consumer pinned to any older version of either fails closed by design; no
-  migration exists.
+- **`PublicState` wire version is now 8 (Slice 14) and the sync envelope version
+  is 2.** A consumer pinned to any older version of either fails closed by
+  design; no migration exists. Version 7 is REJECTED, never reinterpreted — a
+  version-7 display would otherwise fail the round guard on a Final payload and
+  silently freeze on its last board snapshot.
+- **Final state deliberately SURVIVES a round change**, unlike a response phase
+  (ADR-007 §8). A Final holds committed wagers, recorded responses and applied
+  settlements, and discarding those because a teacher glanced back at an earlier
+  round would destroy recorded facts. A Final window that is stale on return is
+  recorded as expired, which changes nothing on its own. Documented in ADR-014
+  §14.
+- **Nothing in Final happens automatically.** A window running out locks no
+  wager, invents no zero, marks nobody as a no-response, reveals nothing,
+  adjudicates nothing, settles nothing and ends nothing.
+- **A Final wager is rejected, never clamped.** An over-cap, negative,
+  fractional or non-finite amount appends nothing and mutates nothing; the host
+  sees the number they typed and corrects it.
+- **Manual score correction is narrowed during Final sudden death** to the tied
+  leaders only. This is the one round-type-aware rule in the scoring planner.
 - **The board itself still scores nothing.** `multiplier` affects the displayed
   value and the typed `effectiveValue`, and revealing an answer awards nothing — the
   teacher must deliberately award or deduct. A timer running out awards nothing
@@ -781,15 +849,19 @@ arcs remain inactive; **decision 66 (`CQS-OD-066`) remains unresolved**.
 ## Next action
 
 **Slices 1–13 and planning slice CQS-PLAN-S01 are `Complete` and
-merged.** **Slice 14 — Final-wager round remains `Planned` and
-unstarted** and is the current product route. Slice 14 must receive its
-own bounded planning/readiness authorization before any work begins —
-this handoff does **not** authorize it. When that authorization is
-drafted, the accepted Final Wager decisions (`CQS-OD-005`…`CQS-OD-008`,
-`CQS-OD-011`) now provide **acceptance-design input** for Slice 14's
-already-recorded deliverables (eligibility, wager validation, response
-capture, reveal sequencing, tie handling) without having begun any
-implementation.
+merged.** **Slice 14 — Final-wager round is `In review`**: implemented
+under `AUTHORIZE-CQS-S14-FINAL-WAGER-IMPLEMENTATION-1` on
+`claude/slice-14-authorization-3bm0ju` from the authorized base
+`4de1454181ed58bdb282accd136129c3c0eb0f2b`, with a delivery pull request
+open. It is **not merged** and **not `Complete`**. The accepted Final
+Wager decisions (`CQS-OD-005`…`CQS-OD-008`, `CQS-OD-011`) were the
+acceptance-design input and are implemented as recorded.
+
+**The next action is owner review of that pull request.** This handoff
+does **not** authorize merging it, post-merge reconciliation, branch
+cleanup, or Slice 15. **Slice 15 — Session summary & compatible-profile
+reporting remains `Planned` and unstarted** and must receive its own
+bounded authorization before any work begins.
 
 ## Owner direction — colored buttons and the local input contract (2026-07-27)
 

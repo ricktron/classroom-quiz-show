@@ -6,6 +6,7 @@ import { placeholderRoundType } from './placeholderRound'
 import { PLACEHOLDER_ROUND_TYPE, placeholderRound } from './roundDefinition'
 import { roundType } from './ids'
 import { CATEGORY_BOARD_ROUND_TYPE } from './categoryBoard/definition'
+import { FINAL_WAGER_ROUND_TYPE } from './finalWager/definition'
 
 function fakeEntry(type: string): RoundTypeEntry {
   return {
@@ -84,7 +85,11 @@ describe('round registry', () => {
 
   it('the default registry registers exactly the built-in types, in registration order', () => {
     const registry = createDefaultRegistry()
-    expect(registry.knownTypes()).toEqual([PLACEHOLDER_ROUND_TYPE, CATEGORY_BOARD_ROUND_TYPE])
+    expect(registry.knownTypes()).toEqual([
+      PLACEHOLDER_ROUND_TYPE,
+      CATEGORY_BOARD_ROUND_TYPE,
+      FINAL_WAGER_ROUND_TYPE,
+    ])
   })
 
   it('returns a fresh independent registry each call', () => {

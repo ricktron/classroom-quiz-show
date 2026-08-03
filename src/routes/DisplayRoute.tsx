@@ -1,9 +1,10 @@
 import { usePublicState } from '../display/usePublicState'
 import { CategoryBoardDisplay } from '../display/CategoryBoardDisplay'
+import { FinalWagerDisplay } from '../display/FinalWagerDisplay'
 import { TeamScoreboard } from '../display/TeamScoreboard'
 import { ResponseTimerDisplay } from '../display/ResponseTimerDisplay'
 import { BuzzQueueDisplay } from '../display/BuzzQueueDisplay'
-import type { PublicGameView } from '../state/publicState'
+import { PUBLIC_FINAL_KIND, type PublicGameView } from '../state/publicState'
 import './DisplayRoute.css'
 
 /**
@@ -78,7 +79,20 @@ export function DisplayRoute() {
       */}
       {publicState.round && (
         <div className="display__round" aria-live="polite" data-testid="display-round">
-          <CategoryBoardDisplay round={publicState.round} />
+          {/*
+            One renderer per PRESENTATION kind, chosen from the DTO's own
+            discriminator. The display never asks what round TYPE this is — that
+            identifier is not on the wire at all.
+          */}
+          {publicState.round.kind === PUBLIC_FINAL_KIND ? (
+            <FinalWagerDisplay
+              round={publicState.round}
+              teams={publicState.teams}
+              hostClockOffsetMs={hostClockOffsetMs}
+            />
+          ) : (
+            <CategoryBoardDisplay round={publicState.round} />
+          )}
         </div>
       )}
       {/*
