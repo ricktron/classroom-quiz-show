@@ -19,6 +19,37 @@ squash-merged via PR #25 at `cdb499a…`; wire **7**)
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 (**merged to `main` via PR #13**, merge commit `752a3fe`, 2026-07-26T20:02:13Z)
 
+## Expanded-vision planning documentation (CQS-PLAN-S01, 2026-08-03)
+
+A **planning-only documentation slice** (`CQS-PLAN-S01`, authorization
+`AUTHORIZE-CQS-PLAN-S01-EXPANDED-VISION-DOCUMENTATION-1`) recorded the
+expanded gameplay, authoring, analytics, and operator vision as durable
+repository truth. **It changed documentation only**: no runtime code,
+schema, test, dependency, workflow, or deployment configuration changed;
+public-state wire remains **7**, sync envelope **2**, game-file schema
+**1**. **The current MVP is unchanged and Slice 14 remains `Planned` and
+unstarted** — no expanded-vision capability was implemented or promoted
+into current scope, and implementation authority remains with the Program
+Orchestrator and future slice authorizations.
+
+Canonical documents added: the owner decision register
+([`decisions/EXPANDED-VISION-OWNER-DECISIONS.md`](decisions/EXPANDED-VISION-OWNER-DECISIONS.md)
+— all 86 decisions, `CQS-OD-001`…`CQS-OD-086`; **decision 66 remains
+unresolved**), the future-architecture amendment
+([`decisions/ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md`](decisions/ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md)
+— preserves every existing ADR; supersession only via named future arcs),
+the product-direction arc
+([`plans/EXPANDED-CQS-VISION-ARC.md`](plans/EXPANDED-CQS-VISION-ARC.md)
+— first post-MVP arc: spreadsheet and LLM authoring), the deferred-work
+register
+([`plans/POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](plans/POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md)),
+three domain planning views under [`plans/`](plans/), and the research
+record
+([`research/GAMEPLAY-GAMIFICATION-AND-AUTHORING-RESEARCH.md`](research/GAMEPLAY-GAMIFICATION-AND-AUTHORING-RESEARCH.md)).
+Delivery evidence:
+[`receipts/2026-08-03-cqs-expanded-vision-planning.md`](receipts/2026-08-03-cqs-expanded-vision-planning.md).
+This durable file does not claim its own delivery PR's state.
+
 ## Slice 12 merge evidence
 
 | Fact | Value |

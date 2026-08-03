@@ -729,12 +729,48 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
   `OG-3` unblock Slice 8's event vocabulary; Slice 8 itself still needs explicit
   authorization to begin.
 
+## Expanded-vision planning documentation (CQS-PLAN-S01, 2026-08-03)
+
+A planning-only documentation slice recorded the owner's **expanded
+gameplay, authoring, analytics, and operator vision** as durable
+repository truth. Read before planning any expanded-vision work:
+
+- **Owner decisions (canonical):**
+  [`../decisions/EXPANDED-VISION-OWNER-DECISIONS.md`](../decisions/EXPANDED-VISION-OWNER-DECISIONS.md)
+  — decisions `CQS-OD-001`…`CQS-OD-086`; **decision 66 (GCS
+  learning-target linkage) is deliberately unresolved** and must not be
+  treated as decided.
+- **Architecture lineage (canonical):**
+  [`../decisions/ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md`](../decisions/ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md)
+  — every existing ADR decision is preserved for the current
+  implementation; future direction is recorded as explicit
+  amendment/supersession lineage, not active behavior.
+- **Product sequencing (canonical):**
+  [`../plans/EXPANDED-CQS-VISION-ARC.md`](../plans/EXPANDED-CQS-VISION-ARC.md)
+  — the **first post-MVP arc is spreadsheet and LLM authoring**
+  (`CQS-ARC-AUTHORING`), then team identity/presentation, then
+  operator/Loan Mode.
+- **Deferred capabilities (canonical):**
+  [`../plans/POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](../plans/POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md)
+  — every parked/post-MVP capability with dependencies and observable
+  reconsideration triggers.
+- Domain views: gameplay policies, LLM/spreadsheet authoring, host
+  console/team identity, sessions/analytics/assessment (under
+  [`../plans/`](../plans/)); research record under
+  [`../research/`](../research/).
+
+**That slice implemented nothing.** The current MVP (18-slice plan) is
+unchanged; no runtime code, schema, test, or dependency changed;
+implementation authority for every expanded-vision capability remains
+with the Program Orchestrator and future slice authorizations.
+
 ## Next action
 
 **Slices 1–13 are `Complete` and merged.** **Slice 14 — Final-wager round
 remains `Planned` and unstarted.** The next safe product action requires a
 separate Slice 14 planning/readiness decision. This handoff does **not**
-authorize Slice 14 implementation.
+authorize Slice 14 implementation, and the expanded-vision planning
+documentation above does not change that routing.
 
 ## Owner direction — colored buttons and the local input contract (2026-07-27)
 
