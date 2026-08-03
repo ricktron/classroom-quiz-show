@@ -48,6 +48,43 @@ import {
 import { EXPIRY_TOLERANCE_MS } from '../game/timing/limits'
 import { isResponseSeconds, responseDurationMs } from '../game/timing/timerConfig'
 import { isInstant } from '../time/clock'
+import {
+  FINAL_WAGER_ROUND_TYPE,
+  readFinalWagerDefinition,
+  type FinalWagerDefinition,
+} from '../game/finalWager/definition'
+import {
+  buildFinalEligibilitySnapshot,
+  cloneFinalEligibilitySnapshot,
+  findEligibleTeam,
+  highestPrecedingClueValue,
+  isFinalEligibilityMode,
+  isFinalEligibilitySnapshot,
+} from '../game/finalWager/eligibility'
+import {
+  INITIAL_FINAL_WAGER_ROUND_STATE,
+  cloneFinalResponseState,
+  committedResponse,
+  committedWager,
+  currentRevealTeamId,
+  everyResponseCommitted,
+  everyWagerCommitted,
+  everyTeamSettled,
+  finalLeaders,
+  finalSettlementDelta,
+  isFinalOutcome,
+  isFinalResponseCaptureMode,
+  isFinalResponseState,
+  isInitialFinalWagerState,
+  isLegalFinalWager,
+  outcomeMatchesResponse,
+  settlementFor,
+  type FinalSettlement,
+  type FinalWagerPhase,
+  type FinalWagerRoundState,
+} from '../game/finalWager/finalState'
+import type { ResponseTimerState as FinalWindowState } from '../game/timing/responsePhase'
+import type { TeamDefinition } from '../game/teams/definition'
 
 /**
  * The command/event core.
@@ -103,6 +140,23 @@ export type RejectionReason =
   | 'response-phase-not-armed'
   | 'team-already-buzzed'
   | 'no-active-respondent'
+  // Final Wager rejections (Slice 14).
+  | 'not-a-final-wager-round'
+  | 'invalid-final-wager-config'
+  | 'invalid-final-phase'
+  | 'team-not-eligible'
+  | 'invalid-final-wager'
+  | 'invalid-final-response'
+  | 'final-wagers-incomplete'
+  | 'final-responses-incomplete'
+  | 'team-already-revealed'
+  | 'team-not-revealed'
+  | 'team-already-settled'
+  | 'final-outcome-mismatch'
+  | 'no-tied-lead'
+  | 'not-a-tied-leader'
+  | 'stale-final-window'
+  | 'premature-final-window-expiration'
 
 /**
  * Dependencies the planner needs that live OUTSIDE the event history — currently
@@ -189,6 +243,8 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
         // A new game starts with no armed clue and no running timer, for the same
         // reason it starts every board fresh: loading a game is a hard baseline.
         responsePhases: {},
+        // …and with no Final in progress, for exactly the same reason.
+        finalWagers: {},
       }
       return withApplied(state, event.type, { ...state, session: { ...state.session, game } })
     }
@@ -217,9 +273,168 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
         gameLifecycle: 'ended',
         // Nothing can be responded to once the game is over.
         responsePhases: {},
+        // A Final that was in progress becomes `ended`. Its wagers, responses and
+        // settlements are KEPT — they are the record of how the game finished, and
+        // a class reads the final scoreboard after the game is over — but no
+        // further Final transition is legal, which the phase now states outright.
+        finalWagers: endedFinalWagers(state.session.game.finalWagers),
       }
       return withApplied(state, event.type, { ...state, session: { ...state.session, game } })
     }
+
+    case 'FINAL_WAGER_STARTED':
+      return withFinalWager(state, event.type, event.roundId, (final, game) => {
+        // Beginning a Final that has already begun would silently re-freeze the
+        // snapshot against post-Final scores — the one thing CQS-OD-005 forbids.
+        if (final.phase !== 'setup' || final.snapshot !== null) return null
+        if (!isFinalEligibilitySnapshot(event.snapshot)) return null
+        const snapshot = cloneFinalEligibilitySnapshot(event.snapshot)
+        // A Classic Final with nobody eligible has no wagers to take and no
+        // responses to record. It resolves on the pre-final scores rather than
+        // fabricating an empty wager round nobody played.
+        const phase: FinalWagerPhase =
+          snapshot.teams.length === 0
+            ? resolvedFinalPhase(game.definition.teams, (id) => teamScoreFor(game, id))
+            : 'wager-entry'
+        return { ...final, phase, snapshot }
+      })
+
+    case 'FINAL_WAGER_WINDOW_STARTED':
+      return withFinalWager(state, event.type, event.roundId, (final) => {
+        if (final.phase !== 'wager-entry') return null
+        const wagerWindow = applyWindowStart(final.wagerWindow, event)
+        return wagerWindow === null ? null : { ...final, wagerWindow }
+      })
+
+    case 'FINAL_WAGER_WINDOW_PAUSED':
+      return withFinalWager(state, event.type, event.roundId, (final) => {
+        const wagerWindow = applyWindowPause(final.wagerWindow, event)
+        return wagerWindow === null ? null : { ...final, wagerWindow }
+      })
+
+    case 'FINAL_WAGER_WINDOW_RESUMED':
+      return withFinalWager(state, event.type, event.roundId, (final) => {
+        const wagerWindow = applyWindowResume(final.wagerWindow, event)
+        return wagerWindow === null ? null : { ...final, wagerWindow }
+      })
+
+    case 'FINAL_WAGER_WINDOW_EXPIRED':
+      return withFinalWager(state, event.type, event.roundId, (final) => {
+        // Expiry records ONLY that the window ended. It locks no wager, invents no
+        // zero for a silent team, and advances no phase.
+        const wagerWindow = applyWindowExpiry(final.wagerWindow, event)
+        return wagerWindow === null ? null : { ...final, wagerWindow }
+      })
+
+    case 'FINAL_TEAM_WAGER_RECORDED':
+      return withFinalWager(state, event.type, event.roundId, (final) => {
+        if (final.phase !== 'wager-entry' || final.snapshot === null) return null
+        // Re-checked on APPLICATION as well as on planning, so a stored log that
+        // commits an over-cap or ineligible wager degrades to "not applicable"
+        // rather than putting an unplayable number into a settlement.
+        if (!isLegalFinalWager(final.snapshot, event.teamId, event.wager)) return null
+        return { ...final, wagers: { ...final.wagers, [event.teamId]: event.wager } }
+      })
+
+    case 'FINAL_WAGERS_LOCKED':
+      return withFinalWager(state, event.type, event.roundId, (final) => {
+        if (final.phase !== 'wager-entry') return null
+        if (!everyWagerCommitted(final)) return null
+        return { ...final, phase: 'wagers-locked' }
+      })
+
+    case 'FINAL_RESPONSE_WINDOW_STARTED':
+      return withFinalWager(state, event.type, event.roundId, (final) => {
+        if (final.phase !== 'wagers-locked') return null
+        if (!isFinalResponseCaptureMode(event.captureMode)) return null
+        const responseWindow = applyWindowStart(final.responseWindow, event)
+        if (responseWindow === null) return null
+        // This transition is what makes the Final prompt public — there is no
+        // separate "reveal the prompt" action to forget.
+        return {
+          ...final,
+          phase: 'response-entry',
+          captureMode: event.captureMode,
+          responseWindow,
+        }
+      })
+
+    case 'FINAL_RESPONSE_WINDOW_PAUSED':
+      return withFinalWager(state, event.type, event.roundId, (final) => {
+        const responseWindow = applyWindowPause(final.responseWindow, event)
+        return responseWindow === null ? null : { ...final, responseWindow }
+      })
+
+    case 'FINAL_RESPONSE_WINDOW_RESUMED':
+      return withFinalWager(state, event.type, event.roundId, (final) => {
+        const responseWindow = applyWindowResume(final.responseWindow, event)
+        return responseWindow === null ? null : { ...final, responseWindow }
+      })
+
+    case 'FINAL_RESPONSE_WINDOW_EXPIRED':
+      return withFinalWager(state, event.type, event.roundId, (final) => {
+        // As with the wager window: it records the expiry and marks nobody absent.
+        const responseWindow = applyWindowExpiry(final.responseWindow, event)
+        return responseWindow === null ? null : { ...final, responseWindow }
+      })
+
+    case 'FINAL_TEAM_RESPONSE_RECORDED':
+      return withFinalWager(state, event.type, event.roundId, (final) => {
+        if (final.phase !== 'response-entry' || final.snapshot === null) return null
+        if (findEligibleTeam(final.snapshot, event.teamId) === null) return null
+        if (!isFinalResponseState(event.response)) return null
+        return {
+          ...final,
+          responses: {
+            ...final.responses,
+            [event.teamId]: cloneFinalResponseState(event.response),
+          },
+        }
+      })
+
+    case 'FINAL_RESPONSES_LOCKED':
+      return withFinalWager(state, event.type, event.roundId, (final) => {
+        if (final.phase !== 'response-entry') return null
+        if (!everyResponseCommitted(final)) return null
+        return { ...final, phase: 'responses-locked' }
+      })
+
+    case 'FINAL_ANSWER_REVEALED':
+      return withFinalWager(state, event.type, event.roundId, (final) =>
+        final.phase === 'responses-locked' ? { ...final, phase: 'answer-revealed' } : null,
+      )
+
+    case 'FINAL_TEAM_REVEALED':
+      return withFinalWager(state, event.type, event.roundId, (final) => {
+        if (final.phase !== 'answer-revealed' && final.phase !== 'team-reveal') return null
+        if (final.snapshot === null) return null
+        if (findEligibleTeam(final.snapshot, event.teamId) === null) return null
+        if (final.revealedTeamIds.includes(event.teamId)) return null
+        // One team is on screen at a time: the previous reveal must have been
+        // settled before another team can be shown.
+        if (currentRevealTeamId(final) !== null) return null
+        return {
+          ...final,
+          phase: 'team-reveal',
+          revealedTeamIds: [...final.revealedTeamIds, event.teamId],
+        }
+      })
+
+    case 'FINAL_TEAM_SETTLED':
+      return applyFinalSettlement(state, event)
+
+    case 'FINAL_TIE_RESOLUTION_SELECTED':
+      return withFinalWager(state, event.type, event.roundId, (final) => {
+        if (event.resolution === 'sudden-death') {
+          if (final.phase !== 'resolution') return null
+          return { ...final, phase: 'sudden-death', tieResolution: 'sudden-death' }
+        }
+        if (event.resolution !== 'accepted-tie') return null
+        if (final.phase !== 'resolution' && final.phase !== 'sudden-death') return null
+        // The paired `GAME_SESSION_ENDED` in the same command outcome moves the
+        // phase to `ended`; this event records only the CHOICE that was made.
+        return { ...final, phase: 'ready-to-complete', tieResolution: 'accepted-tie' }
+      })
 
     case 'CATEGORY_BOARD_TILE_SELECTED':
       return withBoardState(
@@ -498,6 +713,242 @@ export function responsePhaseFor(
     return INITIAL_RESPONSE_PHASE_STATE
   }
   return game.responsePhases[roundId]
+}
+
+/**
+ * Read a round's Final state, defaulting to
+ * {@link INITIAL_FINAL_WAGER_ROUND_STATE}.
+ *
+ * A pure read with a constant default — NOT a cache, and it never writes anything
+ * back, so replay produces the same result every time and "no entry" and "not
+ * begun" are the same fact. `hasOwnProperty` rather than a bare index so an
+ * inherited `Object.prototype` member can never be mistaken for a Final.
+ */
+export function finalWagerStateFor(
+  game: PrivateGameState,
+  roundId: string,
+): FinalWagerRoundState {
+  if (!Object.prototype.hasOwnProperty.call(game.finalWagers, roundId)) {
+    return INITIAL_FINAL_WAGER_ROUND_STATE
+  }
+  return game.finalWagers[roundId]
+}
+
+/**
+ * The phase a fully-settled Final lands in: `resolution` when the lead is tied
+ * and the host must choose (CQS-OD-011), `ready-to-complete` when one team leads
+ * outright.
+ *
+ * Derived from the replayed scores in `reduce`, so the two situations are
+ * distinguishable without the host UI having to work it out — and so undoing a
+ * settlement moves the phase back automatically on the next replay.
+ */
+function resolvedFinalPhase(
+  teams: readonly TeamDefinition[],
+  scoreFor: (teamId: string) => number,
+): FinalWagerPhase {
+  return finalLeaders(teams, scoreFor).length > 1 ? 'resolution' : 'ready-to-complete'
+}
+
+/** Start a Final window. Refuses anything but an idle one — one countdown at a time. */
+function applyWindowStart(
+  window: FinalWindowState,
+  event: {
+    readonly timerId: string
+    readonly durationMs: number
+    readonly startedAt: number
+    readonly deadline: number
+  },
+): FinalWindowState | null {
+  if (window.status !== 'idle') return null
+  return {
+    status: 'running',
+    timerId: event.timerId,
+    durationMs: event.durationMs,
+    startedAt: event.startedAt,
+    deadline: event.deadline,
+  }
+}
+
+/** Freeze a Final window. Identity is re-checked on application, as ADR-007 does. */
+function applyWindowPause(
+  window: FinalWindowState,
+  event: { readonly timerId: string; readonly remainingMs: number },
+): FinalWindowState | null {
+  if (window.status !== 'running' || window.timerId !== event.timerId) return null
+  return {
+    status: 'paused',
+    timerId: window.timerId,
+    durationMs: window.durationMs,
+    remainingMs: event.remainingMs,
+  }
+}
+
+/** Resume a frozen Final window against a deadline derived at the dispatch edge. */
+function applyWindowResume(
+  window: FinalWindowState,
+  event: { readonly timerId: string; readonly resumedAt: number; readonly deadline: number },
+): FinalWindowState | null {
+  if (window.status !== 'paused' || window.timerId !== event.timerId) return null
+  return {
+    status: 'running',
+    timerId: window.timerId,
+    durationMs: window.durationMs,
+    startedAt: event.resumedAt,
+    deadline: event.deadline,
+  }
+}
+
+/**
+ * Expire a Final window. The three-way match — running, same timer, same deadline
+ * — is what makes "exactly one effective expiry per countdown" structural: once
+ * this applies the status is no longer `running`, so a second expiry of the same
+ * window can never apply.
+ */
+function applyWindowExpiry(
+  window: FinalWindowState,
+  event: { readonly timerId: string; readonly deadline: number },
+): FinalWindowState | null {
+  if (window.status !== 'running') return null
+  if (window.timerId !== event.timerId || window.deadline !== event.deadline) return null
+  return {
+    status: 'expired',
+    timerId: window.timerId,
+    durationMs: window.durationMs,
+    deadline: window.deadline,
+  }
+}
+
+/**
+ * Apply one Final settlement: the score change and the Final state change in ONE
+ * update, so a settled team and its points can never be observed apart.
+ *
+ * It is written out rather than routed through `withFinalWager` precisely because
+ * it touches two fields. Everything is re-checked on application — the team is
+ * the one on screen, it has not already been settled, the outcome agrees with the
+ * recorded response, the delta matches the committed wager, and the resulting
+ * score stays in range — so a corrupt log degrades to "not applicable" instead of
+ * inventing points.
+ */
+function applyFinalSettlement(
+  state: PrivateState,
+  event: {
+    readonly type: 'FINAL_TEAM_SETTLED'
+    readonly roundId: string
+    readonly teamId: string
+    readonly wager: number
+    readonly outcome: FinalOutcomeValue
+    readonly delta: number
+  },
+): PrivateState {
+  if (!state.session || !state.session.game) return state
+  const game = state.session.game
+  if (game.gameLifecycle !== 'active') return state
+  if (findTeamById(game.definition.teams, event.teamId) === null) return state
+
+  const final = finalWagerStateFor(game, event.roundId)
+  if (final.phase !== 'team-reveal' || final.snapshot === null) return state
+  if (currentRevealTeamId(final) !== event.teamId) return state
+  if (settlementFor(final, event.teamId) !== null) return state
+  if (!isFinalOutcome(event.outcome)) return state
+
+  const response = committedResponse(final, event.teamId)
+  if (response === null || !outcomeMatchesResponse(response, event.outcome)) return state
+
+  const wager = committedWager(final, event.teamId)
+  if (wager === null || wager !== event.wager) return state
+  if (finalSettlementDelta(event.outcome, wager) !== event.delta) return state
+
+  const next = teamScoreFor(game, event.teamId) + event.delta
+  // Fail safe rather than clamp, exactly as `TEAM_SCORE_ADJUSTED` does: a stored
+  // delta that would leave the bounds means the log disagrees with the rules that
+  // produced it, and clamping would invent a score nobody awarded.
+  if (!isTeamScore(next)) return state
+
+  const settlement: FinalSettlement = {
+    teamId: event.teamId,
+    wager: event.wager,
+    outcome: event.outcome,
+    delta: event.delta,
+  }
+  const settlements = { ...final.settlements, [event.teamId]: settlement }
+  const teamScores = { ...game.teamScores, [event.teamId]: next }
+  const settledFinal: FinalWagerRoundState = { ...final, settlements }
+  const phase: FinalWagerPhase = everyTeamSettled(settledFinal)
+    ? resolvedFinalPhase(game.definition.teams, (id) =>
+        id === event.teamId ? next : teamScoreFor(game, id),
+      )
+    : 'team-reveal'
+
+  const nextGame: PrivateGameState = {
+    ...game,
+    teamScores,
+    finalWagers: { ...game.finalWagers, [event.roundId]: { ...settledFinal, phase } },
+  }
+  return withApplied(state, event.type, {
+    ...state,
+    session: { ...state.session, game: nextGame },
+  })
+}
+
+/** Narrow alias so the settlement helper does not import the outcome type twice. */
+type FinalOutcomeValue = FinalSettlement['outcome']
+
+/** Move every Final that has begun to the terminal `ended` phase. */
+function endedFinalWagers(
+  finals: PrivateGameState['finalWagers'],
+): PrivateGameState['finalWagers'] {
+  const next: Record<string, FinalWagerRoundState> = {}
+  for (const [roundId, final] of Object.entries(finals)) {
+    next[roundId] = isInitialFinalWagerState(final) ? final : { ...final, phase: 'ended' }
+  }
+  return next
+}
+
+/** Drop one round's Final entry, so the map only records Finals that have begun. */
+function withoutFinalWager(
+  finals: PrivateGameState['finalWagers'],
+  roundId: string,
+): PrivateGameState['finalWagers'] {
+  if (!Object.prototype.hasOwnProperty.call(finals, roundId)) return finals
+  const next: Record<string, FinalWagerRoundState> = {}
+  for (const [key, value] of Object.entries(finals)) {
+    if (key !== roundId) next[key] = value
+  }
+  return next
+}
+
+/**
+ * Apply a pure update to one round's Final state.
+ *
+ * Same fail-safe contract as `withBoardState` and `withResponsePhase`: an updater
+ * returning `null` means the stored event does not apply to the current Final,
+ * and the whole event is skipped with state unchanged rather than throwing.
+ * Writing back the INITIAL state removes the entry instead of storing it, so the
+ * map stays a record of Finals that have actually begun.
+ */
+function withFinalWager(
+  state: PrivateState,
+  type: PrivateState['diagnostics']['lastAppliedEventType'],
+  roundId: string,
+  update: (
+    final: FinalWagerRoundState,
+    game: PrivateGameState,
+  ) => FinalWagerRoundState | null,
+): PrivateState {
+  if (!state.session || !state.session.game) return state
+  const game = state.session.game
+  if (game.gameLifecycle !== 'active') return state
+  const next = update(finalWagerStateFor(game, roundId), game)
+  if (next === null) return state
+  const finalWagers = isInitialFinalWagerState(next)
+    ? withoutFinalWager(game.finalWagers, roundId)
+    : { ...game.finalWagers, [roundId]: next }
+  const nextGame: PrivateGameState = { ...game, finalWagers }
+  return withApplied(state, type, {
+    ...state,
+    session: { ...state.session, game: nextGame },
+  })
 }
 
 /** Drop one round's phase entry, so the map only ever records non-initial phases. */
@@ -963,6 +1414,16 @@ export function planCommand(
       }
       const team = findTeamById(game.definition.teams, command.teamId)
       if (team === null) return { status: 'rejected', reason: 'unknown-team' }
+      // Sudden death (CQS-OD-011) narrows this command and nothing else: while a
+      // Final is in sudden death, correction is the tiebreak mechanism and may
+      // move only a tied leader's score. Every other team's total is already the
+      // finished result, and adjusting one would silently rewrite it.
+      if (suddenDeathFinalOf(game) !== null) {
+        const leaders = finalLeaders(game.definition.teams, (id) => teamScoreFor(game, id))
+        if (!leaders.includes(team.id)) {
+          return { status: 'rejected', reason: 'not-a-tied-leader' }
+        }
+      }
       if (!isScoreAdjustmentMode(command.mode)) {
         return { status: 'rejected', reason: 'malformed-command' }
       }
@@ -1379,6 +1840,544 @@ export function planCommand(
       }
     }
 
+    case 'BEGIN_FINAL_WAGER': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      if (context.final.phase !== 'setup' || context.final.snapshot !== null) {
+        return { status: 'rejected', reason: 'invalid-final-phase' }
+      }
+      // A Final with no teams has nobody to wager, nobody to reveal and no winner.
+      // The import boundary already refuses such a game; this is the runtime half
+      // of the same rule, for a trusted in-memory definition.
+      if (context.game.definition.teams.length === 0) {
+        return { status: 'rejected', reason: 'no-teams-configured' }
+      }
+      if (!isFinalEligibilityMode(command.mode)) {
+        return { status: 'rejected', reason: 'malformed-command' }
+      }
+      const finalIndex = context.game.currentRoundIndex ?? 0
+      const snapshot = buildFinalEligibilitySnapshot({
+        mode: command.mode,
+        teams: context.game.definition.teams,
+        scoreFor: (teamId) => teamScoreFor(context.game, teamId),
+        precedingClueCap: highestPrecedingClueValue(context.game.definition, finalIndex),
+      })
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'FINAL_WAGER_STARTED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            snapshot,
+          },
+        ],
+      }
+    }
+
+    case 'START_FINAL_WAGER_WINDOW': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      if (context.final.phase !== 'wager-entry') {
+        return { status: 'rejected', reason: 'invalid-final-phase' }
+      }
+      const started = planFinalWindowStart(context.final.wagerWindow, command, context, seq, at)
+      if ('reason' in started) return { status: 'rejected', reason: started.reason }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'FINAL_WAGER_WINDOW_STARTED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            ...started.facts,
+          },
+        ],
+      }
+    }
+
+    case 'PAUSE_FINAL_WAGER_WINDOW': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      const paused = planFinalWindowPause(context.final.wagerWindow, at)
+      if ('reason' in paused) return { status: 'rejected', reason: paused.reason }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'FINAL_WAGER_WINDOW_PAUSED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            ...paused.facts,
+          },
+        ],
+      }
+    }
+
+    case 'RESUME_FINAL_WAGER_WINDOW': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      const resumed = planFinalWindowResume(context.final.wagerWindow, at)
+      if ('reason' in resumed) return { status: 'rejected', reason: resumed.reason }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'FINAL_WAGER_WINDOW_RESUMED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            ...resumed.facts,
+          },
+        ],
+      }
+    }
+
+    case 'EXPIRE_FINAL_WAGER_WINDOW': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      const expired = planFinalWindowExpiry(context.final.wagerWindow, command, at)
+      if ('reason' in expired) return { status: 'rejected', reason: expired.reason }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'FINAL_WAGER_WINDOW_EXPIRED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            ...expired.facts,
+          },
+        ],
+      }
+    }
+
+    case 'RECORD_FINAL_WAGER': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      const final = context.final
+      if (final.phase !== 'wager-entry' || final.snapshot === null) {
+        return { status: 'rejected', reason: 'invalid-final-phase' }
+      }
+      if (typeof command.teamId !== 'string' || command.teamId.length === 0) {
+        return { status: 'rejected', reason: 'malformed-command' }
+      }
+      if (findTeamById(context.game.definition.teams, command.teamId) === null) {
+        return { status: 'rejected', reason: 'unknown-team' }
+      }
+      if (findEligibleTeam(final.snapshot, command.teamId) === null) {
+        return { status: 'rejected', reason: 'team-not-eligible' }
+      }
+      // Rejected, never clamped: an over-cap, negative, fractional or non-finite
+      // wager appends nothing and mutates nothing.
+      if (!isLegalFinalWager(final.snapshot, command.teamId, command.wager)) {
+        return { status: 'rejected', reason: 'invalid-final-wager' }
+      }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'FINAL_TEAM_WAGER_RECORDED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            teamId: command.teamId,
+            wager: command.wager,
+          },
+        ],
+      }
+    }
+
+    case 'LOCK_FINAL_WAGERS': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      if (context.final.phase !== 'wager-entry') {
+        return { status: 'rejected', reason: 'invalid-final-phase' }
+      }
+      // Every eligible team needs an EXPLICIT wager — including an explicit zero.
+      // Locking with a team missing would force the engine to invent a number.
+      if (!everyWagerCommitted(context.final)) {
+        return { status: 'rejected', reason: 'final-wagers-incomplete' }
+      }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'FINAL_WAGERS_LOCKED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+          },
+        ],
+      }
+    }
+
+    case 'START_FINAL_RESPONSE_WINDOW': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      if (context.final.phase !== 'wagers-locked') {
+        return { status: 'rejected', reason: 'invalid-final-phase' }
+      }
+      if (!isFinalResponseCaptureMode(command.captureMode)) {
+        return { status: 'rejected', reason: 'malformed-command' }
+      }
+      const started = planFinalWindowStart(
+        context.final.responseWindow,
+        command,
+        context,
+        seq,
+        at,
+      )
+      if ('reason' in started) return { status: 'rejected', reason: started.reason }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'FINAL_RESPONSE_WINDOW_STARTED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            captureMode: command.captureMode,
+            ...started.facts,
+          },
+        ],
+      }
+    }
+
+    case 'PAUSE_FINAL_RESPONSE_WINDOW': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      const paused = planFinalWindowPause(context.final.responseWindow, at)
+      if ('reason' in paused) return { status: 'rejected', reason: paused.reason }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'FINAL_RESPONSE_WINDOW_PAUSED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            ...paused.facts,
+          },
+        ],
+      }
+    }
+
+    case 'RESUME_FINAL_RESPONSE_WINDOW': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      const resumed = planFinalWindowResume(context.final.responseWindow, at)
+      if ('reason' in resumed) return { status: 'rejected', reason: resumed.reason }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'FINAL_RESPONSE_WINDOW_RESUMED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            ...resumed.facts,
+          },
+        ],
+      }
+    }
+
+    case 'EXPIRE_FINAL_RESPONSE_WINDOW': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      const expired = planFinalWindowExpiry(context.final.responseWindow, command, at)
+      if ('reason' in expired) return { status: 'rejected', reason: expired.reason }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'FINAL_RESPONSE_WINDOW_EXPIRED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            ...expired.facts,
+          },
+        ],
+      }
+    }
+
+    case 'RECORD_FINAL_RESPONSE': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      const final = context.final
+      if (final.phase !== 'response-entry' || final.snapshot === null) {
+        return { status: 'rejected', reason: 'invalid-final-phase' }
+      }
+      if (typeof command.teamId !== 'string' || command.teamId.length === 0) {
+        return { status: 'rejected', reason: 'malformed-command' }
+      }
+      if (findTeamById(context.game.definition.teams, command.teamId) === null) {
+        return { status: 'rejected', reason: 'unknown-team' }
+      }
+      if (findEligibleTeam(final.snapshot, command.teamId) === null) {
+        return { status: 'rejected', reason: 'team-not-eligible' }
+      }
+      // Whitespace-only exact text fails here: a host with nothing to type must
+      // say `not-captured` or `no-response`, so the log never conflates the two.
+      if (!isFinalResponseState(command.response)) {
+        return { status: 'rejected', reason: 'invalid-final-response' }
+      }
+      // Exact wording can only be captured when the host chose to capture it —
+      // otherwise the log would claim a transcription mode nobody selected.
+      if (command.response.kind === 'exact' && final.captureMode !== 'exact-text') {
+        return { status: 'rejected', reason: 'invalid-final-response' }
+      }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'FINAL_TEAM_RESPONSE_RECORDED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            teamId: command.teamId,
+            // Rebuilt rather than aliased, so the appended event cannot reference
+            // a caller object that is mutated later (the `ScoreSource` rule).
+            response: cloneFinalResponseState(command.response),
+          },
+        ],
+      }
+    }
+
+    case 'LOCK_FINAL_RESPONSES': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      if (context.final.phase !== 'response-entry') {
+        return { status: 'rejected', reason: 'invalid-final-phase' }
+      }
+      if (!everyResponseCommitted(context.final)) {
+        return { status: 'rejected', reason: 'final-responses-incomplete' }
+      }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'FINAL_RESPONSES_LOCKED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+          },
+        ],
+      }
+    }
+
+    case 'REVEAL_FINAL_ANSWER': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      if (context.final.phase !== 'responses-locked') {
+        return { status: 'rejected', reason: 'invalid-final-phase' }
+      }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'FINAL_ANSWER_REVEALED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+          },
+        ],
+      }
+    }
+
+    case 'REVEAL_FINAL_TEAM': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      const final = context.final
+      if (
+        (final.phase !== 'answer-revealed' && final.phase !== 'team-reveal') ||
+        final.snapshot === null
+      ) {
+        return { status: 'rejected', reason: 'invalid-final-phase' }
+      }
+      // One team at a time: the team currently on screen must be settled first.
+      if (currentRevealTeamId(final) !== null) {
+        return { status: 'rejected', reason: 'invalid-final-phase' }
+      }
+      if (typeof command.teamId !== 'string' || command.teamId.length === 0) {
+        return { status: 'rejected', reason: 'malformed-command' }
+      }
+      if (findEligibleTeam(final.snapshot, command.teamId) === null) {
+        return { status: 'rejected', reason: 'team-not-eligible' }
+      }
+      if (final.revealedTeamIds.includes(command.teamId)) {
+        return { status: 'rejected', reason: 'team-already-revealed' }
+      }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'FINAL_TEAM_REVEALED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            // The team the host ACTUALLY chose — default order or alternate.
+            teamId: command.teamId,
+          },
+        ],
+      }
+    }
+
+    case 'SETTLE_FINAL_TEAM': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      const final = context.final
+      if (final.phase !== 'team-reveal' || final.snapshot === null) {
+        return { status: 'rejected', reason: 'invalid-final-phase' }
+      }
+      if (typeof command.teamId !== 'string' || command.teamId.length === 0) {
+        return { status: 'rejected', reason: 'malformed-command' }
+      }
+      // Settlement follows a reveal, never precedes one.
+      if (currentRevealTeamId(final) !== command.teamId) {
+        return { status: 'rejected', reason: 'team-not-revealed' }
+      }
+      if (settlementFor(final, command.teamId) !== null) {
+        return { status: 'rejected', reason: 'team-already-settled' }
+      }
+      if (!isFinalOutcome(command.outcome)) {
+        return { status: 'rejected', reason: 'malformed-command' }
+      }
+      const response = committedResponse(final, command.teamId)
+      if (response === null) return { status: 'rejected', reason: 'invalid-final-phase' }
+      // The outcome must agree with what was recorded: a team marked as not
+      // answering cannot be judged correct, and a team that answered cannot be
+      // settled as a no-response.
+      if (!outcomeMatchesResponse(response, command.outcome)) {
+        return { status: 'rejected', reason: 'final-outcome-mismatch' }
+      }
+      // Read from frozen state, NEVER from the command — the same rule that stops
+      // a "full credit" score event carrying an arbitrary amount (ADR-006).
+      const wager = committedWager(final, command.teamId)
+      if (wager === null) return { status: 'rejected', reason: 'invalid-final-phase' }
+      const delta = finalSettlementDelta(command.outcome, wager)
+      const resulting = teamScoreFor(context.game, command.teamId) + delta
+      if (!isTeamScore(resulting)) {
+        return { status: 'rejected', reason: 'score-out-of-range' }
+      }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'FINAL_TEAM_SETTLED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            teamId: command.teamId,
+            wager,
+            outcome: command.outcome,
+            // A zero wager still records a settlement with a zero delta: the
+            // adjudication happened, and that is a fact worth keeping.
+            delta,
+          },
+        ],
+      }
+    }
+
+    case 'ENTER_FINAL_SUDDEN_DEATH': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      if (context.final.phase !== 'resolution') {
+        return { status: 'rejected', reason: 'invalid-final-phase' }
+      }
+      // Defensive re-check: sudden death exists only to break a tie.
+      if (!hasTiedLead(context.game)) {
+        return { status: 'rejected', reason: 'no-tied-lead' }
+      }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'FINAL_TIE_RESOLUTION_SELECTED',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            roundId: context.round.id,
+            resolution: 'sudden-death',
+          },
+        ],
+      }
+    }
+
+    case 'ACCEPT_FINAL_TIED_FINISH': {
+      const context = resolveFinalWager(state, command.roundId)
+      if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      const phase = context.final.phase
+      if (phase !== 'resolution' && phase !== 'sudden-death') {
+        return { status: 'rejected', reason: 'invalid-final-phase' }
+      }
+      if (!hasTiedLead(context.game)) {
+        return { status: 'rejected', reason: 'no-tied-lead' }
+      }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            // Irreversible, because the completion appended beside it is. Making
+            // the acceptance undoable while the ended game is not would let the
+            // two disagree about whether the game is over.
+            id,
+            type: 'FINAL_TIE_RESOLUTION_SELECTED',
+            seq,
+            occurredAt: at,
+            reversible: false,
+            roundId: context.round.id,
+            resolution: 'accepted-tie',
+          },
+          {
+            // Completion goes through the EXISTING ended-game boundary rather than
+            // a Final-specific one, so there is still exactly one way a game ends.
+            id: `evt-${seq + 1}`,
+            type: 'GAME_SESSION_ENDED',
+            seq: seq + 1,
+            occurredAt: at,
+            reversible: false,
+          },
+        ],
+      }
+    }
+
     default:
       return { status: 'rejected', reason: 'malformed-command' }
   }
@@ -1492,6 +2491,172 @@ function resolveResponsePhase(state: PrivateState, roundId: unknown): ResponsePh
  */
 function namesLiveOpportunity(tileId: unknown, liveTileId: string): boolean {
   return typeof tileId === 'string' && tileId === liveTileId
+}
+
+/** Everything a Final Wager command needs, or the reason it cannot proceed. */
+type FinalWagerContext =
+  | {
+      readonly game: PrivateGameState
+      readonly round: RoundDefinition
+      readonly definition: FinalWagerDefinition
+      readonly final: FinalWagerRoundState
+    }
+  | { readonly reason: RejectionReason }
+
+/**
+ * Resolve the current round as a playable Final Wager round, or explain why not.
+ *
+ * This is the single gate every Final command passes through, so the rejection
+ * rules are stated once — the exact arrangement `resolveCategoryBoard` uses for
+ * the board: there must be a session, an ACTIVE game, a current round, that round
+ * must be the one the command targeted, it must be a Final, and its config must
+ * still validate as a real Final.
+ *
+ * Per-phase legality is deliberately NOT here. Each command owns exactly one
+ * legal phase (or two, where a transition genuinely has two entry points), and
+ * putting that in the shared gate would make the phase machine invisible.
+ */
+function resolveFinalWager(state: PrivateState, roundId: unknown): FinalWagerContext {
+  if (!state.session) return { reason: 'session-not-initialized' }
+  const game = state.session.game
+  if (!game) return { reason: 'game-not-initialized' }
+  if (game.gameLifecycle !== 'active') return { reason: 'game-already-ended' }
+  if (game.currentRoundIndex === null) return { reason: 'no-current-round' }
+  const round = game.definition.rounds[game.currentRoundIndex]
+  if (!round) return { reason: 'no-current-round' }
+  if (typeof roundId !== 'string' || roundId !== round.id) return { reason: 'round-mismatch' }
+  const definition = readFinalWagerDefinition(round)
+  if (definition === null) {
+    return {
+      reason:
+        round.type === FINAL_WAGER_ROUND_TYPE
+          ? 'invalid-final-wager-config'
+          : 'not-a-final-wager-round',
+    }
+  }
+  return { game, round, definition, final: finalWagerStateFor(game, round.id) }
+}
+
+/** A planned window transition: the durable facts, or the reason it was refused. */
+type FinalWindowPlan<T> = { readonly facts: T } | { readonly reason: RejectionReason }
+
+/**
+ * Plan the start of a Final window.
+ *
+ * The authored default is the fallback; an explicit host choice is validated
+ * against exactly the same 5–600 second bounds, so the UI can never widen the
+ * window. The identity is derived from the append index, so the reducer generates
+ * no ids and consults no random source.
+ */
+function planFinalWindowStart(
+  window: FinalWindowState,
+  command: { readonly durationSeconds?: number },
+  context: { readonly game: PrivateGameState },
+  seq: number,
+  at: number,
+): FinalWindowPlan<{
+  readonly timerId: string
+  readonly durationMs: number
+  readonly startedAt: number
+  readonly deadline: number
+}> {
+  // One countdown per window at a time. A second start would silently restart a
+  // clock the room is already watching.
+  if (window.status !== 'idle') return { reason: 'invalid-final-phase' }
+  if (!isInstant(at)) return { reason: 'malformed-command' }
+  const seconds =
+    command.durationSeconds === undefined
+      ? context.game.definition.timer.responseSeconds
+      : command.durationSeconds
+  if (!isResponseSeconds(seconds)) return { reason: 'invalid-timer-duration' }
+  const durationMs = responseDurationMs(seconds)
+  return {
+    facts: {
+      timerId: `fwt-${seq}`,
+      durationMs,
+      startedAt: at,
+      deadline: at + durationMs,
+    },
+  }
+}
+
+/** Plan a pause: how much is left is computed ONCE, here, then stored as a fact. */
+function planFinalWindowPause(
+  window: FinalWindowState,
+  at: number,
+): FinalWindowPlan<{ readonly timerId: string; readonly remainingMs: number }> {
+  if (window.status !== 'running') return { reason: 'invalid-final-phase' }
+  if (!isInstant(at)) return { reason: 'malformed-command' }
+  return {
+    facts: {
+      timerId: window.timerId,
+      remainingMs: boundedRemaining(window.deadline - at, window.durationMs),
+    },
+  }
+}
+
+/** Plan a resume: a NEW deadline derived from the dispatch clock, never a stored one. */
+function planFinalWindowResume(
+  window: FinalWindowState,
+  at: number,
+): FinalWindowPlan<{
+  readonly timerId: string
+  readonly resumedAt: number
+  readonly deadline: number
+}> {
+  if (window.status !== 'paused') return { reason: 'invalid-final-phase' }
+  if (!isInstant(at)) return { reason: 'malformed-command' }
+  return {
+    facts: { timerId: window.timerId, resumedAt: at, deadline: at + window.remainingMs },
+  }
+}
+
+/**
+ * Plan an expiry. Everything below is what makes a stale timeout callback
+ * harmless: a callback left over from a window that was restarted, paused,
+ * undone, or abandoned because the host changed round fails one of these checks
+ * and appends nothing at all.
+ */
+function planFinalWindowExpiry(
+  window: FinalWindowState,
+  command: { readonly timerId: string; readonly deadline: number },
+  at: number,
+): FinalWindowPlan<{ readonly timerId: string; readonly deadline: number }> {
+  if (window.status !== 'running') return { reason: 'stale-final-window' }
+  if (typeof command.timerId !== 'string' || command.timerId !== window.timerId) {
+    return { reason: 'stale-final-window' }
+  }
+  if (!isInstant(command.deadline) || command.deadline !== window.deadline) {
+    return { reason: 'stale-final-window' }
+  }
+  if (!isInstant(at)) return { reason: 'malformed-command' }
+  // A window that has not ended cannot expire. The tolerance absorbs a callback
+  // that fires a hair early; anything meaningfully early is not an expiry.
+  if (at < window.deadline - EXPIRY_TOLERANCE_MS) {
+    return { reason: 'premature-final-window-expiration' }
+  }
+  return { facts: { timerId: window.timerId, deadline: window.deadline } }
+}
+
+/** Is the current lead shared by more than one team? */
+function hasTiedLead(game: PrivateGameState): boolean {
+  return finalLeaders(game.definition.teams, (teamId) => teamScoreFor(game, teamId)).length > 1
+}
+
+/**
+ * The Final round currently in sudden death, or `null`.
+ *
+ * Used by the scoring planner to enforce CQS-OD-011's narrow rule: while a Final
+ * is in sudden death, manual correction is the tiebreak mechanism, and it may
+ * target ONLY the tied leaders. Every other team's score is already final, and
+ * moving one would silently rewrite a finished result.
+ */
+function suddenDeathFinalOf(game: PrivateGameState): FinalWagerRoundState | null {
+  if (game.currentRoundIndex === null) return null
+  const round = game.definition.rounds[game.currentRoundIndex]
+  if (!round || readFinalWagerDefinition(round) === null) return null
+  const final = finalWagerStateFor(game, round.id)
+  return final.phase === 'sudden-death' ? final : null
 }
 
 export type { CommandType }

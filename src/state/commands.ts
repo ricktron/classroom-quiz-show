@@ -3,6 +3,12 @@ import type { GameDefinition } from '../game/gameDefinition'
 import type { ScoreAdjustmentMode, ScoreSource } from '../game/teams/scoring'
 import type { ResponseInterruptionSource } from '../game/timing/responsePhase'
 import type { ActiveResponseResolution } from '../game/timing/buzzQueue'
+import type { FinalEligibilityMode } from '../game/finalWager/eligibility'
+import type {
+  FinalOutcome,
+  FinalResponseCaptureMode,
+  FinalResponseState,
+} from '../game/finalWager/finalState'
 
 /**
  * COMMANDS express *intent* — a request to change state that the reducer may
@@ -14,8 +20,8 @@ import type { ActiveResponseResolution } from '../game/timing/buzzQueue'
  * a time: Slice 3 added the round-level lifecycle (`INITIALIZE_GAME`,
  * `SELECT_ROUND`, `ADVANCE_TO_NEXT_ROUND`, `END_GAME_SESSION`), Slice 5 the board
  * reveals, Slice 6 the one scoring command, Slice 7 the response phase —
- * arming, the timer, and its transitions — and Slice 8 the buzz queue. There are
- * still no wager or persistence commands.
+ * arming, the timer, and its transitions — Slice 8 the buzz queue, and Slice 14
+ * the Final Wager round.
  *
  * Determinism note: every command carries `issuedAt` (a host-supplied wall-clock
  * stamp). The reducer copies it onto the resulting event and never reads the
@@ -48,6 +54,24 @@ export const COMMAND_TYPES = [
   'RESET_RESPONSE_PHASE',
   'RECORD_TEAM_BUZZ',
   'RESOLVE_ACTIVE_RESPONSE',
+  'BEGIN_FINAL_WAGER',
+  'START_FINAL_WAGER_WINDOW',
+  'PAUSE_FINAL_WAGER_WINDOW',
+  'RESUME_FINAL_WAGER_WINDOW',
+  'EXPIRE_FINAL_WAGER_WINDOW',
+  'RECORD_FINAL_WAGER',
+  'LOCK_FINAL_WAGERS',
+  'START_FINAL_RESPONSE_WINDOW',
+  'PAUSE_FINAL_RESPONSE_WINDOW',
+  'RESUME_FINAL_RESPONSE_WINDOW',
+  'EXPIRE_FINAL_RESPONSE_WINDOW',
+  'RECORD_FINAL_RESPONSE',
+  'LOCK_FINAL_RESPONSES',
+  'REVEAL_FINAL_ANSWER',
+  'REVEAL_FINAL_TEAM',
+  'SETTLE_FINAL_TEAM',
+  'ENTER_FINAL_SUDDEN_DEATH',
+  'ACCEPT_FINAL_TIED_FINISH',
 ] as const
 
 export type CommandType = (typeof COMMAND_TYPES)[number]
@@ -316,6 +340,193 @@ export interface ResolveActiveResponseCommand
   readonly resolution: ActiveResponseResolution
 }
 
+/**
+ * Final Wager commands (Slice 14) — the second playable round type's vocabulary.
+ *
+ * Every one carries the `roundId` it believes it is acting on, exactly like the
+ * board and response-phase commands, so a control rendered for one round cannot
+ * act on another after the host has moved on. They are legal only while that
+ * round is the CURRENT round, the game is active, and the Final is in the phase
+ * that particular command belongs to.
+ *
+ * ## Nothing happens by itself
+ *
+ * Every transition below is an explicit host action. No command locks wagers on
+ * a timer, marks a silent team as a no-response, reveals a prompt or an answer,
+ * adjudicates anything, settles a score, chooses a tie outcome, or ends the game.
+ * A window expiring records only that the window expired (CQS-OD-007 and
+ * ADR-007's discipline, unchanged).
+ *
+ * ## Corrections append, they never rewrite
+ *
+ * {@link RecordFinalWagerCommand} and {@link RecordFinalResponseCommand} are
+ * used for both the first entry and every correction. A correction is a NEW
+ * event; the earlier one stays in the log and stays true about what the host
+ * originally entered. Latest-only undo is unchanged — there is no targeted undo.
+ */
+interface FinalWagerCommandBase<T extends CommandType> extends CommandBase<T> {
+  /** The Final round this command targets. Must equal the current round. */
+  readonly roundId: string
+}
+
+/**
+ * Begin Final, freezing eligibility, pre-final scores, wager caps and the default
+ * reveal order (CQS-OD-005).
+ *
+ * The host chooses only the MODE. Everything derived from it — who is eligible,
+ * what each team may risk, who is revealed first — is resolved from the trusted
+ * definition and the replayed scores at plan time and frozen onto the event, so
+ * replay reproduces it without recomputation and none of it can drift once the
+ * first settlement lands.
+ */
+export interface BeginFinalWagerCommand extends FinalWagerCommandBase<'BEGIN_FINAL_WAGER'> {
+  readonly mode: FinalEligibilityMode
+}
+
+/**
+ * Start the wager window.
+ *
+ * `durationSeconds` is optional: omitted, the planner uses the game's AUTHORED
+ * default (`GameDefinition.timer.responseSeconds`). Supplied, it is validated
+ * against exactly the same 5–600 second bounds, so the host may choose a
+ * different window but can never choose an unbounded one.
+ */
+export interface StartFinalWagerWindowCommand
+  extends FinalWagerCommandBase<'START_FINAL_WAGER_WINDOW'> {
+  readonly durationSeconds?: number
+}
+
+/** Freeze the wager countdown, recording how much was left as a durable fact. */
+export type PauseFinalWagerWindowCommand =
+  FinalWagerCommandBase<'PAUSE_FINAL_WAGER_WINDOW'>
+
+/** Resume a paused wager countdown, deriving a fresh deadline at the dispatch edge. */
+export type ResumeFinalWagerWindowCommand =
+  FinalWagerCommandBase<'RESUME_FINAL_WAGER_WINDOW'>
+
+/**
+ * Record that the wager countdown reached its deadline. Carries the timer
+ * identity and the exact deadline, so a stale callback appends nothing — the same
+ * three-way match `EXPIRE_RESPONSE_TIMER` uses (ADR-007 §6). It locks nothing.
+ */
+export interface ExpireFinalWagerWindowCommand
+  extends FinalWagerCommandBase<'EXPIRE_FINAL_WAGER_WINDOW'> {
+  readonly timerId: string
+  readonly deadline: number
+}
+
+/**
+ * Commit (or correct) one team's wager. Host-private: no wager value or per-team
+ * completion is public before that team's reveal.
+ *
+ * Zero is a legal, explicit wager. Anything else outside `0 … maxWager` — a
+ * negative, a fraction, a non-finite value, an over-cap amount — is REJECTED and
+ * mutates nothing. Nothing is clamped, coerced, rounded or repaired.
+ */
+export interface RecordFinalWagerCommand extends FinalWagerCommandBase<'RECORD_FINAL_WAGER'> {
+  readonly teamId: string
+  readonly wager: number
+}
+
+/** Close wager entry. Refused until EVERY eligible team has an explicit wager. */
+export type LockFinalWagersCommand = FinalWagerCommandBase<'LOCK_FINAL_WAGERS'>
+
+/**
+ * Open response entry — the explicit host action that makes the Final prompt
+ * PUBLIC, and the one place the capture mode is chosen (CQS-OD-007).
+ *
+ * The two are one command because they are one teacher decision: "here is the
+ * question, and here is how I am going to record what comes back". Splitting them
+ * would allow a Final whose prompt is public but whose capture mode is undecided.
+ */
+export interface StartFinalResponseWindowCommand
+  extends FinalWagerCommandBase<'START_FINAL_RESPONSE_WINDOW'> {
+  readonly captureMode: FinalResponseCaptureMode
+  readonly durationSeconds?: number
+}
+
+/** Freeze the response countdown. */
+export type PauseFinalResponseWindowCommand =
+  FinalWagerCommandBase<'PAUSE_FINAL_RESPONSE_WINDOW'>
+
+/** Resume a paused response countdown. */
+export type ResumeFinalResponseWindowCommand =
+  FinalWagerCommandBase<'RESUME_FINAL_RESPONSE_WINDOW'>
+
+/** Record that the response countdown reached its deadline. It marks nobody absent. */
+export interface ExpireFinalResponseWindowCommand
+  extends FinalWagerCommandBase<'EXPIRE_FINAL_RESPONSE_WINDOW'> {
+  readonly timerId: string
+  readonly deadline: number
+}
+
+/**
+ * Commit (or correct) one team's response state. Host-private until that team's
+ * reveal.
+ *
+ * Whitespace-only exact text is rejected: a host who has nothing to type must say
+ * `not-captured` or `no-response`, so the log never conflates "did not answer"
+ * with "answered and nobody wrote it down".
+ */
+export interface RecordFinalResponseCommand
+  extends FinalWagerCommandBase<'RECORD_FINAL_RESPONSE'> {
+  readonly teamId: string
+  readonly response: FinalResponseState
+}
+
+/** Close response entry. Refused until EVERY eligible team has an explicit state. */
+export type LockFinalResponsesCommand = FinalWagerCommandBase<'LOCK_FINAL_RESPONSES'>
+
+/** Publish the canonical Final answer. Explicit — it never follows from a lock. */
+export type RevealFinalAnswerCommand = FinalWagerCommandBase<'REVEAL_FINAL_ANSWER'>
+
+/**
+ * Reveal one team's wager and response (CQS-OD-008).
+ *
+ * `teamId` is required rather than implied, so the log records the team the host
+ * ACTUALLY chose — whether that was the next team in the default low-to-high
+ * order or a deliberate alternate. One team is revealed at a time; the previous
+ * one must already be settled.
+ */
+export interface RevealFinalTeamCommand extends FinalWagerCommandBase<'REVEAL_FINAL_TEAM'> {
+  readonly teamId: string
+}
+
+/**
+ * Adjudicate and settle the revealed team, atomically.
+ *
+ * The command carries only the OUTCOME. The wager and the signed delta are
+ * resolved from the frozen state by the planner, so a settlement can never claim
+ * an amount the team did not commit — the same rule that stops a "full credit"
+ * score event carrying an arbitrary number (ADR-006).
+ */
+export interface SettleFinalTeamCommand extends FinalWagerCommandBase<'SETTLE_FINAL_TEAM'> {
+  readonly teamId: string
+  readonly outcome: FinalOutcome
+}
+
+/**
+ * Enter the bounded sudden-death state on a tied lead (CQS-OD-011).
+ *
+ * It keeps the game ACTIVE, names the tied leaders, and permits manual score
+ * correction only for them. It brings no authored prompt collection, no
+ * sudden-death engine and no new buzzer behaviour: the host conducts the tiebreak
+ * out loud and records the result with the existing correction command.
+ */
+export type EnterFinalSuddenDeathCommand =
+  FinalWagerCommandBase<'ENTER_FINAL_SUDDEN_DEATH'>
+
+/**
+ * Accept a tied finish (CQS-OD-011) — explicit, irreversible, and the end of the
+ * game with the tie preserved.
+ *
+ * It is one command because it is one decision. The planner appends the
+ * acceptance AND the existing `GAME_SESSION_ENDED` together, so completion goes
+ * through the existing ended-game boundary rather than a Final-specific one.
+ */
+export type AcceptFinalTiedFinishCommand =
+  FinalWagerCommandBase<'ACCEPT_FINAL_TIED_FINISH'>
+
 export type SessionCommand =
   | InitSessionCommand
   | SetPublicStatusCommand
@@ -342,3 +553,21 @@ export type SessionCommand =
   | ResetResponsePhaseCommand
   | RecordTeamBuzzCommand
   | ResolveActiveResponseCommand
+  | BeginFinalWagerCommand
+  | StartFinalWagerWindowCommand
+  | PauseFinalWagerWindowCommand
+  | ResumeFinalWagerWindowCommand
+  | ExpireFinalWagerWindowCommand
+  | RecordFinalWagerCommand
+  | LockFinalWagersCommand
+  | StartFinalResponseWindowCommand
+  | PauseFinalResponseWindowCommand
+  | ResumeFinalResponseWindowCommand
+  | ExpireFinalResponseWindowCommand
+  | RecordFinalResponseCommand
+  | LockFinalResponsesCommand
+  | RevealFinalAnswerCommand
+  | RevealFinalTeamCommand
+  | SettleFinalTeamCommand
+  | EnterFinalSuddenDeathCommand
+  | AcceptFinalTiedFinishCommand

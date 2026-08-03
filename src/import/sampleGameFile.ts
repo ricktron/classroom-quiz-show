@@ -174,6 +174,55 @@ export const CANONICAL_SAMPLE_CATEGORY_BOARD_FILE = JSON.stringify(
 )
 
 /**
+ * The Final Wager sample config (Slice 14). It exercises every optional field:
+ * alternates and a host-only teaching note, both of which must never reach the
+ * projector at any stage.
+ */
+const SAMPLE_FINAL_WAGER_CONFIG = {
+  prompt:
+    'This process moves heat through the mantle and is the engine that drives plate motion. Name it.',
+  answer: 'Mantle convection',
+  alternates: ['Convection currents', 'Convection in the mantle'],
+  notes: 'Students often answer "the core" — press for the mechanism, not the source.',
+}
+
+/**
+ * A board round followed by a Final Wager round (Slice 14) — the sample a
+ * teacher plays a whole lesson from, and the one the host harness offers for
+ * exercising Final immediately.
+ *
+ * The board comes FIRST on purpose: Final must be the terminal round (the import
+ * boundary enforces it), and a preceding board is also what gives a team on zero
+ * or a negative score a non-zero wager cap under CQS-OD-006.
+ */
+export const CANONICAL_SAMPLE_FINAL_WAGER_FILE = JSON.stringify(
+  {
+    format: CANONICAL_GAME_FILE_FORMAT,
+    schemaVersion: SUPPORTED_SCHEMA_VERSION,
+    id: 'imported-sample-final',
+    title: 'Earth & Space Science with Final',
+    teams: SAMPLE_TEAMS,
+    timer: { responseSeconds: 30 },
+    rounds: [
+      {
+        id: 'board-round',
+        type: 'category-board',
+        title: 'Earth & Space Science',
+        config: SAMPLE_CATEGORY_BOARD_CONFIG,
+      },
+      {
+        id: 'final-round',
+        type: 'final-wager',
+        title: 'Final Wager',
+        config: SAMPLE_FINAL_WAGER_CONFIG,
+      },
+    ],
+  },
+  null,
+  2,
+)
+
+/**
  * A sample whose second round declares an UNREGISTERED type. It exists to
  * demonstrate that the import boundary rejects it outright — the host sees an
  * actionable error and no game is loaded, rather than a half-valid game with a
@@ -275,6 +324,11 @@ export function importBuiltInSampleGame(options: ImportOptions = {}): ImportResu
 }
 
 /** Import the built-in single-round category board through the same pipeline. */
+/** Import the built-in board + Final sample through the ONE pipeline (Slice 14). */
+export function importBuiltInFinalWagerGame(options: ImportOptions = {}): ImportResult {
+  return importGameFromJsonText(CANONICAL_SAMPLE_FINAL_WAGER_FILE, options)
+}
+
 export function importBuiltInCategoryBoardGame(options: ImportOptions = {}): ImportResult {
   return importGameFromJsonText(CANONICAL_SAMPLE_CATEGORY_BOARD_FILE, options)
 }

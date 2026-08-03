@@ -2,6 +2,7 @@ import type { PublicStatusCode } from './status'
 import type { EventType, RoundSupport } from './events'
 import type { GameDefinition } from '../game/gameDefinition'
 import type { ResponsePhaseState } from '../game/timing/responsePhase'
+import type { FinalWagerRoundState } from '../game/finalWager/finalState'
 
 /**
  * PRIVATE (authoritative) application state.
@@ -14,8 +15,9 @@ import type { ResponsePhaseState } from '../game/timing/responsePhase'
  *
  * Slice 2 was a neutral foundation with no gameplay at all. Gameplay state has
  * arrived since: Slice 5 added per-round board progress, Slice 6 added team
- * scores, and Slice 7 adds the per-round response phase (arming + timer facts).
- * Buzzers, wagers and persistence remain absent.
+ * scores, Slice 7 added the per-round response phase (arming + timer facts),
+ * Slice 8 added the buzz queue inside it, and Slice 14 adds the per-round Final
+ * Wager state.
  */
 
 /** Foundation lifecycle. No gameplay states — those arrive in later slices. */
@@ -148,6 +150,28 @@ export interface PrivateGameState {
    * ADR-007 §8.
    */
   readonly responsePhases: Readonly<Record<string, ResponsePhaseState>>
+  /**
+   * Per-round Final Wager state (Slice 14), keyed by the round's stable `RoundId`.
+   *
+   * A SIBLING of `categoryBoards` and `responsePhases`, for the same reason those
+   * are siblings of each other: Final is a round type, not a mode, and its state
+   * belongs beside the other round types' state rather than inside one of them or
+   * in a parallel store.
+   *
+   * A missing key means the round is in
+   * {@link INITIAL_FINAL_WAGER_ROUND_STATE} — not begun — so "no entry" and "not
+   * started" are the same fact and can never disagree, exactly as with
+   * `teamScores` and `responsePhases`.
+   *
+   * Like every other gameplay field it is DERIVED BY REPLAY. Unlike
+   * `responsePhases` it deliberately DOES survive a round change: a Final holds
+   * committed wagers, recorded responses and applied settlements, and discarding
+   * those because a teacher glanced at an earlier round would destroy recorded
+   * facts. ADR-007 §8 clears a response window because a stale absolute deadline
+   * is nonsense in front of a class; a Final window that is stale on return is
+   * recorded as expired, which changes nothing on its own (see ADR-014).
+   */
+  readonly finalWagers: Readonly<Record<string, FinalWagerRoundState>>
 }
 
 /** Nested private diagnostics — used to prove nested fields never leak. */

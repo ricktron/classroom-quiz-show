@@ -10,6 +10,19 @@ import {
   isActiveResponseResolution,
   type ActiveResponseResolution,
 } from '../../game/timing/buzzQueue'
+import {
+  cloneFinalEligibilitySnapshot,
+  isFinalEligibilitySnapshot,
+  type FinalEligibilitySnapshot,
+} from '../../game/finalWager/eligibility'
+import {
+  cloneFinalResponseState,
+  isFinalOutcome,
+  isFinalResponseCaptureMode,
+  isFinalResponseState,
+  isFinalTieResolution,
+  type FinalResponseState,
+} from '../../game/finalWager/finalState'
 import { isInstant } from '../../time/clock'
 import { EVENT_TYPES, type RoundSupport, type SessionEvent } from '../../state/events'
 import { replay } from '../../state/reducer'
@@ -125,6 +138,9 @@ function encodeEvent(
     case 'RESPONSE_PHASE_ARMED':
     case 'RESPONSE_PHASE_DISARMED':
     case 'RESPONSE_PHASE_RESET':
+    case 'FINAL_WAGERS_LOCKED':
+    case 'FINAL_RESPONSES_LOCKED':
+    case 'FINAL_ANSWER_REVEALED':
       return persistenceOk({ ...base, ...roundOnlyPayload(event) })
     case 'HOST_NOTE_SET':
       return persistenceOk({ ...base, note: event.note })
@@ -208,6 +224,94 @@ function encodeEvent(
         roundId: event.roundId,
         tileId: event.tileId,
         teamId: event.teamId,
+        resolution: event.resolution,
+      })
+    // ── Final Wager (Slice 14) ──────────────────────────────────────────────
+    // Every Final event is encoded field by field, exactly like its siblings.
+    // Nothing is spread from the event, so a field added to a Final event later
+    // is NOT written to disk by default — it has to be named here.
+    case 'FINAL_WAGER_STARTED':
+      return persistenceOk({
+        ...base,
+        roundId: event.roundId,
+        // The whole frozen snapshot is written, because it IS the fact: a
+        // recovered Final must resume with the same eligibility, caps and reveal
+        // order it froze, not with values recomputed against post-Final scores.
+        snapshot: cloneFinalEligibilitySnapshot(event.snapshot),
+      })
+    case 'FINAL_WAGER_WINDOW_STARTED':
+      return persistenceOk({
+        ...base,
+        roundId: event.roundId,
+        timerId: event.timerId,
+        durationMs: event.durationMs,
+        startedAt: event.startedAt,
+        deadline: event.deadline,
+      })
+    case 'FINAL_RESPONSE_WINDOW_STARTED':
+      return persistenceOk({
+        ...base,
+        roundId: event.roundId,
+        captureMode: event.captureMode,
+        timerId: event.timerId,
+        durationMs: event.durationMs,
+        startedAt: event.startedAt,
+        deadline: event.deadline,
+      })
+    case 'FINAL_WAGER_WINDOW_PAUSED':
+    case 'FINAL_RESPONSE_WINDOW_PAUSED':
+      return persistenceOk({
+        ...base,
+        roundId: event.roundId,
+        timerId: event.timerId,
+        remainingMs: event.remainingMs,
+      })
+    case 'FINAL_WAGER_WINDOW_RESUMED':
+    case 'FINAL_RESPONSE_WINDOW_RESUMED':
+      return persistenceOk({
+        ...base,
+        roundId: event.roundId,
+        timerId: event.timerId,
+        resumedAt: event.resumedAt,
+        deadline: event.deadline,
+      })
+    case 'FINAL_WAGER_WINDOW_EXPIRED':
+    case 'FINAL_RESPONSE_WINDOW_EXPIRED':
+      return persistenceOk({
+        ...base,
+        roundId: event.roundId,
+        timerId: event.timerId,
+        deadline: event.deadline,
+      })
+    case 'FINAL_TEAM_WAGER_RECORDED':
+      return persistenceOk({
+        ...base,
+        roundId: event.roundId,
+        teamId: event.teamId,
+        wager: event.wager,
+      })
+    case 'FINAL_TEAM_RESPONSE_RECORDED':
+      return persistenceOk({
+        ...base,
+        roundId: event.roundId,
+        teamId: event.teamId,
+        response: cloneFinalResponseState(event.response),
+      })
+    case 'FINAL_TEAM_REVEALED':
+      return persistenceOk({ ...base, roundId: event.roundId, teamId: event.teamId })
+    case 'FINAL_TEAM_SETTLED':
+      return persistenceOk({
+        ...base,
+        roundId: event.roundId,
+        teamId: event.teamId,
+        wager: event.wager,
+        outcome: event.outcome,
+        delta: event.delta,
+      })
+    case 'FINAL_TIE_RESOLUTION_SELECTED':
+      return persistenceOk({
+        ...base,
+        roundId: event.roundId,
         resolution: event.resolution,
       })
   }
@@ -333,6 +437,9 @@ function decodeEvent(
     case 'RESPONSE_PHASE_ARMED':
     case 'RESPONSE_PHASE_DISARMED':
     case 'RESPONSE_PHASE_RESET':
+    case 'FINAL_WAGERS_LOCKED':
+    case 'FINAL_RESPONSES_LOCKED':
+    case 'FINAL_ANSWER_REVEALED':
       if (!hasExactKeys(input, [...BASE_KEYS, 'roundId'])) return corruptEvent(type)
       if (!isNonEmptyString(input.roundId)) return corruptEvent(type)
       return persistenceOk({ ...base.value, type, reversible: true, roundId: input.roundId })
@@ -452,6 +559,228 @@ function decodeEvent(
         resolution: cloneResolution(input.resolution),
       })
     }
+    // ── Final Wager (Slice 14) ──────────────────────────────────────────────
+    // Every decoder below is exact-keyed and fail-closed: an unknown field, a
+    // missing field, a mistyped value or a snapshot that is not a permutation of
+    // its own eligible teams rejects the whole history as corrupt. Nothing is
+    // repaired, defaulted, or partially decoded.
+    case 'FINAL_WAGER_STARTED': {
+      if (!hasExactKeys(input, [...BASE_KEYS, 'roundId', 'snapshot'])) return corruptEvent(type)
+      if (!isNonEmptyString(input.roundId)) return corruptEvent(type)
+      if (!isFinalEligibilitySnapshot(input.snapshot)) return corruptEvent(type)
+      return persistenceOk({
+        ...base.value,
+        type,
+        reversible: true,
+        roundId: input.roundId,
+        snapshot: cloneFinalEligibilitySnapshot(input.snapshot as FinalEligibilitySnapshot),
+      })
+    }
+    case 'FINAL_WAGER_WINDOW_STARTED': {
+      if (
+        !hasExactKeys(input, [
+          ...BASE_KEYS,
+          'roundId',
+          'timerId',
+          'durationMs',
+          'startedAt',
+          'deadline',
+        ])
+      ) {
+        return corruptEvent(type)
+      }
+      const startedAt = input.startedAt
+      const deadline = input.deadline
+      if (!isTimerCommon(input)) return corruptEvent(type)
+      if (!isInstant(startedAt) || !isInstant(deadline)) return corruptEvent(type)
+      return persistenceOk({
+        ...base.value,
+        type,
+        reversible: true,
+        roundId: input.roundId,
+        timerId: input.timerId,
+        durationMs: input.durationMs,
+        startedAt,
+        deadline,
+      })
+    }
+    case 'FINAL_RESPONSE_WINDOW_STARTED': {
+      if (
+        !hasExactKeys(input, [
+          ...BASE_KEYS,
+          'roundId',
+          'captureMode',
+          'timerId',
+          'durationMs',
+          'startedAt',
+          'deadline',
+        ])
+      ) {
+        return corruptEvent(type)
+      }
+      const startedAt = input.startedAt
+      const deadline = input.deadline
+      // Read before the timer guard narrows `input` to the timer-only shape.
+      const captureMode = input.captureMode
+      if (!isFinalResponseCaptureMode(captureMode)) return corruptEvent(type)
+      if (!isTimerCommon(input)) return corruptEvent(type)
+      if (!isInstant(startedAt) || !isInstant(deadline)) return corruptEvent(type)
+      return persistenceOk({
+        ...base.value,
+        type,
+        reversible: true,
+        roundId: input.roundId,
+        captureMode,
+        timerId: input.timerId,
+        durationMs: input.durationMs,
+        startedAt,
+        deadline,
+      })
+    }
+    case 'FINAL_WAGER_WINDOW_PAUSED':
+    case 'FINAL_RESPONSE_WINDOW_PAUSED': {
+      if (!hasExactKeys(input, [...BASE_KEYS, 'roundId', 'timerId', 'remainingMs'])) {
+        return corruptEvent(type)
+      }
+      const remainingMs = input.remainingMs
+      if (!isRoundTimerId(input) || !isNonNegativeInteger(remainingMs)) return corruptEvent(type)
+      return persistenceOk({
+        ...base.value,
+        type,
+        reversible: true,
+        roundId: input.roundId,
+        timerId: input.timerId,
+        remainingMs,
+      })
+    }
+    case 'FINAL_WAGER_WINDOW_RESUMED':
+    case 'FINAL_RESPONSE_WINDOW_RESUMED': {
+      if (!hasExactKeys(input, [...BASE_KEYS, 'roundId', 'timerId', 'resumedAt', 'deadline'])) {
+        return corruptEvent(type)
+      }
+      const resumedAt = input.resumedAt
+      const deadline = input.deadline
+      if (!isRoundTimerId(input) || !isInstant(resumedAt) || !isInstant(deadline)) {
+        return corruptEvent(type)
+      }
+      return persistenceOk({
+        ...base.value,
+        type,
+        reversible: true,
+        roundId: input.roundId,
+        timerId: input.timerId,
+        resumedAt,
+        deadline,
+      })
+    }
+    case 'FINAL_WAGER_WINDOW_EXPIRED':
+    case 'FINAL_RESPONSE_WINDOW_EXPIRED': {
+      if (!hasExactKeys(input, [...BASE_KEYS, 'roundId', 'timerId', 'deadline'])) {
+        return corruptEvent(type)
+      }
+      const deadline = input.deadline
+      if (!isRoundTimerId(input) || !isInstant(deadline)) return corruptEvent(type)
+      return persistenceOk({
+        ...base.value,
+        type,
+        reversible: true,
+        roundId: input.roundId,
+        timerId: input.timerId,
+        deadline,
+      })
+    }
+    case 'FINAL_TEAM_WAGER_RECORDED': {
+      if (!hasExactKeys(input, [...BASE_KEYS, 'roundId', 'teamId', 'wager'])) {
+        return corruptEvent(type)
+      }
+      const wager = input.wager
+      if (!isNonEmptyString(input.roundId) || !isNonEmptyString(input.teamId)) {
+        return corruptEvent(type)
+      }
+      // Zero is a real committed wager, so the guard is "non-negative integer",
+      // not "positive". The per-team cap is re-checked on replay against the
+      // decoded snapshot, which is the only place it can be checked at all.
+      if (!isNonNegativeInteger(wager)) return corruptEvent(type)
+      return persistenceOk({
+        ...base.value,
+        type,
+        reversible: true,
+        roundId: input.roundId,
+        teamId: input.teamId,
+        wager,
+      })
+    }
+    case 'FINAL_TEAM_RESPONSE_RECORDED': {
+      if (!hasExactKeys(input, [...BASE_KEYS, 'roundId', 'teamId', 'response'])) {
+        return corruptEvent(type)
+      }
+      if (!isNonEmptyString(input.roundId) || !isNonEmptyString(input.teamId)) {
+        return corruptEvent(type)
+      }
+      if (!isFinalResponseState(input.response)) return corruptEvent(type)
+      return persistenceOk({
+        ...base.value,
+        type,
+        reversible: true,
+        roundId: input.roundId,
+        teamId: input.teamId,
+        response: cloneFinalResponseState(input.response as FinalResponseState),
+      })
+    }
+    case 'FINAL_TEAM_REVEALED': {
+      if (!hasExactKeys(input, [...BASE_KEYS, 'roundId', 'teamId'])) return corruptEvent(type)
+      if (!isNonEmptyString(input.roundId) || !isNonEmptyString(input.teamId)) {
+        return corruptEvent(type)
+      }
+      return persistenceOk({
+        ...base.value,
+        type,
+        reversible: true,
+        roundId: input.roundId,
+        teamId: input.teamId,
+      })
+    }
+    case 'FINAL_TEAM_SETTLED': {
+      if (
+        !hasExactKeys(input, [...BASE_KEYS, 'roundId', 'teamId', 'wager', 'outcome', 'delta'])
+      ) {
+        return corruptEvent(type)
+      }
+      const wager = input.wager
+      const delta = input.delta
+      if (!isNonEmptyString(input.roundId) || !isNonEmptyString(input.teamId)) {
+        return corruptEvent(type)
+      }
+      if (!isNonNegativeInteger(wager)) return corruptEvent(type)
+      if (!isFinalOutcome(input.outcome)) return corruptEvent(type)
+      // A zero-wager settlement legitimately carries a zero delta, so the guard
+      // is "integer", not "non-zero integer" as it is for a score adjustment.
+      if (typeof delta !== 'number' || !Number.isInteger(delta)) return corruptEvent(type)
+      return persistenceOk({
+        ...base.value,
+        type,
+        reversible: true,
+        roundId: input.roundId,
+        teamId: input.teamId,
+        wager,
+        outcome: input.outcome,
+        delta,
+      })
+    }
+    case 'FINAL_TIE_RESOLUTION_SELECTED': {
+      if (!hasExactKeys(input, [...BASE_KEYS, 'roundId', 'resolution'])) return corruptEvent(type)
+      if (!isNonEmptyString(input.roundId)) return corruptEvent(type)
+      if (!isFinalTieResolution(input.resolution)) return corruptEvent(type)
+      return persistenceOk({
+        ...base.value,
+        type,
+        // `readBase` has already proved this matches the resolution: accepting a
+        // tied finish is irreversible, entering sudden death is not.
+        reversible: input.resolution !== 'accepted-tie',
+        roundId: input.roundId,
+        resolution: input.resolution,
+      })
+    }
   }
 }
 
@@ -471,7 +800,7 @@ function readBase(input: Record<string, unknown>, index: number): PersistenceRes
   if (input.id !== `evt-${index}`) return persistenceErr('corrupt', 'Persistence event id does not match its sequence.')
   if (!isInstant(input.occurredAt)) return persistenceErr('corrupt', 'Persistence event occurredAt is invalid.')
   if (typeof input.reversible !== 'boolean') return persistenceErr('corrupt', 'Persistence event reversibility is invalid.')
-  if (input.reversible !== reversibleFor(input.type)) {
+  if (input.reversible !== reversibleFor(input.type, input)) {
     return persistenceErr('corrupt', 'Persistence event reversibility does not match its type.')
   }
   return persistenceOk({
@@ -483,7 +812,15 @@ function readBase(input: Record<string, unknown>, index: number): PersistenceRes
   })
 }
 
-function reversibleFor(type: SessionEvent['type']): boolean {
+function reversibleFor(
+  type: SessionEvent['type'],
+  input: Record<string, unknown>,
+): boolean {
+  // The one event whose reversibility depends on its payload: accepting a tied
+  // finish ends the game and is irreversible exactly like the
+  // `GAME_SESSION_ENDED` appended beside it, while entering sudden death changes
+  // only the phase and must be undoable.
+  if (type === 'FINAL_TIE_RESOLUTION_SELECTED') return input.resolution !== 'accepted-tie'
   return ![
     'SESSION_INITIALIZED',
     'EVENT_UNDONE',

@@ -13,6 +13,7 @@ import { createDefaultRegistry } from '../game/defaultRegistry'
 import { createRoundRegistry } from '../game/registry'
 import { placeholderRoundType } from '../game/placeholderRound'
 import { CATEGORY_BOARD_ROUND_TYPE, readCategoryBoardDefinition } from '../game/categoryBoard/definition'
+import { FINAL_WAGER_ROUND_TYPE } from '../game/finalWager/definition'
 import {
   MAX_ALTERNATES,
   MAX_CATEGORIES,
@@ -331,7 +332,11 @@ describe('registration is application-controlled, never content-supplied', () =>
       )
     }
     // The default registry is unchanged and still exposes exactly the built-ins.
-    expect(createDefaultRegistry().knownTypes()).toEqual(['placeholder', CATEGORY_BOARD_ROUND_TYPE])
+    expect(createDefaultRegistry().knownTypes()).toEqual([
+      'placeholder',
+      CATEGORY_BOARD_ROUND_TYPE,
+      FINAL_WAGER_ROUND_TYPE,
+    ])
   })
 
   it('a game file cannot smuggle a function into a board config', () => {
@@ -349,7 +354,11 @@ describe('registration is application-controlled, never content-supplied', () =>
     const before = registry.lookup(CATEGORY_BOARD_ROUND_TYPE)
     importGameFromUnknown(boardGameFile(), { registry })
     expect(registry.lookup(CATEGORY_BOARD_ROUND_TYPE)).toEqual(before)
-    expect(registry.knownTypes()).toEqual(['placeholder', CATEGORY_BOARD_ROUND_TYPE])
+    expect(registry.knownTypes()).toEqual([
+      'placeholder',
+      CATEGORY_BOARD_ROUND_TYPE,
+      FINAL_WAGER_ROUND_TYPE,
+    ])
   })
 })
 
