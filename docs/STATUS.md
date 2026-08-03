@@ -19,18 +19,41 @@ squash-merged via PR #25 at `cdb499a…`; wire **7**)
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 (**merged to `main` via PR #13**, merge commit `752a3fe`, 2026-07-26T20:02:13Z)
 
-## Expanded-vision planning documentation (CQS-PLAN-S01, 2026-08-03)
+## Expanded-vision planning documentation (CQS-PLAN-S01) — Complete
 
-A **planning-only documentation slice** (`CQS-PLAN-S01`, authorization
-`AUTHORIZE-CQS-PLAN-S01-EXPANDED-VISION-DOCUMENTATION-1`) recorded the
-expanded gameplay, authoring, analytics, and operator vision as durable
-repository truth. **It changed documentation only**: no runtime code,
-schema, test, dependency, workflow, or deployment configuration changed;
-public-state wire remains **7**, sync envelope **2**, game-file schema
-**1**. **The current MVP is unchanged and Slice 14 remains `Planned` and
-unstarted** — no expanded-vision capability was implemented or promoted
-into current scope, and implementation authority remains with the Program
-Orchestrator and future slice authorizations.
+**Slice state: Complete** — the planning-only documentation slice
+`CQS-PLAN-S01` (authorization
+`AUTHORIZE-CQS-PLAN-S01-EXPANDED-VISION-DOCUMENTATION-1`, repaired under
+`AUTHORIZE-CQS-PLAN-S01-ORDINARY-SEMANTIC-REPAIR-1`) was **squash-merged
+via [PR #30](https://github.com/ricktron/classroom-quiz-show/pull/30)**
+at `44e835cd2b349cd55d4bfc84a34015cb3694b821` (merged
+**2026-08-03T01:44:11Z**) from final reviewed head
+`df832f6c091852cec419ca0e2faedd7b8fa07724` (evidence state
+`CQS-PLAN-S01-ES-2`), and is **post-merge verified**.
+
+| Fact | Value |
+| --- | --- |
+| PR | [#30](https://github.com/ricktron/classroom-quiz-show/pull/30) (merged and closed) |
+| Authorized base / sole squash parent | `1e5815dbb80a49e09f227a664625e85a81bf1c5a` (exactly one parent) |
+| Final reviewed head | `df832f6c091852cec419ca0e2faedd7b8fa07724` |
+| Squash commit | `44e835cd2b349cd55d4bfc84a34015cb3694b821` |
+| Merged | **2026-08-03T01:44:11Z** |
+| Reviewed-head / squash tree | identical (`3e799359177e11ce08a31fe5bc603d5a20064b5c`) |
+| Post-merge `CI` run | `30777582632` — **success** (both jobs) |
+| Post-merge Pages deploy run | `30777582624` — **success** (both jobs) |
+| Changed paths | 15, documentation-only |
+
+The slice recorded the expanded gameplay, authoring, analytics, and
+operator vision as durable repository truth. **It changed documentation
+only**: no runtime code, schema, test, dependency, workflow, or
+deployment configuration changed; public-state wire remains **7**, sync
+envelope **2**, game-file schema **1**. **The current MVP is unchanged
+and Slice 14 remains `Planned` and unstarted** — no expanded-vision
+capability was implemented or promoted into current scope, and
+implementation authority remains with the Program Orchestrator and
+future slice authorizations. The first post-MVP arc remains spreadsheet
+and LLM authoring (`CQS-ARC-AUTHORING`); decision 66 (`CQS-OD-066`)
+remains unresolved.
 
 Canonical documents added: the owner decision register
 ([`decisions/EXPANDED-VISION-OWNER-DECISIONS.md`](decisions/EXPANDED-VISION-OWNER-DECISIONS.md)
@@ -47,8 +70,11 @@ four domain planning views under [`plans/`](plans/), and the research
 record
 ([`research/GAMEPLAY-GAMIFICATION-AND-AUTHORING-RESEARCH.md`](research/GAMEPLAY-GAMIFICATION-AND-AUTHORING-RESEARCH.md)).
 Delivery evidence:
-[`receipts/2026-08-03-cqs-expanded-vision-planning.md`](receipts/2026-08-03-cqs-expanded-vision-planning.md).
-This durable file does not claim its own delivery PR's state.
+[`receipts/2026-08-03-cqs-expanded-vision-planning.md`](receipts/2026-08-03-cqs-expanded-vision-planning.md)
+(ES-1) and
+[`receipts/2026-08-03-cqs-expanded-vision-planning-repair-1.md`](receipts/2026-08-03-cqs-expanded-vision-planning-repair-1.md)
+(ES-2); post-merge reconciliation:
+[`receipts/2026-08-03-cqs-plan-s01-post-merge-reconciliation.md`](receipts/2026-08-03-cqs-plan-s01-post-merge-reconciliation.md).
 
 ## Slice 12 merge evidence
 
