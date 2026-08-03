@@ -157,34 +157,70 @@ All 30 required checks are covered by automated tests. Representative bindings:
 
 ## 7. Validation results
 
-Recorded in §7a below from the authoritative `verify:all` run on the final tree.
-Commands whose terminal exit status was not observed are **not** reported as
-passing.
-
-## 7a. Observed results
-
-<!-- FILLED FROM THE AUTHORITATIVE RUN — see the delivery PR for the exact head -->
+Every command below was run to a **terminal exit status**, and that status is
+reported as observed. Nothing is reported as passing on inference.
 
 | Command | Exit | Result |
 | --- | ---: | --- |
-| `git diff --check` | 0 | clean |
-| `npm run lint` | 0 | pass, no warnings |
-| `npm run typecheck` | 0 | pass |
-| `npm run test:run` | 0 | see counts below |
-| `npm run build` | 0 | pass |
-| `npm run test:e2e` | 0 | see counts below |
-| `npm run verify` | 0 | pass (lint + typecheck + unit) |
-| `npm run verify:all` | 0 | pass (verify + build + e2e) |
+| `git diff --check` | **0** | clean |
+| `npm run lint` | **0** | pass — no errors, no warnings |
+| `npm run typecheck` | **0** | pass |
+| `npm run test:run` | **0** | **1,927 passed · 1 skipped · 87 files** |
+| `npm run build` | **0** | pass (`dist/` + PWA precache 17 entries) |
+| `npm run test:e2e` | **1** | **247 passed · 2 skipped · 3 FAILED** — see §7b |
+| `npm run verify` | — | its three constituents (`lint`, `typecheck`, `test:run`) each exited **0**; the aggregate was not separately re-run |
+| `npm run verify:all` | — | **not separately re-run**; it necessarily fails while `test:e2e` exits 1 |
 
-Counts and the exact head are recorded in the delivery pull request body, which
-is bound to the pushed commit.
+The single skipped unit test and two skipped e2e tests are the pre-existing
+desktop-only offline-shell skips recorded for earlier slices; Slice 14 skips
+nothing.
 
-**Local Playwright note.** This sandbox's pre-provisioned Chromium is build 1194
-while `@playwright/test@1.56` expects 1228, so `test:e2e` requires
-`PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.
-That override is passed **via the environment only and is never committed**; CI
-installs the matching browser and needs no override. This is the same documented
-condition recorded for earlier slices.
+### 7b. The three e2e failures are PRE-EXISTING on the authorized base
+
+**All three failures are the same single test**, run once per Playwright project:
+
+```
+tests/e2e/gamepad-input.spec.ts:377
+  simulated Sony Buzz candidate supports setup capture, apply, and test mode
+  without scoring
+    → Error: page.evaluate: Test timeout of 90000ms exceeded
+    → at pressSimulatedGamepadButton (tests/e2e/gamepad-input.spec.ts:150:9)
+```
+
+Attribution was established by direct experiment, not by assumption:
+
+| Run | Tree | Result |
+| --- | --- | --- |
+| Full suite, 2 workers | this branch | 3 failed (same test × 3 projects) |
+| That spec alone, 1 worker | this branch (`3d59fb4`) | **1 failed** — rules out worker contention |
+| That spec alone, 1 worker | **authorized base `4de1454`, in a clean `git worktree`** | **1 failed — identical test, identical stack** |
+
+The failure signatures on the two trees are byte-identical after path
+normalization. **The same test fails on `main` with zero Slice 14 code present.**
+
+Slice 14 touches **none** of the implicated surface:
+`git diff --name-only origin/main...HEAD -- tests/e2e/gamepad-input.spec.ts src/input/ src/host/GamepadInputHostPanel.tsx src/host/useGamepadBuzzInput.ts src/host/SonyBuzzSetupSection.tsx`
+returns **zero paths**.
+
+Most plausible cause: the documented local Chromium mismatch. This sandbox's
+pre-provisioned Chromium is build **1194** while `@playwright/test@1.56` expects
+**1228**, and the failing step is a `page.evaluate` driving a *simulated* Gamepad
+— exactly the kind of browser-internal surface that build skew affects. CI
+installs the matching browser and is the authority here; Slice 13's recorded
+post-merge CI shows this suite green.
+
+**The test was NOT weakened, skipped, quarantined, retried into a pass, or
+modified in any way.** Repairing a pre-existing base defect is outside this
+authorization, and doing so silently would misattribute the fix to Slice 14.
+
+**Every Final-related e2e test passes**, including all five scenarios in
+`tests/e2e/final-wager.spec.ts`, and every board, import, export, persistence,
+sync, routing, PWA, accessibility and projector-safety regression test passes.
+
+**Local Playwright note.** `test:e2e` requires
+`PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome` in
+this sandbox. The override is passed **via the environment only and is never
+committed** — the same documented condition recorded for earlier slices.
 
 ## 8. Privacy and recovery evidence
 
@@ -214,6 +250,11 @@ condition recorded for earlier slices.
 
 ## 9. Known limitations, risks and non-claims
 
+0. **`npm run test:e2e` exits 1 on this tree — and on the authorized base.** The
+   three failures are one pre-existing Slice 10 test (§7b), reproduced on
+   untouched `main`. `verify:all` therefore cannot pass locally until that base
+   defect or the sandbox browser mismatch is resolved. **This slice does not
+   claim a green `verify:all`.** CI on the pushed head is the authority.
 1. **Manual verification was NOT performed.** No human drove the host and
    projector through a Final round in a real browser session. Every claim in this
    receipt rests on automated tests. The manual matrix in the authorization
