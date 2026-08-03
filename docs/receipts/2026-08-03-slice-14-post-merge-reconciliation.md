@@ -141,20 +141,25 @@ on the `push` event; its exact-head result is recorded above.
 | Focused Final reducer / sanitizer / wire / import | **0** | **186 passed** (4 files) |
 | Focused `tests/e2e/final-wager.spec.ts` | **0** | **8/8 passed** |
 | `npm run verify` (on this reconciliation branch) | **0** | lint + typecheck + unit all pass |
-| `npm run test:e2e` (full, on `main`) | — | **still running when this receipt was committed; its terminal result is NOT claimed here** |
+| `npm run test:e2e` (full, on `main`) | **1** | **256 passed · 2 skipped · 3 failed** (23.9 min) |
 
-The full local suite takes ~23 minutes in this sandbox and had not reached a
-terminal exit when this receipt was written. It is recorded as unfinished rather
-than assumed: **local `test:e2e` and `verify:all` are NOT claimed to pass.**
+**Local `test:e2e` and `verify:all` are NOT claimed to pass.** The exit status
+was **1** and is reported as such.
 
-The expected outcome, based on every prior run of this suite in this sandbox, is
-exit **1** from a single pre-existing test — `tests/e2e/gamepad-input.spec.ts:377`
-("simulated Sony Buzz candidate…"), once per Playwright project. That is a known
-**execution-environment mismatch**, not a product defect: this sandbox ships
-Chromium **1194** while `@playwright/test@1.56` expects **1228**, and the failing
-step drives a *simulated* Gamepad through `page.evaluate`. The clean-base
-attribution is preserved — the same test fails on the authorized base in a clean
-worktree with zero Slice 14 code present — and the test was **not** modified.
+All three failures are the **same single test**, once per Playwright project —
+`[desktop-1080p]`, `[projector-720p]` and `[mobile-host]`:
+
+```
+tests/e2e/gamepad-input.spec.ts:377
+  simulated Sony Buzz candidate supports setup capture, apply, and test mode
+```
+
+That is a known **execution-environment mismatch**, not a product defect: this
+sandbox ships Chromium **1194** while `@playwright/test@1.56` expects **1228**,
+and the failing step drives a *simulated* Gamepad through `page.evaluate`. The
+clean-base attribution is preserved — the same test fails on the authorized base
+in a clean worktree with zero Slice 14 code present — and the test was **not**
+modified. **All 24 Final e2e results passed** (8 scenarios × 3 projects).
 
 **The authoritative e2e evidence is matching-browser CI**, which ran the same
 suite **green** both pre-merge (run `30832657245`, exact head) and post-merge
