@@ -70,6 +70,55 @@ describe('the compatibility versions are unchanged', () => {
     expect(PERSISTENCE_DB_VERSION).toBe(1)
   })
 
+  it('decodes a FROZEN pre-Slice-14 wire record written by the Slice 13 build', () => {
+    // A literal record in the version-1 format as it stood BEFORE Slice 14 —
+    // not a round-trip through the current encoder. This is what makes "the
+    // private wire stays at 1" a compatibility claim rather than a tautology:
+    // a history saved by the previous build still decodes and still replays.
+    const legacy = {
+      format: PERSISTENCE_WIRE_FORMAT,
+      schemaVersion: 1,
+      savedAt: AT,
+      events: [
+        {
+          id: 'evt-0',
+          type: 'SESSION_INITIALIZED',
+          seq: 0,
+          occurredAt: AT,
+          reversible: false,
+          sessionId: 'legacy-session',
+        },
+        {
+          id: 'evt-1',
+          type: 'PUBLIC_STATUS_SET',
+          seq: 1,
+          occurredAt: AT,
+          reversible: true,
+          code: 'session-ready',
+        },
+        {
+          id: 'evt-2',
+          type: 'SEQUENCE_ADVANCED',
+          seq: 2,
+          occurredAt: AT,
+          reversible: true,
+        },
+      ],
+    }
+
+    const decoded = decodeSessionHistory(legacy)
+    expect(decoded.ok, decoded.ok ? '' : decoded.message).toBe(true)
+    if (!decoded.ok) return
+    expect(decoded.value.map((event) => event.type)).toEqual([
+      'SESSION_INITIALIZED',
+      'PUBLIC_STATUS_SET',
+      'SEQUENCE_ADVANCED',
+    ])
+    const state = replay(decoded.value)
+    expect(state.session?.sessionId).toBe('legacy-session')
+    expect(state.session?.counter).toBe(1)
+  })
+
   it('still decodes a pre-Slice-14 history containing no Final event at all', () => {
     const store = finalStore({ scores: { red: 300, blue: 100 } })
     const decoded = roundTrip(store)
@@ -286,6 +335,20 @@ describe('recovery resumes exactly, at every point in Final', () => {
     expect(scoreOf(store, 'blue')).toBe(150)
     // Red is untouched and still to be revealed.
     expect(final.revealedTeamIds).toEqual(['blue'])
+  })
+
+  it('resumes an unresolved TIED resolution, with the choice still open', () => {
+    const store = finalStore({ scores: { red: 300, blue: 100 } })
+    playToReveal(store, { wagers: { red: 100, blue: 100 } })
+    settleAll(store, { red: 'incorrect', blue: 'correct' })
+    const restored = recover(store)
+    const final = finalWagerStateFor(restored.session!.game!, ROUND)
+    // The host has not chosen yet, so the phase is still the open decision and
+    // no tie resolution is recorded.
+    expect(final.phase).toBe('resolution')
+    expect(final.tieResolution).toBeNull()
+    expect(restored.session!.game!.teamScores).toEqual({ red: 200, blue: 200 })
+    expect(restored.session!.game!.gameLifecycle).toBe('active')
   })
 
   it('resumes sudden death with the tied scores intact', () => {

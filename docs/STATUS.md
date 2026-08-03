@@ -13,11 +13,126 @@ lease coordination. Public-state wire remains **7**; sync-envelope remains
 [`architecture/ADR-013-local-persistence-recovery.md`](architecture/ADR-013-local-persistence-recovery.md).
 **Previous slice:** Slice 12 — Portable export & round-trip import (`Complete`,
 squash-merged via PR #25 at `cdb499a…`; wire **7**)
-**Next planned product slice:** Slice 14 — Final-wager round
-**Slice 14 state:** Planned and unstarted
+**Slice in review:** Slice 14 — Final-wager round
+**Slice 14 state:** **In review** — implemented under
+`AUTHORIZE-CQS-S14-FINAL-WAGER-IMPLEMENTATION-1` on branch
+`claude/slice-14-authorization-3bm0ju` from authorized base
+`4de1454181ed58bdb282accd136129c3c0eb0f2b`. **Not merged, and not `Complete`.**
+The `final-wager` round is the second playable registered round type: frozen
+eligibility/cap/reveal-order snapshot, host-private wagers, optional exact-text
+response capture, two Final windows on ADR-007's clock discipline, explicit
+team-by-team reveal, reversible atomic settlement, and bounded tie handling with
+sudden death. Public-state wire moves **7 → 8**; sync envelope remains **2**;
+game-file schema, `GameDefinition` model, private persistence wire and IndexedDB
+schema all remain **1**; no dependency added. See
+[`architecture/ADR-014-final-wager-round.md`](architecture/ADR-014-final-wager-round.md)
+and
+[`receipts/2026-08-03-slice-14-local-verification.md`](receipts/2026-08-03-slice-14-local-verification.md).
+**Next planned product slice:** Slice 15 — Session summary & compatible-profile
+reporting (`Planned`, unstarted)
 **Roadmap:** 18 slices, amended 2026-07-26 by
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 (**merged to `main` via PR #13**, merge commit `752a3fe`, 2026-07-26T20:02:13Z)
+
+## Slice 14 work (In review)
+
+The **second playable round type** — `final-wager`, the closing wager round. Full
+rationale in
+[`architecture/ADR-014-final-wager-round.md`](architecture/ADR-014-final-wager-round.md);
+local evidence in
+[`receipts/2026-08-03-slice-14-local-verification.md`](receipts/2026-08-03-slice-14-local-verification.md).
+
+> **The headline is what it is NOT:** not a game mode, not a preset or policy
+> engine, not an extension of `category-board`, and not a parallel store or a
+> screen outside command/event/replay. It is a registered round type beside the
+> board in the same registry, validated by the same import pipeline, exported by
+> the same canonical exporter, persisted by the same private codec.
+
+| Item | State |
+| --- | --- |
+| `final-wager` registered by application code only; content can never register or replace a schema | Implemented |
+| Strict Final config: typed `PromptContent`, answer, optional host-only alternates and notes | Implemented |
+| Cross-round rules at import: at most one Final, Final terminal, Final requires teams | Implemented |
+| Every previously valid `schemaVersion: 1` game still valid and semantically unchanged | Implemented |
+| Final export / re-import structural equality and byte-identical second export | Implemented |
+| Classic (positive scores) and Inclusive (all teams) eligibility; Classic is the default | Implemented |
+| Per-team eligibility override | **Excluded by design** |
+| Eligibility, pre-final scores, wager caps and reveal order FROZEN onto the start event | Implemented |
+| Classic Final with zero eligible teams resolves safely on pre-final scores | Implemented |
+| Wager cap: positive team = own score; non-positive team = highest preceding effective clue value | Implemented |
+| Wager cap further bounded by BOTH score-bound headrooms; never negative | Implemented |
+| Zero is an explicit, valid wager; anything outside `0 … cap` is rejected, never clamped | Implemented |
+| Global wager lock refused until every eligible team has an explicit wager | Implemented |
+| Optional response capture: `exact-text` or `host-only`, chosen once with the window | Implemented |
+| Three distinct durable response states; whitespace-only exact text rejected | Implemented |
+| Global response lock refused until every eligible team has an explicit state | Implemented |
+| Two Final windows reusing ADR-007's durable-facts union; no tick events | Implemented |
+| Expiry records ONLY that the window ended — it locks, marks, reveals, adjudicates, settles and completes nothing | Implemented |
+| Default reveal order low-to-high with authored order as the deterministic tie-break | Implemented |
+| Host may reveal any unrevealed eligible team; the event records the actual choice | Implemented |
+| One team revealed at a time; the previous must be settled first | Implemented |
+| Atomic reversible settlement; wager and delta read from frozen state, never the command | Implemented |
+| Zero-wager settlement recorded as an auditable zero-delta fact | Implemented |
+| Resulting total deliberately NOT stored on the settlement event | Implemented |
+| Undoing a settlement restores the score AND the revealed-but-unsettled state | Implemented |
+| Unique leader requires explicit completion; settlement alone never ends the game | Implemented |
+| Tied lead presents both choices; sudden death highlighted but never automatic | Implemented |
+| Accepted tie is irreversible and appends the existing `GAME_SESSION_ENDED` beside it | Implemented |
+| Sudden death keeps the game active; manual correction narrowed to tied leaders | Implemented |
+| `PublicState.round` gains the Final member; wire version **7 → 8** | Implemented |
+| Neutral presentation discriminator (`final`), never the registry type | Implemented |
+| Exact-key runtime guard for every Final stage; malformed state fails closed | Implemented |
+| No unrevealed wager, response, correctness, note, alternate, cap, snapshot, timer id or raw stamp on the wire | Implemented |
+| Every Final event encoded/decoded by the existing private codec; wire stays **1** | Implemented |
+| Refresh resumes exactly at wager entry, wager lock, response entry, answer reveal, current reveal, partial settlement, unresolved tie and sudden death | Implemented |
+| An ENDED game stays non-resumable and is cleared through the existing cleanup | Implemented |
+| Sync envelope, game-file schema, `GameDefinition` model, IndexedDB schema | **All unchanged** |
+| New dependency, object store, backend, workflow or deployment change | **None** |
+| Daily Double, mid-board hidden wagers, presets, policy engines, transcripts, student entry, buzzers in Final | **Not implemented — excluded** |
+
+### Commands / events / public fields (added in Slice 14)
+
+- **Commands (18):** `BEGIN_FINAL_WAGER` · `START_FINAL_WAGER_WINDOW` ·
+  `PAUSE_FINAL_WAGER_WINDOW` · `RESUME_FINAL_WAGER_WINDOW` ·
+  `EXPIRE_FINAL_WAGER_WINDOW` · `RECORD_FINAL_WAGER` · `LOCK_FINAL_WAGERS` ·
+  `START_FINAL_RESPONSE_WINDOW` · `PAUSE_FINAL_RESPONSE_WINDOW` ·
+  `RESUME_FINAL_RESPONSE_WINDOW` · `EXPIRE_FINAL_RESPONSE_WINDOW` ·
+  `RECORD_FINAL_RESPONSE` · `LOCK_FINAL_RESPONSES` · `REVEAL_FINAL_ANSWER` ·
+  `REVEAL_FINAL_TEAM` · `SETTLE_FINAL_TEAM` · `ENTER_FINAL_SUDDEN_DEATH` ·
+  `ACCEPT_FINAL_TIED_FINISH`. Each carries the `roundId` it targets.
+- **Events (17):** `FINAL_WAGER_STARTED` · `FINAL_WAGER_WINDOW_STARTED` /
+  `_PAUSED` / `_RESUMED` / `_EXPIRED` · `FINAL_TEAM_WAGER_RECORDED` ·
+  `FINAL_WAGERS_LOCKED` · `FINAL_RESPONSE_WINDOW_STARTED` / `_PAUSED` /
+  `_RESUMED` / `_EXPIRED` · `FINAL_TEAM_RESPONSE_RECORDED` ·
+  `FINAL_RESPONSES_LOCKED` · `FINAL_ANSWER_REVEALED` · `FINAL_TEAM_REVEALED` ·
+  `FINAL_TEAM_SETTLED` · `FINAL_TIE_RESOLUTION_SELECTED`. All reversible except
+  `FINAL_TIE_RESOLUTION_SELECTED` when it names `accepted-tie`.
+- **Phases:** `setup` · `wager-entry` · `wagers-locked` · `response-entry` ·
+  `responses-locked` · `answer-revealed` · `team-reveal` · `resolution` ·
+  `sudden-death` · `ready-to-complete` · `ended`.
+- **Eligibility modes:** `classic` (default) · `inclusive`.
+- **Capture modes:** `exact-text` · `host-only`.
+- **Response states:** `exact` · `not-captured` · `no-response`.
+- **Outcomes:** `correct` (+wager) · `incorrect` (−wager) · `no-response` (−wager).
+- **Tie resolutions:** `sudden-death` (reversible) · `accepted-tie` (irreversible).
+- **New rejection reasons (16):** `not-a-final-wager-round`,
+  `invalid-final-wager-config`, `invalid-final-phase`, `team-not-eligible`,
+  `invalid-final-wager`, `invalid-final-response`, `final-wagers-incomplete`,
+  `final-responses-incomplete`, `team-already-revealed`, `team-not-revealed`,
+  `team-already-settled`, `final-outcome-mismatch`, `no-tied-lead`,
+  `not-a-tied-leader`, `stale-final-window`, `premature-final-window-expiration`.
+- **New import issue codes (3):** `duplicate-final-round`,
+  `final-round-not-terminal`, `final-round-requires-teams`.
+- **`PublicState`:** `PublicRoundState` gains `PublicFinalWagerState`. Wire
+  version **7 → 8**; version 7 is rejected, never reinterpreted.
+
+### Documented divergence from ADR-007 §8
+
+A response phase is cleared on a round change because a stale absolute deadline is
+nonsense in front of a class. **Final state deliberately survives a round change**
+— it holds committed wagers, recorded responses and applied settlements, and
+discarding those because a teacher glanced back at an earlier round would destroy
+recorded facts. See ADR-014 §14.
 
 ## Expanded-vision planning documentation (CQS-PLAN-S01) — Complete
 

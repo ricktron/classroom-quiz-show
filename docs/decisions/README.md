@@ -85,6 +85,14 @@ This project separates two kinds of durable decision records:
      persistence-session wire version 1, canonical definition encoding through
      export/import, explicit Resume/Discard recovery, serialized writes, host
      lease coordination, and no `PublicState` or sync-version change (Slice 13).
+   - [`ADR-014-final-wager-round.md`](../architecture/ADR-014-final-wager-round.md)
+     — the `final-wager` round as the SECOND registered playable round type:
+     frozen eligibility/cap/reveal-order snapshot, host-private wagers and
+     response capture, two Final windows on ADR-007's clock discipline, explicit
+     team-by-team reveal and reversible atomic settlement, bounded tie handling
+     and sudden death, cross-round import rules (one Final, terminal, teams
+     required), and `PublicState` wire version 8 with a per-stage exact-key guard
+     (Slice 14, In review).
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).
