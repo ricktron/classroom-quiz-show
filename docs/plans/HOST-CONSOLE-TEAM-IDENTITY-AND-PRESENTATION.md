@@ -74,6 +74,16 @@ approve identities. A recurring team sees **"Keep our identity"**
 alongside three new choices (`CQS-OD-076`); session-specific is the
 default lifetime (`CQS-OD-064`/`CQS-OD-070`).
 
+**Normal completion is controller-only.** When every active logical team
+has confirmed an identity and reached **Ready**, identity setup advances
+automatically — with no host Continue action — unless the host has
+deliberately paused the phase, reset a team, or invoked an emergency
+override. This preserves the rest of the model unchanged: no forced
+timeout (`CQS-OD-074`), the host keeps skip/reset/emergency-default
+powers, and the host still does not normally select or approve
+identities. No button mappings beyond the decided primary-redraw and
+ordinal-choice roles are defined here.
+
 This flow is the natural **first consumer** of the inert ordinal
 secondary actions (`CQS-RA2-SECONDARY-01`) — its authorization is what
 defines their durable vocabulary for this use.

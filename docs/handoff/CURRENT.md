@@ -749,7 +749,9 @@ repository truth. Read before planning any expanded-vision work:
   [`../plans/EXPANDED-CQS-VISION-ARC.md`](../plans/EXPANDED-CQS-VISION-ARC.md)
   — the **first post-MVP arc is spreadsheet and LLM authoring**
   (`CQS-ARC-AUTHORING`), then team identity/presentation, then
-  operator/Loan Mode.
+  operator/Loan Mode. The polished host console may follow the identity
+  arc directly; **Loan Mode implementation and Operator-arc completion
+  cannot precede the completed-game archive** (`CQS-ARC-INSIGHT`).
 - **Deferred capabilities (canonical):**
   [`../plans/POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](../plans/POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md)
   — every parked/post-MVP capability with dependencies and observable

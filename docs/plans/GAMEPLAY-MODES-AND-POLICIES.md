@@ -123,30 +123,42 @@ controller identity, host-only notes, correctness before adjudication or
 reveal. Queue position is order, never a reaction-time claim
 (`CQS-RA2-PUBLIC-STATE-01`).
 
-## 4. Final Wager — future model (planning only)
+## 4. Final Wager — Slice 14 acceptance design and post-MVP packaging
 
-The current MVP already plans Slice 14 (Final-wager round); its recorded
-scope stands unchanged, and this section does **not** redefine or start
-it. This is the fuller future model the preset layer eventually exposes:
+Slice 14 (Final-wager round) is the current MVP's next planned slice and
+**remains `Planned` and unstarted**. Decisions `CQS-OD-005`…`CQS-OD-008`
+and `CQS-OD-011` are `current-mvp-planned`: they **clarify the acceptance
+design of Slice 14's already-recorded deliverables** — eligibility, wager
+validation, response capture, reveal sequencing, and tie handling — and
+do **not** authorize, begin, or materially expand Slice 14 beyond those
+deliverables. What stays post-MVP is the *packaging*: Board + Final as a
+polished preset, a selector for eligibility profiles, and the broader
+policy engine (`CQS-OPP-GAMEPLAY-POLICIES`). The mid-board hidden-wager
+clue modifier (`CQS-OD-003`/`CQS-OD-004`) also remains
+`post-mvp-priority` — Slice 14's record explicitly excludes it.
 
-- **Eligibility:** preset-controlled (`CQS-OD-005`) — classic profile
-  requires a positive score (as in broadcast Final Jeopardy,
-  `CQS-RF-JEOPARDY-02`); inclusive profile admits all teams.
-- **Wagers:** zero allowed; bounded by score for positive teams; a
-  nonpositive team's default cap is the highest ordinary clue value
-  (`CQS-OD-006`); host-entered, private until reveal; score-bound
+Acceptance design for the recorded Slice 14 deliverables:
+
+- **Eligibility** (`CQS-OD-005`): the classic rule — a positive score
+  required, as in broadcast Final Jeopardy (`CQS-RF-JEOPARDY-02`) — with
+  the inclusive all-teams rule as the recorded host-level alternative;
+  exposing these as selectable preset *profiles* is post-MVP packaging.
+- **Wager validation** (`CQS-OD-006`): zero allowed; bounded by score for
+  positive teams; a nonpositive team's default cap is the highest
+  ordinary clue value; host-entered, private until reveal; score-bound
   validation rejects rather than clamps (existing engine convention).
 - **Windows:** separate wager window and response window; locking on
   submission; explicit host correction before lock-cutoff, evented after.
-- **Responses:** optional exact response text (`CQS-OD-007`); an explicit
-  no-response state distinct from a blank.
-- **Reveal:** default lowest pre-final score to highest, host-selectable
-  alternate order (`CQS-OD-008`); answer reveal then team-by-team
-  adjudication (correct / incorrect / no-response).
+- **Response capture** (`CQS-OD-007`): optional exact response text; an
+  explicit no-response state distinct from a blank; adjudication works
+  with or without captured text.
+- **Reveal sequencing** (`CQS-OD-008`): default lowest pre-final score to
+  highest, host-selectable alternate order; answer reveal then
+  team-by-team adjudication (correct / incorrect / no-response).
 - **Settlement:** one atomic, reversible settlement event per team (or a
   single atomic batch), auditable and undoable like every score change.
-- **Ties:** host chooses sudden death or permits a tied finish
-  (`CQS-OD-011`); game completion vs. tied-game override is an explicit
+- **Tie handling** (`CQS-OD-011`): host chooses sudden death or permits a
+  tied finish; game completion vs. tied-game override is an explicit
   host action.
 - **Safety:** timer expiry performs only safe transitions; refresh and
   recovery restore wager state exactly (ADR-013 pattern); wagers and

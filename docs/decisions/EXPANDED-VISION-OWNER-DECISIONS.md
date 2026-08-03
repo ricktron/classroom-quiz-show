@@ -26,11 +26,15 @@ deferred work lives in
 - **Status** is one of: `Accepted` (owner direction), `Accepted —
   clarification` (accepted direction that clarifies an existing recorded
   repository decision), `Unresolved` (deliberately not decided).
-- **Activation** uses the canonical vocabulary — exactly one of:
+- **Primary activation** — every decision carries **exactly one**
+  machine-reviewable primary value from the canonical vocabulary:
   `implemented` · `current-mvp-planned` · `architecture-preserved` ·
   `post-mvp-priority` · `parked` · `research-required` · `rejected` ·
-  `unresolved`. Where one decision touches two capabilities with different
-  states, the entry names each capability's state explicitly.
+  `unresolved`. Only primary values are counted in the 86-decision tally.
+- **Component states** — where a decision covers sub-capabilities whose
+  states differ from the primary, they are listed in a separately labeled
+  **Component states** field (one canonical value per component). Component
+  states are **not** counted in the primary tally.
 - **An accepted decision is not an implementation authorization.** Every
   activation short of `implemented` requires its own future authorization
   (see the opportunity register's triggers).
@@ -51,7 +55,8 @@ deferred work lives in
 | Duplicate decision numbers | 0 |
 | Accepted decisions omitted | 0 |
 | Unresolved decisions guessed | 0 |
-| Decision 66 status | **Unresolved** |
+| Primary activation values (exactly one per decision) | 86 |
+| Decision 66 status / primary activation | **Unresolved** / `unresolved` |
 
 ---
 
@@ -59,7 +64,7 @@ deferred work lives in
 
 ### CQS-OD-001 (1) — Initial game-format direction
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** The initial preset catalog includes **Classic Board**,
   **Board + Final**, **Buzzer Sprint**, and **Team Choice**. **Mixed Review**
@@ -72,7 +77,7 @@ deferred work lives in
 
 ### CQS-OD-002 (2) — Wrong-answer behavior is preset-configurable
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** Wrong-answer behavior is configurable per preset. The
   competitive Classic Board default is **deduction plus promotion of the next
@@ -85,7 +90,7 @@ deferred work lives in
 
 ### CQS-OD-003 (3) — Hidden-wager clue ownership
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** A hidden-wager clue normally belongs to the team that
   selected the clue.
@@ -95,7 +100,7 @@ deferred work lives in
 
 ### CQS-OD-004 (4) — Hidden-wager placement authoring
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS` (authoring linkage: `CQS-ARC-AUTHORING`)
 - **Direction.** Hidden-wager placement may be authored secretly (not visible
   on the projected board), with a host override.
@@ -105,49 +110,64 @@ deferred work lives in
 
 ### CQS-OD-005 (5) — Final eligibility is preset-controlled
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
-  `CQS-ARC-FORMATS`
+- **Status:** Accepted · **Primary activation:** `current-mvp-planned` ·
+  **Arc:** current MVP (Slice 14, [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md));
+  preset packaging → `CQS-ARC-FORMATS`
 - **Direction.** Final-round eligibility is preset-controlled: a classic
   profile may require a positive score; an inclusive profile may allow all
   teams.
-- **Consequence.** Informs the future Final Wager model documented in
+- **Component states.** Eligibility rules as Slice 14 acceptance design:
+  `current-mvp-planned`. Exposure of classic/inclusive *profiles* through
+  a preset selector (Board + Final packaging, policy engine):
+  `post-mvp-priority`.
+- **Consequence.** Clarifies the acceptance design of Slice 14's
+  already-recorded eligibility/tie/reveal deliverables. It does **not**
+  authorize, begin, or materially expand Slice 14, which remains
+  `Planned` and unstarted. See
   [`../plans/GAMEPLAY-MODES-AND-POLICIES.md`](../plans/GAMEPLAY-MODES-AND-POLICIES.md)
-  §Final-Wager. Slice 14 remains `Planned` exactly as recorded in
-  `MVP-ARC.md`; this decision does not redefine or start it.
+  §4.
 
 ### CQS-OD-006 (6) — Nonpositive-team default maximum final wager
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
-  `CQS-ARC-FORMATS`
+- **Status:** Accepted · **Primary activation:** `current-mvp-planned` ·
+  **Arc:** current MVP (Slice 14); preset packaging → `CQS-ARC-FORMATS`
 - **Direction.** A team at zero or negative score has a default maximum final
   wager equal to the **highest ordinary clue value**, unless the preset
   specifies otherwise.
-- **Consequence.** A concrete wager-validation rule for the inclusive
-  eligibility profile (CQS-OD-005).
+- **Component states.** Wager-validation rule as Slice 14 acceptance
+  design: `current-mvp-planned`. Per-preset overrides of the cap:
+  `post-mvp-priority`.
+- **Consequence.** Clarifies Slice 14's recorded wager deliverable
+  (wager validation) without authorizing, beginning, or expanding the
+  slice.
 
 ### CQS-OD-007 (7) — Exact Final response text is optional
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
-  `CQS-ARC-FORMATS` (retention linkage: `CQS-ARC-INSIGHT`)
+- **Status:** Accepted · **Primary activation:** `current-mvp-planned` ·
+  **Arc:** current MVP (Slice 14); retention linkage → `CQS-ARC-INSIGHT`
 - **Direction.** Exact Final responses may be stored, but exact response text
   is optional rather than universally required.
-- **Consequence.** The Final Wager model must support host adjudication with
-  or without captured response text; retention of captured text follows
-  CQS-OD-037.
+- **Component states.** Optional response capture as Slice 14 acceptance
+  design: `current-mvp-planned`. Retention configuration for captured
+  text (CQS-OD-037): `post-mvp-priority`.
+- **Consequence.** Clarifies Slice 14's recorded response deliverable
+  (response capture): adjudication must work with or without captured
+  text. It does not authorize, begin, or expand the slice.
 
 ### CQS-OD-008 (8) — Final reveal ordering
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
-  `CQS-ARC-FORMATS`
+- **Status:** Accepted · **Primary activation:** `current-mvp-planned` ·
+  **Arc:** current MVP (Slice 14)
 - **Direction.** Final reveal defaults from **lowest pre-final score to
   highest**, with a host-selectable alternate order.
-- **Consequence.** Reveal ordering is a host-controlled presentation
-  sequence over private wager state; nothing reveals without explicit host
-  action (existing invariant).
+- **Consequence.** Clarifies Slice 14's recorded reveal deliverable
+  (reveal sequencing): a host-controlled sequence over private wager
+  state; nothing reveals without explicit host action (existing
+  invariant). It does not authorize, begin, or expand the slice.
 
 ### CQS-OD-009 (9) — Team Choice scoring weighting
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** Team Choice scoring is preset-configurable. **Modest speed
   weighting is the default**; extreme speed weighting is a rejected default
@@ -158,8 +178,10 @@ deferred work lives in
 
 ### CQS-OD-010 (10) — One physical controller per logical team
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
-  `CQS-ARC-FORMATS` (contract: `architecture-preserved` today)
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` ·
+  **Arc:** `CQS-ARC-FORMATS`
+- **Component states.** The existing inert ordinal input contract:
+  `architecture-preserved`.
 - **Direction.** Move toward one physical controller per logical team, using
   the four secondary buttons for A–D-style choices. Preserve the
   host-recorded fallback and future multiple-controller-per-team mappings.
@@ -171,7 +193,7 @@ deferred work lives in
 
 ### CQS-OD-011 (11) — Sudden death or tied finish
 
-- **Status:** Accepted — clarification · **Activation:**
+- **Status:** Accepted — clarification · **Primary activation:**
   `current-mvp-planned` (Slice 14 tie handling)
 - **Direction.** The host may choose sudden death **or permit a tied
   finish**.
@@ -184,7 +206,7 @@ deferred work lives in
 
 ### CQS-OD-012 (12) — One-screen live host console
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-OPERATOR`
 - **Direction.** The host console should be a one-screen live console with
   **one emphasized next action** and collapsible detail — not a wall of
@@ -198,7 +220,7 @@ deferred work lives in
 
 ### CQS-OD-013 (13) — Early-buzz behavior is configurable
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** Early-buzz behavior remains configurable. Competitive play
   supports detecting the early team, showing the host, and **temporarily
@@ -212,7 +234,7 @@ deferred work lives in
 
 ### CQS-OD-014 (14) — Answer-turn timer start is preset-controlled
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** The answer-turn timer may begin automatically or through a
   host action, controlled by the preset.
@@ -222,7 +244,7 @@ deferred work lives in
 
 ### CQS-OD-015 (15) — Timeout with a queued team
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** When the active team times out and another team is queued,
   behavior is configurable. The competitive default **promotes the next
@@ -233,7 +255,7 @@ deferred work lives in
 
 ### CQS-OD-016 (16) — Timeout with nobody queued
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** When the active team times out and no team is queued,
   behavior is configurable; **returning control to the host is the safe
@@ -242,7 +264,7 @@ deferred work lives in
 
 ### CQS-OD-017 (17) — Queue intake while a team is answering
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** Whether teams may join the queue while another team is
   answering is configurable. Classic Board defaults to **allowing it**.
@@ -252,7 +274,7 @@ deferred work lives in
 
 ### CQS-OD-018 (18) — The five turn-ending causes
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** A turn may end through **correct adjudication, incorrect
   adjudication, pass, timeout, or explicit host termination**.
@@ -263,7 +285,7 @@ deferred work lives in
 
 ### CQS-OD-019 (19) — Incorrect and timeout score separately
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** Incorrect adjudication and timeout may use **separate
   scoring policies**.
@@ -273,7 +295,7 @@ deferred work lives in
 
 ### CQS-OD-020 (20) — A resolved team is locked out for the clue
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** A resolved team is normally locked out for the remainder of
   the clue, with a host override to restore eligibility.
@@ -283,14 +305,14 @@ deferred work lives in
 
 ### CQS-OD-021 (21) — Attempt limits
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** Attempt limits are configurable; **one attempt per team per
   clue is the default** (today's implemented behavior).
 
 ### CQS-OD-022 (22) — Timer visibility
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** Thinking and simultaneous-response timers are normally
   public. **Individual answer-turn timer visibility** may be host- or
@@ -301,8 +323,10 @@ deferred work lives in
 
 ### CQS-OD-023 (23) — Automatic transitions are bounded
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` (the invariant
-  half already holds in the implementation) · **Arc:** `CQS-ARC-FORMATS`
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` ·
+  **Arc:** `CQS-ARC-FORMATS`
+- **Component states.** The explicit-adjudication invariant (expiry awards
+  and reveals nothing): `implemented`.
 - **Direction.** Timer expiry may perform **safe transitions**
   automatically, but **answer reveal, correctness adjudication, score
   changes, and wager settlement remain explicit** host (or explicitly
@@ -312,7 +336,7 @@ deferred work lives in
 
 ### CQS-OD-024 (24) — Host evented overrides
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS` / `CQS-ARC-OPERATOR`
 - **Direction.** The host retains evented overrides: add time, restart the
   timer, promote a different team, restore eligibility, cancel the active
@@ -322,7 +346,7 @@ deferred work lives in
 
 ### CQS-OD-025 (25) — Secondary actions are bounded ordinal choices
 
-- **Status:** Accepted · **Activation:** `architecture-preserved`
+- **Status:** Accepted · **Primary activation:** `architecture-preserved`
 - **Direction.** The four secondary controller actions are **ordinal
   A–D-style choices by default**; compatible round types may assign other
   bounded ordinal meanings.
@@ -335,7 +359,7 @@ deferred work lives in
 
 ### CQS-OD-026 (26) — Public exact queue position
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS` / `CQS-ARC-IDENTITY`
 - **Direction.** The projector may show **exact queue position** on each team
   card — without raw timestamps or reaction-time claims.
@@ -347,7 +371,7 @@ deferred work lives in
 
 ### CQS-OD-027 (27) — Early-lockout duration
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** Early-lockout duration is preset-controlled;
   **approximately 500 ms** is the recommended classroom default.
@@ -358,7 +382,7 @@ deferred work lives in
 
 ### CQS-OD-028 (28) — Lockout presses do not extend the lockout
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** Repeated presses during an active early lockout are ignored
   and **do not extend** the lockout. A fresh press after the lockout ends may
@@ -369,7 +393,7 @@ deferred work lives in
 
 ### CQS-OD-029 (29) — Readiness-timer expiry behavior
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** Readiness-timer expiry behavior is preset-controlled;
   competitive presets may **arm immediately** at expiry.
@@ -379,7 +403,7 @@ deferred work lives in
 
 ### CQS-OD-030 (30) — Answer-turn timeout fallback
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS` / `CQS-ARC-OPERATOR`
 - **Direction.** Answer-turn timeout behavior is preset-controlled; a **host
   decision popup is the fallback** (§10.2 direction: Next queued team ·
@@ -389,7 +413,7 @@ deferred work lives in
 
 ### CQS-OD-031 (31) — Show why a turn ended, briefly
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-IDENTITY`
 - **Direction.** Briefly show why a team's turn ended (timeout, incorrect,
   pass), then transition its card to the durable eligibility or lockout
@@ -400,7 +424,7 @@ deferred work lives in
 
 ### CQS-OD-032 (32) — Policy levels
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** Game-level and round-level policies are normal.
   **Clue-level overrides are reserved for specifically designated special
@@ -410,8 +434,10 @@ deferred work lives in
 
 ### CQS-OD-033 (33) — Team cards are positionally stable
 
-- **Status:** Accepted — clarification · **Activation:** `implemented`
-  (as the scoreboard rule; future team cards inherit it)
+- **Status:** Accepted — clarification · **Primary activation:**
+  `implemented`
+- **Component states.** Inheritance of the stability rule by future
+  richer team cards: `post-mvp-priority`.
 - **Direction.** Team cards remain positionally stable during normal
   gameplay.
 - **Lineage.** Confirms ADR-006's implemented rule that authored order is
@@ -423,7 +449,7 @@ deferred work lives in
 
 ### CQS-OD-034 (34) — Optional animated score-order transitions
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-IDENTITY`
 - **Direction.** Optional animated score-order transitions may occur
   **between rounds and at game end**; normal gameplay returns teams to
@@ -433,9 +459,10 @@ deferred work lives in
 
 ### CQS-OD-035 (35) — Summary always, telemetry opt-in
 
-- **Status:** Accepted · **Activation:** `current-mvp-planned` (per-session
-  summary = planned Slice 15) / `post-mvp-priority` (opt-in detailed
-  telemetry)
+- **Status:** Accepted · **Primary activation:** `current-mvp-planned` ·
+  **Arc:** current MVP (Slice 15 summary)
+- **Component states.** The opt-in detailed telemetry journal: `parked`
+  (`CQS-OPP-TELEMETRY`).
 - **Direction.** Every completed game receives a useful summary. **Detailed
   input telemetry is opt-in**, never mandatory.
 - **Consequence.** The summary half is already the planned Slice 15
@@ -446,7 +473,7 @@ deferred work lives in
 
 ### CQS-OD-036 (36) — Archive retention
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-INSIGHT`
 - **Direction.** Archive retention is configurable and exportable,
   defaulting to **retention until deletion**.
@@ -455,7 +482,7 @@ deferred work lives in
 
 ### CQS-OD-037 (37) — Private response retention
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-INSIGHT`
 - **Direction.** Exact private written responses and wager responses use
   **game-configurable retention**.
@@ -464,7 +491,7 @@ deferred work lives in
 
 ### CQS-OD-038 (38) — Analytics views
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-INSIGHT`
 - **Direction.** Analytics supports **overall** and **private class or
   section** views.
@@ -473,7 +500,7 @@ deferred work lives in
 
 ### CQS-OD-039 (39) — Two funny-format families
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** Support both **controller-native funny formats** and
   clearly labeled **host-assisted open-response formats**.
@@ -483,7 +510,7 @@ deferred work lives in
 
 ### CQS-OD-040 (40) — One active controller per team, for now
 
-- **Status:** Accepted — clarification · **Activation:**
+- **Status:** Accepted — clarification · **Primary activation:**
   `architecture-preserved`
 - **Direction.** Start with **one active controller per team** while
   preserving future multiple-controller-per-team mapping.
@@ -495,7 +522,7 @@ deferred work lives in
 
 ### CQS-OD-041 (41) — Source grounding is preset-controlled
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-AUTHORING`
 - **Direction.** Source-grounding mode is preset-controlled, with
   **uploaded-sources-only as the default**.
@@ -506,7 +533,7 @@ deferred work lives in
 
 ### CQS-OD-042 (42) — Complete games and question banks are both first-class
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-AUTHORING`
 - **Direction.** Support both complete-game generation and reusable
   question-bank generation. **Complete-game spreadsheet generation is a
@@ -514,7 +541,7 @@ deferred work lives in
 
 ### CQS-OD-043 (43) — Source references are host-side QA
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-AUTHORING`
 - **Direction.** Source references are **required for every factual clue**
   but remain host-side QA and documentation — **not normal projected
@@ -524,7 +551,7 @@ deferred work lives in
 
 ### CQS-OD-044 (44) — Teacher approval gates playability
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-AUTHORING`
 - **Direction.** Teacher approval occurs at the **game level** after
   reviewing warnings. **Invalid or blocked content cannot become playable.**
@@ -533,16 +560,17 @@ deferred work lives in
 
 ### CQS-OD-045 (45) — Difficulty metadata
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` (calibration
-  against observed performance additionally `research-required`) · **Arc:**
-  `CQS-ARC-AUTHORING` / `CQS-ARC-INSIGHT`
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` ·
+  **Arc:** `CQS-ARC-AUTHORING` / `CQS-ARC-INSIGHT`
+- **Component states.** Calibration against observed performance:
+  `research-required`.
 - **Direction.** Difficulty metadata includes a numeric level, a
   cognitive-demand label, and an explanation — with later calibration
   against observed performance.
 
 ### CQS-OD-046 (46) — Generation metadata, never hidden reasoning
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-AUTHORING`
 - **Direction.** Retain provider or model, generation date,
   authoring-template version, and generation instructions. **Never require
@@ -550,14 +578,14 @@ deferred work lives in
 
 ### CQS-OD-047 (47) — Source references and hashes by default
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-AUTHORING`
 - **Direction.** Retain source references and hashes by default, with
   optional bundled source archives.
 
 ### CQS-OD-048 (48) — Humor profiles
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-AUTHORING`
 - **Direction.** Humor profiles are **Straight, Light, Playful, and
   Chaotic-but-School-Safe**. **Light is the default.**
@@ -566,7 +594,7 @@ deferred work lives in
 
 ### CQS-OD-049 (49) — One internal model, preset-specific workbooks
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-AUTHORING`
 - **Direction.** Maintain **one universal internal content model** while
   exporting small preset-specific workbook templates.
@@ -576,14 +604,14 @@ deferred work lives in
 
 ### CQS-OD-050 (50) — Import produces a game and feeds the bank
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-AUTHORING`
 - **Direction.** Spreadsheet import creates a reviewable ready-to-play game
   **and** adds imported questions to the reusable question bank.
 
 ### CQS-OD-051 (51) — Clue replacement and the reveal boundary
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-AUTHORING`
 - **Direction.** A clue may be freely replaced **until reveal**. After
   reveal, use an explicit cancellation or correction workflow and **preserve
@@ -593,17 +621,19 @@ deferred work lives in
 
 ### CQS-OD-052 (52) — Portable bank packages before a shared repository
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` (portable
-  packages) / `parked` (shared hosted repository) · **Arc:**
-  `CQS-ARC-AUTHORING`
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` ·
+  **Arc:** `CQS-ARC-AUTHORING`
+- **Component states.** Portable packages: `post-mvp-priority`. Shared
+  hosted repository: `parked`.
 - **Direction.** Support portable question-bank packages first and a future
   shared repository later.
 
 ### CQS-OD-053 (53) — External recording first; native recording later
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` (external
-  recording + transcript import) / `parked` (native recording) · **Arc:**
-  `CQS-ARC-INSIGHT`
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` ·
+  **Arc:** `CQS-ARC-INSIGHT`
+- **Component states.** External recording + transcript import:
+  `post-mvp-priority`. Native recording: `parked`.
 - **Direction.** External session recording was the original assumption.
   Native recording is a valid later capability but is **not required for the
   MVP**.
@@ -612,7 +642,7 @@ deferred work lives in
 
 ### CQS-OD-054 (54) — Transcript identity is team identity
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-INSIGHT`
 - **Direction.** Team identity is the default transcript identity. Optional
   **teacher-managed** speaker labels may exist — **without biometric
@@ -620,16 +650,16 @@ deferred work lives in
 
 ### CQS-OD-055 (55) — Recommendation vs. promotion
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-INSIGHT`
 - **Direction.** CQS **recommends** assessment candidates; the **teacher
   explicitly promotes** them.
 
 ### CQS-OD-056 (56) — Credit requires a noncompetitive route
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` (grading-policy
-  detail additionally `research-required`) · **Arc:**
-  `CQS-ARC-PARTICIPATION`
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` ·
+  **Arc:** `CQS-ARC-PARTICIPATION`
+- **Component states.** Grading-policy detail: `research-required`.
 - **Direction.** Credit may recognize competition **only when an equivalent
   noncompetitive contribution route exists**. Content creation, sourcing,
   review, analysis, and reflection are preferred.
@@ -638,16 +668,18 @@ deferred work lives in
 
 ### CQS-OD-057 (57) — Design Loan Mode now, implement later
 
-- **Status:** Accepted · **Activation:** `architecture-preserved` (design
-  documented now; implementation is `parked` → `CQS-OPP-LOAN-MODE`) ·
+- **Status:** Accepted · **Primary activation:** `architecture-preserved` ·
   **Arc:** `CQS-ARC-OPERATOR`
+- **Component states.** Loan Mode implementation: `parked`
+  (`CQS-OPP-LOAN-MODE`; it cannot precede the completed-game archive —
+  see the register entry).
 - **Direction.** Design for Loan Mode now but implement it after the MVP.
 
 ## Decisions 58–66 — assessment linkage and curriculum boundary
 
 ### CQS-OD-058 (58) — Stable item-family identity
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-AUTHORING` / `CQS-ARC-INSIGHT`
 - **Direction.** Connect game clues, revisions, adaptations, and test items
   through a **stable item-family ID**, with teacher confirmation.
@@ -656,16 +688,16 @@ deferred work lives in
 
 ### CQS-OD-059 (59) — Aggregate statistics in, individual records out
 
-- **Status:** Accepted · **Activation:** `architecture-preserved`
-  (controlled import path allowed architecturally; aggregate-statistics
-  intake is `post-mvp-priority`) · **Arc:** `CQS-ARC-INSIGHT`
+- **Status:** Accepted · **Primary activation:** `architecture-preserved` ·
+  **Arc:** `CQS-ARC-INSIGHT`
+- **Component states.** Aggregate-statistics intake: `post-mvp-priority`.
 - **Direction.** Architecturally allow controlled test-data import, but
   initially prefer individual assessment records to remain in GCS or another
   assessment system while CQS receives **aggregate item statistics**.
 
 ### CQS-OD-060 (60) — Roster linkage is optional and later
 
-- **Status:** Accepted · **Activation:** `parked` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `parked` · **Arc:**
   `CQS-ARC-INSIGHT`
 - **Direction.** Optional roster and team-membership linkage may exist later
   while **distinguishing team evidence from individual evidence**. It is not
@@ -673,28 +705,28 @@ deferred work lives in
 
 ### CQS-OD-061 (61) — Recording order of arrival
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-INSIGHT`
 - **Direction.** External recording and transcript import come **before**
   native recording (sequencing rule reinforcing CQS-OD-053).
 
 ### CQS-OD-062 (62) — Transcript retention
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-INSIGHT`
 - **Direction.** Transcript retention and deletion are configurable, with an
   option to **extract insights and remove the original transcript**.
 
 ### CQS-OD-063 (63) — Identity pools are approved, selection is student-made
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-IDENTITY` (generation: `CQS-ARC-AUTHORING`)
 - **Direction.** LLM authoring supplies an **approved identity pool**;
   students select their identities.
 
 ### CQS-OD-064 (64) — Recurring and session-specific identities
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-IDENTITY`
 - **Direction.** Support recurring and session-specific identities, with
   **session-specific as the default**. (Restated per identity-pack flow in
@@ -702,14 +734,14 @@ deferred work lives in
 
 ### CQS-OD-065 (65) — Candidate thresholds are configurable
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-INSIGHT`
 - **Direction.** Assessment-candidate thresholds are configurable, while the
   teacher may manually promote any appropriate item.
 
 ### CQS-OD-066 (66) — GCS learning-target linkage — UNRESOLVED
 
-- **Status:** **Unresolved** · **Activation:** `unresolved` · **Arc:**
+- **Status:** **Unresolved** · **Primary activation:** `unresolved` · **Arc:**
   `CQS-ARC-INSIGHT` (`CQS-OPP-GCS-LINKAGE`)
 - **Open question.** Whether CQS should store external GCS learning-target
   IDs and labels while leaving GCS as the curriculum and formal-assessment
@@ -725,27 +757,27 @@ deferred work lives in
 
 ### CQS-OD-067 (67) — Four packs, with redraw
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-IDENTITY`
 - **Direction.** Teams choose among **four complete identity packs** and may
   redraw.
 
 ### CQS-OD-068 (68) — Simultaneous choice
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-IDENTITY`
 - **Direction.** Active teams choose **simultaneously**, not in turns.
 
 ### CQS-OD-069 (69) — Uniqueness within the session
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-IDENTITY`
 - **Direction.** Candidate pools and final identities remain **unique within
   the session**.
 
 ### CQS-OD-070 (70) — Session-specific by default, recurring optional
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-IDENTITY`
 - **Direction.** Identities may be session-specific or saved as recurring
   team profiles; **session-specific is the default**. (Companion of
@@ -753,14 +785,14 @@ deferred work lives in
 
 ### CQS-OD-071 (71) — Participation passport
 
-- **Status:** Accepted · **Activation:** `parked` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `parked` · **Arc:**
   `CQS-ARC-PARTICIPATION` (`CQS-OPP-PARTICIPATION-PASSPORT`)
 - **Direction.** An optional physical or digital **participation passport**
   may recognize several contribution types.
 
 ### CQS-OD-072 (72) — Deferred capabilities must carry their dossier
 
-- **Status:** Accepted · **Activation:** `implemented` (as a documentation
+- **Status:** Accepted · **Primary activation:** `implemented` (as a documentation
   practice, by the opportunity register in this package)
 - **Direction.** Every deferred capability must record its **reason,
   dependencies, implementation trigger, and required evidence**.
@@ -770,35 +802,35 @@ deferred work lives in
 
 ### CQS-OD-073 (73) — Preview before confirmation
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-IDENTITY`
 - **Direction.** Selecting an identity opens a **preview** before
   confirmation.
 
 ### CQS-OD-074 (74) — No forced setup timeout
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-IDENTITY`
 - **Direction.** There is **no forced setup timeout**. The host may skip an
   unfinished team if necessary.
 
 ### CQS-OD-075 (75) — Complete packs, optional refinement
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-IDENTITY`
 - **Direction.** Complete identity packs are the default, with an optional
   controller-driven refinement step.
 
 ### CQS-OD-076 (76) — "Keep our identity"
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-IDENTITY`
 - **Direction.** A recurring team sees **"Keep our identity"** alongside
   three new choices.
 
 ### CQS-OD-077 (77) — Pool composition
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-IDENTITY`
 - **Direction.** Combine game-specific identity pools with approved CQS
   fallbacks, **prioritizing course-relevant options**.
@@ -807,14 +839,14 @@ deferred work lives in
 
 ### CQS-OD-078 (78) — One comprehensive documentation package
 
-- **Status:** Accepted · **Activation:** `implemented` (by slice
+- **Status:** Accepted · **Primary activation:** `implemented` (by slice
   `CQS-PLAN-S01` — this package)
 - **Direction.** Finish this bounded discovery and create one comprehensive
   documentation package.
 
 ### CQS-OD-079 (79) — The current MVP is preserved
 
-- **Status:** Accepted · **Activation:** `implemented` (governing rule of
+- **Status:** Accepted · **Primary activation:** `implemented` (governing rule of
   this slice)
 - **Direction.** Preserve the current MVP. Add only documentation and
   architecture amendments required to avoid blocking the expanded vision.
@@ -823,7 +855,7 @@ deferred work lives in
 
 ### CQS-OD-080 (80) — Post-MVP arc order
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` (sequencing
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` (sequencing
   decision)
 - **Direction.** The **first post-MVP arc is spreadsheet and LLM game
   authoring** (`CQS-ARC-AUTHORING`), followed by team identity and
@@ -834,14 +866,14 @@ deferred work lives in
 
 ### CQS-OD-081 (81) — Presets → Customize → Advanced
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority`
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority`
 - **Direction.** Configuration uses **Presets first**, followed by
   **Customize** and **Advanced** layers. The normal setup screen never
   exposes every internal policy.
 
 ### CQS-OD-082 (82) — Authority boundaries
 
-- **Status:** Accepted — clarification · **Activation:** `implemented`
+- **Status:** Accepted — clarification · **Primary activation:** `implemented`
 - **Direction.** The CQS repository is canonical. This owner-discovery
   record supplies decisions and rationale. Obsidian may index and summarize
   but is not authoritative.
@@ -853,7 +885,7 @@ deferred work lives in
 
 ### CQS-OD-083 (83) — Survey Showdown joins the post-MVP catalog
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS` (`CQS-OPP-SURVEY-SHOWDOWN`)
 - **Direction.** Include a Family-Feud-inspired **Survey Showdown** format
   in the post-MVP catalog (no commercial branding, audio, or styling is
@@ -861,14 +893,14 @@ deferred work lives in
 
 ### CQS-OD-084 (84) — Spoken play is the Survey Showdown default
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** Support spoken-answer host adjudication and
   controller-choice variants, with **spoken play as the default**.
 
 ### CQS-OD-085 (85) — Survey provenance is mandatory
 
-- **Status:** Accepted · **Activation:** `post-mvp-priority` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `post-mvp-priority` · **Arc:**
   `CQS-ARC-FORMATS`
 - **Direction.** Every survey board declares provenance: **real survey**,
   **teacher-authored ranking**, or **synthetic / LLM-predicted answers**.
@@ -876,7 +908,7 @@ deferred work lives in
 
 ### CQS-OD-086 (86) — Survey finale is planned separately
 
-- **Status:** Accepted · **Activation:** `parked` · **Arc:**
+- **Status:** Accepted · **Primary activation:** `parked` · **Arc:**
   `CQS-ARC-FORMATS` (`CQS-OPP-SURVEY-FINALE`)
 - **Direction.** Plan a later timed survey-finale round **separately** from
   the first Survey Board implementation.

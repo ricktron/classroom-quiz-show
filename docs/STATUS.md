@@ -43,7 +43,7 @@ the product-direction arc
 — first post-MVP arc: spreadsheet and LLM authoring), the deferred-work
 register
 ([`plans/POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](plans/POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md)),
-three domain planning views under [`plans/`](plans/), and the research
+four domain planning views under [`plans/`](plans/), and the research
 record
 ([`research/GAMEPLAY-GAMIFICATION-AND-AUTHORING-RESEARCH.md`](research/GAMEPLAY-GAMIFICATION-AND-AUTHORING-RESEARCH.md)).
 Delivery evidence:

@@ -116,9 +116,15 @@ motion accessibility.
 Polished one-screen host console (`CQS-OD-012`), guided operator workflow,
 and Loan Mode packaging for non-owner operators. Detail:
 [`HOST-CONSOLE-TEAM-IDENTITY-AND-PRESENTATION.md`](HOST-CONSOLE-TEAM-IDENTITY-AND-PRESENTATION.md).
-Dependencies: stable gameplay-policy surface (else the console redesign
-churns); Loan Mode additionally depends on the archive for automatic
-session records.
+The **polished host-console portion may follow `CQS-ARC-IDENTITY`
+directly**, preserving the `CQS-OD-080` order (authoring → identity →
+operator). Loan Mode design remains part of this arc, but **Loan Mode
+implementation and Operator-arc completion cannot precede the
+completed-game archive capability** (`CQS-OPP-HISTORICAL-ARCHIVE`,
+delivered under `CQS-ARC-INSIGHT`).
+Dependencies: stable gameplay-policy surface for the console redesign;
+the completed-game archive for Loan Mode implementation and arc
+completion.
 Principal risks: console rebuild destabilizing working host flows;
 Loan-Mode support burden.
 
@@ -166,10 +172,13 @@ Principal risks: grading-policy sensitivity; equity of credit routes.
 ```
 MVP (slices 14–18)
   └─► CQS-ARC-AUTHORING ──► CQS-ARC-INSIGHT ──► CQS-ARC-PARTICIPATION
-            │                     ▲
-            ├─► CQS-ARC-IDENTITY  │ (item identity, archives)
-            │         │           │
-            │         └─► CQS-ARC-OPERATOR (Loan Mode needs archive)
+            │        (item identity) │
+            │                        │ completed-game archive
+            │                        ▼
+            ├─► CQS-ARC-IDENTITY ─► CQS-ARC-OPERATOR
+            │       (console may follow IDENTITY directly; Loan Mode
+            │        implementation and Operator-arc COMPLETION require
+            │        the archive from CQS-ARC-INSIGHT)
             └─► CQS-ARC-FORMATS (content + policies; Survey Showdown)
 ```
 
@@ -187,9 +196,12 @@ privacy tests, replay determinism). Arc-level definitions of done:
   interaction after launch; all presentation effects pass
   reduced-motion/mute/contrast requirements; no presentation event is
   gameplay-authoritative.
-- **OPERATOR:** a non-owner operator runs a complete supervised game
-  following only the highlighted next actions; Loan Mode locks
-  configuration and auto-archives.
+- **OPERATOR (host console):** a non-owner operator runs a complete
+  supervised game following only the highlighted next actions — no
+  later-arc capability required.
+- **OPERATOR (completion, incl. Loan Mode):** reached only after the
+  completed-game archive exists (`CQS-OPP-HISTORICAL-ARCHIVE`); Loan
+  Mode locks configuration and auto-archives.
 - **INSIGHT:** a completed game yields an archive entry and summary;
   question analytics render from ≥2 archived sessions; a transcript
   aligns to the event timeline; no individual-mastery claim appears

@@ -30,16 +30,20 @@ note only *additional* authority where it exists.
   `CQS-ARC-AUTHORING`
 - **Deferred because:** the MVP must finish its own core (slices 14–18);
   MVP Slice 17 already owns basic spreadsheet-import convenience, and this
-  opportunity must build on its delivered shape rather than race it.
+  opportunity must build on its delivered shape rather than race it. It
+  remains the **accepted first post-MVP arc** (`CQS-OD-080`) — the
+  trigger below times it, it does not re-rank it.
 - **Dependencies:** canonical pipeline (done); portable export (done);
   Slice 17 outcome; workbook-shape design in
   [`LLM-SPREADSHEET-AUTHORING-ARC.md`](LLM-SPREADSHEET-AUTHORING-ARC.md).
-- **Trigger:** MVP Slice 17 reaches `Complete` (or the owner explicitly
-  re-sequences it), **and** the owner has authored at least two complete
-  games by hand-editing JSON or raw spreadsheets and reports the authoring
-  cost in a receipt or decision record.
-- **Evidence required:** authoring-time observations from real game prep;
-  one worked example of an LLM-populated workbook validated by hand.
+- **Trigger:** MVP Slice 17 is `Complete` **and post-merge reconciled**,
+  and at least **two real game-preparation workflows have documented
+  limitations in the delivered authoring path** — evidence may come from
+  the authoring UI, spreadsheets, or JSON. A deliberate Program
+  Orchestrator re-sequencing decision may override this default timing.
+- **Evidence required:** the two documented workflow-limitation records
+  from real game preparation; one worked example of an LLM-populated
+  workbook validated by hand.
 - **Risks:** editor-product scope creep; model-output variance; teacher
   trust in QA warnings.
 
@@ -130,7 +134,10 @@ note only *additional* authority where it exists.
   diagnostics.
 - **Activation:** `post-mvp-priority` · **Arc:** `CQS-ARC-OPERATOR`
 - **Deferred because:** the console should be redesigned once, after the
-  gameplay-policy surface stabilizes — not per-slice.
+  gameplay-policy surface stabilizes — not per-slice. The console portion
+  may follow `CQS-ARC-IDENTITY` directly (the `CQS-OD-080` order) and
+  does **not** require the completed-game archive — Operator-arc
+  completion and Loan Mode do.
 - **Dependencies:** stable policy/preset surface (`CQS-ARC-FORMATS` core);
   existing host panels as the behavioral spec.
 - **Trigger:** an operator-error log from at least three real sessions
@@ -148,9 +155,11 @@ note only *additional* authority where it exists.
 - **Activation:** `parked` (designed now, implemented after the operator
   console) · **Arc:** `CQS-ARC-OPERATOR`
 - **Deferred because:** no second operator exists yet; requires the
-  polished console and the archive.
-- **Dependencies:** `CQS-OPP-HOST-CONSOLE`; `CQS-OPP-HISTORICAL-ARCHIVE`;
-  controller-test guidance.
+  polished console and the archive. **Loan Mode implementation and
+  Operator-arc completion cannot precede the completed-game archive
+  capability** (`CQS-OPP-HISTORICAL-ARCHIVE`, `CQS-ARC-INSIGHT`).
+- **Dependencies:** `CQS-OPP-HOST-CONSOLE`; `CQS-OPP-HISTORICAL-ARCHIVE`
+  (hard prerequisite); controller-test guidance.
 - **Trigger:** reconsider after at least two non-owner teachers complete
   supervised game sessions and an operator-error log identifies the three
   most common setup failures.
