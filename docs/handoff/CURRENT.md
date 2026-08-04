@@ -4,7 +4,7 @@ This is the entry point for the next contributor or coding agent. It reflects
 the repository with **Slices 1–14 all `Complete` and merged to `main`**, and
 **Slice 15 — Session Summary Contract `In review`** (not merged) on PR
 [#38](https://github.com/ricktron/classroom-quiz-show/pull/38)
-(`feat/slice-15-session-summary-contract`, head `11e8758…`) under
+(`feat/slice-15-session-summary-contract`, head `784a526…`) under
 `AUTHORIZE-CQS-SLICE-15-SESSION-SUMMARY-CONTRACT-1` / `CQS-SLICE-15-ES-1`
 (exact authorized base `0939d9cafd009e713c8ca83bcc35ff3f90556819`). See
 [`../architecture/ADR-015-session-summary-contract.md`](../architecture/ADR-015-session-summary-contract.md)
