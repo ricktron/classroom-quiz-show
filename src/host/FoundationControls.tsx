@@ -6,6 +6,7 @@ import { GameImportPanel } from './GameImportPanel'
 import { GameExportPanel } from './GameExportPanel'
 import { CategoryBoardHostPanel } from './CategoryBoardHostPanel'
 import { TeamScoringPanel } from './TeamScoringPanel'
+import { SessionSummaryPanel } from './SessionSummaryPanel'
 import { ResponseTimerHostPanel } from './ResponseTimerHostPanel'
 import { FinalWagerHostPanel } from './FinalWagerHostPanel'
 import { LocalInputHostPanel } from './LocalInputHostPanel'
@@ -348,6 +349,13 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
       {game && (
         <TeamScoringPanel dispatch={dispatch} game={game} history={history} clock={clock} />
       )}
+
+      {/*
+        Session summary (Slice 15). Host-only, current completed session only.
+        Derivation lives in `src/summary/`; this panel presents the typed result
+        when the replayed lifecycle is ended — no new route, no modal, no export.
+      */}
+      {game && <SessionSummaryPanel game={game} history={history} />}
 
       <GameImportPanel
         dispatch={dispatch}
