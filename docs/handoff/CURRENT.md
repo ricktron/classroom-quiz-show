@@ -20,12 +20,14 @@ and
 **Slices 15–22 remain `Planned` and unstarted** under the **22-slice** MVP
 plan amended by
 [`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
-(`CQS-PLAN-S02`, documentation-only; **merged** via PR #35 at
-`2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`). **Next planned product slice:**
-Slice 15 — Session Summary Contract. This handoff does **not** authorize
-Slice 15 implementation. The recommended next action is exact-head review of
-the CQS-PLAN-S02 post-merge reconciliation PR — not Slice 15 readiness or
-implementation.
+(`CQS-PLAN-S02`, documentation-only; delivery **merged** via PR #35 at
+`2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`; post-merge reconciliation
+**merged** via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`).
+**Next planned product slice:** Slice 15 — Session Summary Contract. This
+handoff does **not** authorize Slice 15 implementation. The recommended next
+action is Program Orchestrator Slice 15 readiness and a fresh exact-main-base
+owner authorization for `CQS-SLICE-15-SESSION-SUMMARY-CONTRACT` — not further
+review or merge of PR #36, and not silent implementation.
 
 Coding agents and contributors should read root
 [`../../AGENTS.md`](../../AGENTS.md) before changing the repository. Claude
@@ -65,16 +67,20 @@ defers to `AGENTS.md` and adds no separate authority.
 > replaced by Slices 15–22. Slices 1–14 are unchanged and `Complete`. Canonical
 > decision:
 > [`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md).
-> Squash-merged via
+> Delivery squash-merged via
 > [PR #35](https://github.com/ricktron/classroom-quiz-show/pull/35) at
 > `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc` (merged **2026-08-04T03:41:30Z**)
 > from reviewed head `c637b979fa6e575c28dd6eb73dfbd52a76e93d35`.
+> Post-merge reconciliation squash-merged via
+> [PR #36](https://github.com/ricktron/classroom-quiz-show/pull/36) at
+> `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d` (merged **2026-08-04T14:03:30Z**)
+> from reviewed head `2457d6c0d27976855a0d247554730ec2f0efe899`.
 > **Documentation only — no product implementation authorized.** CQS-PLAN-S02
-> delivery and merge authority are exhausted. A documentation-only
-> post-merge reconciliation lane records the final merged state; that
-> reconciliation must be reviewed and merged before Slice 15 readiness.
-> Slice 15 — Session Summary Contract remains the next product candidate under
-> separate authority. Phase 3 remains unauthorized. `CQS-OD-066` remains
+> delivery and post-merge reconciliation are complete on `main`; PR #36
+> requires no further review or merge action. Slice 15 — Session Summary
+> Contract remains the next product candidate under separate exact-main-base
+> authorization. Phase 3 remains unauthorized. Slices 16–22 remain
+> unauthorized. Post-MVP arcs remain inactive. `CQS-OD-066` remains
 > unresolved.
 
 ## Repository state
@@ -886,24 +892,24 @@ arcs remain inactive; **decision 66 (`CQS-OD-066`) remains unresolved**.
 
 **Slices 1–14 and planning slice CQS-PLAN-S01 are `Complete` and
 merged.** Phase 2B design direction is registered. **Roadmap Amendment 003
-(`CQS-PLAN-S02`) is merged to `main`** via
-[PR #35](https://github.com/ricktron/classroom-quiz-show/pull/35) at
-`2ebeb24099d5f63ccd3247ffb8e8744f89c039bc` (22-slice plan canonical; see
-[`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
+(`CQS-PLAN-S02`) delivery and post-merge reconciliation are complete on
+`main`** (PR #35 at `2ebeb240…`; PR #36 at
+`da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`; 22-slice plan canonical; see
+[`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md),
+[`../receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md`](../receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md),
 and
-[`../receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md`](../receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md)).
+[`../receipts/2026-08-04-cqs-plan-s02-post-merge-registration.md`](../receipts/2026-08-04-cqs-plan-s02-post-merge-registration.md)).
 **Slice 14 — Final-wager round is `Complete`** (PR
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32) at
 `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d`).
 
-**CQS-PLAN-S02 delivery and merge authority are exhausted.** The
-reconciliation lane is documentation-only. **Recommended next action:
-exact-head Program Orchestrator review of the CQS-PLAN-S02 post-merge
-reconciliation PR — not Slice 15 implementation.** After that reconciliation
-is reviewed and merged, the Program Orchestrator may conduct Slice 15
-readiness under separate authority. Slices 15–22 remain `Planned` and
-unstarted. Slice 15 remains unauthorized. Phase 3 remains unauthorized.
-`CQS-OD-066` remains unresolved.
+**PR #36 requires no further review or merge action.** **Recommended next
+action: Program Orchestrator Slice 15 readiness, then a fresh exact-main-base
+owner authorization for `CQS-SLICE-15-SESSION-SUMMARY-CONTRACT` — not Slice
+15 implementation from this handoff.** Slices 15–22 remain `Planned` and
+unstarted. Slice 15 remains unauthorized until that separate authorization.
+Phase 3 remains unauthorized. Slices 16–22 remain unauthorized. Post-MVP arcs
+remain inactive. `CQS-OD-066` remains unresolved.
 
 ## Registered design direction — Phase 2B audience display (2026-08-03)
 
@@ -1019,9 +1025,9 @@ codebase implements, anticipates or reserves space for a response mode or a
 multiple-choice question type. When this direction was recorded the immediate
 frontier was a separate Slice 14 planning/readiness decision, and this direction
 did not authorize it; **Slice 14 is now `Complete`** (PR #32, `ce2e103…`), and
-**Amendment 003 is merged** (PR #35, `2ebeb24…`). The immediate frontier is
-documentation-only post-merge reconciliation review, then a separate Slice 15
-readiness decision. Slice 13 is
+**Amendment 003 delivery and post-merge reconciliation are merged** (PR #35,
+`2ebeb24…`; PR #36, `da6b4dc…`). The immediate frontier is a separate Slice 15
+readiness decision under fresh exact-main-base authorization. Slice 13 is
 **`Complete`** (PR #27, `6cf4d25…`). Slice 12 is **`Complete`** (PR #25, `cdb499a…`). Slice 11 is
 **`Complete`** (PR #23, `5d47b2f`). Slice 10 remains **`Complete`** under the
 owner-accepted hardware-independent boundary; OADL2-S07 recorded a bounded
