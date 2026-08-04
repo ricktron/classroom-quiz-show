@@ -13,6 +13,18 @@
   not merged; number recorded in the delivery report*
 - **Environment:** local (remote Linux execution container)
 
+> **Amended by `AUTHORIZE-CQS-DESIGN-PHASE-2B-REGISTRATION-R1`** (ordinary
+> attributable semantic repair at exact PR head `e334ffb…`, inside the existing
+> registration lane). Two bounded documentation defects found during exact-head
+> Program Orchestrator review were corrected: (1) this receipt and the direction
+> document described the ten-file minimal reconstruction as the sole basis of the
+> acceptance and implied the repaired package was directly evaluated — replaced
+> with the accurate eight-item evidence basis and repair sequence below; (2) this
+> section carried a duplicated, orphaned table header — removed. **The repair
+> reopened no design decision, changed no registered disposition, expanded no
+> authority, and authorized no merge.** The disposition, the two-lineage
+> distinction, and the exact evidence wording are unchanged.
+
 ## Disposition registered
 
 **`PASS — PHASE 2B DESIGN DIRECTION ACCEPTED FOR PROGRAM USE`**
@@ -57,17 +69,47 @@ No other path was created, modified, renamed, or deleted.
 Two artifact lineages existed and are recorded as distinct:
 
 1. **A separately reported larger Phase 2B package of approximately 97 files** —
-   **not committed to this repository** and **not the basis of the bounded
-   reconstruction review**. Nothing here claims that no larger package ever
-   existed.
-2. **A ten-file minimal reconstruction** — the artifact set actually used for
-   **bounded Program Orchestrator review**, and the sole evidentiary basis for
-   the acceptance.
+   **not committed to this repository**, **not reviewed**, and **not the basis of
+   the bounded reconstruction review**. Nothing here claims that no larger package
+   ever existed.
+2. **A ten-file minimal reconstruction** — **the artifact lineage that was under
+   bounded Program Orchestrator review**. It was **not the sole basis** of the
+   acceptance; the full evidence basis is below.
+
+### Evidence basis
+
+The bounded design decision relied on:
+
+1. `CQS Directions.dc.html`;
+2. `CQS Prototype.dc.html`;
+3. the CQS design evidence packet and conflict register;
+4. accepted CQS product and privacy decisions;
+5. the four representative reconstructed projector frames;
+6. the minimal-reconstruction report;
+7. direct visual review of the frame direction;
+8. the artifact maintainer's bounded repair and verification receipt.
+
+### Repair sequence
+
+1. **The Program Orchestrator directly reviewed the original representative frame
+   direction and identified six bounded defects** — a direct review of the
+   **original** frame direction, not of the final corrected package.
+2. **The artifact maintainer subsequently reported correcting those defects and
+   verifying the package.**
+3. **The final corrected ZIP was not successfully reopened by the Program
+   Orchestrator.** No second, post-repair direct inspection took place.
+4. **Acceptance therefore relied on** the prior direct visual review, the six
+   identified defects, the detailed repair receipt, and the **absence of any
+   remaining design-direction contradiction**.
+
+**Acceptance was acceptance of the design direction**, not of a particular ZIP,
+file set, checksum set, renderer, or byte sequence.
 
 **No artifact bytes were committed.** No ZIP, PNG, HTML renderer, helper script,
-inventory, checksum file, or reconstruction note entered this repository. **No
-artifact hash and no artifact path is asserted** anywhere in this delivery,
-because none was independently observed.
+inventory, checksum file, or reconstruction note entered this repository.
+**Artifact bytes are not canonical repository evidence.** **No artifact hash and
+no artifact path is asserted** anywhere in this delivery, because none was
+independently observed.
 
 ## Evidence wording (verbatim)
 
@@ -81,8 +123,6 @@ because none was independently observed.
 All were **pre-existing at the authorized base** and stale only because Slice 14
 merged after they were written. Each lay inside an authorized path.
 
-| # | Location | Was | Now |
-| --- | --- | --- | --- |
 The "was" column deliberately **describes** the superseded wording rather than
 reproducing it verbatim, so an automated sweep for stale phrasing stays clean.
 The exact prior text is preserved in Git history at the authorized base.

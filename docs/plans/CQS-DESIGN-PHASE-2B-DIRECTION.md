@@ -44,25 +44,54 @@ capability, and alters no current MVP sequencing. The 18-slice plan of record in
 Two distinct artifact lineages existed, and they must not be conflated:
 
 1. **A separately reported larger Phase 2B package of approximately 97 files.**
-   It was **not committed to this repository** and was **not the basis of the
-   bounded reconstruction review**. Its existence is recorded here as reported;
-   nothing in this document should be read as a claim that no larger package ever
-   existed.
-2. **A ten-file minimal reconstruction.** This is the artifact set that was
-   actually used for **bounded Program Orchestrator review**, and it is the sole
-   evidentiary basis for the acceptance recorded here.
+   It was **not committed to this repository**, was **not reviewed**, and was
+   **not the basis of the bounded reconstruction review**. Its existence is
+   recorded here as reported; nothing in this document should be read as a claim
+   that no larger package ever existed.
+2. **A ten-file minimal reconstruction.** This is **the artifact lineage that was
+   under bounded Program Orchestrator review**. It was **not the sole basis** of
+   the acceptance — the full evidence basis is listed below.
 
 The reconstructed artifacts are **evidence of a design direction**. They are
 **not application source**, not a component library, not a specification of
 record for any renderer, and not a substitute for the implementation work that a
-future authorized slice would have to perform.
+future authorized slice would have to perform. **Artifact bytes are not canonical
+repository evidence**; this document is this repository's canonical record of the
+direction.
+
+### Evidence basis
+
+The bounded design decision relied on:
+
+1. `CQS Directions.dc.html`;
+2. `CQS Prototype.dc.html`;
+3. the CQS design evidence packet and conflict register;
+4. accepted CQS product and privacy decisions;
+5. the four representative reconstructed projector frames;
+6. the minimal-reconstruction report;
+7. direct visual review of the frame direction;
+8. the artifact maintainer's bounded repair and verification receipt.
 
 ### Repair history
 
-The direction reached acceptance only after **bounded artifact repair**. The
-acceptance recorded here is acceptance of the **direction**, evaluated on the
-repaired ten-file reconstruction — not acceptance of any particular file, byte
-sequence, or package.
+The direction reached acceptance only after **bounded artifact repair**, in this
+sequence:
+
+1. **The Program Orchestrator directly reviewed the original representative frame
+   direction and identified six bounded defects.** That direct review was of the
+   **original** frame direction, not of the final corrected package.
+2. **The artifact maintainer subsequently reported correcting those defects and
+   verifying the package.**
+3. **The final corrected ZIP was not successfully reopened by the Program
+   Orchestrator.** No second, post-repair direct inspection of the corrected
+   artifacts took place.
+4. **Acceptance therefore relied on** the prior direct visual review, the six
+   identified defects, the detailed repair receipt, and the **absence of any
+   remaining design-direction contradiction** — not on any re-inspection of the
+   corrected package.
+
+**Acceptance was acceptance of the design direction**, not of a particular ZIP,
+file set, checksum set, renderer, or byte sequence.
 
 ### Exact evidence wording
 
