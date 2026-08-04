@@ -165,17 +165,22 @@ in review remain historical evidence and are not rewritten.
 
 ## 9. Reconciliation changed paths
 
-Exact reconciliation paths are those in the open reconciliation PR against
-`main` (documentation-only Markdown under the authorized allowlist). Expected
-core surfaces:
+Confirmed by `git diff --name-only origin/main...HEAD` on branch
+`docs/slice-15-post-merge-reconciliation` (exact final head recorded in the
+open reconciliation PR):
 
-- `README.md`
-- `docs/STATUS.md`
-- `docs/architecture/ADR-015-session-summary-contract.md`
-- `docs/decisions/README.md`
-- `docs/handoff/CURRENT.md`
-- `docs/plans/MVP-ARC.md`
-- `docs/receipts/2026-08-04-slice-15-post-merge-reconciliation.md`
+```text
+README.md
+docs/STATUS.md
+docs/architecture/ADR-015-session-summary-contract.md
+docs/decisions/README.md
+docs/handoff/CURRENT.md
+docs/plans/MVP-ARC.md
+docs/receipts/2026-08-04-slice-15-post-merge-reconciliation.md
+```
+
+`docs/PROJECT.md` and Amendment 003 were inspected and left unchanged: no
+stale open-PR / In-review current-state statements required repair there.
 
 No `src/**`, `tests/**`, package, lockfile, workflow, schema, persistence,
 public-state, sync, export, or deployment path is modified by this lane.
