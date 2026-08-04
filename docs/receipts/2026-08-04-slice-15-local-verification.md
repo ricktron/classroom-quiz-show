@@ -163,8 +163,24 @@ Hard-stop conditions were **not** met. Mutation authorized to proceed.
 - Inherited Final recovery flake **not repaired** (Slice 15 did not cause or
   worsen it)
 
-### 6.4 Repair verification (filled after local + remote terminal results)
+### 6.4 Repair verification (local, before push)
 
-Local and remote terminal results for the repaired head are recorded in the PR
-body and in the final review report under this authorization. An unrun check is
-never claimed as passing.
+Observed on repaired local head after intentional repair commits
+`8f5b1d9` + `6d6c8b5` (exact SHA of the pushed repaired head is recorded on
+PR #38 after push):
+
+| Command | Result |
+| --- | --- |
+| `git diff --check` | clean |
+| `npm run lint` | **success** |
+| `npm run typecheck` | **success** |
+| `npm run test:run` | **success** — **1975** passed / **1** skipped |
+| `npm run build` | **success** |
+| `npm run verify` | **success** |
+| `npx playwright test tests/e2e/session-summary.spec.ts` | **success** — **12** passed (3 projects × 4 tests) |
+| `npx playwright test --grep-invert "a refresh mid-Final resumes every committed wager"` | **success** — **268** passed / **2** skipped |
+| Full `npm run test:e2e` including inherited Final recovery test | **3 failed** — only `a refresh mid-Final resumes every committed wager` on all three projects (same “Not saved yet” after Resume mode); **259** passed / **2** skipped / **9** did not run after those failures |
+
+Remote terminal GitHub Actions and exact-head Sonar results for the repaired
+head are recorded in the PR body after push. An unrun check is never claimed
+as passing.
