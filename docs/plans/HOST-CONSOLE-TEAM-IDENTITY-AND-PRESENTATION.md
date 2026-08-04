@@ -19,6 +19,36 @@ The current implementation's host surface is a set of stacked functional
 panels; none of the console, identity, or presentation capabilities below
 exists.
 
+## 0. Logical team range and the accepted display baseline
+
+Recorded 2026-08-03 under `AUTHORIZE-CQS-DESIGN-PHASE-2B-REGISTRATION-1`,
+to prevent a future identity flow from being read as narrowing the team
+model:
+
+- **Current CQS supports one through eight logical teams.** `MIN_TEAMS = 1`
+  and `MAX_TEAMS = 8` (`src/game/teams/limits.ts`); a game with no `teams`
+  field at all is also valid.
+- **The accepted Phase 2B projector score layouts cover one through eight
+  teams** — Score Column (1–4), Score Strip (5–6), Score Deck (7–8 at a
+  constrained 1280×720). See
+  [`CQS-DESIGN-PHASE-2B-DIRECTION.md`](CQS-DESIGN-PHASE-2B-DIRECTION.md) §5.
+- **The future controller-operated identity flow (§3 below) may carry
+  narrower physical-controller assumptions** — four handsets, four identity
+  packs, four ordinal buttons — **without redefining the logical team
+  limits.** A physical controller count is not a logical team count
+  (`CQS-RA2-CONTROLLER-01`), and nothing in §3 reduces CQS to four teams.
+- **The base display requires only team names, accents, scores, and
+  structural cues.** That is the whole public team surface today
+  (`PublicTeam`), and it is sufficient for every accepted score layout.
+- **Representatives, rosters, mascots/emblems, sounds, and animations remain
+  deferred future identity/presentation capabilities** — none is required by
+  the base display, and none is implemented.
+
+**Nothing in Phase 2B activates any of those deferred concepts.** The Phase
+2B registration is documentation-only program guidance: it implements
+nothing, authorizes no slice, promotes no parked capability, and changes no
+owner decision's acceptance or activation state.
+
 ## 1. Future host console (`CQS-OD-012`; §14 direction)
 
 The post-MVP plan proposes a one-screen live console with:

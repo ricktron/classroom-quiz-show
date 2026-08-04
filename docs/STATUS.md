@@ -199,6 +199,48 @@ Delivery evidence:
 (ES-2); post-merge reconciliation:
 [`receipts/2026-08-03-cqs-plan-s01-post-merge-reconciliation.md`](receipts/2026-08-03-cqs-plan-s01-post-merge-reconciliation.md).
 
+## Phase 2B design-direction registration — Registered (not a product slice)
+
+**This is accepted program guidance, not an implemented product slice.** Phase 2B
+is **not** a numbered MVP slice, does not appear in the 18-slice plan of record,
+and delivered **no** runtime behavior.
+
+Registered under `AUTHORIZE-CQS-DESIGN-PHASE-2B-REGISTRATION-1`
+(evidence state `CQS-DESIGN-PHASE-2B-ES-1`, authorized base
+`6eef3eb9d96c9337756ccf274170d05280fd22d0`) with disposition
+**`PASS — PHASE 2B DESIGN DIRECTION ACCEPTED FOR PROGRAM USE`**. The canonical
+record is
+[`plans/CQS-DESIGN-PHASE-2B-DIRECTION.md`](plans/CQS-DESIGN-PHASE-2B-DIRECTION.md);
+delivery evidence is
+[`receipts/2026-08-03-cqs-design-phase-2b-registration.md`](receipts/2026-08-03-cqs-design-phase-2b-registration.md).
+
+| Fact | Value |
+| --- | --- |
+| Kind | Documentation-only registration (**not** a product slice) |
+| Disposition | `PASS — PHASE 2B DESIGN DIRECTION ACCEPTED FOR PROGRAM USE` |
+| Changed paths | 7, documentation-only |
+| Runtime / schema / public wire / test / asset / dependency change | **None** |
+| `CQS-OD-*` added or changed | **None** |
+| Implementation authorized | **None** — Phase 3 and Slice 16 both remain unauthorized |
+
+What the acceptance means: the direction is accepted as intended **future**
+audience-display guidance; **the design is not implemented**; the representative
+artifacts are **evidence, not application source**; **Phase 3 is not authorized**;
+**Slice 16 is not authorized**; and **no production, projector, accessibility, or
+Raspberry Pi acceptance exists**. No artifact bytes were committed and no
+artifact hash or path is asserted.
+
+> The Phase 2B design direction was accepted after bounded artifact repair. The
+> artifact maintainer reported successful final package verification. The final
+> corrected ZIP was not independently reopened by the Program Orchestrator, so no
+> independent second checksum audit is claimed.
+
+**Current implementation truth is unchanged by this registration:** Slice 14 —
+Final-wager round is **`Complete`** and merged, **public-state wire is 8**, sync
+envelope **2**, game-file schema **1**, and **Slice 15 remains `Planned` and
+unstarted**. Slice 16 — Theme engine is the eventual MVP implementation consumer
+of this direction and remains `Planned` and unstarted.
+
 ## Slice 14 merge evidence
 
 | Fact | Value |

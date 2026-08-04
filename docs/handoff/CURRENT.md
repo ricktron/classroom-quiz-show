@@ -879,6 +879,49 @@ implementation. **Slice 15 — Session summary & compatible-profile
 reporting remains `Planned` and unstarted** and must receive its own
 bounded authorization before any work begins.
 
+## Registered design direction — Phase 2B audience display (2026-08-03)
+
+**Registered as program guidance. Not implemented. Authorizes nothing.**
+
+The accepted Phase 2B audience-display design direction is recorded in
+[`../plans/CQS-DESIGN-PHASE-2B-DIRECTION.md`](../plans/CQS-DESIGN-PHASE-2B-DIRECTION.md)
+under `AUTHORIZE-CQS-DESIGN-PHASE-2B-REGISTRATION-1`, with disposition
+**`PASS — PHASE 2B DESIGN DIRECTION ACCEPTED FOR PROGRAM USE`**. That
+registration was **documentation-only**: no runtime code, schema, public wire,
+test, asset, dependency, workflow, or deployment configuration changed, and no
+`CQS-OD-*` was added or altered.
+
+What the acceptance does and does not mean:
+
+- the direction is accepted as **intended future audience-display guidance**;
+- **the design is not implemented** — no Phase 2B visual element exists in the
+  application;
+- the representative artifacts are **evidence, not application source**, and no
+  artifact bytes (ZIP, PNG, renderer, script, inventory, checksum file, or
+  reconstruction note) were committed;
+- **Phase 3 is not authorized**; **Slice 16 is not authorized**;
+- **no production, projector, accessibility, or Raspberry Pi acceptance exists.**
+
+Evidence limits, recorded verbatim in the direction document and its receipt:
+
+> The Phase 2B design direction was accepted after bounded artifact repair. The
+> artifact maintainer reported successful final package verification. The final
+> corrected ZIP was not independently reopened by the Program Orchestrator, so no
+> independent second checksum audit is claimed.
+
+**Routing.** Slice 15 remains the next planned product slice and is unaffected in
+priority. Slice 16 — Theme engine is the eventual MVP implementation consumer of
+this direction and remains `Planned` and unauthorized. A separately authorized
+Phase 3 design-system specification/readiness lane may occur without changing
+product-slice sequencing.
+
+**Boundaries this direction does not move.** The public buzz state remains
+`activeTeamKey` plus an anonymous `waitingCount` — never a public ordered queue.
+Final privacy remains wire-version-8 privacy: no unrevealed wagers, no unrevealed
+answers or responses, no host notes, no private caps or calculations, no reveal
+order. A public per-team `Not eligible` label is **not** currently derivable and
+would require a separately authorized sanitized public-state addition.
+
 ## Owner direction — colored buttons and the local input contract (2026-07-27)
 
 Recorded for Slices 8–10. **Slice 8 has now implemented the CONTRACT half of this
@@ -1003,8 +1046,11 @@ reconciliation. Recording this direction authorizes no work of any kind.
 
 ## Prohibited next actions
 
-Do **not**: begin Slice 14 without a separate authorized planning/orchestration
-outcome; claim Child B guidance/onboarding delivery is merged from this handoff;
+Do **not**: reopen or redefine Slice 14 (it is `Complete` and merged — PR #32 at
+`ce2e103…`); begin Slice 15 without separate authority; begin Phase 3 or Slice 16
+without separate authority; expose private Final or queue data (see the Final and
+buzz-queue privacy boundaries below); claim Child B guidance/onboarding delivery
+is merged from this handoff;
 claim live-route behaviour that was
 not directly inspected; over-claim Sony Buzz! beyond the bounded OADL2-S07
 receipt (or treat physical certification as incomplete Slice 10 work); add WebHID,
@@ -1019,7 +1065,10 @@ to an active respondent (`OG-6`, still deferred); add automatic timeout scoring
 or make a timer or a buzz move a point; add student-owned contestant devices,
 networked buzzers, or remote team input — these remain **excluded**, not merely
 deferred; widen Slice 13 persistence into cloud sync, accounts, cross-device
-recovery, or a public persistence protocol; add a final wager, Daily Double, or Final Jeopardy; extend the
+recovery, or a public persistence protocol; add a mid-board Daily Double, a
+mid-board hidden wager, or any second wager mechanism beyond the merged Slice 14
+`final-wager` round (those remain **excluded by design** — see ADR-014); reopen,
+re-scope or re-implement the merged `final-wager` round itself; extend the
 Slice 11 media contract beyond text and same-origin static images, add remote
 media, audio/video, or timer/media coupling; add a theme engine, or add team
 colours beyond the application palette; add buzz-in audio, an audio file,
