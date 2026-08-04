@@ -110,3 +110,61 @@ This lane did **not**:
 - resolve `CQS-OD-066`
 - add completed-session storage
 - change public-state, sync, game-file, persistence wire, or IndexedDB versions
+
+---
+
+## 6. Ordinary semantic review and repair (appended)
+
+- **Authorization ID:** `AUTHORIZE-CQS-SLICE-15-PR38-ORDINARY-SEMANTIC-REPAIR-1`
+- **Binding evidence-state ID:** `CQS-SLICE-15-PR38-REVIEW-ES-1`
+- **Source delivery evidence state:** `CQS-SLICE-15-ES-1`
+- **Pull request:** [#38](https://github.com/ricktron/classroom-quiz-show/pull/38)
+- **Authorized base (re-observed):** `0939d9cafd009e713c8ca83bcc35ff3f90556819`
+- **Prior observed review head:** `5a5487e386b5a97b04e476a43eb65946fbc2a2b3`
+- **Kind:** exact-head ordinary semantic review + bounded repair (pre-merge)
+- **Non-claims:** this appended section does **not** claim merge, Slice 16,
+  Phase 3, post-MVP activation, resolution of `CQS-OD-066`, Final recovery-flake
+  repair, or wire/schema/persistence/event-vocabulary changes
+
+### 6.1 Pre-mutation observation (America/Chicago)
+
+Observed at **2026-08-04 13:57:09 CDT** before repair mutation:
+
+| Fact | Observed |
+| --- | --- |
+| Host / user / HOME | `Ricks-MacBook-Air.local` / `macdaddy` / `/Users/macdaddy` |
+| Repository | `/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show` |
+| Branch | `feat/slice-15-session-summary-contract` |
+| Local HEAD | `5a5487e386b5a97b04e476a43eb65946fbc2a2b3` |
+| Worktree | clean; single worktree at repository root |
+| `origin/main` | `0939d9cafd009e713c8ca83bcc35ff3f90556819` (exact authorized base) |
+| PR #38 | open, non-draft, base `main` @ authorized base, head `5a5487e…` |
+| Reviews / unresolved threads | none |
+| Slice 16 / Phase 3 / post-MVP | unstarted; no conflicting repair branch |
+
+Hard-stop conditions were **not** met. Mutation authorized to proceed.
+
+### 6.2 Review findings and dispositions
+
+| Finding | Disposition |
+| --- | --- |
+| R1 — unsupported authored rounds silently omitted | **Repaired** — `unavailableRounds` on Session Summary V1; host words; unit + browser coverage using `createSampleGameWithUnsupportedRound()` |
+| R2 — SonarQube Cloud bot “last analysis has failed” | **Investigated** — stale bot comment from superseded cancelled analysis on `11e8758…` (check run `92094285864`, cancelled 2026-08-04T18:38:46Z). Exact prior head `5a5487e…` SonarCloud check `92094264820` concluded **success** at 2026-08-04T18:38:41Z; public PR quality gate **OK** for commit `5a5487e…`. Green GitHub Actions alone was not treated as Sonar proof. Post-repair head must re-prove terminal Sonar success. |
+| Timer-reset truthfulness | **Repaired** — `RESPONSE_PHASE_RESET` counted as timer reset only when replayed pre-event response timer is non-idle; unit coverage for arm/buzz/reset without timer |
+
+### 6.3 Contract / privacy / version invariants preserved
+
+- Session Summary contract version remains **1**
+- public-state wire **8**; sync envelope **2**; game-file schema **1**; private
+  persistence wire **1**; IndexedDB schema **1**
+- No summary in PublicState / sync / display / portable export
+- No completed-session storage
+- No event-vocabulary, dependency, workflow, or deployment change
+- Inherited Final recovery flake **not repaired** (Slice 15 did not cause or
+  worsen it)
+
+### 6.4 Repair verification (filled after local + remote terminal results)
+
+Local and remote terminal results for the repaired head are recorded in the PR
+body and in the final review report under this authorization. An unrun check is
+never claimed as passing.

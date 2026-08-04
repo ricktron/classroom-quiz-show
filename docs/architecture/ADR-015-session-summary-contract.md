@@ -103,11 +103,45 @@ Replay supplies:
 | --- | --- |
 | **Observed** | Counted directly from effective authoritative events |
 | **Derived** | Computed deterministically from replayed private state (and authored definition lookups those events authorize) |
-| **Unavailable** | Not honestly representable (no Final begun, incomplete Final, no board rounds, etc.) |
+| **Unavailable** | Not honestly representable (no Final begun, incomplete Final, no board rounds, unsupported authored round type, etc.) |
 
 The contract forbids inventing accuracy, correct-answer percentage, mastery,
 grades, psychometric measures, reaction times, fairness claims, or session
 duration semantics from stamp differences.
+
+### 6.1 Unsupported / unavailable authored rounds
+
+Session Summary V1 summarizes only:
+
+- `category-board` rounds (board activity section); and
+- `final-wager` (Final section, which may itself be `unavailable` when Final did
+  not begin or cannot be classified honestly).
+
+Every other authored round in the replayed game definition is listed in
+`unavailableRounds` with only minimum operational identity:
+
+- `roundId`
+- `roundTitle`
+- `authoredRoundType`
+- bounded reason `unsupported-round-type`
+
+The summary must **not** invent zero-filled gameplay metrics for those rounds,
+must **not** add a generic metadata bag, and must **not** consult React state,
+`PublicState`, storage, network, browser globals, or mutable registry state to
+decide availability. Host UI presents unavailable rounds in words.
+
+Contract version remains **1** — this completes the original Slice 15
+truthfulness boundary rather than introducing a new contract family.
+
+### 6.2 Timer-reset truthfulness
+
+`RESPONSE_PHASE_RESET` clears arming, queue, and timer together. The command can
+be accepted when the phase is non-initial even if the timer is still `idle`
+(for example after arming and/or buzzes with no countdown started). Therefore
+Session Summary V1 counts a **timer reset** only when the replayed effective
+prefix immediately before that event shows a non-idle response timer for the
+named round. Response-phase resets without a timer do not inflate timer-reset
+counts. Event vocabulary is unchanged.
 
 ## 7. Undo and correction semantics
 
@@ -176,8 +210,8 @@ One host-only panel inside the existing host workspace:
 - no new route and no modal;
 - clear current-session-only warning;
 - semantic headings, labeled tables/lists, keyboard operation, signed negatives,
-  textual tie labels, unavailable fields in words, no color-only meaning, usable
-  mobile host layout, no new required motion.
+  textual tie labels, unavailable fields and unavailable rounds in words, no
+  color-only meaning, usable mobile host layout, no new required motion.
 
 No copy/download/export/saved history/comparison/projector/analytics controls.
 
