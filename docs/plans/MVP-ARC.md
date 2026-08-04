@@ -93,7 +93,7 @@ systems.
 | 18  | **Audience Display System** | Accepted Phase 2B audience-display implementation; privacy tests; prefer public wire 8. | 14, 17 |
 | 19  | **Self-Contained Portable Packs** | Versioned offline pack of canonical JSON + local media; safe import/export; round-trip proof. | 4, 11, 12 |
 | 20  | **Spreadsheet Authoring Seed** | Classic Board and Board+Final workbooks → draft → teacher approval → canonical JSON → existing importer. | 4, 5, 12, 14 |
-| 21  | **Sony Buzz Supported-Profile Operationalization** | One exact supported profile (macOS/Chrome/Namtai `Wbuzz` `054c:1000`/4 handsets/keyboard fallback); permanent keep-alive. | 9, 10 |
+| 21  | **Sony Buzz Supported-Profile Operationalization** | One exact supported profile (macOS/Chrome/Namtai `Wbuzz` `054c:1000`/4 handsets/keyboard fallback); permanent keep-alive. | 9, 10, 13 |
 | 22  | **Classroom Release Qualification** | Teacher-reliant classroom proof; no new architecture or features; Pi 5 observational only. | 15–21 |
 
 Additional round engines (image-identification, timeline-ordering, matching,
@@ -1210,8 +1210,11 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
 - **Prerequisites:** slices 4, 11, 12.
 - **Completion evidence:** `verify:all` green; clean-environment round-trip
   proof; fail-closed diagnostics.
-- **Impact:** schema possibly · public-wire no · storage possibly · UI **yes** ·
-  hardware no.
+- **Impact:** game schema **no by default** · pack format **yes** · public-wire
+  no · storage possibly · UI **yes** · hardware no. The pack contract is a new
+  separately versioned envelope/manifest that wraps or carries canonical game
+  JSON; it does not silently redefine canonical game-file schema version 1. Any
+  canonical game-schema change requires separate explicit authorization.
 - **Status:** `Planned` — unstarted.
 - **Owner gate:** separate authorization.
 
@@ -1230,8 +1233,14 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
 - **Prerequisites:** slices 4, 5, 12, 14; slice 19 optional for pack hand-off.
 - **Completion evidence:** `verify:all` green; both profiles proven through
   teacher approval into ADR-004; fail-closed diagnostics.
-- **Impact:** schema possibly · public-wire no · storage possibly · UI **yes** ·
-  hardware no.
+- **Impact:** game schema **no by default** · workbook/draft format **yes** ·
+  storage **no by default** · public-wire no · UI **yes** · hardware no.
+  Workbook and non-playable draft formats may have their own versioned
+  authoring contracts; those contracts are not runtime truth. Output must still
+  compile to canonical JSON and pass through the existing strict importer. A
+  canonical game-schema change requires separate explicit authorization.
+  Persistent draft storage is not required for Slice 20 completion unless
+  separately authorized.
 - **Status:** `Planned` — unstarted.
 - **Owner gate:** separate authorization.
 
@@ -1249,7 +1258,12 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
 - **Major exclusions:** generalized cross-platform, wired, Bluetooth, Raspberry
   Pi, or all-SKU support. Stop for owner reclassification if permanent profile
   is infeasible — do not silently downgrade.
-- **Prerequisites:** slices 9, 10; OADL2-S07 receipt as evidence baseline.
+- **Prerequisites:** slices 9, 10, **13**; OADL2-S07 receipt as evidence baseline.
+  Mapping persistence must follow the existing host-private persistence and
+  coordination discipline (Slice 13 / ADR-013). Slice 21 must not create a
+  second import pipeline, an unrelated persistence authority, public mapping
+  state, or a projector persistence protocol. Exact storage design belongs to
+  the Slice 21 ADR.
 - **Completion evidence:** `verify:all` green; ADR; RC physical certification
   receipt; exact profile documentation.
 - **Impact:** schema no · public-wire no · storage **yes** · UI **yes** ·

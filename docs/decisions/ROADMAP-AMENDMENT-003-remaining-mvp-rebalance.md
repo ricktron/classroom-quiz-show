@@ -278,8 +278,12 @@ as **historical names** only. Current plan identifiers are listed in §7.
 - **Exclude:** spreadsheet authoring; AI; question bank; remote media; new media
   kinds unless separately authorized.
 - **Depends on:** 4, 11, 12.
-- **Impact class:** schema **possibly** (pack envelope) · public-wire no ·
-  storage **possibly** · UI yes · hardware no · deployment no.
+- **Impact class:** game schema **no by default** · pack format **yes** ·
+  public-wire no · storage possibly · UI yes · hardware no · deployment no.
+  The pack contract is a new separately versioned envelope/manifest that wraps
+  or carries canonical game JSON; it does not silently redefine canonical
+  game-file schema version 1. Any canonical game-schema change requires
+  separate explicit authorization.
 - **Status:** `Planned` — unstarted.
 - **Definition of done:** pack export/import round-trip in a clean environment;
   fail-closed diagnostics; offline play proven; `verify:all` green.
@@ -301,8 +305,16 @@ as **historical names** only. Current plan identifiers are listed in §7.
   identity; live clue swapping; assessment promotion; GCS integration;
   **standards tags as an MVP completion gate**.
 - **Depends on:** 4, 5, 12, 14; 19 optional for pack hand-off.
-- **Impact class:** schema **possibly** (draft/workbook metadata only if needed)
-  · public-wire no · storage **possibly** · UI yes · hardware no · deployment no.
+- **Impact class:** game schema **no by default** · workbook/draft format **yes**
+  · storage **no by default** · public-wire no · UI yes · hardware no ·
+  deployment no. Workbook and non-playable draft formats may have their own
+  versioned authoring contracts; those contracts are not runtime truth. Output
+  must still compile to canonical JSON and pass through the existing strict
+  importer. A canonical game-schema change requires separate explicit
+  authorization. Persistent draft storage is not required for Slice 20
+  completion unless separately authorized. Item-family metadata, question-bank
+  schema, GCS identifiers, and post-MVP authoring architecture are not
+  authorized here.
 - **Status:** `Planned` — unstarted.
 - **Definition of done:** both workbook profiles produce playable games only
   after teacher approval through ADR-004; embedded model-neutral instructions;
@@ -326,7 +338,12 @@ as **historical names** only. Current plan identifiers are listed in §7.
 - **Stop rule:** if a safe permanent profile proves infeasible, stop for an
   explicit owner decision to reclassify Sony Buzz as experimental; **do not**
   silently downgrade the claim.
-- **Depends on:** 9, 10; OADL2-S07 receipt as evidence baseline.
+- **Depends on:** 9, 10, **13**; OADL2-S07 receipt as evidence baseline.
+- **Persistence boundary:** mapping persistence must follow the existing
+  host-private persistence and coordination discipline (Slice 13 / ADR-013).
+  Slice 21 must **not** create a second import pipeline, an unrelated
+  persistence authority, public mapping state, or a projector persistence
+  protocol. Exact storage design belongs to the Slice 21 ADR.
 - **Impact class:** schema no · public-wire no · storage **yes** (host-private
   mapping persistence) · UI yes · hardware **yes** · deployment **possibly**
   (packaging for keep-alive lifecycle only as required by the ADR).
@@ -394,16 +411,16 @@ remains ordered unless a later explicit amendment changes it.
 
 ## 9. Impact classifications (summary)
 
-| Slice | Schema | Public wire | Storage | UI | Hardware | Deployment |
+| Slice | Schema / format | Public wire | Storage | UI | Hardware | Deployment |
 | --- | --- | --- | --- | --- | --- | --- |
-| 15 | no | no | no | yes | no | no |
-| 16 | no | no | yes (summaries) | yes | no | no |
-| 17 | no by default | no by default | no | yes | no | no |
-| 18 | no* | possibly* | no | yes | no | no |
-| 19 | possibly (pack) | no | possibly | yes | no | no |
-| 20 | possibly | no | possibly | yes | no | no |
-| 21 | no | no | yes (mappings) | yes | yes | possibly |
-| 22 | no | no | no | polish | no new | verification |
+| 15 | game schema no | no | no | yes | no | no |
+| 16 | game schema no | no | yes (summaries) | yes | no | no |
+| 17 | game schema no by default | no by default | no | yes | no | no |
+| 18 | game schema no* | possibly* | no | yes | no | no |
+| 19 | game schema no by default · pack format yes | no | possibly | yes | no | no |
+| 20 | game schema no by default · workbook/draft format yes | no | no by default | yes | no | no |
+| 21 | game schema no | no | yes (mappings; follows Slice 13 discipline) | yes | yes | possibly |
+| 22 | game schema no | no | no | polish | no new | verification |
 
 \* Slice 18 may require a public-state addition only under separate
 authorization and a deliberate wire-version decision.
