@@ -19,8 +19,8 @@ the round-based engine direction into it.
 > (`CQS-PLAN-S02`), **merged to `main`** via PR #35 at squash
 > `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`, with post-merge reconciliation
 > via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`. Slices 1–14 remain
-> `Complete`; Slices 15–22 remain `Planned` and unstarted. Post-MVP arcs still
-> require separate authorization.
+> `Complete`; Slice 15 is `In review` (not merged); Slices 16–22 remain
+> `Planned` and unstarted. Post-MVP arcs still require separate authorization.
 
 > **Phase 2B design direction is accepted program guidance (2026-08-03).**
 > The accepted audience-display design direction is registered in
@@ -95,7 +95,7 @@ systems.
 | 12  | **Portable export & round-trip import** | Export a game to the canonical portable document and re-import it losslessly; reproducible game identity; round-trip equality as an acceptance criterion. **Complete — squash-merged via PR #25 (`cdb499a…`).** | 4, 11 |
 | 13  | **Local persistence & recovery** | IndexedDB durable local storage with three stores (`savedDefinitions`, `activeSessions`, `coordination`); explicit Resume/Discard recovery; saved-definition Save/Replace/Delete/Load; private persistence-session wire; lightweight host lease coordination; nothing new projected to the display. **(Complete — squash-merged via PR #27 (`6cf4d25…`) from reviewed head `ad0867a…`.)** | 2, 12 |
 | 14  | **Final-wager round**          | Public prompt, host-entered/private wagers, timed response, reveal, settlement, tie handling. **(Complete — squash-merged via PR #32 (`ce2e103…`) from reviewed head `c2bcc1a…`. Public wire 7 → 8; sync 2; schema 1. See ADR-014.)** | 5, 6, 7, 11 |
-| 15  | **Session Summary Contract** | Versioned host-private completed-session summary derived from authoritative replay; no completed-session storage. | 2, 5, 6, 7, 8, 13, 14 |
+| 15  | **Session Summary Contract** | Versioned host-private completed-session summary derived from authoritative replay; no completed-session storage. **(`In review` — not merged.)** | 2, 5, 6, 7, 8, 13, 14 |
 | 16  | **Completed Summary Ledger & Compatible Reporting** | Privacy-minimized summary storage; versioned competitive-profile comparison; retention/deletion; team/class reports. | 13, 15 |
 | 17  | **Theme and Design-Token Foundation** | Application-owned tokens/theme registry; default + high-contrast; reduced-motion; viewport/team/score fixtures. Requires preceding Phase 3 planning lane. | 5, 6; Phase 3 |
 | 18  | **Audience Display System** | Accepted Phase 2B audience-display implementation; privacy tests; prefer public wire 8. | 14, 17 |
@@ -1146,9 +1146,15 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
 - **Completion evidence:** `verify:all` green; tests proving summary derivation
   from replay only and absence of a completed-session store.
 - **Impact:** schema no · public-wire no · storage no · UI **yes** · hardware no.
-- **Status:** `Planned` — unstarted.
-- **Owner gate:** separate authorization to begin. **Not authorized by
-  Amendment 003.**
+- **Status:** `In review` — delivered under
+  `AUTHORIZE-CQS-SLICE-15-SESSION-SUMMARY-CONTRACT-1` / `CQS-SLICE-15-ES-1` from
+  exact base `0939d9cafd009e713c8ca83bcc35ff3f90556819` on
+  `feat/slice-15-session-summary-contract`. **Not merged.** See
+  [`../architecture/ADR-015-session-summary-contract.md`](../architecture/ADR-015-session-summary-contract.md)
+  and
+  [`../receipts/2026-08-04-slice-15-local-verification.md`](../receipts/2026-08-04-slice-15-local-verification.md).
+- **Owner gate:** separate authorization to begin was granted for this delivery;
+  merge remains a separate owner action. **Not authorized by Amendment 003.**
 
 ### Slice 16 — Completed Summary Ledger & Compatible Reporting
 
