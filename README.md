@@ -434,10 +434,13 @@ The Slice 1 foundation is unchanged beneath it:
 There are **two playable round types**. `category-board` scores, can be timed,
 and teams can buzz in on it **from the host keyboard, or from a generic USB
 controller through the same boundary**; `final-wager` (Slice 14) is
-the closing wager round, host-entered and private until each explicit reveal. Slice 10 adds a **host-private Sony Buzz! setup surface**
-(candidate classification, capture recipe, setup test mode) — **`Complete`** under
-the owner-accepted hardware-independent boundary, with physical certification
-deferred and **no compatibility claim**. No WebHID or Bluetooth of any kind, no networked or
+the closing wager round, host-entered and private until each explicit reveal.
+Slice 10 adds a host-private Sony Buzz! setup surface (candidate classification,
+capture recipe, and setup test mode) and is `Complete` under its
+hardware-independent implementation boundary. Bounded physical certification is
+recorded separately under OADL2-S07; it does not establish a generalized
+compatibility claim. Permanent supported-profile operationalization remains
+Slice 21 work. No WebHID or Bluetooth of any kind, no networked or
 student-device buzzing, and no wagers, audio/video/remote media, or themes.
 The host has local IndexedDB persistence for the active event history and a saved
 definitions library: after a refresh with an unfinished session, the teacher gets
