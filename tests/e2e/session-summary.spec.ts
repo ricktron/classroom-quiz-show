@@ -103,3 +103,46 @@ test('refresh after completion does not restore the summary or recovery record',
 
   await host.close()
 })
+
+test('unsupported-round sample shows unavailable rounds and nothing on display', async ({
+  context,
+}) => {
+  const host = await context.newPage()
+  const display = await context.newPage()
+  await openHost(host)
+  await openDisplay(display)
+
+  await host.getByRole('button', { name: /initialize \/ reset session/i }).click()
+  await host.getByRole('button', { name: /initialize sample with unsupported round/i }).click()
+  await expect(host.getByTestId('game-lifecycle')).toHaveText('active')
+
+  await host.getByRole('button', { name: /end game session/i }).click()
+  await expect(host.getByTestId('game-lifecycle')).toHaveText('ended')
+  await expect(host.getByTestId('session-summary-panel')).toBeVisible()
+  await expect(host.getByRole('heading', { name: 'Unavailable rounds' })).toBeVisible()
+  await expect(host.getByTestId('ssp-unavailable-round-mystery-round')).toContainText(
+    /Mystery Round/,
+  )
+  await expect(host.getByTestId('ssp-unavailable-round-mystery-round')).toContainText(
+    /unsupported-sample/,
+  )
+  await expect(host.getByTestId('ssp-unavailable-round-mystery-round')).toContainText(
+    /No gameplay metrics are invented/,
+  )
+  await expect(host.getByTestId('ssp-unavailable-round-supported-1')).toContainText(
+    /placeholder/,
+  )
+  await expect(host.getByTestId('ssp-boards-none')).toBeVisible()
+  await expect(host.locator('[data-testid^="ssp-board-"]')).toHaveCount(0)
+  await expect(host.getByTestId('ssp-unavailable-rounds')).not.toContainText(/Tile selections/)
+  await expect(host.getByTestId('ssp-unavailable-rounds')).not.toContainText(/Timer starts/)
+
+  const displayText = (await display.locator('body').innerText()).toLowerCase()
+  expect(displayText).not.toContain('session summary')
+  expect(displayText).not.toContain('unavailable rounds')
+  expect(displayText).not.toContain('mystery round')
+  await expect(display.getByTestId('session-summary-panel')).toHaveCount(0)
+
+  await host.close()
+  await display.close()
+})

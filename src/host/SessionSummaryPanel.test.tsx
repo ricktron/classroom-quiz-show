@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import { createSampleGameWithUnsupportedRound } from '../game/sampleGame'
 import { importGameFromUnknown } from '../import/importGame'
 import { createSessionStore } from '../state/store'
 import { teamBoardGameFile, twoTeams } from '../test/teamFixtures'
@@ -55,5 +56,31 @@ describe('SessionSummaryPanel', () => {
     expect(screen.getByRole('heading', { name: 'Final standings' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Scoring summary' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Category boards' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Unavailable rounds' })).toBeInTheDocument()
+    expect(screen.getByTestId('ssp-unavailable-rounds-none')).toHaveTextContent(
+      /every authored round/i,
+    )
+  })
+
+  it('presents unsupported authored rounds in words without fabricated metrics', () => {
+    const store = createSessionStore()
+    store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 'unsupported-panel' })
+    store.dispatch({
+      type: 'INITIALIZE_GAME',
+      issuedAt: AT,
+      definition: createSampleGameWithUnsupportedRound(),
+    })
+    store.dispatch({ type: 'END_GAME_SESSION', issuedAt: AT + 1 })
+    const game = store.getState().session!.game!
+    render(<SessionSummaryPanel game={game} history={store.getHistory()} />)
+
+    expect(screen.getByTestId('ssp-unavailable-rounds')).toBeInTheDocument()
+    expect(screen.getByTestId('ssp-unavailable-round-mystery-round')).toHaveTextContent(
+      /Mystery Round[\s\S]*unsupported-sample[\s\S]*No gameplay metrics/i,
+    )
+    expect(screen.getByTestId('ssp-unavailable-round-supported-1')).toHaveTextContent(
+      /Supported Round[\s\S]*placeholder/i,
+    )
+    expect(screen.queryByText(/Tile selections/i)).not.toBeInTheDocument()
   })
 })

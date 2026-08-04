@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { importGameFromUnknown } from '../import/importGame'
+import { createSampleGameWithUnsupportedRound } from '../game/sampleGame'
 import { createSessionStore, type SessionStore } from '../state/store'
 import { effectiveEvents, replay } from '../state/reducer'
 import type { SessionCommand } from '../state/commands'
@@ -325,6 +326,79 @@ describe('deriveSessionSummaryV1 — buzz and timer', () => {
     store.dispatch({ type: 'UNDO', issuedAt: BOARD_AT + 2 })
     endGame(store)
     expect(available(store).buzzActivity.observed.acceptedBuzzCount).toBe(0)
+  })
+
+  it('does not count RESPONSE_PHASE_RESET as a timer reset when no timer existed', () => {
+    const store = boardStore()
+    store.dispatch({
+      type: 'SELECT_CATEGORY_BOARD_TILE',
+      issuedAt: BOARD_AT,
+      roundId: ROUND,
+      tileId: 'alpha-100',
+    })
+    store.dispatch({ type: 'REVEAL_CATEGORY_BOARD_PROMPT', issuedAt: BOARD_AT, roundId: ROUND })
+    store.dispatch({ type: 'ARM_RESPONSE_PHASE', issuedAt: BOARD_AT, roundId: ROUND })
+    store.dispatch({
+      type: 'RECORD_TEAM_BUZZ',
+      issuedAt: BOARD_AT + 1,
+      roundId: ROUND,
+      tileId: 'alpha-100',
+      teamId: 'red',
+    })
+    // Armed + queue, but timer never started — reset clears the phase without a
+    // timer fact, so it must not inflate timer-reset counts.
+    store.dispatch({ type: 'RESET_RESPONSE_PHASE', issuedAt: BOARD_AT + 2, roundId: ROUND })
+    endGame(store)
+    const summary = available(store)
+    expect(summary.timerActivity.observed.starts).toBe(0)
+    expect(summary.timerActivity.observed.resets).toBe(0)
+    expect(summary.categoryBoards.kind).toBe('rounds')
+    if (summary.categoryBoards.kind !== 'rounds') throw new Error('expected rounds')
+    expect(summary.categoryBoards.rounds[0].observed.timerResets).toBe(0)
+  })
+})
+
+describe('deriveSessionSummaryV1 — unavailable rounds', () => {
+  it('represents unsupported authored rounds without inventing gameplay metrics', () => {
+    const store = createSessionStore()
+    store.dispatch({
+      type: 'INIT_SESSION',
+      issuedAt: BOARD_AT,
+      sessionId: 'unsupported-summary',
+    })
+    store.dispatch({
+      type: 'INITIALIZE_GAME',
+      issuedAt: BOARD_AT,
+      definition: createSampleGameWithUnsupportedRound(),
+    })
+    endGame(store)
+    const summary = available(store)
+    expect(summary.unavailableRounds).toEqual([
+      {
+        roundId: 'supported-1',
+        roundTitle: 'Supported Round',
+        authoredRoundType: 'placeholder',
+        reason: 'unsupported-round-type',
+      },
+      {
+        roundId: 'mystery-round',
+        roundTitle: 'Mystery Round',
+        authoredRoundType: 'unsupported-sample',
+        reason: 'unsupported-round-type',
+      },
+    ])
+    expect(summary.categoryBoards).toEqual({
+      kind: 'none',
+      reason: 'no-category-board-rounds',
+    })
+    expect(summary.finalWager).toEqual({
+      kind: 'unavailable',
+      reason: 'no-final-round',
+    })
+    const blob = JSON.stringify(summary.unavailableRounds)
+    expect(blob).not.toMatch(/tileSelections|timerStarts|scoreChangeCount|wager/)
+    expect(summary.unavailableRounds.every((round) => Object.keys(round).sort().join() ===
+      'authoredRoundType,reason,roundId,roundTitle')).toBe(true)
   })
 })
 

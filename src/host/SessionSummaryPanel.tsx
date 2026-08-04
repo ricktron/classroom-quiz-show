@@ -5,6 +5,7 @@ import type {
   SessionSummaryResultV1,
   SessionSummaryStandingV1,
   SessionSummaryTerminalPathV1,
+  SessionSummaryUnavailableRoundV1,
   SessionSummaryV1,
 } from '../summary/contract'
 import type { SessionEvent } from '../state/events'
@@ -69,6 +70,7 @@ export function SessionSummaryPanel({ game, history }: SessionSummaryPanelProps)
       <StandingsSection standings={summary.scoreActivity.derived.standings} />
       <ScoringSection summary={summary} />
       <CategoryBoardsSection summary={summary} />
+      <UnavailableRoundsSection rounds={summary.unavailableRounds} />
       <TimerBuzzSection summary={summary} />
       <FinalSection finalWager={summary.finalWager} />
     </section>
@@ -247,6 +249,47 @@ function CategoryBoardRound({ round }: { readonly round: SessionSummaryCategoryB
   )
 }
 
+function UnavailableRoundsSection({
+  rounds,
+}: {
+  readonly rounds: readonly SessionSummaryUnavailableRoundV1[]
+}) {
+  return (
+    <section className="ssp__block" aria-labelledby="ssp-unavailable-rounds-heading">
+      <h4 id="ssp-unavailable-rounds-heading">Unavailable rounds</h4>
+      {rounds.length === 0 ? (
+        <p className="host__note" data-testid="ssp-unavailable-rounds-none">
+          Every authored round in this game has a Session Summary V1 section.
+        </p>
+      ) : (
+        <ul className="ssp__list" data-testid="ssp-unavailable-rounds">
+          {rounds.map((round) => (
+            <li
+              key={round.roundId}
+              data-testid={`ssp-unavailable-round-${round.roundId}`}
+            >
+              <strong>{round.roundTitle}</strong> is unavailable for summary
+              because Session Summary V1 does not support authored round type{' '}
+              <code>{round.authoredRoundType}</code> (
+              {unavailableRoundReasonCopy(round.reason)}). No gameplay metrics
+              are invented for this round.
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  )
+}
+
+function unavailableRoundReasonCopy(
+  reason: SessionSummaryUnavailableRoundV1['reason'],
+): string {
+  switch (reason) {
+    case 'unsupported-round-type':
+      return 'unsupported round type'
+  }
+}
+
 function TimerBuzzSection({ summary }: { readonly summary: SessionSummaryV1 }) {
   const timer = summary.timerActivity.observed
   const buzz = summary.buzzActivity.observed
@@ -255,7 +298,8 @@ function TimerBuzzSection({ summary }: { readonly summary: SessionSummaryV1 }) {
       <h4 id="ssp-timer-buzz-heading">Timer and buzz activity</h4>
       <p className="host__note">
         Transition and acceptance counts only. Session duration, reaction time,
-        and fairness claims are not calculated.
+        and fairness claims are not calculated. Timer resets count only when a
+        response-phase reset cleared a non-idle timer.
       </p>
       <dl className="ssp__kv" data-testid="ssp-timer-buzz">
         <dt>Timer starts</dt>

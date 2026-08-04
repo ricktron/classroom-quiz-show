@@ -4,6 +4,7 @@ import {
   readCategoryBoardDefinition,
   type CategoryBoardDefinition,
 } from '../game/categoryBoard/definition'
+import { FINAL_WAGER_ROUND_TYPE } from '../game/finalWager/definition'
 import type { FinalWagerRoundState } from '../game/finalWager/finalState'
 import type { GameDefinition } from '../game/gameDefinition'
 import type { TeamDefinition } from '../game/teams/definition'
@@ -14,6 +15,7 @@ import {
   effectiveEvents,
   finalWagerStateFor,
   replay,
+  responsePhaseFor,
   teamScoreFor,
 } from '../state/reducer'
 import {
@@ -31,6 +33,7 @@ import {
   type SessionSummaryStandingV1,
   type SessionSummaryTerminalPathV1,
   type SessionSummaryTimerActivityV1,
+  type SessionSummaryUnavailableRoundV1,
   type SessionSummaryV1,
 } from './contract'
 
@@ -119,6 +122,7 @@ export function deriveSessionSummaryV1(
     buzzActivity: buildBuzzActivity(effective),
     categoryBoards: buildCategoryBoards(effective, endedGame, definition),
     finalWager: buildFinalSection(effective, gameBeforeEnd, endedGame, definition, terminalPath),
+    unavailableRounds: buildUnavailableRounds(definition),
   }
 
   return deepFreeze({ status: 'available', summary })
@@ -279,7 +283,8 @@ function buildTimerActivity(effective: readonly SessionEvent[]): SessionSummaryT
   let interruptions = 0
   let resets = 0
 
-  for (const event of effective) {
+  for (let index = 0; index < effective.length; index += 1) {
+    const event = effective[index]
     switch (event.type) {
       case 'RESPONSE_TIMER_STARTED':
       case 'FINAL_WAGER_WINDOW_STARTED':
@@ -305,7 +310,12 @@ function buildTimerActivity(effective: readonly SessionEvent[]): SessionSummaryT
         interruptions += 1
         break
       case 'RESPONSE_PHASE_RESET':
-        resets += 1
+        // RESPONSE_PHASE_RESET clears arming/queue/timer together and can be
+        // accepted with no timer. Count a timer reset only when the replayed
+        // pre-event phase already held a non-idle timer.
+        if (responsePhaseHadTimerBefore(effective, index, event.roundId)) {
+          resets += 1
+        }
         break
       default:
         break
@@ -370,7 +380,8 @@ function buildOneCategoryBoard(
   let timerResets = 0
   const tilesWithScore = new Set<string>()
 
-  for (const event of effective) {
+  for (let index = 0; index < effective.length; index += 1) {
+    const event = effective[index]
     switch (event.type) {
       case 'CATEGORY_BOARD_TILE_SELECTED':
         if (event.roundId === roundId) tileSelections += 1
@@ -415,7 +426,12 @@ function buildOneCategoryBoard(
         if (event.roundId === roundId) timerInterruptions += 1
         break
       case 'RESPONSE_PHASE_RESET':
-        if (event.roundId === roundId) timerResets += 1
+        if (
+          event.roundId === roundId &&
+          responsePhaseHadTimerBefore(effective, index, event.roundId)
+        ) {
+          timerResets += 1
+        }
         break
       default:
         break
@@ -648,11 +664,50 @@ function findFinalRound(definition: GameDefinition): {
   readonly title: string
 } | null {
   for (const round of definition.rounds) {
-    if (round.type === 'final-wager') {
+    if (round.type === FINAL_WAGER_ROUND_TYPE) {
       return { id: round.id, title: round.title }
     }
   }
   return null
+}
+
+/**
+ * Authored rounds Session Summary V1 cannot summarize as category-board or Final
+ * sections. Derived from the replayed game definition only — no registry, React,
+ * PublicState, storage, or network consultation.
+ */
+function buildUnavailableRounds(
+  definition: GameDefinition,
+): readonly SessionSummaryUnavailableRoundV1[] {
+  const rounds: SessionSummaryUnavailableRoundV1[] = []
+  for (const round of definition.rounds) {
+    // Match the same board recognition used by `buildCategoryBoards`.
+    if (readCategoryBoardDefinition(round) !== null) continue
+    // Final is always represented by the Final section (available or unavailable).
+    if (round.type === FINAL_WAGER_ROUND_TYPE) continue
+    rounds.push({
+      roundId: round.id,
+      roundTitle: round.title,
+      authoredRoundType: round.type,
+      reason: 'unsupported-round-type',
+    })
+  }
+  return rounds
+}
+
+/**
+ * Whether the response phase for `roundId` held a non-idle timer in the replayed
+ * effective prefix immediately before `effective[index]`.
+ */
+function responsePhaseHadTimerBefore(
+  effective: readonly SessionEvent[],
+  index: number,
+  roundId: string,
+): boolean {
+  const before = replay(effective.slice(0, index))
+  const game = before.session?.game
+  if (game === undefined || game === null) return false
+  return responsePhaseFor(game, roundId).timer.status !== 'idle'
 }
 
 function uniqueLeaders(

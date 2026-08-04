@@ -196,6 +196,24 @@ export type SessionSummaryFinalSectionV1 =
     }
 
 /**
+ * Bounded reason a Session Summary V1 document cannot summarize an authored
+ * round. Version 1 only summarizes `category-board` and `final-wager`.
+ */
+export type SessionSummaryUnavailableRoundReasonV1 = 'unsupported-round-type'
+
+/**
+ * Operational identity for an authored round that Session Summary V1 cannot
+ * summarize. Deliberately excludes gameplay metrics and generic metadata bags.
+ */
+export interface SessionSummaryUnavailableRoundV1 {
+  readonly roundId: string
+  readonly roundTitle: string
+  /** Authored round-type string from the replayed game definition. */
+  readonly authoredRoundType: string
+  readonly reason: SessionSummaryUnavailableRoundReasonV1
+}
+
+/**
  * The available completed-session summary document.
  *
  * Deliberately excludes: full event history, generic metadata bags, raw private
@@ -219,6 +237,11 @@ export interface SessionSummaryV1 {
   readonly buzzActivity: SessionSummaryBuzzActivityV1
   readonly categoryBoards: SessionSummaryCategoryBoardSectionV1
   readonly finalWager: SessionSummaryFinalSectionV1
+  /**
+   * Every authored round that Session Summary V1 does not summarize as a
+   * category-board or Final Wager section. Never invents zero-filled metrics.
+   */
+  readonly unavailableRounds: readonly SessionSummaryUnavailableRoundV1[]
 }
 
 /**
