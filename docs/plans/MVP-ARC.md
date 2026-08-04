@@ -16,8 +16,10 @@ the round-based engine direction into it.
 > Amendment 002 did not change the then-current 18-slice MVP. **The current
 > MVP sequence is the 22-slice plan below**, per
 > [`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
-> (`CQS-PLAN-S02`). Slices 1–14 remain `Complete`; Slices 15–22 remain
-> `Planned` and unstarted. Post-MVP arcs still require separate authorization.
+> (`CQS-PLAN-S02`), **merged to `main`** via PR #35 at squash
+> `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`. Slices 1–14 remain `Complete`;
+> Slices 15–22 remain `Planned` and unstarted. Post-MVP arcs still require
+> separate authorization.
 
 > **Phase 2B design direction is accepted program guidance (2026-08-03).**
 > The accepted audience-display design direction is registered in
@@ -64,12 +66,15 @@ systems.
 > contract ahead of any new round type. Rationale:
 > [`../decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](../decisions/ROADMAP-AMENDMENT-001-local-buzzers.md).
 >
-> **Amended 2026-08-03 by `ROADMAP-AMENDMENT-003`.** Slices 1–14 remain
+> **Amended 2026-08-03 by `ROADMAP-AMENDMENT-003` (merged).** Slices 1–14 remain
 > unchanged and `Complete`. Former unstarted Slices 15–18 were replaced by
 > Slices 15–22 (decomposition/reconciliation plus one Sony Buzz
 > supported-profile operationalization slice). Rationale and binding records:
 > [`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md).
-> **No product implementation is authorized by Amendment 003.**
+> Squash-merged via PR #35 at `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`.
+> **No product implementation is authorized by Amendment 003.** CQS-PLAN-S02
+> delivery is complete on `main`; documentation-only post-merge reconciliation
+> must land before Slice 15 readiness.
 
 | #   | Slice                          | Focus (summary)                                                                 | Depends on |
 | --- | ------------------------------ | ------------------------------------------------------------------------------- | ---------- |
@@ -658,7 +663,11 @@ squash-merged via
 head `c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26` (authorized base
 `4de1454181ed58bdb282accd136129c3c0eb0f2b`, merged **2026-08-03T17:08:37Z**).
 **Slices 15–22 remain `Planned` and unstarted** under the 22-slice plan
-(Amendment 003). **No Slice 15 implementation authority is granted.**
+(Amendment 003, merged at `2ebeb240…`). **No Slice 15 implementation authority
+is granted.** Immediate next action: exact-head review of the CQS-PLAN-S02
+post-merge reconciliation PR; Slice 15 remains the next product candidate only
+after that reconciliation lands and under separate readiness/implementation
+authorization.
 
 ## Slice 8 — scope, acceptance, non-goals
 
@@ -998,11 +1007,14 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   [`../architecture/ADR-011-media-contract.md`](../architecture/ADR-011-media-contract.md);
   post-merge evidence in
   [`../receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
-- **Next action:** Slices 1–14 are `Complete` and merged. Slices 15–22 remain
-  `Planned` under the 22-slice plan (Amendment 003). Amendment 003 does **not**
-  authorize Slice 15 implementation; after it merges, the next product action
-  returns to the Program Orchestrator for Slice 15 readiness — never silent
-  implementation.
+- **Next action:** Slices 1–14 are `Complete` and merged. Amendment 003
+  (`CQS-PLAN-S02`) is **merged** at squash
+  `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`; the 22-slice plan is canonical on
+  `main`. Slices 15–22 remain `Planned`. CQS-PLAN-S02 is complete only after
+  its documentation-only post-merge reconciliation lands. Immediate action:
+  reconciliation review/merge. Slice 15 remains the next product candidate
+  after reconciliation and requires a new bounded planning/readiness and
+  implementation authorization — never silent implementation.
 
 ### Slice 12 — Portable export & round-trip import
 
