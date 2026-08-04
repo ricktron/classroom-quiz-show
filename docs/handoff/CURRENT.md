@@ -2,8 +2,9 @@
 
 This is the entry point for the next contributor or coding agent. It reflects
 the repository with **Slices 1–14 all `Complete` and merged to `main`**, and
-**Slice 15 — Session Summary Contract `In review`** (not merged) on
-`feat/slice-15-session-summary-contract` under
+**Slice 15 — Session Summary Contract `In review`** (not merged) on PR
+[#38](https://github.com/ricktron/classroom-quiz-show/pull/38)
+(`feat/slice-15-session-summary-contract`, head `11e8758…`) under
 `AUTHORIZE-CQS-SLICE-15-SESSION-SUMMARY-CONTRACT-1` / `CQS-SLICE-15-ES-1`
 (exact authorized base `0939d9cafd009e713c8ca83bcc35ff3f90556819`). See
 [`../architecture/ADR-015-session-summary-contract.md`](../architecture/ADR-015-session-summary-contract.md)
@@ -30,9 +31,10 @@ plan amended by
 (`CQS-PLAN-S02`, documentation-only; delivery **merged** via PR #35 at
 `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`; post-merge reconciliation
 **merged** via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`).
-**Recommended next action:** review and (separately authorize) merge of the
-Slice 15 delivery PR — **stop before merge from this handoff alone**. Do not
-begin Slice 16, Phase 3, or post-MVP work.
+**Recommended next action:** review and (separately authorize) merge of Slice 15
+delivery PR [#38](https://github.com/ricktron/classroom-quiz-show/pull/38) —
+**stop before merge from this handoff alone**. Do not begin Slice 16, Phase 3,
+or post-MVP work.
 
 Coding agents and contributors should read root
 [`../../AGENTS.md`](../../AGENTS.md) before changing the repository. Claude
@@ -917,10 +919,11 @@ and
 `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d`).
 
 **PR #36 requires no further review or merge action.** **Recommended next
-action: review the Slice 15 delivery PR and stop before merge unless separately
-authorized to merge.** Slice 15 is `In review` (not `Complete`, not merged).
-Phase 3 remains unauthorized. Slices 16–22 remain unauthorized. Post-MVP arcs
-remain inactive. `CQS-OD-066` remains unresolved.
+action: review Slice 15 delivery PR
+[#38](https://github.com/ricktron/classroom-quiz-show/pull/38) and stop before
+merge unless separately authorized to merge.** Slice 15 is `In review` (not
+`Complete`, not merged). Phase 3 remains unauthorized. Slices 16–22 remain
+unauthorized. Post-MVP arcs remain inactive. `CQS-OD-066` remains unresolved.
 
 ## Registered design direction — Phase 2B audience display (2026-08-03)
 

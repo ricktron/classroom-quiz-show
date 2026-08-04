@@ -8,6 +8,9 @@
 - **Repository path:** `/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show`
 - **Exact authorized base (`origin/main`):** `0939d9cafd009e713c8ca83bcc35ff3f90556819`
 - **Branch:** `feat/slice-15-session-summary-contract`
+- **Delivery PR:** [#38](https://github.com/ricktron/classroom-quiz-show/pull/38)
+  (non-draft, review-ready; **not merged**)
+- **Final head at receipt close:** `11e8758ee408d80d50078f10d2cb53b5ed924e7e`
 - **Kind:** immutable local-verification evidence for the Slice 15 delivery lane
 - **Non-claims:** this receipt does **not** claim merge, post-merge CI, Pages
   deploy, owner acceptance, Slice 16 start, Phase 3 start, post-MVP activation,

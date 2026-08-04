@@ -397,7 +397,8 @@ schema all stay **1**; no dependency added. Browser acceptance covered **24 of
 [`docs/receipts/2026-08-03-slice-14-local-verification.md`](docs/receipts/2026-08-03-slice-14-local-verification.md)
 and
 [`docs/receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](docs/receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
-**Slice 15 — Session Summary Contract** is **`In review`** (not merged) under
+**Slice 15 — Session Summary Contract** is **`In review`** (not merged) on PR
+[#38](https://github.com/ricktron/classroom-quiz-show/pull/38) under
 `AUTHORIZE-CQS-SLICE-15-SESSION-SUMMARY-CONTRACT-1` on
 `feat/slice-15-session-summary-contract` from exact base `0939d9c…`. It adds a
 versioned host-private current-session summary derived from authoritative
