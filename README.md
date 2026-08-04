@@ -397,18 +397,28 @@ schema all stay **1**; no dependency added. Browser acceptance covered **24 of
 [`docs/receipts/2026-08-03-slice-14-local-verification.md`](docs/receipts/2026-08-03-slice-14-local-verification.md)
 and
 [`docs/receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](docs/receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
-**Slice 15 — Session Summary Contract** is **`In review`** (not merged) on PR
-[#38](https://github.com/ricktron/classroom-quiz-show/pull/38) under
-`AUTHORIZE-CQS-SLICE-15-SESSION-SUMMARY-CONTRACT-1` on
-`feat/slice-15-session-summary-contract` from exact base `0939d9c…`. It adds a
-versioned host-private current-session summary derived from authoritative
-history/replay only, with no completed-session storage and no public-wire or
-persistence version change. See
-[`docs/architecture/ADR-015-session-summary-contract.md`](docs/architecture/ADR-015-session-summary-contract.md).
+**Slice 15 — Session Summary Contract. Complete** — squash-merged via PR
+[#38](https://github.com/ricktron/classroom-quiz-show/pull/38) at
+`242539044e45a43eacc6d8334349e59a6987a3d9` (merged **2026-08-04T19:28:26Z**) from
+reviewed-and-repaired head `d8f6308eccea5144ab1c6b5f49afdfcc2b7d5b5b` (authorized
+base `0939d9cafd009e713c8ca83bcc35ff3f90556819`, the squash commit's **sole**
+parent). Reviewed-head and squash trees are identical
+(`10ac401ebba0daab6e43dc96fa9fdbb4f72b6a9b`) and the direct diff between them is
+empty. It adds a versioned host-private current-session summary
+(`classroom-quiz-show/session-summary`, version **1**) derived from authoritative
+history/replay only: unavailable authored rounds are listed without fabricated
+metrics; timer-reset counts require a non-idle pre-event response timer; no
+completed-session storage; no public-wire or persistence version change. The
+inherited Final mid-refresh recovery flake remains unresolved. See
+[`docs/architecture/ADR-015-session-summary-contract.md`](docs/architecture/ADR-015-session-summary-contract.md)
+and
+[`docs/receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](docs/receipts/2026-08-04-slice-15-post-merge-reconciliation.md).
 **Slices 16–22** remain Planned and unstarted under the **22-slice** MVP plan
 ([`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md);
 CQS-PLAN-S02 delivery and post-merge reconciliation complete on `main` via
-PR #35 / PR #36).
+PR #35 / PR #36). Slice 16 readiness requires a new exact-main-base owner
+authorization; Phase 3 remains unauthorized; post-MVP arcs remain inactive;
+`CQS-OD-066` remains unresolved.
 
 > ⚠️ **Sony Buzz physical certification is bounded, not a supported-hardware
 > list.** OADL2-S07 completed physical certification for one exact tested

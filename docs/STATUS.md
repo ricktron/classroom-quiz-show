@@ -1,16 +1,26 @@
 # Status
 
-**Current completed product slice:** Slice 14 — Final-wager round
-**Current delivery in review:** Slice 15 — Session Summary Contract
-**Slice 15 state:** **In review** — open PR
-[#38](https://github.com/ricktron/classroom-quiz-show/pull/38) on
-`feat/slice-15-session-summary-contract` (head tracked by PR #38), delivered under
-`AUTHORIZE-CQS-SLICE-15-SESSION-SUMMARY-CONTRACT-1` (evidence state
-`CQS-SLICE-15-ES-1`) from exact authorized `main` base
-`0939d9cafd009e713c8ca83bcc35ff3f90556819`. **Not merged.** See
+**Current completed product slice:** Slice 15 — Session Summary Contract
+**Slice 15 state:** **Complete** — PR
+[#38](https://github.com/ricktron/classroom-quiz-show/pull/38) was squash-merged
+at `242539044e45a43eacc6d8334349e59a6987a3d9` (merged
+**2026-08-04T19:28:26Z**) from final reviewed-and-repaired head
+`d8f6308eccea5144ab1c6b5f49afdfcc2b7d5b5b` (authorized base
+`0939d9cafd009e713c8ca83bcc35ff3f90556819`, the squash commit's **sole**
+parent). Reviewed-head and squash trees are identical
+(`10ac401ebba0daab6e43dc96fa9fdbb4f72b6a9b`) and the direct diff between them is
+empty. The Session Summary Contract is a versioned host-private
+current-session summary (`classroom-quiz-show/session-summary`, version **1**)
+derived from authoritative effective history and replay only: ephemeral and
+unavailable after refresh/reset/discard/close/new game; not persisted, exported,
+or projected publicly; unsupported authored rounds listed as unavailable without
+fabricated metrics; timer-reset counts require a non-idle pre-event response
+timer. Public-state wire remains **8**; sync envelope **2**; game-file schema,
+private persistence wire, and IndexedDB schema remain **1**. The inherited Final
+mid-refresh recovery flake remains unresolved. See
 [`architecture/ADR-015-session-summary-contract.md`](architecture/ADR-015-session-summary-contract.md)
 and
-[`receipts/2026-08-04-slice-15-local-verification.md`](receipts/2026-08-04-slice-15-local-verification.md).
+[`receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](receipts/2026-08-04-slice-15-post-merge-reconciliation.md).
 **Slice 14 state:** **Complete** — PR
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32) was squash-merged
 at `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` (merged
@@ -29,17 +39,18 @@ wire and IndexedDB schema all remain **1**; no dependency added. See
 [`architecture/ADR-014-final-wager-round.md`](architecture/ADR-014-final-wager-round.md)
 and
 [`receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
-**Previous slice:** Slice 13 — Local persistence & recovery (`Complete`,
-squash-merged via PR #27 at `6cf4d25…`; wire **7**)
-**Next planned product slice after Slice 15 merge:** Slice 16 — Completed
-Summary Ledger & Compatible Reporting (`Planned`, unstarted) — **not authorized**
+**Previous slice:** Slice 14 — Final-wager round (`Complete`, squash-merged via
+PR #32 at `ce2e103…`)
+**Next planned product slice:** Slice 16 — Completed Summary Ledger & Compatible
+Reporting (`Planned`, unstarted) — **not authorized**; requires a new
+exact-main-base owner authorization
 **Roadmap:** **22 slices**, amended 2026-08-03 by
 [`decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
 (`CQS-PLAN-S02`; documentation-only). Prior amendment
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
-grew the plan from 11 to 18 slices (PR #13, `752a3fe`, 2026-07-26). Slices 1–14
-remain `Complete`; Slice 15 is `In review`; Slices 16–22 remain `Planned` and
-unstarted.
+grew the plan from 11 to 18 slices (PR #13, `752a3fe`, 2026-07-26). Slices 1–15
+remain `Complete`; Slices 16–22 remain `Planned` and unstarted. Phase 3 remains
+unauthorized; post-MVP arcs remain inactive; `CQS-OD-066` remains unresolved.
 
 ## Slice 14 work (Complete)
 
@@ -306,11 +317,12 @@ merge action.**
 | Post-merge Pages deploy run | `30916961449` — **success** |
 | Changed paths (PR #36) | exactly **5**, documentation-only Markdown |
 
-What landed: the remaining unstarted Slices 15–18 were replaced by Slices
-15–22; Slices **1–14 remain `Complete`**; Slices **15–22 remain `Planned` and
-unstarted**. **No Slice 15 implementation authority is granted.** Decision 66
-(`CQS-OD-066`) remains unresolved. No runtime code, schema, test, dependency,
-workflow, or deployment configuration changed.
+What landed at amendment time: the remaining unstarted Slices 15–18 were
+replaced by Slices 15–22; Slices **1–14 were `Complete`**; Slices **15–22 were
+`Planned` and unstarted**. Amendment 003 granted **no Slice 15 implementation
+authority**. Decision 66 (`CQS-OD-066`) remains unresolved. No runtime code,
+schema, test, dependency, workflow, or deployment configuration changed by
+CQS-PLAN-S02.
 
 Delivery / repair evidence (historical; pre-merge statements preserved):
 [`receipts/2026-08-03-cqs-remaining-mvp-rebalance.md`](receipts/2026-08-03-cqs-remaining-mvp-rebalance.md).
@@ -322,10 +334,11 @@ Post-merge registration evidence:
 (`CQS-PLAN-S02-POST-MERGE-REG-ES-1`).
 
 **CQS-PLAN-S02 delivery and post-merge reconciliation are complete on
-`main`.** The recommended next action is Program Orchestrator **Slice 15
-readiness** and a fresh exact-main-base owner authorization for
-`CQS-SLICE-15-SESSION-SUMMARY-CONTRACT` — **not** Slice 15 implementation
-from this surface, and **not** further review of PR #36.
+`main`.** Slice 15 has since been delivered and squash-merged via PR #38 (see
+Slice 15 status above). The recommended next action is Program Orchestrator
+**Slice 16 readiness** and a fresh exact-main-base owner authorization for
+`CQS-SLICE-16-SUMMARY-LEDGER` — **not** Slice 16 implementation from this
+surface, and **not** further review of PR #36 or PR #38.
 
 ## Slice 14 merge evidence
 
@@ -1394,40 +1407,45 @@ None.
 - The host "Foundation / testing controls" are diagnostics to prove the model,
   **not** game controls.
 
-## Slice 15 work (In review — not merged)
+## Slice 15 work (Complete)
 
 Host-private **Session Summary Contract** derived from authoritative event
 history and replay only. Full rationale in
 [`architecture/ADR-015-session-summary-contract.md`](architecture/ADR-015-session-summary-contract.md);
 local evidence in
-[`receipts/2026-08-04-slice-15-local-verification.md`](receipts/2026-08-04-slice-15-local-verification.md).
+[`receipts/2026-08-04-slice-15-local-verification.md`](receipts/2026-08-04-slice-15-local-verification.md);
+merge and post-merge evidence in
+[`receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](receipts/2026-08-04-slice-15-post-merge-reconciliation.md).
 
 | Item | State |
 | --- | --- |
-| Versioned `SessionSummaryV1` contract (`kind` + version **1**) | Implemented (review) |
-| Public `deriveSessionSummaryV1(history)` — history only | Implemented (review) |
-| Discriminated result: available / no-session / no-game / active-or-incomplete / invalid-history | Implemented (review) |
-| Observed vs derived field truthfulness | Implemented (review) |
-| Effective-history + undo semantics | Implemented (review) |
-| Terminal-path classification (ordinary, Final unique winner, accepted tie, sudden-death winner) | Implemented (review) |
-| Host-only end-of-session summary panel (no new route/modal) | Implemented (review) |
-| Current-session-only lifecycle; no completed-session storage | Implemented (review) |
-| No summary in `PublicState`, sync, projector, or portable export | Proven by tests (review) |
+| Versioned `SessionSummaryV1` contract (`classroom-quiz-show/session-summary`, version **1**) | Implemented |
+| Public `deriveSessionSummaryV1(history)` — history only | Implemented |
+| Discriminated result: available / no-session / no-game / active-or-incomplete / invalid-history | Implemented |
+| Observed vs derived field truthfulness | Implemented |
+| Effective-history + undo semantics | Implemented |
+| Terminal-path classification (ordinary, Final unique winner, accepted tie, sudden-death winner) | Implemented |
+| Unavailable authored rounds (`unsupported-round-type`) without fabricated metrics | Implemented |
+| Timer-reset counts only when pre-event response timer is non-idle | Implemented |
+| Host-only end-of-session summary panel (no new route/modal) | Implemented |
+| Current-session-only lifecycle; no completed-session storage | Implemented |
+| No summary in `PublicState`, sync, projector, or portable export | Proven by tests |
 | Public-state wire / sync / game-file / persistence / IndexedDB versions | **Unchanged** (8 / 2 / 1 / 1 / 1) |
+| Inherited Final mid-refresh recovery flake | **Unresolved** (not caused/worsened by Slice 15) |
 | Slice 16 ledger, Phase 3, post-MVP arcs, `CQS-OD-066` | **Not started / unresolved** |
 
 ## Next safe action
 
-**Slice 15 — Session Summary Contract is `In review`** on PR
-[#38](https://github.com/ricktron/classroom-quiz-show/pull/38)
-(`feat/slice-15-session-summary-contract`) under
-`AUTHORIZE-CQS-SLICE-15-SESSION-SUMMARY-CONTRACT-1` / `CQS-SLICE-15-ES-1`
-(exact base `0939d9cafd009e713c8ca83bcc35ff3f90556819`). **Stop before merge.**
-Do not begin Slice 16, Phase 3, or post-MVP work from this surface.
+**Slice 15 — Session Summary Contract is `Complete` and merged** (PR
+[#38](https://github.com/ricktron/classroom-quiz-show/pull/38), squash commit
+`242539044e45a43eacc6d8334349e59a6987a3d9`). **PR #38 requires no further review
+or merge action.**
 
-**Slice 14 remains `Complete` and merged** (PR
-[#32](https://github.com/ricktron/classroom-quiz-show/pull/32), squash commit
-`ce2e103377c5d86c8e0946346cb4cf05dfe7d58d`).
+**Recommended next action:** Program Orchestrator readiness for **Slice 16 —
+Completed Summary Ledger & Compatible Reporting**, followed by a fresh
+exact-main-base owner authorization before any Slice 16 implementation. Slice 16
+remains `Planned`, unstarted, and unauthorized. Do not begin Slice 16, Phase 3,
+or post-MVP work from this surface. `CQS-OD-066` remains unresolved.
 
 **Roadmap Amendment 003 (`CQS-PLAN-S02`) delivery and post-merge
 reconciliation remain complete on `main`** (PR #35 squash `2ebeb240…`; PR #36

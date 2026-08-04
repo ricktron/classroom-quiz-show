@@ -97,7 +97,7 @@ This project separates two kinds of durable decision records:
      — versioned host-private current-session summary derived from authoritative
      history and replay only; observed vs derived truthfulness; undo/correction
      and terminal-path rules; no completed-session storage; no public projection;
-     versions unchanged (Slice 15, In review).
+     versions unchanged (Slice 15, Complete).
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).

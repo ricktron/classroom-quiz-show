@@ -1,6 +1,6 @@
 # ADR-015 — Session Summary Contract
 
-**Status:** Accepted for review (Slice 15 — `CQS-SLICE-15-SESSION-SUMMARY-CONTRACT`)
+**Status:** Accepted (Slice 15 — `CQS-SLICE-15-SESSION-SUMMARY-CONTRACT`)
 **Date:** 2026-08-04
 **Supersedes:** nothing. **Superseded by:** nothing.
 **Related:** ADR-002 (state/event/sync core) · ADR-005 (category-board) ·

@@ -18,9 +18,9 @@ the round-based engine direction into it.
 > [`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
 > (`CQS-PLAN-S02`), **merged to `main`** via PR #35 at squash
 > `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`, with post-merge reconciliation
-> via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`. Slices 1–14 remain
-> `Complete`; Slice 15 is `In review` (not merged); Slices 16–22 remain
-> `Planned` and unstarted. Post-MVP arcs still require separate authorization.
+> via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`. Slices 1–15 remain
+> `Complete`; Slices 16–22 remain `Planned` and unstarted. Post-MVP arcs still
+> require separate authorization.
 
 > **Phase 2B design direction is accepted program guidance (2026-08-03).**
 > The accepted audience-display design direction is registered in
@@ -76,8 +76,9 @@ systems.
 > Post-merge reconciliation squash-merged via PR #36 at
 > `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`.
 > **No product implementation is authorized by Amendment 003.** CQS-PLAN-S02
-> delivery and post-merge reconciliation are complete on `main`; Slice 15
-> readiness requires a separate exact-main-base owner authorization.
+> delivery and post-merge reconciliation are complete on `main`. Slice 15 has
+> since been delivered and squash-merged via PR #38. Slice 16 readiness requires
+> a separate exact-main-base owner authorization.
 
 | #   | Slice                          | Focus (summary)                                                                 | Depends on |
 | --- | ------------------------------ | ------------------------------------------------------------------------------- | ---------- |
@@ -95,7 +96,7 @@ systems.
 | 12  | **Portable export & round-trip import** | Export a game to the canonical portable document and re-import it losslessly; reproducible game identity; round-trip equality as an acceptance criterion. **Complete — squash-merged via PR #25 (`cdb499a…`).** | 4, 11 |
 | 13  | **Local persistence & recovery** | IndexedDB durable local storage with three stores (`savedDefinitions`, `activeSessions`, `coordination`); explicit Resume/Discard recovery; saved-definition Save/Replace/Delete/Load; private persistence-session wire; lightweight host lease coordination; nothing new projected to the display. **(Complete — squash-merged via PR #27 (`6cf4d25…`) from reviewed head `ad0867a…`.)** | 2, 12 |
 | 14  | **Final-wager round**          | Public prompt, host-entered/private wagers, timed response, reveal, settlement, tie handling. **(Complete — squash-merged via PR #32 (`ce2e103…`) from reviewed head `c2bcc1a…`. Public wire 7 → 8; sync 2; schema 1. See ADR-014.)** | 5, 6, 7, 11 |
-| 15  | **Session Summary Contract** | Versioned host-private completed-session summary derived from authoritative replay; no completed-session storage. **(`In review` — not merged.)** | 2, 5, 6, 7, 8, 13, 14 |
+| 15  | **Session Summary Contract** | Versioned host-private completed-session summary derived from authoritative replay; no completed-session storage. **(Complete — squash-merged via PR #38 (`2425390…`) from reviewed head `d8f6308…`. Public wire 8; sync 2; schema 1. See ADR-015.)** | 2, 5, 6, 7, 8, 13, 14 |
 | 16  | **Completed Summary Ledger & Compatible Reporting** | Privacy-minimized summary storage; versioned competitive-profile comparison; retention/deletion; team/class reports. | 13, 15 |
 | 17  | **Theme and Design-Token Foundation** | Application-owned tokens/theme registry; default + high-contrast; reduced-motion; viewport/team/score fixtures. Requires preceding Phase 3 planning lane. | 5, 6; Phase 3 |
 | 18  | **Audience Display System** | Accepted Phase 2B audience-display implementation; privacy tests; prefer public wire 8. | 14, 17 |
@@ -665,13 +666,16 @@ squash-merged via
 `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` from the final reviewed-and-repaired
 head `c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26` (authorized base
 `4de1454181ed58bdb282accd136129c3c0eb0f2b`, merged **2026-08-03T17:08:37Z**).
-**Slices 15–22 remain `Planned` and unstarted** under the 22-slice plan
+**Slice 15 is `Complete`** — squash-merged via PR #38 at
+`242539044e45a43eacc6d8334349e59a6987a3d9` from the final reviewed-and-repaired
+head `d8f6308eccea5144ab1c6b5f49afdfcc2b7d5b5b` (authorized base
+`0939d9cafd009e713c8ca83bcc35ff3f90556819`, merged **2026-08-04T19:28:26Z**).
+**Slices 16–22 remain `Planned` and unstarted** under the 22-slice plan
 (Amendment 003 delivery merged at `2ebeb240…`; post-merge reconciliation
-merged at `da6b4dc…`). **No Slice 15 implementation authority is granted.**
-Immediate next action: Program Orchestrator Slice 15 readiness and a fresh
-exact-main-base owner authorization for
-`CQS-SLICE-15-SESSION-SUMMARY-CONTRACT` — not further review of PR #36, and
-not silent implementation.
+merged at `da6b4dc…`). **No Slice 16 implementation authority is granted.**
+Immediate next action: Program Orchestrator Slice 16 readiness and a fresh
+exact-main-base owner authorization for `CQS-SLICE-16-SUMMARY-LEDGER` — not
+silent implementation.
 
 ## Slice 8 — scope, acceptance, non-goals
 
@@ -1146,15 +1150,18 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
 - **Completion evidence:** `verify:all` green; tests proving summary derivation
   from replay only and absence of a completed-session store.
 - **Impact:** schema no · public-wire no · storage no · UI **yes** · hardware no.
-- **Status:** `In review` — delivered under
-  `AUTHORIZE-CQS-SLICE-15-SESSION-SUMMARY-CONTRACT-1` / `CQS-SLICE-15-ES-1` from
-  exact base `0939d9cafd009e713c8ca83bcc35ff3f90556819` on
-  `feat/slice-15-session-summary-contract`. **Not merged.** See
-  [`../architecture/ADR-015-session-summary-contract.md`](../architecture/ADR-015-session-summary-contract.md)
+- **Status:** `Complete` — squash-merged via
+  [PR #38](https://github.com/ricktron/classroom-quiz-show/pull/38) at
+  `242539044e45a43eacc6d8334349e59a6987a3d9` from reviewed-and-repaired head
+  `d8f6308eccea5144ab1c6b5f49afdfcc2b7d5b5b` (authorized base
+  `0939d9cafd009e713c8ca83bcc35ff3f90556819`, merged **2026-08-04T19:28:26Z**).
+  See
+  [`../architecture/ADR-015-session-summary-contract.md`](../architecture/ADR-015-session-summary-contract.md),
+  [`../receipts/2026-08-04-slice-15-local-verification.md`](../receipts/2026-08-04-slice-15-local-verification.md),
   and
-  [`../receipts/2026-08-04-slice-15-local-verification.md`](../receipts/2026-08-04-slice-15-local-verification.md).
-- **Owner gate:** separate authorization to begin was granted for this delivery;
-  merge remains a separate owner action. **Not authorized by Amendment 003.**
+  [`../receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](../receipts/2026-08-04-slice-15-post-merge-reconciliation.md).
+- **Owner gate:** delivery and exact-head squash-merge authorizations were
+  granted and satisfied. **PR #38 requires no further review or merge action.**
 
 ### Slice 16 — Completed Summary Ledger & Compatible Reporting
 
@@ -1175,8 +1182,9 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
 - **Impact:** schema no · public-wire no · storage **yes** · UI **yes** ·
   hardware no.
 - **Status:** `Planned` — unstarted.
-- **Owner gate:** separate authorization; `OG-7` remains binding against
-  individual identity.
+- **Owner gate:** separate exact-main-base authorization required; `OG-7`
+  remains binding against individual identity. **Not authorized by Slice 15
+  merge or by Amendment 003.**
 
 ### Slice 17 — Theme and Design-Token Foundation
 
