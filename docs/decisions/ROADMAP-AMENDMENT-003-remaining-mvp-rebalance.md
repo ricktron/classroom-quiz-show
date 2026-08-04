@@ -568,17 +568,24 @@ Actual sequence after delivery:
    `5ea188f5117d9f92bca6d3f83da57d7c868c3395`; empty direct diff; CI run
    `30875474982` success; SonarCloud success; Pages run `30875474980`
    success).
-3. Documentation-only post-merge reconciliation records the final merged
-   state — see
+3. Documentation-only post-merge reconciliation recorded the final merged
+   state and was **squash-merged** via PR #36 at
+   `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d` (reviewed head
+   `2457d6c0d27976855a0d247554730ec2f0efe899`; merged
+   **2026-08-04T14:03:30Z**) — see
    [`../receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md`](../receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md).
-4. After that reconciliation is reviewed and merged, the Program Orchestrator
-   may conduct readiness for **Slice 15 — Session Summary Contract** as the
-   next product implementation candidate.
-5. Slice 15 implementation still requires separate owner authorization.
-6. The Phase 3 planning lane remains separately unauthorized and may be
+4. Canonical post-merge registration updates durable routing after PR #36 —
+   see
+   [`../receipts/2026-08-04-cqs-plan-s02-post-merge-registration.md`](../receipts/2026-08-04-cqs-plan-s02-post-merge-registration.md).
+5. The Program Orchestrator may now conduct readiness for **Slice 15 —
+   Session Summary Contract** as the next product implementation candidate.
+6. Slice 15 implementation still requires a separate owner authorization
+   naming the exact canonical `main` base after the registration lane merges.
+7. The Phase 3 planning lane remains separately unauthorized and may be
    considered only under the documented parallelism rule in §8.
 
-**This amendment does not authorize Slice 15 implementation.**
+**This amendment does not authorize Slice 15 implementation.** PR #36 requires
+no further review or merge action.
 
 ---
 

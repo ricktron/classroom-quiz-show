@@ -246,10 +246,10 @@ implementation truth is unchanged:** Slice 14 is **`Complete`**, public-state
 wire **8**, sync envelope **2**, game-file schema **1**, and **Slices 15–22
 remain `Planned` and unstarted**.
 
-## Remaining-MVP rebalance planning (CQS-PLAN-S02) — Complete (delivery merged; reconciliation in review)
+## Remaining-MVP rebalance planning (CQS-PLAN-S02) — Complete
 
-**Planning slice state: Complete for delivery** — `CQS-PLAN-S02` /
-`ROADMAP-AMENDMENT-003` was **squash-merged via
+**Planning slice state: Complete** — `CQS-PLAN-S02` /
+`ROADMAP-AMENDMENT-003` delivery was **squash-merged via
 [PR #35](https://github.com/ricktron/classroom-quiz-show/pull/35)** at
 `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc` (merged **2026-08-04T03:41:30Z**)
 from final reviewed head `c637b979fa6e575c28dd6eb73dfbd52a76e93d35`
@@ -260,7 +260,7 @@ from final reviewed head `c637b979fa6e575c28dd6eb73dfbd52a76e93d35`
 Post-merge `CI` and Pages both succeeded. The **22-slice plan is now
 canonical on `main`**.
 
-| Fact | Value |
+| Fact (delivery PR #35) | Value |
 | --- | --- |
 | PR | [#35](https://github.com/ricktron/classroom-quiz-show/pull/35) (merged and closed) |
 | Authorized base / sole squash parent | `4df76f1dd504f0fdef5b27417edeec90471e6b62` (exactly one parent) |
@@ -273,6 +273,28 @@ canonical on `main`**.
 | Post-merge Pages deploy run | `30875474980` — **success** (Build + Deploy) |
 | Changed paths (PR #35) | exactly **13**, documentation-only Markdown |
 
+Post-merge reconciliation was **squash-merged via
+[PR #36](https://github.com/ricktron/classroom-quiz-show/pull/36)** at
+`da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d` (merged **2026-08-04T14:03:30Z**)
+from reviewed head `2457d6c0d27976855a0d247554730ec2f0efe899` (evidence state
+`CQS-PLAN-S02-POST-MERGE-RECON-ES-1`), with identical trees
+(`bc531b8d5b7d917635c4220431ac8e1a4c5d69ac`), empty direct diff, and
+post-merge CI / Sonar / Pages success. **PR #36 requires no further review or
+merge action.**
+
+| Fact (reconciliation PR #36) | Value |
+| --- | --- |
+| PR | [#36](https://github.com/ricktron/classroom-quiz-show/pull/36) (merged and closed) |
+| Authorized base / sole squash parent | `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc` |
+| Final reviewed head | `2457d6c0d27976855a0d247554730ec2f0efe899` |
+| Squash commit | `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d` |
+| Merged | **2026-08-04T14:03:30Z** |
+| Reviewed-head / squash tree | identical (`bc531b8d5b7d917635c4220431ac8e1a4c5d69ac`); direct diff empty |
+| Post-merge `CI` run | `30916960892` — **success** |
+| SonarCloud on squash | **success** |
+| Post-merge Pages deploy run | `30916961449` — **success** |
+| Changed paths (PR #36) | exactly **5**, documentation-only Markdown |
+
 What landed: the remaining unstarted Slices 15–18 were replaced by Slices
 15–22; Slices **1–14 remain `Complete`**; Slices **15–22 remain `Planned` and
 unstarted**. **No Slice 15 implementation authority is granted.** Decision 66
@@ -284,10 +306,15 @@ Delivery / repair evidence (historical; pre-merge statements preserved):
 Post-merge reconciliation evidence:
 [`receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md`](receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md)
 (`CQS-PLAN-S02-POST-MERGE-RECON-ES-1`).
+Post-merge registration evidence:
+[`receipts/2026-08-04-cqs-plan-s02-post-merge-registration.md`](receipts/2026-08-04-cqs-plan-s02-post-merge-registration.md)
+(`CQS-PLAN-S02-POST-MERGE-REG-ES-1`).
 
-**CQS-PLAN-S02 delivery and merge authority are exhausted.** The immediate
-next action is exact-head review of the CQS-PLAN-S02 post-merge
-reconciliation PR — **not** Slice 15 implementation.
+**CQS-PLAN-S02 delivery and post-merge reconciliation are complete on
+`main`.** The recommended next action is Program Orchestrator **Slice 15
+readiness** and a fresh exact-main-base owner authorization for
+`CQS-SLICE-15-SESSION-SUMMARY-CONTRACT` — **not** Slice 15 implementation
+from this surface, and **not** further review of PR #36.
 
 ## Slice 14 merge evidence
 
@@ -1363,11 +1390,14 @@ None.
 `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d`), with post-merge CI and Pages both
 observed green.
 
-**Roadmap Amendment 003 (`CQS-PLAN-S02`) is merged to `main`** (PR #35 squash
-`2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`; 22-slice plan canonical). Slices
-**15–22 remain `Planned` and unstarted**. **No Slice 15 implementation
-authority is granted.** The recommended next action is exact-head review of
-the CQS-PLAN-S02 post-merge reconciliation PR — not Slice 15 implementation.
+**Roadmap Amendment 003 (`CQS-PLAN-S02`) delivery and post-merge
+reconciliation are complete on `main`** (PR #35 squash `2ebeb240…`; PR #36
+squash `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`; 22-slice plan canonical).
+Slices **15–22 remain `Planned` and unstarted**. **No Slice 15 implementation
+authority is granted.** The recommended next action is Slice 15 readiness and
+a separate exact-main-base owner authorization for
+`CQS-SLICE-15-SESSION-SUMMARY-CONTRACT` — not Slice 15 implementation, and
+not further review or merge of PR #36.
 
 Coding agents and contributors should read root [`../AGENTS.md`](../AGENTS.md)
 (and pointer-only [`../CLAUDE.md`](../CLAUDE.md) for Claude sessions) before

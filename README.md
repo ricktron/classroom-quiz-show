@@ -398,9 +398,11 @@ schema all stay **1**; no dependency added. Browser acceptance covered **24 of
 and
 [`docs/receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](docs/receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
 **Slices 15–22** remain Planned and unstarted under the **22-slice** MVP plan
-([`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
-Next product candidate: **Slice 15 — Session Summary Contract** (not
-authorized by the roadmap amendment).
+([`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md);
+CQS-PLAN-S02 delivery and post-merge reconciliation complete on `main` via
+PR #35 / PR #36). Next product candidate: **Slice 15 — Session Summary
+Contract** — still unstarted and separately authorized; not authorized by the
+roadmap amendment or by post-merge reconciliation/registration.
 
 > ⚠️ **Sony Buzz physical certification is bounded, not a supported-hardware
 > list.** OADL2-S07 completed physical certification for one exact tested
