@@ -15,6 +15,14 @@ deferred-capability dossiers in
 [`POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md).
 The current MVP sequence remains [`MVP-ARC.md`](MVP-ARC.md), unchanged.
 
+The accepted **Phase 2B audience-display design direction** is registered
+separately in
+[`CQS-DESIGN-PHASE-2B-DIRECTION.md`](CQS-DESIGN-PHASE-2B-DIRECTION.md). It is
+program guidance only: it implements nothing, authorizes nothing, changes no
+owner decision's acceptance or activation state, and changes no arc sequencing
+in this document. Its eventual MVP implementation consumer is **Slice 16 — Theme
+engine**, which remains `Planned` and unauthorized.
+
 ## 1. Product thesis
 
 Classroom Quiz Show grows from a local-first classroom game-show engine into
@@ -28,9 +36,9 @@ host-authoritative, fail-closed, and free of student devices, accounts, and
 cloud dependencies. Every expansion composes the existing command/event
 architecture rather than replacing it.
 
-## 2. Current implementation truth (2026-08-03)
+## 2. Current implementation truth (reconciled 2026-08-03, post-Slice-14)
 
-The current implementation supports: slices 1–13 `Complete` and merged —
+The current implementation supports: slices 1–14 `Complete` and merged —
 foundation and routing; the command/event/replay/undo core; the typed
 game/round model and non-executable registry; the canonical versioned JSON
 import pipeline; the `category-board` round; teams and bounded integer
@@ -38,10 +46,19 @@ scoring; timers, manual arming and transitions; the hardware-independent
 local input boundary with keyboard buzz-in and a full ordered queue; the
 generic Gamepad adapter; the Sony Buzz! host-private setup boundary (bounded
 physical claim, OADL2-S07); the typed text/image media contract; portable
-export with round-trip import; and host-local IndexedDB persistence with
-explicit Resume/Discard recovery. Public-state wire **7**, sync envelope
-**2**, game-file schema **1**. **Slice 14 — Final-wager round is `Planned`
-and unstarted.**
+export with round-trip import; host-local IndexedDB persistence with
+explicit Resume/Discard recovery; and the `final-wager` round as the second
+playable registered round type. Public-state wire **8**, sync envelope
+**2**, game-file schema **1**. **Slice 14 — Final-wager round is
+`Complete`** (squash-merged via PR #32 at `ce2e103…`); **Slice 15 — Session
+summary & compatible-profile reporting is `Planned` and unstarted.**
+
+> **Reconciliation note.** This section previously recorded slices 1–13,
+> public-state wire 7, and Slice 14 as `Planned` and unstarted. That was
+> accurate when `CQS-PLAN-S01` merged and became stale when Slice 14
+> merged; it was corrected under
+> `AUTHORIZE-CQS-DESIGN-PHASE-2B-REGISTRATION-1`. See
+> [`../STATUS.md`](../STATUS.md) for canonical current slice status.
 
 Nothing in the expanded vision is implemented. No statement in this arc may
 be read as "CQS supports X" for any X outside the paragraph above.
@@ -49,11 +66,11 @@ be read as "CQS supports X" for any X outside the paragraph above.
 ## 3. Current MVP boundary
 
 The current MVP is exactly the 18-slice plan of record in
-[`MVP-ARC.md`](MVP-ARC.md) (slices 14–18 remaining: final-wager round;
-session summary and compatible-profile reporting; theme engine; authoring
-and packs; release readiness). This arc **does not** add to, reorder, or
-re-scope it. Expanded-vision capabilities enter only through future arcs,
-each requiring its own Program Orchestrator authorization.
+[`MVP-ARC.md`](MVP-ARC.md) (**slices 15–18 remaining**: session summary and
+compatible-profile reporting; theme engine; authoring and packs; release
+readiness). This arc **does not** add to, reorder, or re-scope it.
+Expanded-vision capabilities enter only through future arcs, each requiring
+its own Program Orchestrator authorization.
 
 ## 4. Architecture preservation now
 
@@ -225,8 +242,10 @@ boundary. Survey Showdown never presents synthetic data as a real survey
 
 ## 9. Program Orchestrator decision points
 
-1. **Authorize Slice 14** (current MVP next action — unchanged by this
-   arc).
+1. **Slice 15 readiness and sequencing** (current MVP next action —
+   unchanged by this arc). Slice 14 was authorized, implemented, reviewed
+   and merged; the frontier has moved to a separate Slice 15
+   planning/readiness decision, which nothing here grants.
 2. **Resolve `CQS-OD-066`** (GCS learning-target linkage) — owner
    decision; blocks only the GCS-integration slice of `CQS-ARC-INSIGHT`.
 3. **Authorize `CQS-ARC-AUTHORING` planning** — after MVP Slice 17

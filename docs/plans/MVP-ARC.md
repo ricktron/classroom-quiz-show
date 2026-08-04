@@ -18,6 +18,17 @@ the round-based engine direction into it.
 > `Complete` and merged, Slice 15 remains `Planned` and unstarted; post-MVP
 > arcs require separate authorization.
 
+> **Phase 2B design direction is accepted program guidance and changes
+> nothing here (2026-08-03).** The accepted audience-display design direction
+> is registered in
+> [`CQS-DESIGN-PHASE-2B-DIRECTION.md`](CQS-DESIGN-PHASE-2B-DIRECTION.md)
+> under `AUTHORIZE-CQS-DESIGN-PHASE-2B-REGISTRATION-1`. **Slice 16 — Theme
+> engine is its eventual MVP implementation consumer.** The acceptance
+> **does not authorize Slice 16**, does not change Slice 15's priority, and
+> does not add to, remove from, reorder, or re-scope this 18-slice sequence
+> or any slice's dependencies. Phase 2B is **not** a numbered MVP slice and
+> is not implemented.
+
 ## Product direction (approved)
 
 Classroom Quiz Show is a **reusable, local-first classroom game-show engine**,
@@ -70,7 +81,7 @@ systems.
 | 11  | **Media contract**             | Typed media model (beyond plain-string prompts), fail-closed on unsupported media, additive on `schemaVersion: 1`. **(Complete — squash-merged via PR #23 (`5d47b2f`) from reviewed head `bb8bd94`. Public wire 7; sync 2; schema 1. See ADR-011.)** | 4, 5 |
 | 12  | **Portable export & round-trip import** | Export a game to the canonical portable document and re-import it losslessly; reproducible game identity; round-trip equality as an acceptance criterion. **Complete — squash-merged via PR #25 (`cdb499a…`).** | 4, 11 |
 | 13  | **Local persistence & recovery** | IndexedDB durable local storage with three stores (`savedDefinitions`, `activeSessions`, `coordination`); explicit Resume/Discard recovery; saved-definition Save/Replace/Delete/Load; private persistence-session wire; lightweight host lease coordination; nothing new projected to the display. **(Complete — squash-merged via PR #27 (`6cf4d25…`) from reviewed head `ad0867a…`.)** | 2, 12 |
-| 14  | **Final-wager round**          | Public prompt, host-entered/private wagers, timed response, reveal, settlement, tie handling. | 5, 6, 7, 11 |
+| 14  | **Final-wager round**          | Public prompt, host-entered/private wagers, timed response, reveal, settlement, tie handling. **(Complete — squash-merged via PR #32 (`ce2e103…`) from reviewed head `c2bcc1a…`. Public wire 7 → 8; sync 2; schema 1. See ADR-014.)** | 5, 6, 7, 11 |
 | 15  | **Session summary & compatible-profile reporting** | Per-session result summary from replay; normalized metrics; cross-session comparison behind a stable competitive-profile identifier. | 6, 13 |
 | 16  | **Theme engine**               | Presentation-only theme system, accessibility/high-contrast theme. Never alters scoring, validation, event semantics or the privacy boundary. | 5 |
 | 17  | **Authoring & packs**          | Content authoring, spreadsheet import convenience, complete portable game packs, standards tags. | 4, 5, 12 |
