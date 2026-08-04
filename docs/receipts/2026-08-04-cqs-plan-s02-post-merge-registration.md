@@ -10,7 +10,8 @@
 - **Exact authorized base:** `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`
   (`origin/main` at registration start; PR #36 squash)
 - **Branch:** `docs/cqs-plan-s02-post-merge-registration`
-- **PR:** *recorded when opened*
+- **PR:** [#37](https://github.com/ricktron/classroom-quiz-show/pull/37)
+  (non-draft; not merged)
 
 This receipt is **documentation-only registration and canonicalization** after
 the completed merge of the CQS-PLAN-S02 post-merge reconciliation PR. It does
