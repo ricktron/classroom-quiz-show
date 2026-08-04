@@ -11,7 +11,8 @@
 - **Exact reconciliation base:** `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`
   (`origin/main` at reconciliation start; Amendment 003 squash)
 - **Branch:** `docs/cqs-plan-s02-post-merge-reconciliation`
-- **PR:** *recorded when opened*
+- **PR:** [#36](https://github.com/ricktron/classroom-quiz-show/pull/36)
+  (non-draft; not merged)
 
 This receipt separates four evidence layers and does **not** rewrite the
 original delivery receipt
