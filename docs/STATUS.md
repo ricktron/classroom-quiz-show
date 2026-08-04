@@ -4,8 +4,7 @@
 **Current delivery in review:** Slice 15 — Session Summary Contract
 **Slice 15 state:** **In review** — open PR
 [#38](https://github.com/ricktron/classroom-quiz-show/pull/38) on
-`feat/slice-15-session-summary-contract` at head
-`784a52640b666e05ce2d1435e7c22da0a7508055`, delivered under
+`feat/slice-15-session-summary-contract` (head tracked by PR #38), delivered under
 `AUTHORIZE-CQS-SLICE-15-SESSION-SUMMARY-CONTRACT-1` (evidence state
 `CQS-SLICE-15-ES-1`) from exact authorized `main` base
 `0939d9cafd009e713c8ca83bcc35ff3f90556819`. **Not merged.** See
@@ -1421,7 +1420,7 @@ local evidence in
 
 **Slice 15 — Session Summary Contract is `In review`** on PR
 [#38](https://github.com/ricktron/classroom-quiz-show/pull/38)
-(`feat/slice-15-session-summary-contract`, head `784a526…`) under
+(`feat/slice-15-session-summary-contract`) under
 `AUTHORIZE-CQS-SLICE-15-SESSION-SUMMARY-CONTRACT-1` / `CQS-SLICE-15-ES-1`
 (exact base `0939d9cafd009e713c8ca83bcc35ff3f90556819`). **Stop before merge.**
 Do not begin Slice 16, Phase 3, or post-MVP work from this surface.

@@ -10,7 +10,8 @@
 - **Branch:** `feat/slice-15-session-summary-contract`
 - **Delivery PR:** [#38](https://github.com/ricktron/classroom-quiz-show/pull/38)
   (non-draft, review-ready; **not merged**)
-- **Final head at receipt close:** `784a52640b666e05ce2d1435e7c22da0a7508055`
+- **Implementation commits (content):** `02d0938` (runtime) · `11e8758` (ADR/receipt/routing)
+- **Head moves with subsequent PR-routing doc commits; observe GitHub PR #38 for the exact review head**
 - **Kind:** immutable local-verification evidence for the Slice 15 delivery lane
 - **Non-claims:** this receipt does **not** claim merge, post-merge CI, Pages
   deploy, owner acceptance, Slice 16 start, Phase 3 start, post-MVP activation,
