@@ -397,12 +397,18 @@ schema all stay **1**; no dependency added. Browser acceptance covered **24 of
 [`docs/receipts/2026-08-03-slice-14-local-verification.md`](docs/receipts/2026-08-03-slice-14-local-verification.md)
 and
 [`docs/receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](docs/receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
-**Slices 15–22** remain Planned and unstarted under the **22-slice** MVP plan
+**Slice 15 — Session Summary Contract** is **`In review`** (not merged) on PR
+[#38](https://github.com/ricktron/classroom-quiz-show/pull/38) under
+`AUTHORIZE-CQS-SLICE-15-SESSION-SUMMARY-CONTRACT-1` on
+`feat/slice-15-session-summary-contract` from exact base `0939d9c…`. It adds a
+versioned host-private current-session summary derived from authoritative
+history/replay only, with no completed-session storage and no public-wire or
+persistence version change. See
+[`docs/architecture/ADR-015-session-summary-contract.md`](docs/architecture/ADR-015-session-summary-contract.md).
+**Slices 16–22** remain Planned and unstarted under the **22-slice** MVP plan
 ([`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md);
 CQS-PLAN-S02 delivery and post-merge reconciliation complete on `main` via
-PR #35 / PR #36). Next product candidate: **Slice 15 — Session Summary
-Contract** — still unstarted and separately authorized; not authorized by the
-roadmap amendment or by post-merge reconciliation/registration.
+PR #35 / PR #36).
 
 > ⚠️ **Sony Buzz physical certification is bounded, not a supported-hardware
 > list.** OADL2-S07 completed physical certification for one exact tested

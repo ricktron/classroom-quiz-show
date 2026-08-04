@@ -92,7 +92,12 @@ This project separates two kinds of durable decision records:
      team-by-team reveal and reversible atomic settlement, bounded tie handling
      and sudden death, cross-round import rules (one Final, terminal, teams
      required), and `PublicState` wire version 8 with a per-stage exact-key guard
-     (Slice 14, In review).
+     (Slice 14, Complete).
+   - [`ADR-015-session-summary-contract.md`](../architecture/ADR-015-session-summary-contract.md)
+     — versioned host-private current-session summary derived from authoritative
+     history and replay only; observed vs derived truthfulness; undo/correction
+     and terminal-path rules; no completed-session storage; no public projection;
+     versions unchanged (Slice 15, In review).
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).

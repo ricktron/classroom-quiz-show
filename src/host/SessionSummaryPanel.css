@@ -1,0 +1,122 @@
+/*
+ * Host-only session summary (Slice 15). PRIVATE — never projected.
+ *
+ * Visually primary after completion. No required motion. Usable on a phone-width
+ * host layout. Meaning is never carried by colour alone.
+ */
+.ssp {
+  width: 100%;
+  max-width: 60rem;
+  margin: var(--space-3) auto 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  text-align: start;
+}
+
+.ssp--primary {
+  border-width: 2px;
+  border-color: var(--color-text);
+  outline: 1px solid var(--color-border);
+}
+
+.foundation__tag--slice15 {
+  background: color-mix(in srgb, var(--color-accent, var(--color-success)) 22%, transparent);
+  border-color: var(--color-accent, var(--color-success));
+}
+
+.ssp h3 {
+  margin: var(--space-1) 0 var(--space-2);
+  font-size: 1.25rem;
+}
+
+.ssp h4 {
+  margin: var(--space-2) 0 var(--space-1);
+  font-size: 1.05rem;
+}
+
+.ssp h5 {
+  margin: var(--space-1) 0;
+  font-size: 1rem;
+}
+
+.ssp__warning {
+  margin: 0 0 var(--space-2);
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-left-width: 4px;
+  background: var(--color-surface-raised, var(--color-surface));
+  font-weight: 600;
+}
+
+.ssp__block {
+  margin-top: var(--space-2);
+  padding-top: var(--space-1);
+  border-top: 1px solid var(--color-border);
+}
+
+.ssp__kv {
+  display: grid;
+  grid-template-columns: minmax(10rem, 16rem) 1fr;
+  gap: 0.35rem 1rem;
+  margin: 0;
+}
+
+.ssp__kv dt {
+  font-weight: 600;
+  color: var(--color-text-muted, inherit);
+}
+
+.ssp__kv dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.ssp__table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--space-1);
+}
+
+.ssp__table th,
+.ssp__table td {
+  border: 1px solid var(--color-border);
+  padding: 0.4rem 0.6rem;
+  text-align: start;
+}
+
+.ssp__table th {
+  background: var(--color-surface-raised, var(--color-surface));
+}
+
+.ssp__caption {
+  caption-side: top;
+  text-align: start;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.ssp__round + .ssp__round {
+  margin-top: var(--space-2);
+}
+
+.ssp__list {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.ssp__list li + li {
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 40rem) {
+  .ssp__kv {
+    grid-template-columns: 1fr;
+  }
+
+  .ssp__table {
+    display: block;
+    overflow-x: auto;
+  }
+}
