@@ -1,15 +1,16 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with **Slices 1–14 all `Complete` and merged to `main`**, and
-**Slice 15 — Session Summary Contract `In review`** (not merged) on PR
-[#38](https://github.com/ricktron/classroom-quiz-show/pull/38)
-(`feat/slice-15-session-summary-contract`; head tracked by the open PR) under
-`AUTHORIZE-CQS-SLICE-15-SESSION-SUMMARY-CONTRACT-1` / `CQS-SLICE-15-ES-1`
-(exact authorized base `0939d9cafd009e713c8ca83bcc35ff3f90556819`). See
+the repository with **Slices 1–15 all `Complete` and merged to `main`**.
+**Slice 15 — Session Summary Contract is `Complete`** (PR
+[#38](https://github.com/ricktron/classroom-quiz-show/pull/38) squash-merged at
+`242539044e45a43eacc6d8334349e59a6987a3d9` from reviewed-and-repaired head
+`d8f6308eccea5144ab1c6b5f49afdfcc2b7d5b5b`, merged **2026-08-04T19:28:26Z**,
+post-merge CI, Sonar, and Pages green — see
 [`../architecture/ADR-015-session-summary-contract.md`](../architecture/ADR-015-session-summary-contract.md)
 and
-[`../receipts/2026-08-04-slice-15-local-verification.md`](../receipts/2026-08-04-slice-15-local-verification.md).
+[`../receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](../receipts/2026-08-04-slice-15-post-merge-reconciliation.md)).
+**PR #38 requires no further review or merge action.**
 **Slice 14 — Final-wager round is `Complete`** (PR
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32) squash-merged at
 `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` from reviewed-and-repaired head
@@ -31,10 +32,11 @@ plan amended by
 (`CQS-PLAN-S02`, documentation-only; delivery **merged** via PR #35 at
 `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`; post-merge reconciliation
 **merged** via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`).
-**Recommended next action:** review and (separately authorize) merge of Slice 15
-delivery PR [#38](https://github.com/ricktron/classroom-quiz-show/pull/38) —
-**stop before merge from this handoff alone**. Do not begin Slice 16, Phase 3,
-or post-MVP work.
+**Recommended next action:** Program Orchestrator readiness for **Slice 16 —
+Completed Summary Ledger & Compatible Reporting**, then a fresh exact-main-base
+owner authorization before any Slice 16 implementation. Slice 16 remains
+unauthorized. Do not begin Slice 16, Phase 3, or post-MVP work from this
+handoff alone. `CQS-OD-066` remains unresolved.
 
 Coding agents and contributors should read root
 [`../../AGENTS.md`](../../AGENTS.md) before changing the repository. Claude
@@ -84,8 +86,9 @@ defers to `AGENTS.md` and adds no separate authority.
 > from reviewed head `2457d6c0d27976855a0d247554730ec2f0efe899`.
 > **Documentation only — no product implementation authorized.** CQS-PLAN-S02
 > delivery and post-merge reconciliation are complete on `main`; PR #36
-> requires no further review or merge action. Slice 15 — Session Summary
-> Contract remains the next product candidate under separate exact-main-base
+> requires no further review or merge action. Slice 15 is now `Complete` on
+> `main` (PR #38). Slice 16 — Completed Summary Ledger & Compatible Reporting
+> remains the next product candidate under a separate exact-main-base
 > authorization. Phase 3 remains unauthorized. Slices 16–22 remain
 > unauthorized. Post-MVP arcs remain inactive. `CQS-OD-066` remains
 > unresolved.
@@ -276,16 +279,25 @@ defers to `AGENTS.md` and adds no separate authority.
   [`../receipts/2026-08-03-media-normalized-prompt-reread-repair.md`](../receipts/2026-08-03-media-normalized-prompt-reread-repair.md)
   and
   [`../receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](../receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
-- **Slice 15 (current delivery):** `In review` on
-  `feat/slice-15-session-summary-contract` under
-  `AUTHORIZE-CQS-SLICE-15-SESSION-SUMMARY-CONTRACT-1` / `CQS-SLICE-15-ES-1`
-  (exact base `0939d9c…`). Host-private current-session summary contract derived
-  from authoritative history/replay only; no completed-session storage; public
-  wire **8**, sync **2**, schema/persistence/IndexedDB **1** unchanged. **Not
-  merged.**
+- **Slice 15 (current):** `Complete.` Squash-merged via
+  [PR #38](https://github.com/ricktron/classroom-quiz-show/pull/38) at
+  `242539044e45a43eacc6d8334349e59a6987a3d9` from reviewed-and-repaired head
+  `d8f6308eccea5144ab1c6b5f49afdfcc2b7d5b5b` (authorized base `0939d9c…`, merged
+  **2026-08-04T19:28:26Z**). Host-private current-session summary contract
+  (`classroom-quiz-show/session-summary`, version **1**) derived from
+  authoritative history/replay only; unavailable authored rounds without
+  fabricated metrics; truthful timer-reset counting; no completed-session
+  storage; public wire **8**, sync **2**, schema/persistence/IndexedDB **1**
+  unchanged. Inherited Final mid-refresh recovery flake remains unresolved.
+  Rationale in
+  [`../architecture/ADR-015-session-summary-contract.md`](../architecture/ADR-015-session-summary-contract.md);
+  evidence in
+  [`../receipts/2026-08-04-slice-15-local-verification.md`](../receipts/2026-08-04-slice-15-local-verification.md)
+  and
+  [`../receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](../receipts/2026-08-04-slice-15-post-merge-reconciliation.md).
 - **Slices 16–22:** `Planned`, unstarted (22-slice plan; Amendment 003).
-  Next product candidate after Slice 15 merge: **Slice 16 — Completed Summary
-  Ledger & Compatible Reporting** (unauthorized).
+  Next product candidate: **Slice 16 — Completed Summary Ledger & Compatible
+  Reporting** (unauthorized; requires a new exact-main-base owner authorization).
 - **What Slice 14 adds:** the SECOND playable round type, `final-wager` — and
   the important thing about it is where it lives. It is registered by application
   code in the same registry as `category-board`, validated by the same import
@@ -905,7 +917,7 @@ arcs remain inactive; **decision 66 (`CQS-OD-066`) remains unresolved**.
 
 ## Next action
 
-**Slices 1–14 and planning slice CQS-PLAN-S01 are `Complete` and
+**Slices 1–15 and planning slice CQS-PLAN-S01 are `Complete` and
 merged.** Phase 2B design direction is registered. **Roadmap Amendment 003
 (`CQS-PLAN-S02`) delivery and post-merge reconciliation are complete on
 `main`** (PR #35 at `2ebeb240…`; PR #36 at
@@ -914,16 +926,19 @@ merged.** Phase 2B design direction is registered. **Roadmap Amendment 003
 [`../receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md`](../receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md),
 and
 [`../receipts/2026-08-04-cqs-plan-s02-post-merge-registration.md`](../receipts/2026-08-04-cqs-plan-s02-post-merge-registration.md)).
+**Slice 15 — Session Summary Contract is `Complete`** (PR
+[#38](https://github.com/ricktron/classroom-quiz-show/pull/38) at
+`242539044e45a43eacc6d8334349e59a6987a3d9`).
 **Slice 14 — Final-wager round is `Complete`** (PR
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32) at
 `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d`).
 
-**PR #36 requires no further review or merge action.** **Recommended next
-action: review Slice 15 delivery PR
-[#38](https://github.com/ricktron/classroom-quiz-show/pull/38) and stop before
-merge unless separately authorized to merge.** Slice 15 is `In review` (not
-`Complete`, not merged). Phase 3 remains unauthorized. Slices 16–22 remain
-unauthorized. Post-MVP arcs remain inactive. `CQS-OD-066` remains unresolved.
+**PR #38 and PR #36 require no further review or merge action.** **Recommended
+next action: Program Orchestrator readiness for Slice 16 — Completed Summary
+Ledger & Compatible Reporting, then a fresh exact-main-base owner authorization
+before any Slice 16 implementation.** Slice 16 remains `Planned`, unstarted, and
+unauthorized. Phase 3 remains unauthorized. Slices 17–22 remain unauthorized.
+Post-MVP arcs remain inactive. `CQS-OD-066` remains unresolved.
 
 ## Registered design direction — Phase 2B audience display (2026-08-03)
 
@@ -955,11 +970,12 @@ Evidence limits, recorded verbatim in the direction document and its receipt:
 > corrected ZIP was not independently reopened by the Program Orchestrator, so no
 > independent second checksum audit is claimed.
 
-**Routing.** Slice 15 — Session Summary Contract remains the next planned
-product slice and is unaffected in priority by Phase 2B. MVP Phase 2B consumers
-are **Slices 17–18** (theme/token foundation, then audience display), both
-`Planned` and unauthorized. A separately authorized
-Phase 3 design-system specification/readiness lane may occur without changing
+**Routing.** Slice 15 — Session Summary Contract is now `Complete` on `main`
+(PR #38). Slice 16 — Completed Summary Ledger & Compatible Reporting remains
+the next planned product slice and is unaffected in priority by Phase 2B. MVP
+Phase 2B consumers are **Slices 17–18** (theme/token foundation, then audience
+display), both `Planned` and unauthorized. A separately authorized Phase 3
+design-system specification/readiness lane may occur without changing
 product-slice sequencing.
 
 **Boundaries this direction does not move.** The public buzz state remains
