@@ -246,6 +246,49 @@ implementation truth is unchanged:** Slice 14 is **`Complete`**, public-state
 wire **8**, sync envelope **2**, game-file schema **1**, and **Slices 15–22
 remain `Planned` and unstarted**.
 
+## Remaining-MVP rebalance planning (CQS-PLAN-S02) — Complete (delivery merged; reconciliation in review)
+
+**Planning slice state: Complete for delivery** — `CQS-PLAN-S02` /
+`ROADMAP-AMENDMENT-003` was **squash-merged via
+[PR #35](https://github.com/ricktron/classroom-quiz-show/pull/35)** at
+`2ebeb24099d5f63ccd3247ffb8e8744f89c039bc` (merged **2026-08-04T03:41:30Z**)
+from final reviewed head `c637b979fa6e575c28dd6eb73dfbd52a76e93d35`
+(authorized base / sole squash parent
+`4df76f1dd504f0fdef5b27417edeec90471e6b62`; evidence state
+`CQS-PLAN-S02-ES-1`), with **identical reviewed-head and squash trees**
+(`5ea188f5117d9f92bca6d3f83da57d7c868c3395`) and an **empty direct diff**.
+Post-merge `CI` and Pages both succeeded. The **22-slice plan is now
+canonical on `main`**.
+
+| Fact | Value |
+| --- | --- |
+| PR | [#35](https://github.com/ricktron/classroom-quiz-show/pull/35) (merged and closed) |
+| Authorized base / sole squash parent | `4df76f1dd504f0fdef5b27417edeec90471e6b62` (exactly one parent) |
+| Final reviewed head | `c637b979fa6e575c28dd6eb73dfbd52a76e93d35` |
+| Squash commit | `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc` |
+| Merged | **2026-08-04T03:41:30Z** |
+| Reviewed-head / squash tree | identical (`5ea188f5117d9f92bca6d3f83da57d7c868c3395`); direct diff empty |
+| Post-merge `CI` run | `30875474982` — **success** (Lint/typecheck/unit/build; Playwright e2e) |
+| SonarCloud on squash | **success** |
+| Post-merge Pages deploy run | `30875474980` — **success** (Build + Deploy) |
+| Changed paths (PR #35) | exactly **13**, documentation-only Markdown |
+
+What landed: the remaining unstarted Slices 15–18 were replaced by Slices
+15–22; Slices **1–14 remain `Complete`**; Slices **15–22 remain `Planned` and
+unstarted**. **No Slice 15 implementation authority is granted.** Decision 66
+(`CQS-OD-066`) remains unresolved. No runtime code, schema, test, dependency,
+workflow, or deployment configuration changed.
+
+Delivery / repair evidence (historical; pre-merge statements preserved):
+[`receipts/2026-08-03-cqs-remaining-mvp-rebalance.md`](receipts/2026-08-03-cqs-remaining-mvp-rebalance.md).
+Post-merge reconciliation evidence:
+[`receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md`](receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md)
+(`CQS-PLAN-S02-POST-MERGE-RECON-ES-1`).
+
+**CQS-PLAN-S02 delivery and merge authority are exhausted.** The immediate
+next action is exact-head review of the CQS-PLAN-S02 post-merge
+reconciliation PR — **not** Slice 15 implementation.
+
 ## Slice 14 merge evidence
 
 | Fact | Value |
@@ -1320,11 +1363,11 @@ None.
 `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d`), with post-merge CI and Pages both
 observed green.
 
-**Roadmap Amendment 003 (`CQS-PLAN-S02`) rebalances the remaining MVP to 22
-slices** (documentation-only). Slices **15–22 remain `Planned` and unstarted**.
-**No Slice 15 implementation authority is granted.** The recommended next
-action is exact-head Program Orchestrator review of the Amendment 003 delivery
-PR — not Slice 15 implementation.
+**Roadmap Amendment 003 (`CQS-PLAN-S02`) is merged to `main`** (PR #35 squash
+`2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`; 22-slice plan canonical). Slices
+**15–22 remain `Planned` and unstarted**. **No Slice 15 implementation
+authority is granted.** The recommended next action is exact-head review of
+the CQS-PLAN-S02 post-merge reconciliation PR — not Slice 15 implementation.
 
 Coding agents and contributors should read root [`../AGENTS.md`](../AGENTS.md)
 (and pointer-only [`../CLAUDE.md`](../CLAUDE.md) for Claude sessions) before

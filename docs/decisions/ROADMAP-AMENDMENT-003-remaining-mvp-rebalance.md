@@ -4,9 +4,13 @@
 - **Slice identifier:** `CQS-PLAN-S02-REMAINING-MVP-REBALANCE`
 - **Authorization:** `AUTHORIZE-CQS-PLAN-S02-REMAINING-MVP-REBALANCE-1`
 - **Evidence state:** `CQS-PLAN-S02-ES-1`
-- **Status:** Accepted (owner-authorized planning decision)
+- **Status:** Accepted (owner-authorized planning decision) — **merged to
+  `main`** via PR #35 at squash `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`
+  (merged **2026-08-04T03:41:30Z**)
 - **Date:** 2026-08-03
-- **Base `main`:** `4df76f1dd504f0fdef5b27417edeec90471e6b62`
+- **Base `main` (delivery base):** `4df76f1dd504f0fdef5b27417edeec90471e6b62`
+- **Merge evidence:**
+  [`../receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md`](../receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md)
 - **Type:** decision + documentation only — **no runtime code, no schema
   change, no test change, no dependency change, no CI/deploy change**
 - **Amends:** the remaining sequence of the 18-slice plan in
@@ -553,12 +557,26 @@ writing and is superseded for *current* MVP counting by this amendment.
 
 ## 18. Next safe product action
 
-After this amendment merges:
+Actual sequence after delivery:
 
-1. Exact-head Program Orchestrator review of the amendment PR (this delivery).
-2. After merge/reconciliation: Program Orchestrator readiness for **Slice 15 —
-   Session Summary Contract** as the next product implementation candidate.
-3. Phase 3 planning lane may be scheduled per §8’s parallelism rule.
+1. Amendment 003 delivery was reviewed and **squash-merged** via PR #35 at
+   `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc` (reviewed head
+   `c637b979fa6e575c28dd6eb73dfbd52a76e93d35`; sole parent
+   `4df76f1dd504f0fdef5b27417edeec90471e6b62`; merged
+   **2026-08-04T03:41:30Z**).
+2. Post-merge identity and checks were verified (identical trees
+   `5ea188f5117d9f92bca6d3f83da57d7c868c3395`; empty direct diff; CI run
+   `30875474982` success; SonarCloud success; Pages run `30875474980`
+   success).
+3. Documentation-only post-merge reconciliation records the final merged
+   state — see
+   [`../receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md`](../receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md).
+4. After that reconciliation is reviewed and merged, the Program Orchestrator
+   may conduct readiness for **Slice 15 — Session Summary Contract** as the
+   next product implementation candidate.
+5. Slice 15 implementation still requires separate owner authorization.
+6. The Phase 3 planning lane remains separately unauthorized and may be
+   considered only under the documented parallelism rule in §8.
 
 **This amendment does not authorize Slice 15 implementation.**
 
