@@ -1,5 +1,13 @@
 # Expanded Vision — Owner Decision Register
 
+> **Routing note (Amendment 003, 2026-08-03).** Passages below that describe the
+> MVP as an **18-slice** plan were true when `CQS-PLAN-S01` recorded them. The
+> **current** MVP sequence is the **22-slice** plan in
+> [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md), per
+> [`ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md).
+> No `CQS-OD-*` acceptance or activation state in this register is changed by
+> that note. **`CQS-OD-066` remains unresolved.**
+
 - **Register id:** `CQS-EXPANDED-VISION-DECISIONS`
 - **Authorization:** `AUTHORIZE-CQS-PLAN-S01-EXPANDED-VISION-DOCUMENTATION-1`
 - **Slice:** `CQS-PLAN-S01` (planning-only documentation slice)
@@ -11,9 +19,11 @@ decisions and their acceptance state**. Other planning documents cite decision
 ids (`CQS-OD-001`…`CQS-OD-086`) instead of restating decisions independently.
 
 Nothing in this register implements anything, authorizes implementation,
-changes the current MVP, or rewrites accepted history. Architectural
-consequences and supersession lineage live in
+or rewrites accepted history. Architectural consequences and supersession
+lineage live in
 [`ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md`](ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md);
+remaining-MVP rebalance in
+[`ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md);
 sequencing lives in
 [`../plans/EXPANDED-CQS-VISION-ARC.md`](../plans/EXPANDED-CQS-VISION-ARC.md);
 deferred work lives in
@@ -44,7 +54,9 @@ deferred work lives in
   (sessions, telemetry, transcripts, analytics, assessment),
   `CQS-ARC-FORMATS` (additional game formats incl. Survey Showdown),
   `CQS-ARC-PARTICIPATION` (student participation and credit). The current
-  MVP remains the 18-slice plan in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).
+  MVP sequence at recording was the 18-slice plan in
+  [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md); **current** sequence is the
+  22-slice plan per Amendment 003 (see routing note above).
 
 ## Traceability gate
 

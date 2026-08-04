@@ -13,15 +13,16 @@ architectural lineage in
 [`../decisions/ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md`](../decisions/ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md);
 deferred-capability dossiers in
 [`POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md).
-The current MVP sequence remains [`MVP-ARC.md`](MVP-ARC.md), unchanged.
+The current MVP sequence is the **22-slice** plan in
+[`MVP-ARC.md`](MVP-ARC.md) (Amendment 003). Post-MVP arcs still require separate
+authorization.
 
 The accepted **Phase 2B audience-display design direction** is registered
 separately in
 [`CQS-DESIGN-PHASE-2B-DIRECTION.md`](CQS-DESIGN-PHASE-2B-DIRECTION.md). It is
-program guidance only: it implements nothing, authorizes nothing, changes no
-owner decision's acceptance or activation state, and changes no arc sequencing
-in this document. Its eventual MVP implementation consumer is **Slice 16 — Theme
-engine**, which remains `Planned` and unauthorized.
+program guidance only: it implements nothing, authorizes nothing, and changes no
+owner decision's acceptance or activation state. Its MVP implementation consumers
+are **Slices 17–18**, which remain `Planned` and unauthorized.
 
 ## 1. Product thesis
 
@@ -50,8 +51,9 @@ export with round-trip import; host-local IndexedDB persistence with
 explicit Resume/Discard recovery; and the `final-wager` round as the second
 playable registered round type. Public-state wire **8**, sync envelope
 **2**, game-file schema **1**. **Slice 14 — Final-wager round is
-`Complete`** (squash-merged via PR #32 at `ce2e103…`); **Slice 15 — Session
-summary & compatible-profile reporting is `Planned` and unstarted.**
+`Complete`** (squash-merged via PR #32 at `ce2e103…`); **Slices 15–22 remain
+`Planned` and unstarted** under Amendment 003. Next product candidate: **Slice 15
+— Session Summary Contract** (unauthorized).
 
 > **Reconciliation note.** This section previously recorded slices 1–13,
 > public-state wire 7, and Slice 14 as `Planned` and unstarted. That was
@@ -65,12 +67,14 @@ be read as "CQS supports X" for any X outside the paragraph above.
 
 ## 3. Current MVP boundary
 
-The current MVP is exactly the 18-slice plan of record in
-[`MVP-ARC.md`](MVP-ARC.md) (**slices 15–18 remaining**: session summary and
-compatible-profile reporting; theme engine; authoring and packs; release
-readiness). This arc **does not** add to, reorder, or re-scope it.
-Expanded-vision capabilities enter only through future arcs, each requiring
-its own Program Orchestrator authorization.
+The current MVP is exactly the **22-slice** plan of record in
+[`MVP-ARC.md`](MVP-ARC.md) (**slices 15–22 remaining**: session summary contract;
+summary ledger & compatible reporting; theme/token foundation; audience display;
+portable packs; spreadsheet authoring seed; Sony Buzz supported-profile
+operationalization; classroom release qualification). This arc **does not** add
+to, reorder, or re-scope that remaining sequence beyond what Amendment 003
+already recorded. Expanded-vision capabilities enter only through future arcs,
+each requiring its own Program Orchestrator authorization.
 
 ## 4. Architecture preservation now
 
@@ -109,9 +113,10 @@ validation, review and approval; canonical-JSON compilation through the
 existing import boundary; question-bank storage with item-family identity;
 generation and source lineage. Detail:
 [`LLM-SPREADSHEET-AUTHORING-ARC.md`](LLM-SPREADSHEET-AUTHORING-ARC.md).
-Dependencies: current MVP through Slice 17 territory (the MVP's own
-authoring/packs slice remains the seed this arc grows from — the arc must
-reconcile with Slice 17's delivered shape at authorization time).
+Dependencies: current MVP through Slice 20 territory (spreadsheet authoring
+seed remains the seed this arc grows from — the arc must reconcile with
+Slice 20's delivered shape at authorization time; Slice 19 packs are
+available composition).
 Principal risks: scope creep into an editor product; grounding-quality
 variance across models; teacher-trust failure if QA warnings are noisy.
 
@@ -123,7 +128,7 @@ recurring identities, presentation effects (animation, sound, celebrations)
 under strict accessibility and authority bounds, richer public team-card
 state. Detail:
 [`HOST-CONSOLE-TEAM-IDENTITY-AND-PRESENTATION.md`](HOST-CONSOLE-TEAM-IDENTITY-AND-PRESENTATION.md).
-Dependencies: media/theme groundwork from the MVP (Slice 16), ordinal
+Dependencies: media/theme groundwork from the MVP (Slices 17–18), ordinal
 secondary-action consumers (`CQS-RA2-SECONDARY-01`).
 Principal risks: presentation leaking into game authority; audio licensing;
 motion accessibility.
@@ -153,7 +158,7 @@ in; individual records out — `CQS-OD-059`; `CQS-OD-066` unresolved).
 Detail:
 [`SESSION-ANALYTICS-ASSESSMENT-AND-PARTICIPATION.md`](SESSION-ANALYTICS-ASSESSMENT-AND-PARTICIPATION.md).
 Dependencies: `CQS-ARC-AUTHORING`'s item identity; the archive
-(`CQS-RA2-ARCHIVE-01`); MVP Slice 15's summary as the seed.
+(`CQS-RA2-ARCHIVE-01`); MVP Slices 15–16 summary contract and ledger as the seed.
 Principal risks: privacy expectations; analytics over-claiming (reaction
 time, individual mastery); retention complexity.
 
@@ -242,13 +247,13 @@ boundary. Survey Showdown never presents synthetic data as a real survey
 
 ## 9. Program Orchestrator decision points
 
-1. **Slice 15 readiness and sequencing** (current MVP next action —
-   unchanged by this arc). Slice 14 was authorized, implemented, reviewed
-   and merged; the frontier has moved to a separate Slice 15
-   planning/readiness decision, which nothing here grants.
+1. **Exact-head review of Amendment 003**, then **Slice 15 readiness**
+   (current MVP next product action — nothing here grants Slice 15
+   implementation). Slice 14 is `Complete`; Slices 15–22 are `Planned`.
 2. **Resolve `CQS-OD-066`** (GCS learning-target linkage) — owner
    decision; blocks only the GCS-integration slice of `CQS-ARC-INSIGHT`.
-3. **Authorize `CQS-ARC-AUTHORING` planning** — after MVP Slice 17
+   Standards/GCS tags are removed from the MVP completion requirement.
+3. **Authorize `CQS-ARC-AUTHORING` planning** — after MVP Slice 20
    territory is reached or deliberately re-sequenced; this is the first
    post-MVP authorization the owner has pre-declared (`CQS-OD-080`).
 4. **Order arcs 2–5** as classroom evidence accumulates (see the

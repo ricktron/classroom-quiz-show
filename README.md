@@ -315,8 +315,11 @@ was squash-merged at `5575be35d76ae0f0d3b36394431b7873883b78ac` (merged
 `288593391776be1d89b7f5ab9820e147946e56f9`. Exact PR-path blob equality confirmed
 that the reviewed content is what landed (28 paths). Post-merge verification
 succeeded on clean `main` at that squash tip. Completion covers the
-owner-accepted hardware-independent scope; physical Sony Buzz! certification
-remains deferred, and no compatibility claim is made. See
+owner-accepted hardware-independent scope. A later bounded physical
+certification (OADL2-S07) exists for one exact configuration under a temporary
+keep-alive — see the current physical-certification note below and
+[`docs/receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](docs/receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md).
+Permanent supported-profile operationalization remains Slice 21. See
 [`docs/architecture/ADR-010-sony-buzz-profile-and-setup.md`](docs/architecture/ADR-010-sony-buzz-profile-and-setup.md)
 and
 [`docs/receipts/2026-07-28-slice-10-post-merge-reconciliation.md`](docs/receipts/2026-07-28-slice-10-post-merge-reconciliation.md).
@@ -330,8 +333,10 @@ No schema, `PublicState`, sync protocol, command, event or reducer change.
   (`sonyBuzzProfile`).
 - **Setup test mode** and host setup surface (`SonyBuzzSetupSection`) that resolve
   presses without dispatching gameplay.
-- **Deferred certification:** future physical Sony Buzz! validation is required
-  before any supported-hardware claim, not before merge or Slice 10 completion.
+- **Physical certification (later):** OADL2-S07 recorded a bounded host claim for
+  one exact tested configuration; it is not a generalized supported-hardware
+  list. Slice 21 is intended to close permanent keep-alive / supported-profile
+  operationalization.
 
 **Slice 11 — Media contract. Complete** — PR #23 was squash-merged at
 `5d47b2f641e1a96c2066ec22731f4e751288b39a` (merged **2026-07-28T04:56:27Z**) from
@@ -392,16 +397,27 @@ schema all stay **1**; no dependency added. Browser acceptance covered **24 of
 [`docs/receipts/2026-08-03-slice-14-local-verification.md`](docs/receipts/2026-08-03-slice-14-local-verification.md)
 and
 [`docs/receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](docs/receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
-**Slice 15** remains Planned and unstarted.
+**Slices 15–22** remain Planned and unstarted under the **22-slice** MVP plan
+([`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
+Next product candidate: **Slice 15 — Session Summary Contract** (not
+authorized by the roadmap amendment).
 
-> ⚠️ **No physical Sony Buzz! controller has been tested.** CI and simulated
-> Gamepad sources prove the hardware-independent boundary only. There is no
-> supported-hardware list and no compatibility claim.
-
-> ⚠️ **No physical controller has been tested** (Slice 9 generic adapter). Every
-> physical behaviour is proved by deterministic unit tests against a fake Gamepad
-> source; the browser tests cover the **no-controller** path only. There is no
-> supported-hardware list and no compatibility claim for any specific device.
+> ⚠️ **Sony Buzz physical certification is bounded, not a supported-hardware
+> list.** OADL2-S07 completed physical certification for one exact tested
+> configuration: macOS · Chrome · Namtai wireless `Wbuzz` · vendor/product
+> `054c:1000` · four labeled handsets · with a temporary external HID output
+> keep-alive active. Guided setup, test mode, primary-Red gameplay
+> identification, rising-edge behavior, one simultaneous A+B ordering
+> observation, and keyboard fallback passed under that temporary keep-alive.
+> This does **not** claim wired Sony Buzz, Windows, Linux, Raspberry Pi,
+> Bluetooth, all Sony revisions, or operation without the keep-alive. Permanent
+> packaged keep-alive, hot-plug recovery, and supported-profile
+> operationalization remain unresolved; **Slice 21** is intended to close that
+> exact gap. See
+> [`docs/receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](docs/receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md).
+> Slice 9’s generic Gamepad adapter remains unit-proven against a fake source
+> for hardware-independent behavior; browser tests still cover the
+> no-controller path.
 
 The Slice 1 foundation is unchanged beneath it:
 
@@ -418,10 +434,13 @@ The Slice 1 foundation is unchanged beneath it:
 There are **two playable round types**. `category-board` scores, can be timed,
 and teams can buzz in on it **from the host keyboard, or from a generic USB
 controller through the same boundary**; `final-wager` (Slice 14) is
-the closing wager round, host-entered and private until each explicit reveal. Slice 10 adds a **host-private Sony Buzz! setup surface**
-(candidate classification, capture recipe, setup test mode) — **`Complete`** under
-the owner-accepted hardware-independent boundary, with physical certification
-deferred and **no compatibility claim**. No WebHID or Bluetooth of any kind, no networked or
+the closing wager round, host-entered and private until each explicit reveal.
+Slice 10 adds a host-private Sony Buzz! setup surface (candidate classification,
+capture recipe, and setup test mode) and is `Complete` under its
+hardware-independent implementation boundary. Bounded physical certification is
+recorded separately under OADL2-S07; it does not establish a generalized
+compatibility claim. Permanent supported-profile operationalization remains
+Slice 21 work. No WebHID or Bluetooth of any kind, no networked or
 student-device buzzing, and no wagers, audio/video/remote media, or themes.
 The host has local IndexedDB persistence for the active event history and a saved
 definitions library: after a refresh with an unfinished session, the teacher gets

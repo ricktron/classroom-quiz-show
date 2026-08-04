@@ -15,8 +15,10 @@ deferral dossiers: the `CQS-OPP-HISTORICAL-ARCHIVE` through
 [`POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md).
 
 None of this exists today. The current implementation persists an active
-session for recovery only (ADR-013) and projects a live scoreboard; MVP
-Slice 15 (unstarted) plans the per-session summary.
+session for recovery only (ADR-013) and projects a live scoreboard. MVP
+**Slices 15–16** (unstarted) own the session-summary contract and the
+completed-summary ledger / compatible reporting seed; the full archive,
+telemetry, and assessment promotion remain post-MVP for this arc.
 
 ## 1. Two separated history layers (§10.8; `CQS-RA2-TELEMETRY-01`)
 

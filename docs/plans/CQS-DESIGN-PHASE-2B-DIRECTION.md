@@ -21,7 +21,7 @@ What the disposition means, stated exactly:
 - **the design is not implemented**;
 - **the representative artifacts are evidence, not application source**;
 - **Phase 3 is not authorized**;
-- **Slice 16 is not authorized**;
+- **Slices 17–18 are not authorized**;
 - **no production, projector, accessibility, or Raspberry Pi acceptance exists.**
 
 **This repository remains the single source of implementation truth.** Per
@@ -32,10 +32,11 @@ observed implementation appear to disagree about what exists today, **the
 repository is correct by definition**, and this document is the thing to be
 corrected.
 
-This registration creates no new `CQS-OD-*`, changes no existing owner decision's
-acceptance or activation state, promotes no parked or `architecture-preserved`
-capability, and alters no current MVP sequencing. The 18-slice plan of record in
-[`MVP-ARC.md`](MVP-ARC.md) is unchanged.
+This registration created no new `CQS-OD-*`, changed no existing owner decision's
+acceptance or activation state, promoted no parked or `architecture-preserved`
+capability, and (at registration time) altered no MVP sequencing. **After
+Amendment 003**, the MVP plan of record in [`MVP-ARC.md`](MVP-ARC.md) is the
+**22-slice** sequence; Phase 2B MVP consumers are Slices **17–18**.
 
 ## 2. Provenance and evidence limits
 
@@ -173,7 +174,8 @@ supports today (`MIN_TEAMS = 1`, `MAX_TEAMS = 8` in
 - **No automatic score ranking.** The score layouts never reorder themselves by
   score. A ranked list is a leaderboard by another name, and raw-score
   leaderboards as a default surface are excluded
-  (`ROADMAP-AMENDMENT-001` §5.7; [`MVP-ARC.md`](MVP-ARC.md) Slice 15 exclusions).
+  (`ROADMAP-AMENDMENT-001` §5.7; [`MVP-ARC.md`](MVP-ARC.md) reporting-slice
+exclusions; Amendment 003 Slices 15–16).
 - **Negative scores supported**, with an **explicit minus sign** — never colour
   alone, never a parenthesis convention.
 - **Long-name handling** is required, not optional. Team names are bounded at 40
@@ -358,7 +360,7 @@ Recorded as obligations on any future implementation:
 - **future physical-projector and viewing-distance testing.**
 
 **No current accessibility certification exists.** The accessibility audit is
-Slice 18 work ([`MVP-ARC.md`](MVP-ARC.md)), and nothing in this registration
+Slice 22 classroom-release work ([`MVP-ARC.md`](MVP-ARC.md)), and nothing in this registration
 performs, schedules, or satisfies it. No physical projector test was performed
 for this registration.
 
@@ -413,15 +415,17 @@ Explicit non-claims for this registration:
 
 - **The Phase 2B design-direction purpose is complete.** This document is its
   durable landing place.
-- **Slice 15 — Session summary & compatible-profile reporting remains the next
-  planned product slice**, `Planned` and unstarted. This document does not change
-  its priority and does not authorize it.
-- **Slice 16 — Theme engine remains the eventual MVP implementation consumer** of
-  this direction, `Planned` and unstarted. **Slice 16 is not authorized** by this
-  registration.
+- **Slice 15 — Session Summary Contract remains the next planned product
+  slice**, `Planned` and unstarted. This document does not change its priority
+  and does not authorize it.
+- **MVP implementation consumers of this direction are Slices 17–18** (Theme and
+  Design-Token Foundation, then Audience Display System), both `Planned` and
+  unstarted. **Neither is authorized** by this registration. Amendment 003
+  requires a documentation/specification-only **Phase 3** readiness lane before
+  Slice 17 implementation.
 - **A separately authorized Phase 3 design-system specification/readiness lane
-  may occur** without changing product-slice sequencing. **Phase 3 is not
-  authorized** here.
+  is required before Slice 17** and may run in parallel with Slices 15–16 only
+  when paths do not conflict. **Phase 3 is not authorized** here.
 - **No implementation authority follows from this document.** Any work that
   changes runtime code, schema, the public wire, tests, assets, dependencies,
   workflows, or deployment requires its own bounded owner authorization.
