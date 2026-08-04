@@ -5,7 +5,7 @@ direction, and the slice sequence. It is the durable plan of record in this
 repository. It does **not** silently rewrite the approved plan; it incorporates
 the round-based engine direction into it.
 
-> **Expanded-vision planning exists and changes nothing here (2026-08-03).**
+> **Expanded-vision planning exists as post-MVP direction (2026-08-03).**
 > A planning-only documentation slice (`CQS-PLAN-S01`) recorded the owner's
 > expanded post-MVP vision — see
 > [`EXPANDED-CQS-VISION-ARC.md`](EXPANDED-CQS-VISION-ARC.md),
@@ -13,21 +13,21 @@ the round-based engine direction into it.
 > [`../decisions/ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md`](../decisions/ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md),
 > and
 > [`POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md).
-> **This 18-slice plan remains the current MVP sequence, unmodified**: no
-> slice was added, removed, reordered, or re-scoped; Slice 14 is now
-> `Complete` and merged, Slice 15 remains `Planned` and unstarted; post-MVP
-> arcs require separate authorization.
+> Amendment 002 did not change the then-current 18-slice MVP. **The current
+> MVP sequence is the 22-slice plan below**, per
+> [`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
+> (`CQS-PLAN-S02`). Slices 1–14 remain `Complete`; Slices 15–22 remain
+> `Planned` and unstarted. Post-MVP arcs still require separate authorization.
 
-> **Phase 2B design direction is accepted program guidance and changes
-> nothing here (2026-08-03).** The accepted audience-display design direction
-> is registered in
+> **Phase 2B design direction is accepted program guidance (2026-08-03).**
+> The accepted audience-display design direction is registered in
 > [`CQS-DESIGN-PHASE-2B-DIRECTION.md`](CQS-DESIGN-PHASE-2B-DIRECTION.md)
-> under `AUTHORIZE-CQS-DESIGN-PHASE-2B-REGISTRATION-1`. **Slice 16 — Theme
-> engine is its eventual MVP implementation consumer.** The acceptance
-> **does not authorize Slice 16**, does not change Slice 15's priority, and
-> does not add to, remove from, reorder, or re-scope this 18-slice sequence
-> or any slice's dependencies. Phase 2B is **not** a numbered MVP slice and
-> is not implemented.
+> under `AUTHORIZE-CQS-DESIGN-PHASE-2B-REGISTRATION-1`. **MVP implementation
+> consumers are Slices 17–18** (theme/token foundation, then audience display).
+> A documentation/specification-only **Phase 3** readiness lane is required
+> before Slice 17 implementation. Phase 2B / Phase 3 / Slices 17–18 are **not**
+> authorized for implementation by their registration or by Amendment 003.
+> Phase 2B is **not** a numbered MVP slice and is not implemented.
 
 ## Product direction (approved)
 
@@ -50,7 +50,7 @@ fail-closed projector behavior.
 Slice 1 preserves these decisions **without** prematurely implementing the later
 systems.
 
-## Slice sequence (18-slice plan, amended)
+## Slice sequence (22-slice plan, amended)
 
 > This ordering is the plan of record. Later slices must not be started until
 > the current slice is accepted. Details for future slices are intentionally
@@ -58,13 +58,18 @@ systems.
 > silently rewritten.
 >
 > **Amended 2026-07-26 by `ROADMAP-AMENDMENT-001`.** The original plan had 11
-> slices. Slices 1–6 are unchanged and `Complete`; former slices 7–11 have been
+> slices. Slices 1–6 were unchanged and `Complete`; former slices 7–11 were
 > re-scoped, decomposed and reordered into slices 7–18 to accommodate
 > owner-authorized **local host-attached USB buzzers** and to pull the media
-> contract ahead of any new round type. This was **not** a silent rewrite: the
-> full rationale, the dependency analysis, the superseded statements, and the
-> open owner gates are recorded in
+> contract ahead of any new round type. Rationale:
 > [`../decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](../decisions/ROADMAP-AMENDMENT-001-local-buzzers.md).
+>
+> **Amended 2026-08-03 by `ROADMAP-AMENDMENT-003`.** Slices 1–14 remain
+> unchanged and `Complete`. Former unstarted Slices 15–18 were replaced by
+> Slices 15–22 (decomposition/reconciliation plus one Sony Buzz
+> supported-profile operationalization slice). Rationale and binding records:
+> [`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md).
+> **No product implementation is authorized by Amendment 003.**
 
 | #   | Slice                          | Focus (summary)                                                                 | Depends on |
 | --- | ------------------------------ | ------------------------------------------------------------------------------- | ---------- |
@@ -77,15 +82,19 @@ systems.
 | 7   | **Timers, arming & transitions** | Timer config, a deadline-projected public timer, host arming/disarming, host-controlled undoable round transitions, reduced-motion-safe. The interrupt seam must be typed so buzz-in is a later addition, not a rewrite. **(Complete.)** | 5, 6 |
 | 8   | **Local input contract & keyboard buzz-in** | The device-independent input-adapter boundary + registry, buzz-in domain semantics, one command/event pair, replay-derived queue state, sanitized public projection — with the **keyboard adapter** as its first consumer. **(Complete — delivered without the anticipated adapter *registry* object; a bounded application-only input-source union ships its guarantees instead. See ADR-008 §3.)** | 2, 6, 7 |
 | 9   | **Generic Gamepad adapter**    | Gamepad API adapter behind the slice 8 boundary; connect/disconnect handling, polling isolation, host diagnostics. No model-specific assumptions. **(Complete — merged via PR #19 (`d16f90d`). No schema, `PublicState`, protocol, command, event or reducer change. No physical controller was tested. See ADR-009.)** | 8 |
-| 10  | **Sony Buzz! mapping, validation & host setup UX** | Configurable controller mapping, Sony Buzz! candidate classification and capture recipe, host setup/test surface, fallback when no controller is present. **(Complete — squash-merged via PR #21 (`5575be3`) from reviewed head `2885933`. Hardware-independent scope; physical certification deferred; no compatibility claim. See ADR-010.)** | 9 |
+| 10  | **Sony Buzz! mapping, validation & host setup UX** | Configurable controller mapping, Sony Buzz! candidate classification and capture recipe, host setup/test surface, fallback when no controller is present. **(Complete — squash-merged via PR #21 (`5575be3`) from reviewed head `2885933`. Hardware-independent scope; OADL2-S07 bounded physical claim under temporary keep-alive; permanent keep-alive unresolved until Slice 21. See ADR-010.)** | 9 |
 | 11  | **Media contract**             | Typed media model (beyond plain-string prompts), fail-closed on unsupported media, additive on `schemaVersion: 1`. **(Complete — squash-merged via PR #23 (`5d47b2f`) from reviewed head `bb8bd94`. Public wire 7; sync 2; schema 1. See ADR-011.)** | 4, 5 |
 | 12  | **Portable export & round-trip import** | Export a game to the canonical portable document and re-import it losslessly; reproducible game identity; round-trip equality as an acceptance criterion. **Complete — squash-merged via PR #25 (`cdb499a…`).** | 4, 11 |
 | 13  | **Local persistence & recovery** | IndexedDB durable local storage with three stores (`savedDefinitions`, `activeSessions`, `coordination`); explicit Resume/Discard recovery; saved-definition Save/Replace/Delete/Load; private persistence-session wire; lightweight host lease coordination; nothing new projected to the display. **(Complete — squash-merged via PR #27 (`6cf4d25…`) from reviewed head `ad0867a…`.)** | 2, 12 |
 | 14  | **Final-wager round**          | Public prompt, host-entered/private wagers, timed response, reveal, settlement, tie handling. **(Complete — squash-merged via PR #32 (`ce2e103…`) from reviewed head `c2bcc1a…`. Public wire 7 → 8; sync 2; schema 1. See ADR-014.)** | 5, 6, 7, 11 |
-| 15  | **Session summary & compatible-profile reporting** | Per-session result summary from replay; normalized metrics; cross-session comparison behind a stable competitive-profile identifier. | 6, 13 |
-| 16  | **Theme engine**               | Presentation-only theme system, accessibility/high-contrast theme. Never alters scoring, validation, event semantics or the privacy boundary. | 5 |
-| 17  | **Authoring & packs**          | Content authoring, spreadsheet import convenience, complete portable game packs, standards tags. | 4, 5, 12 |
-| 18  | **Release readiness**          | Accessibility audit, polish, documentation completeness, deployment verification. | all |
+| 15  | **Session Summary Contract** | Versioned host-private completed-session summary derived from authoritative replay; no completed-session storage. | 2, 5, 6, 7, 8, 13, 14 |
+| 16  | **Completed Summary Ledger & Compatible Reporting** | Privacy-minimized summary storage; versioned competitive-profile comparison; retention/deletion; team/class reports. | 13, 15 |
+| 17  | **Theme and Design-Token Foundation** | Application-owned tokens/theme registry; default + high-contrast; reduced-motion; viewport/team/score fixtures. Requires preceding Phase 3 planning lane. | 5, 6; Phase 3 |
+| 18  | **Audience Display System** | Accepted Phase 2B audience-display implementation; privacy tests; prefer public wire 8. | 14, 17 |
+| 19  | **Self-Contained Portable Packs** | Versioned offline pack of canonical JSON + local media; safe import/export; round-trip proof. | 4, 11, 12 |
+| 20  | **Spreadsheet Authoring Seed** | Classic Board and Board+Final workbooks → draft → teacher approval → canonical JSON → existing importer. | 4, 5, 12, 14 |
+| 21  | **Sony Buzz Supported-Profile Operationalization** | One exact supported profile (macOS/Chrome/Namtai `Wbuzz` `054c:1000`/4 handsets/keyboard fallback); permanent keep-alive. | 9, 10 |
+| 22  | **Classroom Release Qualification** | Teacher-reliant classroom proof; no new architecture or features; Pi 5 observational only. | 15–21 |
 
 Additional round engines (image-identification, timeline-ordering, matching,
 data-interpretation, concept-map, claim-evidence-reasoning, whiteboard-challenge,
@@ -648,7 +657,8 @@ squash-merged via
 `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` from the final reviewed-and-repaired
 head `c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26` (authorized base
 `4de1454181ed58bdb282accd136129c3c0eb0f2b`, merged **2026-08-03T17:08:37Z**).
-**Slice 15 remains `Planned` and unstarted.**
+**Slices 15–22 remain `Planned` and unstarted** under the 22-slice plan
+(Amendment 003). **No Slice 15 implementation authority is granted.**
 
 ## Slice 8 — scope, acceptance, non-goals
 
@@ -988,10 +998,11 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   [`../architecture/ADR-011-media-contract.md`](../architecture/ADR-011-media-contract.md);
   post-merge evidence in
   [`../receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
-- **Next action:** Slices 12, 13 and 14 are all `Complete` and merged. Slice 15
-  remains `Planned` and unstarted, and starting it requires separate
-  owner-approved authority; the next product action returns to the Program
-  Orchestrator for Slice 15 readiness and sequencing.
+- **Next action:** Slices 1–14 are `Complete` and merged. Slices 15–22 remain
+  `Planned` under the 22-slice plan (Amendment 003). Amendment 003 does **not**
+  authorize Slice 15 implementation; after it merges, the next product action
+  returns to the Program Orchestrator for Slice 15 readiness — never silent
+  implementation.
 
 ### Slice 12 — Portable export & round-trip import
 
@@ -1101,84 +1112,179 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
 - **Owner gate:** review of the delivery pull request — **satisfied**; merged
   under `AUTHORIZE-CQS-S14-EXACT-HEAD-SQUASH-MERGE-1`.
 
-### Slice 15 — Session summary & compatible-profile reporting
+### Slice 15 — Session Summary Contract
 
-- **Identifier:** `CQS-SLICE-15-REPORTING`
-- **Purpose:** tell the teacher what happened in a session, and make any
-  cross-session comparison honest.
-- **Primary deliverables:** a per-session result summary derived from replay;
-  **normalized metrics** (percentage of available points, category accuracy,
-  wins, response accuracy); a stable **competitive-profile identifier** so only
-  compatible games are compared; cross-session comparison **only** where
-  persistence supplies the history.
-- **Major exclusions:** **no raw-score leaderboard as a default surface**; no
-  individual student identity (`OG-7`); no grading or defensible individual
-  analytics; no export to an LMS.
-- **Prerequisites:** slice 6; slice 13 for anything cross-session.
-- **Completion evidence:** `verify:all` green; tests proving a summary is derived
-  from the log and never cached; tests proving incompatible profiles are not
-  compared.
-- **Impact:** schema no · runtime **yes** · UI **yes** · storage no (reads slice
-  13's) · hardware no.
+- **Identifier:** `CQS-SLICE-15-SESSION-SUMMARY-CONTRACT`
+- **Purpose:** derive one deterministic host-private completed-session summary
+  from authoritative replay.
+- **Primary deliverables:** a versioned summary contract; teacher-readable
+  current-session summary; explicit observed-vs-derived distinction; undo and
+  irreversible-event handling across board, scoring, timer, buzz, persistence,
+  and Final behavior.
+- **Major exclusions:** no completed-session storage; no cross-session history;
+  no full event archive, telemetry, transcript, question analytics, individual
+  identity, or LMS/GCS integration; no ungrounded accuracy, reaction-time,
+  mastery, or grading claims.
+- **Prerequisites:** slices 2, 5, 6, 7, 8, 13, 14.
+- **Completion evidence:** `verify:all` green; tests proving summary derivation
+  from replay only and absence of a completed-session store.
+- **Impact:** schema no · public-wire no · storage no · UI **yes** · hardware no.
 - **Status:** `Planned` — unstarted.
-- **Owner gate:** `OG-7` for any individual identity; authorization to begin.
+- **Owner gate:** separate authorization to begin. **Not authorized by
+  Amendment 003.**
 
-### Slice 16 — Theme engine
+### Slice 16 — Completed Summary Ledger & Compatible Reporting
 
-- **Identifier:** `CQS-SLICE-16-THEME-ENGINE`
-- **Purpose:** presentation-only theming, including an accessibility/high-contrast
-  theme.
-- **Primary deliverables:** a theme system covering typography, backgrounds,
-  tiles, score presentation and animation intensity; a high-contrast theme;
-  theme selection that content may name but never supply.
-- **Major exclusions:** a theme must **never** alter scoring rules, the
-  private/public boundary, validation, event semantics or answer-reveal
-  authorization; no imported style values; no team colours beyond the
-  application palette.
-- **Prerequisites:** slice 5.
-- **Completion evidence:** `verify:all` green; tests proving no theme value
-  originates from imported content and no theme changes engine behaviour.
-- **Impact:** schema **possibly** (additive theme name) · runtime **yes** · UI
-  **yes** · storage no · hardware no.
-- **Status:** `Planned` — unstarted.
-- **Owner gate:** authorization to begin.
-
-### Slice 17 — Authoring & packs
-
-- **Identifier:** `CQS-SLICE-17-AUTHORING-PACKS`
-- **Purpose:** let a teacher build and manage content without hand-writing JSON.
-- **Primary deliverables:** content authoring UI; spreadsheet import convenience
-  through the existing single pipeline; complete portable game packs; standards
-  tags.
-- **Major exclusions:** no backend; no cloud library; no AI generation; no second
-  validation pipeline.
-- **Prerequisites:** slices 4, 5, 12.
-- **Completion evidence:** `verify:all` green; every authoring path proven to
-  converge on the one canonical import pipeline.
-- **Impact:** schema **possibly** · runtime **yes** · UI **yes** · storage
-  **yes** · hardware no.
-- **Status:** `Planned` — unstarted.
-- **Owner gate:** authorization to begin.
-
-### Slice 18 — Release readiness
-
-- **Identifier:** `CQS-SLICE-18-RELEASE-READINESS`
-- **Purpose:** close the gap between "features exist" and "a teacher can rely on
-  it in a classroom".
-- **Primary deliverables:** a full accessibility audit; real PWA icons (the Slice
-  1 placeholders); polish; documentation completeness; **owner-performed live
-  deployment verification**, recorded as such; release-readiness consideration of
-  any supported-hardware claims against separately completed physical
-  certification.
-- **Major exclusions:** no new capability.
-- **Prerequisites:** all prior slices.
-- **Completion evidence:** `verify:all` green; an accessibility audit receipt;
-  an owner-verified live-route receipt — which, unlike every prior slice, cannot
-  be satisfied by a deployment workflow conclusion alone.
-- **Impact:** schema no · runtime **yes** (polish) · UI **yes** · storage no ·
+- **Identifier:** `CQS-SLICE-16-SUMMARY-LEDGER`
+- **Purpose:** store privacy-minimized summary records and compare only
+  semantically compatible summaries.
+- **Primary deliverables:** storage separate from active recovery and saved
+  definitions; versioned competitive-profile semantics; compatible-only
+  comparison with visible incompatibility; retention and deletion controls;
+  team/class-focused reports.
+- **Major exclusions:** no full session archive; no raw telemetry or transcript;
+  no exact private response retention; no individual student identity; no
+  mastery or psychometric claims. Preserves the future full archive for
+  `CQS-ARC-INSIGHT`.
+- **Prerequisites:** slices 13, 15.
+- **Completion evidence:** `verify:all` green; tests for compatible-only
+  comparison and retention/deletion.
+- **Impact:** schema no · public-wire no · storage **yes** · UI **yes** ·
   hardware no.
 - **Status:** `Planned` — unstarted.
-- **Owner gate:** authorization to begin.
+- **Owner gate:** separate authorization; `OG-7` remains binding against
+  individual identity.
+
+### Slice 17 — Theme and Design-Token Foundation
+
+- **Identifier:** `CQS-SLICE-17-THEME-TOKENS`
+- **Purpose:** create an application-owned visual foundation for Phase 2B.
+- **Primary deliverables:** tokens and controlled theme registry; default and
+  high-contrast themes; reduced-motion parity; 1920×1080 and 1280×720 support;
+  1–8 teams, maximum-length names, and negative scores.
+- **Major exclusions:** full Phase 2B layout; imported CSS; content-defined
+  animations; presentation as game authority; game-schema or public-wire theme
+  field unless separately justified and authorized.
+- **Prerequisites:** slices 5, 6; **preceding Phase 3** design-system
+  readiness/specification lane (documentation/specification only).
+- **Completion evidence:** `verify:all` green; tests proving no theme value
+  originates from imported content and no theme changes engine behaviour.
+- **Impact:** schema no by default · public-wire no by default · UI **yes** ·
+  storage no · hardware no.
+- **Status:** `Planned` — unstarted.
+- **Owner gate:** Phase 3 readiness complete **and** separate Slice 17
+  implementation authorization. **Neither is granted by Amendment 003.**
+
+### Slice 18 — Audience Display System
+
+- **Identifier:** `CQS-SLICE-18-AUDIENCE-DISPLAY`
+- **Purpose:** implement the accepted Phase 2B audience-display direction.
+- **Primary deliverables:** board-first composition; Nexus Core; Score Column /
+  Strip / Deck; compact, expanded, and Final Signal Rails; quiet cognition and
+  loud consequences; living-board memory; depletion and cleared-category
+  presentation; Final settlement/winner/tie-safe states; complete display-state
+  matrix; privacy tests; public-wire compatibility analysis (prefer wire 8).
+- **Major exclusions:** inferring or revealing public queue order, private Final
+  eligibility, private wagers/responses, tile correctness/ownership history,
+  rosters or representatives. Any public-state addition needs separate
+  authorization and a deliberate wire-version decision.
+- **Prerequisites:** slices 14, 17; Phase 2B direction document.
+- **Completion evidence:** `verify:all` green; privacy tests; wire compatibility
+  analysis.
+- **Impact:** schema no* · public-wire possibly* · UI **yes** · storage no ·
+  hardware no.
+- **Status:** `Planned` — unstarted.
+- **Owner gate:** separate authorization; nested gate for any wire bump.
+
+### Slice 19 — Self-Contained Portable Packs
+
+- **Identifier:** `CQS-SLICE-19-PORTABLE-PACKS`
+- **Purpose:** bundle canonical game JSON and local media into a safe, offline,
+  portable artifact.
+- **Primary deliverables:** versioned pack envelope/manifest; deterministic
+  internal media paths; safe import/extraction; limits and structured
+  diagnostics; export/import; clean-environment round-trip; host-only
+  answer-key/privacy warnings; offline play.
+- **Major exclusions:** spreadsheet authoring; AI; question bank; remote media;
+  new media kinds unless separately authorized.
+- **Prerequisites:** slices 4, 11, 12.
+- **Completion evidence:** `verify:all` green; clean-environment round-trip
+  proof; fail-closed diagnostics.
+- **Impact:** schema possibly · public-wire no · storage possibly · UI **yes** ·
+  hardware no.
+- **Status:** `Planned` — unstarted.
+- **Owner gate:** separate authorization.
+
+### Slice 20 — Spreadsheet Authoring Seed
+
+- **Identifier:** `CQS-SLICE-20-SPREADSHEET-AUTHORING-SEED`
+- **Purpose:** allow teachers to build a playable game without writing JSON.
+- **Primary deliverables:** Classic Board and Board + Final workbook profiles;
+  pipeline workbook → non-playable draft → located diagnostics → teacher
+  review/correction → explicit approval → canonical JSON → existing strict
+  importer → optional portable pack; embedded model-neutral instructions for
+  external LLM use.
+- **Major exclusions:** direct LLM API; full editor; question bank; item-family
+  identity; live clue swapping; assessment promotion; GCS integration;
+  standards tags as an MVP completion gate (`CQS-OD-066` unresolved).
+- **Prerequisites:** slices 4, 5, 12, 14; slice 19 optional for pack hand-off.
+- **Completion evidence:** `verify:all` green; both profiles proven through
+  teacher approval into ADR-004; fail-closed diagnostics.
+- **Impact:** schema possibly · public-wire no · storage possibly · UI **yes** ·
+  hardware no.
+- **Status:** `Planned` — unstarted.
+- **Owner gate:** separate authorization.
+
+### Slice 21 — Sony Buzz Supported-Profile Operationalization
+
+- **Identifier:** `CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE`
+- **Purpose:** turn the bounded OADL2-S07 physical certification into one
+  repeatable supported profile.
+- **Target profile:** macOS · supported Chrome · Namtai wireless `Wbuzz` ·
+  vendor/product `054c:1000` · four handsets · keyboard fallback.
+- **Primary deliverables:** architecture ADR; permanent packaged keep-alive
+  lifecycle; health/failure reporting; unplug/replug recovery; host-private
+  mapping persistence; teams-bearing setup path; exact supported-profile docs;
+  release-candidate physical certification.
+- **Major exclusions:** generalized cross-platform, wired, Bluetooth, Raspberry
+  Pi, or all-SKU support. Stop for owner reclassification if permanent profile
+  is infeasible — do not silently downgrade.
+- **Prerequisites:** slices 9, 10; OADL2-S07 receipt as evidence baseline.
+- **Completion evidence:** `verify:all` green; ADR; RC physical certification
+  receipt; exact profile documentation.
+- **Impact:** schema no · public-wire no · storage **yes** · UI **yes** ·
+  hardware **yes** · deployment possibly.
+- **Status:** `Planned` — unstarted.
+- **Owner gate:** separate authorization; infeasibility escalation is owner-only.
+
+### Slice 22 — Classroom Release Qualification
+
+- **Identifier:** `CQS-SLICE-22-CLASSROOM-RELEASE-QUALIFICATION`
+- **Purpose:** prove a teacher can rely on the product in class.
+- **Primary deliverables:** clean-install golden path; pack import/export;
+  team/input setup; complete board and Final session; timer/buzz/score/
+  correction/undo/recovery/summary/comparison; dual viewports; 1/4/6/8 teams;
+  long names and negative scores; image failure; reduced motion; high contrast;
+  grayscale and projector-washout checks; keyboard-only; semantic/screen-reader
+  review; viewing-distance test; PWA install/update/offline/reset;
+  owner-performed deployment verification; support matrix; retention/deletion
+  docs.
+- **Major exclusions:** no architecture or new feature may originate here;
+  material defects require separately bounded repair. Raspberry Pi 5 may receive
+  an observational smoke test only — **not** an MVP acceptance gate.
+- **Prerequisites:** slices 15–21.
+- **Completion evidence:** `verify:all` green; qualification receipt;
+  owner-verified live-route receipt (CI alone is insufficient).
+- **Impact:** schema no · public-wire no · storage no · UI polish · deployment
+  verification **yes**.
+- **Status:** `Planned` — unstarted.
+- **Owner gate:** separate authorization; owner live verification required.
+
+> **Historical note.** Under the former 18-slice plan, remaining work was named
+> Slice 15 (session summary & compatible-profile reporting), Slice 16 (theme
+> engine), Slice 17 (authoring & packs), and Slice 18 (release readiness). Those
+> names are superseded for current routing by Amendment 003; see that amendment
+> §6 for the exact mapping.
 
 ## Dependencies & risks
 

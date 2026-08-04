@@ -127,7 +127,19 @@ This project separates two kinds of durable decision records:
      question-family identity, logical-team/controller parking) recorded
      as explicit amendment clauses (`CQS-RA2-…`) that supersede nothing
      until a named future arc is separately authorized and implemented.
-     **It changes the current 18-slice MVP plan in no way.**
+     **At acceptance it changed the then-current 18-slice MVP plan in no
+     way** (the MVP count later changed under Amendment 003).
+   - [`ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
+     — remaining-MVP rebalance from 18 to **22** slices (2026-08-03,
+     planning slice `CQS-PLAN-S02`): Slices 1–14 unchanged and `Complete`;
+     former Slices 15–18 replaced by Slices 15–22 (summary contract;
+     summary ledger; theme/token foundation; audience display; portable
+     packs; spreadsheet authoring seed; Sony Buzz supported-profile
+     operationalization; classroom release qualification). Phase 3
+     display-system readiness required before Slice 17. Standards/GCS tags
+     removed from MVP completion pending `CQS-OD-066`. Raspberry Pi 5 is
+     post-MVP. **Documentation only — no product implementation
+     authorized.**
 
 ## When an ADR is required
 

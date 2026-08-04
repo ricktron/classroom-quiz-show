@@ -17,10 +17,13 @@ see
 [`../architecture/ADR-013-local-persistence-recovery.md`](../architecture/ADR-013-local-persistence-recovery.md)
 and
 [`../STATUS.md`](../STATUS.md)).
-**Slice 15 remains `Planned` and unstarted.** The next safe product action
-requires a **separate** Slice 15 planning/readiness decision — this handoff
-does **not** authorize Slice 15 implementation. The next product action returns
-to the Program Orchestrator for Slice 15 readiness and sequencing.
+**Slices 15–22 remain `Planned` and unstarted** under the **22-slice** MVP
+plan amended by
+[`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
+(`CQS-PLAN-S02`, documentation-only). **Next planned product slice:** Slice 15
+— Session Summary Contract. This handoff does **not** authorize Slice 15
+implementation. The recommended next action is exact-head review of the
+Amendment 003 delivery PR, then Program Orchestrator readiness for Slice 15.
 
 Coding agents and contributors should read root
 [`../../AGENTS.md`](../../AGENTS.md) before changing the repository. Claude
@@ -54,6 +57,14 @@ defers to `AGENTS.md` and adds no separate authority.
 > `752a3fe0f45fdc1ee687339134023c3811facd91`, merged 2026-07-26T20:02:13Z by
 > `ricktron`; reviewed head `2524e745`) with all three PR checks green. Its
 > historical receipt is preserved unchanged.
+
+> **Roadmap amended again 2026-08-03 by Amendment 003 (`CQS-PLAN-S02`).** The
+> remaining unstarted Slices 15–18 were replaced by Slices 15–22. Slices 1–14
+> are unchanged and `Complete`. Canonical decision:
+> [`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md).
+> **Documentation only — no product implementation authorized.** After this
+> amendment’s delivery PR is reviewed/merged, the next product candidate is
+> Slice 15 — Session Summary Contract under separate authority.
 
 ## Repository state
 
@@ -241,7 +252,8 @@ defers to `AGENTS.md` and adds no separate authority.
   [`../receipts/2026-08-03-media-normalized-prompt-reread-repair.md`](../receipts/2026-08-03-media-normalized-prompt-reread-repair.md)
   and
   [`../receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](../receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
-- **Slice 15:** `Planned`, unstarted.
+- **Slices 15–22:** `Planned`, unstarted (22-slice plan; Amendment 003).
+  Next product candidate: **Slice 15 — Session Summary Contract** (unauthorized).
 - **What Slice 14 adds:** the SECOND playable round type, `final-wager` — and
   the important thing about it is where it lives. It is registered by application
   code in the same registry as `category-board`, validated by the same import
@@ -853,7 +865,7 @@ work:
   [`../plans/`](../plans/)); research record under
   [`../research/`](../research/).
 
-**That slice implemented nothing.** The current MVP (18-slice plan) is
+**That slice implemented nothing.** The current MVP (**22-slice plan**, Amendment 003) is
 unchanged; no runtime code, schema, test, or dependency changed;
 implementation authority for every expanded-vision capability remains
 with the Program Orchestrator and future slice authorizations. Post-MVP
@@ -862,22 +874,18 @@ arcs remain inactive; **decision 66 (`CQS-OD-066`) remains unresolved**.
 ## Next action
 
 **Slices 1–14 and planning slice CQS-PLAN-S01 are `Complete` and
-merged.** **Slice 14 — Final-wager round is `Complete`**: implemented
-under `AUTHORIZE-CQS-S14-FINAL-WAGER-IMPLEMENTATION-1` on
-`claude/cqs-slice-14-final-wager` from the authorized base
-`4de1454181ed58bdb282accd136129c3c0eb0f2b`, reviewed under
-`AUTHORIZE-CQS-S14-PR-REVIEW-AND-HARDENING-1`, and squash-merged via PR
+merged.** Phase 2B design direction is registered. **Roadmap Amendment 003
+(`CQS-PLAN-S02`) rebalances the remaining MVP to 22 slices**
+(documentation-only; see
+[`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
+**Slice 14 — Final-wager round is `Complete`** (PR
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32) at
-`ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` on 2026-08-03T17:08:37Z. The
-accepted Final Wager decisions (`CQS-OD-005`…`CQS-OD-008`,
-`CQS-OD-011`) were the acceptance-design input and are implemented as
-recorded. Browser acceptance covered **24 of 24** required scenarios.
+`ce2e103377c5d86c8e0946346cb4cf05dfe7d58d`).
 
-**The next action returns to the Program Orchestrator for Slice 15
-readiness and sequencing.** This handoff does **not** authorize Slice 15
-implementation. **Slice 15 — Session summary & compatible-profile
-reporting remains `Planned` and unstarted** and must receive its own
-bounded authorization before any work begins.
+**Recommended next action: exact-head Program Orchestrator review of the
+Amendment 003 delivery PR — not Slice 15 implementation.** Slices 15–22 remain
+`Planned` and unstarted. Slice 15 — Session Summary Contract requires its own
+bounded authorization before any product work begins.
 
 ## Registered design direction — Phase 2B audience display (2026-08-03)
 
@@ -899,7 +907,7 @@ What the acceptance does and does not mean:
 - the representative artifacts are **evidence, not application source**, and no
   artifact bytes (ZIP, PNG, renderer, script, inventory, checksum file, or
   reconstruction note) were committed;
-- **Phase 3 is not authorized**; **Slice 16 is not authorized**;
+- **Phase 3 is not authorized**; **Slices 17–18 are not authorized**;
 - **no production, projector, accessibility, or Raspberry Pi acceptance exists.**
 
 Evidence limits, recorded verbatim in the direction document and its receipt:
@@ -909,9 +917,10 @@ Evidence limits, recorded verbatim in the direction document and its receipt:
 > corrected ZIP was not independently reopened by the Program Orchestrator, so no
 > independent second checksum audit is claimed.
 
-**Routing.** Slice 15 remains the next planned product slice and is unaffected in
-priority. Slice 16 — Theme engine is the eventual MVP implementation consumer of
-this direction and remains `Planned` and unauthorized. A separately authorized
+**Routing.** Slice 15 — Session Summary Contract remains the next planned
+product slice and is unaffected in priority by Phase 2B. MVP Phase 2B consumers
+are **Slices 17–18** (theme/token foundation, then audience display), both
+`Planned` and unauthorized. A separately authorized
 Phase 3 design-system specification/readiness lane may occur without changing
 product-slice sequencing.
 
@@ -975,7 +984,7 @@ timer's interruption seam. See
 
 **Deferred until after the functional MVP is complete. Recorded only.** This is a
 parked concept, not a plan: it is **not** inserted into the active roadmap, which
-remains **18 slices**.
+remains **22 slices** (Amendment 003).
 
 The owner has parked additional response-mode work covering:
 
@@ -992,7 +1001,8 @@ codebase implements, anticipates or reserves space for a response mode or a
 multiple-choice question type. When this direction was recorded the immediate
 frontier was a separate Slice 14 planning/readiness decision, and this direction
 did not authorize it; **Slice 14 is now `Complete`** (PR #32, `ce2e103…`), and
-the frontier has moved to a separate Slice 15 readiness decision. Slice 13 is
+the frontier has moved to Amendment 003 (roadmap rebalance) and then a
+separate Slice 15 readiness decision. Slice 13 is
 **`Complete`** (PR #27, `6cf4d25…`). Slice 12 is **`Complete`** (PR #25, `cdb499a…`). Slice 11 is
 **`Complete`** (PR #23, `5d47b2f`). Slice 10 remains **`Complete`** under the
 owner-accepted hardware-independent boundary; OADL2-S07 recorded a bounded
@@ -1004,7 +1014,7 @@ Recording this direction authorizes no work of any kind.
 
 **Recorded only. Deferred. Not a slice, not scheduled, not authorized, and not
 implemented.** This was **not** inserted into the active roadmap, which remains
-**18 slices**. Nothing in the codebase implements, anticipates or reserves space
+**22 slices**. Nothing in the codebase implements, anticipates or reserves space
 for audio.
 
 The owner wants **optional team buzz-in audio cues** eventually, potentially
@@ -1047,7 +1057,7 @@ reconciliation. Recording this direction authorizes no work of any kind.
 ## Prohibited next actions
 
 Do **not**: reopen or redefine Slice 14 (it is `Complete` and merged — PR #32 at
-`ce2e103…`); begin Slice 15 without separate authority; begin Phase 3 or Slice 16
+`ce2e103…`); begin Slice 15 without separate authority; begin Phase 3 or Slices 17–18
 without separate authority; expose private Final or queue data (see the Final and
 buzz-queue privacy boundaries below); claim Child B guidance/onboarding delivery
 is merged from this handoff;

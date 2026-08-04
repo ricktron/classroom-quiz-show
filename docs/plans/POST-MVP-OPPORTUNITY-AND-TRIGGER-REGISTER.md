@@ -28,15 +28,15 @@ note only *additional* authority where it exists.
   teacher's materials to a reviewable, ready-to-play game.
 - **Activation:** `post-mvp-priority` (first arc) · **Arc:**
   `CQS-ARC-AUTHORING`
-- **Deferred because:** the MVP must finish its own core (slices 14–18);
-  MVP Slice 17 already owns basic spreadsheet-import convenience, and this
-  opportunity must build on its delivered shape rather than race it. It
-  remains the **accepted first post-MVP arc** (`CQS-OD-080`) — the
-  trigger below times it, it does not re-rank it.
+- **Deferred because:** the MVP must finish its own remaining core (slices
+  15–22 under Amendment 003); MVP Slice 20 owns the spreadsheet authoring
+  seed, and this opportunity must build on its delivered shape rather than
+  race it. It remains the **accepted first post-MVP arc** (`CQS-OD-080`) —
+  the trigger below times it, it does not re-rank it.
 - **Dependencies:** canonical pipeline (done); portable export (done);
-  Slice 17 outcome; workbook-shape design in
+  Slice 20 outcome; workbook-shape design in
   [`LLM-SPREADSHEET-AUTHORING-ARC.md`](LLM-SPREADSHEET-AUTHORING-ARC.md).
-- **Trigger:** MVP Slice 17 is `Complete` **and post-merge reconciled**,
+- **Trigger:** MVP Slice 20 is `Complete` **and post-merge reconciled**,
   and at least **two real game-preparation workflows have documented
   limitations in the delivered authoring path** — evidence may come from
   the authoring UI, spreadsheets, or JSON. A deliberate Program
@@ -99,7 +99,7 @@ note only *additional* authority where it exists.
 - **Deferred because:** depends on ordinal secondary-action consumers and
   presentation groundwork; MVP has no identity surface.
 - **Dependencies:** `CQS-RA2-SECONDARY-01` consumer authorization; theme
-  groundwork (MVP Slice 16); authoring supplies pools (`CQS-OD-063`).
+  groundwork (MVP Slices 17–18); authoring supplies pools (`CQS-OD-063`).
 - **Trigger:** classroom evidence (receipt or owner note) from at least
   three sessions that team naming/setup consumed class time or caused
   disputes, **or** the owner schedules the identity arc after the
@@ -118,10 +118,10 @@ note only *additional* authority where it exists.
   gameplay policy; audio licensing boundaries (see the recorded buzz-sound
   direction in [`../handoff/CURRENT.md`](../handoff/CURRENT.md)) are
   unresolved for bundled assets.
-- **Dependencies:** theme engine (MVP Slice 16); `CQS-RA2-TEAM-ORDER-01`
-  bounds; accessibility requirements of §10.4.
-- **Trigger:** the theme engine ships and one full unit of classroom play
-  is observed on it, with owner notes on presentation gaps.
+- **Dependencies:** theme/token foundation and audience display (MVP Slices
+  17–18); `CQS-RA2-TEAM-ORDER-01` bounds; accessibility requirements of §10.4.
+- **Trigger:** Slices 17–18 ship and one full unit of classroom play is
+  observed on them, with owner notes on presentation gaps.
 - **Evidence required:** the observation notes; a reduced-motion review of
   any proposed animation set.
 - **Risks:** presentation becoming authority (prohibited); flashing/motion
@@ -272,10 +272,11 @@ note only *additional* authority where it exists.
 - **Deferred because:** ADR-013 deliberately scoped persistence to
   recovery; an archive is a new store with new retention semantics
   (`CQS-RA2-ARCHIVE-01`).
-- **Dependencies:** ADR-013 stores (done); MVP Slice 15 summary as the
-  natural archive payload.
-- **Trigger:** MVP Slice 15 is `Complete` and the owner wants any summary
-  kept beyond the session (first time a summary is manually copied out).
+- **Dependencies:** ADR-013 stores (done); MVP Slices 15–16 summary contract
+  and ledger as the natural archive seed payload.
+- **Trigger:** MVP Slices 15–16 are `Complete` and the owner wants any
+  summary kept beyond the compatible ledger (first time a fuller archive is
+  needed).
 - **Evidence required:** that manual-copy moment recorded; a retention
   policy draft.
 - **Risks:** unbounded local storage growth; student-visible history

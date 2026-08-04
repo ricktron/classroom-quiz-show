@@ -21,11 +21,14 @@ and
 [`receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
 **Previous slice:** Slice 13 — Local persistence & recovery (`Complete`,
 squash-merged via PR #27 at `6cf4d25…`; wire **7**)
-**Next planned product slice:** Slice 15 — Session summary & compatible-profile
-reporting (`Planned`, unstarted)
-**Roadmap:** 18 slices, amended 2026-07-26 by
+**Next planned product slice:** Slice 15 — Session Summary Contract
+(`Planned`, unstarted) — **not authorized for implementation by Amendment 003**
+**Roadmap:** **22 slices**, amended 2026-08-03 by
+[`decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
+(`CQS-PLAN-S02`; documentation-only). Prior amendment
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
-(**merged to `main` via PR #13**, merge commit `752a3fe`, 2026-07-26T20:02:13Z)
+grew the plan from 11 to 18 slices (PR #13, `752a3fe`, 2026-07-26). Slices 1–14
+remain `Complete`; Slices 15–22 remain `Planned` and unstarted.
 
 ## Slice 14 work (Complete)
 
@@ -202,8 +205,8 @@ Delivery evidence:
 ## Phase 2B design-direction registration — Registered (not a product slice)
 
 **This is accepted program guidance, not an implemented product slice.** Phase 2B
-is **not** a numbered MVP slice, does not appear in the 18-slice plan of record,
-and delivered **no** runtime behavior.
+is **not** a numbered MVP slice, does not appear as a product row in the
+22-slice plan of record, and delivered **no** runtime behavior.
 
 Registered under `AUTHORIZE-CQS-DESIGN-PHASE-2B-REGISTRATION-1`
 (evidence state `CQS-DESIGN-PHASE-2B-ES-1`, authorized base
@@ -221,12 +224,12 @@ delivery evidence is
 | Changed paths | 7, documentation-only |
 | Runtime / schema / public wire / test / asset / dependency change | **None** |
 | `CQS-OD-*` added or changed | **None** |
-| Implementation authorized | **None** — Phase 3 and Slice 16 both remain unauthorized |
+| Implementation authorized | **None** — Phase 3 and Slices 17–18 all remain unauthorized |
 
 What the acceptance means: the direction is accepted as intended **future**
 audience-display guidance; **the design is not implemented**; the representative
 artifacts are **evidence, not application source**; **Phase 3 is not authorized**;
-**Slice 16 is not authorized**; and **no production, projector, accessibility, or
+**Slices 17–18 are not authorized**; and **no production, projector, accessibility, or
 Raspberry Pi acceptance exists**. No artifact bytes were committed and no
 artifact hash or path is asserted.
 
@@ -235,11 +238,13 @@ artifact hash or path is asserted.
 > corrected ZIP was not independently reopened by the Program Orchestrator, so no
 > independent second checksum audit is claimed.
 
-**Current implementation truth is unchanged by this registration:** Slice 14 —
-Final-wager round is **`Complete`** and merged, **public-state wire is 8**, sync
-envelope **2**, game-file schema **1**, and **Slice 15 remains `Planned` and
-unstarted**. Slice 16 — Theme engine is the eventual MVP implementation consumer
-of this direction and remains `Planned` and unstarted.
+**Routing after Amendment 003:** MVP implementation consumers of Phase 2B are
+**Slice 17 — Theme and Design-Token Foundation** and **Slice 18 — Audience
+Display System** (both `Planned`, unstarted). A documentation/specification-only
+Phase 3 readiness lane is required before Slice 17 implementation. **Current
+implementation truth is unchanged:** Slice 14 is **`Complete`**, public-state
+wire **8**, sync envelope **2**, game-file schema **1**, and **Slices 15–22
+remain `Planned` and unstarted**.
 
 ## Slice 14 merge evidence
 
@@ -1315,10 +1320,11 @@ None.
 `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d`), with post-merge CI and Pages both
 observed green.
 
-**Slice 15 remains `Planned` and unstarted.** Starting it requires a
-**separate** owner-approved planning/readiness decision; this STATUS surface
-does not authorize Slice 15 implementation. The next product action returns to
-the Program Orchestrator for Slice 15 readiness and sequencing.
+**Roadmap Amendment 003 (`CQS-PLAN-S02`) rebalances the remaining MVP to 22
+slices** (documentation-only). Slices **15–22 remain `Planned` and unstarted**.
+**No Slice 15 implementation authority is granted.** The recommended next
+action is exact-head Program Orchestrator review of the Amendment 003 delivery
+PR — not Slice 15 implementation.
 
 Coding agents and contributors should read root [`../AGENTS.md`](../AGENTS.md)
 (and pointer-only [`../CLAUDE.md`](../CLAUDE.md) for Claude sessions) before
@@ -1330,4 +1336,4 @@ the owner direction recorded in
 likewise deferred owner direction only** (recorded in the same place, 2026-07-27).
 Nothing about either is designed, scheduled or authorized; no audio file,
 playback code, audio schema, audio event or sound-pack manifest exists; and the
-active MVP roadmap remains **18 slices**.
+active MVP roadmap is **22 slices** per Amendment 003.

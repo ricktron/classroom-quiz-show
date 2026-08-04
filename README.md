@@ -392,7 +392,10 @@ schema all stay **1**; no dependency added. Browser acceptance covered **24 of
 [`docs/receipts/2026-08-03-slice-14-local-verification.md`](docs/receipts/2026-08-03-slice-14-local-verification.md)
 and
 [`docs/receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](docs/receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
-**Slice 15** remains Planned and unstarted.
+**Slices 15–22** remain Planned and unstarted under the **22-slice** MVP plan
+([`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
+Next product candidate: **Slice 15 — Session Summary Contract** (not
+authorized by the roadmap amendment).
 
 > ⚠️ **No physical Sony Buzz! controller has been tested.** CI and simulated
 > Gamepad sources prove the hardware-independent boundary only. There is no

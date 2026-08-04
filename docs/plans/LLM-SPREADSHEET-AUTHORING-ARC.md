@@ -14,9 +14,10 @@ dossier: `CQS-OPP-SPREADSHEET-LLM-AUTHORING` and neighbors in
 [`POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md).
 
 **Nothing in this pipeline exists.** The current implementation imports
-canonical JSON by paste only; MVP Slice 17 (unstarted) owns basic
-spreadsheet-import convenience, and this arc builds on whatever Slice 17
-delivers.
+canonical JSON by paste only; MVP **Slice 20** (unstarted) owns the
+spreadsheet authoring seed (Classic Board and Board + Final), and this arc
+builds on whatever Slice 20 delivers. MVP Slice 19 owns self-contained
+portable packs.
 
 ## 1. Preferred operator experience (§12 direction)
 
@@ -143,8 +144,8 @@ played, full stop.
 
 - No implementation in this slice — no parser, no schema code, no
   workbook file, no LLM integration.
-- The arc must reconcile with MVP Slice 17's delivered shape when
-  authorized; if Slice 17 ships first, this arc extends it — it never
+- The arc must reconcile with MVP Slice 20's delivered shape when
+  authorized; if Slice 20 ships first, this arc extends it — it never
   builds a parallel path.
 - Question-bank storage, packages, and any shared repository carry their
   own register entries and triggers (`CQS-OPP-QUESTION-BANK`,
