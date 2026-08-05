@@ -146,18 +146,38 @@ Disposition:
 - Live-route verification on GitHub Pages
 - Merge / post-merge state
 
-## PR state
+## PR and remote evidence (observed after open)
 
 | Fact | Value |
 | --- | --- |
 | PR | [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) |
-| State at follow-up commit | open, non-draft, unmerged |
-| Head at PR open | `890f42a2a20a3697fea13f9d1350d892cbff15ea` |
+| State | open, non-draft, unmerged |
 | Base | `f92b65fa2d6619d9c2a4d09b5457f0976ff91079` |
+| Head at PR open | `890f42a2a20a3697fea13f9d1350d892cbff15ea` |
+| Final observed head for this receipt | `b550bef5b65a87ed2bbaedd8beb18041965bd7ec` |
 
-The initial implementation commit recorded that no PR number existed yet. This
-follow-up records the observed open PR number without rewriting the earlier
-preflight observation that no Slice 16 PR existed before delivery.
+### GitHub Actions (exact head `b550bef…`)
+
+| Surface | ID | Conclusion |
+| --- | --- | --- |
+| CI workflow run | `30970933327` | **success** |
+| Job: Lint, typecheck, unit tests, build | `92194867567` | **success** |
+| Job: Playwright e2e | `92194867522` | **success** |
+
+Earlier run `30970439552` on head `9f54d05…` failed Playwright (inherited Final flake only) and Sonar reliability; Sonar findings were repaired in `b550bef…`. Run `30970358626` on the first head was **cancelled** after the docs push.
+
+### SonarCloud (exact head `b550bef…`)
+
+| Surface | ID / URL | Conclusion |
+| --- | --- | --- |
+| SonarCloud Code Analysis check | `92195592696` | **success** — Quality Gate passed |
+| Dashboard | https://sonarcloud.io/dashboard?id=ricktron_classroom-quiz-show&pullRequest=40 | Quality Gate passed |
+
+GitHub Actions success is not treated as Sonar proof; Sonar success is not treated as browser-test proof. Both were observed independently.
+
+### Inherited Final flake on CI (distinct from local)
+
+On CI run `30970933327`, `a refresh mid-Final resumes every committed wager` **failed first attempt** on desktop-1080p, projector-720p, and mobile-host with `"Not saved yet"`, then **passed on retry #1** on each project. The Playwright job therefore concluded success. This does **not** claim the flake is repaired; first-attempt and retry remain distinct evidence.
 
 ## Required stop
 

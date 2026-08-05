@@ -44,7 +44,7 @@ PR #32 at `ce2e103…`)
 **Current delivery frontier:** Slice 16 — Completed Summary Ledger & Compatible
 Reporting is **`In review` / delivered for review** via open PR
 [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) on
-`feat/slice-16-summary-ledger` (head `890f42a2a20a3697fea13f9d1350d892cbff15ea`);
+`feat/slice-16-summary-ledger` (head `b550bef5b65a87ed2bbaedd8beb18041965bd7ec`);
 it is unmerged. At this delivery frontier, IndexedDB schema is **2**;
 public-state wire **8**, sync envelope **2**, canonical game-file schema **1**,
 private active-session wire **1**, and Session Summary contract **1** remain
