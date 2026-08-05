@@ -382,10 +382,13 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         setLedgerMessage(message)
         return { ok: false, message }
       }
-      if (leadership === 'follower') {
+      if (leadership !== 'leader') {
         setCurrentCompletionSave({ sessionId, status: 'failed' })
         setLedgerStatus('failed')
-        const message = 'This follower tab cannot save completed summaries.'
+        const message =
+          leadership === 'follower'
+            ? 'This follower tab cannot save completed summaries.'
+            : 'This tab cannot save completed summaries until it holds the persistence lease.'
         setLedgerMessage(message)
         return { ok: false, message }
       }
@@ -413,14 +416,24 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       setLedgerStatus('saved')
       setLedgerMessage('Completed summary saved locally.')
       const retained = await enforceCompletedSummaryRetention(adapter)
-      await updateCompletedLedger()
+      const listed = await updateCompletedLedger()
       if (!retained.ok) {
-        setLedgerMessage(
-          'Completed summary saved locally, but automatic retention cleanup failed. The saved record was kept.',
-        )
+        const message = listed.ok
+          ? 'Completed summary saved locally, but automatic retention cleanup failed. The saved record was kept.'
+          : 'Completed summary saved locally, but automatic retention cleanup failed and the ledger list could not be refreshed. Use Refresh ledger.'
+        setLedgerMessage(message)
         return {
           ok: true,
           message: 'Summary saved; automatic retention cleanup failed.',
+        }
+      }
+      if (!listed.ok) {
+        setLedgerMessage(
+          'Completed summary saved locally, but the ledger list could not be refreshed. Use Refresh ledger.',
+        )
+        return {
+          ok: true,
+          message: 'Summary saved; ledger list refresh failed.',
         }
       }
       return { ok: true, message: 'Completed summary saved locally.' }
@@ -458,8 +471,14 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       operation: () => Promise<PersistenceResult<unknown>>,
       successMessage: string,
     ): Promise<PersistenceActionResult> => {
-      if (leadership === 'follower') {
-        return { ok: false, message: 'This tab is read-only while another host owns persistence.' }
+      if (leadership !== 'leader') {
+        return {
+          ok: false,
+          message:
+            leadership === 'follower'
+              ? 'This tab is read-only while another host owns persistence.'
+              : 'This tab cannot mutate the ledger until it holds the persistence lease.',
+        }
       }
       if (!storageReadyRef.current) {
         setLedgerStatus('unavailable')
@@ -471,7 +490,13 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         setLedgerMessage(result.message)
         return { ok: false, message: result.message }
       }
-      await updateCompletedLedger()
+      const listed = await updateCompletedLedger()
+      if (!listed.ok) {
+        setLedgerStatus(ledgerStatusForError(listed.code))
+        const message = `${successMessage} The durable change succeeded, but the ledger list could not be refreshed. Use Refresh ledger.`
+        setLedgerMessage(message)
+        return { ok: true, message }
+      }
       setLedgerStatus('idle')
       setLedgerMessage(successMessage)
       return { ok: true, message: successMessage }

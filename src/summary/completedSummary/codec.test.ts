@@ -44,4 +44,51 @@ describe('completed summary codec', () => {
       summary: recordFixture().summary,
     })
   })
+
+  it('classifies unknown V2 envelopes without requiring V1 exact keys', () => {
+    const cases: unknown[] = [
+      {
+        kind: 'classroom-quiz-show/completed-summary-record',
+        version: 2,
+        extraField: true,
+        nested: { privateLooking: 'secret' },
+      },
+      {
+        kind: 'classroom-quiz-show/completed-summary-record',
+        version: 2,
+      },
+      {
+        kind: 'classroom-quiz-show/completed-summary-record',
+        version: 2,
+        recordId: 'x',
+        savedAt: 1,
+        // missing classLabel / competitiveProfile / summary on purpose
+      },
+      {
+        kind: 'classroom-quiz-show/completed-summary-record',
+        version: 2,
+        completelyDifferentShape: [{ a: 1 }],
+        lease: { tabId: 'should-not-be-read' },
+      },
+    ]
+    for (const input of cases) {
+      expect(decodeCompletedSummaryRecord(input)).toEqual({
+        status: 'unsupported-envelope-version',
+        version: 2,
+      })
+    }
+  })
+
+  it('still classifies malformed kind/version and wrong kind as corrupt', () => {
+    expect(decodeCompletedSummaryRecord(null)).toMatchObject({ status: 'corrupt' })
+    expect(decodeCompletedSummaryRecord({ kind: 'other', version: 1 })).toMatchObject({
+      status: 'corrupt',
+    })
+    expect(
+      decodeCompletedSummaryRecord({
+        kind: 'classroom-quiz-show/completed-summary-record',
+        version: '2',
+      }),
+    ).toMatchObject({ status: 'corrupt' })
+  })
 })

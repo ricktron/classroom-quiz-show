@@ -28,6 +28,10 @@ test('auto-save, refresh, labeling, deletion, confirmation, and display privacy'
   await expect(ledger).toContainText('Foundation Sample Game')
   await expect(host.getByTestId('persistence-recovery')).toHaveCount(0)
 
+  // Human-readable timestamps, not raw epoch integers.
+  await expect(ledger.locator('time').first()).toBeVisible()
+  await expect(ledger.locator('time').first()).not.toHaveText(/^\d+$/)
+
   await host.reload()
   await openHost(host)
   await expect(host.getByTestId('session-summary-panel')).toHaveCount(0)
@@ -39,6 +43,15 @@ test('auto-save, refresh, labeling, deletion, confirmation, and display privacy'
   await host.getByRole('button', { name: /save class label/i }).click()
   await expect(host.getByTestId('ledger-status')).toContainText(/class label updated/i)
   await expect(ledger).toContainText('Period 3')
+
+  // Filters constrain the compatible report selection.
+  await host.getByLabel('Filter by class label').selectOption('Period 3')
+  await expect(host.getByTestId('ledger-class-rollups')).toContainText('Period 3')
+  await expect(host.getByTestId('ledger-game-rollup')).toContainText('Foundation Sample Game')
+  await host.getByLabel('Filter by class label').selectOption('unlabeled')
+  await expect(host.getByTestId('ledger-reports-empty')).toBeVisible()
+  await host.getByLabel('Filter by class label').selectOption('all')
+  await expect(host.getByTestId('ledger-game-rollup')).toContainText('Foundation Sample Game')
 
   await host.getByRole('button', { name: /^delete$/i }).click()
   await expect(host.getByRole('button', { name: /confirm delete/i })).toBeFocused()

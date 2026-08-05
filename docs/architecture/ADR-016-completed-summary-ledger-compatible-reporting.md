@@ -63,8 +63,14 @@ The browser-local ledger record is:
 ```
 
 `recordId` is the summary's session id. `summary` is exactly Session Summary
-Contract V1. The decoder requires exact keys, validates all nested V1 shapes,
-and requires record, summary, and profile identities to agree.
+Contract V1. At the outer envelope boundary the decoder inspects only
+object-ness, kind, and numeric version so an unknown future envelope version is
+classified as `unsupported-envelope-version` without requiring V1 exact keys or
+trusting nested fields. Only after confirming envelope version **1** does it
+require exact V1 keys, validate nested V1 shapes, and require record, summary,
+and profile identities to agree. On read, the persistence boundary also requires
+`IndexedDB key = recordId = summary.sessionId`; a mismatched key fails closed as
+a quarantined corrupt diagnostic and is never silently moved or rewritten.
 
 ## 4. Competitive Profile V1
 
@@ -182,24 +188,35 @@ The host-only surface provides:
 - a ledger list with saved time, completion time, game, optional class label,
   decode status, and actions;
 - saved Session Summary V1 detail for a selected valid record;
-- game and class-label filters;
+- bounded saved Session Summary V1 detail for
+  `unsupported-profile-version` when the ledger envelope and Summary V1 are
+  strictly understood — with a prominent warning that comparison and aggregation
+  remain disabled and label editing stays unavailable;
+- game and class-label filters that define one reporting selection applied
+  before competitive-profile grouping and before game, team, and class rollups;
 - newest, oldest, and game-title sorting;
-- exact-profile grouping with visible incompatibility explanations;
+- exact-profile grouping with visible incompatibility explanations relative to
+  each prior group (never partial compatibility or mixed statistics);
 - compatible game rollups (session count, score-change and buzz totals);
 - compatible team rollups (session count, total/average final score and score
   activity);
-- compatible class-label rollups inside one profile group.
+- compatible class-label rollups inside one profile group;
+- a separate quarantine/diagnostic list for unsupported and corrupt records that
+  remains visible while filters are active.
 
-Invalid or unsupported records expose status and key only where safe; their
-metrics remain hidden. Reports are descriptive summaries of stored fields, not
-new gameplay or assessment claims.
+Unknown envelope versions, unknown summary versions, and corrupt records expose
+status and raw object-store key only; their metrics remain hidden. Unsupported
+profile versions never enter `validRecords`, profile groups, team continuity, or
+reports. Reports are descriptive summaries of stored fields, not new gameplay or
+assessment claims.
 
 ## 12. Unknown versions and failure semantics
 
 The decoder distinguishes corrupt data from unsupported envelope, summary, and
 profile versions. Unknown versions never enter retention counts, compatibility
-groups, detail metrics, or rollups. No downgrade, field dropping, shape guessing,
-or best-effort aggregation is allowed.
+groups, or rollups. No downgrade, field dropping, shape guessing, or best-effort
+aggregation is allowed. Bounded Summary V1 detail for an unsupported profile is
+presentation-only and does not reinterpret unknown profile fields.
 
 If IndexedDB is unavailable, blocked, quota-exceeded, corrupt, or a transaction
 fails:
@@ -290,5 +307,8 @@ any observed regression requires a separately bounded disposition before merge.
 Teachers receive a bounded, deletable, host-local history of privacy-minimized
 completed summaries and exact-compatible reports. Active recovery remains
 event-sourced and separate. Semantic drift becomes visible rather than silently
-aggregated. This ADR is accepted for review on
-`feat/slice-16-summary-ledger`; Slice 16 remains unmerged and is not `Complete`.
+aggregated. This ADR is **Accepted for review** on open PR
+[#40](https://github.com/ricktron/classroom-quiz-show/pull/40)
+(`feat/slice-16-summary-ledger`); Slice 16 remains **In review — unmerged** and
+is not `Complete`. Obtain the current exact head from GitHub before any
+exact-head authority.

@@ -30,8 +30,22 @@ export function encodeCompletedSummaryRecord(record: CompletedSummaryRecordV1): 
 }
 
 export function decodeCompletedSummaryRecord(input: unknown): CompletedSummaryDecodeResult {
+  // Outer envelope classification inspects only object-ness, kind, and numeric
+  // version. Unknown future envelope versions must not be forced through V1
+  // exact-key validation (which would misclassify them as corrupt).
+  if (!isObject(input)) {
+    return corrupt('Completed summary envelope is malformed or has unknown keys.')
+  }
+  if (input.kind !== COMPLETED_SUMMARY_RECORD_KIND) {
+    return corrupt('Completed summary envelope is malformed or has unknown keys.')
+  }
+  if (typeof input.version !== 'number' || !Number.isSafeInteger(input.version)) {
+    return corrupt('Envelope version is malformed.')
+  }
+  if (input.version !== COMPLETED_SUMMARY_RECORD_VERSION) {
+    return { status: 'unsupported-envelope-version', version: input.version }
+  }
   if (
-    !isObject(input) ||
     !hasExactKeys(input, [
       'kind',
       'version',
@@ -40,14 +54,9 @@ export function decodeCompletedSummaryRecord(input: unknown): CompletedSummaryDe
       'classLabel',
       'competitiveProfile',
       'summary',
-    ]) ||
-    input.kind !== COMPLETED_SUMMARY_RECORD_KIND
+    ])
   ) {
     return corrupt('Completed summary envelope is malformed or has unknown keys.')
-  }
-  if (typeof input.version !== 'number') return corrupt('Envelope version is malformed.')
-  if (input.version !== COMPLETED_SUMMARY_RECORD_VERSION) {
-    return { status: 'unsupported-envelope-version', version: input.version }
   }
   if (
     typeof input.recordId !== 'string' ||

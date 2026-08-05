@@ -28,23 +28,25 @@ see
 [`../architecture/ADR-013-local-persistence-recovery.md`](../architecture/ADR-013-local-persistence-recovery.md)
 and
 [`../STATUS.md`](../STATUS.md)).
-**Slice 16 — Completed Summary Ledger & Compatible Reporting is `In review` /
-delivered for review** via open PR
+**Slice 16 — Completed Summary Ledger & Compatible Reporting is `In review` —
+unmerged** via open PR
 [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) on
-`feat/slice-16-summary-ledger` (head `890f42a2a20a3697fea13f9d1350d892cbff15ea`).
-Its contract is
+`feat/slice-16-summary-ledger`. Obtain the current exact head from GitHub before
+any exact-head authority. Its contract is
 [`../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md);
 its local evidence is
-[`../receipts/2026-08-04-slice-16-local-verification.md`](../receipts/2026-08-04-slice-16-local-verification.md).
+[`../receipts/2026-08-04-slice-16-local-verification.md`](../receipts/2026-08-04-slice-16-local-verification.md);
+semantic-review/repair evidence is
+[`../receipts/2026-08-04-slice-16-semantic-review-r1.md`](../receipts/2026-08-04-slice-16-semantic-review-r1.md).
 **Slices 17–22 remain `Planned` and unauthorized** under the **22-slice** MVP
 plan amended by
 [`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
 (`CQS-PLAN-S02`, documentation-only; delivery **merged** via PR #35 at
 `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`; post-merge reconciliation
 **merged** via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`).
-**Recommended next action:** independent semantic review of PR #40 at the exact
-head. **STOP BEFORE MERGE.** Do not begin Slice 17, Phase 3, or post-MVP work
-from this handoff alone.
+**Recommended next action:** exact-head merge consideration of PR #40 after
+semantic-review evidence. **STOP BEFORE MERGE.** Do not begin Slice 17, Phase 3,
+or post-MVP work from this handoff alone.
 `CQS-OD-066` remains unresolved.
 
 Coding agents and contributors should read root
@@ -97,11 +99,12 @@ defers to `AGENTS.md` and adds no separate authority.
 > delivery and post-merge reconciliation are complete on `main`; PR #36
 > requires no further review or merge action. Slice 15 is now `Complete` on
 > `main` (PR #38). Slice 16 — Completed Summary Ledger & Compatible Reporting
-> is now delivered for review via open PR
+> is **`In review` — unmerged** via open PR
 > [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) on
-> `feat/slice-16-summary-ledger` (unmerged). Phase 3 remains unauthorized.
-> Slices 17–22 remain unauthorized. Post-MVP arcs remain inactive.
-> `CQS-OD-066` remains unresolved.
+> `feat/slice-16-summary-ledger`. Obtain the current exact head from GitHub
+> before any exact-head authority. Phase 3 remains unauthorized. Slices 17–22
+> remain unauthorized. Post-MVP arcs remain inactive. `CQS-OD-066` remains
+> unresolved.
 
 ## Repository state
 
@@ -305,14 +308,17 @@ defers to `AGENTS.md` and adds no separate authority.
   [`../receipts/2026-08-04-slice-15-local-verification.md`](../receipts/2026-08-04-slice-15-local-verification.md)
   and
   [`../receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](../receipts/2026-08-04-slice-15-post-merge-reconciliation.md).
-- **Slice 16 (current):** `In review` / delivered for review on
-  `feat/slice-16-summary-ledger`; unmerged; no PR number recorded. Adds the
-  host-private completed-summary ledger, exact competitive profiles, compatible
-  game/team/class rollups, retention/deletion/class-label controls, and IndexedDB
-  schema **2**. Public wire **8**, sync **2**, game-file schema **1**, private
-  active-session wire **1**, and Session Summary contract **1** remain unchanged.
-  See
-  [`../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md).
+- **Slice 16 (current):** `In review` — unmerged via open PR
+  [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) on
+  `feat/slice-16-summary-ledger`. Obtain the current exact head from GitHub
+  before any exact-head authority. Adds the host-private completed-summary
+  ledger, exact competitive profiles, compatible game/team/class rollups,
+  retention/deletion/class-label controls, and IndexedDB schema **2**. Public
+  wire **8**, sync **2**, game-file schema **1**, private active-session wire
+  **1**, and Session Summary contract **1** remain unchanged. See
+  [`../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md)
+  and
+  [`../receipts/2026-08-04-slice-16-semantic-review-r1.md`](../receipts/2026-08-04-slice-16-semantic-review-r1.md).
 - **Slices 17–22:** `Planned`, unstarted, and unauthorized (22-slice plan;
   Amendment 003).
 - **What Slice 14 adds:** the SECOND playable round type, `final-wager` — and

@@ -6,7 +6,6 @@ import {
   enqueueSaveCompletedAndClearActive,
   enforceCompletedSummaryRetention,
   listCompletedSummaries,
-  retrySaveCompletedAndClearActive,
   saveCompletedAndClearActive,
   updateCompletedSummaryClassLabel,
 } from './completedSummaries'
@@ -52,7 +51,7 @@ describe('completed summary persistence', () => {
     })
   })
 
-  it('preserves active recovery when the atomic transaction fails and supports retry', async () => {
+  it('preserves active recovery when the atomic transaction fails and supports queued retry', async () => {
     const failing = createMemoryPersistenceAdapter({ failTransactions: true })
     await failing.open()
     expect(
@@ -63,12 +62,43 @@ describe('completed summary persistence', () => {
     ).toMatchObject({ ok: false })
 
     const adapter = await opened()
+    const queue = new PersistenceWriteQueue()
     expect(
-      await retrySaveCompletedAndClearActive(adapter, completedHistory().history, {
-        savedAt: 30,
-        classLabel: null,
-      }),
+      await enqueueSaveCompletedAndClearActive(
+        adapter,
+        completedHistory().history,
+        { savedAt: 30, classLabel: null },
+        queue,
+      ),
     ).toMatchObject({ ok: true })
+  })
+
+  it('quarantines values whose object-store key does not match recordId', async () => {
+    const adapter = await opened()
+    const record = recordFixture({
+      recordId: 'session-1',
+      summary: summaryFixture({ sessionId: 'session-1' }),
+    })
+    await adapter.withTransaction([OBJECT_STORE_COMPLETED_SUMMARIES], async (tx) => {
+      await tx.put(OBJECT_STORE_COMPLETED_SUMMARIES, 'other-key', record)
+    })
+    const listed = await listCompletedSummaries(adapter)
+    expect(listed.ok).toBe(true)
+    if (!listed.ok) throw new Error('expected listing')
+    expect(listed.value).toHaveLength(1)
+    expect(listed.value[0]).toMatchObject({
+      key: 'other-key',
+      diagnostic: 'corrupt',
+    })
+    expect(listed.value[0]?.decoded.status).toBe('corrupt')
+    expect(await updateCompletedSummaryClassLabel(adapter, 'other-key', 'Period 1'))
+      .toMatchObject({ ok: false })
+    expect(await enforceCompletedSummaryRetention(adapter, 0)).toEqual({
+      ok: true,
+      value: [],
+    })
+    expect(await deleteCompletedSummary(adapter, 'other-key')).toMatchObject({ ok: true })
+    expect(await listCompletedSummaries(adapter)).toEqual({ ok: true, value: [] })
   })
 
   it('invalidates an older queued active write before atomic completion cleanup', async () => {
@@ -104,10 +134,11 @@ describe('completed summary persistence', () => {
   it('lists per-record diagnostics without deleting corrupt or unknown records', async () => {
     const adapter = await opened()
     await adapter.withTransaction([OBJECT_STORE_COMPLETED_SUMMARIES], async (tx) => {
-      await tx.put(OBJECT_STORE_COMPLETED_SUMMARIES, 'valid', recordFixture())
+      await tx.put(OBJECT_STORE_COMPLETED_SUMMARIES, 'session-1', recordFixture())
       await tx.put(OBJECT_STORE_COMPLETED_SUMMARIES, 'future', {
         ...recordFixture(),
         version: 2,
+        extraField: 'ignored',
       })
       await tx.put(OBJECT_STORE_COMPLETED_SUMMARIES, 'broken', {})
     })
@@ -133,7 +164,7 @@ describe('completed summary persistence', () => {
     expect(listed.value[0].decoded.record.classLabel).toBe('Period 2')
     expect(await deleteCompletedSummary(adapter, 'session-1')).toMatchObject({ ok: true })
     await adapter.withTransaction([OBJECT_STORE_COMPLETED_SUMMARIES], async (tx) => {
-      await tx.put(OBJECT_STORE_COMPLETED_SUMMARIES, 'one', recordFixture())
+      await tx.put(OBJECT_STORE_COMPLETED_SUMMARIES, 'session-1', recordFixture())
       await tx.put(OBJECT_STORE_COMPLETED_SUMMARIES, 'two', {})
     })
     expect(await clearAllCompletedSummaries(adapter)).toMatchObject({ ok: true })

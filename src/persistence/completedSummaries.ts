@@ -68,14 +68,6 @@ export function enqueueSaveCompletedAndClearActive(
   return writeQueue.enqueue(() => saveCompletedAndClearActive(adapter, history, options))
 }
 
-export async function retrySaveCompletedAndClearActive(
-  adapter: PersistenceAdapter,
-  history: readonly SessionEvent[],
-  options: SaveCompletedSummaryOptions,
-): Promise<PersistenceResult<CompletedSummaryRecordV1>> {
-  return saveCompletedAndClearActive(adapter, history, options)
-}
-
 export async function listCompletedSummaries(
   adapter: PersistenceAdapter,
 ): Promise<PersistenceResult<readonly CompletedSummaryListing[]>> {
@@ -84,13 +76,35 @@ export async function listCompletedSummaries(
     const keys = [...(await tx.getAllKeys(OBJECT_STORE_COMPLETED_SUMMARIES))]
     keys.sort((a, b) => a.localeCompare(b))
     for (const key of keys) {
-      const decoded = decodeCompletedSummaryRecord(
+      const decoded = decodeCompletedSummaryForStoreKey(
+        key,
         await tx.get(OBJECT_STORE_COMPLETED_SUMMARIES, key),
       )
       listings.push({ key, diagnostic: decoded.status, decoded })
     }
   })
   return result.ok ? persistenceOk(listings) : result
+}
+
+/**
+ * Contract: IndexedDB key = recordId = summary.sessionId.
+ * A value that is otherwise valid under a different key fails closed and is
+ * never silently moved, repaired, or rewritten.
+ */
+export function decodeCompletedSummaryForStoreKey(
+  storeKey: string,
+  value: unknown,
+): CompletedSummaryDecodeResult {
+  const decoded = decodeCompletedSummaryRecord(value)
+  if (decoded.status !== 'valid') return decoded
+  if (decoded.record.recordId !== storeKey) {
+    return {
+      status: 'corrupt',
+      message:
+        'Object-store key does not equal recordId / summary.sessionId. The record is quarantined.',
+    }
+  }
+  return decoded
 }
 
 export async function updateCompletedSummaryClassLabel(
@@ -108,7 +122,7 @@ export async function updateCompletedSummaryClassLabel(
       dataError = persistenceErr('not-found', 'No completed summary exists for that record id.')
       return
     }
-    const decoded = decodeCompletedSummaryRecord(stored)
+    const decoded = decodeCompletedSummaryForStoreKey(recordId, stored)
     if (decoded.status !== 'valid') {
       dataError = persistenceErr(
         decoded.status.startsWith('unsupported-') ? 'unsupported-version' : 'corrupt',
