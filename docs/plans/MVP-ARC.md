@@ -1208,10 +1208,14 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   unchanged.
 - **Owner gate:** delivery and exact-head squash-merge authorizations were
   granted and satisfied. **PR #40 requires no further review or merge action.**
-  Post-merge reconciliation is in review via PR
-  [#41](https://github.com/ricktron/classroom-quiz-show/pull/41). `OG-7` remains
-  binding against individual identity. Slice 17 is not authorized by this
-  delivery.
+  Post-merge reconciliation was squash-merged via PR
+  [#41](https://github.com/ricktron/classroom-quiz-show/pull/41) at
+  `3ee239a1341749aa03d2bbbfa780aece74c07be5`. **PR #41 requires no further
+  review or merge action.** The Slice 16 delivery and canonical reconciliation
+  sequence is complete. `OG-7` remains binding against individual identity.
+  Slice 17 remains routable only through its required preceding Phase 3
+  readiness/specification dependency and a separate owner authorization; neither
+  is granted by this delivery.
 
 ### Slice 17 — Theme and Design-Token Foundation
 
