@@ -65,12 +65,21 @@ and
 [`receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
 **Previous slice:** Slice 15 — Session Summary Contract (`Complete`, squash-merged
 via PR #38 at `2425390…`)
-**Current delivery frontier:** Slice 16 product implementation is **`Complete`**
-on `main`. Documentation-only post-merge reconciliation is **in review** via
-open PR [#41](https://github.com/ricktron/classroom-quiz-show/pull/41) on
-`docs/slice-16-post-merge-reconciliation`. At this frontier, IndexedDB schema is
-**2**; public-state wire **8**, sync envelope **2**, canonical game-file schema
-**1**, private active-session wire **1**, and Session Summary contract **1**.
+**Current delivery frontier:** Slice 16 product implementation and post-merge
+reconciliation are **`Complete`** on `main`. Current canonical `main` tip is PR
+[#41](https://github.com/ricktron/classroom-quiz-show/pull/41) squash
+`3ee239a1341749aa03d2bbbfa780aece74c07be5` (merged **2026-08-05T14:40:02Z** from
+reviewed head `2787040ff251f04fa899f0b40b18fa7217f6ba80`; sole parent
+`bc3cea65cab8db1481b0b2420be580cc69932f3d`; trees identical at
+`c1b48c92a91524d3a6615eec2ff2c0b3ba52201f`). ADR-016 is **Accepted**. At this
+frontier, IndexedDB schema is **2**; public-state wire **8**, sync envelope
+**2**; canonical game-file schema **1**, private active-session wire **1**, and
+Session Summary contract **1**. Documentation-only PR #41 post-merge
+canonicalization is **in review** on
+`docs/slice-16-pr41-post-merge-canonicalization` (see
+[`receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md`](receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md)
+once present). After that lane lands, no further Slice 16 delivery, repair,
+merge, reconciliation, or registration is owed.
 **Roadmap:** **22 slices**, amended 2026-08-03 by
 [`decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
 (`CQS-PLAN-S02`; documentation-only). Prior amendment
@@ -365,9 +374,14 @@ Post-merge registration evidence:
 Slice 15 status above). Slice 16 has since been delivered and squash-merged via
 PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) at
 `bc3cea65cab8db1481b0b2420be580cc69932f3d` (see Slice 16 status above).
-**PR #40 requires no further review or merge action.** The next safe action is
-independent review of the Slice 16 post-merge reconciliation PR — not further
-review of PR #36, PR #38, or PR #40.
+**PR #40 requires no further review or merge action.** Post-merge reconciliation
+was squash-merged via PR
+[#41](https://github.com/ricktron/classroom-quiz-show/pull/41) at
+`3ee239a1341749aa03d2bbbfa780aece74c07be5`. **PR #41 requires no further review
+or merge action.** The next safe action is documentation-only PR #41
+post-merge canonicalization review, then separately authorized Slice 17
+readiness and Phase 3 dependency analysis — not further review of PR #36,
+PR #38, PR #40, or PR #41.
 
 ## Slice 14 merge evidence
 
@@ -1516,17 +1530,22 @@ post-merge reconciliation receipt:
 ## Next safe action
 
 **Slice 16 — Completed Summary Ledger & Compatible Reporting is `Complete` and
-merged** (PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40),
-squash commit `bc3cea65cab8db1481b0b2420be580cc69932f3d`). **PR #40 requires no
-further review or merge action.**
+merged** (implementation PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40)
+at `bc3cea65cab8db1481b0b2420be580cc69932f3d`; reconciliation PR
+[#41](https://github.com/ricktron/classroom-quiz-show/pull/41) at
+`3ee239a1341749aa03d2bbbfa780aece74c07be5`). **PR #40 and PR #41 require no
+further review or merge action.** ADR-016 is **Accepted**.
 
-**Recommended next action:** independent review of open reconciliation PR
-[#41](https://github.com/ricktron/classroom-quiz-show/pull/41) on
-`docs/slice-16-post-merge-reconciliation`, then obtain separate exact-head
-squash-merge authority for that reconciliation. **STOP BEFORE MERGE** from this
-surface alone. Do not begin Slice 17 readiness or implementation, Phase 3, or
-post-MVP work from this surface. Slice 17 remains `Planned` and unauthorized;
-`CQS-OD-066` remains unresolved.
+**Recommended next action:** independent review of the open documentation-only
+PR #41 post-merge canonicalization on
+`docs/slice-16-pr41-post-merge-canonicalization`, then obtain separate
+exact-head squash-merge authority for that canonicalization. After it lands,
+the next program lane is separately authorized Slice 17 readiness and Phase 3
+dependency analysis — not Slice 17 implementation. **STOP BEFORE MERGE** from
+this surface alone. Do not begin Slice 17 readiness or implementation, Phase 3,
+or post-MVP work from this surface. Slice 17 remains `Planned` and unauthorized;
+`CQS-OD-066` remains unresolved. No Slice 17 or Phase 3 implementation authority
+exists.
 
 **Roadmap Amendment 003 (`CQS-PLAN-S02`) delivery and post-merge
 reconciliation remain complete on `main`** (PR #35 squash `2ebeb240…`; PR #36
