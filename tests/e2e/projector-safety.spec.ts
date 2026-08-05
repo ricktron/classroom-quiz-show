@@ -23,6 +23,16 @@ test('display exposes no teacher-only controls', async ({ page }) => {
   await expect(page.getByRole('button')).toHaveCount(0)
   await expect(page.getByRole('textbox')).toHaveCount(0)
   await expect(page.getByRole('link')).toHaveCount(0)
+  await expect(page.getByRole('radio')).toHaveCount(0)
+})
+
+test('themed display launch still exposes no teacher-only controls', async ({ page }) => {
+  await page.goto('#/display?theme=high-contrast')
+  await expect(page.getByRole('button')).toHaveCount(0)
+  await expect(page.getByRole('textbox')).toHaveCount(0)
+  await expect(page.getByRole('link')).toHaveCount(0)
+  await expect(page.getByRole('radio')).toHaveCount(0)
+  await expect(page.getByRole('group', { name: 'Theme' })).toHaveCount(0)
 })
 
 test('display shows no answer or teacher-note placeholders', async ({ page }) => {

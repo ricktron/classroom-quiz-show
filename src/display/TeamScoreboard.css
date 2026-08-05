@@ -21,7 +21,7 @@
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-text-muted);
+  color: var(--fg-muted);
 }
 
 .tsb__list {
@@ -40,9 +40,10 @@
   min-width: clamp(7rem, 11vw, 12rem);
   max-width: 100%;
   padding: clamp(0.3rem, 0.7vw, 0.6rem) clamp(0.5rem, 1vw, 0.9rem);
-  border: 1px solid var(--color-border);
+  border: var(--bw-standard) solid var(--border-panel);
   border-radius: var(--radius);
-  background: var(--color-surface);
+  background: var(--surface-base);
+  color: var(--fg-primary);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -53,13 +54,14 @@
 /*
  * The accent is a bar along the top edge — decoration only. With no accent class
  * it falls back to the neutral muted colour, and the card stays fully readable.
+ * Height is theme-controlled (4px default / 6px high contrast).
  */
 .tsb__accent-bar {
   position: absolute;
   inset-block-start: 0;
   inset-inline: 0;
-  height: 4px;
-  background: var(--team-accent, var(--color-text-muted));
+  height: var(--accent-bar-height);
+  background: var(--team-accent, var(--fg-muted));
 }
 
 .tsb__name {
@@ -76,6 +78,7 @@
   font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
+  color: var(--fg-score);
 }
 
 /*
@@ -84,15 +87,15 @@
  * viewers. The accessible name says "minus N points" outright.
  */
 .tsb__score--negative {
-  color: var(--color-danger);
+  color: var(--fg-score-negative);
 }
 
 .tsb--unavailable {
-  padding: var(--space-2);
+  padding: var(--space-4);
 }
 
 .tsb__unavailable-text {
   margin: 0;
   font-size: clamp(1rem, 1.8vw, 1.5rem);
-  color: var(--color-text-muted);
+  color: var(--fg-muted);
 }

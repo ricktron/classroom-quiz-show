@@ -1,3 +1,5 @@
+import { resolveThemeId, type ThemeId } from '../theme/themeRegistry'
+
 /**
  * Central route table.
  *
@@ -37,4 +39,35 @@ export function absoluteHashUrl(
   const normalizedBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
   const normalizedHash = hashPath.startsWith('/') ? hashPath : `/${hashPath}`
   return `${origin}${normalizedBase}#${normalizedHash}`
+}
+
+/**
+ * In-app hash path for the projector with a validated theme query.
+ * Form: `/display?theme=default` or `/display?theme=high-contrast`.
+ */
+export function displayPathWithTheme(themeCandidate: unknown): string {
+  const themeId = resolveThemeId(themeCandidate)
+  const params = new URLSearchParams()
+  params.set('theme', themeId)
+  return `${ROUTES.display}?${params.toString()}`
+}
+
+/**
+ * Absolute, base-path-aware URL for opening the named display window with the
+ * host's current validated theme ID only.
+ */
+export function absoluteDisplayUrlWithTheme(
+  themeCandidate: unknown,
+  origin: string = typeof window !== 'undefined' ? window.location.origin : '',
+  baseUrl: string = import.meta.env.BASE_URL,
+): string {
+  return absoluteHashUrl(displayPathWithTheme(themeCandidate), origin, baseUrl)
+}
+
+/** Parse a theme query from a hash-route search string (`?theme=…` or `theme=…`). */
+export function themeIdFromDisplaySearch(search: string): ThemeId {
+  const raw = search.startsWith('?') ? search.slice(1) : search
+  const params = new URLSearchParams(raw)
+  if (!params.has('theme')) return resolveThemeId(undefined)
+  return resolveThemeId(params.get('theme'))
 }
