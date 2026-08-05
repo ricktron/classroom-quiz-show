@@ -97,9 +97,11 @@ defers to `AGENTS.md` and adds no separate authority.
 > delivery and post-merge reconciliation are complete on `main`; PR #36
 > requires no further review or merge action. Slice 15 is now `Complete` on
 > `main` (PR #38). Slice 16 — Completed Summary Ledger & Compatible Reporting
-> is now delivered for review on `feat/slice-16-summary-ledger`, unmerged, with
-> no PR number yet. Phase 3 remains unauthorized. Slices 17–22 remain
-> unauthorized. Post-MVP arcs remain inactive. `CQS-OD-066` remains unresolved.
+> is now delivered for review via open PR
+> [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) on
+> `feat/slice-16-summary-ledger` (unmerged). Phase 3 remains unauthorized.
+> Slices 17–22 remain unauthorized. Post-MVP arcs remain inactive.
+> `CQS-OD-066` remains unresolved.
 
 ## Repository state
 

@@ -1183,8 +1183,10 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   comparison and retention/deletion.
 - **Impact:** schema no · public-wire no · storage **yes** · UI **yes** ·
   hardware no.
-- **Status:** **`In review` / delivered for review** on
-  `feat/slice-16-summary-ledger`; unmerged; no PR number recorded. Rationale in
+- **Status:** **`In review` / delivered for review** via open PR
+  [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) on
+  `feat/slice-16-summary-ledger` (head `890f42a2a20a3697fea13f9d1350d892cbff15ea`);
+  unmerged. Rationale in
   [`../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md).
 - **Delivered contracts:** completed-summary envelope v1; competitive profile
   v1; SHA-256 of Slice 12's exact canonical UTF-8 export; exact-compatible
@@ -1193,7 +1195,7 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   schema moves **1 → 2**; public wire **8**, sync **2**, game-file schema **1**,
   private active-session wire **1**, and Session Summary contract **1** remain
   unchanged.
-- **Owner gate:** independent semantic review once the PR is opened, then
+- **Owner gate:** independent semantic review of PR #40 at the exact head, then
   **STOP BEFORE MERGE**. `OG-7` remains binding against individual identity.
   Slice 17 is not authorized by this delivery.
 
