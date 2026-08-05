@@ -98,6 +98,15 @@ This project separates two kinds of durable decision records:
      history and replay only; observed vs derived truthfulness; undo/correction
      and terminal-path rules; no completed-session storage; no public projection;
      versions unchanged (Slice 15, Complete).
+   - [`ADR-016-completed-summary-ledger-compatible-reporting.md`](../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md)
+     — host-private completed-summary ledger and exact-compatible reporting:
+     IndexedDB schema version 2 with `completedSummaries`, completed-summary
+     envelope v1, competitive profile v1, atomic completion save with
+     active-recovery cleanup, newest-50 valid retention, confirmed deletion,
+     optional class label, and quarantine of unknown/corrupt records; public
+     wire **8**, sync **2**, game-file schema **1**, active-session wire **1**,
+     and Session Summary **1** unchanged (Slice 16, Complete — merged via PR
+     #40).
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).
