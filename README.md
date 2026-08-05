@@ -434,15 +434,18 @@ and
 [`docs/receipts/2026-08-05-slice-16-post-merge-reconciliation.md`](docs/receipts/2026-08-05-slice-16-post-merge-reconciliation.md).
 Slices 17–22 remain Planned and unauthorized under the **22-slice** MVP plan
 ([`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
-Phase 3 remains unauthorized; post-MVP arcs remain inactive; `CQS-OD-066`
-remains unresolved. **PR #40 requires no further review or merge action.**
-Post-merge reconciliation was squash-merged via PR
+Post-MVP arcs remain inactive; `CQS-OD-066` remains unresolved. **PR #40
+requires no further review or merge action.** Post-merge reconciliation was
+squash-merged via PR
 [#41](https://github.com/ricktron/classroom-quiz-show/pull/41) at
 `3ee239a1341749aa03d2bbbfa780aece74c07be5`. **PR #41 requires no further review
-or merge action.** Slices 1–16 are Complete. The next safe action is separately
-authorized Slice 17 readiness and Phase 3 dependency analysis. Phase 3 remains
-unauthorized; Slice 17 implementation remains unauthorized; the inherited Final
-mid-refresh recovery flake remains unresolved; `CQS-OD-066` remains unresolved.
+or merge action.** Slices 1–16 are Complete. The Phase 3 design-system readiness
+documentation dependency is satisfied when
+[`docs/plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](docs/plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
+is on `main`. Slice 17 remains Planned, unstarted, and unauthorized. The next
+safe action is separately authorized Slice 17 implementation. The inherited
+Final mid-refresh recovery flake remains unresolved; `CQS-OD-066` remains
+unresolved.
 
 > ⚠️ **Sony Buzz physical certification is bounded, not a supported-hardware
 > list.** OADL2-S07 completed physical certification for one exact tested

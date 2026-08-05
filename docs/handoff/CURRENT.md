@@ -57,12 +57,16 @@ are complete on `main`. The remaining PR #41 stale-routing defect has been
 canonicalized (see
 [`../receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md`](../receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md)).
 No further Slice 16 delivery, repair, merge, reconciliation, registration, or
-canonicalization lane is owed. **Recommended next action:** a new, separately
-authorized Program Orchestrator readiness lane for Slice 17 and its required
-preceding Phase 3 planning/specification dependency. Slice 17 readiness has not
-started. Slice 17 implementation and Phase 3 remain unauthorized. Do not begin
-Slice 17 readiness or implementation, Phase 3, or post-MVP work from this
-handoff alone. `CQS-OD-066` remains unresolved. The inherited Final mid-refresh
+canonicalization lane is owed. **Phase 3 design-system readiness is complete**
+when
+[`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
+is on `main` (documentation/specification only; authorization
+`AUTHORIZE-CQS-PHASE3-S17-DESIGN-SYSTEM-READINESS-1`). **Slice 17 remains
+`Planned`, unstarted, and unauthorized.** **Recommended next action:** a new,
+separately authorized Slice 17 implementation Orchestrator. No further readiness
+registration or reconciliation is owed merely to record this dependency. Do not
+begin Slice 17 implementation, Slice 18, or post-MVP work from this handoff
+alone. `CQS-OD-066` remains unresolved. The inherited Final mid-refresh
 recovery flake remains unresolved.
 
 Coding agents and contributors should read root
@@ -120,9 +124,11 @@ defers to `AGENTS.md` and adds no separate authority.
 > `bc3cea65cab8db1481b0b2420be580cc69932f3d` and reconciliation PR
 > [#41](https://github.com/ricktron/classroom-quiz-show/pull/41) at
 > `3ee239a1341749aa03d2bbbfa780aece74c07be5`. **PR #40 and PR #41 require no
-> further review or merge action.** Phase 3 remains unauthorized. Slices 17–22
-> remain unauthorized. Post-MVP arcs remain inactive. `CQS-OD-066` remains
-> unresolved.
+> further review or merge action.** Phase 3 design-system readiness is complete
+> when
+> [`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
+> is on `main`. Slices 17–22 remain unauthorized for implementation. Post-MVP
+> arcs remain inactive. `CQS-OD-066` remains unresolved.
 
 ## Repository state
 
@@ -986,9 +992,11 @@ and
 Slice 16 product delivery and post-merge reconciliation are `Complete` on
 `main`. The remaining PR #41 stale-routing defect has been canonicalized. No
 further Slice 16 delivery, repair, merge, reconciliation, registration, or
-canonicalization lane is owed. **Recommended next action:** a new, separately
-authorized Slice 17 readiness and Phase 3 dependency lane — not started here.
-Phase 3 remains unauthorized. Slices 17–22 remain unauthorized. Post-MVP arcs
+canonicalization lane is owed. Phase 3 design-system readiness is complete when
+[`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
+is on `main`. **Recommended next action:** a new, separately authorized Slice 17
+implementation Orchestrator. Slice 17 remains `Planned`, unstarted, and
+unauthorized. Slices 17–22 remain unauthorized for implementation. Post-MVP arcs
 remain inactive. `CQS-OD-066` remains unresolved. The inherited Final
 mid-refresh recovery flake remains unresolved.
 
@@ -1109,9 +1117,12 @@ frontier was a separate Slice 14 planning/readiness decision, and this direction
 did not authorize it; **Slice 14 is now `Complete`** (PR #32, `ce2e103…`), and
 **Amendment 003 delivery and post-merge reconciliation are merged** (PR #35,
 `2ebeb24…`; PR #36, `da6b4dc…`). Slice 15 is `Complete`; Slice 16 is `Complete`
-on `main` (PR #40, `bc3cea65…`; PR #41, `3ee239a…`). The immediate frontier is
-a separately authorized Slice 17 readiness and Phase 3 dependency lane; Slice 17
-readiness has not started. Slice 13 is **`Complete`** (PR #27, `6cf4d25…`). Slice 12 is
+on `main` (PR #40, `bc3cea65…`; PR #41, `3ee239a…`). Phase 3 design-system
+readiness is complete when
+[`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
+is on `main`. The immediate frontier is a separately authorized Slice 17
+implementation lane; Slice 17 remains `Planned`, unstarted, and unauthorized.
+Slice 13 is **`Complete`** (PR #27, `6cf4d25…`). Slice 12 is
 **`Complete`** (PR #25, `cdb499a…`). Slice 11 is **`Complete`** (PR #23,
 `5d47b2f`). Slice 10 remains **`Complete`** under the owner-accepted
 hardware-independent boundary; OADL2-S07 recorded a bounded physical claim under
