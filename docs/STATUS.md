@@ -85,8 +85,10 @@ private active-session wire **1**, and Session Summary contract **1**.
 (`CQS-PLAN-S02`; documentation-only). Prior amendment
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 grew the plan from 11 to 18 slices (PR #13, `752a3fe`, 2026-07-26). Slices 1–16
-are `Complete`; Slices 17–22 remain `Planned` and unauthorized. Phase 3 remains
-unauthorized; post-MVP arcs remain inactive; `CQS-OD-066` remains unresolved.
+are `Complete`; Slices 17–22 remain `Planned` and unauthorized for
+implementation. Phase 3 design-system readiness is satisfied when
+[`plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
+is on `main`; post-MVP arcs remain inactive; `CQS-OD-066` remains unresolved.
 
 ## Slice 14 work (Complete)
 
@@ -298,11 +300,35 @@ artifact hash or path is asserted.
 
 **Routing after Amendment 003:** MVP implementation consumers of Phase 2B are
 **Slice 17 — Theme and Design-Token Foundation** and **Slice 18 — Audience
-Display System** (both `Planned`, unstarted). A documentation/specification-only
-Phase 3 readiness lane is required before Slice 17 implementation. **Current
-implementation truth is unchanged:** Slice 14 is **`Complete`**, public-state
-wire **8**, sync envelope **2**, game-file schema **1**, and **Slices 15–22
-remain `Planned` and unstarted**.
+Display System** (both `Planned`, unstarted).
+
+## Phase 3 design-system readiness — documentation dependency
+
+**Kind:** documentation/specification only (not a product slice; no runtime).
+**Canonical specification:**
+[`plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
+(`CQS-PHASE-3-DESIGN-SYSTEM-READINESS`; authorization
+`AUTHORIZE-CQS-PHASE3-S17-DESIGN-SYSTEM-READINESS-1`; evidence state
+`CQS-PHASE3-S17-DESIGN-SYSTEM-READINESS-ES-1`).
+
+This Phase 3 design-system readiness dependency is **satisfied by the proposed
+content once that specification is on `main`**. It defines the Slice 17
+token/theme contract (hybrid typed registry + CSS custom properties; closed IDs
+`default` / `high-contrast`; session-local selection; no schema/wire/storage
+theme field). It does **not** start or complete Slice 17. Slice 17 remains
+`Planned`, unstarted, and unauthorized pending separate implementation
+authorization.
+
+**Preserved boundaries and limitations:** public-state wire **8**; sync
+envelope **2**; game-file schema **1**; private active-session wire **1**;
+IndexedDB schema **2**; Session Summary contract **1**; completed-summary
+envelope **1**; competitive profile **1**. The inherited Final mid-refresh
+recovery flake remains unresolved. `CQS-OD-066` remains unresolved. No
+physical-projector, accessibility, or Raspberry Pi certification is claimed.
+
+**Next action:** separately authorized Slice 17 implementation Orchestrator.
+No further readiness registration or reconciliation is owed merely to record
+this dependency.
 
 ## Remaining-MVP rebalance planning (CQS-PLAN-S02) — Complete
 
@@ -380,10 +406,12 @@ was squash-merged via PR
 `3ee239a1341749aa03d2bbbfa780aece74c07be5`. **PR #41 requires no further review
 or merge action.** The Slice 16 PR #41 post-merge canonicalization recorded in
 [`receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md`](receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md)
-closes the remaining stale-routing defect. The next safe action is separately
-authorized Slice 17 readiness and Phase 3 dependency analysis — not further
-review of PR #36, PR #38, PR #40, or PR #41, and not a claim that Slice 17
-readiness has started.
+closes the remaining stale-routing defect. Phase 3 design-system readiness is
+satisfied when
+[`plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
+is on `main`. The next safe action is separately authorized Slice 17
+implementation — not further review of PR #36, PR #38, PR #40, or PR #41, and
+not Slice 17 implementation from this surface alone.
 
 ## Slice 14 merge evidence
 
@@ -1538,16 +1566,17 @@ at `bc3cea65cab8db1481b0b2420be580cc69932f3d`; reconciliation PR
 `3ee239a1341749aa03d2bbbfa780aece74c07be5`). **PR #40 and PR #41 require no
 further review or merge action.** ADR-016 is **Accepted**.
 
-**Recommended next action:** a new, separately authorized Program Orchestrator
-readiness lane for Slice 17 and its required preceding Phase 3
-planning/specification dependency — not Slice 17 implementation. Slice 17
-readiness has not started. Do not begin Slice 17 readiness or implementation,
-Phase 3, or post-MVP work from this surface. Slice 17 remains `Planned` and
-unauthorized; Phase 3 remains unauthorized; post-MVP arcs remain inactive;
-`CQS-OD-066` remains unresolved; the inherited Final mid-refresh recovery flake
-remains unresolved. No Slice 17 or Phase 3 implementation authority exists. No
-further Slice 16 delivery, repair, merge, reconciliation, registration, or
-canonicalization lane is owed after this content is on `main`.
+**Recommended next action:** a new, separately authorized Slice 17
+implementation Orchestrator. Phase 3 design-system readiness is satisfied when
+[`plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
+is on `main`. Slice 17 remains `Planned`, unstarted, and unauthorized. Do not
+begin Slice 17 implementation, Slice 18, or post-MVP work from this surface.
+Post-MVP arcs remain inactive; `CQS-OD-066` remains unresolved; the inherited
+Final mid-refresh recovery flake remains unresolved. No Slice 17 implementation
+authority exists. No further Slice 16 delivery, repair, merge, reconciliation,
+registration, or canonicalization lane is owed after this content is on `main`.
+No further Phase 3 readiness registration or reconciliation is owed merely to
+record that dependency.
 
 **Roadmap Amendment 003 (`CQS-PLAN-S02`) delivery and post-merge
 reconciliation remain complete on `main`** (PR #35 squash `2ebeb240…`; PR #36

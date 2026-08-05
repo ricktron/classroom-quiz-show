@@ -28,10 +28,13 @@ the round-based engine direction into it.
 > [`CQS-DESIGN-PHASE-2B-DIRECTION.md`](CQS-DESIGN-PHASE-2B-DIRECTION.md)
 > under `AUTHORIZE-CQS-DESIGN-PHASE-2B-REGISTRATION-1`. **MVP implementation
 > consumers are Slices 17–18** (theme/token foundation, then audience display).
-> A documentation/specification-only **Phase 3** readiness lane is required
-> before Slice 17 implementation. Phase 2B / Phase 3 / Slices 17–18 are **not**
-> authorized for implementation by their registration or by Amendment 003.
-> Phase 2B is **not** a numbered MVP slice and is not implemented.
+> The documentation/specification-only **Phase 3** design-system readiness
+> dependency is
+> [`CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md);
+> it is satisfied when that content is on `main`. Phase 2B / Slices 17–18 are
+> **not** authorized for implementation by their registration, by Amendment 003,
+> or by Phase 3 readiness alone. Phase 2B is **not** a numbered MVP slice and is
+> not implemented.
 
 ## Product direction (approved)
 
@@ -1214,8 +1217,10 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   review or merge action.** The Slice 16 delivery and canonical reconciliation
   sequence is complete. `OG-7` remains binding against individual identity.
   Slice 17 remains routable only through its required preceding Phase 3
-  readiness/specification dependency and a separate owner authorization; neither
-  is granted by this delivery.
+  readiness specification
+  ([`CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md),
+  satisfied when that content is on `main`) and a separate owner authorization;
+  neither is granted by this delivery.
 
 ### Slice 17 — Theme and Design-Token Foundation
 
@@ -1227,15 +1232,19 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
 - **Major exclusions:** full Phase 2B layout; imported CSS; content-defined
   animations; presentation as game authority; game-schema or public-wire theme
   field unless separately justified and authorized.
-- **Prerequisites:** slices 5, 6; **preceding Phase 3** design-system
-  readiness/specification lane (documentation/specification only).
+- **Prerequisites:** slices 5, 6; **preceding Phase 3** design-system readiness
+  specification
+  [`CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
+  (documentation/specification only). That documentation prerequisite is
+  satisfied when the readiness specification is on `main`.
 - **Completion evidence:** `verify:all` green; tests proving no theme value
   originates from imported content and no theme changes engine behaviour.
 - **Impact:** schema no by default · public-wire no by default · UI **yes** ·
   storage no · hardware no.
 - **Status:** `Planned` — unstarted.
-- **Owner gate:** Phase 3 readiness complete **and** separate Slice 17
-  implementation authorization. **Neither is granted by Amendment 003.**
+- **Owner gate:** Phase 3 readiness content on `main` **and** separate Slice 17
+  implementation authorization. **Neither grants the other; Amendment 003
+  grants neither.**
 
 ### Slice 18 — Audience Display System
 
