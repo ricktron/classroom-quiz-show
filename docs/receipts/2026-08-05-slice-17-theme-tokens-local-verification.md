@@ -154,6 +154,7 @@ Received: Not saved yet
 | Base branch | `main` |
 | Head branch | `feat/slice-17-theme-tokens` |
 | Exact head SHA (implementation commit) | `cf8e2f75b4e9a219f9f745d9b35aa53a6c434c34` |
+| Exact head SHA (after receipt identity commit) | `f22f845d13041a58a7af6ebaaefdc5459c8d90ea` |
 | Draft | no |
 | Merged | no |
 | Auto-merge | off (must remain off) |
