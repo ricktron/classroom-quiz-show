@@ -1,60 +1,12 @@
 /*
  * Foundational visual identity for Classroom Quiz Show.
  *
- * This is intentionally restrained and token-driven so it can be replaced by a
- * real theme engine later (see GAME-ENGINE-BOUNDARIES.md). Tokens live on
- * :root; screens consume them. No commercial game-show branding is imitated.
+ * Semantic theme tokens live in themes.css. This file imports that contract,
+ * applies shared element styles, and keeps temporary legacy aliases available
+ * to surfaces that still consume `--color-*`.
  */
 
-:root {
-  /* Neutral / surface palette (dark, projector-friendly base) */
-  --color-bg: #0b1b2b;
-  --color-surface: #12263a;
-  --color-surface-raised: #1b344c;
-  --color-border: #2b4a68;
-  --color-text: #f2f7fb;
-  --color-text-muted: #b9c9d8;
-
-  /* Accents */
-  --color-accent: #3aa0ff; /* display / general */
-  --color-accent-strong: #1d7fe0;
-  --color-host-accent: #f2a900; /* host = private, amber caution */
-  --color-danger: #ff6b6b;
-  --color-success: #4ade80;
-
-  /* Typography */
-  --font-sans:
-    system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-display: var(--font-sans);
-
-  /*
-   * Team accent palette (Slice 6). These are the ONLY colours a team can be
-   * given: a game file names a token, application code maps the token to the
-   * class below, and the class reads one of these variables. No authored string
-   * ever reaches a style property, and a future theme engine can redefine every
-   * value here without touching a single game file.
-   *
-   * All eight are chosen to sit legibly on the dark projector background AND to
-   * stay distinguishable in greyscale, because colour is only ever supplemental —
-   * every surface also renders the team's name as text.
-   */
-  --color-team-crimson: #ff7a7a;
-  --color-team-azure: #5cb8ff;
-  --color-team-emerald: #5ee2a0;
-  --color-team-amber: #ffc75c;
-  --color-team-violet: #c39bff;
-  --color-team-teal: #4fd8d8;
-  --color-team-rose: #ff92c2;
-  --color-team-slate: #b9c9d8;
-
-  /* Scale */
-  --space-1: 0.5rem;
-  --space-2: 1rem;
-  --space-3: 1.5rem;
-  --space-4: 2.5rem;
-  --radius: 12px;
-  --focus-ring: 3px solid var(--color-accent);
-}
+@import './themes.css';
 
 *,
 *::before,
@@ -71,21 +23,21 @@ body,
 
 body {
   font-family: var(--font-sans);
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--surface-canvas);
+  color: var(--fg-primary);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
 a {
-  color: var(--color-accent);
+  color: var(--fg-interactive);
 }
 
 /* Visible, consistent focus for keyboard users on every interactive element. */
 :where(a, button, [tabindex]):focus-visible {
   outline: var(--focus-ring);
-  outline-offset: 3px;
-  border-radius: 6px;
+  outline-offset: var(--focus-offset);
+  border-radius: var(--radius-sm);
 }
 
 /* Shared button foundation. */
@@ -93,58 +45,73 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
-  min-height: 48px; /* touch-friendly */
+  gap: var(--space-2);
+  min-height: var(--target-comfortable);
   padding: 0.75rem 1.5rem;
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--color-text);
-  background: var(--color-accent-strong);
-  border: 1px solid transparent;
+  color: var(--fg-on-accent-fill);
+  background: var(--state-accent-strong);
+  border: var(--bw-standard) solid transparent;
   border-radius: var(--radius);
   text-decoration: none;
   cursor: pointer;
-  transition: background-color 120ms ease;
+  transition: background-color var(--dur-fast) var(--ease-standard);
 }
 
 .btn:hover {
-  background: var(--color-accent);
+  background: var(--state-accent-fill-hover);
 }
 
 .btn--secondary {
+  color: var(--fg-primary);
   background: transparent;
-  border-color: var(--color-border);
+  border-color: var(--border-standard);
 }
 
 .btn--secondary:hover {
-  background: var(--color-surface-raised);
+  background: var(--surface-raised);
+}
+
+.btn--destructive {
+  color: var(--fg-on-accent-fill);
+  background: var(--state-danger);
+  border-color: var(--state-danger);
 }
 
 /*
- * A disabled control must LOOK unavailable, not merely refuse to fire. Slice 6
- * introduces several controls that are deliberately disabled until they can be
- * used legitimately (no scoring target chosen, no tile open, an adjustment already
- * submitted), and a teacher mid-lesson should be able to see that at a glance.
- * The `disabled` attribute is what makes them inoperable; this is the visual half.
+ * Disabled presentation uses semantic disabled tokens — never whole-control
+ * opacity, which washes out borders and text together.
  */
 .btn:disabled,
 .btn[aria-disabled='true'] {
-  opacity: 0.5;
+  color: var(--fg-disabled);
+  background: var(--surface-disabled);
+  border-color: var(--border-disabled);
   cursor: not-allowed;
 }
 
-.btn:disabled:hover {
-  background: var(--color-accent-strong);
+.btn:disabled:hover,
+.btn[aria-disabled='true']:hover {
+  background: var(--surface-disabled);
+}
+
+.btn--secondary:disabled,
+.btn--secondary[aria-disabled='true'] {
+  color: var(--fg-disabled);
+  background: var(--surface-disabled);
+  border-color: var(--border-disabled);
 }
 
 .btn--secondary:disabled:hover {
-  background: transparent;
+  background: var(--surface-disabled);
 }
 
 .screen {
   min-height: 100%;
   display: flex;
   flex-direction: column;
+  background: var(--surface-shell);
 }
 
 .screen__main {
@@ -154,8 +121,8 @@ a {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: var(--space-4) var(--space-2);
-  gap: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+  gap: var(--space-5);
 }
 
 /*
@@ -165,28 +132,28 @@ a {
  * neutral default rather than injecting anything.
  */
 .accent--crimson {
-  --team-accent: var(--color-team-crimson);
+  --team-accent: var(--team-crimson);
 }
 .accent--azure {
-  --team-accent: var(--color-team-azure);
+  --team-accent: var(--team-azure);
 }
 .accent--emerald {
-  --team-accent: var(--color-team-emerald);
+  --team-accent: var(--team-emerald);
 }
 .accent--amber {
-  --team-accent: var(--color-team-amber);
+  --team-accent: var(--team-amber);
 }
 .accent--violet {
-  --team-accent: var(--color-team-violet);
+  --team-accent: var(--team-violet);
 }
 .accent--teal {
-  --team-accent: var(--color-team-teal);
+  --team-accent: var(--team-teal);
 }
 .accent--rose {
-  --team-accent: var(--color-team-rose);
+  --team-accent: var(--team-rose);
 }
 .accent--slate {
-  --team-accent: var(--color-team-slate);
+  --team-accent: var(--team-slate);
 }
 
 .visually-hidden {

@@ -9,32 +9,32 @@
 .tsp {
   width: 100%;
   max-width: 60rem;
-  margin: var(--space-3) auto 0;
-  padding: var(--space-2);
-  border: 1px solid var(--color-border);
+  margin: var(--space-5) auto 0;
+  padding: var(--space-4);
+  border: 1px solid var(--border-panel);
   border-radius: var(--radius);
-  background: var(--color-surface);
+  background: var(--surface-base);
   text-align: start;
 }
 
 .foundation__tag--slice6 {
-  background: color-mix(in srgb, var(--color-success) 22%, transparent);
-  border-color: var(--color-success);
+  background: var(--state-success-wash);
+  border-color: var(--state-success);
 }
 
 .tsp h3 {
-  margin: var(--space-1) 0 var(--space-2);
+  margin: var(--space-2) 0 var(--space-4);
   font-size: 1.1rem;
 }
 
 /* ── Scoreboard ─────────────────────────────────────────────────────────── */
 .tsp__board {
   list-style: none;
-  margin: 0 0 var(--space-2);
+  margin: 0 0 var(--space-4);
   padding: 0;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  gap: var(--space-1);
+  gap: var(--space-2);
 }
 
 .tsp__team {
@@ -42,9 +42,9 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-panel);
   border-radius: var(--radius);
-  background: var(--color-surface-raised);
+  background: var(--surface-raised);
 }
 
 .tsp__swatch {
@@ -52,7 +52,7 @@
   height: 0.85rem;
   border-radius: 50%;
   flex: none;
-  background: var(--team-accent, var(--color-text-muted));
+  background: var(--team-accent, var(--fg-muted));
 }
 
 .tsp__team-name {
@@ -68,19 +68,19 @@
 
 /* ── Target selection ───────────────────────────────────────────────────── */
 .tsp__targets {
-  margin: 0 0 var(--space-2);
-  padding: var(--space-1);
-  border: 1px solid var(--color-border);
+  margin: 0 0 var(--space-4);
+  padding: var(--space-2);
+  border: 1px solid var(--border-panel);
   border-radius: var(--radius);
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1);
+  gap: var(--space-2);
 }
 
 .tsp__targets legend {
   padding: 0 0.4rem;
   font-size: 0.85rem;
-  color: var(--color-text-muted);
+  color: var(--fg-muted);
 }
 
 .tsp__target {
@@ -90,7 +90,7 @@
   /* A comfortable target on a phone-width host screen. */
   min-height: 44px;
   padding: 0 0.6rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-panel);
   border-radius: var(--radius);
   cursor: pointer;
 }
@@ -109,38 +109,38 @@
 .tsp__context,
 .tsp__selected-team,
 .tsp__last {
-  margin: 0 0 var(--space-1);
+  margin: 0 0 var(--space-2);
   font-size: 0.95rem;
 }
 
 .tsp__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1);
-  margin-bottom: var(--space-2);
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
 .tsp__result {
   margin-inline-start: 0.4rem;
   font-variant-numeric: tabular-nums;
-  opacity: 0.85;
+  color: var(--fg-secondary);
 }
 
 .tsp__field {
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
 .tsp__label {
   display: block;
   margin-bottom: 0.3rem;
   font-size: 0.9rem;
-  color: var(--color-text-muted);
+  color: var(--fg-muted);
 }
 
 .tsp__row {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1);
+  gap: var(--space-2);
   align-items: center;
 }
 
@@ -150,9 +150,9 @@
   padding: 0 0.6rem;
   font: inherit;
   font-variant-numeric: tabular-nums;
-  color: var(--color-text);
-  background: var(--color-surface-raised);
-  border: 1px solid var(--color-border);
+  color: var(--fg-primary);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-panel);
   border-radius: var(--radius);
 }
 
@@ -162,7 +162,7 @@
 }
 
 .tsp__input[aria-invalid='true'] {
-  border-color: var(--color-danger);
+  border-color: var(--state-danger);
 }
 
 .tsp__confirm {
@@ -183,23 +183,23 @@
   margin: 0.3rem 0 0;
   font-size: 0.9rem;
   font-variant-numeric: tabular-nums;
-  color: var(--color-text-muted);
+  color: var(--fg-muted);
 }
 
 .tsp__error {
-  margin: 0 0 var(--space-2);
+  margin: 0 0 var(--space-4);
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--color-danger);
+  border: 1px solid var(--state-danger);
   border-radius: var(--radius);
-  background: color-mix(in srgb, var(--color-danger) 15%, transparent);
+  background: var(--state-danger-wash);
   font-size: 0.9rem;
 }
 
 .tsp__history {
-  border-top: 1px solid var(--color-border);
-  padding-top: var(--space-1);
+  border-top: 1px solid var(--border-panel);
+  padding-top: var(--space-2);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-1);
+  gap: var(--space-2);
 }

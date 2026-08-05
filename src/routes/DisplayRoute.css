@@ -9,21 +9,17 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  background:
-    radial-gradient(
-      120% 120% at 50% 0%,
-      var(--color-surface) 0%,
-      var(--color-bg) 60%
-    );
+  gap: var(--space-5);
+  padding: var(--space-6);
+  background: var(--surface-projector);
+  color: var(--fg-primary);
 }
 
 .display__brand {
   font-size: clamp(1.25rem, 2.5vw, 2rem);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-accent);
+  color: var(--fg-interactive);
   font-weight: 700;
 }
 
@@ -32,6 +28,7 @@
   line-height: 1.05;
   font-weight: 800;
   margin: 0;
+  color: var(--fg-strong);
   /* Long scientific terms must wrap rather than overflow the projector. */
   overflow-wrap: break-word;
   max-width: 20ch;
@@ -39,7 +36,7 @@
 
 .display__subtext {
   font-size: clamp(1.25rem, 3vw, 2.25rem);
-  color: var(--color-text-muted);
+  color: var(--fg-muted);
   max-width: 30ch;
 }
 
@@ -50,8 +47,8 @@
  */
 .display--round {
   justify-content: flex-start;
-  gap: var(--space-2);
-  padding: var(--space-2);
+  gap: var(--space-4);
+  padding: var(--space-4);
 }
 
 .display--round .display__brand {
@@ -61,7 +58,7 @@
 .display--round .display__headline {
   font-size: clamp(1rem, 1.6vw, 1.4rem);
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: var(--fg-muted);
   max-width: none;
 }
 
@@ -86,7 +83,7 @@
 .display__response {
   width: 100%;
   overflow-x: hidden;
-  padding-block-start: var(--space-1);
+  padding-block-start: var(--space-2);
 }
 
 /*
@@ -98,14 +95,14 @@
   width: 100%;
   overflow-x: hidden;
   margin-block-start: auto;
-  padding-block-start: var(--space-1);
+  padding-block-start: var(--space-2);
 }
 
 .display__status-dot {
   width: 0.9rem;
   height: 0.9rem;
   border-radius: 50%;
-  background: var(--color-success);
+  background: var(--state-success);
   display: inline-block;
   margin-inline-end: 0.5rem;
   vertical-align: middle;

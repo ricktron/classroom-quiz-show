@@ -71,6 +71,55 @@ describe('rendering the scoreboard', () => {
     render(<TeamScoreboard teams={available(eight)} />)
     expect(screen.getAllByRole('listitem')).toHaveLength(8)
   })
+
+  it('covers stress sizes: long names, extreme scores, ties, duplicate accents, authored order', () => {
+    const longName = "Ms. Garnett's 4th Period Titans of Earth"
+    const stress = available([
+      team({ key: 't0', name: longName, accent: 'crimson', score: 1000000 }),
+      team({ key: 't1', name: 'Tie A', accent: 'azure', score: 100 }),
+      team({ key: 't2', name: 'Tie B', accent: 'azure', score: 100 }),
+      team({ key: 't3', name: 'Low', accent: 'crimson', score: -1000000 }),
+      team({ key: 't4', name: 'Five', accent: 'emerald', score: 5 }),
+      team({ key: 't5', name: 'Six', accent: 'amber', score: 6 }),
+      team({ key: 't6', name: 'Seven', accent: 'violet', score: 7 }),
+      team({ key: 't7', name: 'Eight', accent: 'teal', score: 8 }),
+    ])
+    render(<TeamScoreboard teams={stress} />)
+    const items = screen.getAllByRole('listitem')
+    expect(items).toHaveLength(8)
+    expect(items[0]).toHaveTextContent(longName)
+    expect(items[0]).toHaveTextContent('1000000')
+    expect(items[3]).toHaveTextContent('-1000000')
+    expect(screen.getByLabelText(`${longName}: 1000000 points`)).toBeInTheDocument()
+    expect(screen.getByLabelText('Low: minus 1000000 points')).toBeInTheDocument()
+    // Authored order, not score order (1,000,000 is first; -1,000,000 is fourth).
+    expect(items.map((el) => el.textContent)).toEqual([
+      expect.stringContaining(longName),
+      expect.stringContaining('Tie A'),
+      expect.stringContaining('Tie B'),
+      expect.stringContaining('Low'),
+      expect.stringContaining('Five'),
+      expect.stringContaining('Six'),
+      expect.stringContaining('Seven'),
+      expect.stringContaining('Eight'),
+    ])
+  })
+
+  it.each([1, 4, 5, 6, 7, 8] as const)('renders %i teams without reordering', (count) => {
+    const teams = Array.from({ length: count }, (_, index) =>
+      team({
+        key: `t${index}`,
+        name: `Team ${index + 1}`,
+        accent: TEAM_ACCENTS[index % TEAM_ACCENTS.length],
+        score: (count - index) * 100,
+      }),
+    )
+    render(<TeamScoreboard teams={available(teams)} />)
+    const items = screen.getAllByRole('listitem')
+    expect(items).toHaveLength(count)
+    expect(items[0]).toHaveTextContent('Team 1')
+    expect(items[count - 1]).toHaveTextContent(`Team ${count}`)
+  })
 })
 
 describe('colour is never the only signal', () => {

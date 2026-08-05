@@ -35,6 +35,7 @@ test('host can open the display in a new window', async ({ page, context }) => {
   const popup = await popupPromise
   await popup.waitForLoadState()
   expect(popup.url()).toContain('#/display')
+  expect(popup.url()).toMatch(/#\/display\?theme=(default|high-contrast)/)
   await expect(
     popup.getByRole('heading', { name: /game display ready/i }),
   ).toBeVisible()

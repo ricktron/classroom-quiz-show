@@ -1,5 +1,5 @@
 /*
- * Projector styling for the category board (Slice 5).
+ * Projector styling for the category board (Slice 5 / Slice 17 tokens).
  *
  * Design constraints, in priority order:
  *  1. Readable from the back of a classroom at 1280×720.
@@ -8,14 +8,16 @@
  *  3. Long prompts and answers wrap; they never clip or overflow.
  *  4. Nothing is conveyed by colour alone (a used tile also says "Used").
  *  5. No animation, so there is nothing for reduced-motion to suppress.
- *
- * This is presentation only. It is not a theme engine — that is Slice 10.
  */
 
 .cbd {
   width: 100%;
   max-width: 90rem;
   margin: 0 auto;
+  background: var(--surface-board);
+  box-shadow: var(--edge-board);
+  border-radius: var(--radius-panel);
+  padding: clamp(0.35rem, 0.9vw, 0.9rem);
 }
 
 /*
@@ -44,9 +46,10 @@
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  background: var(--color-surface-raised);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  color: var(--fg-primary);
+  background: var(--surface-raised);
+  border: var(--bw-standard) solid var(--border-board-grid);
+  border-radius: var(--radius-md);
   overflow-wrap: anywhere;
 }
 
@@ -65,19 +68,21 @@
   justify-content: center;
   min-height: clamp(2.4rem, 6vh, 4.5rem);
   padding: 0.35rem;
-  background: var(--color-accent-strong);
-  border: 2px solid transparent;
-  border-radius: var(--radius);
+  color: var(--fg-strong);
+  background: var(--surface-tile);
+  border: none;
+  box-shadow: var(--edge-tile);
+  border-radius: var(--radius-tile);
   font-weight: 800;
   font-size: clamp(1.1rem, 2.4vw, 2.4rem);
 }
 
-/* Used: dimmed AND dashed AND labelled — three independent, non-colour cues. */
+/* Used: transparent/dormant AND dashed AND labelled — three independent cues. */
 .cbd__tile--used {
-  background: transparent;
-  border-style: dashed;
-  border-color: var(--color-border);
-  color: var(--color-text-muted);
+  background: var(--surface-tile-used);
+  color: var(--state-dormant);
+  box-shadow: none;
+  border: var(--bw-standard) var(--bs-used) var(--border-waiting);
 }
 
 .cbd__tile-used {
@@ -93,6 +98,10 @@
   align-items: center;
   gap: clamp(0.8rem, 2vh, 2rem);
   text-align: center;
+  background: var(--surface-question);
+  border-radius: var(--radius-panel);
+  padding: clamp(0.6rem, 1.6vh, 1.4rem);
+  box-shadow: var(--edge-selected);
 }
 
 .cbd__selection-header {
@@ -100,7 +109,7 @@
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: center;
-  gap: var(--space-2);
+  gap: var(--space-4);
   margin: 0;
 }
 
@@ -108,20 +117,21 @@
   font-size: clamp(1.1rem, 2.2vw, 2.2rem);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--color-text-muted);
+  color: var(--fg-muted);
   overflow-wrap: anywhere;
 }
 
 .cbd__selection-value {
   font-size: clamp(1.4rem, 3vw, 3rem);
   font-weight: 800;
-  color: var(--color-accent);
+  color: var(--state-selected);
 }
 
 /* Wrapper for MediaContentDisplay — presentation lives on `.mcd*` classes. */
 .cbd__prompt {
   margin: 0;
   max-width: 100%;
+  color: var(--fg-question);
 }
 
 .cbd__answer {
@@ -131,10 +141,11 @@
   gap: 0.4rem;
   margin: 0;
   max-width: 40ch;
-  padding: clamp(0.6rem, 1.6vh, 1.4rem) var(--space-2);
-  background: var(--color-surface-raised);
-  border: 2px solid var(--color-success);
+  padding: clamp(0.6rem, 1.6vh, 1.4rem) var(--space-4);
+  background: var(--surface-raised);
+  border: var(--bw-strong) solid var(--state-success);
   border-radius: var(--radius);
+  color: var(--fg-primary);
 }
 
 .cbd__answer-label {
@@ -142,7 +153,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--color-text-muted);
+  color: var(--fg-muted);
 }
 
 .cbd__answer-text {
@@ -159,5 +170,5 @@
 .cbd__unavailable-text {
   margin: 0;
   font-size: clamp(1.1rem, 2.2vw, 2rem);
-  color: var(--color-text-muted);
+  color: var(--fg-muted);
 }

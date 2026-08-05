@@ -120,6 +120,25 @@ describe('strict unknown-key policy', () => {
     expect(unknown?.stage).toBe('schema')
   })
 
+  it.each([
+    ['theme', 'high-contrast'],
+    ['css', 'body{color:red}'],
+    ['tokens', '--surface-tile:#fff'],
+    ['selector', '.accent--crimson'],
+    ['className', 'host__theme'],
+    ['stylesheetUrl', 'https://evil.example/theme.css'],
+    ['gradient', 'linear-gradient(red,blue)'],
+    ['animation', 'rtd-pulse 1s infinite'],
+  ])(
+    'rejects imported %s authority (%j) as an unknown field',
+    (key, value) => {
+      const issues = expectFailure(gameFile({ [key]: value }))
+      const unknown = issues.find((i) => i.code === 'unknown-field')
+      expect(unknown?.path).toBe(key)
+      expect(unknown?.stage).toBe('schema')
+    },
+  )
+
   it('rejects an unknown NESTED field with an exact path', () => {
     const issues = expectFailure(
       gameFile({ rounds: [{ ...roundFile('r1'), points: 400 }] }),

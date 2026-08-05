@@ -5,6 +5,7 @@ import { HostRoute } from '../routes/HostRoute'
 import { DisplayRoute } from '../routes/DisplayRoute'
 import { NotFoundRoute } from '../routes/NotFoundRoute'
 import { ErrorBoundary } from './ErrorBoundary'
+import { ThemeProvider } from '../theme/ThemeProvider'
 
 /**
  * Application shell.
@@ -14,32 +15,37 @@ import { ErrorBoundary } from './ErrorBoundary'
  * repository base path with zero extra configuration. See
  * docs/architecture/ADR-001-github-pages-routing.md.
  *
+ * ThemeProvider owns only per-window presentation state (Slice 17). It mounts
+ * inside the router so hash-route launch queries can seed the display theme.
+ *
  * The host and display surfaces get SEPARATE error boundaries so the display
  * can fail closed independently of the host.
  */
 export function App() {
   return (
     <HashRouter>
-      <Routes>
-        <Route path={ROUTES.root} element={<RootRoute />} />
-        <Route
-          path={ROUTES.host}
-          element={
-            <ErrorBoundary variant="host">
-              <HostRoute />
-            </ErrorBoundary>
-          }
-        />
-        <Route
-          path={ROUTES.display}
-          element={
-            <ErrorBoundary variant="display">
-              <DisplayRoute />
-            </ErrorBoundary>
-          }
-        />
-        <Route path="*" element={<NotFoundRoute />} />
-      </Routes>
+      <ThemeProvider>
+        <Routes>
+          <Route path={ROUTES.root} element={<RootRoute />} />
+          <Route
+            path={ROUTES.host}
+            element={
+              <ErrorBoundary variant="host">
+                <HostRoute />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path={ROUTES.display}
+            element={
+              <ErrorBoundary variant="display">
+                <DisplayRoute />
+              </ErrorBoundary>
+            }
+          />
+          <Route path="*" element={<NotFoundRoute />} />
+        </Routes>
+      </ThemeProvider>
     </HashRouter>
   )
 }
