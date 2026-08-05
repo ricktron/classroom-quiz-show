@@ -33,7 +33,15 @@ at `242539044e45a43eacc6d8334349e59a6987a3d9` (merged
 `0939d9cafd009e713c8ca83bcc35ff3f90556819`, the squash commit's **sole**
 parent). Reviewed-head and squash trees are identical
 (`10ac401ebba0daab6e43dc96fa9fdbb4f72b6a9b`) and the direct diff between them is
-empty. See
+empty. The Session Summary Contract is a versioned host-private
+current-session summary (`classroom-quiz-show/session-summary`, version **1**)
+derived from authoritative effective history and replay only: ephemeral and
+unavailable after refresh/reset/discard/close/new game; not persisted, exported,
+or projected publicly; unsupported authored rounds listed as unavailable without
+fabricated metrics; timer-reset counts require a non-idle pre-event response
+timer. Public-state wire remains **8**; sync envelope **2**; game-file schema,
+private persistence wire, and IndexedDB schema remain **1**. The inherited Final
+mid-refresh recovery flake remains unresolved. See
 [`architecture/ADR-015-session-summary-contract.md`](architecture/ADR-015-session-summary-contract.md)
 and
 [`receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](receipts/2026-08-04-slice-15-post-merge-reconciliation.md).
@@ -41,7 +49,17 @@ and
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32) was squash-merged
 at `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` (merged
 **2026-08-03T17:08:37Z**) from final reviewed-and-repaired head
-`c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26`. See
+`c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26` (authorized base
+`4de1454181ed58bdb282accd136129c3c0eb0f2b`, the squash commit's **sole**
+parent). Reviewed-head and squash trees are identical
+(`50caaa392d99ceaf057f184af4d049a5bcd3feba`) and the direct diff between them is
+empty. The `final-wager` round is the **second playable registered round type**:
+frozen eligibility/cap/reveal-order snapshot, host-private wagers, optional
+exact-text response capture, two Final windows on ADR-007's clock discipline,
+explicit team-by-team reveal, reversible atomic settlement, and bounded tie
+handling with sudden death. Public-state wire moves **7 → 8**; sync envelope
+remains **2**; game-file schema, `GameDefinition` model, private persistence
+wire and IndexedDB schema all remain **1**; no dependency added. See
 [`architecture/ADR-014-final-wager-round.md`](architecture/ADR-014-final-wager-round.md)
 and
 [`receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](receipts/2026-08-03-slice-14-post-merge-reconciliation.md).

@@ -17,19 +17,25 @@ and
 **PR #40 requires no further review or merge action.**
 **Slice 15 — Session Summary Contract is `Complete`** (PR
 [#38](https://github.com/ricktron/classroom-quiz-show/pull/38) squash-merged at
-`242539044e45a43eacc6d8334349e59a6987a3d9` — see
+`242539044e45a43eacc6d8334349e59a6987a3d9` from reviewed-and-repaired head
+`d8f6308eccea5144ab1c6b5f49afdfcc2b7d5b5b`, merged **2026-08-04T19:28:26Z**,
+post-merge CI, Sonar, and Pages green — see
 [`../architecture/ADR-015-session-summary-contract.md`](../architecture/ADR-015-session-summary-contract.md)
 and
 [`../receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](../receipts/2026-08-04-slice-15-post-merge-reconciliation.md)).
 **PR #38 requires no further review or merge action.**
 **Slice 14 — Final-wager round is `Complete`** (PR
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32) squash-merged at
-`ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` — see
+`ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` from reviewed-and-repaired head
+`c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26`, merged **2026-08-03T17:08:37Z**,
+post-merge CI and Pages both green — see
 [`../architecture/ADR-014-final-wager-round.md`](../architecture/ADR-014-final-wager-round.md)
 and
 [`../receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](../receipts/2026-08-03-slice-14-post-merge-reconciliation.md)).
 **Slice 13 — Local persistence & recovery is `Complete`** (PR #27
-squash-merged at `6cf4d2579ab558f8c4b7eabca0b94df4acc6f20c` — see
+squash-merged at `6cf4d2579ab558f8c4b7eabca0b94df4acc6f20c` from reviewed head
+`ad0867ab6d7e00f397de51dfad2363f35bc181d7`, merged **2026-07-29T21:27:59Z** —
+see
 [`../architecture/ADR-013-local-persistence-recovery.md`](../architecture/ADR-013-local-persistence-recovery.md)
 and
 [`../STATUS.md`](../STATUS.md)).
