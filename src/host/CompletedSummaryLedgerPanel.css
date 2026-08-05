@@ -20,12 +20,25 @@
 
 .ledger__filters {
   margin: var(--space-2) 0;
+  border: 0;
+  padding: 0;
+  min-inline-size: 0;
+}
+
+.ledger__filters-legend {
+  padding: 0;
+  margin: 0 0 0.35rem;
+  font-weight: 600;
 }
 
 .ledger__filters label,
 .ledger__label-editor + label {
   display: grid;
   gap: 0.25rem;
+}
+
+.ledger output {
+  display: block;
 }
 
 .ledger select,

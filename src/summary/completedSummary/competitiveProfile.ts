@@ -62,7 +62,7 @@ export async function deriveCompetitiveProfileV1(
   try {
     const state = replay(history)
     const definition = state.session?.game?.definition
-    if (definition === undefined || definition.id !== summary.summary.gameId) {
+    if (definition?.id !== summary.summary.gameId) {
       return { status: 'unavailable', message: 'The completed game definition is unavailable.' }
     }
     const fingerprint = await fingerprintGameDefinitionV1(definition)

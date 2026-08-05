@@ -81,8 +81,9 @@ export async function listCompletedSummaries(
 ): Promise<PersistenceResult<readonly CompletedSummaryListing[]>> {
   const listings: CompletedSummaryListing[] = []
   const result = await adapter.withTransaction([OBJECT_STORE_COMPLETED_SUMMARIES], async (tx) => {
-    const keys = await tx.getAllKeys(OBJECT_STORE_COMPLETED_SUMMARIES)
-    for (const key of keys.sort((a, b) => a.localeCompare(b))) {
+    const keys = [...(await tx.getAllKeys(OBJECT_STORE_COMPLETED_SUMMARIES))]
+    keys.sort((a, b) => a.localeCompare(b))
+    for (const key of keys) {
       const decoded = decodeCompletedSummaryRecord(
         await tx.get(OBJECT_STORE_COMPLETED_SUMMARIES, key),
       )

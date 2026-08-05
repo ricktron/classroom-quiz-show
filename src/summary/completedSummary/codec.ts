@@ -416,9 +416,15 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+function compareKeys(left: string, right: string): number {
+  return left.localeCompare(right)
+}
+
 function hasExactKeys(value: Record<string, unknown>, expected: readonly string[]): boolean {
-  const actual = Object.keys(value).sort()
-  const wanted = [...expected].sort()
+  const actual = Object.keys(value)
+  actual.sort(compareKeys)
+  const wanted = [...expected]
+  wanted.sort(compareKeys)
   return actual.length === wanted.length && actual.every((key, index) => key === wanted[index])
 }
 

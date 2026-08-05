@@ -103,9 +103,9 @@ export function CompletedSummaryLedgerPanel({
     <section className="ledger" aria-labelledby="completed-ledger-title">
       <div className="foundation__tag">Completed summary ledger (Slice 16) — host-only</div>
       <h3 id="completed-ledger-title">Completed summary ledger</h3>
-      <p className="host__note" role="status" data-testid="ledger-status">
+      <output className="host__note" data-testid="ledger-status">
         {persistence.ledgerMessage}
-      </p>
+      </output>
       {readOnly && (
         <p className="ledger__warning">Another host tab owns persistence. Ledger changes are disabled here.</p>
       )}
@@ -128,31 +128,52 @@ export function CompletedSummaryLedgerPanel({
         )}
       </div>
 
-      <div className="ledger__filters" role="group" aria-label="Ledger filters and sorting">
+      <fieldset className="ledger__filters">
+        <legend className="ledger__filters-legend">Ledger filters and sorting</legend>
         <label>
           Game
-          <select value={gameFilter} onChange={(event) => setGameFilter(event.target.value)}>
+          <select
+            value={gameFilter}
+            onChange={(event) => setGameFilter(event.target.value)}
+            aria-label="Filter by game"
+          >
             <option value="all">All games</option>
-            {games.map((gameId) => <option key={gameId} value={gameId}>{gameId}</option>)}
+            {games.map((gameId) => (
+              <option key={gameId} value={gameId}>
+                {gameId}
+              </option>
+            ))}
           </select>
         </label>
         <label>
           Class label
-          <select value={classFilter} onChange={(event) => setClassFilter(event.target.value)}>
+          <select
+            value={classFilter}
+            onChange={(event) => setClassFilter(event.target.value)}
+            aria-label="Filter by class label"
+          >
             <option value="all">All class labels</option>
             <option value="unlabeled">Unlabeled</option>
-            {classes.map((label) => <option key={label} value={label}>{label}</option>)}
+            {classes.map((label) => (
+              <option key={label} value={label}>
+                {label}
+              </option>
+            ))}
           </select>
         </label>
         <label>
           Sort
-          <select value={sortOrder} onChange={(event) => setSortOrder(event.target.value as SortOrder)}>
+          <select
+            value={sortOrder}
+            onChange={(event) => setSortOrder(event.target.value as SortOrder)}
+            aria-label="Sort completed summaries"
+          >
             <option value="saved-newest">Saved newest first</option>
             <option value="saved-oldest">Saved oldest first</option>
             <option value="game-title">Game title</option>
           </select>
         </label>
-      </div>
+      </fieldset>
 
       <table className="ledger__table">
         <caption>Host-private completed summary records and decode status</caption>
