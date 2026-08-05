@@ -1,11 +1,15 @@
 # ADR-016 — Completed Summary Ledger and Compatible Reporting
 
-**Status:** Accepted for review (Slice 16 — `CQS-SLICE-16-SUMMARY-LEDGER`; unmerged)
+**Status:** Accepted (Slice 16 — `CQS-SLICE-16-SUMMARY-LEDGER`; Complete)
 **Date:** 2026-08-04
 **Supersedes:** nothing. **Superseded by:** nothing.
 **Related:** ADR-002 (state/event/sync core) · ADR-012 (portable export) ·
 ADR-013 (local persistence & recovery) · ADR-015 (Session Summary Contract) ·
 [`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
+· delivery PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40)
+(squash `bc3cea65cab8db1481b0b2420be580cc69932f3d`) ·
+[`../receipts/2026-08-04-slice-16-local-verification.md`](../receipts/2026-08-04-slice-16-local-verification.md)
+· [`../receipts/2026-08-04-slice-16-semantic-review-r1.md`](../receipts/2026-08-04-slice-16-semantic-review-r1.md)
 
 ---
 
@@ -307,8 +311,10 @@ any observed regression requires a separately bounded disposition before merge.
 Teachers receive a bounded, deletable, host-local history of privacy-minimized
 completed summaries and exact-compatible reports. Active recovery remains
 event-sourced and separate. Semantic drift becomes visible rather than silently
-aggregated. This ADR is **Accepted for review** on open PR
-[#40](https://github.com/ricktron/classroom-quiz-show/pull/40)
-(`feat/slice-16-summary-ledger`); Slice 16 remains **In review — unmerged** and
-is not `Complete`. Obtain the current exact head from GitHub before any
-exact-head authority.
+aggregated. This ADR is **Accepted**. Slice 16 was squash-merged via PR
+[#40](https://github.com/ricktron/classroom-quiz-show/pull/40) at
+`bc3cea65cab8db1481b0b2420be580cc69932f3d` from reviewed head
+`942575c97b97df220c215a7d265736a797869157` (sole parent
+`f92b65fa2d6619d9c2a4d09b5457f0976ff91079`; reviewed-head and squash trees
+identical at `12fea1bc056e6968e13a651161cdf89a6158a558`). Owner policies A–G and
+the version contracts above remain binding.

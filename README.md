@@ -413,21 +413,30 @@ inherited Final mid-refresh recovery flake remains unresolved. See
 [`docs/architecture/ADR-015-session-summary-contract.md`](docs/architecture/ADR-015-session-summary-contract.md)
 and
 [`docs/receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](docs/receipts/2026-08-04-slice-15-post-merge-reconciliation.md).
-**Slice 16 — Completed Summary Ledger & Compatible Reporting is `In review` /
-unmerged** via open PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40)
-on `feat/slice-16-summary-ledger`. Obtain the current exact head from GitHub
-before any exact-head authority. The delivery adds a host-private
-completed-summary ledger, exact competitive-profile grouping, bounded
-retention/deletion/class labels, and compatible game/team/class rollups;
-IndexedDB schema moves **1 → 2**, while public wire **8**, sync **2**, game-file
-schema **1**, private active-session wire **1**, and Session Summary contract
-**1** remain unchanged. See
-[`docs/architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](docs/architecture/ADR-016-completed-summary-ledger-compatible-reporting.md).
+**Slice 16 — Completed Summary Ledger & Compatible Reporting. Complete** —
+squash-merged via PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40)
+at `bc3cea65cab8db1481b0b2420be580cc69932f3d` (merged **2026-08-05T04:38:20Z**)
+from reviewed-and-repaired head `942575c97b97df220c215a7d265736a797869157`
+(authorized base `f92b65fa2d6619d9c2a4d09b5457f0976ff91079`, the squash
+commit's **sole** parent). Reviewed-head and squash trees are identical
+(`12fea1bc056e6968e13a651161cdf89a6158a558`) and the direct diff between them is
+empty. It adds a host-private completed-summary ledger, exact
+competitive-profile grouping, bounded retention/deletion/class labels, and
+compatible game/team/class rollups; IndexedDB schema moves **1 → 2**, while
+public wire **8**, sync **2**, game-file schema **1**, private active-session
+wire **1**, and Session Summary contract **1** remain unchanged. The inherited
+Final mid-refresh recovery flake remains unresolved and is not claimed repaired.
+See
+[`docs/architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](docs/architecture/ADR-016-completed-summary-ledger-compatible-reporting.md),
+[`docs/receipts/2026-08-04-slice-16-local-verification.md`](docs/receipts/2026-08-04-slice-16-local-verification.md),
+and
+[`docs/receipts/2026-08-04-slice-16-semantic-review-r1.md`](docs/receipts/2026-08-04-slice-16-semantic-review-r1.md).
 Slices 17–22 remain Planned and unauthorized under the **22-slice** MVP plan
 ([`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
 Phase 3 remains unauthorized; post-MVP arcs remain inactive; `CQS-OD-066`
-remains unresolved. The next safe action is exact-head merge consideration of
-PR #40 after semantic-review evidence — **stop before merge**.
+remains unresolved. **PR #40 requires no further review or merge action.** The
+next safe action is independent review of the open Slice 16 post-merge
+reconciliation PR — **stop before merge**. Slice 17 remains unauthorized.
 
 > ⚠️ **Sony Buzz physical certification is bounded, not a supported-hardware
 > list.** OADL2-S07 completed physical certification for one exact tested

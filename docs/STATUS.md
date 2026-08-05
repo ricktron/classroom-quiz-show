@@ -1,6 +1,29 @@
 # Status
 
-**Current completed product slice:** Slice 15 — Session Summary Contract
+**Current completed product slice:** Slice 16 — Completed Summary Ledger &
+Compatible Reporting
+**Slice 16 state:** **Complete** — PR
+[#40](https://github.com/ricktron/classroom-quiz-show/pull/40) was squash-merged
+at `bc3cea65cab8db1481b0b2420be580cc69932f3d` (merged
+**2026-08-05T04:38:20Z**) from final reviewed-and-repaired head
+`942575c97b97df220c215a7d265736a797869157` (authorized base
+`f92b65fa2d6619d9c2a4d09b5457f0976ff91079`, the squash commit's **sole**
+parent). Reviewed-head and squash trees are identical
+(`12fea1bc056e6968e13a651161cdf89a6158a558`) and the direct diff between them is
+empty. The delivery adds a host-private completed-summary ledger
+(`classroom-quiz-show/completed-summary-record`, version **1**), competitive
+profiles (version **1**), atomic completion save with active-recovery cleanup,
+newest-50 valid retention, confirmed deletion, optional class labels, and
+exact-compatible game/team/class reports with quarantine of unknown/corrupt
+records. IndexedDB schema moves **1 → 2**; public-state wire remains **8**; sync
+envelope **2**; canonical game-file schema **1**; private active-session wire
+**1**; Session Summary contract **1**. Semantic-review R1 repairs are in the
+merged tree. The inherited Final mid-refresh recovery flake remains unresolved
+and is not claimed repaired. See
+[`architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](architecture/ADR-016-completed-summary-ledger-compatible-reporting.md),
+[`receipts/2026-08-04-slice-16-local-verification.md`](receipts/2026-08-04-slice-16-local-verification.md),
+and
+[`receipts/2026-08-04-slice-16-semantic-review-r1.md`](receipts/2026-08-04-slice-16-semantic-review-r1.md).
 **Slice 15 state:** **Complete** — PR
 [#38](https://github.com/ricktron/classroom-quiz-show/pull/38) was squash-merged
 at `242539044e45a43eacc6d8334349e59a6987a3d9` (merged
@@ -9,15 +32,7 @@ at `242539044e45a43eacc6d8334349e59a6987a3d9` (merged
 `0939d9cafd009e713c8ca83bcc35ff3f90556819`, the squash commit's **sole**
 parent). Reviewed-head and squash trees are identical
 (`10ac401ebba0daab6e43dc96fa9fdbb4f72b6a9b`) and the direct diff between them is
-empty. The Session Summary Contract is a versioned host-private
-current-session summary (`classroom-quiz-show/session-summary`, version **1**)
-derived from authoritative effective history and replay only: ephemeral and
-unavailable after refresh/reset/discard/close/new game; not persisted, exported,
-or projected publicly; unsupported authored rounds listed as unavailable without
-fabricated metrics; timer-reset counts require a non-idle pre-event response
-timer. Public-state wire remains **8**; sync envelope **2**; game-file schema,
-private persistence wire, and IndexedDB schema remain **1**. The inherited Final
-mid-refresh recovery flake remains unresolved. See
+empty. See
 [`architecture/ADR-015-session-summary-contract.md`](architecture/ADR-015-session-summary-contract.md)
 and
 [`receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](receipts/2026-08-04-slice-15-post-merge-reconciliation.md).
@@ -25,38 +40,25 @@ and
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32) was squash-merged
 at `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` (merged
 **2026-08-03T17:08:37Z**) from final reviewed-and-repaired head
-`c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26` (authorized base
-`4de1454181ed58bdb282accd136129c3c0eb0f2b`, the squash commit's **sole**
-parent). Reviewed-head and squash trees are identical
-(`50caaa392d99ceaf057f184af4d049a5bcd3feba`) and the direct diff between them is
-empty. The `final-wager` round is the **second playable registered round type**:
-frozen eligibility/cap/reveal-order snapshot, host-private wagers, optional
-exact-text response capture, two Final windows on ADR-007's clock discipline,
-explicit team-by-team reveal, reversible atomic settlement, and bounded tie
-handling with sudden death. Public-state wire moves **7 → 8**; sync envelope
-remains **2**; game-file schema, `GameDefinition` model, private persistence
-wire and IndexedDB schema all remain **1**; no dependency added. See
+`c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26`. See
 [`architecture/ADR-014-final-wager-round.md`](architecture/ADR-014-final-wager-round.md)
 and
 [`receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
-**Previous slice:** Slice 14 — Final-wager round (`Complete`, squash-merged via
-PR #32 at `ce2e103…`)
-**Current delivery frontier:** Slice 16 — Completed Summary Ledger & Compatible
-Reporting is **`In review` — unmerged** via open PR
-[#40](https://github.com/ricktron/classroom-quiz-show/pull/40) on
-`feat/slice-16-summary-ledger`. Obtain the current exact head from GitHub before
-any exact-head authority. At this delivery frontier, IndexedDB schema is **2**;
-public-state wire **8**, sync envelope **2**, canonical game-file schema **1**,
-private active-session wire **1**, and Session Summary contract **1** remain
-unchanged.
+**Previous slice:** Slice 15 — Session Summary Contract (`Complete`, squash-merged
+via PR #38 at `2425390…`)
+**Current delivery frontier:** Slice 16 product implementation is **`Complete`**
+on `main`. Documentation-only post-merge reconciliation is in review on
+`docs/slice-16-post-merge-reconciliation` (PR number recorded once opened). At
+this frontier, IndexedDB schema is **2**; public-state wire **8**, sync envelope
+**2**, canonical game-file schema **1**, private active-session wire **1**, and
+Session Summary contract **1**.
 **Roadmap:** **22 slices**, amended 2026-08-03 by
 [`decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
 (`CQS-PLAN-S02`; documentation-only). Prior amendment
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
-grew the plan from 11 to 18 slices (PR #13, `752a3fe`, 2026-07-26). Slices 1–15
-remain `Complete`; Slice 16 is delivered for review but unmerged; Slices 17–22
-remain `Planned` and unauthorized. Phase 3 remains unauthorized; post-MVP arcs
-remain inactive; `CQS-OD-066` remains unresolved.
+grew the plan from 11 to 18 slices (PR #13, `752a3fe`, 2026-07-26). Slices 1–16
+are `Complete`; Slices 17–22 remain `Planned` and unauthorized. Phase 3 remains
+unauthorized; post-MVP arcs remain inactive; `CQS-OD-066` remains unresolved.
 
 ## Slice 14 work (Complete)
 
@@ -341,13 +343,12 @@ Post-merge registration evidence:
 
 **CQS-PLAN-S02 delivery and post-merge reconciliation are complete on
 `main`.** Slice 15 has since been delivered and squash-merged via PR #38 (see
-Slice 15 status above). Slice 16 implementation is **`In review` — unmerged** via open PR
-[#40](https://github.com/ricktron/classroom-quiz-show/pull/40) on
-`feat/slice-16-summary-ledger` under its separate authorization. Obtain the
-current exact head from GitHub before any exact-head authority. The next safe
-action is exact-head merge consideration of PR #40 after semantic-review
-evidence — not further review of PR #36 or PR #38, and not merge from this
-surface alone.
+Slice 15 status above). Slice 16 has since been delivered and squash-merged via
+PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) at
+`bc3cea65cab8db1481b0b2420be580cc69932f3d` (see Slice 16 status above).
+**PR #40 requires no further review or merge action.** The next safe action is
+independent review of the Slice 16 post-merge reconciliation PR — not further
+review of PR #36, PR #38, or PR #40.
 
 ## Slice 14 merge evidence
 
@@ -1441,54 +1442,70 @@ merge and post-merge evidence in
 | No summary in `PublicState`, sync, projector, or portable export | Proven by tests |
 | Public-state wire / sync / game-file / persistence / IndexedDB versions | **Unchanged** (8 / 2 / 1 / 1 / 1) |
 | Inherited Final mid-refresh recovery flake | **Unresolved** (not caused/worsened by Slice 15) |
-| Slice 16 ledger | **Delivered for review via PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40); unmerged** |
+| Slice 16 ledger | **Complete** via PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) at `bc3cea65…` |
 | Phase 3, Slice 17, post-MVP arcs, `CQS-OD-066` | **Unauthorized / inactive / unresolved** |
 
-## Slice 16 work (In review — unmerged)
+## Slice 16 work (Complete)
 
 Host-private **Completed Summary Ledger & Compatible Reporting**. Architecture
 contract:
-[`architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](architecture/ADR-016-completed-summary-ledger-compatible-reporting.md);
-draft local-verification receipt:
-[`receipts/2026-08-04-slice-16-local-verification.md`](receipts/2026-08-04-slice-16-local-verification.md).
+[`architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](architecture/ADR-016-completed-summary-ledger-compatible-reporting.md)
+(**Accepted**); implementation receipt:
+[`receipts/2026-08-04-slice-16-local-verification.md`](receipts/2026-08-04-slice-16-local-verification.md);
+semantic-review receipt:
+[`receipts/2026-08-04-slice-16-semantic-review-r1.md`](receipts/2026-08-04-slice-16-semantic-review-r1.md).
+
+### Slice 16 merge evidence
+
+| Fact | Value |
+| --- | --- |
+| PR | [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) (merged and closed) |
+| Authorized base / sole squash parent | `f92b65fa2d6619d9c2a4d09b5457f0976ff91079` |
+| Final reviewed-and-repaired head | `942575c97b97df220c215a7d265736a797869157` |
+| Squash commit | `bc3cea65cab8db1481b0b2420be580cc69932f3d` |
+| Merged | **2026-08-05T04:38:20Z** by `ricktron` |
+| Reviewed-head / squash tree | identical (`12fea1bc056e6968e13a651161cdf89a6158a558`); direct diff empty |
+| Landed paths | exactly **51** (`+4428` / `−111`) |
+| Pre-merge CI (exact head) | run `30974663371` — **success** (jobs `92206096376`, `92206096393`) |
+| Pre-merge Sonar | check `92206660573` — **success**; Quality Gate **passed** |
+| Post-merge CI | run `30975717255` — **success** (jobs `92209173156`, `92209173149`) |
+| Post-merge Pages | run `30975717243` — **success** (jobs `92209173097`, `92209242044`) |
+| Post-merge Sonar (main) | check `92209863042` — **success** |
+| Local post-merge verify | **success** — 2020 passed / 1 skipped |
 
 | Item | State |
 | --- | --- |
-| Automatic completion capture from authoritative history | Delivered for review |
-| Atomic completed-record put + `activeSessions/current` delete | Delivered for review |
-| Retain newest 50 valid records; retention after successful save in a separate transaction | Delivered for review |
-| Confirmed delete-one and clear-all | Delivered for review |
-| Optional strict host-private `classLabel` | Delivered for review |
-| Ledger envelope `classroom-quiz-show/completed-summary-record` v1 | Delivered for review |
-| Competitive profile `classroom-quiz-show/competitive-profile` v1 | Delivered for review |
-| Canonical-definition SHA-256 over Slice 12 exporter's exact UTF-8 `jsonText` | Delivered for review |
-| Exact-compatible game/team/class rollups with filters, sorting, and mismatch explanations | Delivered for review |
-| Unknown envelope/summary/profile versions fail closed | Delivered for review |
+| Automatic completion capture from authoritative history | Implemented |
+| Atomic completed-record put + `activeSessions/current` delete | Implemented |
+| Retain newest 50 valid records; retention after successful save in a separate transaction | Implemented |
+| Confirmed delete-one and clear-all | Implemented |
+| Optional strict host-private `classLabel` | Implemented |
+| Ledger envelope `classroom-quiz-show/completed-summary-record` v1 | Implemented |
+| Competitive profile `classroom-quiz-show/competitive-profile` v1 | Implemented |
+| Canonical-definition SHA-256 over Slice 12 exporter's exact UTF-8 `jsonText` | Implemented |
+| Exact-compatible game/team/class rollups with filters, sorting, and mismatch explanations | Implemented |
+| Unknown envelope/summary/profile versions fail closed; quarantine retained | Implemented |
+| Semantic-review R1 repairs (filters, detail, key equality, leadership, docs) | Merged |
 | IndexedDB schema | **1 → 2** (`completedSummaries` added) |
 | Public wire / sync / game-file / active-session wire / summary contract | **Unchanged** (8 / 2 / 1 / 1 / 1) |
 | Full archive, transcript, exact private responses, individual identity, grading/mastery | **Excluded** |
-| Inherited Final mid-refresh recovery flake | **Not intentionally repaired** (assessed separately; not claimed fixed) |
-
-This delivery is **not `Complete`**: it remains **`In review` — unmerged** on
-open PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40)
-(`feat/slice-16-summary-ledger`). Obtain the current exact head from GitHub
-before any exact-head authority. Slice 17 remains `Planned` and unauthorized;
-Phase 3 remains unauthorized; post-MVP arcs remain inactive; `CQS-OD-066`
-remains unresolved.
+| Inherited Final mid-refresh recovery flake | **Not claimed repaired** |
+| Implementation source branch deleted | **Not claimed** (still present at review time) |
 
 ## Next safe action
 
-**Slice 15 — Session Summary Contract is `Complete` and merged** (PR
-[#38](https://github.com/ricktron/classroom-quiz-show/pull/38), squash commit
-`242539044e45a43eacc6d8334349e59a6987a3d9`). **PR #38 requires no further review
-or merge action.**
+**Slice 16 — Completed Summary Ledger & Compatible Reporting is `Complete` and
+merged** (PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40),
+squash commit `bc3cea65cab8db1481b0b2420be580cc69932f3d`). **PR #40 requires no
+further review or merge action.**
 
-**Recommended next action:** exact-head merge consideration of open PR
-[#40](https://github.com/ricktron/classroom-quiz-show/pull/40) after
-semantic-review evidence. Obtain the current exact head from GitHub before any
-merge authority. **STOP BEFORE MERGE** from this surface alone. Do not begin
-Slice 17, Phase 3, or post-MVP work from this surface. Slice 17 remains
-`Planned` and unauthorized; `CQS-OD-066` remains unresolved.
+**Recommended next action:** independent review of the open Slice 16
+documentation-only post-merge reconciliation PR on
+`docs/slice-16-post-merge-reconciliation`, then obtain separate exact-head
+squash-merge authority for that reconciliation. **STOP BEFORE MERGE** from this
+surface alone. Do not begin Slice 17 readiness or implementation, Phase 3, or
+post-MVP work from this surface. Slice 17 remains `Planned` and unauthorized;
+`CQS-OD-066` remains unresolved.
 
 **Roadmap Amendment 003 (`CQS-PLAN-S02`) delivery and post-merge
 reconciliation remain complete on `main`** (PR #35 squash `2ebeb240…`; PR #36
