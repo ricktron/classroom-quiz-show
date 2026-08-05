@@ -148,11 +148,14 @@ Received: Not saved yet
 
 ## PR identity
 
-Filled after PR creation (receipt-only follow-up commit if needed):
-
 | Fact | Value |
 | --- | --- |
-| PR | _(pending)_ |
-| Exact head SHA | _(pending)_ |
+| PR | [#44](https://github.com/ricktron/classroom-quiz-show/pull/44) |
+| Base branch | `main` |
+| Head branch | `feat/slice-17-theme-tokens` |
+| Exact head SHA (implementation commit) | `cf8e2f75b4e9a219f9f745d9b35aa53a6c434c34` |
+| Draft | no |
+| Merged | no |
+| Auto-merge | off (must remain off) |
 
-**STOP BEFORE MERGE.**
+**STOP BEFORE MERGE.** No merge, branch deletion, or worktree cleanup performed by the executor.
