@@ -23,6 +23,14 @@ import './SessionSummaryPanel.css'
 export interface SessionSummaryPanelProps {
   readonly game: PrivateGameState
   readonly history: readonly SessionEvent[]
+  readonly saveStatus?: 'idle' | 'saving' | 'saved' | 'failed'
+  readonly saveMessage?: string
+  readonly onRetrySave?: () => void
+  readonly onDeleteSavedCopy?: () => void
+}
+
+export interface SessionSummaryViewProps {
+  readonly summary: SessionSummaryV1
 }
 
 const TERMINAL_PATH_LABEL: Readonly<Record<SessionSummaryTerminalPathV1, string>> = {
@@ -32,7 +40,14 @@ const TERMINAL_PATH_LABEL: Readonly<Record<SessionSummaryTerminalPathV1, string>
   'final-sudden-death-winner': 'Final sudden-death winner',
 }
 
-export function SessionSummaryPanel({ game, history }: SessionSummaryPanelProps) {
+export function SessionSummaryPanel({
+  game,
+  history,
+  saveStatus = 'idle',
+  saveMessage,
+  onRetrySave,
+  onDeleteSavedCopy,
+}: SessionSummaryPanelProps) {
   if (game.gameLifecycle !== 'ended') {
     return null
   }
@@ -61,11 +76,27 @@ export function SessionSummaryPanel({ game, history }: SessionSummaryPanelProps)
       <h3 id="ssp-title">Session summary</h3>
 
       <p className="ssp__warning" role="status" data-testid="ssp-current-session-warning">
-        This summary exists only for the currently mounted completed session. It
-        is lost on refresh, reset, discard, close, or loading another game. It is
-        not saved.
+        {saveStateCopy(saveStatus, saveMessage)}
       </p>
+      {saveStatus === 'failed' && onRetrySave && (
+        <button type="button" className="btn" onClick={onRetrySave}>
+          Retry saving summary
+        </button>
+      )}
+      {saveStatus === 'saved' && onDeleteSavedCopy && (
+        <button type="button" className="btn btn--secondary" onClick={onDeleteSavedCopy}>
+          Delete saved copy
+        </button>
+      )}
 
+      <SessionSummaryView summary={summary} />
+    </section>
+  )
+}
+
+export function SessionSummaryView({ summary }: SessionSummaryViewProps) {
+  return (
+    <>
       <CompletionSection summary={summary} />
       <StandingsSection standings={summary.scoreActivity.derived.standings} />
       <ScoringSection summary={summary} />
@@ -73,8 +104,25 @@ export function SessionSummaryPanel({ game, history }: SessionSummaryPanelProps)
       <UnavailableRoundsSection rounds={summary.unavailableRounds} />
       <TimerBuzzSection summary={summary} />
       <FinalSection finalWager={summary.finalWager} />
-    </section>
+    </>
   )
+}
+
+function saveStateCopy(
+  status: NonNullable<SessionSummaryPanelProps['saveStatus']>,
+  message?: string,
+): string {
+  if (message) return message
+  switch (status) {
+    case 'saving':
+      return 'Saving this completed summary locally.'
+    case 'saved':
+      return 'This completed summary is saved locally in the host ledger.'
+    case 'failed':
+      return 'The summary remains available in this host session, but its local copy was not saved.'
+    case 'idle':
+      return 'The summary is available for this completed host session. Local save status is not yet available.'
+  }
 }
 
 function unavailableCopy(result: Exclude<SessionSummaryResultV1, { status: 'available' }>): string {
@@ -92,8 +140,8 @@ function unavailableCopy(result: Exclude<SessionSummaryResultV1, { status: 'avai
 
 function CompletionSection({ summary }: { readonly summary: SessionSummaryV1 }) {
   return (
-    <section className="ssp__block" aria-labelledby="ssp-completion-heading">
-      <h4 id="ssp-completion-heading">Completion</h4>
+    <section className="ssp__block" aria-label="Completion">
+      <h4>Completion</h4>
       <dl className="ssp__kv">
         <dt>Completion context</dt>
         <dd data-testid="ssp-terminal-path">{TERMINAL_PATH_LABEL[summary.terminalPath]}</dd>
@@ -116,8 +164,8 @@ function StandingsSection({
   readonly standings: readonly SessionSummaryStandingV1[]
 }) {
   return (
-    <section className="ssp__block" aria-labelledby="ssp-standings-heading">
-      <h4 id="ssp-standings-heading">Final standings</h4>
+    <section className="ssp__block" aria-label="Final standings">
+      <h4>Final standings</h4>
       {standings.length === 0 ? (
         <p className="host__note" data-testid="ssp-standings-empty">
           No teams are configured, so standings are unavailable.
@@ -150,8 +198,8 @@ function StandingsSection({
 function ScoringSection({ summary }: { readonly summary: SessionSummaryV1 }) {
   const observed = summary.scoreActivity.observed
   return (
-    <section className="ssp__block" aria-labelledby="ssp-scoring-heading">
-      <h4 id="ssp-scoring-heading">Scoring summary</h4>
+    <section className="ssp__block" aria-label="Scoring summary">
+      <h4>Scoring summary</h4>
       <p className="host__note">
         Descriptive score activity only. No accuracy, mastery, grades, or
         performance ratings are computed.
@@ -196,8 +244,8 @@ function ScoringSection({ summary }: { readonly summary: SessionSummaryV1 }) {
 function CategoryBoardsSection({ summary }: { readonly summary: SessionSummaryV1 }) {
   const section = summary.categoryBoards
   return (
-    <section className="ssp__block" aria-labelledby="ssp-boards-heading">
-      <h4 id="ssp-boards-heading">Category boards</h4>
+    <section className="ssp__block" aria-label="Category boards">
+      <h4>Category boards</h4>
       {section.kind === 'none' ? (
         <p className="host__note" data-testid="ssp-boards-none">
           No category-board rounds are present in this game.
@@ -255,8 +303,8 @@ function UnavailableRoundsSection({
   readonly rounds: readonly SessionSummaryUnavailableRoundV1[]
 }) {
   return (
-    <section className="ssp__block" aria-labelledby="ssp-unavailable-rounds-heading">
-      <h4 id="ssp-unavailable-rounds-heading">Unavailable rounds</h4>
+    <section className="ssp__block" aria-label="Unavailable rounds">
+      <h4>Unavailable rounds</h4>
       {rounds.length === 0 ? (
         <p className="host__note" data-testid="ssp-unavailable-rounds-none">
           Every authored round in this game has a Session Summary V1 section.
@@ -294,8 +342,8 @@ function TimerBuzzSection({ summary }: { readonly summary: SessionSummaryV1 }) {
   const timer = summary.timerActivity.observed
   const buzz = summary.buzzActivity.observed
   return (
-    <section className="ssp__block" aria-labelledby="ssp-timer-buzz-heading">
-      <h4 id="ssp-timer-buzz-heading">Timer and buzz activity</h4>
+    <section className="ssp__block" aria-label="Timer and buzz activity">
+      <h4>Timer and buzz activity</h4>
       <p className="host__note">
         Transition and acceptance counts only. Session duration, reaction time,
         and fairness claims are not calculated. Timer resets count only when a
@@ -325,8 +373,8 @@ function TimerBuzzSection({ summary }: { readonly summary: SessionSummaryV1 }) {
 
 function FinalSection({ finalWager }: { readonly finalWager: SessionSummaryFinalSectionV1 }) {
   return (
-    <section className="ssp__block" aria-labelledby="ssp-final-heading">
-      <h4 id="ssp-final-heading">Final Wager</h4>
+    <section className="ssp__block" aria-label="Final Wager">
+      <h4>Final Wager</h4>
       {finalWager.kind === 'unavailable' ? (
         <p className="host__note" data-testid="ssp-final-unavailable">
           {finalUnavailableCopy(finalWager.reason)}

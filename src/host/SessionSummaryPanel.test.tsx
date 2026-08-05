@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { createSampleGameWithUnsupportedRound } from '../game/sampleGame'
 import { importGameFromUnknown } from '../import/importGame'
 import { createSessionStore } from '../state/store'
@@ -49,7 +49,9 @@ describe('SessionSummaryPanel', () => {
 
     expect(screen.getByTestId('session-summary-panel')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Session summary' })).toBeInTheDocument()
-    expect(screen.getByTestId('ssp-current-session-warning')).toHaveTextContent(/not saved/i)
+    expect(screen.getByTestId('ssp-current-session-warning')).toHaveTextContent(
+      /local save status is not yet available/i,
+    )
     expect(screen.getByTestId('ssp-terminal-path')).toHaveTextContent(/host-ended/i)
     expect(screen.getByTestId('ssp-standings')).toBeInTheDocument()
     expect(screen.getAllByText('−40').length).toBeGreaterThanOrEqual(1)
@@ -60,6 +62,31 @@ describe('SessionSummaryPanel', () => {
     expect(screen.getByTestId('ssp-unavailable-rounds-none')).toHaveTextContent(
       /every authored round/i,
     )
+  })
+
+  it('renders truthful saved and failed save states with retry', () => {
+    const store = endedStore()
+    const game = store.getState().session!.game!
+    const retry = vi.fn()
+    const { rerender } = render(
+      <SessionSummaryPanel
+        game={game}
+        history={store.getHistory()}
+        saveStatus="saved"
+      />,
+    )
+    expect(screen.getByTestId('ssp-current-session-warning')).toHaveTextContent(/saved locally/i)
+
+    rerender(
+      <SessionSummaryPanel
+        game={game}
+        history={store.getHistory()}
+        saveStatus="failed"
+        onRetrySave={retry}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /retry saving summary/i }))
+    expect(retry).toHaveBeenCalledOnce()
   })
 
   it('presents unsupported authored rounds in words without fabricated metrics', () => {

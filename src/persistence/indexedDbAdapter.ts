@@ -1,5 +1,6 @@
 import {
   OBJECT_STORE_ACTIVE_SESSIONS,
+  OBJECT_STORE_COMPLETED_SUMMARIES,
   OBJECT_STORE_COORDINATION,
   OBJECT_STORE_SAVED_DEFINITIONS,
   PERSISTENCE_DB_NAME,
@@ -22,6 +23,7 @@ export const PERSISTENCE_OBJECT_STORES: readonly PersistenceStoreName[] = [
   OBJECT_STORE_SAVED_DEFINITIONS,
   OBJECT_STORE_ACTIVE_SESSIONS,
   OBJECT_STORE_COORDINATION,
+  OBJECT_STORE_COMPLETED_SUMMARIES,
 ]
 
 export function upgradePersistenceSchema(db: PersistenceSchemaDatabase): void {
@@ -52,7 +54,13 @@ export class IndexedDbPersistenceAdapter implements PersistenceAdapter {
       const db = await openDatabase(this.factory, this.dbName)
       this.db = db
       return persistenceOk(undefined)
-    } catch {
+    } catch (error) {
+      if (error instanceof UpgradeBlockedError) {
+        return persistenceErr(
+          'upgrade-blocked',
+          'IndexedDB upgrade is blocked by another open Classroom Quiz Show tab.',
+        )
+      }
       return persistenceErr('unavailable', 'IndexedDB could not be opened.')
     }
   }
@@ -94,7 +102,10 @@ export class IndexedDbPersistenceAdapter implements PersistenceAdapter {
       await work(tx)
       await completion
       return persistenceOk(undefined)
-    } catch {
+    } catch (error) {
+      if (isQuotaExceededError(error)) {
+        return persistenceErr('quota-exceeded', 'Browser storage quota was exceeded.')
+      }
       return persistenceErr('transaction-failed', 'The IndexedDB transaction failed.')
     }
   }
@@ -118,8 +129,14 @@ function openDatabase(factory: IDBFactory, dbName: string): Promise<IDBDatabase>
       resolve(db)
     }
     request.onerror = () => rejectIdbError(reject, request.error, 'IndexedDB open failed.')
-    request.onblocked = () => rejectIdbError(reject, request.error, 'IndexedDB open blocked.')
+    request.onblocked = () => reject(new UpgradeBlockedError())
   })
+}
+
+class UpgradeBlockedError extends Error {}
+
+function isQuotaExceededError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === 'QuotaExceededError'
 }
 
 function requestResult<T>(request: IDBRequest<T>): Promise<T> {

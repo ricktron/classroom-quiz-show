@@ -41,16 +41,22 @@ and
 [`receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
 **Previous slice:** Slice 14 — Final-wager round (`Complete`, squash-merged via
 PR #32 at `ce2e103…`)
-**Next planned product slice:** Slice 16 — Completed Summary Ledger & Compatible
-Reporting (`Planned`, unstarted) — **not authorized**; requires a new
-exact-main-base owner authorization
+**Current delivery frontier:** Slice 16 — Completed Summary Ledger & Compatible
+Reporting is **`In review` — unmerged** via open PR
+[#40](https://github.com/ricktron/classroom-quiz-show/pull/40) on
+`feat/slice-16-summary-ledger`. Obtain the current exact head from GitHub before
+any exact-head authority. At this delivery frontier, IndexedDB schema is **2**;
+public-state wire **8**, sync envelope **2**, canonical game-file schema **1**,
+private active-session wire **1**, and Session Summary contract **1** remain
+unchanged.
 **Roadmap:** **22 slices**, amended 2026-08-03 by
 [`decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
 (`CQS-PLAN-S02`; documentation-only). Prior amendment
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 grew the plan from 11 to 18 slices (PR #13, `752a3fe`, 2026-07-26). Slices 1–15
-remain `Complete`; Slices 16–22 remain `Planned` and unstarted. Phase 3 remains
-unauthorized; post-MVP arcs remain inactive; `CQS-OD-066` remains unresolved.
+remain `Complete`; Slice 16 is delivered for review but unmerged; Slices 17–22
+remain `Planned` and unauthorized. Phase 3 remains unauthorized; post-MVP arcs
+remain inactive; `CQS-OD-066` remains unresolved.
 
 ## Slice 14 work (Complete)
 
@@ -335,10 +341,13 @@ Post-merge registration evidence:
 
 **CQS-PLAN-S02 delivery and post-merge reconciliation are complete on
 `main`.** Slice 15 has since been delivered and squash-merged via PR #38 (see
-Slice 15 status above). The recommended next action is Program Orchestrator
-**Slice 16 readiness** and a fresh exact-main-base owner authorization for
-`CQS-SLICE-16-SUMMARY-LEDGER` — **not** Slice 16 implementation from this
-surface, and **not** further review of PR #36 or PR #38.
+Slice 15 status above). Slice 16 implementation is **`In review` — unmerged** via open PR
+[#40](https://github.com/ricktron/classroom-quiz-show/pull/40) on
+`feat/slice-16-summary-ledger` under its separate authorization. Obtain the
+current exact head from GitHub before any exact-head authority. The next safe
+action is exact-head merge consideration of PR #40 after semantic-review
+evidence — not further review of PR #36 or PR #38, and not merge from this
+surface alone.
 
 ## Slice 14 merge evidence
 
@@ -1432,7 +1441,40 @@ merge and post-merge evidence in
 | No summary in `PublicState`, sync, projector, or portable export | Proven by tests |
 | Public-state wire / sync / game-file / persistence / IndexedDB versions | **Unchanged** (8 / 2 / 1 / 1 / 1) |
 | Inherited Final mid-refresh recovery flake | **Unresolved** (not caused/worsened by Slice 15) |
-| Slice 16 ledger, Phase 3, post-MVP arcs, `CQS-OD-066` | **Not started / unresolved** |
+| Slice 16 ledger | **Delivered for review via PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40); unmerged** |
+| Phase 3, Slice 17, post-MVP arcs, `CQS-OD-066` | **Unauthorized / inactive / unresolved** |
+
+## Slice 16 work (In review — unmerged)
+
+Host-private **Completed Summary Ledger & Compatible Reporting**. Architecture
+contract:
+[`architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](architecture/ADR-016-completed-summary-ledger-compatible-reporting.md);
+draft local-verification receipt:
+[`receipts/2026-08-04-slice-16-local-verification.md`](receipts/2026-08-04-slice-16-local-verification.md).
+
+| Item | State |
+| --- | --- |
+| Automatic completion capture from authoritative history | Delivered for review |
+| Atomic completed-record put + `activeSessions/current` delete | Delivered for review |
+| Retain newest 50 valid records; retention after successful save in a separate transaction | Delivered for review |
+| Confirmed delete-one and clear-all | Delivered for review |
+| Optional strict host-private `classLabel` | Delivered for review |
+| Ledger envelope `classroom-quiz-show/completed-summary-record` v1 | Delivered for review |
+| Competitive profile `classroom-quiz-show/competitive-profile` v1 | Delivered for review |
+| Canonical-definition SHA-256 over Slice 12 exporter's exact UTF-8 `jsonText` | Delivered for review |
+| Exact-compatible game/team/class rollups with filters, sorting, and mismatch explanations | Delivered for review |
+| Unknown envelope/summary/profile versions fail closed | Delivered for review |
+| IndexedDB schema | **1 → 2** (`completedSummaries` added) |
+| Public wire / sync / game-file / active-session wire / summary contract | **Unchanged** (8 / 2 / 1 / 1 / 1) |
+| Full archive, transcript, exact private responses, individual identity, grading/mastery | **Excluded** |
+| Inherited Final mid-refresh recovery flake | **Not intentionally repaired** (assessed separately; not claimed fixed) |
+
+This delivery is **not `Complete`**: it remains **`In review` — unmerged** on
+open PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40)
+(`feat/slice-16-summary-ledger`). Obtain the current exact head from GitHub
+before any exact-head authority. Slice 17 remains `Planned` and unauthorized;
+Phase 3 remains unauthorized; post-MVP arcs remain inactive; `CQS-OD-066`
+remains unresolved.
 
 ## Next safe action
 
@@ -1441,11 +1483,12 @@ merge and post-merge evidence in
 `242539044e45a43eacc6d8334349e59a6987a3d9`). **PR #38 requires no further review
 or merge action.**
 
-**Recommended next action:** Program Orchestrator readiness for **Slice 16 —
-Completed Summary Ledger & Compatible Reporting**, followed by a fresh
-exact-main-base owner authorization before any Slice 16 implementation. Slice 16
-remains `Planned`, unstarted, and unauthorized. Do not begin Slice 16, Phase 3,
-or post-MVP work from this surface. `CQS-OD-066` remains unresolved.
+**Recommended next action:** exact-head merge consideration of open PR
+[#40](https://github.com/ricktron/classroom-quiz-show/pull/40) after
+semantic-review evidence. Obtain the current exact head from GitHub before any
+merge authority. **STOP BEFORE MERGE** from this surface alone. Do not begin
+Slice 17, Phase 3, or post-MVP work from this surface. Slice 17 remains
+`Planned` and unauthorized; `CQS-OD-066` remains unresolved.
 
 **Roadmap Amendment 003 (`CQS-PLAN-S02`) delivery and post-merge
 reconciliation remain complete on `main`** (PR #35 squash `2ebeb240…`; PR #36

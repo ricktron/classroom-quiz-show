@@ -413,12 +413,21 @@ inherited Final mid-refresh recovery flake remains unresolved. See
 [`docs/architecture/ADR-015-session-summary-contract.md`](docs/architecture/ADR-015-session-summary-contract.md)
 and
 [`docs/receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](docs/receipts/2026-08-04-slice-15-post-merge-reconciliation.md).
-**Slices 16–22** remain Planned and unstarted under the **22-slice** MVP plan
-([`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md);
-CQS-PLAN-S02 delivery and post-merge reconciliation complete on `main` via
-PR #35 / PR #36). Slice 16 readiness requires a new exact-main-base owner
-authorization; Phase 3 remains unauthorized; post-MVP arcs remain inactive;
-`CQS-OD-066` remains unresolved.
+**Slice 16 — Completed Summary Ledger & Compatible Reporting is `In review` /
+unmerged** via open PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40)
+on `feat/slice-16-summary-ledger`. Obtain the current exact head from GitHub
+before any exact-head authority. The delivery adds a host-private
+completed-summary ledger, exact competitive-profile grouping, bounded
+retention/deletion/class labels, and compatible game/team/class rollups;
+IndexedDB schema moves **1 → 2**, while public wire **8**, sync **2**, game-file
+schema **1**, private active-session wire **1**, and Session Summary contract
+**1** remain unchanged. See
+[`docs/architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](docs/architecture/ADR-016-completed-summary-ledger-compatible-reporting.md).
+Slices 17–22 remain Planned and unauthorized under the **22-slice** MVP plan
+([`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
+Phase 3 remains unauthorized; post-MVP arcs remain inactive; `CQS-OD-066`
+remains unresolved. The next safe action is exact-head merge consideration of
+PR #40 after semantic-review evidence — **stop before merge**.
 
 > ⚠️ **Sony Buzz physical certification is bounded, not a supported-hardware
 > list.** OADL2-S07 completed physical certification for one exact tested

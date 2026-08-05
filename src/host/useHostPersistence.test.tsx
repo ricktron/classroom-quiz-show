@@ -6,12 +6,17 @@ import { importGameFromJsonText } from '../import/importGame'
 import {
   ACTIVE_SESSION_KEY,
   OBJECT_STORE_ACTIVE_SESSIONS,
+  OBJECT_STORE_COMPLETED_SUMMARIES,
+  MemoryPersistenceAdapter,
   PersistenceWriteQueue,
   acquireOrRenewHostLease,
   createMemoryPersistenceAdapter,
+  persistenceErr,
   readActiveSession,
   writeActiveSession,
-  type MemoryPersistenceAdapter,
+  type PersistenceAdapter,
+  type PersistenceStoreName,
+  type PersistenceTx,
 } from '../persistence'
 import type { SessionCommand } from '../state/commands'
 import type { SessionEvent } from '../state/events'
@@ -60,7 +65,7 @@ function finalHistory(): readonly SessionEvent[] {
 }
 
 async function seedActiveSession(
-  adapter: MemoryPersistenceAdapter,
+  adapter: PersistenceAdapter,
   events: readonly SessionEvent[],
 ): Promise<void> {
   await adapter.open()
@@ -74,7 +79,7 @@ async function seedActiveSession(
   if (!result.ok) throw new Error(result.message)
 }
 
-function renderHarness(adapter: MemoryPersistenceAdapter, tabId = 'tab-a') {
+function renderHarness(adapter: PersistenceAdapter, tabId = 'tab-a') {
   let current: HarnessApi | null = null
   const clock = createManualClock(AT)
 
@@ -296,6 +301,80 @@ describe('useHostPersistence', () => {
     })
     expect(result.status).toBe('accepted')
     expect(api().session.store.getState().session?.sessionId).toBe('memory-only')
+  })
+
+  it('auto-saves a newly ended game to the ledger and clears active recovery', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    const { api } = renderHarness(adapter)
+    await waitFor(() => expect(api().persistence.bootPhase).toBe('ready'))
+
+    act(() => {
+      api().dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 'completed-hook' })
+      api().dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT, definition: definition() })
+      api().dispatch({ type: 'END_GAME_SESSION', issuedAt: AT + 1 })
+    })
+
+    await waitFor(() => expect(api().persistence.ledgerStatus).toBe('saved'))
+    expect(api().persistence.currentCompletionSave).toEqual({
+      sessionId: 'completed-hook',
+      status: 'saved',
+      recordId: 'completed-hook',
+    })
+    expect(api().persistence.completedListings).toHaveLength(1)
+    expect(api().persistence.completedListings[0]?.diagnostic).toBe('valid')
+    let active: unknown = 'unset'
+    await adapter.withTransaction([OBJECT_STORE_ACTIVE_SESSIONS], async (tx) => {
+      active = await tx.get(OBJECT_STORE_ACTIVE_SESSIONS, ACTIVE_SESSION_KEY)
+    })
+    expect(active).toBeUndefined()
+    let completedKeys: readonly string[] = []
+    await adapter.withTransaction([OBJECT_STORE_COMPLETED_SUMMARIES], async (tx) => {
+      completedKeys = await tx.getAllKeys(OBJECT_STORE_COMPLETED_SUMMARIES)
+    })
+    expect(completedKeys).toEqual(['completed-hook'])
+  })
+
+  it('keeps an ended in-memory summary after save failure and retries successfully', async () => {
+    class FailFirstCompletionAdapter extends MemoryPersistenceAdapter {
+      private failCompletion = true
+
+      override async withTransaction(
+        stores: readonly PersistenceStoreName[],
+        work: (tx: PersistenceTx) => Promise<void>,
+      ) {
+        if (
+          this.failCompletion &&
+          stores.includes(OBJECT_STORE_COMPLETED_SUMMARIES) &&
+          stores.includes(OBJECT_STORE_ACTIVE_SESSIONS)
+        ) {
+          this.failCompletion = false
+          return persistenceErr('quota-exceeded', 'Test quota failure.')
+        }
+        return super.withTransaction(stores, work)
+      }
+    }
+
+    const adapter = new FailFirstCompletionAdapter()
+    const { api } = renderHarness(adapter)
+    await waitFor(() => expect(api().persistence.bootPhase).toBe('ready'))
+    act(() => {
+      api().dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 'retry-hook' })
+      api().dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT, definition: definition() })
+      api().dispatch({ type: 'END_GAME_SESSION', issuedAt: AT + 1 })
+    })
+
+    await waitFor(() => expect(api().persistence.ledgerStatus).toBe('quota-exceeded'))
+    expect(api().session.store.getState().session?.game?.gameLifecycle).toBe('ended')
+    expect(api().persistence.currentCompletionSave).toEqual({
+      sessionId: 'retry-hook',
+      status: 'failed',
+    })
+
+    await act(async () => {
+      expect(await api().persistence.retryCurrentCompletionSave()).toMatchObject({ ok: true })
+    })
+    await waitFor(() => expect(api().persistence.ledgerStatus).toBe('saved'))
+    expect(api().persistence.completedListings).toHaveLength(1)
   })
 
   it('recovers timer histories by replaying future and past deadlines exactly', async () => {

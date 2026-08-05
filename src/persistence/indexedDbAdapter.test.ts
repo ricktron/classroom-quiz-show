@@ -6,7 +6,7 @@ import {
 } from './indexedDbAdapter'
 
 describe('IndexedDbPersistenceAdapter', () => {
-  it('creates exactly the persistence v1 object stores during schema upgrade', () => {
+  it('creates exactly the persistence v2 object stores during schema upgrade', () => {
     const created: string[] = []
     const existing = new Set<string>()
 
@@ -20,6 +20,7 @@ describe('IndexedDbPersistenceAdapter', () => {
     })
 
     expect(created).toEqual(PERSISTENCE_OBJECT_STORES)
+    expect(created).toContain('completedSummaries')
     expect([...existing].sort()).toEqual([...PERSISTENCE_OBJECT_STORES].sort())
   })
 
@@ -66,6 +67,27 @@ describe('IndexedDbPersistenceAdapter', () => {
     const result = await adapter.open()
 
     expect(result).toMatchObject({ ok: false, code: 'unavailable' })
+  })
+
+  it('distinguishes a blocked version upgrade', async () => {
+    const openRequest = {
+      result: null as IDBDatabase | null,
+      error: null as DOMException | null,
+      onupgradeneeded: null as ((event: Event) => void) | null,
+      onsuccess: null as ((event: Event) => void) | null,
+      onerror: null as ((event: Event) => void) | null,
+      onblocked: null as ((event: Event) => void) | null,
+    }
+    const factory = {
+      open: () => {
+        queueMicrotask(() => openRequest.onblocked?.(new Event('blocked')))
+        return openRequest
+      },
+    } as unknown as IDBFactory
+
+    await expect(
+      createIndexedDbPersistenceAdapter({ indexedDB: factory }).open(),
+    ).resolves.toMatchObject({ ok: false, code: 'upgrade-blocked' })
   })
 
   it.runIf(typeof globalThis.indexedDB !== 'undefined')('opens the browser IndexedDB factory', async () => {

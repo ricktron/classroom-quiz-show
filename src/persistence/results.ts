@@ -8,6 +8,8 @@ export type PersistenceErrorCode =
   | 'conflict'
   | 'follower'
   | 'internal'
+  | 'upgrade-blocked'
+  | 'quota-exceeded'
 
 export type PersistenceOk<T> = { readonly ok: true; readonly value: T }
 export type PersistenceErr = {

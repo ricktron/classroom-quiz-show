@@ -4,6 +4,7 @@ export type PersistenceStoreName =
   | 'savedDefinitions'
   | 'activeSessions'
   | 'coordination'
+  | 'completedSummaries'
 
 export interface PersistenceTx {
   get(store: PersistenceStoreName, key: string): Promise<unknown>

@@ -19,8 +19,9 @@ the round-based engine direction into it.
 > (`CQS-PLAN-S02`), **merged to `main`** via PR #35 at squash
 > `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`, with post-merge reconciliation
 > via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`. Slices 1–15 remain
-> `Complete`; Slices 16–22 remain `Planned` and unstarted. Post-MVP arcs still
-> require separate authorization.
+> `Complete`; Slice 16 is `In review` — unmerged via open PR #40 on
+> `feat/slice-16-summary-ledger`; Slices 17–22 remain `Planned` and
+> unauthorized. Post-MVP arcs still require separate authorization.
 
 > **Phase 2B design direction is accepted program guidance (2026-08-03).**
 > The accepted audience-display design direction is registered in
@@ -77,8 +78,11 @@ systems.
 > `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`.
 > **No product implementation is authorized by Amendment 003.** CQS-PLAN-S02
 > delivery and post-merge reconciliation are complete on `main`. Slice 15 has
-> since been delivered and squash-merged via PR #38. Slice 16 readiness requires
-> a separate exact-main-base owner authorization.
+> since been delivered and squash-merged via PR #38. Slice 16 is **`In review` —
+> unmerged** via open PR
+> [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) on
+> `feat/slice-16-summary-ledger`. Obtain the current exact head from GitHub
+> before any exact-head authority.
 
 | #   | Slice                          | Focus (summary)                                                                 | Depends on |
 | --- | ------------------------------ | ------------------------------------------------------------------------------- | ---------- |
@@ -97,7 +101,7 @@ systems.
 | 13  | **Local persistence & recovery** | IndexedDB durable local storage with three stores (`savedDefinitions`, `activeSessions`, `coordination`); explicit Resume/Discard recovery; saved-definition Save/Replace/Delete/Load; private persistence-session wire; lightweight host lease coordination; nothing new projected to the display. **(Complete — squash-merged via PR #27 (`6cf4d25…`) from reviewed head `ad0867a…`.)** | 2, 12 |
 | 14  | **Final-wager round**          | Public prompt, host-entered/private wagers, timed response, reveal, settlement, tie handling. **(Complete — squash-merged via PR #32 (`ce2e103…`) from reviewed head `c2bcc1a…`. Public wire 7 → 8; sync 2; schema 1. See ADR-014.)** | 5, 6, 7, 11 |
 | 15  | **Session Summary Contract** | Versioned host-private completed-session summary derived from authoritative replay; no completed-session storage. **(Complete — squash-merged via PR #38 (`2425390…`) from reviewed head `d8f6308…`. Public wire 8; sync 2; schema 1. See ADR-015.)** | 2, 5, 6, 7, 8, 13, 14 |
-| 16  | **Completed Summary Ledger & Compatible Reporting** | Privacy-minimized summary storage; versioned competitive-profile comparison; retention/deletion; team/class reports. | 13, 15 |
+| 16  | **Completed Summary Ledger & Compatible Reporting** | Privacy-minimized summary storage; versioned competitive-profile comparison; retention/deletion; team/class reports. **(`In review` — unmerged via open PR #40 on `feat/slice-16-summary-ledger`; obtain exact head from GitHub; see ADR-016.)** | 13, 15 |
 | 17  | **Theme and Design-Token Foundation** | Application-owned tokens/theme registry; default + high-contrast; reduced-motion; viewport/team/score fixtures. Requires preceding Phase 3 planning lane. | 5, 6; Phase 3 |
 | 18  | **Audience Display System** | Accepted Phase 2B audience-display implementation; privacy tests; prefer public wire 8. | 14, 17 |
 | 19  | **Self-Contained Portable Packs** | Versioned offline pack of canonical JSON + local media; safe import/export; round-trip proof. | 4, 11, 12 |
@@ -670,12 +674,14 @@ head `c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26` (authorized base
 `242539044e45a43eacc6d8334349e59a6987a3d9` from the final reviewed-and-repaired
 head `d8f6308eccea5144ab1c6b5f49afdfcc2b7d5b5b` (authorized base
 `0939d9cafd009e713c8ca83bcc35ff3f90556819`, merged **2026-08-04T19:28:26Z**).
-**Slices 16–22 remain `Planned` and unstarted** under the 22-slice plan
-(Amendment 003 delivery merged at `2ebeb240…`; post-merge reconciliation
-merged at `da6b4dc…`). **No Slice 16 implementation authority is granted.**
-Immediate next action: Program Orchestrator Slice 16 readiness and a fresh
-exact-main-base owner authorization for `CQS-SLICE-16-SUMMARY-LEDGER` — not
-silent implementation.
+**Slice 16 is `In review` — unmerged** via open PR
+[#40](https://github.com/ricktron/classroom-quiz-show/pull/40) on
+`feat/slice-16-summary-ledger`. Obtain the current exact head from GitHub before
+any exact-head authority. Slices 17–22 remain `Planned`, unstarted, and
+unauthorized under the 22-slice plan (Amendment 003 delivery merged at
+`2ebeb240…`; post-merge reconciliation merged at `da6b4dc…`). Immediate next
+action: exact-head merge consideration of PR #40 after semantic-review evidence
+— **stop before merge**.
 
 ## Slice 8 — scope, acceptance, non-goals
 
@@ -1015,15 +1021,17 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   [`../architecture/ADR-011-media-contract.md`](../architecture/ADR-011-media-contract.md);
   post-merge evidence in
   [`../receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
-- **Next action:** Slices 1–14 are `Complete` and merged. Amendment 003
+- **Current routing:** Slices 1–15 are `Complete` and merged. Amendment 003
   (`CQS-PLAN-S02`) delivery is **merged** at squash
   `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`, and its post-merge
   reconciliation is **merged** at squash
   `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`; the 22-slice plan is canonical
-  on `main`. Slices 15–22 remain `Planned`. Immediate action: Slice 15
-  readiness and a new bounded exact-main-base planning/readiness and
-  implementation authorization for `CQS-SLICE-15-SESSION-SUMMARY-CONTRACT` —
-  never silent implementation, and not further review of PR #36.
+  on `main`. Slice 16 is **`In review` — unmerged** via open PR
+  [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) on
+  `feat/slice-16-summary-ledger`. Obtain the current exact head from GitHub
+  before any exact-head authority. Slices 17–22 remain `Planned` and
+  unauthorized. Immediate action: exact-head merge consideration of PR #40 after
+  semantic-review evidence — stop before merge.
 
 ### Slice 12 — Portable export & round-trip import
 
@@ -1181,10 +1189,21 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   comparison and retention/deletion.
 - **Impact:** schema no · public-wire no · storage **yes** · UI **yes** ·
   hardware no.
-- **Status:** `Planned` — unstarted.
-- **Owner gate:** separate exact-main-base authorization required; `OG-7`
-  remains binding against individual identity. **Not authorized by Slice 15
-  merge or by Amendment 003.**
+- **Status:** **`In review` — unmerged** via open PR
+  [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) on
+  `feat/slice-16-summary-ledger`. Obtain the current exact head from GitHub
+  before any exact-head authority. Rationale in
+  [`../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md).
+- **Delivered contracts:** completed-summary envelope v1; competitive profile
+  v1; SHA-256 of Slice 12's exact canonical UTF-8 export; exact-compatible
+  grouping; newest-50-valid retention; confirmed deletion; optional class label;
+  atomic completed put + active recovery delete; host-only reports. IndexedDB
+  schema moves **1 → 2**; public wire **8**, sync **2**, game-file schema **1**,
+  private active-session wire **1**, and Session Summary contract **1** remain
+  unchanged.
+- **Owner gate:** exact-head merge consideration of PR #40 after semantic-review
+  evidence, then **STOP BEFORE MERGE**. `OG-7` remains binding against
+  individual identity. Slice 17 is not authorized by this delivery.
 
 ### Slice 17 — Theme and Design-Token Foundation
 

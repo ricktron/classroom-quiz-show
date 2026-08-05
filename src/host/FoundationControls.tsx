@@ -16,6 +16,7 @@ import { useFinalWagerExpiry } from './useFinalWagerExpiry'
 import { systemClock, type Clock } from '../time/clock'
 import { useHostPersistence } from './useHostPersistence'
 import { PersistenceControls } from './PersistenceControls'
+import { CompletedSummaryLedgerPanel } from './CompletedSummaryLedgerPanel'
 import './FoundationControls.css'
 
 /**
@@ -355,7 +356,34 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
         Derivation lives in `src/summary/`; this panel presents the typed result
         when the replayed lifecycle is ended — no new route, no modal, no export.
       */}
-      {game && <SessionSummaryPanel game={game} history={history} />}
+      {game && (
+        <SessionSummaryPanel
+          game={game}
+          history={history}
+          saveStatus={
+            persistence.currentCompletionSave?.sessionId === state.session?.sessionId
+              ? persistence.currentCompletionSave?.status ?? 'idle'
+              : 'idle'
+          }
+          saveMessage={
+            persistence.currentCompletionSave?.sessionId === state.session?.sessionId
+              ? persistence.ledgerMessage
+              : undefined
+          }
+          onRetrySave={() => void persistence.retryCurrentCompletionSave()}
+          onDeleteSavedCopy={
+            persistence.currentCompletionSave?.status === 'saved' &&
+            persistence.currentCompletionSave.recordId
+              ? () => {
+                  const recordId = persistence.currentCompletionSave?.recordId
+                  if (recordId) void persistence.deleteCompletedRecord(recordId)
+                }
+              : undefined
+          }
+        />
+      )}
+
+      <CompletedSummaryLedgerPanel persistence={persistence} />
 
       <GameImportPanel
         dispatch={dispatch}
