@@ -1,7 +1,9 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with **Slices 1–15 all `Complete` and merged to `main`**.
+the repository with **Slices 1–15 all `Complete` and merged to `main`**, and
+**Slice 16 delivered for review but unmerged** on
+`feat/slice-16-summary-ledger`.
 **Slice 15 — Session Summary Contract is `Complete`** (PR
 [#38](https://github.com/ricktron/classroom-quiz-show/pull/38) squash-merged at
 `242539044e45a43eacc6d8334349e59a6987a3d9` from reviewed-and-repaired head
@@ -26,17 +28,22 @@ see
 [`../architecture/ADR-013-local-persistence-recovery.md`](../architecture/ADR-013-local-persistence-recovery.md)
 and
 [`../STATUS.md`](../STATUS.md)).
-**Slices 16–22 remain `Planned` and unstarted** under the **22-slice** MVP
+**Slice 16 — Completed Summary Ledger & Compatible Reporting is `In review` /
+delivered for review** on `feat/slice-16-summary-ledger`. No pull-request number
+is recorded because none existed when this handoff was written. Its contract is
+[`../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md);
+its draft evidence stub is
+[`../receipts/2026-08-04-slice-16-local-verification.md`](../receipts/2026-08-04-slice-16-local-verification.md).
+**Slices 17–22 remain `Planned` and unauthorized** under the **22-slice** MVP
 plan amended by
 [`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
 (`CQS-PLAN-S02`, documentation-only; delivery **merged** via PR #35 at
 `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`; post-merge reconciliation
 **merged** via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`).
-**Recommended next action:** Program Orchestrator readiness for **Slice 16 —
-Completed Summary Ledger & Compatible Reporting**, then a fresh exact-main-base
-owner authorization before any Slice 16 implementation. Slice 16 remains
-unauthorized. Do not begin Slice 16, Phase 3, or post-MVP work from this
-handoff alone. `CQS-OD-066` remains unresolved.
+**Recommended next action:** open the Slice 16 delivery PR when authorized and
+perform independent semantic review of its exact head. **STOP BEFORE MERGE.**
+Do not begin Slice 17, Phase 3, or post-MVP work from this handoff alone.
+`CQS-OD-066` remains unresolved.
 
 Coding agents and contributors should read root
 [`../../AGENTS.md`](../../AGENTS.md) before changing the repository. Claude
@@ -88,10 +95,9 @@ defers to `AGENTS.md` and adds no separate authority.
 > delivery and post-merge reconciliation are complete on `main`; PR #36
 > requires no further review or merge action. Slice 15 is now `Complete` on
 > `main` (PR #38). Slice 16 — Completed Summary Ledger & Compatible Reporting
-> remains the next product candidate under a separate exact-main-base
-> authorization. Phase 3 remains unauthorized. Slices 16–22 remain
-> unauthorized. Post-MVP arcs remain inactive. `CQS-OD-066` remains
-> unresolved.
+> is now delivered for review on `feat/slice-16-summary-ledger`, unmerged, with
+> no PR number yet. Phase 3 remains unauthorized. Slices 17–22 remain
+> unauthorized. Post-MVP arcs remain inactive. `CQS-OD-066` remains unresolved.
 
 ## Repository state
 
@@ -295,9 +301,16 @@ defers to `AGENTS.md` and adds no separate authority.
   [`../receipts/2026-08-04-slice-15-local-verification.md`](../receipts/2026-08-04-slice-15-local-verification.md)
   and
   [`../receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](../receipts/2026-08-04-slice-15-post-merge-reconciliation.md).
-- **Slices 16–22:** `Planned`, unstarted (22-slice plan; Amendment 003).
-  Next product candidate: **Slice 16 — Completed Summary Ledger & Compatible
-  Reporting** (unauthorized; requires a new exact-main-base owner authorization).
+- **Slice 16 (current):** `In review` / delivered for review on
+  `feat/slice-16-summary-ledger`; unmerged; no PR number recorded. Adds the
+  host-private completed-summary ledger, exact competitive profiles, compatible
+  game/team/class rollups, retention/deletion/class-label controls, and IndexedDB
+  schema **2**. Public wire **8**, sync **2**, game-file schema **1**, private
+  active-session wire **1**, and Session Summary contract **1** remain unchanged.
+  See
+  [`../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md).
+- **Slices 17–22:** `Planned`, unstarted, and unauthorized (22-slice plan;
+  Amendment 003).
 - **What Slice 14 adds:** the SECOND playable round type, `final-wager` — and
   the important thing about it is where it lives. It is registered by application
   code in the same registry as `category-board`, validated by the same import
@@ -933,12 +946,12 @@ and
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32) at
 `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d`).
 
-**PR #38 and PR #36 require no further review or merge action.** **Recommended
-next action: Program Orchestrator readiness for Slice 16 — Completed Summary
-Ledger & Compatible Reporting, then a fresh exact-main-base owner authorization
-before any Slice 16 implementation.** Slice 16 remains `Planned`, unstarted, and
-unauthorized. Phase 3 remains unauthorized. Slices 17–22 remain unauthorized.
-Post-MVP arcs remain inactive. `CQS-OD-066` remains unresolved.
+**PR #38 and PR #36 require no further review or merge action.** Slice 16 is
+delivered for review on `feat/slice-16-summary-ledger`, unmerged, and has no PR
+number recorded yet. **Recommended next action: independent semantic review of
+the exact Slice 16 PR head once the PR is opened. STOP BEFORE MERGE.** Phase 3
+remains unauthorized. Slices 17–22 remain unauthorized. Post-MVP arcs remain
+inactive. `CQS-OD-066` remains unresolved.
 
 ## Registered design direction — Phase 2B audience display (2026-08-03)
 
@@ -971,11 +984,11 @@ Evidence limits, recorded verbatim in the direction document and its receipt:
 > independent second checksum audit is claimed.
 
 **Routing.** Slice 15 — Session Summary Contract is now `Complete` on `main`
-(PR #38). Slice 16 — Completed Summary Ledger & Compatible Reporting remains
-the next planned product slice and is unaffected in priority by Phase 2B. MVP
-Phase 2B consumers are **Slices 17–18** (theme/token foundation, then audience
-display), both `Planned` and unauthorized. A separately authorized Phase 3
-design-system specification/readiness lane may occur without changing
+(PR #38). Slice 16 — Completed Summary Ledger & Compatible Reporting is
+delivered for review but unmerged, and remains unaffected in priority by Phase
+2B. MVP Phase 2B consumers are **Slices 17–18** (theme/token foundation, then
+audience display), both `Planned` and unauthorized. A separately authorized
+Phase 3 design-system specification/readiness lane may occur without changing
 product-slice sequencing.
 
 **Boundaries this direction does not move.** The public buzz state remains
@@ -1056,8 +1069,10 @@ multiple-choice question type. When this direction was recorded the immediate
 frontier was a separate Slice 14 planning/readiness decision, and this direction
 did not authorize it; **Slice 14 is now `Complete`** (PR #32, `ce2e103…`), and
 **Amendment 003 delivery and post-merge reconciliation are merged** (PR #35,
-`2ebeb24…`; PR #36, `da6b4dc…`). The immediate frontier is a separate Slice 15
-readiness decision under fresh exact-main-base authorization. Slice 13 is
+`2ebeb24…`; PR #36, `da6b4dc…`). Slice 15 is now `Complete`; Slice 16 is
+delivered for review on `feat/slice-16-summary-ledger`, unmerged, with no PR
+number recorded. The immediate frontier is independent semantic review once the
+Slice 16 PR is opened, followed by a stop before merge. Slice 13 is
 **`Complete`** (PR #27, `6cf4d25…`). Slice 12 is **`Complete`** (PR #25, `cdb499a…`). Slice 11 is
 **`Complete`** (PR #23, `5d47b2f`). Slice 10 remains **`Complete`** under the
 owner-accepted hardware-independent boundary; OADL2-S07 recorded a bounded
@@ -1112,8 +1127,9 @@ reconciliation. Recording this direction authorizes no work of any kind.
 ## Prohibited next actions
 
 Do **not**: reopen or redefine Slice 14 (it is `Complete` and merged — PR #32 at
-`ce2e103…`); merge Slice 15 without separate merge authority; begin Slice 16,
-Phase 3, or Slices 17–18 without separate authority; expose private Final or queue data (see the Final and
+`ce2e103…`); reopen or merge Slice 15; merge Slice 16 without separate exact-head
+authority; begin Slice 17, Phase 3, or Slices 18–22 without separate authority;
+expose private Final or queue data (see the Final and
 buzz-queue privacy boundaries below); claim Child B guidance/onboarding delivery
 is merged from this handoff;
 claim live-route behaviour that was

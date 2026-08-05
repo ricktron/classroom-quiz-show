@@ -66,6 +66,9 @@ export async function writeActiveSession(
       return skippedStaleWrite()
     }
     if (!isResumableHistory(events)) {
+      // Completion normally uses enqueueSaveCompletedAndClearActive so the
+      // ledger write and recovery cleanup are atomic. Keep this defensive clear
+      // for every other non-resumable history and for callers outside that path.
       return clearActiveSession(adapter)
     }
     const encoded = encodeActiveSessionRecord(events, savedAt, { registry })

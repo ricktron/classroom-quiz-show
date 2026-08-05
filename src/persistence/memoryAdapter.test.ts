@@ -19,6 +19,16 @@ describe('MemoryPersistenceAdapter', () => {
     expect(value).toEqual({ title: 'Game 1' })
   })
 
+  it('includes the completed summary store', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    expect(
+      await adapter.withTransaction(['completedSummaries'], async (tx) => {
+        await tx.put('completedSummaries', 'session-1', { savedAt: 1 })
+      }),
+    ).toEqual({ ok: true, value: undefined })
+  })
+
   it('rolls back a transaction when work throws', async () => {
     const adapter = createMemoryPersistenceAdapter()
     await adapter.open()

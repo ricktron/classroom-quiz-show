@@ -18,14 +18,22 @@ import {
   SESSION_SUMMARY_CONTRACT_KIND,
   SESSION_SUMMARY_CONTRACT_VERSION,
 } from './contract'
+import {
+  buildCompletedSummaryRecordV1,
+  COMPETITIVE_PROFILE_KIND,
+  COMPLETED_SUMMARY_RECORD_KIND,
+} from './completedSummary'
+import { completedHistory } from './completedSummary/testHistory'
+import { encodeActiveSessionRecord } from '../persistence/wire/sessionWire'
+import { exportGameDefinition } from '../export/exportGame'
 
 describe('Slice 15 privacy and version invariants', () => {
-  it('keeps public-state, sync, game-file, persistence, and IndexedDB versions unchanged', () => {
+  it('keeps public contracts unchanged while Slice 16 advances IndexedDB to version 2', () => {
     expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(8)
     expect(SYNC_SCHEMA_VERSION).toBe(2)
     expect(SUPPORTED_SCHEMA_VERSION).toBe(1)
     expect(PERSISTENCE_WIRE_VERSION).toBe(1)
-    expect(PERSISTENCE_DB_VERSION).toBe(1)
+    expect(PERSISTENCE_DB_VERSION).toBe(2)
     expect(SESSION_SUMMARY_CONTRACT_VERSION).toBe(1)
     expect(SESSION_SUMMARY_CONTRACT_KIND).toBe('classroom-quiz-show/session-summary')
   })
@@ -84,6 +92,46 @@ describe('Slice 15 privacy and version invariants', () => {
     expect(blob).not.toContain('alternates')
     expect(blob).not.toContain('notes')
     expect(blob).not.toContain('Mantle convection')
+  })
+
+  it('keeps ledger envelopes, profiles, and class labels out of public, sync, export, and active-session wires', async () => {
+    const fixture = completedHistory()
+    const classLabel = 'PRIVATE CLASS 7B'
+    const built = await buildCompletedSummaryRecordV1(fixture.history, {
+      savedAt: 30,
+      classLabel,
+    })
+    expect(built.status).toBe('success')
+    if (built.status !== 'success') throw new Error('record build failed')
+    expect(JSON.stringify(built.record)).toContain(COMPLETED_SUMMARY_RECORD_KIND)
+    expect(JSON.stringify(built.record)).toContain(COMPETITIVE_PROFILE_KIND)
+    expect(JSON.stringify(built.record)).toContain(classLabel)
+
+    const store = createSessionStore({ initialHistory: fixture.history })
+    const publicState = store.getPublicState()
+    const sync = encodeEnvelope({
+      type: 'public-state',
+      revision: publicState.revision,
+      payload: publicState,
+      sentAt: AT,
+    })
+    const exported = exportGameDefinition(fixture.definition)
+    expect(exported.status).toBe('success')
+    const activeWire = encodeActiveSessionRecord(fixture.history.slice(0, -1), 19)
+    expect(activeWire.ok).toBe(true)
+
+    for (const value of [
+      publicState,
+      sync,
+      exported.status === 'success' ? exported.document : null,
+      activeWire.ok ? activeWire.value : null,
+    ]) {
+      const text = JSON.stringify(value)
+      expect(text).not.toContain(COMPLETED_SUMMARY_RECORD_KIND)
+      expect(text).not.toContain(COMPETITIVE_PROFILE_KIND)
+      expect(text).not.toContain(classLabel)
+      expect(text).not.toContain('completedSummaries')
+    }
   })
 })
 

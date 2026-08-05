@@ -41,7 +41,7 @@ test('summary is absent while active and visible after host ends the session', a
   await host.getByRole('button', { name: /end game session/i }).click()
   await expect(host.getByTestId('game-lifecycle')).toHaveText('ended')
   await expect(host.getByTestId('session-summary-panel')).toBeVisible()
-  await expect(host.getByTestId('ssp-current-session-warning')).toContainText(/not saved/i)
+  await expect(host.getByTestId('ssp-current-session-warning')).toContainText(/saved locally/i)
   await expect(host.getByTestId('ssp-terminal-path')).toBeVisible()
   await expect(host.getByRole('heading', { name: 'Session summary' })).toBeVisible()
   await expect(host.getByRole('heading', { name: 'Final standings' })).toBeVisible()
@@ -87,9 +87,8 @@ test('refresh after completion does not restore the summary or recovery record',
   await host.getByRole('button', { name: /end game session/i }).click()
   await expect(host.getByTestId('session-summary-panel')).toBeVisible()
   await expect(host.getByTestId('event-history')).toContainText('GAME_SESSION_ENDED')
-  // Ending clears the active-session record asynchronously through the existing
-  // Slice 13 write path — wait for that write/clear to finish before refresh.
-  await expect(host.getByTestId('persistence-status')).not.toContainText(/saving/i, {
+  // Completion atomically saves the ledger record and clears active recovery.
+  await expect(host.getByTestId('ledger-status')).toContainText(/saved locally/i, {
     timeout: 10_000,
   })
 
@@ -100,6 +99,9 @@ test('refresh after completion does not restore the summary or recovery record',
   await expect(host.getByTestId('persistence-recovery')).toHaveCount(0)
   await expect(host.getByTestId('session-summary-panel')).toHaveCount(0)
   await expect(host.getByTestId('game-lifecycle')).toHaveCount(0)
+  await expect(host.getByRole('table', { name: /host-private completed summary/i })).toContainText(
+    'Foundation Sample Game',
+  )
 
   await host.close()
 })

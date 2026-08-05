@@ -22,6 +22,10 @@ function persistence(overrides: Partial<UseHostPersistence> = {}): UseHostPersis
     invalidRecovery: null,
     leadership: 'leader',
     durabilityStatus: 'idle',
+    ledgerStatus: 'idle',
+    ledgerMessage: 'Completed-session ledger ready.',
+    currentCompletionSave: null,
+    completedListings: [],
     library: [],
     message: 'Local persistence ready.',
     initialHistory: [],
@@ -36,6 +40,11 @@ function persistence(overrides: Partial<UseHostPersistence> = {}): UseHostPersis
     loadSaved: vi.fn(async () => ({ ok: true as const, message: 'Loaded.' })),
     dispatchSessionCommand: vi.fn(),
     renewLease: vi.fn(async () => ({ ok: true, message: 'Renewed.' })),
+    retryCurrentCompletionSave: vi.fn(async () => ({ ok: true, message: 'Retried.' })),
+    refreshCompletedLedger: vi.fn(async () => ({ ok: true, message: 'Refreshed.' })),
+    deleteCompletedRecord: vi.fn(async () => ({ ok: true, message: 'Deleted.' })),
+    clearAllCompletedRecords: vi.fn(async () => ({ ok: true, message: 'Cleared.' })),
+    updateCompletedClassLabel: vi.fn(async () => ({ ok: true, message: 'Updated.' })),
     ...overrides,
   }
 }

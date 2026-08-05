@@ -1,0 +1,84 @@
+.ledger {
+  width: 100%;
+  max-width: 60rem;
+  margin: var(--space-3) auto 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  text-align: start;
+}
+
+.ledger__actions,
+.ledger__filters,
+.ledger__label-editor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  align-items: end;
+}
+
+.ledger__filters {
+  margin: var(--space-2) 0;
+}
+
+.ledger__filters label,
+.ledger__label-editor + label {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.ledger select,
+.ledger input {
+  min-height: 2.5rem;
+  max-width: 100%;
+  padding: 0.4rem;
+}
+
+.ledger__table {
+  width: 100%;
+  margin-top: var(--space-1);
+  border-collapse: collapse;
+}
+
+.ledger__table caption {
+  caption-side: top;
+  text-align: start;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.ledger__table th,
+.ledger__table td {
+  padding: 0.4rem;
+  border: 1px solid var(--color-border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.ledger__detail,
+.ledger__reports,
+.ledger__profile {
+  margin-top: var(--space-2);
+  padding-top: var(--space-1);
+  border-top: 1px solid var(--color-border);
+}
+
+.ledger__warning {
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-left-width: 4px;
+  font-weight: 600;
+}
+
+@media (max-width: 40rem) {
+  .ledger__table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .ledger__filters {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

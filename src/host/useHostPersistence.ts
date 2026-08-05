@@ -12,18 +12,26 @@ import {
   HOST_WRITER_LEASE_TTL_MS,
   PersistenceWriteQueue,
   acquireOrRenewHostLease,
+  clearAllCompletedSummaries,
   clearActiveSession,
   createIndexedDbPersistenceAdapter,
   createTabId,
+  deleteCompletedSummary,
   deleteDefinition,
+  enqueueSaveCompletedAndClearActive,
+  enforceCompletedSummaryRetention,
+  listCompletedSummaries,
   listSavedDefinitions,
   loadDefinition,
   readActiveSession,
   releaseHostLease,
   saveDefinition,
+  updateCompletedSummaryClassLabel,
   writeActiveSession,
   type ActiveSessionRead,
+  type CompletedSummaryListing,
   type PersistenceAdapter,
+  type PersistenceErrorCode,
   type PersistenceResult,
   type SavedDefinitionSummary,
 } from '../persistence'
@@ -37,6 +45,21 @@ export type PersistenceDurabilityStatus =
   | 'saved'
   | 'unavailable'
   | 'failed'
+
+export type LedgerStatus =
+  | 'idle'
+  | 'saving'
+  | 'saved'
+  | 'failed'
+  | 'unavailable'
+  | 'upgrade-blocked'
+  | 'quota-exceeded'
+
+export interface CurrentCompletionSave {
+  readonly sessionId: string
+  readonly status: 'saving' | 'saved' | 'failed'
+  readonly recordId?: string
+}
 
 export interface RecoveryPayload {
   readonly events: readonly SessionEvent[]
@@ -81,6 +104,10 @@ export interface UseHostPersistence {
   readonly invalidRecovery: InvalidRecoveryPayload | null
   readonly leadership: PersistenceLeadership
   readonly durabilityStatus: PersistenceDurabilityStatus
+  readonly ledgerStatus: LedgerStatus
+  readonly ledgerMessage: string
+  readonly currentCompletionSave: CurrentCompletionSave | null
+  readonly completedListings: readonly CompletedSummaryListing[]
   readonly library: readonly SavedDefinitionSummary[]
   readonly message: string
   readonly initialHistory: readonly SessionEvent[]
@@ -106,6 +133,14 @@ export interface UseHostPersistence {
     registry: RoundRegistry,
   ) => DispatchResult
   readonly renewLease: () => Promise<PersistenceActionResult>
+  readonly retryCurrentCompletionSave: () => Promise<PersistenceActionResult>
+  readonly refreshCompletedLedger: () => Promise<PersistenceActionResult>
+  readonly deleteCompletedRecord: (key: string) => Promise<PersistenceActionResult>
+  readonly clearAllCompletedRecords: () => Promise<PersistenceActionResult>
+  readonly updateCompletedClassLabel: (
+    recordId: string,
+    label: string | null,
+  ) => Promise<PersistenceActionResult>
 }
 
 const DEFAULT_RENEW_INTERVAL_MS = Math.floor(HOST_WRITER_LEASE_TTL_MS / 2)
@@ -131,12 +166,24 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   const [invalidRecovery, setInvalidRecovery] = useState<InvalidRecoveryPayload | null>(null)
   const [leadership, setLeadership] = useState<PersistenceLeadership>('unknown')
   const [durabilityStatus, setDurabilityStatus] = useState<PersistenceDurabilityStatus>('loading')
+  const [ledgerStatus, setLedgerStatus] = useState<LedgerStatus>('idle')
+  const [ledgerMessage, setLedgerMessage] = useState('Completed-session ledger is ready.')
+  const [currentCompletionSave, setCurrentCompletionSave] =
+    useState<CurrentCompletionSave | null>(null)
+  const [completedListings, setCompletedListings] =
+    useState<readonly CompletedSummaryListing[]>([])
   const [library, setLibrary] = useState<readonly SavedDefinitionSummary[]>([])
   const [message, setMessage] = useState('Opening local persistence.')
   const [initialHistory, setInitialHistory] = useState<readonly SessionEvent[]>([])
   const [storeEpoch, setStoreEpoch] = useState(0)
   const storageReadyRef = useRef(false)
   const latestWriteToken = useRef(0)
+  const lastCompletionAttemptRef = useRef<string | null>(null)
+  const retryCompletionRef = useRef<{
+    readonly sessionId: string
+    readonly history: readonly SessionEvent[]
+    readonly savedAt: number
+  } | null>(null)
 
   const leadershipOptions = useMemo(
     () => ({ adapter, tabId, clock, leaseTtlMs, broadcastChannel }),
@@ -155,6 +202,12 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   const updateLibrary = useCallback(async (): Promise<PersistenceResult<readonly SavedDefinitionSummary[]>> => {
     const result = await listSavedDefinitions(adapter)
     if (result.ok) setLibrary(result.value)
+    return result
+  }, [adapter])
+
+  const updateCompletedLedger = useCallback(async (): Promise<PersistenceResult<readonly CompletedSummaryListing[]>> => {
+    const result = await listCompletedSummaries(adapter)
+    if (result.ok) setCompletedListings(result.value)
     return result
   }, [adapter])
 
@@ -220,6 +273,11 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         setDurabilityStatus(listed.code === 'unavailable' ? 'unavailable' : 'failed')
         setMessage('Saved definitions could not be listed. The host remains usable in memory.')
       }
+      const completed = await updateCompletedLedger()
+      if (!cancelled && !completed.ok) {
+        setLedgerStatus(ledgerStatusForError(completed.code))
+        setLedgerMessage('Completed summaries could not be listed.')
+      }
     }
 
     function applyBootLease(lease: PersistenceResult<'leader' | 'follower'>): void {
@@ -241,7 +299,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         void adapter.close()
       })
     }
-  }, [adapter, broadcastChannel, leadershipOptions, registry, updateLibrary])
+  }, [adapter, broadcastChannel, leadershipOptions, registry, updateCompletedLedger, updateLibrary])
 
   useEffect(() => {
     if (bootPhase === 'loading' || !storageReadyRef.current) return
@@ -304,6 +362,164 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       })
     },
     [adapter, clock, leadership, writeQueue],
+  )
+
+  const saveCompletion = useCallback(
+    async (
+      sessionId: string,
+      history: readonly SessionEvent[],
+      savedAt: number,
+    ): Promise<PersistenceActionResult> => {
+      retryCompletionRef.current = { sessionId, history, savedAt }
+      setCurrentCompletionSave({ sessionId, status: 'saving' })
+      setLedgerStatus('saving')
+      setLedgerMessage('Saving completed summary locally.')
+      if (!storageReadyRef.current) {
+        setCurrentCompletionSave({ sessionId, status: 'failed' })
+        setLedgerStatus('unavailable')
+        const message =
+          'Summary is available for this session, but local persistence is unavailable. Retry when storage is available.'
+        setLedgerMessage(message)
+        return { ok: false, message }
+      }
+      if (leadership === 'follower') {
+        setCurrentCompletionSave({ sessionId, status: 'failed' })
+        setLedgerStatus('failed')
+        const message = 'This follower tab cannot save completed summaries.'
+        setLedgerMessage(message)
+        return { ok: false, message }
+      }
+
+      const saved = await enqueueSaveCompletedAndClearActive(
+        adapter,
+        history,
+        { savedAt, classLabel: null },
+        writeQueue,
+      )
+      if (!saved.ok) {
+        setCurrentCompletionSave({ sessionId, status: 'failed' })
+        setLedgerStatus(ledgerStatusForError(saved.code))
+        setLedgerMessage(
+          'Summary is available for this session, but its local copy was not saved. Retry is available.',
+        )
+        return { ok: false, message: saved.message }
+      }
+
+      setCurrentCompletionSave({
+        sessionId,
+        status: 'saved',
+        recordId: saved.value.recordId,
+      })
+      setLedgerStatus('saved')
+      setLedgerMessage('Completed summary saved locally.')
+      const retained = await enforceCompletedSummaryRetention(adapter)
+      await updateCompletedLedger()
+      if (!retained.ok) {
+        setLedgerMessage(
+          'Completed summary saved locally, but automatic retention cleanup failed. The saved record was kept.',
+        )
+        return {
+          ok: true,
+          message: 'Summary saved; automatic retention cleanup failed.',
+        }
+      }
+      return { ok: true, message: 'Completed summary saved locally.' }
+    },
+    [adapter, leadership, updateCompletedLedger, writeQueue],
+  )
+
+  const retryCurrentCompletionSave = useCallback(async (): Promise<PersistenceActionResult> => {
+    const pending = retryCompletionRef.current
+    if (pending === null) {
+      return { ok: false, message: 'No completed summary save is available to retry.' }
+    }
+    return saveCompletion(pending.sessionId, pending.history, pending.savedAt)
+  }, [saveCompletion])
+
+  const refreshCompletedLedger = useCallback(async (): Promise<PersistenceActionResult> => {
+    if (!storageReadyRef.current) {
+      setLedgerStatus('unavailable')
+      setLedgerMessage('Completed summaries are unavailable because local persistence is unavailable.')
+      return { ok: false, message: 'Local persistence is unavailable.' }
+    }
+    const result = await updateCompletedLedger()
+    if (!result.ok) {
+      setLedgerStatus(ledgerStatusForError(result.code))
+      setLedgerMessage('Completed summaries could not be refreshed.')
+      return { ok: false, message: result.message }
+    }
+    setLedgerStatus('idle')
+    setLedgerMessage('Completed summaries refreshed.')
+    return { ok: true, message: 'Completed summaries refreshed.' }
+  }, [updateCompletedLedger])
+
+  const mutateCompletedLedger = useCallback(
+    async (
+      operation: () => Promise<PersistenceResult<unknown>>,
+      successMessage: string,
+    ): Promise<PersistenceActionResult> => {
+      if (leadership === 'follower') {
+        return { ok: false, message: 'This tab is read-only while another host owns persistence.' }
+      }
+      if (!storageReadyRef.current) {
+        setLedgerStatus('unavailable')
+        return { ok: false, message: 'Local persistence is unavailable.' }
+      }
+      const result = await operation()
+      if (!result.ok) {
+        setLedgerStatus(ledgerStatusForError(result.code))
+        setLedgerMessage(result.message)
+        return { ok: false, message: result.message }
+      }
+      await updateCompletedLedger()
+      setLedgerStatus('idle')
+      setLedgerMessage(successMessage)
+      return { ok: true, message: successMessage }
+    },
+    [leadership, updateCompletedLedger],
+  )
+
+  const deleteCompletedRecord = useCallback(
+    async (key: string): Promise<PersistenceActionResult> => {
+      const result = await mutateCompletedLedger(
+        () => deleteCompletedSummary(adapter, key),
+        'Completed summary deleted. This cannot be undone.',
+      )
+      if (result.ok && currentCompletionSave?.recordId === key) {
+        setCurrentCompletionSave({ sessionId: key, status: 'failed' })
+        setLedgerMessage(
+          'The saved copy was deleted. The in-memory summary remains available until this session is cleared.',
+        )
+      }
+      return result
+    },
+    [adapter, currentCompletionSave?.recordId, mutateCompletedLedger],
+  )
+
+  const clearAllCompletedRecords = useCallback(
+    async (): Promise<PersistenceActionResult> => {
+      const result = await mutateCompletedLedger(
+        () => clearAllCompletedSummaries(adapter),
+        'All completed summaries deleted. This cannot be undone.',
+      )
+      if (result.ok && currentCompletionSave?.status === 'saved') {
+        setCurrentCompletionSave({
+          sessionId: currentCompletionSave.sessionId,
+          status: 'failed',
+        })
+      }
+      return result
+    },
+    [adapter, currentCompletionSave, mutateCompletedLedger],
+  )
+
+  const updateCompletedClassLabel = useCallback(
+    (recordId: string, label: string | null) =>
+      mutateCompletedLedger(
+        () => updateCompletedSummaryClassLabel(adapter, recordId, label),
+        'Class label updated.',
+      ),
+    [adapter, mutateCompletedLedger],
   )
 
   const resume = useCallback(() => {
@@ -467,11 +683,26 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         // command controls; this guard keeps stale callbacks from mutating state.
         return { status: 'rejected', reason: 'malformed-command' }
       }
+      const previousHistoryLength = getHistory().length
       const result = dispatch(command)
-      if (result.status === 'accepted') persistHistory(getHistory(), writeRegistry)
+      if (result.status === 'accepted') {
+        const history = getHistory()
+        const completionEvent = history
+          .slice(previousHistoryLength)
+          .find((event) => event.type === 'GAME_SESSION_ENDED')
+        if (completionEvent !== undefined) {
+          const sessionId = findLastInitializedSessionId(history)
+          if (sessionId !== undefined && lastCompletionAttemptRef.current !== sessionId) {
+            lastCompletionAttemptRef.current = sessionId
+            void saveCompletion(sessionId, history, clock.now())
+          }
+        } else {
+          persistHistory(history, writeRegistry)
+        }
+      }
       return result
     },
-    [bootPhase, leadership, persistHistory],
+    [bootPhase, clock, leadership, persistHistory, saveCompletion],
   )
 
   return {
@@ -481,6 +712,10 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     invalidRecovery,
     leadership,
     durabilityStatus,
+    ledgerStatus,
+    ledgerMessage,
+    currentCompletionSave,
+    completedListings,
     library,
     message,
     initialHistory,
@@ -495,7 +730,27 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     loadSaved,
     dispatchSessionCommand,
     renewLease,
+    retryCurrentCompletionSave,
+    refreshCompletedLedger,
+    deleteCompletedRecord,
+    clearAllCompletedRecords,
+    updateCompletedClassLabel,
   }
+}
+
+function ledgerStatusForError(code: PersistenceErrorCode): LedgerStatus {
+  if (code === 'unavailable') return 'unavailable'
+  if (code === 'upgrade-blocked') return 'upgrade-blocked'
+  if (code === 'quota-exceeded') return 'quota-exceeded'
+  return 'failed'
+}
+
+function findLastInitializedSessionId(history: readonly SessionEvent[]): string | undefined {
+  for (let index = history.length - 1; index >= 0; index -= 1) {
+    const event = history[index]
+    if (event?.type === 'SESSION_INITIALIZED') return event.sessionId
+  }
+  return undefined
 }
 
 function createCoordinationBroadcastChannel(): BroadcastChannel | null {
