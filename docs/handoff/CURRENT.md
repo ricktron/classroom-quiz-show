@@ -337,7 +337,8 @@ defers to `AGENTS.md` and adds no separate authority.
   [`../receipts/2026-08-04-slice-16-semantic-review-r1.md`](../receipts/2026-08-04-slice-16-semantic-review-r1.md).
   Documentation-only post-merge reconciliation was squash-merged via PR
   [#41](https://github.com/ricktron/classroom-quiz-show/pull/41) at
-  `3ee239a1341749aa03d2bbbfa780aece74c07be5`.   Documentation-only PR #41 post-merge canonicalization is in review via open
+  `3ee239a1341749aa03d2bbbfa780aece74c07be5`.
+  Documentation-only PR #41 post-merge canonicalization is in review via open
   PR [#42](https://github.com/ricktron/classroom-quiz-show/pull/42) on
   `docs/slice-16-pr41-post-merge-canonicalization`.
 - **Slices 17–22:** `Planned`, unstarted, and unauthorized (22-slice plan;
