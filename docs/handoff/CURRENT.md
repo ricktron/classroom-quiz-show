@@ -29,10 +29,12 @@ see
 and
 [`../STATUS.md`](../STATUS.md)).
 **Slice 16 — Completed Summary Ledger & Compatible Reporting is `In review` /
-delivered for review** on `feat/slice-16-summary-ledger`. No pull-request number
-is recorded because none existed when this handoff was written. Its contract is
+delivered for review** via open PR
+[#40](https://github.com/ricktron/classroom-quiz-show/pull/40) on
+`feat/slice-16-summary-ledger` (head `890f42a2a20a3697fea13f9d1350d892cbff15ea`).
+Its contract is
 [`../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md);
-its draft evidence stub is
+its local evidence is
 [`../receipts/2026-08-04-slice-16-local-verification.md`](../receipts/2026-08-04-slice-16-local-verification.md).
 **Slices 17–22 remain `Planned` and unauthorized** under the **22-slice** MVP
 plan amended by
@@ -40,9 +42,9 @@ plan amended by
 (`CQS-PLAN-S02`, documentation-only; delivery **merged** via PR #35 at
 `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`; post-merge reconciliation
 **merged** via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`).
-**Recommended next action:** open the Slice 16 delivery PR when authorized and
-perform independent semantic review of its exact head. **STOP BEFORE MERGE.**
-Do not begin Slice 17, Phase 3, or post-MVP work from this handoff alone.
+**Recommended next action:** independent semantic review of PR #40 at the exact
+head. **STOP BEFORE MERGE.** Do not begin Slice 17, Phase 3, or post-MVP work
+from this handoff alone.
 `CQS-OD-066` remains unresolved.
 
 Coding agents and contributors should read root

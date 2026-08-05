@@ -146,10 +146,18 @@ Disposition:
 - Live-route verification on GitHub Pages
 - Merge / post-merge state
 
-## PR state at this receipt write time
+## PR state
 
-PR not yet opened when this receipt body was finalized for commit. A follow-up
-commit may record the actual PR number after open if still authorized.
+| Fact | Value |
+| --- | --- |
+| PR | [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) |
+| State at follow-up commit | open, non-draft, unmerged |
+| Head at PR open | `890f42a2a20a3697fea13f9d1350d892cbff15ea` |
+| Base | `f92b65fa2d6619d9c2a4d09b5457f0976ff91079` |
+
+The initial implementation commit recorded that no PR number existed yet. This
+follow-up records the observed open PR number without rewriting the earlier
+preflight observation that no Slice 16 PR existed before delivery.
 
 ## Required stop
 

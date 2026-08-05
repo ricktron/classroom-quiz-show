@@ -414,8 +414,9 @@ inherited Final mid-refresh recovery flake remains unresolved. See
 and
 [`docs/receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](docs/receipts/2026-08-04-slice-15-post-merge-reconciliation.md).
 **Slice 16 — Completed Summary Ledger & Compatible Reporting is delivered for
-review** on `feat/slice-16-summary-ledger`. It is unmerged and no PR number is
-recorded. The delivery adds a host-private completed-summary ledger, exact
+review** via open PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40)
+on `feat/slice-16-summary-ledger` (head `890f42a2a20a3697fea13f9d1350d892cbff15ea`).
+It is unmerged. The delivery adds a host-private completed-summary ledger, exact
 competitive-profile grouping, bounded retention/deletion/class labels, and
 compatible game/team/class rollups; IndexedDB schema moves **1 → 2**, while
 public wire **8**, sync **2**, game-file schema **1**, private active-session
@@ -424,8 +425,8 @@ wire **1**, and Session Summary contract **1** remain unchanged. See
 Slices 17–22 remain Planned and unauthorized under the **22-slice** MVP plan
 ([`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
 Phase 3 remains unauthorized; post-MVP arcs remain inactive; `CQS-OD-066`
-remains unresolved. The next safe action is independent semantic review once the
-Slice 16 PR is opened — stop before merge.
+remains unresolved. The next safe action is independent semantic review of
+PR #40 — stop before merge.
 
 > ⚠️ **Sony Buzz physical certification is bounded, not a supported-hardware
 > list.** OADL2-S07 completed physical certification for one exact tested

@@ -42,12 +42,13 @@ and
 **Previous slice:** Slice 14 — Final-wager round (`Complete`, squash-merged via
 PR #32 at `ce2e103…`)
 **Current delivery frontier:** Slice 16 — Completed Summary Ledger & Compatible
-Reporting is **`In review` / delivered for review** on
-`feat/slice-16-summary-ledger`; it is unmerged and no pull-request number existed
-when this status was written. At this delivery frontier, IndexedDB schema is
-**2**; public-state wire **8**, sync envelope **2**, canonical game-file schema
-**1**, private active-session wire **1**, and Session Summary contract **1**
-remain unchanged.
+Reporting is **`In review` / delivered for review** via open PR
+[#40](https://github.com/ricktron/classroom-quiz-show/pull/40) on
+`feat/slice-16-summary-ledger` (head `890f42a2a20a3697fea13f9d1350d892cbff15ea`);
+it is unmerged. At this delivery frontier, IndexedDB schema is **2**;
+public-state wire **8**, sync envelope **2**, canonical game-file schema **1**,
+private active-session wire **1**, and Session Summary contract **1** remain
+unchanged.
 **Roadmap:** **22 slices**, amended 2026-08-03 by
 [`decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
 (`CQS-PLAN-S02`; documentation-only). Prior amendment
@@ -340,10 +341,12 @@ Post-merge registration evidence:
 
 **CQS-PLAN-S02 delivery and post-merge reconciliation are complete on
 `main`.** Slice 15 has since been delivered and squash-merged via PR #38 (see
-Slice 15 status above). Slice 16 implementation is now delivered for review on
-`feat/slice-16-summary-ledger` under its separate authorization; no PR number is
-recorded yet. The next safe action is independent semantic review after that PR
-is opened — not further review of PR #36 or PR #38, and not merge.
+Slice 15 status above). Slice 16 implementation is now delivered for review via
+open PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) on
+`feat/slice-16-summary-ledger` (head `890f42a2a20a3697fea13f9d1350d892cbff15ea`)
+under its separate authorization. The next safe action is independent semantic
+review of that exact head — not further review of PR #36 or PR #38, and not
+merge.
 
 ## Slice 14 merge evidence
 
@@ -1437,7 +1440,7 @@ merge and post-merge evidence in
 | No summary in `PublicState`, sync, projector, or portable export | Proven by tests |
 | Public-state wire / sync / game-file / persistence / IndexedDB versions | **Unchanged** (8 / 2 / 1 / 1 / 1) |
 | Inherited Final mid-refresh recovery flake | **Unresolved** (not caused/worsened by Slice 15) |
-| Slice 16 ledger | **Delivered for review on `feat/slice-16-summary-ledger`; unmerged** |
+| Slice 16 ledger | **Delivered for review via PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40); unmerged** |
 | Phase 3, Slice 17, post-MVP arcs, `CQS-OD-066` | **Unauthorized / inactive / unresolved** |
 
 ## Slice 16 work (In review — unmerged)
