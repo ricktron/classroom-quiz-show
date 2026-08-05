@@ -52,9 +52,9 @@ plan amended by
 (`CQS-PLAN-S02`, documentation-only; delivery **merged** via PR #35 at
 `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`; post-merge reconciliation
 **merged** via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`).
-**Recommended next action:** independent review of the open documentation-only
-PR #41 post-merge canonicalization on
-`docs/slice-16-pr41-post-merge-canonicalization`, then separate exact-head
+**Recommended next action:** independent review of open documentation-only
+canonicalization PR [#42](https://github.com/ricktron/classroom-quiz-show/pull/42)
+on `docs/slice-16-pr41-post-merge-canonicalization`, then separate exact-head
 squash-merge authority for that canonicalization. After it lands, the next
 program action is a new Program Orchestrator readiness lane for Slice 17 and
 the required preceding Phase 3 planning/specification dependency — not Slice 17
@@ -337,8 +337,8 @@ defers to `AGENTS.md` and adds no separate authority.
   [`../receipts/2026-08-04-slice-16-semantic-review-r1.md`](../receipts/2026-08-04-slice-16-semantic-review-r1.md).
   Documentation-only post-merge reconciliation was squash-merged via PR
   [#41](https://github.com/ricktron/classroom-quiz-show/pull/41) at
-  `3ee239a1341749aa03d2bbbfa780aece74c07be5`. Documentation-only PR #41
-  post-merge canonicalization is in review on
+  `3ee239a1341749aa03d2bbbfa780aece74c07be5`.   Documentation-only PR #41 post-merge canonicalization is in review via open
+  PR [#42](https://github.com/ricktron/classroom-quiz-show/pull/42) on
   `docs/slice-16-pr41-post-merge-canonicalization`.
 - **Slices 17–22:** `Planned`, unstarted, and unauthorized (22-slice plan;
   Amendment 003).
@@ -979,9 +979,9 @@ and
 
 **PR #41, PR #40, PR #38, and PR #36 require no further review or merge action.**
 Slice 16 product delivery and post-merge reconciliation are `Complete` on
-`main`. **Recommended next action: independent review of the open
-documentation-only PR #41 post-merge canonicalization on
-`docs/slice-16-pr41-post-merge-canonicalization`. STOP BEFORE MERGE.** After
+`main`. **Recommended next action: independent review of open documentation-only
+canonicalization PR [#42](https://github.com/ricktron/classroom-quiz-show/pull/42)
+on `docs/slice-16-pr41-post-merge-canonicalization`. STOP BEFORE MERGE.** After
 that lands, next is a separately authorized Slice 17 readiness and Phase 3
 dependency lane — not started here. Phase 3 remains unauthorized. Slices 17–22
 remain unauthorized. Post-MVP arcs remain inactive. `CQS-OD-066` remains
@@ -1105,9 +1105,8 @@ did not authorize it; **Slice 14 is now `Complete`** (PR #32, `ce2e103…`), and
 **Amendment 003 delivery and post-merge reconciliation are merged** (PR #35,
 `2ebeb24…`; PR #36, `da6b4dc…`). Slice 15 is `Complete`; Slice 16 is `Complete`
 on `main` (PR #40, `bc3cea65…`; PR #41, `3ee239a…`). The immediate frontier is
-independent review of the open Slice 16 documentation-only PR #41 post-merge
-canonicalization, followed by a stop before merge; Slice 17 readiness has not
-started. Slice 13 is **`Complete`** (PR #27, `6cf4d25…`). Slice 12 is
+independent review of open documentation-only canonicalization PR #42, followed
+by a stop before merge; Slice 17 readiness has not started. Slice 13 is **`Complete`** (PR #27, `6cf4d25…`). Slice 12 is
 **`Complete`** (PR #25, `cdb499a…`). Slice 11 is **`Complete`** (PR #23,
 `5d47b2f`). Slice 10 remains **`Complete`** under the owner-accepted
 hardware-independent boundary; OADL2-S07 recorded a bounded physical claim under

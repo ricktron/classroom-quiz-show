@@ -75,11 +75,12 @@ reviewed head `2787040ff251f04fa899f0b40b18fa7217f6ba80`; sole parent
 frontier, IndexedDB schema is **2**; public-state wire **8**, sync envelope
 **2**; canonical game-file schema **1**, private active-session wire **1**, and
 Session Summary contract **1**. Documentation-only PR #41 post-merge
-canonicalization is **in review** on
+canonicalization is **in review** via open PR
+[#42](https://github.com/ricktron/classroom-quiz-show/pull/42) on
 `docs/slice-16-pr41-post-merge-canonicalization` (see
-[`receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md`](receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md)
-once present). After that lane lands, no further Slice 16 delivery, repair,
-merge, reconciliation, or registration is owed.
+[`receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md`](receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md)).
+After that lane lands, no further Slice 16 delivery, repair, merge,
+reconciliation, or registration is owed.
 **Roadmap:** **22 slices**, amended 2026-08-03 by
 [`decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
 (`CQS-PLAN-S02`; documentation-only). Prior amendment
@@ -378,10 +379,10 @@ PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) at
 was squash-merged via PR
 [#41](https://github.com/ricktron/classroom-quiz-show/pull/41) at
 `3ee239a1341749aa03d2bbbfa780aece74c07be5`. **PR #41 requires no further review
-or merge action.** The next safe action is documentation-only PR #41
-post-merge canonicalization review, then separately authorized Slice 17
-readiness and Phase 3 dependency analysis — not further review of PR #36,
-PR #38, PR #40, or PR #41.
+or merge action.** The next safe action is independent review of open documentation-only
+canonicalization PR [#42](https://github.com/ricktron/classroom-quiz-show/pull/42),
+then separately authorized Slice 17 readiness and Phase 3 dependency analysis —
+not further review of PR #36, PR #38, PR #40, or PR #41.
 
 ## Slice 14 merge evidence
 
@@ -1536,9 +1537,9 @@ at `bc3cea65cab8db1481b0b2420be580cc69932f3d`; reconciliation PR
 `3ee239a1341749aa03d2bbbfa780aece74c07be5`). **PR #40 and PR #41 require no
 further review or merge action.** ADR-016 is **Accepted**.
 
-**Recommended next action:** independent review of the open documentation-only
-PR #41 post-merge canonicalization on
-`docs/slice-16-pr41-post-merge-canonicalization`, then obtain separate
+**Recommended next action:** independent review of open documentation-only
+canonicalization PR [#42](https://github.com/ricktron/classroom-quiz-show/pull/42)
+on `docs/slice-16-pr41-post-merge-canonicalization`, then obtain separate
 exact-head squash-merge authority for that canonicalization. After it lands,
 the next program lane is separately authorized Slice 17 readiness and Phase 3
 dependency analysis — not Slice 17 implementation. **STOP BEFORE MERGE** from
