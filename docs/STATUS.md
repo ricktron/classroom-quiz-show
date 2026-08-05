@@ -22,8 +22,9 @@ merged tree. The inherited Final mid-refresh recovery flake remains unresolved
 and is not claimed repaired. See
 [`architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](architecture/ADR-016-completed-summary-ledger-compatible-reporting.md),
 [`receipts/2026-08-04-slice-16-local-verification.md`](receipts/2026-08-04-slice-16-local-verification.md),
+[`receipts/2026-08-04-slice-16-semantic-review-r1.md`](receipts/2026-08-04-slice-16-semantic-review-r1.md),
 and
-[`receipts/2026-08-04-slice-16-semantic-review-r1.md`](receipts/2026-08-04-slice-16-semantic-review-r1.md).
+[`receipts/2026-08-05-slice-16-post-merge-reconciliation.md`](receipts/2026-08-05-slice-16-post-merge-reconciliation.md).
 **Slice 15 state:** **Complete** — PR
 [#38](https://github.com/ricktron/classroom-quiz-show/pull/38) was squash-merged
 at `242539044e45a43eacc6d8334349e59a6987a3d9` (merged
@@ -47,11 +48,11 @@ and
 **Previous slice:** Slice 15 — Session Summary Contract (`Complete`, squash-merged
 via PR #38 at `2425390…`)
 **Current delivery frontier:** Slice 16 product implementation is **`Complete`**
-on `main`. Documentation-only post-merge reconciliation is in review on
-`docs/slice-16-post-merge-reconciliation` (PR number recorded once opened). At
-this frontier, IndexedDB schema is **2**; public-state wire **8**, sync envelope
-**2**, canonical game-file schema **1**, private active-session wire **1**, and
-Session Summary contract **1**.
+on `main`. Documentation-only post-merge reconciliation is **in review** via
+open PR [#41](https://github.com/ricktron/classroom-quiz-show/pull/41) on
+`docs/slice-16-post-merge-reconciliation`. At this frontier, IndexedDB schema is
+**2**; public-state wire **8**, sync envelope **2**, canonical game-file schema
+**1**, private active-session wire **1**, and Session Summary contract **1**.
 **Roadmap:** **22 slices**, amended 2026-08-03 by
 [`decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
 (`CQS-PLAN-S02`; documentation-only). Prior amendment
@@ -1453,7 +1454,9 @@ contract:
 (**Accepted**); implementation receipt:
 [`receipts/2026-08-04-slice-16-local-verification.md`](receipts/2026-08-04-slice-16-local-verification.md);
 semantic-review receipt:
-[`receipts/2026-08-04-slice-16-semantic-review-r1.md`](receipts/2026-08-04-slice-16-semantic-review-r1.md).
+[`receipts/2026-08-04-slice-16-semantic-review-r1.md`](receipts/2026-08-04-slice-16-semantic-review-r1.md);
+post-merge reconciliation receipt:
+[`receipts/2026-08-05-slice-16-post-merge-reconciliation.md`](receipts/2026-08-05-slice-16-post-merge-reconciliation.md).
 
 ### Slice 16 merge evidence
 
@@ -1499,8 +1502,8 @@ merged** (PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40),
 squash commit `bc3cea65cab8db1481b0b2420be580cc69932f3d`). **PR #40 requires no
 further review or merge action.**
 
-**Recommended next action:** independent review of the open Slice 16
-documentation-only post-merge reconciliation PR on
+**Recommended next action:** independent review of open reconciliation PR
+[#41](https://github.com/ricktron/classroom-quiz-show/pull/41) on
 `docs/slice-16-post-merge-reconciliation`, then obtain separate exact-head
 squash-merge authority for that reconciliation. **STOP BEFORE MERGE** from this
 surface alone. Do not begin Slice 17 readiness or implementation, Phase 3, or

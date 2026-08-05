@@ -429,14 +429,16 @@ Final mid-refresh recovery flake remains unresolved and is not claimed repaired.
 See
 [`docs/architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](docs/architecture/ADR-016-completed-summary-ledger-compatible-reporting.md),
 [`docs/receipts/2026-08-04-slice-16-local-verification.md`](docs/receipts/2026-08-04-slice-16-local-verification.md),
+[`docs/receipts/2026-08-04-slice-16-semantic-review-r1.md`](docs/receipts/2026-08-04-slice-16-semantic-review-r1.md),
 and
-[`docs/receipts/2026-08-04-slice-16-semantic-review-r1.md`](docs/receipts/2026-08-04-slice-16-semantic-review-r1.md).
+[`docs/receipts/2026-08-05-slice-16-post-merge-reconciliation.md`](docs/receipts/2026-08-05-slice-16-post-merge-reconciliation.md).
 Slices 17–22 remain Planned and unauthorized under the **22-slice** MVP plan
 ([`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
 Phase 3 remains unauthorized; post-MVP arcs remain inactive; `CQS-OD-066`
 remains unresolved. **PR #40 requires no further review or merge action.** The
-next safe action is independent review of the open Slice 16 post-merge
-reconciliation PR — **stop before merge**. Slice 17 remains unauthorized.
+next safe action is independent review of open reconciliation PR
+[#41](https://github.com/ricktron/classroom-quiz-show/pull/41) —
+**stop before merge**. Slice 17 remains unauthorized.
 
 > ⚠️ **Sony Buzz physical certification is bounded, not a supported-hardware
 > list.** OADL2-S07 completed physical certification for one exact tested

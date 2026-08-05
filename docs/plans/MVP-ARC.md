@@ -1195,9 +1195,10 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   `12fea1bc056e6968e13a651161cdf89a6158a558`). Rationale in
   [`../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md)
   (**Accepted**). Evidence in
-  [`../receipts/2026-08-04-slice-16-local-verification.md`](../receipts/2026-08-04-slice-16-local-verification.md)
+  [`../receipts/2026-08-04-slice-16-local-verification.md`](../receipts/2026-08-04-slice-16-local-verification.md),
+  [`../receipts/2026-08-04-slice-16-semantic-review-r1.md`](../receipts/2026-08-04-slice-16-semantic-review-r1.md),
   and
-  [`../receipts/2026-08-04-slice-16-semantic-review-r1.md`](../receipts/2026-08-04-slice-16-semantic-review-r1.md).
+  [`../receipts/2026-08-05-slice-16-post-merge-reconciliation.md`](../receipts/2026-08-05-slice-16-post-merge-reconciliation.md).
 - **Delivered contracts:** completed-summary envelope v1; competitive profile
   v1; SHA-256 of Slice 12's exact canonical UTF-8 export; exact-compatible
   grouping; newest-50-valid retention; confirmed deletion; optional class label;
@@ -1207,8 +1208,10 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   unchanged.
 - **Owner gate:** delivery and exact-head squash-merge authorizations were
   granted and satisfied. **PR #40 requires no further review or merge action.**
-  `OG-7` remains binding against individual identity. Slice 17 is not
-  authorized by this delivery.
+  Post-merge reconciliation is in review via PR
+  [#41](https://github.com/ricktron/classroom-quiz-show/pull/41). `OG-7` remains
+  binding against individual identity. Slice 17 is not authorized by this
+  delivery.
 
 ### Slice 17 — Theme and Design-Token Foundation
 

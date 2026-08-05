@@ -10,6 +10,7 @@ ADR-013 (local persistence & recovery) · ADR-015 (Session Summary Contract) ·
 (squash `bc3cea65cab8db1481b0b2420be580cc69932f3d`) ·
 [`../receipts/2026-08-04-slice-16-local-verification.md`](../receipts/2026-08-04-slice-16-local-verification.md)
 · [`../receipts/2026-08-04-slice-16-semantic-review-r1.md`](../receipts/2026-08-04-slice-16-semantic-review-r1.md)
+· [`../receipts/2026-08-05-slice-16-post-merge-reconciliation.md`](../receipts/2026-08-05-slice-16-post-merge-reconciliation.md)
 
 ---
 

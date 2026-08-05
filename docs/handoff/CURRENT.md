@@ -11,8 +11,9 @@ at `bc3cea65cab8db1481b0b2420be580cc69932f3d` from reviewed-and-repaired head
 post-merge CI, Pages, and Sonar green — see
 [`../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md),
 [`../receipts/2026-08-04-slice-16-local-verification.md`](../receipts/2026-08-04-slice-16-local-verification.md),
+[`../receipts/2026-08-04-slice-16-semantic-review-r1.md`](../receipts/2026-08-04-slice-16-semantic-review-r1.md),
 and
-[`../receipts/2026-08-04-slice-16-semantic-review-r1.md`](../receipts/2026-08-04-slice-16-semantic-review-r1.md)).
+[`../receipts/2026-08-05-slice-16-post-merge-reconciliation.md`](../receipts/2026-08-05-slice-16-post-merge-reconciliation.md)).
 **PR #40 requires no further review or merge action.**
 **Slice 15 — Session Summary Contract is `Complete`** (PR
 [#38](https://github.com/ricktron/classroom-quiz-show/pull/38) squash-merged at
@@ -38,11 +39,11 @@ plan amended by
 (`CQS-PLAN-S02`, documentation-only; delivery **merged** via PR #35 at
 `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`; post-merge reconciliation
 **merged** via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`).
-**Recommended next action:** independent review of the open Slice 16
-documentation-only post-merge reconciliation PR, then separate exact-head
-squash-merge authority for that reconciliation. **STOP BEFORE MERGE.** Do not
-begin Slice 17 readiness or implementation, Phase 3, or post-MVP work from this
-handoff alone. `CQS-OD-066` remains unresolved.
+**Recommended next action:** independent review of open reconciliation PR
+[#41](https://github.com/ricktron/classroom-quiz-show/pull/41), then separate
+exact-head squash-merge authority for that reconciliation. **STOP BEFORE
+MERGE.** Do not begin Slice 17 readiness or implementation, Phase 3, or
+post-MVP work from this handoff alone. `CQS-OD-066` remains unresolved.
 
 Coding agents and contributors should read root
 [`../../AGENTS.md`](../../AGENTS.md) before changing the repository. Claude
@@ -314,7 +315,8 @@ defers to `AGENTS.md` and adds no separate authority.
   [`../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md)
   and
   [`../receipts/2026-08-04-slice-16-semantic-review-r1.md`](../receipts/2026-08-04-slice-16-semantic-review-r1.md).
-  Documentation-only post-merge reconciliation is in review on
+  Documentation-only post-merge reconciliation is in review via open PR
+  [#41](https://github.com/ricktron/classroom-quiz-show/pull/41) on
   `docs/slice-16-post-merge-reconciliation`.
 - **Slices 17–22:** `Planned`, unstarted, and unauthorized (22-slice plan;
   Amendment 003).
@@ -955,10 +957,10 @@ and
 
 **PR #40, PR #38, and PR #36 require no further review or merge action.** Slice
 16 product delivery is `Complete` on `main`. **Recommended next action:
-independent review of the open Slice 16 documentation-only post-merge
-reconciliation PR. STOP BEFORE MERGE.** Phase 3 remains unauthorized. Slices
-17–22 remain unauthorized. Post-MVP arcs remain inactive. `CQS-OD-066` remains
-unresolved.
+independent review of open reconciliation PR
+[#41](https://github.com/ricktron/classroom-quiz-show/pull/41). STOP BEFORE
+MERGE.** Phase 3 remains unauthorized. Slices 17–22 remain unauthorized.
+Post-MVP arcs remain inactive. `CQS-OD-066` remains unresolved.
 
 ## Registered design direction — Phase 2B audience display (2026-08-03)
 
