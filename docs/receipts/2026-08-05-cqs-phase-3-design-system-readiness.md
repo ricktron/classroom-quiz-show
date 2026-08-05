@@ -9,7 +9,8 @@
 - **Kind:** documentation/specification-only readiness delivery (stops before merge)
 - **Exact delivery base:** `70a8c51a1d9545e8d417f4437a8d268a78a6782d`
 - **Branch:** `docs/cqs-phase3-s17-design-system-readiness`
-- **Delivery pull request:** *recorded after open — see §16*
+- **Delivery pull request:** [#43](https://github.com/ricktron/classroom-quiz-show/pull/43)
+  (open / unmerged at receipt write time)
 - **Repository:** `ricktron/classroom-quiz-show`
 
 ---
@@ -192,13 +193,17 @@ independent Slice Orchestrator review of the final exact PR head.
 
 ## 12. PR identity and state at receipt-write time
 
-*Placeholder filled in a bounded receipt-only follow-up commit after the
-non-draft PR is opened.*
+Observed after opening the non-draft PR (before the receipt-only follow-up
+commit that records these facts):
 
 | Fact | Value |
 | --- | --- |
-| PR number | *pending* |
-| URL | *pending* |
-| State | *pending* |
-| Draft | must be **false** |
-| Head OID | *pending* |
+| PR number | [#43](https://github.com/ricktron/classroom-quiz-show/pull/43) |
+| URL | https://github.com/ricktron/classroom-quiz-show/pull/43 |
+| State | **OPEN** / unmerged |
+| Draft | **false** |
+| Head OID at first open | `26517ed3cd1e09a009973b0a5743c674aa85cbc3` |
+| Base | `main` @ `70a8c51a1d9545e8d417f4437a8d268a78a6782d` |
+
+A bounded receipt-only commit updates only this file with the observed PR
+identity. Final head after that commit is recorded in the executor report.
