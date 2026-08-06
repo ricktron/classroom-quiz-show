@@ -432,20 +432,40 @@ See
 [`docs/receipts/2026-08-04-slice-16-semantic-review-r1.md`](docs/receipts/2026-08-04-slice-16-semantic-review-r1.md),
 and
 [`docs/receipts/2026-08-05-slice-16-post-merge-reconciliation.md`](docs/receipts/2026-08-05-slice-16-post-merge-reconciliation.md).
-Slices 17–22 remain Planned and unauthorized under the **22-slice** MVP plan
-([`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
-Post-MVP arcs remain inactive; `CQS-OD-066` remains unresolved. **PR #40
-requires no further review or merge action.** Post-merge reconciliation was
-squash-merged via PR
+**PR #40 requires no further review or merge action.** Post-merge reconciliation
+was squash-merged via PR
 [#41](https://github.com/ricktron/classroom-quiz-show/pull/41) at
 `3ee239a1341749aa03d2bbbfa780aece74c07be5`. **PR #41 requires no further review
-or merge action.** Slices 1–16 are Complete. The Phase 3 design-system readiness
-documentation dependency is satisfied when
-[`docs/plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](docs/plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
-is on `main`. Slice 17 remains Planned, unstarted, and unauthorized. The next
-safe action is separately authorized Slice 17 implementation. The inherited
-Final mid-refresh recovery flake remains unresolved; `CQS-OD-066` remains
-unresolved.
+or merge action.**
+**Slice 17 — Theme and Design-Token Foundation. Complete** — squash-merged via
+PR [#44](https://github.com/ricktron/classroom-quiz-show/pull/44) at
+`dee2f3c219f9e60113a374ce0ec876ae20c40bc1` (merged **2026-08-05T23:48:51Z**)
+from reviewed head `3214185ac750be8a9ab1ad170ff3c9d1c7f9f5a4` (authorized base
+and squash sole parent `6b908d577a588a68f06775a6511e1da3aacc33f3`).
+Reviewed-head and squash trees are identical
+(`ae727b3afd258532043269e60bfe49a9b64a07bb`) and the direct diff between them is
+empty (**39** paths). It adds a closed application-owned theme registry
+(`default`, `high-contrast`), exact fail-closed validation, per-window
+presentation-only theme state, a host-only native selector, validated display
+hash-route launches, complete semantic tokens including corrected opaque default
+tile edge `#35d6e8`, and theme/stress coverage — with **no** change to game
+authority, schemas, public wire **8**, sync **2**, persistence, events,
+reducers, summaries, exports, packages, or deployment configuration.
+Game-file schema **1**, GameDefinition model **1**, private active-session wire
+**1**, IndexedDB **2**, Session Summary **1**, completed-summary envelope **1**,
+and competitive profile **1** remain unchanged. The Phase 3 readiness dependency
+was satisfied before implementation and has been consumed by this completed
+delivery. See
+[`docs/plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](docs/plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md),
+[`docs/receipts/2026-08-05-slice-17-theme-tokens-local-verification.md`](docs/receipts/2026-08-05-slice-17-theme-tokens-local-verification.md),
+and
+[`docs/receipts/2026-08-05-slice-17-post-merge-reconciliation.md`](docs/receipts/2026-08-05-slice-17-post-merge-reconciliation.md).
+**PR #44 requires no further review or merge action.** Slices 1–17 are Complete.
+Slices 18–22 remain Planned and unauthorized under the **22-slice** MVP plan
+([`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
+The next safe action is a separately authorized Slice 18 Audience Display System
+Orchestrator. The inherited Final mid-refresh recovery flake remains unresolved;
+`CQS-OD-066` remains unresolved.
 
 > ⚠️ **Sony Buzz physical certification is bounded, not a supported-hardware
 > list.** OADL2-S07 completed physical certification for one exact tested
