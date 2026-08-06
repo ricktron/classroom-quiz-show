@@ -16,7 +16,8 @@
 - **Implementation branch:** `feat/slice-17-theme-tokens` (preserved; not deleted)
 - **Reconciliation authorized base:** `dee2f3c219f9e60113a374ce0ec876ae20c40bc1`
 - **Reconciliation branch:** `docs/slice-17-post-merge-reconciliation`
-- **Reconciliation pull request:** recorded in §30 once the review-ready PR exists
+- **Reconciliation pull request:** [#45](https://github.com/ricktron/classroom-quiz-show/pull/45)
+  (open / unmerged at receipt write time)
 - **Kind:** documentation-only post-merge reconciliation (stops before merge)
 - **Non-claims:** this receipt does **not** claim reconciliation PR merge,
   branch/worktree cleanup, Slice 18 start, Slice 22 qualification, WCAG or
@@ -324,11 +325,11 @@ flake and are not reclassified as that flake.
 
 | Check | Result |
 | --- | --- |
-| `git diff --check` | recorded after edits |
-| Changed paths ⊆ six-path allowlist | required |
-| Prior receipts unchanged | required |
-| No `src/**`, `tests/**`, packages, locks, workflows, or config | required |
-| `npm run verify` | recorded after edits |
+| `git diff --check` | **pass** (exit 0) |
+| Changed paths ⊆ six-path allowlist | **pass** (exactly the six paths) |
+| Prior receipts unchanged | **pass** |
+| No `src/**`, `tests/**`, packages, locks, workflows, or config | **pass** |
+| `npm run verify` | **pass** — 2084 passed / 1 skipped; 3 pre-existing ThemeProvider `react-refresh` eslint warnings |
 | Full local e2e | **not re-run** for documentation-only reconciliation (per authorization) |
 
 ---
@@ -442,18 +443,20 @@ handoff/reconciliation grants no Slice 18 authority.
 
 ---
 
-## 30. Reconciliation PR identity (filled once available)
+## 30. Reconciliation PR identity
 
 | Fact | Value |
 | --- | --- |
-| Reconciliation PR | *(filled after open)* |
-| URL | *(filled after open)* |
+| Reconciliation PR | [#45](https://github.com/ricktron/classroom-quiz-show/pull/45) |
+| URL | https://github.com/ricktron/classroom-quiz-show/pull/45 |
 | Base | `main` @ `dee2f3c219f9e60113a374ce0ec876ae20c40bc1` |
-| Final exact head | *(filled after final docs commit)* |
+| First docs commit | `d9924b446a669a578694113724fa35b91986c6ef` |
+| Final exact head | recorded after the PR-identity receipt commit on this branch |
 | Changed paths | the six allowlisted paths above |
-| Draft | no |
-| Auto-merge | off (must remain off) |
-| CI / Sonar / Pages on PR head | *(observed after open)* |
+| Draft | **no** |
+| Auto-merge | **off** (must remain off) |
+| State at receipt update | **open / unmerged** |
+| CI / Sonar / Pages on PR head | observe on the final exact head after push; do not invent green |
 
 ---
 
