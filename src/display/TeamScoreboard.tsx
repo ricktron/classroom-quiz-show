@@ -31,8 +31,15 @@ import './TeamScoreboard.css'
  * panel rather than a partial board or a `NaN`.
  */
 
+export type TeamScoreboardLayout = 'column' | 'strip' | 'deck'
+
 export interface TeamScoreboardProps {
   readonly teams: PublicTeamsState
+  /**
+   * Adaptive layout mode from the audience shell. Defaults to strip-like wrap
+   * behaviour for legacy callers; ScoreLayout always supplies an explicit mode.
+   */
+  readonly layout?: TeamScoreboardLayout
 }
 
 /**
@@ -78,12 +85,19 @@ function Unavailable() {
   )
 }
 
-export function TeamScoreboard({ teams }: TeamScoreboardProps) {
+export function TeamScoreboard({ teams, layout }: TeamScoreboardProps) {
   if (teams.status !== 'available') return <Unavailable />
   if (teams.teams.length === 0) return <Unavailable />
 
+  const layoutClass = layout ? ` tsb--${layout}` : ''
+
   return (
-    <section className="tsb" data-testid="tsb" aria-labelledby="tsb-title">
+    <section
+      className={`tsb${layoutClass}`}
+      data-testid="tsb"
+      data-layout={layout ?? 'default'}
+      aria-labelledby="tsb-title"
+    >
       <h2 className="tsb__title" id="tsb-title">
         Scores
       </h2>

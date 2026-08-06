@@ -1,0 +1,339 @@
+/*
+ * Audience display composition (Slice 18).
+ * Token-only colors/surfaces. Board-first hierarchy at 1920×1080 and 1280×720.
+ */
+
+.audience {
+  box-sizing: border-box;
+  min-height: 100%;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background:
+    radial-gradient(ellipse at 50% 0%, var(--surface-canvas) 0%, transparent 55%),
+    var(--surface-projector);
+  color: var(--fg-primary);
+  overflow-x: hidden;
+}
+
+.audience__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+.audience__brand {
+  margin: 0;
+  font-size: clamp(0.75rem, 1.1vw, 1rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-interactive);
+  font-weight: 700;
+}
+
+.audience__headline {
+  margin: 0;
+  font-size: clamp(2.5rem, 7vw, 6rem);
+  font-weight: 800;
+  color: var(--fg-strong);
+  line-height: 1.05;
+  overflow-wrap: break-word;
+  max-width: 20ch;
+}
+
+/* When a round owns the projector, the page title steps down. */
+.audience:not(.audience--scene-waiting):not(.audience--scene-ready):not(
+    .audience--scene-neutral
+  ):not(.audience--scene-unavailable):not(.audience--scene-fail-closed)
+  .audience__headline,
+.audience--scene-board .audience__headline,
+.audience--scene-quiet-cognition .audience__headline,
+.audience--scene-answer .audience__headline,
+.audience--scene-final .audience__headline,
+.audience--scene-complete .audience__headline {
+  font-size: clamp(0.85rem, 1.2vw, 1.15rem);
+  font-weight: 600;
+  color: var(--fg-muted);
+  max-width: none;
+}
+
+.audience__host-line,
+.audience__game-line {
+  margin: 0;
+  font-size: clamp(0.8rem, 1.1vw, 1rem);
+  color: var(--fg-muted);
+  max-width: 48rem;
+}
+
+.audience--scene-waiting .audience__host-line,
+.audience--scene-ready .audience__host-line {
+  font-size: clamp(1.25rem, 3vw, 2.25rem);
+  max-width: 30ch;
+}
+
+.audience__status-dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: var(--state-success);
+  display: inline-block;
+  margin-inline-end: 0.4rem;
+  vertical-align: middle;
+}
+
+/* Nexus Core */
+.nexus {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  border: var(--bw-standard) solid var(--border-panel);
+  border-radius: var(--radius-panel);
+  background: var(--surface-raised);
+  box-shadow: var(--edge-panel, none);
+  max-width: 56rem;
+  width: 100%;
+}
+
+.nexus__brand {
+  margin: 0;
+  font-size: clamp(0.7rem, 1vw, 0.9rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-interactive);
+  font-weight: 700;
+}
+
+.nexus__round,
+.nexus__stage,
+.nexus__detail {
+  margin: 0;
+  font-size: clamp(0.95rem, 1.6vw, 1.35rem);
+  font-weight: 700;
+  color: var(--fg-strong);
+}
+
+.nexus__detail {
+  font-weight: 500;
+  color: var(--fg-secondary);
+}
+
+.audience__body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  min-height: 0;
+  align-items: stretch;
+}
+
+.audience--scores-column .audience__body {
+  grid-template-columns: minmax(10rem, 16rem) 1fr;
+}
+
+.audience__primary {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.audience__round {
+  width: 100%;
+  overflow-x: hidden;
+  z-index: 1;
+}
+
+.audience__status-panel {
+  text-align: center;
+  font-size: clamp(1.25rem, 2.5vw, 2rem);
+  color: var(--fg-secondary);
+  padding: var(--space-6);
+}
+
+.audience__footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.audience__rail {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.audience__scores {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.audience__scores--column {
+  align-self: stretch;
+}
+
+/* Quiet cognition: recede chrome; decorative lattice only */
+.audience--quiet .audience__brand,
+.audience--quiet .audience__headline,
+.audience--quiet .audience__host-line {
+  opacity: 0.72;
+}
+
+.audience--quiet .nexus {
+  padding-block: var(--space-1);
+}
+
+.audience__lattice {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.22;
+}
+
+.audience__lattice-grid {
+  width: 100%;
+  height: 100%;
+  background-image:
+    linear-gradient(var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+  background-size: 12% 18%;
+  border-radius: var(--radius-panel);
+}
+
+/* Signal Rail */
+.signal-rail {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: var(--bw-standard) solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-base);
+}
+
+.signal-rail--expanded {
+  border-color: var(--border-strong, var(--border-standard));
+  background: var(--surface-raised);
+}
+
+.signal-rail--final {
+  border-color: var(--border-panel);
+}
+
+.signal-rail__status,
+.signal-rail__revealed {
+  margin: 0;
+  font-size: clamp(1rem, 1.8vw, 1.5rem);
+  font-weight: 700;
+  color: var(--fg-strong);
+}
+
+.signal-rail__revealed {
+  color: var(--fg-interactive);
+}
+
+/* Score layout modes — applied to TeamScoreboard via parent */
+.score-layout {
+  width: 100%;
+}
+
+.score-layout--column .tsb__list {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+
+.score-layout--column .tsb__team {
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+}
+
+.score-layout--strip .tsb__list {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: stretch;
+}
+
+.score-layout--strip .tsb__team {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.score-layout--deck .tsb__list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(2, auto);
+  gap: clamp(0.35rem, 0.8vw, 0.75rem);
+}
+
+.score-layout--deck .tsb__team {
+  min-width: 0;
+  max-width: none;
+  width: 100%;
+}
+
+/* Result emphasis — structural + text; motion optional */
+.audience__result {
+  margin: var(--space-3) 0 0;
+  text-align: center;
+  font-size: clamp(1.5rem, 3vw, 2.75rem);
+  font-weight: 800;
+  color: var(--fg-strong);
+}
+
+.audience__result--tied {
+  color: var(--fg-secondary);
+}
+
+.audience--emphasis-answer .cbd__answer,
+.audience--emphasis-selection .cbd__selection-header,
+.audience--emphasis-final-reveal .fwd__reveal,
+.audience--emphasis-final-settle .audience__result,
+.audience--emphasis-unique-leader .audience__result--unique,
+.audience--emphasis-tied .audience__result--tied {
+  outline: var(--bw-emphasized, 2px) solid var(--state-active);
+  outline-offset: 4px;
+  border-radius: var(--radius-md);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .audience--emphasis-answer .cbd__answer,
+  .audience--emphasis-selection .cbd__selection-header,
+  .audience--emphasis-final-reveal .fwd__reveal,
+  .audience--emphasis-unique-leader .audience__result--unique,
+  .audience--emphasis-tied .audience__result--tied {
+    animation: audience-pulse var(--dur-emphasized) var(--ease-emphasized) 1;
+  }
+}
+
+@keyframes audience-pulse {
+  from {
+    opacity: var(--pulse-opacity-min);
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-height: 800px) {
+  .audience {
+    padding: var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .audience--scores-column .audience__body {
+    grid-template-columns: minmax(8.5rem, 13rem) 1fr;
+  }
+}

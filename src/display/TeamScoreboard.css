@@ -68,9 +68,48 @@
   font-size: clamp(0.9rem, 1.5vw, 1.5rem);
   font-weight: 600;
   line-height: 1.15;
-  /* Long team names wrap rather than overflow the projector. */
-  overflow-wrap: break-word;
+  /* Long team names wrap rather than overflow / ellipsis into ambiguity. */
+  overflow-wrap: anywhere;
+  word-break: break-word;
   max-width: 100%;
+  hyphens: auto;
+}
+
+/* Adaptive layouts (Slice 18). Authored order is preserved; never ranked. */
+.tsb--column .tsb__list {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+
+.tsb--column .tsb__team {
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+}
+
+.tsb--strip .tsb__list {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: stretch;
+}
+
+.tsb--strip .tsb__team {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.tsb--deck .tsb__list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(2, auto);
+  gap: clamp(0.35rem, 0.8vw, 0.75rem);
+}
+
+.tsb--deck .tsb__team {
+  min-width: 0;
+  max-width: none;
+  width: 100%;
 }
 
 .tsb__score {
