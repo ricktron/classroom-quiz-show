@@ -351,7 +351,8 @@ docs/receipts/2026-08-06-slice-18-audience-display-local-verification.md
 
 ## New exact head H2
 
-_Recorded after push as the PR tip containing this R1 section._
+- **H2 (R1 repair commit):** `6428fad45aab56b13e0fe6175962caf8eb848ad0`
+- **H1 → H2 lineage:** `433b3973c100663254d0749d7f1df50700191d26` → `6428fad45aab56b13e0fe6175962caf8eb848ad0` (plus any subsequent receipt-identity docs commit on the same PR branch)
 
 ## Contract versions (unchanged)
 
