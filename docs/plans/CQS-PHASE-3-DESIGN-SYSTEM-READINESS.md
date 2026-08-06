@@ -13,7 +13,7 @@
 | Classification | Documentation/specification only |
 
 This document is the canonical **Phase 3 design-system readiness contract** that
-must precede Slice 17 implementation. It is authorized under Amendment 003's
+had to precede Slice 17 implementation. It is authorized under Amendment 003's
 requirement for a documentation/specification-only Phase 3 readiness lane before
 Slice 17 ([`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md);
 [`MVP-ARC.md`](MVP-ARC.md)).
@@ -21,16 +21,39 @@ Slice 17 ([`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../d
 **Phase 3 design-system readiness is satisfied when this specification is on
 `main`.**
 
-**Slice 17 remains `Planned`, unstarted, and unauthorized** pending its own
-separate owner authorization. This document grants **no implementation
-authority** of any kind: no CSS, TypeScript, TSX, tests, fixtures, assets,
-package, lockfile, workflow, deployment, or configuration mutation; no theme
-registry in application source; no game-schema, public-wire, synchronization,
-persistence, or summary change.
+**At issuance, Slice 17 remained `Planned`, unstarted, and unauthorized** pending
+its own separate owner authorization. This document granted **no implementation
+authority** of any kind at issuance: no CSS, TypeScript, TSX, tests, fixtures,
+assets, package, lockfile, workflow, deployment, or configuration mutation; no
+theme registry in application source; no game-schema, public-wire,
+synchronization, persistence, or summary change.
 
-Proposed-tree completion semantics: mutable routing surfaces in this delivery
-describe the state that holds **after** this content lands on `main`. They do
-not refer to an open delivery pull request.
+Proposed-tree completion semantics at readiness delivery: mutable routing
+surfaces in that delivery described the state that holds **after** the readiness
+content lands on `main`. They did not refer to an open delivery pull request.
+
+### Post-merge implementation outcome (Slice 17)
+
+The readiness dependency was **satisfied first** (this specification on `main`
+at implementation base `6b908d577a588a68f06775a6511e1da3aacc33f3`) and then
+**consumed** by completed Slice 17 delivery via PR
+[#44](https://github.com/ricktron/classroom-quiz-show/pull/44) (reviewed head
+`3214185ac750be8a9ab1ad170ff3c9d1c7f9f5a4`; squash
+`dee2f3c219f9e60113a374ce0ec876ae20c40bc1`). The implemented result matched the
+binding architecture in this contract and preserved every stated boundary
+(public wire **8**, sync **2**, game-file schema **1**, GameDefinition model
+**1**, private active-session wire **1**, IndexedDB **2**, Session Summary
+**1**, completed-summary **1**, competitive profile **1**; no ADR; no Slice 18;
+no Slice 22 qualification; no WCAG or physical-projector certification).
+
+Evidence:
+
+- [`../receipts/2026-08-05-slice-17-theme-tokens-local-verification.md`](../receipts/2026-08-05-slice-17-theme-tokens-local-verification.md)
+- [`../receipts/2026-08-05-slice-17-post-merge-reconciliation.md`](../receipts/2026-08-05-slice-17-post-merge-reconciliation.md)
+
+Historical base-inspection observations below remain observations of the
+authorized readiness base at issuance and are **not** rewritten as post-Slice-17
+repository truth.
 
 ## 2. Evidence and current repository truth
 
@@ -544,19 +567,22 @@ This handoff does **not** authorize implementation.
 ## 18. Program routing and explicit non-claims
 
 - **Readiness is complete when this specification is on `main`.**
-- **Slice 17 remains planned and unauthorized.**
-- After merge, the next safe action is a **separately authorized Slice 17
-  implementation lane**.
+- **At issuance, Slice 17 remained planned and unauthorized.**
+- After readiness merge, the next safe action was a **separately authorized
+  Slice 17 implementation lane**; that lane has since completed via PR #44
+  (see the post-merge implementation outcome above).
 - No registration or reconciliation lane should be required merely to state that
   this readiness content landed.
 - The inherited Final mid-refresh recovery flake remains unresolved.
 - `CQS-OD-066` remains unresolved.
-- No physical, accessibility, deployment, or Raspberry Pi certification exists.
+- No physical, accessibility, WCAG, deployment, or Raspberry Pi certification
+  exists (and Slice 17 did not create any).
 - No post-MVP arc is activated.
+- No ADR was warranted; none was created.
 - ADR-016 remains Accepted; public wire **8**, sync **2**, game-file schema
   **1**, private active-session wire **1**, IndexedDB **2**, Session Summary
   **1**, completed-summary **1**, and competitive profile **1** remain the
-  current boundaries.
-- Slices 1–16 remain `Complete`; Slices 17–22 remain `Planned` and unauthorized
-  for implementation (Slice 17 additionally gated on this readiness content
-  being on `main` plus its own owner authorization).
+  current boundaries (unchanged by Slice 17).
+- After Slice 17 completion: Slices 1–17 are `Complete`; Slices 18–22 remain
+  `Planned` and unauthorized for implementation. Slice 18 remains separately
+  unauthorized. Slice 22 qualification remains unperformed.

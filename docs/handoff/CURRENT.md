@@ -1,9 +1,23 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with **Slices 1–16 all product-`Complete` and merged to `main`**,
-including **Slice 16 post-merge reconciliation merged** via PR
-[#41](https://github.com/ricktron/classroom-quiz-show/pull/41).
+the repository with **Slices 1–17 all product-`Complete` and merged to `main`**.
+**Slice 17 — Theme and Design-Token Foundation is terminally `Complete`** after
+implementation PR [#44](https://github.com/ricktron/classroom-quiz-show/pull/44)
+(squash-merged at `dee2f3c219f9e60113a374ce0ec876ae20c40bc1` from reviewed head
+`3214185ac750be8a9ab1ad170ff3c9d1c7f9f5a4`, merged **2026-08-05T23:48:51Z**,
+sole parent `6b908d577a588a68f06775a6511e1da3aacc33f3`, reviewed-head and squash
+trees identical at `ae727b3afd258532043269e60bfe49a9b64a07bb`, direct
+head-to-squash diff empty, exactly **39** paths; post-merge CI, SonarCloud, and
+Pages green) **and this post-merge reconciliation’s eventual landing** on
+`main` (see
+[`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md),
+[`../receipts/2026-08-05-slice-17-theme-tokens-local-verification.md`](../receipts/2026-08-05-slice-17-theme-tokens-local-verification.md),
+and
+[`../receipts/2026-08-05-slice-17-post-merge-reconciliation.md`](../receipts/2026-08-05-slice-17-post-merge-reconciliation.md)).
+**PR #44 requires no further review or merge action.** No further Slice 17
+product delivery, repair, merge, reconciliation, registration, or
+canonicalization lane remains after this reconciliation lands.
 **Slice 16 — Completed Summary Ledger & Compatible Reporting is terminally
 `Complete`**
 (implementation PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40)
@@ -12,62 +26,40 @@ reviewed-and-repaired head `942575c97b97df220c215a7d265736a797869157`, merged
 **2026-08-05T04:38:20Z**; reconciliation PR
 [#41](https://github.com/ricktron/classroom-quiz-show/pull/41) squash-merged at
 `3ee239a1341749aa03d2bbbfa780aece74c07be5` from reviewed-and-repaired head
-`2787040ff251f04fa899f0b40b18fa7217f6ba80`, merged **2026-08-05T14:40:02Z**,
-sole parent `bc3cea65cab8db1481b0b2420be580cc69932f3d`, reviewed-head and squash
-trees identical at `c1b48c92a91524d3a6615eec2ff2c0b3ba52201f`, direct
-head-to-squash diff empty; post-merge CI, Pages, and Sonar green — see
-[`../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md),
-[`../receipts/2026-08-04-slice-16-local-verification.md`](../receipts/2026-08-04-slice-16-local-verification.md),
-[`../receipts/2026-08-04-slice-16-semantic-review-r1.md`](../receipts/2026-08-04-slice-16-semantic-review-r1.md),
+`2787040ff251f04fa899f0b40b18fa7217f6ba80`, merged **2026-08-05T14:40:02Z** —
+see
+[`../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md)
 and
 [`../receipts/2026-08-05-slice-16-post-merge-reconciliation.md`](../receipts/2026-08-05-slice-16-post-merge-reconciliation.md)).
 **PR #40 and PR #41 require no further review or merge action.**
 **Slice 15 — Session Summary Contract is `Complete`** (PR
 [#38](https://github.com/ricktron/classroom-quiz-show/pull/38) squash-merged at
-`242539044e45a43eacc6d8334349e59a6987a3d9` from reviewed-and-repaired head
-`d8f6308eccea5144ab1c6b5f49afdfcc2b7d5b5b`, merged **2026-08-04T19:28:26Z**,
-post-merge CI, Sonar, and Pages green — see
+`242539044e45a43eacc6d8334349e59a6987a3d9` — see
 [`../architecture/ADR-015-session-summary-contract.md`](../architecture/ADR-015-session-summary-contract.md)
 and
 [`../receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](../receipts/2026-08-04-slice-15-post-merge-reconciliation.md)).
 **PR #38 requires no further review or merge action.**
 **Slice 14 — Final-wager round is `Complete`** (PR
-[#32](https://github.com/ricktron/classroom-quiz-show/pull/32) squash-merged at
-`ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` from reviewed-and-repaired head
-`c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26`, merged **2026-08-03T17:08:37Z**,
-post-merge CI and Pages both green — see
-[`../architecture/ADR-014-final-wager-round.md`](../architecture/ADR-014-final-wager-round.md)
-and
-[`../receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](../receipts/2026-08-03-slice-14-post-merge-reconciliation.md)).
-**Slice 13 — Local persistence & recovery is `Complete`** (PR #27
-squash-merged at `6cf4d2579ab558f8c4b7eabca0b94df4acc6f20c` from reviewed head
-`ad0867ab6d7e00f397de51dfad2363f35bc181d7`, merged **2026-07-29T21:27:59Z** —
-see
-[`../architecture/ADR-013-local-persistence-recovery.md`](../architecture/ADR-013-local-persistence-recovery.md)
-and
-[`../STATUS.md`](../STATUS.md)).
-**Slices 17–22 remain `Planned` and unauthorized** under the **22-slice** MVP
+[#32](https://github.com/ricktron/classroom-quiz-show/pull/32) at
+`ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` — see
+[`../architecture/ADR-014-final-wager-round.md`](../architecture/ADR-014-final-wager-round.md)).
+**Slice 13 — Local persistence & recovery is `Complete`** (PR #27 at
+`6cf4d2579ab558f8c4b7eabca0b94df4acc6f20c` — see
+[`../architecture/ADR-013-local-persistence-recovery.md`](../architecture/ADR-013-local-persistence-recovery.md)).
+**Slices 18–22 remain `Planned` and unauthorized** under the **22-slice** MVP
 plan amended by
 [`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
 (`CQS-PLAN-S02`, documentation-only; delivery **merged** via PR #35 at
 `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`; post-merge reconciliation
 **merged** via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`).
-Slices 1–16 are Complete. Slice 16 implementation and post-merge reconciliation
-are complete on `main`. The remaining PR #41 stale-routing defect has been
-canonicalized (see
-[`../receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md`](../receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md)).
-No further Slice 16 delivery, repair, merge, reconciliation, registration, or
-canonicalization lane is owed. **Phase 3 design-system readiness is complete**
-when
-[`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
-is on `main` (documentation/specification only; authorization
-`AUTHORIZE-CQS-PHASE3-S17-DESIGN-SYSTEM-READINESS-1`). **Slice 17 remains
-`Planned`, unstarted, and unauthorized.** **Recommended next action:** a new,
-separately authorized Slice 17 implementation Orchestrator. No further readiness
-registration or reconciliation is owed merely to record this dependency. Do not
-begin Slice 17 implementation, Slice 18, or post-MVP work from this handoff
-alone. `CQS-OD-066` remains unresolved. The inherited Final mid-refresh
-recovery flake remains unresolved.
+Slices 1–17 are Complete. The Phase 3 design-system readiness dependency was
+satisfied before Slice 17 and has been consumed by completed Slice 17 delivery
+([`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)).
+**Slice 18 remains `Planned` and unauthorized.** **Recommended next action:** a
+new, separately authorized Slice 18 Audience Display System Orchestrator. No
+authority is granted by this handoff itself. Do not begin Slice 18, Slice 22
+qualification, or post-MVP work from this handoff alone. `CQS-OD-066` remains
+unresolved. The inherited Final mid-refresh recovery flake remains unresolved.
 
 Coding agents and contributors should read root
 [`../../AGENTS.md`](../../AGENTS.md) before changing the repository. Claude
@@ -124,11 +116,10 @@ defers to `AGENTS.md` and adds no separate authority.
 > `bc3cea65cab8db1481b0b2420be580cc69932f3d` and reconciliation PR
 > [#41](https://github.com/ricktron/classroom-quiz-show/pull/41) at
 > `3ee239a1341749aa03d2bbbfa780aece74c07be5`. **PR #40 and PR #41 require no
-> further review or merge action.** Phase 3 design-system readiness is complete
-> when
-> [`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
-> is on `main`. Slices 17–22 remain unauthorized for implementation. Post-MVP
-> arcs remain inactive. `CQS-OD-066` remains unresolved.
+> further review or merge action.** Phase 3 design-system readiness was satisfied
+> and consumed by completed Slice 17 (PR #44). Slices 18–22 remain unauthorized
+> for implementation. Post-MVP arcs remain inactive. `CQS-OD-066` remains
+> unresolved.
 
 ## Repository state
 
@@ -332,7 +323,7 @@ defers to `AGENTS.md` and adds no separate authority.
   [`../receipts/2026-08-04-slice-15-local-verification.md`](../receipts/2026-08-04-slice-15-local-verification.md)
   and
   [`../receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](../receipts/2026-08-04-slice-15-post-merge-reconciliation.md).
-- **Slice 16 (current product frontier):** `Complete` — squash-merged via PR
+- **Slice 16:** `Complete` — squash-merged via PR
   [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) at
   `bc3cea65cab8db1481b0b2420be580cc69932f3d` from reviewed head
   `942575c97b97df220c215a7d265736a797869157`. Host-private completed-summary
@@ -351,7 +342,27 @@ defers to `AGENTS.md` and adds no separate authority.
   [`../receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md`](../receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md)
   closes the remaining stale-routing defect; no further Slice 16
   canonicalization lane is owed.
-- **Slices 17–22:** `Planned`, unstarted, and unauthorized (22-slice plan;
+- **Slice 17 (current product frontier):** `Complete` — squash-merged via PR
+  [#44](https://github.com/ricktron/classroom-quiz-show/pull/44) at
+  `dee2f3c219f9e60113a374ce0ec876ae20c40bc1` from reviewed head
+  `3214185ac750be8a9ab1ad170ff3c9d1c7f9f5a4` (sole parent
+  `6b908d577a588a68f06775a6511e1da3aacc33f3`; trees identical at
+  `ae727b3afd258532043269e60bfe49a9b64a07bb`; **39** paths). Closed themes
+  `default` / `high-contrast`, fail-closed validation, per-window presentation
+  theme state, host-only selector, validated display hash-route launches,
+  semantic tokens including corrected opaque tile edge `#35d6e8`, and theme
+  stress coverage. **No** schema / public-wire / sync / persistence / event /
+  reducer / summary / export / package change. Contract versions unchanged
+  (public wire **8**, sync **2**, game-file schema **1**, GameDefinition model
+  **1**, private active-session wire **1**, IndexedDB **2**, Session Summary
+  **1**, completed-summary **1**, competitive profile **1**). See
+  [`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md),
+  [`../receipts/2026-08-05-slice-17-theme-tokens-local-verification.md`](../receipts/2026-08-05-slice-17-theme-tokens-local-verification.md),
+  and
+  [`../receipts/2026-08-05-slice-17-post-merge-reconciliation.md`](../receipts/2026-08-05-slice-17-post-merge-reconciliation.md).
+  **PR #44 requires no further review or merge action.** After this
+  reconciliation lands, no further Slice 17 product lane remains.
+- **Slices 18–22:** `Planned`, unstarted, and unauthorized (22-slice plan;
   Amendment 003).
 - **What Slice 14 adds:** the SECOND playable round type, `final-wager` — and
   the important thing about it is where it lives. It is registered by application
@@ -972,32 +983,31 @@ arcs remain inactive; **decision 66 (`CQS-OD-066`) remains unresolved**.
 
 ## Next action
 
-**Slices 1–15 and planning slice CQS-PLAN-S01 are `Complete` and
+**Slices 1–17 and planning slice CQS-PLAN-S01 are `Complete` and
 merged.** Phase 2B design direction is registered. **Roadmap Amendment 003
 (`CQS-PLAN-S02`) delivery and post-merge reconciliation are complete on
 `main`** (PR #35 at `2ebeb240…`; PR #36 at
 `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`; 22-slice plan canonical; see
-[`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md),
-[`../receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md`](../receipts/2026-08-03-cqs-plan-s02-post-merge-reconciliation.md),
-and
-[`../receipts/2026-08-04-cqs-plan-s02-post-merge-registration.md`](../receipts/2026-08-04-cqs-plan-s02-post-merge-registration.md)).
+[`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
+**Slice 17 — Theme and Design-Token Foundation is `Complete`** (PR
+[#44](https://github.com/ricktron/classroom-quiz-show/pull/44) at
+`dee2f3c219f9e60113a374ce0ec876ae20c40bc1`).
+**Slice 16 — Completed Summary Ledger & Compatible Reporting is `Complete`**
+(PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) /
+[#41](https://github.com/ricktron/classroom-quiz-show/pull/41)).
 **Slice 15 — Session Summary Contract is `Complete`** (PR
-[#38](https://github.com/ricktron/classroom-quiz-show/pull/38) at
-`242539044e45a43eacc6d8334349e59a6987a3d9`).
+[#38](https://github.com/ricktron/classroom-quiz-show/pull/38)).
 **Slice 14 — Final-wager round is `Complete`** (PR
-[#32](https://github.com/ricktron/classroom-quiz-show/pull/32) at
-`ce2e103377c5d86c8e0946346cb4cf05dfe7d58d`).
+[#32](https://github.com/ricktron/classroom-quiz-show/pull/32)).
 
-**PR #41, PR #40, PR #38, and PR #36 require no further review or merge action.**
-Slice 16 product delivery and post-merge reconciliation are `Complete` on
-`main`. The remaining PR #41 stale-routing defect has been canonicalized. No
-further Slice 16 delivery, repair, merge, reconciliation, registration, or
-canonicalization lane is owed. Phase 3 design-system readiness is complete when
-[`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
-is on `main`. **Recommended next action:** a new, separately authorized Slice 17
-implementation Orchestrator. Slice 17 remains `Planned`, unstarted, and
-unauthorized. Slices 17–22 remain unauthorized for implementation. Post-MVP arcs
-remain inactive. `CQS-OD-066` remains unresolved. The inherited Final
+**PR #44, PR #41, PR #40, PR #38, and PR #36 require no further review or merge
+action.** Slice 17 product delivery is `Complete` on `main`. After this
+reconciliation content lands, no further Slice 17 product lane is owed. Phase 3
+design-system readiness was satisfied and consumed by Slice 17. **Recommended
+next action:** a new, separately authorized Slice 18 Audience Display System
+Orchestrator. Slice 18 remains `Planned` and unauthorized. Slices 18–22 remain
+unauthorized for implementation. This handoff grants **no** authority. Post-MVP
+arcs remain inactive. `CQS-OD-066` remains unresolved. The inherited Final
 mid-refresh recovery flake remains unresolved.
 
 ## Registered design direction — Phase 2B audience display (2026-08-03)
@@ -1032,11 +1042,11 @@ Evidence limits, recorded verbatim in the direction document and its receipt:
 
 **Routing.** Slice 15 — Session Summary Contract is `Complete` on `main`
 (PR #38). Slice 16 — Completed Summary Ledger & Compatible Reporting is
-`Complete` on `main` (PR #40) and remains unaffected in priority by Phase
-2B. MVP Phase 2B consumers are **Slices 17–18** (theme/token foundation, then
-audience display), both `Planned` and unauthorized. A separately authorized
-Phase 3 design-system specification/readiness lane may occur without changing
-product-slice sequencing.
+`Complete` on `main` (PR #40). Slice 17 — Theme and Design-Token Foundation is
+`Complete` on `main` (PR #44). MVP Phase 2B consumers remain **Slices 17–18**:
+Slice 17 token foundation is complete; Slice 18 audience display remains
+`Planned` and unauthorized. Phase 3 readiness was satisfied and consumed by
+Slice 17.
 
 **Boundaries this direction does not move.** The public buzz state remains
 `activeTeamKey` plus an anonymous `waitingCount` — never a public ordered queue.
@@ -1120,13 +1130,13 @@ did not authorize it; **Slice 14 is now `Complete`** (PR #32, `ce2e103…`), and
 on `main` (PR #40, `bc3cea65…`; PR #41, `3ee239a…`). Phase 3 design-system
 readiness is complete when
 [`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
-is on `main`. The immediate frontier is a separately authorized Slice 17
-implementation lane; Slice 17 remains `Planned`, unstarted, and unauthorized.
-Slice 13 is **`Complete`** (PR #27, `6cf4d25…`). Slice 12 is
-**`Complete`** (PR #25, `cdb499a…`). Slice 11 is **`Complete`** (PR #23,
-`5d47b2f`). Slice 10 remains **`Complete`** under the owner-accepted
-hardware-independent boundary; OADL2-S07 recorded a bounded physical claim under
-temporary keep-alive (permanent keep-alive unresolved).
+was satisfied and consumed by completed Slice 17 (PR #44, `dee2f3c…`). The
+immediate frontier is a separately authorized Slice 18 Orchestrator; Slice 18
+remains `Planned` and unauthorized. Slice 13 is **`Complete`** (PR #27,
+`6cf4d25…`). Slice 12 is **`Complete`** (PR #25, `cdb499a…`). Slice 11 is
+**`Complete`** (PR #23, `5d47b2f`). Slice 10 remains **`Complete`** under the
+owner-accepted hardware-independent boundary; OADL2-S07 recorded a bounded
+physical claim under temporary keep-alive (permanent keep-alive unresolved).
 
 Recording this direction authorizes no work of any kind.
 
@@ -1177,9 +1187,9 @@ reconciliation. Recording this direction authorizes no work of any kind.
 ## Prohibited next actions
 
 Do **not**: reopen or redefine Slice 14 (it is `Complete` and merged — PR #32 at
-`ce2e103…`); reopen or merge Slice 15; merge Slice 16 without separate exact-head
-authority; begin Slice 17, Phase 3, or Slices 18–22 without separate authority;
-expose private Final or queue data (see the Final and
+`ce2e103…`); reopen Slice 15, Slice 16, or Slice 17 product lanes; begin Slice
+18 or Slices 19–22 without separate authority; treat this handoff as Slice 18
+authorization; expose private Final or queue data (see the Final and
 buzz-queue privacy boundaries below); claim Child B guidance/onboarding delivery
 is merged from this handoff;
 claim live-route behaviour that was
@@ -1201,8 +1211,9 @@ mid-board hidden wager, or any second wager mechanism beyond the merged Slice 14
 `final-wager` round (those remain **excluded by design** — see ADR-014); reopen,
 re-scope or re-implement the merged `final-wager` round itself; extend the
 Slice 11 media contract beyond text and same-origin static images, add remote
-media, audio/video, or timer/media coupling; add a theme engine, or add team
-colours beyond the application palette; add buzz-in audio, an audio file,
+media, audio/video, or timer/media coupling; extend Slice 17’s closed theme
+registry without separate authority, or add team colours beyond the application
+palette; add buzz-in audio, an audio file,
 playback code, an audio schema, an audio event, a sound-pack manifest, a
 custom-upload path or an
 attribution asset (see the deferred buzz-sound direction — it authorizes none of
