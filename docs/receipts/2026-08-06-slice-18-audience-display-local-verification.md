@@ -281,4 +281,10 @@ Single intentional retry on `mobile-host` reproduced the **same signature**. Not
 
 ## PR identity
 
-_Appended after PR creation._
+- **PR:** [#46](https://github.com/ricktron/classroom-quiz-show/pull/46)
+- **URL:** https://github.com/ricktron/classroom-quiz-show/pull/46
+- **Base:** `main`
+- **Head:** `feat/slice-18-audience-display` @ `7df7a249326f6b37eaa6c637a84d8d070a631793`
+- **Draft:** no
+- **Auto-merge:** off (`null`)
+- **Merge / reconciliation:** still unauthorized; no merge SHA invented
