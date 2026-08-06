@@ -22,6 +22,8 @@ const ACTIVE: PublicResponseState = {
   buzz: { status: 'active', activeTeamKey: 't0', waitingCount: 2 },
 }
 
+const PROMPT = { kind: 'text' as const, text: 'Final question?' }
+
 describe('SignalRail', () => {
   it('Compact rail exposes no team queue identities', () => {
     render(
@@ -34,7 +36,6 @@ describe('SignalRail', () => {
         }}
         teams={TEAMS}
         round={{ kind: PUBLIC_BOARD_KIND, stage: 'board', categories: [] }}
-        finalStageLabel={null}
         revealedTeamName={null}
       />,
     )
@@ -52,7 +53,6 @@ describe('SignalRail', () => {
         response={ACTIVE}
         teams={TEAMS}
         round={null}
-        finalStageLabel={null}
         revealedTeamName={null}
       />,
     )
@@ -62,20 +62,121 @@ describe('SignalRail', () => {
     expect(screen.queryByText('Bravo')).toBeNull()
   })
 
-  it('Final rail exposes no eligibility or unrevealed content', () => {
+  it('Final rail shows wager-entry countdown and no private Final fields', () => {
     render(
       <SignalRail
         mode="final"
         response={null}
         teams={TEAMS}
-        round={{ kind: PUBLIC_FINAL_KIND, stage: 'wagers-locked' }}
-        finalStageLabel="Wagers locked"
+        round={{
+          kind: PUBLIC_FINAL_KIND,
+          stage: 'wager-entry',
+          timer: { status: 'running', durationMs: 60_000, deadline: Date.now() + 60_000 },
+        }}
         revealedTeamName={null}
       />,
     )
+    expect(screen.getByTestId('signal-rail-status')).toHaveTextContent(/final wager open/i)
+    expect(screen.getByTestId('signal-rail-timer')).toHaveAttribute('data-status', 'running')
+    expect(screen.getByTestId('signal-rail-timer-clock')).toBeInTheDocument()
     const text = screen.getByTestId('signal-rail').textContent ?? ''
-    expect(text).toMatch(/wagers locked/i)
-    expect(text).not.toMatch(/eligible|cap|not eligible|reveal order/i)
+    expect(text).not.toMatch(/eligible|cap|not eligible|reveal order|wager cap/i)
+  })
+
+  it('Final rail shows response-entry countdown', () => {
+    render(
+      <SignalRail
+        mode="final"
+        response={null}
+        teams={TEAMS}
+        round={{
+          kind: PUBLIC_FINAL_KIND,
+          stage: 'response-entry',
+          prompt: PROMPT,
+          timer: { status: 'running', durationMs: 30_000, deadline: Date.now() + 30_000 },
+        }}
+        revealedTeamName={null}
+      />,
+    )
+    expect(screen.getByTestId('signal-rail-status')).toHaveTextContent(/final response open/i)
+    expect(screen.getByTestId('signal-rail-timer-clock')).toBeInTheDocument()
+  })
+
+  it('Final rail states paused and expired timers explicitly and omits countdown without a timer', () => {
+    const { rerender } = render(
+      <SignalRail
+        mode="final"
+        response={null}
+        teams={TEAMS}
+        round={{
+          kind: PUBLIC_FINAL_KIND,
+          stage: 'wager-entry',
+          timer: { status: 'paused', durationMs: 60_000, remainingMs: 12_000 },
+        }}
+        revealedTeamName={null}
+      />,
+    )
+    expect(screen.getByTestId('signal-rail-timer')).toHaveAttribute('data-status', 'paused')
+    expect(screen.getByTestId('signal-rail-timer-status')).toHaveTextContent(/paused/i)
+
+    rerender(
+      <SignalRail
+        mode="final"
+        response={null}
+        teams={TEAMS}
+        round={{
+          kind: PUBLIC_FINAL_KIND,
+          stage: 'response-entry',
+          prompt: PROMPT,
+          timer: { status: 'expired', durationMs: 30_000 },
+        }}
+        revealedTeamName={null}
+      />,
+    )
+    expect(screen.getByTestId('signal-rail-timer')).toHaveAttribute('data-status', 'expired')
+    expect(screen.getByTestId('signal-rail-timer-status')).toHaveTextContent(/time up/i)
+
+    rerender(
+      <SignalRail
+        mode="final"
+        response={null}
+        teams={TEAMS}
+        round={{ kind: PUBLIC_FINAL_KIND, stage: 'wagers-locked' }}
+        revealedTeamName={null}
+      />,
+    )
+    expect(screen.queryByTestId('signal-rail-timer')).toBeNull()
+  })
+
+  it('Final rail uses tie-safe status for tied resolution and complete', () => {
+    const { rerender } = render(
+      <SignalRail
+        mode="final"
+        response={null}
+        teams={TEAMS}
+        round={{
+          kind: PUBLIC_FINAL_KIND,
+          stage: 'resolution',
+          prompt: null,
+          answer: null,
+          reveal: null,
+          outcome: 'tied',
+        }}
+        revealedTeamName={null}
+      />,
+    )
+    expect(screen.getByTestId('signal-rail-status')).toHaveTextContent(/tied result/i)
+
+    rerender(
+      <SignalRail
+        mode="final"
+        response={null}
+        teams={TEAMS}
+        round={{ kind: PUBLIC_FINAL_KIND, stage: 'complete', outcome: 'tied' }}
+        revealedTeamName={null}
+      />,
+    )
+    expect(screen.getByTestId('signal-rail-status')).toHaveTextContent(/tied/i)
   })
 
   it('Final rail may show a currently revealed public team name', () => {
@@ -87,7 +188,7 @@ describe('SignalRail', () => {
         round={{
           kind: PUBLIC_FINAL_KIND,
           stage: 'team-reveal',
-          prompt: { kind: 'text', text: 'Q' },
+          prompt: PROMPT,
           answer: 'A',
           reveal: {
             teamKey: 't1',
@@ -96,10 +197,10 @@ describe('SignalRail', () => {
             settlement: null,
           },
         }}
-        finalStageLabel="Team reveal"
         revealedTeamName="Bravo"
       />,
     )
     expect(screen.getByTestId('signal-rail-revealed')).toHaveTextContent('Bravo')
+    expect(screen.queryByTestId('signal-rail-timer')).toBeNull()
   })
 })

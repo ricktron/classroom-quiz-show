@@ -265,6 +265,7 @@ test.describe('audience display scenes and privacy', () => {
     await expect(page.getByTestId('audience-lattice')).toBeVisible()
     await expect(page.getByTestId('cbd-board')).toHaveCount(0)
     await expect(page.getByTestId('signal-rail')).toHaveAttribute('data-mode', 'expanded')
+    await expect(page.getByTestId('nexus-timer')).toHaveAttribute('data-status', 'running')
     await expect(page.getByTestId('bqd-active')).toHaveText('Alpha')
     await expect(page.getByTestId('bqd-waiting')).toContainText('1 team waiting')
     await expect(page.getByTestId('signal-rail')).not.toContainText('Bravo')
@@ -346,6 +347,26 @@ test.describe('audience display scenes and privacy', () => {
       page,
       baseSnapshot({
         revision: 32,
+        round: {
+          kind: 'final',
+          stage: 'wager-entry',
+          timer: { status: 'running', durationMs: 60_000, deadline: Date.now() + 60_000 },
+        },
+        teams: {
+          status: 'available',
+          teams: [team('t0', 'Alpha', 'crimson', 200), team('t1', 'Bravo', 'azure', 50)],
+        },
+      }),
+    )
+    await expect(page.getByTestId('nexus-timer')).toHaveAttribute('data-status', 'running')
+    await expect(page.getByTestId('signal-rail-timer')).toBeVisible()
+    await expect(page.getByTestId('signal-rail-status')).toContainText(/final wager open/i)
+    await expect(page.getByTestId('fwd-timer')).toHaveCount(0)
+
+    await injectPublicState(
+      page,
+      baseSnapshot({
+        revision: 33,
         round: { kind: 'final', stage: 'complete', outcome: 'unique-leader' },
         teams: {
           status: 'available',
@@ -354,11 +375,12 @@ test.describe('audience display scenes and privacy', () => {
       }),
     )
     await expect(page.getByTestId('audience-result-unique')).toContainText('Alpha leads')
+    await expect(page.getByTestId('signal-rail-status')).toContainText(/game complete/i)
 
     await injectPublicState(
       page,
       baseSnapshot({
-        revision: 33,
+        revision: 34,
         round: { kind: 'final', stage: 'complete', outcome: 'tied' },
         teams: {
           status: 'available',
@@ -367,6 +389,40 @@ test.describe('audience display scenes and privacy', () => {
       }),
     )
     await expect(page.getByTestId('audience-result-tied')).toHaveText('Tied')
+    await expect(page.getByTestId('signal-rail-status')).toContainText(/tied/i)
+  })
+
+  test('scores unavailable is explicit; null teams omit the scoreboard', async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile-host', 'projector projects only')
+    await openDisplay(page)
+    await injectPublicState(
+      page,
+      baseSnapshot({
+        revision: 50,
+        round: boardRound(),
+        teams: { status: 'unavailable' },
+      }),
+    )
+    await expect(page.getByTestId('audience-shell')).toHaveAttribute(
+      'data-score-layout',
+      'unavailable',
+    )
+    await expect(page.getByTestId('tsb-unavailable')).toContainText(/scores unavailable/i)
+    await expect(page.getByTestId('cbd-board')).toBeVisible()
+    await expect(page.getByTestId('nexus-core')).toBeVisible()
+    await assertNoOverflow(page)
+
+    await injectPublicState(
+      page,
+      baseSnapshot({
+        revision: 51,
+        round: boardRound(),
+        teams: null,
+      }),
+    )
+    await expect(page.getByTestId('audience-shell')).toHaveAttribute('data-score-layout', 'none')
+    await expect(page.getByTestId('display-scores')).toHaveCount(0)
+    await expect(page.getByTestId('tsb-unavailable')).toHaveCount(0)
   })
 
   test('high-contrast board/Final, reduced motion, unavailable, zero controls', async ({

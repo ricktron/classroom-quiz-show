@@ -3,10 +3,14 @@
  *
  * Facts come only from sanitized public DTOs. Never shows queue order,
  * waiting-team identities, Final eligibility, or unrevealed content.
+ *
+ * Final stages that carry a public timer render the shared FinalCountdown
+ * as the primary countdown (Slice 18 R1).
  */
 
 import { BuzzQueueDisplay } from '../BuzzQueueDisplay'
 import { ResponseTimerDisplay } from '../ResponseTimerDisplay'
+import { FinalCountdown } from '../FinalWagerDisplay'
 import type {
   PublicFinalWagerState,
   PublicResponseState,
@@ -14,6 +18,7 @@ import type {
   PublicTeamsState,
 } from '../../state/publicState'
 import { PUBLIC_FINAL_KIND } from '../../state/publicState'
+import type { Clock } from '../../time/clock'
 import type { SignalRailMode } from './selectAudiencePresentation'
 
 export interface SignalRailProps {
@@ -22,10 +27,11 @@ export interface SignalRailProps {
   readonly teams: PublicTeamsState | null
   readonly round: PublicRoundState | null
   readonly hostClockOffsetMs?: number
-  readonly finalStageLabel: string | null
+  readonly clock?: Clock
   readonly revealedTeamName: string | null
 }
 
+/** Tie-aware Final rail status derived from the public Final DTO alone. */
 function finalRailStatus(round: PublicFinalWagerState): string {
   switch (round.stage) {
     case 'setup':
@@ -51,18 +57,26 @@ function finalRailStatus(round: PublicFinalWagerState): string {
   }
 }
 
+function finalPublicTimer(round: PublicFinalWagerState) {
+  if (round.stage === 'wager-entry' || round.stage === 'response-entry') {
+    return round.timer
+  }
+  return null
+}
+
 export function SignalRail({
   mode,
   response,
   teams,
   round,
   hostClockOffsetMs = 0,
-  finalStageLabel,
+  clock,
   revealedTeamName,
 }: SignalRailProps) {
   if (mode === 'hidden') return null
 
   if (mode === 'final' && round?.kind === PUBLIC_FINAL_KIND) {
+    const timer = finalPublicTimer(round)
     return (
       <aside
         className="signal-rail signal-rail--final"
@@ -71,12 +85,21 @@ export function SignalRail({
         aria-label="Final status"
       >
         <p className="signal-rail__status" data-testid="signal-rail-status">
-          {finalStageLabel ?? finalRailStatus(round)}
+          {finalRailStatus(round)}
         </p>
         {revealedTeamName !== null && (
           <p className="signal-rail__revealed" data-testid="signal-rail-revealed">
             {revealedTeamName}
           </p>
+        )}
+        {timer !== null && (
+          <FinalCountdown
+            timer={timer}
+            hostClockOffsetMs={hostClockOffsetMs}
+            clock={clock}
+            className="signal-rail__timer"
+            testId="signal-rail-timer"
+          />
         )}
       </aside>
     )
@@ -93,6 +116,7 @@ export function SignalRail({
         <ResponseTimerDisplay
           response={response}
           hostClockOffsetMs={hostClockOffsetMs}
+          clock={clock}
         />
         <BuzzQueueDisplay buzz={response.buzz} teams={teams} />
       </aside>
@@ -111,6 +135,7 @@ export function SignalRail({
           <ResponseTimerDisplay
             response={response}
             hostClockOffsetMs={hostClockOffsetMs}
+            clock={clock}
           />
           {response.buzz.status !== 'none' ? (
             <BuzzQueueDisplay buzz={response.buzz} teams={teams} />

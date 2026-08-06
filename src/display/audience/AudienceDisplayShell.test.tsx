@@ -157,6 +157,101 @@ describe('AudienceDisplayShell', () => {
     expect(screen.queryAllByRole('button')).toHaveLength(0)
   })
 
+  it('renders explicit Scores unavailable and keeps null teams scoreboard-free', () => {
+    const { rerender } = render(
+      <AudienceDisplayShell
+        publicState={state({
+          round: {
+            kind: PUBLIC_BOARD_KIND,
+            stage: 'board',
+            categories: [
+              {
+                key: 'c0',
+                title: 'Science',
+                tiles: [{ key: 'c0t0', value: 100, used: false }],
+              },
+            ],
+          },
+          teams: { status: 'unavailable' },
+        })}
+      />,
+    )
+    expect(screen.getByTestId('audience-shell')).toHaveAttribute(
+      'data-score-layout',
+      'unavailable',
+    )
+    expect(screen.getByTestId('tsb-unavailable')).toHaveTextContent(/scores unavailable/i)
+    expect(screen.getByTestId('cbd-board')).toBeInTheDocument()
+    expect(screen.queryByTestId(/tsb-team-/)).toBeNull()
+
+    rerender(
+      <AudienceDisplayShell
+        publicState={state({
+          round: {
+            kind: PUBLIC_BOARD_KIND,
+            stage: 'board',
+            categories: [
+              {
+                key: 'c0',
+                title: 'Science',
+                tiles: [{ key: 'c0t0', value: 100, used: false }],
+              },
+            ],
+          },
+          teams: null,
+        })}
+      />,
+    )
+    expect(screen.getByTestId('audience-shell')).toHaveAttribute('data-score-layout', 'none')
+    expect(screen.queryByTestId('display-scores')).toBeNull()
+    expect(screen.queryByTestId('tsb-unavailable')).toBeNull()
+  })
+
+  it('shows a Nexus timer for a public response timer and none without one', () => {
+    const { rerender } = render(
+      <AudienceDisplayShell
+        publicState={state({
+          round: {
+            kind: PUBLIC_BOARD_KIND,
+            stage: 'prompt',
+            selection: {
+              categoryTitle: 'Science',
+              value: 200,
+              prompt: { kind: 'text', text: 'Q?' },
+              answer: null,
+            },
+          },
+          teams: { status: 'available', teams: [team('t0', 'Alpha', 'crimson', 0)] },
+          response: {
+            armed: true,
+            timer: { status: 'running', durationMs: 15_000, deadline: Date.now() + 15_000 },
+            buzz: { status: 'none' },
+          },
+        })}
+      />,
+    )
+    expect(screen.getByTestId('nexus-timer')).toHaveAttribute('data-status', 'running')
+
+    rerender(
+      <AudienceDisplayShell
+        publicState={state({
+          round: {
+            kind: PUBLIC_FINAL_KIND,
+            stage: 'wager-entry',
+            timer: { status: 'running', durationMs: 60_000, deadline: Date.now() + 60_000 },
+          },
+          teams: { status: 'available', teams: [team('t0', 'Alpha', 'crimson', 0)] },
+          response: null,
+        })}
+      />,
+    )
+    expect(screen.getByTestId('nexus-timer')).toBeInTheDocument()
+    expect(screen.getByTestId('signal-rail-timer')).toBeInTheDocument()
+
+    rerender(<AudienceDisplayShell publicState={INITIAL_PUBLIC_STATE} />)
+    expect(screen.queryByTestId('nexus-timer')).toBeNull()
+  })
+
   it('uses Score Deck row-major order for eight teams', () => {
     const eight = Array.from({ length: 8 }, (_, i) =>
       team(`t${i}`, i === 7 ? LONG : `Team ${i}`, 'azure', 1000 - i),

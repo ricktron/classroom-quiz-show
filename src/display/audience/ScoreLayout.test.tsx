@@ -59,4 +59,11 @@ describe('ScoreLayout', () => {
     const { container } = render(<ScoreLayout teams={teams(1)} mode="none" />)
     expect(container).toBeEmptyDOMElement()
   })
+
+  it('renders the explicit Scores unavailable panel without inventing teams', () => {
+    render(<ScoreLayout teams={{ status: 'unavailable' }} mode="unavailable" />)
+    expect(screen.getByTestId('score-layout')).toHaveAttribute('data-mode', 'unavailable')
+    expect(screen.getByTestId('tsb-unavailable')).toHaveTextContent(/scores unavailable/i)
+    expect(screen.queryByTestId(/tsb-team-/)).toBeNull()
+  })
 })

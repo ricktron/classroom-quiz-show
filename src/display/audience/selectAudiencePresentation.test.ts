@@ -13,6 +13,8 @@ import {
 } from '../../state/publicState'
 import {
   selectAudiencePresentation,
+  selectPublicTimer,
+  selectScoreLayoutFromTeams,
   selectScoreLayoutMode,
   selectUniqueLeader,
 } from './selectAudiencePresentation'
@@ -360,7 +362,9 @@ describe('selectAudiencePresentation', () => {
     expect(presentation.signalRail).toBe('compact')
   })
 
-  it('maps teams null and teams unavailable to score layout none', () => {
+  it('maps teams null to none and teams unavailable to unavailable layout', () => {
+    expect(selectScoreLayoutFromTeams(null)).toBe('none')
+    expect(selectScoreLayoutFromTeams({ status: 'unavailable' })).toBe('unavailable')
     expect(
       selectAudiencePresentation(baseState({ round: OPEN_BOARD, teams: null })).scoreLayout,
     ).toBe('none')
@@ -368,7 +372,35 @@ describe('selectAudiencePresentation', () => {
       selectAudiencePresentation(
         baseState({ round: OPEN_BOARD, teams: { status: 'unavailable' } }),
       ).scoreLayout,
-    ).toBe('none')
+    ).toBe('unavailable')
+  })
+
+  it('selects public response and Final timers without fabricating others', () => {
+    const withResponse = baseState({
+      round: OPEN_BOARD,
+      response: {
+        armed: true,
+        timer: { status: 'paused', durationMs: 10_000, remainingMs: 4_000 },
+        buzz: { status: 'none' },
+      },
+    })
+    expect(selectPublicTimer(withResponse)?.status).toBe('paused')
+
+    const finalWager = baseState({
+      response: null,
+      round: {
+        kind: PUBLIC_FINAL_KIND,
+        stage: 'wager-entry',
+        timer: { status: 'running', durationMs: 60_000, deadline: Date.now() + 60_000 },
+      },
+    })
+    expect(selectPublicTimer(finalWager)?.status).toBe('running')
+
+    const finalLocked = baseState({
+      response: null,
+      round: { kind: PUBLIC_FINAL_KIND, stage: 'wagers-locked' },
+    })
+    expect(selectPublicTimer(finalLocked)).toBeNull()
   })
 
   it('produces public-safe Nexus labels without private titles or types', () => {

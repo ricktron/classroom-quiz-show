@@ -288,3 +288,85 @@ Single intentional retry on `mobile-host` reproduced the **same signature**. Not
 - **Draft:** no
 - **Auto-merge:** off (`null`)
 - **Merge / reconciliation:** still unauthorized; no merge SHA invented
+
+---
+
+# R1 — Nexus timer, Final rail timer, scores-unavailable repair
+
+**Authorization:** `AUTHORIZE-CQS-SLICE-18-PR46-R1-NEXUS-FINAL-TIMER-AND-SCORE-UNAVAILABLE-REPAIR-1`  
+**Evidence state:** `CQS-SLICE-18-PR46-R1-REPAIR-ES-1`  
+**Reviewed head H1:** `433b3973c100663254d0749d7f1df50700191d26`  
+**Authorized base (unchanged):** `6e29121d850cf4b4a4ba366c706225f208166f93`  
+**Host / user:** `Ricks-MacBook-Air.local` / `macdaddy`  
+**Local / UTC:** `Thu Aug 6 09:45:50 CDT 2026` / `Thu Aug 6 14:45:50 UTC 2026` (preflight)
+
+## Independent-review findings repaired
+
+| ID | Finding | Repair |
+| --- | --- | --- |
+| A | Nexus Core omitted all timer information | Compact public timer indicator from response or Final public timer |
+| B | Final Signal Rail omitted wager/response countdowns; `finalStageLabel` bypassed tie-aware rail status | Shared `FinalCountdown` on Final rail; always use `finalRailStatus(round)`; remove duplicate leaf countdown |
+| C | `teams.status === 'unavailable'` silently used score layout `none` | Explicit `unavailable` score layout mounting `TeamScoreboard` → `Scores unavailable` |
+
+## Exact repair paths
+
+```text
+src/display/FinalWagerDisplay.tsx
+src/display/FinalWagerDisplay.test.tsx
+src/display/audience/selectAudiencePresentation.ts
+src/display/audience/selectAudiencePresentation.test.ts
+src/display/audience/AudienceDisplayShell.tsx
+src/display/audience/AudienceDisplayShell.css
+src/display/audience/AudienceDisplayShell.test.tsx
+src/display/audience/NexusCore.tsx
+src/display/audience/NexusCore.test.tsx
+src/display/audience/ScoreLayout.tsx
+src/display/audience/ScoreLayout.test.tsx
+src/display/audience/SignalRail.tsx
+src/display/audience/SignalRail.test.tsx
+tests/e2e/audience-display.spec.ts
+docs/receipts/2026-08-06-slice-18-audience-display-local-verification.md
+```
+
+`src/routes/**` verified identical to H1 (`git diff --exit-code H1 -- src/routes`).
+
+## Repair design
+
+1. **Nexus timer:** `selectPublicTimer(state)` returns response timer or Final `wager-entry`/`response-entry` timer. Nexus renders compact status words (+ digits when not idle). Absent when no public timer. No timer ID / interruption source / authority.
+2. **Final rail timer:** Export `FinalCountdown` from `FinalWagerDisplay`; Final Signal Rail owns primary countdown; Final leaf no longer duplicates it. Rail status always from `finalRailStatus(round)` (tie-safe for resolution/complete).
+3. **Scores unavailable:** `ScoreLayoutMode` gains `unavailable`; shell mounts `TeamScoreboard` unavailable panel; `teams === null` remains no scoreboard; no Column/Strip/Deck invented.
+
+## Focused test results
+
+- Audience + FinalWagerDisplay focused Vitest: **57 passed**
+- Audience Playwright 1080p+720p: **12 passed**, **4 skipped**, **0 failed**
+
+## Full verification results
+
+| Check | Result |
+| --- | --- |
+| `git diff --check` | passed |
+| `npm run verify` | passed — **2126** passed / **1** skipped; lint 0 errors (inherited ThemeProvider warnings) |
+| `npm run verify:all` | **308 passed** / **14 skipped** / **6 did not run** / **2 failed** — both failures are the inherited Final mid-refresh signature on `projector-720p` and `mobile-host` (`Saved: 100` / `Not saved yet`). `desktop-1080p` instance of the same test **passed**. Signature matches inherited flake; not claimed fixed; not R1-causal. Local retries: **0**. |
+
+## New exact head H2
+
+_Recorded after push as the PR tip containing this R1 section._
+
+## Contract versions (unchanged)
+
+Public wire **8**; sync **2**; game schema **1**; GameDefinition **1**; private active-session wire **1**; IndexedDB **2**; summary contracts unchanged. No sanitizer/private-import/command/event/reducer/replay/scoring/timer-authority/buzz-authority/Final-authority/dependency/status-doc changes.
+
+## Remaining inherited limitations
+
+- Final mid-refresh recovery flake
+- ThemeProvider react-refresh warnings
+- Vite large-chunk warning; deprecated `glob@11.1.0`
+- Merge / reconciliation still unauthorized
+
+## Explicit non-performance (R1)
+
+- No merge; auto-merge remains off
+- No new branch/PR; no rebase onto changed `main`
+- No branch/worktree deletion
+- No Slice 19–22 work

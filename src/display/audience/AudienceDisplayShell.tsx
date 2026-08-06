@@ -15,7 +15,10 @@ import {
 import { NexusCore } from './NexusCore'
 import { ScoreLayout } from './ScoreLayout'
 import { SignalRail } from './SignalRail'
-import { selectAudiencePresentation } from './selectAudiencePresentation'
+import {
+  selectAudiencePresentation,
+  selectPublicTimer,
+} from './selectAudiencePresentation'
 import './AudienceDisplayShell.css'
 
 /** Neutral public-safe game line preserved for existing projector contracts. */
@@ -91,6 +94,17 @@ export function AudienceDisplayShell({
     teamsInAuthoredOrder,
   )
   const leaderKey = finalResult?.leaderTeamKey ?? null
+  const publicTimer = selectPublicTimer(publicState)
+
+  const scoresRegion =
+    publicState.teams !== null && scoreLayout !== 'none' ? (
+      <div
+        className={`audience__scores audience__scores--${scoreLayout}`}
+        data-testid="display-scores"
+      >
+        <ScoreLayout teams={publicState.teams} mode={scoreLayout} />
+      </div>
+    ) : null
 
   return (
     <div
@@ -131,18 +145,15 @@ export function AudienceDisplayShell({
             {describeGame(publicState.game)}
           </p>
         )}
-        <NexusCore nexus={nexus} />
+        <NexusCore
+          nexus={nexus}
+          timer={publicTimer}
+          hostClockOffsetMs={hostClockOffsetMs}
+        />
       </header>
 
       <div className="audience__body">
-        {scoreLayout === 'column' && publicState.teams && (
-          <aside
-            className="audience__scores audience__scores--column"
-            data-testid="display-scores"
-          >
-            <ScoreLayout teams={publicState.teams} mode={scoreLayout} />
-          </aside>
-        )}
+        {scoreLayout === 'column' && scoresRegion}
 
         <div className="audience__primary" data-testid="audience-primary">
           {showDecorativeLattice && <DecorativeLattice />}
@@ -209,7 +220,6 @@ export function AudienceDisplayShell({
               teams={publicState.teams}
               round={publicState.round}
               hostClockOffsetMs={hostClockOffsetMs}
-              finalStageLabel={nexus.stageLabel}
               revealedTeamName={finalRevealedName}
             />
           </div>
@@ -222,21 +232,16 @@ export function AudienceDisplayShell({
                 teams={publicState.teams}
                 round={publicState.round}
                 hostClockOffsetMs={hostClockOffsetMs}
-                finalStageLabel={nexus.stageLabel}
                 revealedTeamName={finalRevealedName}
               />
             </div>
           )
         )}
 
-        {(scoreLayout === 'strip' || scoreLayout === 'deck') && publicState.teams && (
-          <div
-            className={`audience__scores audience__scores--${scoreLayout}`}
-            data-testid="display-scores"
-          >
-            <ScoreLayout teams={publicState.teams} mode={scoreLayout} />
-          </div>
-        )}
+        {(scoreLayout === 'strip' ||
+          scoreLayout === 'deck' ||
+          scoreLayout === 'unavailable') &&
+          scoresRegion}
       </footer>
     </div>
   )

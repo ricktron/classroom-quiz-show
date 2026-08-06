@@ -19,6 +19,7 @@ import {
   type PublicFinalWagerState,
   type PublicGameView,
   type PublicResponseState,
+  type PublicResponseTimer,
   type PublicState,
   type PublicTeam,
   type PublicTeamsState,
@@ -37,8 +38,13 @@ export type AudienceScene =
   | 'complete'
   | 'neutral'
 
-/** Adaptive score region mode selected from public team count alone. */
-export type ScoreLayoutMode = 'none' | 'column' | 'strip' | 'deck'
+/**
+ * Adaptive score region mode.
+ * - `none` — teams are null (no scoreboard at all)
+ * - `unavailable` — public scores are explicitly unavailable (neutral panel)
+ * - column / strip / deck — available teams by count
+ */
+export type ScoreLayoutMode = 'none' | 'unavailable' | 'column' | 'strip' | 'deck'
 
 /** Signal Rail mode. Exactly one is active at a time. */
 export type SignalRailMode = 'compact' | 'expanded' | 'final' | 'hidden'
@@ -124,6 +130,28 @@ export function selectScoreLayoutMode(teamCount: number): ScoreLayoutMode {
   if (teamCount <= 4) return 'column'
   if (teamCount <= 6) return 'strip'
   return 'deck'
+}
+
+/**
+ * Public timer for Nexus / rail indication: response timer when present,
+ * otherwise Final wager-entry / response-entry timer. Never fabricates a timer.
+ */
+export function selectPublicTimer(state: PublicState): PublicResponseTimer | null {
+  if (state.response !== null) return state.response.timer
+  const round = state.round
+  if (round?.kind === PUBLIC_FINAL_KIND) {
+    if (round.stage === 'wager-entry' || round.stage === 'response-entry') {
+      return round.timer
+    }
+  }
+  return null
+}
+
+/** Resolve score layout from public teams DTO (null vs unavailable vs available). */
+export function selectScoreLayoutFromTeams(teams: PublicTeamsState | null): ScoreLayoutMode {
+  if (teams === null) return 'none'
+  if (teams.status === 'unavailable') return 'unavailable'
+  return selectScoreLayoutMode(teams.teams.length)
 }
 
 function deriveBoardDepletion(
@@ -340,7 +368,7 @@ function nexusFor(
  */
 export function selectAudiencePresentation(state: PublicState): AudiencePresentation {
   const teams = teamsList(state.teams)
-  const scoreLayout = selectScoreLayoutMode(teams?.length ?? 0)
+  const scoreLayoutResolved = selectScoreLayoutFromTeams(state.teams)
   const { activeTeamName, waitingCount } = responseActiveTeam(state.response, state.teams)
 
   // Fail-closed / unavailable top-level shapes.
@@ -348,7 +376,7 @@ export function selectAudiencePresentation(state: PublicState): AudiencePresenta
     return {
       scene: 'unavailable',
       nexus: nexusFor('This round is not available yet', state.game, state.detail),
-      scoreLayout,
+      scoreLayout: scoreLayoutResolved,
       signalRail: 'compact',
       activeTeamName,
       waitingCount,
@@ -360,17 +388,6 @@ export function selectAudiencePresentation(state: PublicState): AudiencePresenta
       teamsInAuthoredOrder: teams,
     }
   }
-
-  if (state.teams?.status === 'unavailable') {
-    // Scores unavailable is still a valid public state; continue with layout none.
-  }
-
-  const scoreLayoutResolved =
-    state.teams === null
-      ? 'none'
-      : state.teams.status === 'unavailable'
-        ? 'none'
-        : scoreLayout
 
   if (state.game?.status === 'ended' && state.round === null) {
     return {

@@ -59,35 +59,46 @@ const WINDOW_LABEL = {
   interrupted: 'Stopped',
 } as const
 
+export interface FinalCountdownProps {
+  readonly timer: PublicResponseTimer
+  readonly hostClockOffsetMs?: number
+  readonly clock?: Clock
+  /** Optional class prefix; defaults to Final leaf styling (`fwd__timer`). */
+  readonly className?: string
+  /** Optional test id root; defaults to `fwd-timer`. */
+  readonly testId?: string
+}
+
 /**
  * The Final countdown, derived locally from the published deadline exactly as the
  * board's timer is — no tick stream, no authority. Reaching 0:00 expires nothing;
  * it shows 0:00 until the host publishes that the window ended.
+ *
+ * Exported so the Final Signal Rail can own the primary countdown without
+ * reimplementing duration, urgency, or clock-offset logic (Slice 18 R1).
  */
-function FinalCountdown({
+export function FinalCountdown({
   timer,
-  hostClockOffsetMs,
+  hostClockOffsetMs = 0,
   clock,
-}: {
-  readonly timer: PublicResponseTimer
-  readonly hostClockOffsetMs: number
-  readonly clock?: Clock
-}) {
+  className = 'fwd__timer',
+  testId = 'fwd-timer',
+}: FinalCountdownProps) {
   const remainingMs = useResponseCountdown(timer, hostClockOffsetMs, clock)
   if (timer.status === 'idle') return null
   const urgent = timer.status === 'running' && remainingMs <= URGENT_THRESHOLD_MS
   return (
     <div
-      className={`fwd__timer fwd__timer--${timer.status}${urgent ? ' fwd__timer--urgent' : ''}`}
-      data-testid="fwd-timer"
+      className={`${className} ${className}--${timer.status}${urgent ? ` ${className}--urgent` : ''}`}
+      data-testid={testId}
       data-status={timer.status}
     >
-      <p className="fwd__timer-status" data-testid="fwd-timer-status">
+      <p className={`${className}-status`} data-testid={`${testId}-status`}>
         {WINDOW_LABEL[timer.status]}
       </p>
       <p
-        className="fwd__timer-clock"
-        data-testid="fwd-timer-clock"
+        className={`${className}-clock`}
+        data-testid={`${testId}-clock`}
         role="timer"
         aria-label={`${WINDOW_LABEL[timer.status]}: ${describeRemaining(remainingMs)}`}
       >
@@ -171,9 +182,12 @@ function RevealPanel({
 export function FinalWagerDisplay({
   round,
   teams,
-  hostClockOffsetMs = 0,
-  clock,
+  // Clock props retained for API compatibility; primary countdown is on the Final Signal Rail.
+  hostClockOffsetMs: _hostClockOffsetMs = 0,
+  clock: _clock,
 }: FinalWagerDisplayProps) {
+  void _hostClockOffsetMs
+  void _clock
   if (round.kind !== PUBLIC_FINAL_KIND) return <Unavailable />
 
   const heading = (
@@ -196,11 +210,10 @@ export function FinalWagerDisplay({
         <div className="fwd" data-testid="fwd-wager-entry">
           {heading}
           <p className="fwd__status">Place your wagers</p>
-          <FinalCountdown
-            timer={round.timer}
-            hostClockOffsetMs={hostClockOffsetMs}
-            clock={clock}
-          />
+          {/*
+            Primary Final countdown lives on the Final Signal Rail (Slice 18 R1)
+            so the scene and rail do not compete with identical clocks.
+          */}
         </div>
       )
 
@@ -219,11 +232,7 @@ export function FinalWagerDisplay({
           <div className="fwd__prompt" data-testid="fwd-prompt">
             <MediaContentDisplay content={round.prompt} />
           </div>
-          <FinalCountdown
-            timer={round.timer}
-            hostClockOffsetMs={hostClockOffsetMs}
-            clock={clock}
-          />
+          {/* Primary Final countdown: Final Signal Rail (Slice 18 R1). */}
         </div>
       )
 
