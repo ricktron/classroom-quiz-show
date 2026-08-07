@@ -460,12 +460,43 @@ delivery. See
 [`docs/receipts/2026-08-05-slice-17-theme-tokens-local-verification.md`](docs/receipts/2026-08-05-slice-17-theme-tokens-local-verification.md),
 and
 [`docs/receipts/2026-08-05-slice-17-post-merge-reconciliation.md`](docs/receipts/2026-08-05-slice-17-post-merge-reconciliation.md).
-**PR #44 requires no further review or merge action.** Slices 1–17 are Complete.
-Slices 18–22 remain Planned and unauthorized under the **22-slice** MVP plan
+**PR #44 requires no further review or merge action.**
+**Slice 18 — Audience Display System. Complete** — squash-merged via PR
+[#46](https://github.com/ricktron/classroom-quiz-show/pull/46) at
+`91c7708626caeaa28b15617a1f0938f4944f7680` (merged **2026-08-07T01:41:48Z**)
+from reviewed head `bd946f323f381931f706d3a2ff3957d911b5c696` (authorized base
+and squash sole parent `6e29121d850cf4b4a4ba366c706225f208166f93`).
+Reviewed-head and squash trees are identical
+(`bc95d77efc15e3f63a3ea15c397df53e904767fc`) and the direct diff between them is
+empty (**exactly 22** paths). It delivers the accepted Phase 2B audience-display
+composition on existing public-state wire **8**: board-first public audience
+shell, Slice 17 theme/token presentation, Nexus Core (with compact public timer
+indicator after R1), adaptive Score Column / Strip / Deck, compact / expanded /
+Final Signal Rails (Final Signal Rail owns the primary Final countdown with
+tie-safe rail status after R1), quiet-cognition versus louder-consequence
+presentation, living-board composition, Final-specific presentation, and
+fail-closed `Scores unavailable` when public team state is unavailable — with
+public-only audience rendering and privacy tests. **No** game-authority,
+sanitizer, command/event/reducer, schema, public-wire, sync, persistence,
+package, dependency, workflow, or deployment change. Public wire remains **8**;
+sync **2**; game-file schema **1**; GameDefinition model **1**; private
+active-session wire **1**; IndexedDB **2**; Session Summary **1**;
+completed-summary envelope **1**; competitive profile **1**. Post-merge CI,
+SonarCloud, and Pages were green on the squash; Playwright concluded
+**313 passed** / **14 skipped** / **3 flaky** (inherited Final mid-refresh
+`Saved: 100` / `Not saved yet` retry-resolved; unresolved and not claimed
+repaired by Slice 18). No physical-projector or live-route certification is
+claimed from that merge verification. See
+[`docs/plans/CQS-DESIGN-PHASE-2B-DIRECTION.md`](docs/plans/CQS-DESIGN-PHASE-2B-DIRECTION.md),
+[`docs/receipts/2026-08-06-slice-18-audience-display-local-verification.md`](docs/receipts/2026-08-06-slice-18-audience-display-local-verification.md),
+and
+[`docs/receipts/2026-08-06-slice-18-post-merge-reconciliation.md`](docs/receipts/2026-08-06-slice-18-post-merge-reconciliation.md).
+**PR #46 requires no further review or merge action.** Slices 1–18 are Complete.
+Slices 19–22 remain Planned and unauthorized under the **22-slice** MVP plan
 ([`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
-The next safe action is a separately authorized Slice 18 Audience Display System
-Orchestrator. The inherited Final mid-refresh recovery flake remains unresolved;
-`CQS-OD-066` remains unresolved.
+The next planned product frontier is Slice 19 — Self-Contained Portable Packs,
+which remains separately unauthorized. The inherited Final mid-refresh recovery
+flake remains unresolved; `CQS-OD-066` remains unresolved.
 
 > ⚠️ **Sony Buzz physical certification is bounded, not a supported-hardware
 > list.** OADL2-S07 completed physical certification for one exact tested
@@ -506,7 +537,10 @@ hardware-independent implementation boundary. Bounded physical certification is
 recorded separately under OADL2-S07; it does not establish a generalized
 compatibility claim. Permanent supported-profile operationalization remains
 Slice 21 work. No WebHID or Bluetooth of any kind, no networked or
-student-device buzzing, and no wagers, audio/video/remote media, or themes.
+student-device buzzing, and no audio/video/remote media or content-defined
+themes. The projector display is the Slice 18 board-first audience composition
+(not the pre-Phase-2B vertical stack), still consuming only sanitized public
+state on wire **8**.
 The host has local IndexedDB persistence for the active event history and a saved
 definitions library: after a refresh with an unfinished session, the teacher gets
 an explicit **Resume session** or **Discard recovery** choice, and saved

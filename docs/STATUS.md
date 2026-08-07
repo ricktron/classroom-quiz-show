@@ -1,7 +1,46 @@
 # Status
 
-**Current completed product slice:** Slice 17 — Theme and Design-Token
-Foundation
+**Current completed product slice:** Slice 18 — Audience Display System
+**Slice 18 state:** **Complete** — PR
+[#46](https://github.com/ricktron/classroom-quiz-show/pull/46) was squash-merged
+at `91c7708626caeaa28b15617a1f0938f4944f7680` (merged
+**2026-08-07T01:41:48Z**) from final reviewed head
+`bd946f323f381931f706d3a2ff3957d911b5c696` (authorized base
+`6e29121d850cf4b4a4ba366c706225f208166f93`, the squash commit's **sole**
+parent). Reviewed-head and squash trees are identical
+(`bc95d77efc15e3f63a3ea15c397df53e904767fc`) and the direct diff between them is
+empty (**exactly 22** paths). The delivery implements the accepted Phase 2B
+audience-display composition on existing public-state wire **8** without
+expanding it: board-first public audience shell under the Slice 17 theme/token
+foundation; Nexus Core with compact public timer indicator (R1); adaptive Score
+Column / Strip / Deck; compact / expanded / Final Signal Rails with Final Signal
+Rail ownership of the primary Final countdown and tie-safe rail status (R1);
+quiet-cognition versus louder-consequence presentation; living-board composition;
+Final-specific presentation; fail-closed `Scores unavailable` when public team
+status is `unavailable` (R1); and public-only audience rendering with privacy
+tests. **No** private-state import in audience production code; no sanitizer
+expansion; no command/event/reducer, game-authority, persistence, package,
+dependency, workflow, or deployment change; no new ADR. Public-state wire remains
+**8**; sync envelope **2**; canonical game-file schema **1**; GameDefinition
+model **1**; private active-session wire **1**; IndexedDB schema **2**; Session
+Summary contract **1**; completed-summary envelope **1**; competitive profile
+**1**. Post-merge CI run `31138847378` **success** (lint/typecheck/unit/build
+`92744217239` **success** — **110** test files / **2126** passed / **1**
+skipped; Playwright `92744217248` **success** — **313** passed / **14** skipped
+/ **3** flaky / **0** terminal failures); SonarCloud check `92746422985`
+**success** (Quality Gate passed; dashboard branch label was a historical-looking
+quirk — the GitHub check-run was bound to squash `91c7708…`); Pages run
+`31138847376` **success** (build `92744216668`, deploy `92744302090`,
+deployment `5787310456`, status `16468338818`, SHA `91c7708…`). The three flaky
+cases were the inherited Final mid-refresh signature
+(`Saved: 100` / `Not saved yet`) on `desktop-1080p`, `projector-720p`, and
+`mobile-host`, each retry-resolved on retry #1; the flake remains unresolved and
+is not claimed repaired by Slice 18. No live-route or physical-projector
+verification was performed in post-merge verification. See
+[`plans/CQS-DESIGN-PHASE-2B-DIRECTION.md`](plans/CQS-DESIGN-PHASE-2B-DIRECTION.md),
+[`receipts/2026-08-06-slice-18-audience-display-local-verification.md`](receipts/2026-08-06-slice-18-audience-display-local-verification.md),
+and
+[`receipts/2026-08-06-slice-18-post-merge-reconciliation.md`](receipts/2026-08-06-slice-18-post-merge-reconciliation.md).
 **Slice 17 state:** **Complete** — PR
 [#44](https://github.com/ricktron/classroom-quiz-show/pull/44) was squash-merged
 at `dee2f3c219f9e60113a374ce0ec876ae20c40bc1` (merged
@@ -99,33 +138,34 @@ wire and IndexedDB schema all remain **1**; no dependency added. See
 [`architecture/ADR-014-final-wager-round.md`](architecture/ADR-014-final-wager-round.md)
 and
 [`receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
-**Previous slice:** Slice 16 — Completed Summary Ledger & Compatible Reporting
-(`Complete`, squash-merged via PR #40 at `bc3cea65…`; reconciliation PR #41 at
-`3ee239a…`)
-**Current delivery frontier:** Slice 17 product implementation is **`Complete`**
-on `main` via PR [#44](https://github.com/ricktron/classroom-quiz-show/pull/44)
-squash `dee2f3c219f9e60113a374ce0ec876ae20c40bc1` (merged
-**2026-08-05T23:48:51Z**) from reviewed head
-`3214185ac750be8a9ab1ad170ff3c9d1c7f9f5a4`; sole parent
-`6b908d577a588a68f06775a6511e1da3aacc33f3`; trees identical at
-`ae727b3afd258532043269e60bfe49a9b64a07bb`; direct head-to-squash diff empty;
-exactly **39** paths. After this reconciliation content is on `main`, Slice 17
-is terminally complete — no further Slice 17 delivery, repair, merge,
-reconciliation, registration, or canonicalization lane is owed. Slice 16 remains
-`Complete` (PR #40 / #41; ADR-016 **Accepted**). At this frontier, IndexedDB
-schema is **2**; public-state wire **8**, sync envelope **2**; canonical
-game-file schema **1**, GameDefinition model **1**, private active-session wire
-**1**, Session Summary contract **1**, completed-summary envelope **1**, and
-competitive profile **1** — all unchanged by Slice 17.
+**Previous slice:** Slice 17 — Theme and Design-Token Foundation (`Complete`,
+squash-merged via PR #44 at `dee2f3c…`; reconciliation PR #45)
+**Current delivery frontier:** Slice 18 product implementation is **`Complete`**
+on `main` via PR [#46](https://github.com/ricktron/classroom-quiz-show/pull/46)
+squash `91c7708626caeaa28b15617a1f0938f4944f7680` (merged
+**2026-08-07T01:41:48Z**) from reviewed head
+`bd946f323f381931f706d3a2ff3957d911b5c696`; sole parent
+`6e29121d850cf4b4a4ba366c706225f208166f93`; trees identical at
+`bc95d77efc15e3f63a3ea15c397df53e904767fc`; direct head-to-squash diff empty;
+exactly **22** paths. After this reconciliation content is on `main`, Slice 18
+is terminally complete — no further Slice 18 delivery, repair, merge,
+reconciliation, registration, or canonicalization lane is owed. Slice 17 remains
+terminally `Complete` (PR #44 / #45). At this frontier, IndexedDB schema is
+**2**; public-state wire **8**, sync envelope **2**; canonical game-file schema
+**1**, GameDefinition model **1**, private active-session wire **1**, Session
+Summary contract **1**, completed-summary envelope **1**, and competitive
+profile **1** — all unchanged by Slice 18. Slice 19 — Self-Contained Portable
+Packs is the next planned product frontier and remains separately unauthorized.
 **Roadmap:** **22 slices**, amended 2026-08-03 by
 [`decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
 (`CQS-PLAN-S02`; documentation-only). Prior amendment
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
-grew the plan from 11 to 18 slices (PR #13, `752a3fe`, 2026-07-26). Slices 1–17
-are `Complete`; Slices 18–22 remain `Planned` and unauthorized for
-implementation. Phase 3 design-system readiness was satisfied before Slice 17
-and has been consumed by completed Slice 17 delivery; post-MVP arcs remain
-inactive; `CQS-OD-066` remains unresolved.
+grew the plan from 11 to 18 slices (PR #13, `752a3fe`, 2026-07-26). Slices 1–18
+are `Complete`; Slices 19–22 remain `Planned` and unauthorized for
+implementation. Phase 2B’s MVP consumers (Slices 17–18) are both `Complete`;
+Phase 3 design-system readiness has served the theme-foundation →
+audience-display sequence; post-MVP arcs remain inactive; `CQS-OD-066` remains
+unresolved; the inherited Final mid-refresh recovery flake remains unresolved.
 
 ## Slice 14 work (Complete)
 
@@ -321,23 +361,25 @@ delivery evidence is
 | Changed paths | 7, documentation-only |
 | Runtime / schema / public wire / test / asset / dependency change | **None** |
 | `CQS-OD-*` added or changed | **None** |
-| Implementation authorized | **None** — Phase 3 and Slices 17–18 all remain unauthorized |
+| Implementation authorized by registration | **None** — registration alone never authorized Phase 3 or Slices 17–18 |
 
-What the acceptance means: the direction is accepted as intended **future**
-audience-display guidance; **the design is not implemented**; the representative
-artifacts are **evidence, not application source**; **Phase 3 is not authorized**;
-**Slices 17–18 are not authorized**; and **no production, projector, accessibility, or
-Raspberry Pi acceptance exists**. No artifact bytes were committed and no
-artifact hash or path is asserted.
+What the acceptance meant **at registration time** (preserved): the direction is
+accepted as audience-display guidance; **at registration** the design was not
+yet implemented; the representative artifacts are **evidence, not application
+source**; **registration alone** did not authorize Phase 3 or Slices 17–18; and
+**no production, projector, accessibility, or Raspberry Pi acceptance** was
+created by registration. No artifact bytes were committed and no artifact hash
+or path is asserted.
 
 > The Phase 2B design direction was accepted after bounded artifact repair. The
 > artifact maintainer reported successful final package verification. The final
 > corrected ZIP was not independently reopened by the Program Orchestrator, so no
 > independent second checksum audit is claimed.
 
-**Routing after Amendment 003:** MVP implementation consumers of Phase 2B are
+**Current routing:** MVP implementation consumers of Phase 2B are
 **Slice 17 — Theme and Design-Token Foundation** (`Complete` via PR #44) and
-**Slice 18 — Audience Display System** (`Planned`, unauthorized).
+**Slice 18 — Audience Display System** (`Complete` via PR #46). Both consumers
+are complete; Phase 2B remains a design/planning lineage, not a numbered slice.
 
 ## Phase 3 design-system readiness — documentation dependency
 
@@ -352,11 +394,14 @@ This Phase 3 design-system readiness dependency was **satisfied** when the
 specification landed on `main` (implementation base
 `6b908d577a588a68f06775a6511e1da3aacc33f3`) and has now been **consumed** by
 completed Slice 17 delivery via PR
-[#44](https://github.com/ricktron/classroom-quiz-show/pull/44). The readiness
+[#44](https://github.com/ricktron/classroom-quiz-show/pull/44) and subsequent
+Slice 18 audience-display composition via PR
+[#46](https://github.com/ricktron/classroom-quiz-show/pull/46). The readiness
 contract defined the Slice 17 token/theme architecture (hybrid typed registry +
 CSS custom properties; closed IDs `default` / `high-contrast`; session-local
 selection; no schema/wire/storage theme field). Slice 17 implementation matched
-that binding architecture and preserved every stated boundary.
+that binding architecture and preserved every stated boundary; Slice 18 consumed
+that foundation without changing those boundaries.
 
 **Preserved boundaries and limitations:** public-state wire **8**; sync
 envelope **2**; game-file schema **1**; GameDefinition model **1**; private
@@ -366,9 +411,9 @@ inherited Final mid-refresh recovery flake remains unresolved. `CQS-OD-066`
 remains unresolved. No physical-projector, accessibility, WCAG, or Raspberry Pi
 certification is claimed. No ADR was warranted.
 
-**Next action:** separately authorized Slice 18 Audience Display System
-Orchestrator. No further Phase 3 readiness registration or Slice 17 product lane
-is owed after this reconciliation content is on `main`.
+**Next action:** separately authorized Slice 19 — Self-Contained Portable Packs
+lane. No further Phase 3 readiness registration, Slice 17, or Slice 18 product
+lane is owed after this reconciliation content is on `main`.
 
 ## Remaining-MVP rebalance planning (CQS-PLAN-S02) — Complete
 
@@ -447,10 +492,10 @@ was squash-merged via PR
 or merge action.** The Slice 16 PR #41 post-merge canonicalization recorded in
 [`receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md`](receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md)
 closes the remaining stale-routing defect. Phase 3 design-system readiness was
-satisfied and then consumed by completed Slice 17 (PR #44). The next safe action
-is separately authorized Slice 18 orchestration — not further review of PR #36,
-PR #38, PR #40, PR #41, or PR #44, and not Slice 18 implementation from this
-surface alone.
+satisfied and then consumed by completed Slices 17–18 (PR #44, PR #46). The next
+safe action is separately authorized Slice 19 orchestration — not further review
+of PR #36, PR #38, PR #40, PR #41, PR #44, or PR #46, and not Slice 19
+implementation from this surface alone.
 
 ## Slice 14 merge evidence
 
@@ -1546,7 +1591,8 @@ merge and post-merge evidence in
 | Inherited Final mid-refresh recovery flake | **Unresolved** (not caused/worsened by Slice 15) |
 | Slice 16 ledger | **Complete** via PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) at `bc3cea65…` |
 | Slice 17 theme/tokens | **Complete** via PR [#44](https://github.com/ricktron/classroom-quiz-show/pull/44) at `dee2f3c…` |
-| Slice 18+, post-MVP arcs, `CQS-OD-066` | **Unauthorized / inactive / unresolved** |
+| Slice 18 audience display | **Complete** via PR [#46](https://github.com/ricktron/classroom-quiz-show/pull/46) at `91c7708…` |
+| Slice 19+, post-MVP arcs, `CQS-OD-066` | **Unauthorized / inactive / unresolved** |
 
 ## Slice 16 work (Complete)
 
@@ -1597,24 +1643,67 @@ post-merge reconciliation receipt:
 | Inherited Final mid-refresh recovery flake | **Not claimed repaired** |
 | Implementation source branch deleted | **Not claimed** (still present at review time) |
 
+## Slice 18 work (Complete)
+
+Accepted Phase 2B **Audience Display System** on public-state wire **8**. Local
+evidence:
+[`receipts/2026-08-06-slice-18-audience-display-local-verification.md`](receipts/2026-08-06-slice-18-audience-display-local-verification.md);
+post-merge reconciliation:
+[`receipts/2026-08-06-slice-18-post-merge-reconciliation.md`](receipts/2026-08-06-slice-18-post-merge-reconciliation.md).
+
+### Slice 18 merge evidence
+
+| Fact | Value |
+| --- | --- |
+| PR | [#46](https://github.com/ricktron/classroom-quiz-show/pull/46) (merged and closed) |
+| Authorized base / sole squash parent | `6e29121d850cf4b4a4ba366c706225f208166f93` |
+| Final reviewed head (includes R1 repairs) | `bd946f323f381931f706d3a2ff3957d911b5c696` |
+| Squash commit | `91c7708626caeaa28b15617a1f0938f4944f7680` |
+| Merged | **2026-08-07T01:41:48Z** |
+| Reviewed-head / squash tree | identical (`bc95d77efc15e3f63a3ea15c397df53e904767fc`); direct diff empty |
+| Landed paths | exactly **22** |
+| Post-merge CI | run `31138847378` — **success** (jobs `92744217239`, `92744217248`) |
+| Unit totals (post-merge) | **110** files; **2126** passed / **1** skipped |
+| Playwright (post-merge) | **313** passed / **14** skipped / **3** flaky / **0** terminal failures |
+| Post-merge Sonar | check `92746422985` — **success**; Quality Gate **passed** |
+| Post-merge Pages | run `31138847376` — **success**; deployment `5787310456` state **success** |
+| Source branch | `feat/slice-18-audience-display` preserved at reviewed head |
+
+| Item | State |
+| --- | --- |
+| Board-first public audience composition | Implemented |
+| Slice 17 theme/token foundation consumed for presentation | Implemented |
+| Nexus Core + compact public timer indicator (R1) | Implemented |
+| Adaptive Score Column / Strip / Deck | Implemented |
+| Compact / expanded / Final Signal Rails | Implemented |
+| Final Signal Rail owns primary Final countdown; tie-safe status (R1) | Implemented |
+| Quiet cognition vs louder consequence presentation | Implemented |
+| Living-board / Final-specific presentation | Implemented |
+| Fail-closed `Scores unavailable` for public team `unavailable` (R1) | Implemented |
+| Public-only audience rendering + privacy tests | Proven by tests |
+| Public-state wire / sync / schemas / persistence / packages | **Unchanged** |
+| Inherited Final mid-refresh recovery flake | **Unresolved** (not claimed repaired) |
+| Physical projector / live-route certification | **Not claimed** |
+
 ## Next safe action
 
-**Slice 17 — Theme and Design-Token Foundation is `Complete` and merged**
-(implementation PR [#44](https://github.com/ricktron/classroom-quiz-show/pull/44)
-at `dee2f3c219f9e60113a374ce0ec876ae20c40bc1` from reviewed head
-`3214185ac750be8a9ab1ad170ff3c9d1c7f9f5a4`). **PR #44 requires no further review
+**Slice 18 — Audience Display System is `Complete` and merged**
+(implementation PR [#46](https://github.com/ricktron/classroom-quiz-show/pull/46)
+at `91c7708626caeaa28b15617a1f0938f4944f7680` from reviewed head
+`bd946f323f381931f706d3a2ff3957d911b5c696`). **PR #46 requires no further review
 or merge action.** After this reconciliation content is on `main`, no further
-Slice 17 delivery, repair, merge, reconciliation, registration, or
-canonicalization lane is owed. Slice 16 remains `Complete` (PR #40 / #41;
-ADR-016 **Accepted**).
+Slice 18 delivery, repair, merge, reconciliation, registration, or
+canonicalization lane is owed. Slice 17 remains terminally `Complete` (PR #44 /
+#45). Phase 2B’s MVP consumers (Slices 17–18) are both `Complete`.
 
-**Recommended next action:** a new, separately authorized Slice 18 Audience
-Display System Orchestrator. Slices 18–22 remain `Planned` and unauthorized. Do
-not begin Slice 18, Slice 22 qualification, or post-MVP work from this surface.
+**Recommended next action:** a new, separately authorized Slice 19 —
+Self-Contained Portable Packs planning/implementation lane. Slice 19 remains
+`Planned` and unauthorized. Slices 19–22 remain `Planned` and unauthorized. Do
+not begin Slice 19, Slice 22 qualification, or post-MVP work from this surface.
 Post-MVP arcs remain inactive; `CQS-OD-066` remains unresolved; the inherited
-Final mid-refresh recovery flake remains unresolved. No Slice 18 implementation
-authority exists. Phase 3 readiness was satisfied before Slice 17 and has been
-consumed by completed Slice 17 delivery.
+Final mid-refresh recovery flake remains unresolved. No Slice 19 implementation
+authority exists. Phase 3 readiness has served the theme-foundation →
+audience-display sequence.
 
 **Roadmap Amendment 003 (`CQS-PLAN-S02`) delivery and post-merge
 reconciliation remain complete on `main`** (PR #35 squash `2ebeb240…`; PR #36

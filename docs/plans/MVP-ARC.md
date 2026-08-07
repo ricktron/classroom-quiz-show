@@ -18,26 +18,28 @@ the round-based engine direction into it.
 > [`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
 > (`CQS-PLAN-S02`), **merged to `main`** via PR #35 at squash
 > `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`, with post-merge reconciliation
-> via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`. Slices 1–17 remain
-> `Complete` (Slice 17 via PR #44 squash `dee2f3c219f9e60113a374ce0ec876ae20c40bc1`;
+> via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`. Slices 1–18 remain
+> `Complete` (Slice 18 via PR #46 squash `91c7708626caeaa28b15617a1f0938f4944f7680`;
+> Slice 17 via PR #44 squash `dee2f3c219f9e60113a374ce0ec876ae20c40bc1`;
 > Slice 16 via PR #40 squash `bc3cea65cab8db1481b0b2420be580cc69932f3d`);
-> Slices 18–22 remain `Planned` and unauthorized. Post-MVP arcs still require
+> Slices 19–22 remain `Planned` and unauthorized. Post-MVP arcs still require
 > separate authorization.
 
 > **Phase 2B design direction is accepted program guidance (2026-08-03).**
 > The accepted audience-display design direction is registered in
 > [`CQS-DESIGN-PHASE-2B-DIRECTION.md`](CQS-DESIGN-PHASE-2B-DIRECTION.md)
 > under `AUTHORIZE-CQS-DESIGN-PHASE-2B-REGISTRATION-1`. **MVP implementation
-> consumers are Slices 17–18** (theme/token foundation, then audience display).
-> Slice 17 — Theme and Design-Token Foundation is **`Complete`** (PR #44).
-> Slice 18 — Audience Display System remains the unimplemented Phase 2B
-> consumer and stays `Planned` / unauthorized. The documentation/specification-only
-> **Phase 3** design-system readiness dependency
+> consumers are Slices 17–18** (theme/token foundation, then audience display);
+> **both consumers are now `Complete`**. Slice 17 — Theme and Design-Token
+> Foundation is **`Complete`** (PR #44). Slice 18 — Audience Display System is
+> **`Complete`** (PR #46). The documentation/specification-only **Phase 3**
+> design-system readiness dependency
 > ([`CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md))
-> was satisfied before Slice 17 and has been consumed by that completed delivery.
-> Slice 18 is **not** authorized by Phase 2B registration, Amendment 003, Phase 3
-> readiness, or Slice 17 completion alone. Phase 2B is **not** a numbered MVP
-> slice; the audience-display composition remains unimplemented.
+> was satisfied before Slice 17 and has been consumed by the completed
+> theme-foundation → audience-display sequence. Phase 2B registration, Amendment
+> 003, and Phase 3 readiness never granted Slice 18 (or Slice 19) implementation
+> authority by themselves. Phase 2B is **not** a numbered MVP slice. The next
+> planned frontier is Slice 19 — Self-Contained Portable Packs (unauthorized).
 
 ## Product direction (approved)
 
@@ -107,7 +109,7 @@ systems.
 | 15  | **Session Summary Contract** | Versioned host-private completed-session summary derived from authoritative replay; no completed-session storage. **(Complete — squash-merged via PR #38 (`2425390…`) from reviewed head `d8f6308…`. Public wire 8; sync 2; schema 1. See ADR-015.)** | 2, 5, 6, 7, 8, 13, 14 |
 | 16  | **Completed Summary Ledger & Compatible Reporting** | Privacy-minimized summary storage; versioned competitive-profile comparison; retention/deletion; team/class reports. **(`Complete` — squash-merged via PR #40 at `bc3cea65…`; see ADR-016.)** | 13, 15 |
 | 17  | **Theme and Design-Token Foundation** | Application-owned tokens/theme registry; default + high-contrast; reduced-motion; viewport/team/score fixtures. Requires preceding Phase 3 planning lane. **(`Complete` — squash-merged via PR #44 at `dee2f3c…` from reviewed head `3214185…`.)** | 5, 6; Phase 3 |
-| 18  | **Audience Display System** | Accepted Phase 2B audience-display implementation; privacy tests; prefer public wire 8. | 14, 17 |
+| 18  | **Audience Display System** | Accepted Phase 2B audience-display implementation; privacy tests; prefer public wire 8. **(`Complete` — squash-merged via PR #46 at `91c7708…` from reviewed head `bd946f3…`.)** | 14, 17 |
 | 19  | **Self-Contained Portable Packs** | Versioned offline pack of canonical JSON + local media; safe import/export; round-trip proof. | 4, 11, 12 |
 | 20  | **Spreadsheet Authoring Seed** | Classic Board and Board+Final workbooks → draft → teacher approval → canonical JSON → existing importer. | 4, 5, 12, 14 |
 | 21  | **Sony Buzz Supported-Profile Operationalization** | One exact supported profile (macOS/Chrome/Namtai `Wbuzz` `054c:1000`/4 handsets/keyboard fallback); permanent keep-alive. | 9, 10, 13 |
@@ -684,10 +686,12 @@ head `d8f6308eccea5144ab1c6b5f49afdfcc2b7d5b5b` (authorized base
 `942575c97b97df220c215a7d265736a797869157` (sole parent
 `f92b65fa2d6619d9c2a4d09b5457f0976ff91079`). **Slice 17 is `Complete`** via PR
 [#44](https://github.com/ricktron/classroom-quiz-show/pull/44) at
-`dee2f3c219f9e60113a374ce0ec876ae20c40bc1`. Slices 18–22 remain `Planned`,
+`dee2f3c219f9e60113a374ce0ec876ae20c40bc1`. **Slice 18 is `Complete`** via PR
+[#46](https://github.com/ricktron/classroom-quiz-show/pull/46) at
+`91c7708626caeaa28b15617a1f0938f4944f7680`. Slices 19–22 remain `Planned`,
 unstarted, and unauthorized under the 22-slice plan (Amendment 003 delivery
 merged at `2ebeb240…`; post-merge reconciliation merged at `da6b4dc…`).
-Immediate next action: separately authorized Slice 18 Orchestrator — **not**
+Immediate next action: separately authorized Slice 19 lane — **not**
 implementation from this surface alone.
 
 ## Slice 8 — scope, acceptance, non-goals
@@ -1037,9 +1041,11 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) at
   `bc3cea65cab8db1481b0b2420be580cc69932f3d`. Slice 17 is **`Complete`** via PR
   [#44](https://github.com/ricktron/classroom-quiz-show/pull/44) at
-  `dee2f3c219f9e60113a374ce0ec876ae20c40bc1`. Slices 18–22 remain `Planned` and
-  unauthorized. Immediate action: separately authorized Slice 18 Orchestrator —
-  stop before unauthorized implementation.
+  `dee2f3c219f9e60113a374ce0ec876ae20c40bc1`. Slice 18 is **`Complete`** via PR
+  [#46](https://github.com/ricktron/classroom-quiz-show/pull/46) at
+  `91c7708626caeaa28b15617a1f0938f4944f7680`. Slices 19–22 remain `Planned` and
+  unauthorized. Immediate action: separately authorized Slice 19 lane — stop
+  before unauthorized implementation.
 
 ### Slice 12 — Portable export & round-trip import
 
@@ -1224,7 +1230,8 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   review or merge action.** The Slice 16 delivery and canonical reconciliation
   sequence is complete. `OG-7` remains binding against individual identity.
   Slice 17 has since been delivered and squash-merged via PR #44 (see Slice 17
-  below). Slice 18 remains unauthorized.
+  below). Slice 18 has since been delivered and squash-merged via PR #46 (see
+  Slice 18 below). Slice 19 remains unauthorized.
 
 ### Slice 17 — Theme and Design-Token Foundation
 
@@ -1258,7 +1265,8 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   `dee2f3c219f9e60113a374ce0ec876ae20c40bc1`.
 - **Owner gate:** delivery and exact-head squash-merge authorizations were
   granted and satisfied. **PR #44 requires no further review or merge action.**
-  Slice 18 remains separately unauthorized.
+  Slice 18 has since completed via PR #46; Slice 19 remains separately
+  unauthorized.
 
 ### Slice 18 — Audience Display System
 
@@ -1275,11 +1283,22 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   authorization and a deliberate wire-version decision.
 - **Prerequisites:** slices 14, 17; Phase 2B direction document.
 - **Completion evidence:** `verify:all` green; privacy tests; wire compatibility
-  analysis.
-- **Impact:** schema no* · public-wire possibly* · UI **yes** · storage no ·
-  hardware no.
-- **Status:** `Planned` — unstarted.
-- **Owner gate:** separate authorization; nested gate for any wire bump.
+  analysis (public wire **8** sufficient — no bump). Squash-merged via PR
+  [#46](https://github.com/ricktron/classroom-quiz-show/pull/46) at
+  `91c7708626caeaa28b15617a1f0938f4944f7680` from reviewed head
+  `bd946f323f381931f706d3a2ff3957d911b5c696` (sole parent
+  `6e29121d850cf4b4a4ba366c706225f208166f93`; trees identical at
+  `bc95d77efc15e3f63a3ea15c397df53e904767fc`; **22** paths). Local verification:
+  [`../receipts/2026-08-06-slice-18-audience-display-local-verification.md`](../receipts/2026-08-06-slice-18-audience-display-local-verification.md);
+  post-merge reconciliation:
+  [`../receipts/2026-08-06-slice-18-post-merge-reconciliation.md`](../receipts/2026-08-06-slice-18-post-merge-reconciliation.md).
+- **Impact:** schema no · public-wire no (remains **8**) · UI **yes** · storage
+  no · hardware no.
+- **Status:** `Complete` — squash-merged via PR #46 at
+  `91c7708626caeaa28b15617a1f0938f4944f7680`.
+- **Owner gate:** delivery and exact-head squash-merge authorizations were
+  granted and satisfied. **PR #46 requires no further review or merge action.**
+  Slice 19 remains separately unauthorized.
 
 ### Slice 19 — Self-Contained Portable Packs
 
