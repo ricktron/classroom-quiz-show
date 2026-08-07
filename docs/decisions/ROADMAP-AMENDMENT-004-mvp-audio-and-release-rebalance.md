@@ -4,11 +4,13 @@
 - **Slice identifier:** `CQS-PLAN-S03-MVP-AUDIO-AND-RELEASE-REBALANCE`
 - **Authorization:** `AUTHORIZE-CQS-PLAN-S03-MVP-AUDIO-AND-RELEASE-REBALANCE-1`
 - **Evidence state:** `CQS-PLAN-S03-ES-1`
-- **Status:** Accepted (owner-authorized planning decision) — documentation
-  only; **no product implementation authorized**; this record does not claim a
-  merge SHA
+- **Status:** Accepted (owner-authorized planning decision) — **merged to
+  `main`** via PR #48 at squash `a73e6f86bf0757aa118cb9c3247f4e6eddaa090b`
+  (merged **2026-08-07T18:15:39Z**)
 - **Date:** 2026-08-07
-- **Exact base `main`:** `ee7ed93c3336a99afc4f1945b0cc8678b855dd8a`
+- **Exact base `main` (delivery base):** `ee7ed93c3336a99afc4f1945b0cc8678b855dd8a`
+- **Merge evidence:**
+  [`../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md`](../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md)
 - **Type:** decision + documentation only — **no runtime code, no schema
   change, no asset addition, no test change, no dependency change, no
   CI/deploy change**
@@ -519,3 +521,34 @@ reconciliation is complete:
    remains unresolved; inherited Final mid-refresh flake remains unresolved.
 
 This amendment itself grants **no** Slice 19 authority.
+
+---
+
+## 19. Post-merge status (append-only; 2026-08-07)
+
+> **Historical note.** Sections above retain the original planning preflight and
+> rationale observed before PR #48 merge. This section records later merge
+> evidence only and does not rewrite those pre-merge observations.
+
+| Fact | Value |
+| --- | --- |
+| Delivery PR | [#48](https://github.com/ricktron/classroom-quiz-show/pull/48) — merged and closed |
+| Final reviewed head | `b9e30be96af7d2276cae310ef2601cad4424a635` |
+| Exact authorized delivery base / sole parent | `ee7ed93c3336a99afc4f1945b0cc8678b855dd8a` |
+| Squash commit | `a73e6f86bf0757aa118cb9c3247f4e6eddaa090b` |
+| Merge timestamp | `2026-08-07T18:15:39Z` |
+| Tree parity | reviewed-head tree = squash tree = `82d938c7e167600a3e283d44d9e2757eee881831`; direct head→squash diff empty |
+| Landed path count | exactly **12** |
+| Reconciliation receipt | [`../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md`](../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md) |
+| Current canonical status | **23-slice** MVP roadmap |
+| Product implementation authority | **none** from CQS-PLAN-S03 |
+| Slice 19 | still unauthorized |
+| Slice 22 Minimal Presentation Audio | still unauthorized |
+| Slice 23 Classroom Release Qualification | still unauthorized |
+| Theme song | still post-MVP |
+| Post-MVP arcs / `CQS-OPP-PRESENTATION-EFFECTS` | inactive |
+| `CQS-OD-066` | unresolved |
+
+**No product implementation is authorized by `CQS-PLAN-S03` or by this
+amendment.** Implementation of any of Slices 19–23 requires its own bounded
+owner authorization naming an exact base.

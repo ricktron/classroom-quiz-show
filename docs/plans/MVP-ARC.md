@@ -20,11 +20,17 @@ the round-based engine direction into it.
 > via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`). **The current MVP
 > sequence is the 23-slice plan below**, per
 > [`../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md)
-> (`CQS-PLAN-S03`). Slices 1–18 remain `Complete` (Slice 18 via PR #46 squash
+> (`CQS-PLAN-S03`), **merged to `main`** via PR #48 at squash
+> `a73e6f86bf0757aa118cb9c3247f4e6eddaa090b` from reviewed head
+> `b9e30be96af7d2276cae310ef2601cad4424a635` (merged **2026-08-07T18:15:39Z**).
+> Merge evidence:
+> [`../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md`](../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md).
+> Slices 1–18 remain `Complete` (Slice 18 via PR #46 squash
 > `91c7708626caeaa28b15617a1f0938f4944f7680`; Slice 17 via PR #44 squash
 > `dee2f3c219f9e60113a374ce0ec876ae20c40bc1`; Slice 16 via PR #40 squash
 > `bc3cea65cab8db1481b0b2420be580cc69932f3d`); Slices 19–23 remain `Planned`
-> and unauthorized. Post-MVP arcs still require separate authorization.
+> and unauthorized. The next product frontier remains separately authorized
+> Slice 19. Post-MVP arcs still require separate authorization.
 
 > **Phase 2B design direction is accepted program guidance (2026-08-03).**
 > The accepted audience-display design direction is registered in
@@ -91,13 +97,18 @@ systems.
 > via PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) at
 > `bc3cea65cab8db1481b0b2420be580cc69932f3d`.
 >
-> **Amended 2026-08-07 by `ROADMAP-AMENDMENT-004`.** Slices 1–18 remain
+> **Amended 2026-08-07 by `ROADMAP-AMENDMENT-004` (merged).** Slices 1–18 remain
 > unchanged and `Complete`. Slices 19–21 remain unchanged in substance. New
 > Slice 22 — Minimal Presentation Audio is inserted; former Slice 22 Classroom
 > Release Qualification becomes Slice 23 with audio and Phase 2B
 > visual-fidelity qualification gates. Rationale and binding records:
 > [`../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md).
-> **No product implementation is authorized by Amendment 004.**
+> Squash-merged via PR #48 at `a73e6f86bf0757aa118cb9c3247f4e6eddaa090b`.
+> Post-merge reconciliation evidence:
+> [`../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md`](../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md).
+> **No product implementation is authorized by Amendment 004.** Slices 19–23
+> remain unauthorized; next product frontier remains separately authorized
+> Slice 19.
 
 | #   | Slice                          | Focus (summary)                                                                 | Depends on |
 | --- | ------------------------------ | ------------------------------------------------------------------------------- | ---------- |
