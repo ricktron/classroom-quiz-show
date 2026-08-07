@@ -13,9 +13,9 @@ architectural lineage in
 [`../decisions/ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md`](../decisions/ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md);
 deferred-capability dossiers in
 [`POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md).
-The current MVP sequence is the **22-slice** plan in
-[`MVP-ARC.md`](MVP-ARC.md) (Amendment 003). Post-MVP arcs still require separate
-authorization.
+The current MVP sequence is the **23-slice** plan in
+[`MVP-ARC.md`](MVP-ARC.md) (Amendment 004; prior Amendment 003 set 22 slices).
+Post-MVP arcs still require separate authorization.
 
 The accepted **Phase 2B audience-display design direction** is registered
 separately in
@@ -55,8 +55,8 @@ summary ledger and compatible reporting; the theme and design-token
 foundation; and the Phase 2B audience-display composition (board-first shell,
 Nexus Core, adaptive scores, Signal Rails) on public-state wire **8**. Public-
 state wire **8**, sync envelope **2**, game-file schema **1**, IndexedDB
-schema **2**. **Slices 1–18 are `Complete`**; **Slices 19–22 remain `Planned`
-and unauthorized** under Amendment 003. Next planned product frontier:
+schema **2**. **Slices 1–18 are `Complete`**; **Slices 19–23 remain `Planned`
+and unauthorized** under Amendment 004. Next planned product frontier:
 **Slice 19 — Self-Contained Portable Packs** (unauthorized).
 
 > **Reconciliation note.** This section previously recorded a post-Slice-14
@@ -73,13 +73,15 @@ post-MVP X outside separately authorized delivery.
 
 ## 3. Current MVP boundary
 
-The current MVP is exactly the **22-slice** plan of record in
-[`MVP-ARC.md`](MVP-ARC.md) (**slices 19–22 remaining**: portable packs;
+The current MVP is exactly the **23-slice** plan of record in
+[`MVP-ARC.md`](MVP-ARC.md) (**slices 19–23 remaining**: portable packs;
 spreadsheet authoring seed; Sony Buzz supported-profile operationalization;
-classroom release qualification). This arc **does not** add to, reorder, or
-re-scope that remaining sequence beyond what Amendment 003 already recorded.
-Expanded-vision capabilities enter only through future arcs, each requiring its
-own Program Orchestrator authorization.
+minimal presentation audio; classroom release qualification). This arc **does
+not** add to, reorder, or re-scope that remaining sequence beyond what
+Amendments 003 and 004 already recorded. Expanded-vision capabilities enter
+only through future arcs, each requiring its own Program Orchestrator
+authorization. Theme song and advanced/team-specific presentation effects
+remain post-MVP (`CQS-OPP-PRESENTATION-EFFECTS`).
 
 ## 4. Architecture preservation now
 
@@ -256,7 +258,7 @@ boundary. Survey Showdown never presents synthetic data as a real survey
    Slice 15 readiness. That next-product action has since been superseded by
    completed Slices 15–18. **Current MVP next product frontier:** separately
    authorized Slice 19 readiness/implementation (nothing here grants Slice 19
-   implementation). Slices 1–18 are `Complete`; Slices 19–22 are `Planned`.
+   implementation). Slices 1–18 are `Complete`; Slices 19–23 are `Planned`.
 2. **Resolve `CQS-OD-066`** (GCS learning-target linkage) — owner
    decision; blocks only the GCS-integration slice of `CQS-ARC-INSIGHT`.
    Standards/GCS tags are removed from the MVP completion requirement.

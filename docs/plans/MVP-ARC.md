@@ -13,17 +13,18 @@ the round-based engine direction into it.
 > [`../decisions/ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md`](../decisions/ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md),
 > and
 > [`POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md).
-> Amendment 002 did not change the then-current 18-slice MVP. **The current
-> MVP sequence is the 22-slice plan below**, per
-> [`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
-> (`CQS-PLAN-S02`), **merged to `main`** via PR #35 at squash
+> Amendment 002 did not change the then-current 18-slice MVP. Amendment 003
+> (`CQS-PLAN-S02`) later rebalanced the remaining MVP from 18 to 22 slices
+> (**merged to `main`** via PR #35 at squash
 > `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`, with post-merge reconciliation
-> via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`. Slices 1–18 remain
-> `Complete` (Slice 18 via PR #46 squash `91c7708626caeaa28b15617a1f0938f4944f7680`;
-> Slice 17 via PR #44 squash `dee2f3c219f9e60113a374ce0ec876ae20c40bc1`;
-> Slice 16 via PR #40 squash `bc3cea65cab8db1481b0b2420be580cc69932f3d`);
-> Slices 19–22 remain `Planned` and unauthorized. Post-MVP arcs still require
-> separate authorization.
+> via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`). **The current MVP
+> sequence is the 23-slice plan below**, per
+> [`../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md)
+> (`CQS-PLAN-S03`). Slices 1–18 remain `Complete` (Slice 18 via PR #46 squash
+> `91c7708626caeaa28b15617a1f0938f4944f7680`; Slice 17 via PR #44 squash
+> `dee2f3c219f9e60113a374ce0ec876ae20c40bc1`; Slice 16 via PR #40 squash
+> `bc3cea65cab8db1481b0b2420be580cc69932f3d`); Slices 19–23 remain `Planned`
+> and unauthorized. Post-MVP arcs still require separate authorization.
 
 > **Phase 2B design direction is accepted program guidance (2026-08-03).**
 > The accepted audience-display design direction is registered in
@@ -62,7 +63,7 @@ fail-closed projector behavior.
 Slice 1 preserves these decisions **without** prematurely implementing the later
 systems.
 
-## Slice sequence (22-slice plan, amended)
+## Slice sequence (23-slice plan, amended)
 
 > This ordering is the plan of record. Later slices must not be started until
 > the current slice is accepted. Details for future slices are intentionally
@@ -89,6 +90,14 @@ systems.
 > since been delivered and squash-merged via PR #38. Slice 16 is **`Complete`**
 > via PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) at
 > `bc3cea65cab8db1481b0b2420be580cc69932f3d`.
+>
+> **Amended 2026-08-07 by `ROADMAP-AMENDMENT-004`.** Slices 1–18 remain
+> unchanged and `Complete`. Slices 19–21 remain unchanged in substance. New
+> Slice 22 — Minimal Presentation Audio is inserted; former Slice 22 Classroom
+> Release Qualification becomes Slice 23 with audio and Phase 2B
+> visual-fidelity qualification gates. Rationale and binding records:
+> [`../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md).
+> **No product implementation is authorized by Amendment 004.**
 
 | #   | Slice                          | Focus (summary)                                                                 | Depends on |
 | --- | ------------------------------ | ------------------------------------------------------------------------------- | ---------- |
@@ -113,7 +122,8 @@ systems.
 | 19  | **Self-Contained Portable Packs** | Versioned offline pack of canonical JSON + local media; safe import/export; round-trip proof. | 4, 11, 12 |
 | 20  | **Spreadsheet Authoring Seed** | Classic Board and Board+Final workbooks → draft → teacher approval → canonical JSON → existing importer. | 4, 5, 12, 14 |
 | 21  | **Sony Buzz Supported-Profile Operationalization** | One exact supported profile (macOS/Chrome/Namtai `Wbuzz` `054c:1000`/4 handsets/keyboard fallback); permanent keep-alive. | 9, 10, 13 |
-| 22  | **Classroom Release Qualification** | Teacher-reliant classroom proof; no new architecture or features; Pi 5 observational only. | 15–21 |
+| 22  | **Minimal Presentation Audio** | Bounded application-owned non-authoritative live cues (buzz/claim, award, incorrect, timer expiry, game complete); host mute/volume; offline licensing-safe assets; visual parity. | 18 (arch); sequenced after 21 |
+| 23  | **Classroom Release Qualification** | Teacher-reliant classroom proof incl. Slice 22 audio gates and Phase 2B visual-fidelity calibration; no new architecture or features; Pi 5 observational only. | 15–22 |
 
 Additional round engines (image-identification, timeline-ordering, matching,
 data-interpretation, concept-map, claim-evidence-reasoning, whiteboard-challenge,
@@ -688,10 +698,10 @@ head `d8f6308eccea5144ab1c6b5f49afdfcc2b7d5b5b` (authorized base
 [#44](https://github.com/ricktron/classroom-quiz-show/pull/44) at
 `dee2f3c219f9e60113a374ce0ec876ae20c40bc1`. **Slice 18 is `Complete`** via PR
 [#46](https://github.com/ricktron/classroom-quiz-show/pull/46) at
-`91c7708626caeaa28b15617a1f0938f4944f7680`. Slices 19–22 remain `Planned`,
-unstarted, and unauthorized under the 22-slice plan (Amendment 003 delivery
-merged at `2ebeb240…`; post-merge reconciliation merged at `da6b4dc…`).
-Immediate next action: separately authorized Slice 19 lane — **not**
+`91c7708626caeaa28b15617a1f0938f4944f7680`. Slices 19–23 remain `Planned`,
+unstarted, and unauthorized under the 23-slice plan (Amendment 004; Amendment
+003 delivery merged at `2ebeb240…`; post-merge reconciliation merged at
+`da6b4dc…`). Immediate next action: separately authorized Slice 19 lane — **not**
 implementation from this surface alone.
 
 ## Slice 8 — scope, acceptance, non-goals
@@ -1036,14 +1046,14 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   (`CQS-PLAN-S02`) delivery is **merged** at squash
   `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`, and its post-merge
   reconciliation is **merged** at squash
-  `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`; the 22-slice plan is canonical
-  on `main`. Slice 16 is **`Complete`** via PR
+  `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`. **Current** MVP count is the
+  23-slice plan per Amendment 004. Slice 16 is **`Complete`** via PR
   [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) at
   `bc3cea65cab8db1481b0b2420be580cc69932f3d`. Slice 17 is **`Complete`** via PR
   [#44](https://github.com/ricktron/classroom-quiz-show/pull/44) at
   `dee2f3c219f9e60113a374ce0ec876ae20c40bc1`. Slice 18 is **`Complete`** via PR
   [#46](https://github.com/ricktron/classroom-quiz-show/pull/46) at
-  `91c7708626caeaa28b15617a1f0938f4944f7680`. Slices 19–22 remain `Planned` and
+  `91c7708626caeaa28b15617a1f0938f4944f7680`. Slices 19–23 remain `Planned` and
   unauthorized. Immediate action: separately authorized Slice 19 lane — stop
   before unauthorized implementation.
 
@@ -1375,9 +1385,39 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
 - **Status:** `Planned` — unstarted.
 - **Owner gate:** separate authorization; infeasibility escalation is owner-only.
 
-### Slice 22 — Classroom Release Qualification
+### Slice 22 — Minimal Presentation Audio
 
-- **Identifier:** `CQS-SLICE-22-CLASSROOM-RELEASE-QUALIFICATION`
+- **Identifier:** `CQS-SLICE-22-MINIMAL-PRESENTATION-AUDIO`
+- **Purpose:** provide a bounded, application-owned set of non-authoritative
+  live audio cues that materially improves classroom/game-show feedback without
+  activating the broader Presentation/Identity arc.
+- **Primary deliverables:** small cue vocabulary (successful active buzz/claim;
+  positive/full-credit award; incorrect response; timer expiration; restrained
+  game-complete); host master mute; restrained volume; licensing-safe bundled
+  offline assets; visual equivalent for each cue; stale/replayed cue suppression
+  after refresh/reconnect/recovery/replay/undo; playback deduplication; tests
+  for mute and stale/repeated suppression.
+- **Major exclusions:** theme song; team-specific / identity-pack sounds;
+  entrance effects; custom/uploaded/remote audio; celebration libraries; broad
+  victory-fanfare; soundboard UI; animation systems; controller-specific sounds;
+  audience-authored audio configuration; wholesale
+  `CQS-OPP-PRESENTATION-EFFECTS`.
+- **Prerequisites:** architectural dependency on the completed state/event core
+  and audience/presentation foundation (especially Slice 18). Roadmap
+  sequencing places this after Slice 21; Slice 21 is **not** an automatic hard
+  architecture dependency.
+- **Default contract impact:** game schema no · GameDefinition no · public wire
+  no · sync envelope no · event/command/reducer no · storage version no · UI yes
+  · local assets yes · hardware no direct dependency · deployment bundled static
+  assets only · game authority no.
+- **Completion evidence:** `verify:all` green; mute + stale/repeated cue tests;
+  no unapproved contract/version changes.
+- **Status:** `Planned` — unstarted / unauthorized.
+- **Owner gate:** separate authorization to begin implementation.
+
+### Slice 23 — Classroom Release Qualification
+
+- **Identifier:** `CQS-SLICE-23-CLASSROOM-RELEASE-QUALIFICATION`
 - **Purpose:** prove a teacher can rely on the product in class.
 - **Primary deliverables:** clean-install golden path; pack import/export;
   team/input setup; complete board and Final session; timer/buzz/score/
@@ -1386,23 +1426,33 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   grayscale and projector-washout checks; keyboard-only; semantic/screen-reader
   review; viewing-distance test; PWA install/update/offline/reset;
   owner-performed deployment verification; support matrix; retention/deletion
-  docs.
+  docs; **Slice 22 audio qualification** (master mute; sensible classroom
+  volume; offline assets; no stale/recovery replay; complete without audio);
+  **Phase 2B visual-fidelity calibration** in the real classroom/projector
+  environment (qualification, not redesign — board-first hierarchy; Nexus;
+  Score Column/Strip/Deck; Signal Rails; quiet cognition; living-board
+  depletion; Final/result; 1280×720 and 1920×1080 where applicable; high
+  contrast; reduced motion). Real visual defects fail the gate, are documented,
+  and route to separately authorized bounded repair.
 - **Major exclusions:** no architecture or new feature may originate here;
   material defects require separately bounded repair. Raspberry Pi 5 may receive
   an observational smoke test only — **not** an MVP acceptance gate.
-- **Prerequisites:** slices 15–21.
-- **Completion evidence:** `verify:all` green; qualification receipt;
-  owner-verified live-route receipt (CI alone is insufficient).
+- **Prerequisites:** slices 15–22.
+- **Completion evidence:** `verify:all` green; qualification receipt including
+  audio and Phase 2B visual-fidelity gates; owner-verified live-route receipt
+  (CI alone is insufficient).
 - **Impact:** schema no · public-wire no · storage no · UI polish · deployment
   verification **yes**.
-- **Status:** `Planned` — unstarted.
+- **Status:** `Planned` — unstarted / unauthorized.
 - **Owner gate:** separate authorization; owner live verification required.
 
 > **Historical note.** Under the former 18-slice plan, remaining work was named
 > Slice 15 (session summary & compatible-profile reporting), Slice 16 (theme
 > engine), Slice 17 (authoring & packs), and Slice 18 (release readiness). Those
 > names are superseded for current routing by Amendment 003; see that amendment
-> §6 for the exact mapping.
+> §6 for the exact mapping. Under the former 22-slice plan, Classroom Release
+> Qualification was Slice 22; Amendment 004 renumbers it to Slice 23 and inserts
+> Minimal Presentation Audio as Slice 22.
 
 ## Dependencies & risks
 

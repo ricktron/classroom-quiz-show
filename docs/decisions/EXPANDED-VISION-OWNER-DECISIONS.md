@@ -1,10 +1,12 @@
 # Expanded Vision — Owner Decision Register
 
-> **Routing note (Amendment 003, 2026-08-03).** Passages below that describe the
-> MVP as an **18-slice** plan were true when `CQS-PLAN-S01` recorded them. The
-> **current** MVP sequence is the **22-slice** plan in
-> [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md), per
-> [`ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md).
+> **Routing note (Amendments 003 and 004).** Passages below that describe the
+> MVP as an **18-slice** plan were true when `CQS-PLAN-S01` recorded them.
+> Amendment 003 later set a **22-slice** plan. The **current** MVP sequence is
+> the **23-slice** plan in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md), per
+> [`ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md)
+> (prior:
+> [`ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
 > No `CQS-OD-*` acceptance or activation state in this register is changed by
 > that note. **`CQS-OD-066` remains unresolved.**
 
@@ -56,7 +58,7 @@ deferred work lives in
   `CQS-ARC-PARTICIPATION` (student participation and credit). The current
   MVP sequence at recording was the 18-slice plan in
   [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md); **current** sequence is the
-  22-slice plan per Amendment 003 (see routing note above).
+  23-slice plan per Amendment 004 (see routing note above).
 
 ## Traceability gate
 

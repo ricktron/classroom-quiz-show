@@ -111,21 +111,32 @@ note only *additional* authority where it exists.
 
 ## CQS-OPP-PRESENTATION-EFFECTS — Advanced presentation (animation & sound)
 
-- **Intent:** `CQS-OD-031`, `CQS-OD-034`, §10.4; card states, celebrations,
-  optional buzz sounds, optional between-round leaderboard motion.
+- **Intent:** `CQS-OD-031`, `CQS-OD-034`, §10.4; richer card states,
+  celebrations, **team-specific / identity-pack** buzz sounds, optional
+  between-round leaderboard motion, entrance effects, sound packs, and a
+  future **theme song / opening music identity**.
 - **Activation:** `post-mvp-priority` · **Arc:** `CQS-ARC-IDENTITY`
-- **Deferred because:** presentation polish must not precede stable
-  gameplay policy; audio licensing boundaries (see the recorded buzz-sound
-  direction in [`../handoff/CURRENT.md`](../handoff/CURRENT.md)) are
-  unresolved for bundled assets.
+- **Not the same as MVP Slice 22:** Amendment 004 plans a tiny **generic**
+  application-owned cue layer as MVP Slice 22 — Minimal Presentation Audio.
+  That slice does **not** activate this opportunity and does **not** include
+  theme song, team-specific packs, celebrations, or animation systems.
+- **Deferred because:** advanced presentation polish must not precede stable
+  gameplay/identity policy; **broader/custom/team-specific** audio licensing
+  (see the recorded team buzz-sound direction in
+  [`../handoff/CURRENT.md`](../handoff/CURRENT.md)) remains unresolved.
+  Licensing-safe **generic** application cues are an explicit Slice 22
+  requirement and do **not** imply all presentation-audio licensing questions
+  are solved.
 - **Dependencies:** theme/token foundation and audience display (MVP Slices
-  17–18); `CQS-RA2-TEAM-ORDER-01` bounds; accessibility requirements of §10.4.
+  17–18); preferably after MVP Slice 22’s minimal cue layer if that ships;
+  `CQS-RA2-TEAM-ORDER-01` bounds; accessibility requirements of §10.4.
 - **Trigger:** Slices 17–18 ship and one full unit of classroom play is
-  observed on them, with owner notes on presentation gaps.
+  observed on them, with owner notes on presentation gaps beyond the minimal
+  cue layer.
 - **Evidence required:** the observation notes; a reduced-motion review of
   any proposed animation set.
 - **Risks:** presentation becoming authority (prohibited); flashing/motion
-  accessibility; audio licensing.
+  accessibility; broader audio licensing.
 
 ## CQS-OPP-HOST-CONSOLE — Polished one-screen host console
 

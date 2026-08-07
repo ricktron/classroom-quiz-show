@@ -492,11 +492,15 @@ claimed from that merge verification. See
 and
 [`docs/receipts/2026-08-06-slice-18-post-merge-reconciliation.md`](docs/receipts/2026-08-06-slice-18-post-merge-reconciliation.md).
 **PR #46 requires no further review or merge action.** Slices 1–18 are Complete.
-Slices 19–22 remain Planned and unauthorized under the **22-slice** MVP plan
-([`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
+Slices 19–23 remain Planned and unauthorized under the **23-slice** MVP plan
+([`docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md);
+prior Amendment 003:
+[`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
 The next planned product frontier is Slice 19 — Self-Contained Portable Packs,
-which remains separately unauthorized. The inherited Final mid-refresh recovery
-flake remains unresolved; `CQS-OD-066` remains unresolved.
+which remains separately unauthorized. Slice 22 Minimal Presentation Audio and
+Slice 23 Classroom Release Qualification remain unauthorized. Theme song
+remains post-MVP. The inherited Final mid-refresh recovery flake remains
+unresolved; `CQS-OD-066` remains unresolved.
 
 > ⚠️ **Sony Buzz physical certification is bounded, not a supported-hardware
 > list.** OADL2-S07 completed physical certification for one exact tested

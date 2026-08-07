@@ -156,16 +156,20 @@ terminally `Complete` (PR #44 / #45). At this frontier, IndexedDB schema is
 Summary contract **1**, completed-summary envelope **1**, and competitive
 profile **1** — all unchanged by Slice 18. Slice 19 — Self-Contained Portable
 Packs is the next planned product frontier and remains separately unauthorized.
-**Roadmap:** **22 slices**, amended 2026-08-03 by
+**Roadmap:** **23 slices**, amended 2026-08-07 by
+[`decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md)
+(`CQS-PLAN-S03`; documentation-only). Prior Amendment 003
 [`decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
-(`CQS-PLAN-S02`; documentation-only). Prior amendment
+(`CQS-PLAN-S02`) rebalanced 18→22 slices; Amendment 001
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 grew the plan from 11 to 18 slices (PR #13, `752a3fe`, 2026-07-26). Slices 1–18
-are `Complete`; Slices 19–22 remain `Planned` and unauthorized for
-implementation. Phase 2B’s MVP consumers (Slices 17–18) are both `Complete`;
-Phase 3 design-system readiness has served the theme-foundation →
-audience-display sequence; post-MVP arcs remain inactive; `CQS-OD-066` remains
-unresolved; the inherited Final mid-refresh recovery flake remains unresolved.
+are `Complete`; Slices 19–23 remain `Planned` and unauthorized for
+implementation. This planning amendment does **not** authorize Slice 19, Slice
+22 audio, or Slice 23 qualification. Phase 2B’s MVP consumers (Slices 17–18) are
+both `Complete`; Phase 3 design-system readiness has served the theme-foundation
+→ audience-display sequence; post-MVP arcs remain inactive; theme song remains
+post-MVP; `CQS-OD-066` remains unresolved; the inherited Final mid-refresh
+recovery flake remains unresolved.
 
 ## Slice 14 work (Complete)
 
@@ -1698,16 +1702,17 @@ canonicalization lane is owed. Slice 17 remains terminally `Complete` (PR #44 /
 
 **Recommended next action:** a new, separately authorized Slice 19 —
 Self-Contained Portable Packs planning/implementation lane. Slice 19 remains
-`Planned` and unauthorized. Slices 19–22 remain `Planned` and unauthorized. Do
-not begin Slice 19, Slice 22 qualification, or post-MVP work from this surface.
-Post-MVP arcs remain inactive; `CQS-OD-066` remains unresolved; the inherited
-Final mid-refresh recovery flake remains unresolved. No Slice 19 implementation
-authority exists. Phase 3 readiness has served the theme-foundation →
-audience-display sequence.
+`Planned` and unauthorized. Slices 19–23 remain `Planned` and unauthorized. Do
+not begin Slice 19, Slice 22 audio implementation, Slice 23 qualification, or
+post-MVP work from this surface. Post-MVP arcs remain inactive; `CQS-OD-066`
+remains unresolved; the inherited Final mid-refresh recovery flake remains
+unresolved. No Slice 19 implementation authority exists. Phase 3 readiness has
+served the theme-foundation → audience-display sequence.
 
 **Roadmap Amendment 003 (`CQS-PLAN-S02`) delivery and post-merge
 reconciliation remain complete on `main`** (PR #35 squash `2ebeb240…`; PR #36
-squash `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`; 22-slice plan canonical).
+squash `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`). **Current** MVP count is the
+**23-slice** plan per Amendment 004 (`CQS-PLAN-S03`).
 
 Coding agents and contributors should read root [`../AGENTS.md`](../AGENTS.md)
 (and pointer-only [`../CLAUDE.md`](../CLAUDE.md) for Claude sessions) before
@@ -1715,8 +1720,10 @@ mutating the repository.
 
 **Additional response modes are deferred until after the functional MVP** — see
 the owner direction recorded in
-[`handoff/CURRENT.md`](handoff/CURRENT.md). **Optional team buzz-in audio cues are
-likewise deferred owner direction only** (recorded in the same place, 2026-07-27).
-Nothing about either is designed, scheduled or authorized; no audio file,
-playback code, audio schema, audio event or sound-pack manifest exists; and the
-active MVP roadmap is **22 slices** per Amendment 003.
+[`handoff/CURRENT.md`](handoff/CURRENT.md). **Team-specific / custom /
+identity-pack buzz-in audio remains deferred post-MVP owner direction**
+(recorded in the same place, 2026-07-27). Distinct from that deferral,
+**Minimal Presentation Audio** is now planned MVP Slice 22 under Amendment 004
+and remains **unauthorized for implementation**. No audio file, playback code,
+audio schema, audio event, or sound-pack manifest exists yet; the active MVP
+roadmap is **23 slices** per Amendment 004.
