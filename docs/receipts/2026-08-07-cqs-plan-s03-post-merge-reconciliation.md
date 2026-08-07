@@ -17,8 +17,9 @@
 - **Exact reconciliation base:** `a73e6f86bf0757aa118cb9c3247f4e6eddaa090b`
   (`origin/main` at reconciliation start; Amendment 004 / PR #48 squash)
 - **Branch:** `docs/cqs-plan-s03-post-merge-reconciliation`
-- **PR:** *to be recorded after the reconciliation PR opens*
-  (documentation-only; **STOP BEFORE MERGE**)
+- **PR:** [#49](https://github.com/ricktron/classroom-quiz-show/pull/49)
+  (non-draft; not merged at receipt-write time; documentation-only;
+  **STOP BEFORE MERGE**)
 
 This receipt separates four evidence layers and does **not** rewrite the
 original Amendment 004 planning record
