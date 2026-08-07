@@ -35,8 +35,9 @@ corrected.
 This registration created no new `CQS-OD-*`, changed no existing owner decision's
 acceptance or activation state, promoted no parked or `architecture-preserved`
 capability, and (at registration time) altered no MVP sequencing. **After
-Amendment 003**, the MVP plan of record in [`MVP-ARC.md`](MVP-ARC.md) is the
-**22-slice** sequence; Phase 2B MVP consumers are Slices **17–18**.
+Amendment 004**, the MVP plan of record in [`MVP-ARC.md`](MVP-ARC.md) is the
+**23-slice** sequence (Amendment 003 previously set 22); Phase 2B MVP consumers
+are Slices **17–18**.
 
 ## 2. Provenance and evidence limits
 
@@ -360,9 +361,11 @@ Recorded as obligations on any future implementation:
 - **future physical-projector and viewing-distance testing.**
 
 **No current accessibility certification exists.** The accessibility audit is
-Slice 22 classroom-release work ([`MVP-ARC.md`](MVP-ARC.md)), and nothing in this registration
-performs, schedules, or satisfies it. No physical projector test was performed
-for this registration.
+Slice 23 classroom-release work ([`MVP-ARC.md`](MVP-ARC.md); formerly Slice 22
+under the 22-slice plan), and nothing in this registration performs, schedules,
+or satisfies it. No physical projector test was performed for this registration.
+Phase 2B production visual-fidelity calibration is likewise a Slice 23
+qualification gate, not a redesign slice.
 
 ## 13. Representative-frame dispositions
 

@@ -153,7 +153,17 @@ This project separates two kinds of durable decision records:
      display-system readiness required before Slice 17. Standards/GCS tags
      removed from MVP completion pending `CQS-OD-066`. Raspberry Pi 5 is
      post-MVP. **Documentation only — no product implementation
-     authorized.**
+     authorized.** Historical 18→22 mapping remains valid; **current** MVP
+     count is superseded for routing by Amendment 004.
+   - [`ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md)
+     — MVP audio and release rebalance from 22 to **23** slices (2026-08-07,
+     planning slice `CQS-PLAN-S03`): Slices 1–18 unchanged and `Complete`;
+     Slices 19–21 unchanged in substance; new Slice 22 Minimal Presentation
+     Audio; former Slice 22 Classroom Release Qualification renumbered to
+     Slice 23 with audio qualification and Phase 2B visual-fidelity
+     calibration gates. Theme song remains post-MVP;
+     `CQS-OPP-PRESENTATION-EFFECTS` remains post-MVP. **Documentation only
+     — no product implementation authorized.**
 
 ## When an ADR is required
 

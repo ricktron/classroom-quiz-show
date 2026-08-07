@@ -43,8 +43,8 @@ at implementation base `6b908d577a588a68f06775a6511e1da3aacc33f3`) and then
 binding architecture in this contract and preserved every stated boundary
 (public wire **8**, sync **2**, game-file schema **1**, GameDefinition model
 **1**, private active-session wire **1**, IndexedDB **2**, Session Summary
-**1**, completed-summary **1**, competitive profile **1**; no ADR; no Slice 22
-qualification; no WCAG or physical-projector certification).
+**1**, completed-summary **1**, competitive profile **1**; no ADR; no
+classroom-release qualification; no WCAG or physical-projector certification).
 
 Slice 18 subsequently **consumed** that Slice 17 foundation and completed the
 accepted Phase 2B audience-display composition via PR
@@ -230,7 +230,7 @@ and clear handoffs to Slices 18 and 22 — without starting implementation.
 | Storage boundary | IndexedDB **2**; no theme persistence required | Session-local only for Slice 17 | Preserve | 17 (must not change) |
 | Presentation authority | Host private; display sanitized | Theme is presentation config only | Infrastructure absent | 17 |
 | Slice 18 handoff | Phase 2B direction accepted; not implemented | Board-first composition consumes tokens | Composition out of scope | 18 |
-| Slice 22 qualification | Unstarted | Physical/a11y/release qualification | Out of scope | 22 |
+| Slice 23 qualification | Unstarted | Physical/a11y/release qualification (incl. audio + Phase 2B visual-fidelity gates) | Out of scope | 23 |
 
 ## 5. Conflict and ambiguity register
 
@@ -246,7 +246,7 @@ and clear handoffs to Slices 18 and 22 — without starting implementation.
 | Migration covers colour/contrast/focus/motion coherence; not full layout | Fixed readiness decision | Layout debt may defer to Slice 18 |
 | Score Column / Strip / Deck absent | Deferred Slice 18 concern | Current flex-wrap remains until Slice 18 |
 | Nexus Core, Signal Rails, living-board, Final choreography | Deferred Slice 18 concern | Out of Slice 17 |
-| Physical projector / a11y / Pi certification | Deferred Slice 22 concern | Out of readiness and Slice 17 |
+| Physical projector / a11y / Pi certification | Deferred Slice 23 concern | Out of readiness and Slice 17 |
 | Reduced-motion semantic parity unproven | Under-specification → Slice 17 obligation | Spec requires parity tests |
 | Literal token values (exact hex) | Routine technical choice | Implementation may choose literals within constraints |
 | Incidental file names for registry modules | Routine technical choice | Not dictated here |
@@ -524,15 +524,18 @@ Slice 18 owns:
 Slice 18 consumes the Slice 17 token/theme foundation; it does not redefine
 theme ownership or import-supplied styles.
 
-## 15. Slice 22 handoff
+## 15. Slice 23 handoff
 
-Slice 22 owns:
+Slice 23 — Classroom Release Qualification owns (formerly Slice 22 under the
+22-slice plan; renumbered by Amendment 004):
 
 - physical-projector verification;
 - viewing-distance testing;
 - washout and grayscale checks;
 - final accessibility audit;
-- classroom release qualification.
+- classroom release qualification;
+- Slice 22 audio qualification gates;
+- Phase 2B production visual-fidelity calibration (qualification, not redesign).
 
 No certification claim is created by this readiness document or by Slice 17.
 
@@ -595,7 +598,8 @@ This handoff does **not** authorize implementation.
   **1**, completed-summary **1**, and competitive profile **1** remain the
   current boundaries (unchanged by Slices 17–18).
 - After Slice 17 completion and subsequent Slice 18 completion: Slices 1–18 are
-  `Complete`; Slices 19–22 remain `Planned` and unauthorized for implementation.
-  Slice 19 is the next planned frontier and remains separately unauthorized.
-  Slice 22 qualification remains unperformed. The inherited Final mid-refresh
-  recovery flake and `CQS-OD-066` remain unresolved.
+  `Complete`; Slices 19–23 remain `Planned` and unauthorized for implementation
+  under the 23-slice plan (Amendment 004). Slice 19 is the next planned frontier
+  and remains separately unauthorized. Slice 22 audio and Slice 23 qualification
+  remain unperformed/unauthorized. The inherited Final mid-refresh recovery
+  flake and `CQS-OD-066` remain unresolved.

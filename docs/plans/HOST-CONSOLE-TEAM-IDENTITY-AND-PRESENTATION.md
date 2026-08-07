@@ -40,9 +40,16 @@ model:
 - **The base display requires only team names, accents, scores, and
   structural cues.** That is the whole public team surface today
   (`PublicTeam`), and it is sufficient for every accepted score layout.
-- **Representatives, rosters, mascots/emblems, sounds, and animations remain
-  deferred future identity/presentation capabilities** — none is required by
-  the base display, and none is implemented.
+- **Representatives, rosters, mascots/emblems, team-specific sounds, and
+  animations remain deferred future identity/presentation capabilities** —
+  none is required by the base display, and none is implemented.
+- **Distinct MVP planning note (Amendment 004):** a tiny **generic**
+  application-owned cue layer is planned as MVP Slice 22 — Minimal
+  Presentation Audio (`CQS-SLICE-22-MINIMAL-PRESENTATION-AUDIO`) and remains
+  **unauthorized for implementation**. That slice is **not** identity packs,
+  team-specific sounds, entrance effects, celebrations, theme song, or
+  `CQS-OPP-PRESENTATION-EFFECTS`. A future theme song/opening music identity
+  remains post-MVP desire only.
 
 **Nothing in Phase 2B activates any of those deferred concepts.** The Phase
 2B registration is documentation-only program guidance: it implements
@@ -132,12 +139,28 @@ non-stereotyping, readable, distinct, and **not answer-revealing**.
 
 ## 5. Presentation effects (§10.4)
 
-Team cards may use animation, sound, score counting, status transitions,
-celebrations, optional buzz sounds, and optional leaderboard movement
-between rounds and at game end (`CQS-OD-034`) — while normal gameplay
-keeps stable authored positions (`CQS-OD-033`, implemented rule).
+### MVP vs post-MVP audio (Amendment 004)
 
-Hard requirements, recorded now and binding on any future implementation:
+| Layer | Scope | Status |
+| --- | --- | --- |
+| **MVP Slice 22 — Minimal Presentation Audio** | Tiny generic application-owned cues (buzz/claim, award, incorrect, timer expiry, restrained game-complete); host mute/volume; offline licensing-safe assets; visual parity | `Planned` / unauthorized |
+| **Post-MVP `CQS-OPP-PRESENTATION-EFFECTS`** | Richer/team-specific identity sounds, animation, celebrations, sound packs, entrance effects, leaderboard motion, theme/opening music identity | Inactive / not authorized |
+
+Team cards may eventually use animation, sound, score counting, status
+transitions, celebrations, optional buzz sounds, and optional leaderboard
+movement between rounds and at game end (`CQS-OD-034`) — while normal
+gameplay keeps stable authored positions (`CQS-OD-033`, implemented rule).
+That richer layer remains post-MVP.
+
+**Theme song / opening music** should eventually exist as recognizable
+application-owned identity (original or clearly licensed; offline;
+intentionally triggered; muteable/skippable; non-authoritative; not replayed
+after refresh/reconnect). It is **not** an MVP requirement and must not become
+a `GameDefinition`, game-schema, or public-wire field, or an authored-game
+choice by default.
+
+Hard requirements, recorded now and binding on any future implementation
+(including later Slice 22):
 
 - **Presentation completion never becomes authoritative game-state
   input.** No animation, sound, or transition ever gates a command,
@@ -145,10 +168,15 @@ Hard requirements, recorded now and binding on any future implementation:
 - Reduced-motion support; mute and volume controls; no dependency on
   flashing; accessible contrast; text or icon state indicators in
   addition to color.
-- Sound assignment belongs to a team or presentation profile, never to a
-  physical key, controller, handset, or button (the standing buzz-sound
-  direction in [`../handoff/CURRENT.md`](../handoff/CURRENT.md) remains
-  in force, including its licensing boundaries).
+- For **team/identity** sounds: assignment belongs to a team or presentation
+  profile, never to a physical key, controller, handset, or button (the
+  standing team buzz-sound direction in
+  [`../handoff/CURRENT.md`](../handoff/CURRENT.md) remains in force,
+  including its licensing boundaries for that richer scope).
+- For **MVP Slice 22** cues: semantics are application-owned and independent
+  of keyboard/gamepad/Sony handset/button identity; licensing-safe generic
+  bundled assets are required, without implying all presentation-audio
+  licensing questions are solved.
 - Stale snapshots, replay, refresh, reconnect, and undo never replay old
   audio or animation.
 
