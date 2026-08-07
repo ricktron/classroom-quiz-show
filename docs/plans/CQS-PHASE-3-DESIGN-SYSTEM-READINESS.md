@@ -32,28 +32,39 @@ Proposed-tree completion semantics at readiness delivery: mutable routing
 surfaces in that delivery described the state that holds **after** the readiness
 content lands on `main`. They did not refer to an open delivery pull request.
 
-### Post-merge implementation outcome (Slice 17)
+### Post-merge implementation outcome (Slices 17–18)
 
 The readiness dependency was **satisfied first** (this specification on `main`
 at implementation base `6b908d577a588a68f06775a6511e1da3aacc33f3`) and then
 **consumed** by completed Slice 17 delivery via PR
 [#44](https://github.com/ricktron/classroom-quiz-show/pull/44) (reviewed head
 `3214185ac750be8a9ab1ad170ff3c9d1c7f9f5a4`; squash
-`dee2f3c219f9e60113a374ce0ec876ae20c40bc1`). The implemented result matched the
+`dee2f3c219f9e60113a374ce0ec876ae20c40bc1`). The Slice 17 result matched the
 binding architecture in this contract and preserved every stated boundary
 (public wire **8**, sync **2**, game-file schema **1**, GameDefinition model
 **1**, private active-session wire **1**, IndexedDB **2**, Session Summary
-**1**, completed-summary **1**, competitive profile **1**; no ADR; no Slice 18;
-no Slice 22 qualification; no WCAG or physical-projector certification).
+**1**, completed-summary **1**, competitive profile **1**; no ADR; no Slice 22
+qualification; no WCAG or physical-projector certification).
+
+Slice 18 subsequently **consumed** that Slice 17 foundation and completed the
+accepted Phase 2B audience-display composition via PR
+[#46](https://github.com/ricktron/classroom-quiz-show/pull/46) (reviewed head
+`bd946f323f381931f706d3a2ff3957d911b5c696`; squash
+`91c7708626caeaa28b15617a1f0938f4944f7680`; identical tree
+`bc95d77efc15e3f63a3ea15c397df53e904767fc`; **22** paths) without changing those
+contract versions. Physical projector / accessibility / release qualification
+remain outside this result.
 
 Evidence:
 
 - [`../receipts/2026-08-05-slice-17-theme-tokens-local-verification.md`](../receipts/2026-08-05-slice-17-theme-tokens-local-verification.md)
 - [`../receipts/2026-08-05-slice-17-post-merge-reconciliation.md`](../receipts/2026-08-05-slice-17-post-merge-reconciliation.md)
+- [`../receipts/2026-08-06-slice-18-audience-display-local-verification.md`](../receipts/2026-08-06-slice-18-audience-display-local-verification.md)
+- [`../receipts/2026-08-06-slice-18-post-merge-reconciliation.md`](../receipts/2026-08-06-slice-18-post-merge-reconciliation.md)
 
 Historical base-inspection observations below remain observations of the
-authorized readiness base at issuance and are **not** rewritten as post-Slice-17
-repository truth.
+authorized readiness base at issuance and are **not** rewritten as
+post-Slice-17/18 repository truth.
 
 ## 2. Evidence and current repository truth
 
@@ -583,6 +594,8 @@ This handoff does **not** authorize implementation.
   **1**, private active-session wire **1**, IndexedDB **2**, Session Summary
   **1**, completed-summary **1**, and competitive profile **1** remain the
   current boundaries (unchanged by Slice 17).
-- After Slice 17 completion: Slices 1–17 are `Complete`; Slices 18–22 remain
-  `Planned` and unauthorized for implementation. Slice 18 remains separately
-  unauthorized. Slice 22 qualification remains unperformed.
+- After Slice 17 completion and subsequent Slice 18 completion: Slices 1–18 are
+  `Complete`; Slices 19–22 remain `Planned` and unauthorized for implementation.
+  Slice 19 is the next planned frontier and remains separately unauthorized.
+  Slice 22 qualification remains unperformed. The inherited Final mid-refresh
+  recovery flake and `CQS-OD-066` remain unresolved.

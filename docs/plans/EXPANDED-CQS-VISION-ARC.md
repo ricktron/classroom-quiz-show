@@ -20,9 +20,10 @@ authorization.
 The accepted **Phase 2B audience-display design direction** is registered
 separately in
 [`CQS-DESIGN-PHASE-2B-DIRECTION.md`](CQS-DESIGN-PHASE-2B-DIRECTION.md). It is
-program guidance only: it implements nothing, authorizes nothing, and changes no
-owner decision's acceptance or activation state. Its MVP implementation consumers
-are **Slices 17–18**, which remain `Planned` and unauthorized.
+program guidance only: registration itself implements nothing, authorizes
+nothing, and changes no owner decision's acceptance or activation state. Its MVP
+implementation consumers are **Slices 17–18**, which are now both `Complete`
+(Slice 17 via PR #44; Slice 18 via PR #46).
 
 ## 1. Product thesis
 
@@ -37,9 +38,9 @@ host-authoritative, fail-closed, and free of student devices, accounts, and
 cloud dependencies. Every expansion composes the existing command/event
 architecture rather than replacing it.
 
-## 2. Current implementation truth (reconciled 2026-08-03, post-Slice-14)
+## 2. Current implementation truth (reconciled 2026-08-06, post-Slice-18)
 
-The current implementation supports: slices 1–14 `Complete` and merged —
+The current implementation supports: slices 1–18 `Complete` and merged —
 foundation and routing; the command/event/replay/undo core; the typed
 game/round model and non-executable registry; the canonical versioned JSON
 import pipeline; the `category-board` round; teams and bounded integer
@@ -48,33 +49,37 @@ local input boundary with keyboard buzz-in and a full ordered queue; the
 generic Gamepad adapter; the Sony Buzz! host-private setup boundary (bounded
 physical claim, OADL2-S07); the typed text/image media contract; portable
 export with round-trip import; host-local IndexedDB persistence with
-explicit Resume/Discard recovery; and the `final-wager` round as the second
-playable registered round type. Public-state wire **8**, sync envelope
-**2**, game-file schema **1**. **Slice 14 — Final-wager round is
-`Complete`** (squash-merged via PR #32 at `ce2e103…`); **Slices 15–22 remain
-`Planned` and unstarted** under Amendment 003. Next product candidate: **Slice 15
-— Session Summary Contract** (unauthorized).
+explicit Resume/Discard recovery; the `final-wager` round as the second
+playable registered round type; the Session Summary Contract; the completed
+summary ledger and compatible reporting; the theme and design-token
+foundation; and the Phase 2B audience-display composition (board-first shell,
+Nexus Core, adaptive scores, Signal Rails) on public-state wire **8**. Public-
+state wire **8**, sync envelope **2**, game-file schema **1**, IndexedDB
+schema **2**. **Slices 1–18 are `Complete`**; **Slices 19–22 remain `Planned`
+and unauthorized** under Amendment 003. Next planned product frontier:
+**Slice 19 — Self-Contained Portable Packs** (unauthorized).
 
-> **Reconciliation note.** This section previously recorded slices 1–13,
-> public-state wire 7, and Slice 14 as `Planned` and unstarted. That was
-> accurate when `CQS-PLAN-S01` merged and became stale when Slice 14
-> merged; it was corrected under
-> `AUTHORIZE-CQS-DESIGN-PHASE-2B-REGISTRATION-1`. See
-> [`../STATUS.md`](../STATUS.md) for canonical current slice status.
+> **Reconciliation note.** This section previously recorded a post-Slice-14
+> snapshot (slices 1–14 Complete; Slices 15–22 Planned; next candidate Slice
+> 15). That wording became stale across completed Slices 15–18 and is updated
+> here under `AUTHORIZE-CQS-SLICE-18-POST-MERGE-RECONCILIATION-1` while
+> historical product thesis, post-MVP sequencing, preservation clauses, and
+> owner-decision meaning remain unchanged. See [`../STATUS.md`](../STATUS.md)
+> for canonical current slice status.
 
-Nothing in the expanded vision is implemented. No statement in this arc may
-be read as "CQS supports X" for any X outside the paragraph above.
+Nothing in the expanded vision beyond the completed MVP paragraph above is
+implemented. No statement in this arc may be read as "CQS supports X" for any
+post-MVP X outside separately authorized delivery.
 
 ## 3. Current MVP boundary
 
 The current MVP is exactly the **22-slice** plan of record in
-[`MVP-ARC.md`](MVP-ARC.md) (**slices 15–22 remaining**: session summary contract;
-summary ledger & compatible reporting; theme/token foundation; audience display;
-portable packs; spreadsheet authoring seed; Sony Buzz supported-profile
-operationalization; classroom release qualification). This arc **does not** add
-to, reorder, or re-scope that remaining sequence beyond what Amendment 003
-already recorded. Expanded-vision capabilities enter only through future arcs,
-each requiring its own Program Orchestrator authorization.
+[`MVP-ARC.md`](MVP-ARC.md) (**slices 19–22 remaining**: portable packs;
+spreadsheet authoring seed; Sony Buzz supported-profile operationalization;
+classroom release qualification). This arc **does not** add to, reorder, or
+re-scope that remaining sequence beyond what Amendment 003 already recorded.
+Expanded-vision capabilities enter only through future arcs, each requiring its
+own Program Orchestrator authorization.
 
 ## 4. Architecture preservation now
 
@@ -247,9 +252,11 @@ boundary. Survey Showdown never presents synthetic data as a real survey
 
 ## 9. Program Orchestrator decision points
 
-1. **Exact-head review of Amendment 003**, then **Slice 15 readiness**
-   (current MVP next product action — nothing here grants Slice 15
-   implementation). Slice 14 is `Complete`; Slices 15–22 are `Planned`.
+1. **Historical (at issuance):** exact-head review of Amendment 003, then
+   Slice 15 readiness. That next-product action has since been superseded by
+   completed Slices 15–18. **Current MVP next product frontier:** separately
+   authorized Slice 19 readiness/implementation (nothing here grants Slice 19
+   implementation). Slices 1–18 are `Complete`; Slices 19–22 are `Planned`.
 2. **Resolve `CQS-OD-066`** (GCS learning-target linkage) — owner
    decision; blocks only the GCS-integration slice of `CQS-ARC-INSIGHT`.
    Standards/GCS tags are removed from the MVP completion requirement.
