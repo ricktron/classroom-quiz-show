@@ -40,7 +40,7 @@ describe('each Final stage renders from the DTO alone', () => {
     expect(screen.getByText(/getting ready/i)).toBeInTheDocument()
   })
 
-  it('shows the wager stage with a countdown and no wager anywhere', () => {
+  it('shows the wager stage with no wager amounts (countdown owned by Final Signal Rail)', () => {
     renderFinal({
       kind: PUBLIC_FINAL_KIND,
       stage: 'wager-entry',
@@ -48,10 +48,12 @@ describe('each Final stage renders from the DTO alone', () => {
     })
     expect(screen.getByTestId('fwd-wager-entry')).toBeInTheDocument()
     expect(screen.getByText(/place your wagers/i)).toBeInTheDocument()
-    expect(screen.getByTestId('fwd-timer-clock')).toBeInTheDocument()
+    // Primary Final countdown moved to SignalRail (Slice 18 R1) — leaf must not duplicate it.
+    expect(screen.queryByTestId('fwd-timer')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('fwd-reveal-wager')).not.toBeInTheDocument()
   })
 
-  it('renders no clock at all for an idle window', () => {
+  it('renders no Final leaf clock for an idle wager window', () => {
     renderFinal({
       kind: PUBLIC_FINAL_KIND,
       stage: 'wager-entry',

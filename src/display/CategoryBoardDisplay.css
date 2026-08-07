@@ -163,6 +163,30 @@
   overflow-wrap: anywhere;
 }
 
+.cbd__depletion {
+  margin: 0 0 clamp(0.35rem, 0.9vw, 0.75rem);
+  text-align: center;
+  font-size: clamp(0.8rem, 1.2vw, 1.05rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.cbd__column--cleared .cbd__category {
+  background: var(--surface-cleared);
+  border-style: dashed;
+}
+
+.cbd__cleared-label {
+  display: inline-block;
+  margin-inline-start: 0.35rem;
+  font-size: 0.75em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--fg-muted);
+}
+
 .cbd--unavailable {
   text-align: center;
 }
