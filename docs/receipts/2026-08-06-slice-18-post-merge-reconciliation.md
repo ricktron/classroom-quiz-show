@@ -20,8 +20,8 @@
 - **Implementation branch:** `feat/slice-18-audience-display` (preserved at reviewed head; not deleted)
 - **Reconciliation authorized base:** `91c7708626caeaa28b15617a1f0938f4944f7680`
 - **Reconciliation branch:** `docs/slice-18-post-merge-reconciliation`
-- **Reconciliation pull request:** *to be recorded after PR open* (open /
-  unmerged at receipt write time)
+- **Reconciliation pull request:** [#47](https://github.com/ricktron/classroom-quiz-show/pull/47)
+  (open / unmerged at receipt write time)
 - **Kind:** documentation-only post-merge reconciliation (stops before merge)
 - **Non-claims:** this receipt does **not** claim reconciliation PR merge,
   branch/worktree cleanup, Slice 19 start, Slice 22 qualification, WCAG or
@@ -341,11 +341,13 @@ This lane did **not**:
 
 | Fact | Value |
 | --- | --- |
-| Reconciliation PR | *recorded after PR open* |
+| Reconciliation PR | [#47](https://github.com/ricktron/classroom-quiz-show/pull/47) |
+| URL | https://github.com/ricktron/classroom-quiz-show/pull/47 |
 | Base | `main` @ `91c7708626caeaa28b15617a1f0938f4944f7680` |
+| Docs commit | `4c799272655c678adf1a743eb74f5b9fb3cfa577` |
 | Head branch | `docs/slice-18-post-merge-reconciliation` |
 | Changed paths | the seven allowlisted paths above |
-| Draft | **no** (expected) |
+| Draft | **no** |
 | Auto-merge | **off** (must remain off) |
 | State at receipt write | **open / unmerged** (must not claim merged) |
 
