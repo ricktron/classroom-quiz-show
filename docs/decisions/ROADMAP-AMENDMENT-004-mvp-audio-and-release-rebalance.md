@@ -4,13 +4,11 @@
 - **Slice identifier:** `CQS-PLAN-S03-MVP-AUDIO-AND-RELEASE-REBALANCE`
 - **Authorization:** `AUTHORIZE-CQS-PLAN-S03-MVP-AUDIO-AND-RELEASE-REBALANCE-1`
 - **Evidence state:** `CQS-PLAN-S03-ES-1`
-- **Status:** Accepted (owner-authorized planning decision) — **merged to
-  `main`** via PR #48 at squash `a73e6f86bf0757aa118cb9c3247f4e6eddaa090b`
-  (merged **2026-08-07T18:15:39Z**)
+- **Status:** Accepted (owner-authorized planning decision) — documentation
+  only; **no product implementation authorized**; this record does not claim a
+  merge SHA
 - **Date:** 2026-08-07
-- **Exact base `main` (delivery base):** `ee7ed93c3336a99afc4f1945b0cc8678b855dd8a`
-- **Merge evidence:**
-  [`../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md`](../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md)
+- **Exact base `main`:** `ee7ed93c3336a99afc4f1945b0cc8678b855dd8a`
 - **Type:** decision + documentation only — **no runtime code, no schema
   change, no asset addition, no test change, no dependency change, no
   CI/deploy change**
