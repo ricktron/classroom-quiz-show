@@ -593,7 +593,7 @@ This handoff does **not** authorize implementation.
 - ADR-016 remains Accepted; public wire **8**, sync **2**, game-file schema
   **1**, private active-session wire **1**, IndexedDB **2**, Session Summary
   **1**, completed-summary **1**, and competitive profile **1** remain the
-  current boundaries (unchanged by Slice 17).
+  current boundaries (unchanged by Slices 17–18).
 - After Slice 17 completion and subsequent Slice 18 completion: Slices 1–18 are
   `Complete`; Slices 19–22 remain `Planned` and unauthorized for implementation.
   Slice 19 is the next planned frontier and remains separately unauthorized.

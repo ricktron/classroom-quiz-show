@@ -21,24 +21,34 @@ canonicalization lane remains after this reconciliation lands.
 **Slice 17 — Theme and Design-Token Foundation is terminally `Complete`**
 (implementation PR [#44](https://github.com/ricktron/classroom-quiz-show/pull/44)
 squash-merged at `dee2f3c219f9e60113a374ce0ec876ae20c40bc1` from reviewed head
-`3214185ac750be8a9ab1ad170ff3c9d1c7f9f5a4`, merged **2026-08-05T23:48:51Z**;
-reconciliation PR [#45](https://github.com/ricktron/classroom-quiz-show/pull/45)
-— see
-[`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
+`3214185ac750be8a9ab1ad170ff3c9d1c7f9f5a4`, merged **2026-08-05T23:48:51Z**,
+sole parent `6b908d577a588a68f06775a6511e1da3aacc33f3`, reviewed-head and squash
+trees identical at `ae727b3afd258532043269e60bfe49a9b64a07bb`, direct
+head-to-squash diff empty, exactly **39** paths; post-merge CI, SonarCloud, and
+Pages green; reconciliation PR
+[#45](https://github.com/ricktron/classroom-quiz-show/pull/45) — see
+[`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md),
+[`../receipts/2026-08-05-slice-17-theme-tokens-local-verification.md`](../receipts/2026-08-05-slice-17-theme-tokens-local-verification.md),
 and
 [`../receipts/2026-08-05-slice-17-post-merge-reconciliation.md`](../receipts/2026-08-05-slice-17-post-merge-reconciliation.md)).
 **PR #44 and PR #45 require no further review or merge action.**
 **Slice 16 — Completed Summary Ledger & Compatible Reporting is terminally
 `Complete`**
 (implementation PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40)
-squash-merged at `bc3cea65cab8db1481b0b2420be580cc69932f3d`; reconciliation PR
-[#41](https://github.com/ricktron/classroom-quiz-show/pull/41) — see
+squash-merged at `bc3cea65cab8db1481b0b2420be580cc69932f3d` from
+reviewed-and-repaired head `942575c97b97df220c215a7d265736a797869157`, merged
+**2026-08-05T04:38:20Z**; reconciliation PR
+[#41](https://github.com/ricktron/classroom-quiz-show/pull/41) squash-merged at
+`3ee239a1341749aa03d2bbbfa780aece74c07be5` from reviewed-and-repaired head
+`2787040ff251f04fa899f0b40b18fa7217f6ba80`, merged **2026-08-05T14:40:02Z** —
+see
 [`../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](../architecture/ADR-016-completed-summary-ledger-compatible-reporting.md)
 and
 [`../receipts/2026-08-05-slice-16-post-merge-reconciliation.md`](../receipts/2026-08-05-slice-16-post-merge-reconciliation.md)).
 **PR #40 and PR #41 require no further review or merge action.**
 **Slice 15 — Session Summary Contract is `Complete`** (PR
-[#38](https://github.com/ricktron/classroom-quiz-show/pull/38) — see
+[#38](https://github.com/ricktron/classroom-quiz-show/pull/38) squash-merged at
+`242539044e45a43eacc6d8334349e59a6987a3d9` — see
 [`../architecture/ADR-015-session-summary-contract.md`](../architecture/ADR-015-session-summary-contract.md)
 and
 [`../receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](../receipts/2026-08-04-slice-15-post-merge-reconciliation.md)).

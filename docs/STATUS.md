@@ -49,13 +49,32 @@ at `dee2f3c219f9e60113a374ce0ec876ae20c40bc1` (merged
 `6b908d577a588a68f06775a6511e1da3aacc33f3`, the squash commit's **sole**
 parent). Reviewed-head and squash trees are identical
 (`ae727b3afd258532043269e60bfe49a9b64a07bb`) and the direct diff between them is
-empty (**exactly 39** paths). Closed application-owned theme registry
-(`default`, `high-contrast`), fail-closed validation, per-window presentation
-theme state, host-only selector, validated display hash-route launches, complete
-semantic tokens including corrected opaque default tile edge `#35d6e8`, and
-theme/stress coverage — with **no** game-authority / schema / public-wire /
-sync / persistence change. See
-[`plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
+empty (**exactly 39** paths). The delivery adds a closed application-owned theme
+registry (`default`, `high-contrast`), exact case-sensitive fail-closed
+validation, per-window presentation-only theme state, a host-only native theme
+selector, validated hash-route display launches with independent display-side
+validation, complete semantic tokens including corrected opaque default tile
+edge `#35d6e8`, and coverage for high-contrast, reduced-motion, disabled-state,
+projector-safety, viewport, team-count, long-name, signed-score, ordering, and
+import isolation. **No** game-authority, schema, public-wire, sync, persistence,
+event, reducer, summary, export, package, dependency, workflow, or deployment
+change. Public-state wire remains **8**; sync envelope **2**; canonical
+game-file schema **1**; GameDefinition model **1**; private active-session wire
+**1**; IndexedDB schema **2**; Session Summary contract **1**; completed-summary
+envelope **1**; competitive profile **1**. Post-merge CI run `31057641812`
+**success**; SonarCloud check `92480089319` **success** (external provider;
+configured-and-green — correcting an earlier incomplete discovery that inferred
+Sonar was unconfigured from the absence of an in-repo Sonar workflow file);
+Pages deploy run `31057641869` **success** (deployment `5771220150`). CI
+Playwright concluded **301 passed** with **3 flaky** retries matching the
+inherited Final mid-refresh signature (`Saved: 100` / `Not saved yet`); that
+flake remains unresolved and is not claimed repaired by Slice 17. Merge-lane
+local verification also recorded environmental port-4173 web-server and Vitest
+worker timeouts under load, then final clean `npm run verify` / `verify:all`
+with local e2e **304 passed** / **2 skipped** / **0 failed** / **0 flaky** —
+environmental events distinct from the inherited Final flake. See
+[`plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md),
+[`receipts/2026-08-05-slice-17-theme-tokens-local-verification.md`](receipts/2026-08-05-slice-17-theme-tokens-local-verification.md),
 and
 [`receipts/2026-08-05-slice-17-post-merge-reconciliation.md`](receipts/2026-08-05-slice-17-post-merge-reconciliation.md).
 **Slice 16 state:** **Complete** — PR
@@ -66,17 +85,38 @@ at `bc3cea65cab8db1481b0b2420be580cc69932f3d` (merged
 `f92b65fa2d6619d9c2a4d09b5457f0976ff91079`, the squash commit's **sole**
 parent). Reviewed-head and squash trees are identical
 (`12fea1bc056e6968e13a651161cdf89a6158a558`) and the direct diff between them is
-empty. Host-private completed-summary ledger and competitive profiles;
-IndexedDB schema **1 → 2**; public wire remains **8**. See
-[`architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](architecture/ADR-016-completed-summary-ledger-compatible-reporting.md)
+empty. The delivery adds a host-private completed-summary ledger
+(`classroom-quiz-show/completed-summary-record`, version **1**), competitive
+profiles (version **1**), atomic completion save with active-recovery cleanup,
+newest-50 valid retention, confirmed deletion, optional class labels, and
+exact-compatible game/team/class reports with quarantine of unknown/corrupt
+records. IndexedDB schema moves **1 → 2**; public-state wire remains **8**; sync
+envelope **2**; canonical game-file schema **1**; private active-session wire
+**1**; Session Summary contract **1**. Semantic-review R1 repairs are in the
+merged tree. The inherited Final mid-refresh recovery flake remains unresolved
+and is not claimed repaired. See
+[`architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](architecture/ADR-016-completed-summary-ledger-compatible-reporting.md),
+[`receipts/2026-08-04-slice-16-local-verification.md`](receipts/2026-08-04-slice-16-local-verification.md),
+[`receipts/2026-08-04-slice-16-semantic-review-r1.md`](receipts/2026-08-04-slice-16-semantic-review-r1.md),
 and
 [`receipts/2026-08-05-slice-16-post-merge-reconciliation.md`](receipts/2026-08-05-slice-16-post-merge-reconciliation.md).
 **Slice 15 state:** **Complete** — PR
 [#38](https://github.com/ricktron/classroom-quiz-show/pull/38) was squash-merged
 at `242539044e45a43eacc6d8334349e59a6987a3d9` (merged
 **2026-08-04T19:28:26Z**) from final reviewed-and-repaired head
-`d8f6308eccea5144ab1c6b5f49afdfcc2b7d5b5b`. Session Summary Contract version
-**1**; public wire **8**. See
+`d8f6308eccea5144ab1c6b5f49afdfcc2b7d5b5b` (authorized base
+`0939d9cafd009e713c8ca83bcc35ff3f90556819`, the squash commit's **sole**
+parent). Reviewed-head and squash trees are identical
+(`10ac401ebba0daab6e43dc96fa9fdbb4f72b6a9b`) and the direct diff between them is
+empty. The Session Summary Contract is a versioned host-private
+current-session summary (`classroom-quiz-show/session-summary`, version **1**)
+derived from authoritative effective history and replay only: ephemeral and
+unavailable after refresh/reset/discard/close/new game; not persisted, exported,
+or projected publicly; unsupported authored rounds listed as unavailable without
+fabricated metrics; timer-reset counts require a non-idle pre-event response
+timer. Public-state wire remains **8**; sync envelope **2**; game-file schema,
+private persistence wire, and IndexedDB schema remain **1**. The inherited Final
+mid-refresh recovery flake remains unresolved. See
 [`architecture/ADR-015-session-summary-contract.md`](architecture/ADR-015-session-summary-contract.md)
 and
 [`receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](receipts/2026-08-04-slice-15-post-merge-reconciliation.md).
@@ -84,7 +124,17 @@ and
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32) was squash-merged
 at `ce2e103377c5d86c8e0946346cb4cf05dfe7d58d` (merged
 **2026-08-03T17:08:37Z**) from final reviewed-and-repaired head
-`c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26`. Public-state wire **7 → 8**. See
+`c2bcc1a5c383d5e6787f7f9a9d9a808c8ffd2d26` (authorized base
+`4de1454181ed58bdb282accd136129c3c0eb0f2b`, the squash commit's **sole**
+parent). Reviewed-head and squash trees are identical
+(`50caaa392d99ceaf057f184af4d049a5bcd3feba`) and the direct diff between them is
+empty. The `final-wager` round is the **second playable registered round type**:
+frozen eligibility/cap/reveal-order snapshot, host-private wagers, optional
+exact-text response capture, two Final windows on ADR-007's clock discipline,
+explicit team-by-team reveal, reversible atomic settlement, and bounded tie
+handling with sudden death. Public-state wire moves **7 → 8**; sync envelope
+remains **2**; game-file schema, `GameDefinition` model, private persistence
+wire and IndexedDB schema all remain **1**; no dependency added. See
 [`architecture/ADR-014-final-wager-round.md`](architecture/ADR-014-final-wager-round.md)
 and
 [`receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
