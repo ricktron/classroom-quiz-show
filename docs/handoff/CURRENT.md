@@ -63,7 +63,15 @@ and
 **Slices 19–23 remain `Planned` and unauthorized** under the **23-slice** MVP
 plan amended by
 [`../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md)
-(`CQS-PLAN-S03`, documentation-only). Prior Amendment 003
+(`CQS-PLAN-S03`, documentation-only). **Amendment 004 is merged and canonical**
+via PR [#48](https://github.com/ricktron/classroom-quiz-show/pull/48) (squash
+`a73e6f86bf0757aa118cb9c3247f4e6eddaa090b` from reviewed head
+`b9e30be96af7d2276cae310ef2601cad4424a635`; merged **2026-08-07T18:15:39Z**).
+**PR #48 requires no further review or merge action.** CQS-PLAN-S03
+planning/merge authority is exhausted. Post-merge reconciliation evidence is
+recorded in
+[`../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md`](../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md)
+and adds evidence only. Prior Amendment 003
 ([`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md),
 `CQS-PLAN-S02`) delivery **merged** via PR #35 at
 `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`; post-merge reconciliation
@@ -74,12 +82,13 @@ audience-display sequence
 ([`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)).
 **Slice 19 remains `Planned` and unauthorized.** Slice 22 Minimal Presentation
 Audio and Slice 23 Classroom Release Qualification remain unauthorized.
-**Recommended next action:** a new, separately authorized Slice 19 —
+**Recommended next action (after this reconciliation content is on `main`):**
+return to the Program Orchestrator for a new, separately authorized Slice 19 —
 Self-Contained Portable Packs lane. No authority is granted by this handoff
-itself. Do not begin Slice 19, Slice 22 audio, Slice 23 qualification, or
-post-MVP work from this handoff alone. Theme song remains post-MVP.
-`CQS-OD-066` remains unresolved. The inherited Final mid-refresh recovery flake
-remains unresolved.
+itself. Do not begin Slice 19, Slice 20, Slice 21, Slice 22 audio, Slice 23
+qualification, or post-MVP work from this handoff alone. Theme song remains
+post-MVP. `CQS-OD-066` remains unresolved. The inherited Final mid-refresh
+recovery flake remains unresolved.
 
 Coding agents and contributors should read root
 [`../../AGENTS.md`](../../AGENTS.md) before changing the repository. Claude
@@ -138,9 +147,9 @@ defers to `AGENTS.md` and adds no separate authority.
 > `3ee239a1341749aa03d2bbbfa780aece74c07be5`. **PR #40 and PR #41 require no
 > further review or merge action.** Phase 3 design-system readiness was satisfied
 > and consumed by completed Slices 17–18 (PR #44, PR #46). **Current** MVP count
-> is the **23-slice** plan per Amendment 004; Slices 19–23 remain unauthorized
-> for implementation. Post-MVP arcs remain inactive. Theme song remains
-> post-MVP. `CQS-OD-066` remains unresolved.
+> is the **23-slice** plan per Amendment 004 (**merged** via PR #48); Slices
+> 19–23 remain unauthorized for implementation. Post-MVP arcs remain inactive.
+> Theme song remains post-MVP. `CQS-OD-066` remains unresolved.
 
 ## Repository state
 
@@ -1028,7 +1037,14 @@ merged.** Phase 2B design direction is registered and its MVP consumers
 [`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
 **Current MVP count is the 23-slice plan** per
 [`../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md)
-(`CQS-PLAN-S03`).
+(`CQS-PLAN-S03`), **merged and canonical** via PR
+[#48](https://github.com/ricktron/classroom-quiz-show/pull/48) at squash
+`a73e6f86bf0757aa118cb9c3247f4e6eddaa090b` (reviewed head
+`b9e30be96af7d2276cae310ef2601cad4424a635`; merged **2026-08-07T18:15:39Z**).
+Merge evidence:
+[`../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md`](../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md).
+CQS-PLAN-S03 planning/merge authority is exhausted; post-merge reconciliation
+adds evidence only.
 **Slice 18 — Audience Display System is `Complete`** (PR
 [#46](https://github.com/ricktron/classroom-quiz-show/pull/46) at
 `91c7708626caeaa28b15617a1f0938f4944f7680`).
@@ -1043,17 +1059,17 @@ merged.** Phase 2B design direction is registered and its MVP consumers
 **Slice 14 — Final-wager round is `Complete`** (PR
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32)).
 
-**PR #46, PR #45, PR #44, PR #41, PR #40, PR #38, and PR #36 require no further
-review or merge action.** Slice 18 product delivery is `Complete` on `main`.
-After this reconciliation content lands, no further Slice 18 product lane is
-owed. Phase 3 design-system readiness has served the theme-foundation →
-audience-display sequence. **Recommended next action:** a new, separately
-authorized Slice 19 — Self-Contained Portable Packs lane. Slice 19 remains
-`Planned` and unauthorized. Slices 19–23 remain unauthorized for
-implementation (including Slice 22 audio and Slice 23 qualification). This
-handoff grants **no** authority. Post-MVP arcs remain inactive. Theme song
-remains post-MVP. `CQS-OD-066` remains unresolved. The inherited Final
-mid-refresh recovery flake remains unresolved.
+**PR #48, PR #46, PR #45, PR #44, PR #41, PR #40, PR #38, and PR #36 require no
+further review or merge action.** Slice 18 product delivery is `Complete` on
+`main`. No further Slice 18 product lane is owed. Phase 3 design-system
+readiness has served the theme-foundation → audience-display sequence.
+**Recommended next action (after this reconciliation content is on `main`):**
+return to the Program Orchestrator for a new, separately authorized Slice 19 —
+Self-Contained Portable Packs lane. Slice 19 remains `Planned` and unauthorized.
+Slices 19–23 remain unauthorized for implementation (including Slice 22 audio
+and Slice 23 qualification). This handoff grants **no** authority. Post-MVP arcs
+remain inactive. Theme song remains post-MVP. `CQS-OD-066` remains unresolved.
+The inherited Final mid-refresh recovery flake remains unresolved.
 
 ## Registered design direction — Phase 2B audience display (2026-08-03)
 
