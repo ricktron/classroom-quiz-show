@@ -345,7 +345,8 @@ This lane did **not**:
 | URL | https://github.com/ricktron/classroom-quiz-show/pull/47 |
 | Base | `main` @ `91c7708626caeaa28b15617a1f0938f4944f7680` |
 | First docs commit | `4c799272655c678adf1a743eb74f5b9fb3cfa577` |
-| Exact head (with PR identity) | `c8026bc07fb7f2ae4732c480dedce1e8d92c1377` |
+| PR-identity commit | `c8026bc07fb7f2ae4732c480dedce1e8d92c1377` |
+| Final exact head | recorded after the PR-identity receipt commit on this branch |
 | Head branch | `docs/slice-18-post-merge-reconciliation` |
 | Changed paths | the seven allowlisted paths above |
 | Draft | **no** |
