@@ -6,7 +6,7 @@
 - **Implementation HEAD (feature commit):** `f3bed18b8e6cc8167f6323b95bd22306ba8a0a49`
 - **PR:** [#50](https://github.com/ricktron/classroom-quiz-show/pull/50) — `feat(slice-19): add self-contained portable packs`
 - **Draft / auto-merge:** no / off
-- **Observed PR head at receipt update:** 
+- **PR identity receipt commit:** `1c9d012c6c70b72d29a4a478479ff6657c3b53f8`
 - **Slice state after this work:** `In review` (unmerged)
 - **STOP BEFORE MERGE**
 
@@ -211,7 +211,8 @@ No Slice 19 repair attempted.
 Retain `feat/slice-19-portable-packs` and isolated worktree until independent
 orchestrator review and separate merge authorization.
 
-## 19. PR tip after identity receipt commit
+## 19. Branch tip
 
-- **Exact branch tip:** 
-- Does not claim merge.
+Filled after the tip-fill commit and push (does not claim merge). Tip SHA is
+recorded in the commit message body of the tip-fill commit and in the executor
+report; do not treat a receipt line as predicting its own commit hash.
