@@ -1,15 +1,24 @@
 import { writeFile, unlink, mkdtemp } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { test, expect, type Page, type BrowserContext } from '@playwright/test'
+import {
+  test,
+  expect,
+  type Page,
+  type Browser,
+  type BrowserContext,
+} from '@playwright/test'
 import { CANONICAL_GAME_FILE_FORMAT, SUPPORTED_SCHEMA_VERSION } from '../../src/import/canonicalFormat'
-import { PERSISTENCE_DB_NAME } from '../../src/persistence/constants'
 
 /**
  * Slice 19 — self-contained portable packs, end to end in a real browser.
  *
  * Proves clean-environment pack round-trip, zero-media packs, Save/Load durability,
  * refresh/recovery with embedded media, and export-after-import without hosted media.
+ *
+ * Clean-environment phases use a fresh BrowserContext (isolated storage lifetime)
+ * rather than indexedDB.deleteDatabase against pages that still hold connections.
+ * Treating IDB `onblocked` as success is invalid: blocked deletion leaves the DB.
  */
 
 test.describe.configure({ mode: 'serial' })
@@ -123,28 +132,20 @@ async function blockHostedMedia(page: Page) {
   await page.route(MEDIA_ROUTE, (route) => route.abort('failed'))
 }
 
-async function clearClassroomQuizShowStorage(page: Page) {
-  await page.evaluate(async (dbName) => {
-    const databases =
-      typeof indexedDB.databases === 'function' ? await indexedDB.databases() : []
-    const names = new Set<string>([dbName])
-    for (const db of databases) {
-      if (db.name && db.name.includes('classroom-quiz-show')) {
-        names.add(db.name)
-      }
-    }
-    await Promise.all(
-      [...names].map(
-        (name) =>
-          new Promise<void>((resolve, reject) => {
-            const request = indexedDB.deleteDatabase(name)
-            request.onsuccess = () => resolve()
-            request.onerror = () => reject(request.error ?? new Error(`delete ${name}`))
-            request.onblocked = () => resolve()
-          }),
-      ),
-    )
-  }, PERSISTENCE_DB_NAME)
+/**
+ * Run `fn` inside a brand-new BrowserContext whose origin storage starts empty.
+ * Closing the context ends that storage lifetime — no in-page deleteDatabase.
+ */
+async function withCleanContext<T>(
+  browser: Browser,
+  fn: (context: BrowserContext) => Promise<T>,
+): Promise<T> {
+  const clean = await browser.newContext()
+  try {
+    return await fn(clean)
+  } finally {
+    await clean.close()
+  }
 }
 
 async function downloadPackFromLoadedGame(host: Page): Promise<Buffer> {
@@ -205,207 +206,180 @@ async function applyHostedMediaBlock(host: Page, display: Page) {
   await display.route(MEDIA_ROUTE, abort)
 }
 
-test('media pack clean-environment chain survives hosted media block', async ({ context }) => {
+async function buildImagePackBytes(context: BrowserContext): Promise<Buffer> {
   const buildHost = await context.newPage()
   await openHost(buildHost)
   await startBoard(buildHost, IMAGE_PACK_GAME)
-
   const packBytes = await downloadPackFromLoadedGame(buildHost)
-  expect(packBytes.length).toBeGreaterThan(0)
   await buildHost.close()
+  return packBytes
+}
 
-  const { host, display } = await openHostDisplayWithBlockedMedia(context)
+test('media pack clean-environment chain survives hosted media block', async ({
+  browser,
+  context,
+}) => {
+  const packBytes = await buildImagePackBytes(context)
+  expect(packBytes.length).toBeGreaterThan(0)
 
-  let hostedMediaAttempts = 0
-  const countingAbort = (route: Parameters<Parameters<Page['route']>[1]>[0]) => {
-    hostedMediaAttempts += 1
-    return route.abort('failed')
-  }
-  await host.unroute(MEDIA_ROUTE)
-  await display.unroute(MEDIA_ROUTE)
-  await host.route(MEDIA_ROUTE, countingAbort)
-  await display.route(MEDIA_ROUTE, countingAbort)
+  await withCleanContext(browser, async (clean) => {
+    const { host, display } = await openHostDisplayWithBlockedMedia(clean)
 
-  await clearClassroomQuizShowStorage(host)
-  await host.reload()
-  await display.reload()
-  await openHost(host)
-  await openDisplay(display)
-  await applyHostedMediaBlock(host, display)
+    let hostedMediaAttempts = 0
+    const countingAbort = (route: Parameters<Parameters<Page['route']>[1]>[0]) => {
+      hostedMediaAttempts += 1
+      return route.abort('failed')
+    }
+    await host.unroute(MEDIA_ROUTE)
+    await display.unroute(MEDIA_ROUTE)
+    await host.route(MEDIA_ROUTE, countingAbort)
+    await display.route(MEDIA_ROUTE, countingAbort)
 
-  await initSession(host)
-  await importPackFile(host, packBytes)
-  await expect(host.getByTestId('game-title')).toHaveText('E2E Portable Pack Image')
-  await expect(host.getByTestId('pack-import-media-count')).toHaveText('1')
+    await initSession(host)
+    await importPackFile(host, packBytes)
+    await expect(host.getByTestId('game-title')).toHaveText('E2E Portable Pack Image')
+    await expect(host.getByTestId('pack-import-media-count')).toHaveText('1')
 
-  await host.getByRole('button', { name: /advance to next round/i }).click()
-  await assertImagePromptVisible(host, display, 'cbh-tile-pack-image-100')
+    await host.getByRole('button', { name: /advance to next round/i }).click()
+    await assertImagePromptVisible(host, display, 'cbh-tile-pack-image-100')
 
-  await host.getByTestId('cbh-reveal-answer').click()
-  await expect(display.getByTestId('cbd-answer')).toContainText('PACK-IMAGE-ANSWER-PRIVATE')
-  await expect(display.getByTestId('mcd-img')).toBeVisible()
+    await host.getByTestId('cbh-reveal-answer').click()
+    await expect(display.getByTestId('cbd-answer')).toContainText('PACK-IMAGE-ANSWER-PRIVATE')
+    await expect(display.getByTestId('mcd-img')).toBeVisible()
 
-  expect(hostedMediaAttempts, 'pack-resolved media must not fetch hosted fixture').toBe(0)
-
-  await host.close()
-  await display.close()
+    expect(hostedMediaAttempts, 'pack-resolved media must not fetch hosted fixture').toBe(0)
+  })
 })
 
-test('zero-media pack export and import succeeds', async ({ context }) => {
+test('zero-media pack export and import succeeds', async ({ browser, context }) => {
   const host = await context.newPage()
   await openHost(host)
   await initSession(host)
   await importJson(host, TEXT_PACK_GAME)
   await expect(host.getByTestId('game-title')).toHaveText('E2E Portable Pack Text')
-
   const packBytes = await downloadPackFromLoadedGame(host)
-  await clearClassroomQuizShowStorage(host)
-  await host.reload()
-  await openHost(host)
-  await blockHostedMedia(host)
-
-  await initSession(host)
-  await importPackFile(host, packBytes)
-  await expect(host.getByTestId('pack-import-media-count')).toHaveText('0')
-  await expect(host.getByTestId('game-title')).toHaveText('E2E Portable Pack Text')
-
-  await host.getByRole('button', { name: /advance to next round/i }).click()
-  await host.getByTestId('cbh-tile-pack-text-100').click()
-  await host.getByTestId('cbh-reveal-prompt').click()
-  await expect(host.getByTestId('cbh-prompt')).toContainText('Which layer lies beneath the crust?')
-
   await host.close()
+
+  await withCleanContext(browser, async (clean) => {
+    const cleanHost = await clean.newPage()
+    await openHost(cleanHost)
+    await blockHostedMedia(cleanHost)
+
+    await initSession(cleanHost)
+    await importPackFile(cleanHost, packBytes)
+    await expect(cleanHost.getByTestId('pack-import-media-count')).toHaveText('0')
+    await expect(cleanHost.getByTestId('game-title')).toHaveText('E2E Portable Pack Text')
+
+    await cleanHost.getByRole('button', { name: /advance to next round/i }).click()
+    await cleanHost.getByTestId('cbh-tile-pack-text-100').click()
+    await cleanHost.getByTestId('cbh-reveal-prompt').click()
+    await expect(cleanHost.getByTestId('cbh-prompt')).toContainText(
+      'Which layer lies beneath the crust?',
+    )
+  })
 })
 
-test('Save/Load keeps pack media when hosted path is blocked', async ({ context }) => {
-  const buildHost = await context.newPage()
-  await openHost(buildHost)
-  await startBoard(buildHost, IMAGE_PACK_GAME)
-  const packBytes = await downloadPackFromLoadedGame(buildHost)
-  await buildHost.close()
+test('Save/Load keeps pack media when hosted path is blocked', async ({ browser, context }) => {
+  const packBytes = await buildImagePackBytes(context)
 
-  const { host, display } = await openHostDisplayWithBlockedMedia(context)
-  await clearClassroomQuizShowStorage(host)
-  await host.reload()
-  await display.reload()
-  await openHost(host)
-  await openDisplay(display)
-  await applyHostedMediaBlock(host, display)
+  await withCleanContext(browser, async (clean) => {
+    const { host, display } = await openHostDisplayWithBlockedMedia(clean)
 
-  await initSession(host)
-  await importPackFile(host, packBytes)
-  await waitForSaved(host)
+    await initSession(host)
+    await importPackFile(host, packBytes)
+    await waitForSaved(host)
 
-  await host.getByRole('button', { name: /advance to next round/i }).click()
-  await assertImagePromptVisible(host, display, 'cbh-tile-pack-image-100')
-  await host.getByTestId('cbh-return').click()
+    await host.getByRole('button', { name: /advance to next round/i }).click()
+    await assertImagePromptVisible(host, display, 'cbh-tile-pack-image-100')
+    await host.getByTestId('cbh-return').click()
 
-  await host.getByTestId('persistence-save').click()
-  await expect(host.getByTestId('persistence-library')).toContainText('E2E Portable Pack Image')
+    await host.getByTestId('persistence-save').click()
+    await expect(host.getByTestId('persistence-library')).toContainText('E2E Portable Pack Image')
 
-  await host.getByRole('button', { name: /^initialize sample game$/i }).click()
-  await expect(host.getByTestId('game-title')).toHaveText('Foundation Sample Game')
-  await waitForSaved(host)
+    await host.getByRole('button', { name: /^initialize sample game$/i }).click()
+    await expect(host.getByTestId('game-title')).toHaveText('Foundation Sample Game')
+    await waitForSaved(host)
 
-  await host.getByTestId('persistence-load').click()
-  await expect(host.getByTestId('persistence-load')).toHaveText(/confirm load and replace current game/i)
-  await host.getByTestId('persistence-load').click()
-  await expect(host.getByTestId('game-title')).toHaveText('E2E Portable Pack Image')
-  await waitForSaved(host)
+    await host.getByTestId('persistence-load').click()
+    await expect(host.getByTestId('persistence-load')).toHaveText(
+      /confirm load and replace current game/i,
+    )
+    await host.getByTestId('persistence-load').click()
+    await expect(host.getByTestId('game-title')).toHaveText('E2E Portable Pack Image')
+    await waitForSaved(host)
 
-  await host.getByRole('button', { name: /advance to next round/i }).click()
-  await assertImagePromptVisible(host, display, 'cbh-tile-pack-image-100')
-
-  await host.close()
-  await display.close()
+    await host.getByRole('button', { name: /advance to next round/i }).click()
+    await assertImagePromptVisible(host, display, 'cbh-tile-pack-image-100')
+  })
 })
 
-test('refresh recovery keeps pack media when hosted path is blocked', async ({ context }) => {
-  const buildHost = await context.newPage()
-  await openHost(buildHost)
-  await startBoard(buildHost, IMAGE_PACK_GAME)
-  const packBytes = await downloadPackFromLoadedGame(buildHost)
-  await buildHost.close()
+test('refresh recovery keeps pack media when hosted path is blocked', async ({
+  browser,
+  context,
+}) => {
+  const packBytes = await buildImagePackBytes(context)
 
-  const { host, display } = await openHostDisplayWithBlockedMedia(context)
-  await clearClassroomQuizShowStorage(host)
-  await host.reload()
-  await display.reload()
-  await openHost(host)
-  await openDisplay(display)
-  await applyHostedMediaBlock(host, display)
+  await withCleanContext(browser, async (clean) => {
+    const { host, display } = await openHostDisplayWithBlockedMedia(clean)
 
-  await initSession(host)
-  await importPackFile(host, packBytes)
-  await host.getByRole('button', { name: /advance to next round/i }).click()
-  // Persist while still on the board (tile buttons remount after Resume).
-  await waitForSaved(host)
+    await initSession(host)
+    await importPackFile(host, packBytes)
+    await host.getByRole('button', { name: /advance to next round/i }).click()
+    // Persist while still on the board (tile buttons remount after Resume).
+    await waitForSaved(host)
 
-  await host.reload()
-  await display.reload()
-  await expect(host.getByRole('heading', { name: /host control/i })).toBeVisible()
-  await applyHostedMediaBlock(host, display)
+    await host.reload()
+    await display.reload()
+    await expect(host.getByRole('heading', { name: /host control/i })).toBeVisible()
+    await applyHostedMediaBlock(host, display)
 
-  const recovery = host.getByTestId('persistence-recovery')
-  await expect(recovery).toBeVisible({ timeout: 15_000 })
-  await expect(recovery).toContainText(/unfinished session found/i)
-  await host.getByTestId('persistence-resume').click()
-  await expect(recovery).toHaveCount(0)
-  await expect(host.getByTestId('game-title')).toHaveText('E2E Portable Pack Image')
-  await waitForSaved(host)
+    const recovery = host.getByTestId('persistence-recovery')
+    await expect(recovery).toBeVisible({ timeout: 15_000 })
+    await expect(recovery).toContainText(/unfinished session found/i)
+    await host.getByTestId('persistence-resume').click()
+    await expect(recovery).toHaveCount(0)
+    await expect(host.getByTestId('game-title')).toHaveText('E2E Portable Pack Image')
+    await waitForSaved(host)
 
-  // Allow pack-media hydration from IndexedDB before revealing the image.
-  await expect
-    .poll(async () => host.getByTestId('cbh-tile-pack-image-100').count(), { timeout: 15_000 })
-    .toBeGreaterThan(0)
+    // Allow pack-media hydration from IndexedDB before revealing the image.
+    await expect
+      .poll(async () => host.getByTestId('cbh-tile-pack-image-100').count(), { timeout: 15_000 })
+      .toBeGreaterThan(0)
 
-  await assertImagePromptVisible(host, display, 'cbh-tile-pack-image-100')
-
-  await host.close()
-  await display.close()
+    await assertImagePromptVisible(host, display, 'cbh-tile-pack-image-100')
+  })
 })
 
 test('export-after-import produces an independent pack without hosted media', async ({
+  browser,
   context,
 }) => {
-  const buildHost = await context.newPage()
-  await openHost(buildHost)
-  await startBoard(buildHost, IMAGE_PACK_GAME)
-  const packA = await downloadPackFromLoadedGame(buildHost)
-  await buildHost.close()
+  const packA = await buildImagePackBytes(context)
 
-  const { host, display } = await openHostDisplayWithBlockedMedia(context)
-  await clearClassroomQuizShowStorage(host)
-  await host.reload()
-  await display.reload()
-  await openHost(host)
-  await openDisplay(display)
-  await applyHostedMediaBlock(host, display)
+  const packB = await withCleanContext(browser, async (clean) => {
+    const host = await clean.newPage()
+    await openHost(host)
+    await blockHostedMedia(host)
 
-  await initSession(host)
-  await importPackFile(host, packA)
-  await expect(host.getByTestId('pack-import-media-count')).toHaveText('1')
+    await initSession(host)
+    await importPackFile(host, packA)
+    await expect(host.getByTestId('pack-import-media-count')).toHaveText('1')
 
-  const packBPromise = host.waitForEvent('download')
-  await host.getByTestId('pack-export-download').click()
-  const packBDownload = await packBPromise
-  const packBPath = await packBDownload.path()
-  expect(packBPath).toBeTruthy()
-  const { readFile } = await import('node:fs/promises')
-  const packB = await readFile(packBPath!)
+    const packBPromise = host.waitForEvent('download')
+    await host.getByTestId('pack-export-download').click()
+    const packBDownload = await packBPromise
+    const packBPath = await packBDownload.path()
+    expect(packBPath).toBeTruthy()
+    const { readFile } = await import('node:fs/promises')
+    return readFile(packBPath!)
+  })
 
-  await clearClassroomQuizShowStorage(host)
-  await host.reload()
-  await display.reload()
-  await openHost(host)
-  await openDisplay(display)
-  await applyHostedMediaBlock(host, display)
+  await withCleanContext(browser, async (clean) => {
+    const { host, display } = await openHostDisplayWithBlockedMedia(clean)
 
-  await initSession(host)
-  await importPackFile(host, packB)
-  await host.getByRole('button', { name: /advance to next round/i }).click()
-  await assertImagePromptVisible(host, display, 'cbh-tile-pack-image-100')
-
-  await host.close()
-  await display.close()
+    await initSession(host)
+    await importPackFile(host, packB)
+    await host.getByRole('button', { name: /advance to next round/i }).click()
+    await assertImagePromptVisible(host, display, 'cbh-tile-pack-image-100')
+  })
 })

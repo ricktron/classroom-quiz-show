@@ -184,6 +184,16 @@ All five cases passed on all three Playwright projects:
 
 Hosted fixture path deliberately aborted on host and display; display image asserted via `blob:` src.
 
+### Clean-environment harness (PR #50 exact-head E2E repair)
+
+Clean-import / clean-recovery phases use a fresh Playwright `BrowserContext`
+(isolated origin storage lifetime) instead of in-page
+`indexedDB.deleteDatabase` while host/display pages hold connections.
+`IDBOpenDBRequest.onblocked` must not be treated as successful deletion —
+blocked deletion leaves the database present. Assertions for pack media,
+hosted-path abort, refresh/recovery, Save/Load, and export-after-import are
+unchanged in rigor.
+
 ## 16. Inherited flake disclosure
 
 Observed on `verify:all` (not repaired):
