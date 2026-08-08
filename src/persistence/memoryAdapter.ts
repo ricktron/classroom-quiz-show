@@ -15,6 +15,7 @@ const STORE_NAMES: ReadonlySet<PersistenceStoreName> = new Set([
   'activeSessions',
   'coordination',
   'completedSummaries',
+  'packMediaAssets',
 ])
 
 /**
@@ -112,6 +113,7 @@ function createEmptyDatabase(): DatabaseMap {
     activeSessions: new Map(),
     coordination: new Map(),
     completedSummaries: new Map(),
+    packMediaAssets: new Map(),
   }
 }
 
@@ -131,6 +133,9 @@ function cloneDatabase(database: DatabaseMap): DatabaseMap {
         key,
         cloneStoredValue(value),
       ]),
+    ),
+    packMediaAssets: new Map(
+      [...database.packMediaAssets.entries()].map(([key, value]) => [key, cloneStoredValue(value)]),
     ),
   }
 }

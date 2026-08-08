@@ -152,7 +152,7 @@ describe('GameExportPanel', () => {
     )
     renderExport({ definition: withMedia })
     expect(screen.getByTestId('export-media-warning')).toHaveTextContent(
-      /preserves media paths but does not include/i,
+      /preserves media paths only|does not include the referenced image bytes/i,
     )
   })
 

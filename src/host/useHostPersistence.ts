@@ -8,6 +8,12 @@ import type { PrivateGameState } from '../state/privateState'
 import type { DispatchResult } from '../state/store'
 import { systemClock, type Clock } from '../time/clock'
 import {
+  collectReferencedPackScopeKeys,
+  hydratePackMediaForDefinition,
+} from '../pack/hydratePackMedia'
+import { gcUnreferencedPackScopes } from '../pack/packMediaPersistence'
+import { getSharedPackResourceRegistry } from '../pack/resourceRegistry'
+import {
   COORDINATION_BROADCAST_CHANNEL,
   HOST_WRITER_LEASE_TTL_MS,
   PersistenceWriteQueue,
@@ -141,6 +147,11 @@ export interface UseHostPersistence {
     recordId: string,
     label: string | null,
   ) => Promise<PersistenceActionResult>
+  /** Keeps pack-media GC aware of the active loaded definition. */
+  readonly setPackGcContext?: (
+    definition: GameDefinition | null,
+    roundRegistry: RoundRegistry,
+  ) => void
 }
 
 const DEFAULT_RENEW_INTERVAL_MS = Math.floor(HOST_WRITER_LEASE_TTL_MS / 2)
@@ -184,6 +195,40 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     readonly history: readonly SessionEvent[]
     readonly savedAt: number
   } | null>(null)
+  const packGcContextRef = useRef<{
+    definition: GameDefinition | null
+    roundRegistry: RoundRegistry
+  }>({ definition: null, roundRegistry: registry })
+
+  const setPackGcContext = useCallback(
+    (definition: GameDefinition | null, roundRegistry: RoundRegistry): void => {
+      packGcContextRef.current = { definition, roundRegistry }
+    },
+    [],
+  )
+
+  const gcPackMedia = useCallback(async (): Promise<void> => {
+    if (!storageReadyRef.current) return
+    const { definition, roundRegistry } = packGcContextRef.current
+    const keepScopeKeys = await collectReferencedPackScopeKeys(adapter, {
+      activeDefinition: definition,
+      roundRegistry,
+    })
+    await gcUnreferencedPackScopes(adapter, { keepScopeKeys })
+  }, [adapter])
+
+  const hydrateActivePackMedia = useCallback(
+    async (definition: GameDefinition, roundRegistry: RoundRegistry): Promise<void> => {
+      if (!storageReadyRef.current) return
+      await hydratePackMediaForDefinition(
+        adapter,
+        definition,
+        getSharedPackResourceRegistry(),
+        roundRegistry,
+      )
+    },
+    [adapter],
+  )
 
   const leadershipOptions = useMemo(
     () => ({ adapter, tabId, clock, leaseTtlMs, broadcastChannel }),
@@ -646,11 +691,12 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         setMessage('Saved definition could not be deleted.')
         return { ok: false, message: result.message }
       }
+      await gcPackMedia()
       await updateLibrary()
       setMessage('Saved definition deleted.')
       return { ok: true, message: 'Saved definition deleted.' }
     },
-    [adapter, canUseStorage, leadership, updateLibrary],
+    [adapter, canUseStorage, gcPackMedia, leadership, updateLibrary],
   )
 
   const loadSaved = useCallback(
@@ -687,13 +733,14 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         setMessage(message)
         return { ok: false, message }
       }
+      await hydrateActivePackMedia(loaded.value, loadRegistry)
       // Safe if the caller passed a raw store dispatch (no enqueue) or a wrapped
       // leadership dispatch (already enqueued): writeActiveSession is generation-gated.
       persistHistory(getHistory(), loadRegistry)
       setMessage('Saved definition loaded into the active session.')
       return { ok: true, message: 'Saved definition loaded.' }
     },
-    [adapter, canUseStorage, clock, leadership, persistHistory],
+    [adapter, canUseStorage, clock, hydrateActivePackMedia, leadership, persistHistory],
   )
 
   const dispatchSessionCommand = useCallback(
@@ -760,6 +807,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     deleteCompletedRecord,
     clearAllCompletedRecords,
     updateCompletedClassLabel,
+    setPackGcContext,
   }
 }
 

@@ -67,7 +67,7 @@ describe('the compatibility versions are unchanged', () => {
   })
 
   it('advances only the IndexedDB database schema to version 2 for completed summaries', () => {
-    expect(PERSISTENCE_DB_VERSION).toBe(2)
+    expect(PERSISTENCE_DB_VERSION).toBe(3)
   })
 
   it('decodes a FROZEN pre-Slice-14 wire record written by the Slice 13 build', () => {

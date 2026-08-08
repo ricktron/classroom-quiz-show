@@ -6,7 +6,7 @@ import {
 } from './indexedDbAdapter'
 
 describe('IndexedDbPersistenceAdapter', () => {
-  it('creates exactly the persistence v2 object stores during schema upgrade', () => {
+  it('creates exactly the persistence v3 object stores during schema upgrade', () => {
     const created: string[] = []
     const existing = new Set<string>()
 
@@ -21,7 +21,31 @@ describe('IndexedDbPersistenceAdapter', () => {
 
     expect(created).toEqual(PERSISTENCE_OBJECT_STORES)
     expect(created).toContain('completedSummaries')
+    expect(created).toContain('packMediaAssets')
     expect([...existing].sort()).toEqual([...PERSISTENCE_OBJECT_STORES].sort())
+  })
+
+  it('adds packMediaAssets without recreating existing v2 stores', () => {
+    const created: string[] = []
+    const existing = new Set<string>([
+      'savedDefinitions',
+      'activeSessions',
+      'coordination',
+      'completedSummaries',
+    ])
+
+    upgradePersistenceSchema({
+      objectStoreNames: { contains: (name) => existing.has(name) },
+      createObjectStore: (name) => {
+        created.push(name)
+        existing.add(name)
+        return {}
+      },
+    })
+
+    expect(created).toEqual(['packMediaAssets'])
+    expect(existing.has('savedDefinitions')).toBe(true)
+    expect(existing.has('packMediaAssets')).toBe(true)
   })
 
   it('does not recreate stores that already exist', () => {
