@@ -102,6 +102,7 @@ export {
   hydratePackMediaForDefinition,
   hydratePackMediaForGameText,
   collectReferencedPackScopeKeys,
+  enqueueActivePackResourceScopePublish,
   type PackMediaHydrationOptions,
 } from './hydratePackMedia'
 

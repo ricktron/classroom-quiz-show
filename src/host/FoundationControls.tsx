@@ -18,8 +18,10 @@ import { useResponseTimerExpiry } from './useResponseTimerExpiry'
 import { useFinalWagerExpiry } from './useFinalWagerExpiry'
 import { systemClock, type Clock } from '../time/clock'
 import { useHostPersistence } from './useHostPersistence'
-import { hydratePackMediaForDefinition } from '../pack/hydratePackMedia'
-import { publishActivePackResourceScope } from '../pack/packMediaScopeSync'
+import {
+  enqueueActivePackResourceScopePublish,
+  hydratePackMediaForDefinition,
+} from '../pack/hydratePackMedia'
 import { getSharedPackResourceRegistry } from '../pack/resourceRegistry'
 import { PersistenceControls } from './PersistenceControls'
 import { CompletedSummaryLedgerPanel } from './CompletedSummaryLedgerPanel'
@@ -99,7 +101,9 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
     const definition = game?.definition ?? null
     if (definition === null) {
       getSharedPackResourceRegistry().clear()
-      void publishActivePackResourceScope(persistence.adapter, null)
+      if (isCurrent()) {
+        enqueueActivePackResourceScopePublish(persistence.adapter, null)
+      }
       return
     }
     void hydratePackMediaForDefinition(

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createMemoryPersistenceAdapter } from '../persistence/memoryAdapter'
 import { createDefaultRegistry } from '../game/defaultRegistry'
 import { importGameFromUnknown } from '../import/importGame'
@@ -7,6 +7,7 @@ import { exportGameDefinition } from '../export/exportGame'
 import { saveDefinition } from '../persistence/savedDefinitions'
 import {
   collectReferencedPackScopeKeys,
+  enqueueActivePackResourceScopePublish,
   hydratePackMediaForGameText,
 } from './hydratePackMedia'
 import {
@@ -150,14 +151,37 @@ describe('hydratePackMedia concurrency', () => {
 
     generation += 1
     packRegistry.clear()
-    const { publishActivePackResourceScope } = await import('./packMediaScopeSync')
-    await publishActivePackResourceScope(adapter, null)
+    enqueueActivePackResourceScopePublish(adapter, null)
+    await vi.waitFor(async () => {
+      expect(await readActivePackResourceScope(adapter)).toBeNull()
+    })
 
     releaseA()
     await startA
     expect(packRegistry.scopeKey).toBeNull()
     expect(await readActivePackResourceScope(adapter)).toBeNull()
     expect(scopeA).toMatch(/^[0-9a-f]{64}$/)
+  })
+
+  it('does not let a slow clear publish clobber a newer hydration', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    const defB = await definitionWithId('hydrate-publish-b')
+    const scopeB = await commitScopeForDefinition(adapter, defB)
+    const exportedB = exportGameDefinition(defB, { registry })
+    if (exportedB.status !== 'success') throw new Error('export failed')
+
+    const packRegistry = createPackResourceRegistry({
+      createObjectURL: () => 'blob:hydrate-publish',
+      revokeObjectURL: () => undefined,
+    })
+
+    enqueueActivePackResourceScopePublish(adapter, null)
+    await hydratePackMediaForGameText(adapter, exportedB.jsonText, packRegistry)
+    await vi.waitFor(async () => {
+      expect(await readActivePackResourceScope(adapter)).toBe(scopeB)
+    })
+    expect(packRegistry.scopeKey).toBe(scopeB)
   })
 })
 

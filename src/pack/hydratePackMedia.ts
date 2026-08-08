@@ -23,6 +23,43 @@ export interface PackMediaHydrationOptions {
   readonly isCurrent?: () => boolean
 }
 
+type PendingPublish = {
+  readonly adapter: PersistenceAdapter
+  readonly resourceScopeKey: string | null
+}
+
+let pendingPublish: PendingPublish | null = null
+let publishPumpActive = false
+
+/**
+ * Coalesce active-scope publications so the latest requested key wins.
+ * Prevents a slow stale `publish(null)` from clobbering a newer hydration.
+ */
+export function enqueueActivePackResourceScopePublish(
+  adapter: PersistenceAdapter,
+  resourceScopeKey: string | null,
+): void {
+  pendingPublish = { adapter, resourceScopeKey }
+  void pumpActivePackResourceScopePublish()
+}
+
+async function pumpActivePackResourceScopePublish(): Promise<void> {
+  if (publishPumpActive) return
+  publishPumpActive = true
+  try {
+    while (pendingPublish !== null) {
+      const job = pendingPublish
+      pendingPublish = null
+      await publishActivePackResourceScope(job.adapter, job.resourceScopeKey)
+    }
+  } finally {
+    publishPumpActive = false
+    if (pendingPublish !== null) {
+      void pumpActivePackResourceScopePublish()
+    }
+  }
+}
+
 export async function hydratePackMediaForDefinition(
   adapter: PersistenceAdapter,
   definition: GameDefinition,
@@ -53,7 +90,7 @@ export async function hydratePackMediaForGameText(
 
   if (records.length === 0) {
     packRegistry.clear()
-    await publishActivePackResourceScope(adapter, null)
+    enqueueActivePackResourceScopePublish(adapter, null)
     return
   }
 
@@ -69,7 +106,7 @@ export async function hydratePackMediaForGameText(
   if (options.isCurrent && !options.isCurrent()) return
 
   packRegistry.setActiveScope(scopeKey, assets)
-  await publishActivePackResourceScope(adapter, scopeKey)
+  enqueueActivePackResourceScopePublish(adapter, scopeKey)
 }
 
 export async function collectReferencedPackScopeKeys(
