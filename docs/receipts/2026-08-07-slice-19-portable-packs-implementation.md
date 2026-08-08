@@ -194,6 +194,15 @@ blocked deletion leaves the database present. Assertions for pack media,
 hosted-path abort, refresh/recovery, Save/Load, and export-after-import are
 unchanged in rigor.
 
+### Sonar S2871 reliability repair (PR #50)
+
+`listPackMediaScopeKeys` previously returned `[...scopes].sort()` with no
+compare function (`typescript:S2871`, issue `AZ_eu4ReGjm1flKAOeP_`), which was
+the sole New Code reliability bug failing SonarCloud Quality Gate at head
+`7c5901fec7889687a57d4126019ec2131b592b3c`. Repair uses an explicit
+`localeCompare(..., 'en')` comparator; unit coverage asserts multi-scope
+listing order. No schema/wire/reducer changes.
+
 ## 16. Inherited flake disclosure
 
 Observed on `verify:all` (not repaired):

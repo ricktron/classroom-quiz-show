@@ -110,6 +110,32 @@ describe('packMediaPersistence', () => {
     expect(await listPackMediaScopeKeys(adapter)).toEqual([])
   })
 
+  it('lists resource scope keys in locale-aware sorted order', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    // Insert in reverse of expected English localeCompare order.
+    const later = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+    const earlier = '0000000000000000000000000000000000000000000000000000000000000000'
+
+    for (const scopeKey of [later, earlier]) {
+      await commitPackMediaAssets(adapter, {
+        resourceScopeKey: scopeKey,
+        gameId: scopeKey,
+        gameSha256: scopeKey,
+        mediaAssets: [
+          {
+            sourcePath: 'media/a.png',
+            bytes: TINY_PNG_BYTES,
+            mediaType: 'image/png',
+            sha256: 'x',
+          },
+        ],
+      })
+    }
+
+    expect(await listPackMediaScopeKeys(adapter)).toEqual([earlier, later])
+  })
+
   it('uses deterministic compound storage keys', () => {
     expect(packMediaStorageKey('scope', PNG_PATH)).toBe(`scope\0${PNG_PATH}`)
   })

@@ -131,7 +131,7 @@ export async function listPackMediaScopeKeys(
     }
   })
   if (!result.ok) return []
-  return [...scopes].sort()
+  return [...scopes].sort((a, b) => a.localeCompare(b, 'en'))
 }
 
 export async function clearAllPackMediaAssets(adapter: PersistenceAdapter): Promise<void> {
