@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MediaContentDisplay } from './MediaContentDisplay'
 import {
@@ -6,8 +6,20 @@ import {
   resolveSameOriginMediaSrc,
 } from './resolveSameOriginMediaSrc'
 import type { PublicPromptContent } from '../state/publicState'
+import {
+  createPackResourceRegistry,
+  setSharedPackResourceRegistryForTests,
+} from '../pack/resourceRegistry'
+import { TINY_PNG_BYTES } from '../pack/testFixtures'
 
 describe('joinBaseAndMediaPath / resolveSameOriginMediaSrc', () => {
+  beforeEach(() => {
+    setSharedPackResourceRegistryForTests(null)
+  })
+
+  afterEach(() => {
+    setSharedPackResourceRegistryForTests(null)
+  })
   it('joins BASE_URL and path with a single slash', () => {
     const joined = resolveSameOriginMediaSrc('media-fixtures/slice-11-clue.png')
     expect(joined).not.toBeNull()
@@ -33,9 +45,35 @@ describe('joinBaseAndMediaPath / resolveSameOriginMediaSrc', () => {
     expect(joinBaseAndMediaPath('/', 'media//image.png')).toBeNull()
     expect(resolveSameOriginMediaSrc('https://evil.example/x.png')).toBeNull()
   })
+
+  it('prefers pack registry object URLs over hosted paths', () => {
+    const registry = createPackResourceRegistry({
+      createObjectURL: () => 'blob:pack-scoped',
+      revokeObjectURL: () => undefined,
+    })
+    setSharedPackResourceRegistryForTests(registry)
+    registry.setActiveScope(
+      'scope',
+      new Map([
+        [
+          'media-fixtures/slice-11-clue.png',
+          { bytes: TINY_PNG_BYTES, mediaType: 'image/png', sha256: 'x' },
+        ],
+      ]),
+    )
+    expect(resolveSameOriginMediaSrc('media-fixtures/slice-11-clue.png')).toBe('blob:pack-scoped')
+  })
 })
 
 describe('MediaContentDisplay', () => {
+  beforeEach(() => {
+    setSharedPackResourceRegistryForTests(null)
+  })
+
+  afterEach(() => {
+    setSharedPackResourceRegistryForTests(null)
+  })
+
   it('renders text prompts with large-type presentation', () => {
     const content: PublicPromptContent = { kind: 'text', text: 'What is the mantle?' }
     render(<MediaContentDisplay content={content} />)
@@ -149,6 +187,33 @@ describe('MediaContentDisplay', () => {
     expect(screen.getByTestId('mcd-caption')).toHaveClass('mcd__caption')
     expect(screen.getByTestId('mcd-attribution')).toHaveClass('mcd__attribution')
     expect(screen.getByTestId('mcd-caption')).toHaveTextContent(long)
+  })
+
+  it('uses pack-scoped object URLs when the registry has assets', () => {
+    const registry = createPackResourceRegistry({
+      createObjectURL: () => 'blob:display-pack',
+      revokeObjectURL: () => undefined,
+    })
+    setSharedPackResourceRegistryForTests(registry)
+    registry.setActiveScope(
+      'scope',
+      new Map([
+        [
+          'media-fixtures/slice-11-clue.png',
+          { bytes: TINY_PNG_BYTES, mediaType: 'image/png', sha256: 'x' },
+        ],
+      ]),
+    )
+
+    const content: PublicPromptContent = {
+      kind: 'image',
+      source: { kind: 'same-origin-path', path: 'media-fixtures/slice-11-clue.png' },
+      alt: 'Pack image',
+      caption: null,
+      attribution: null,
+    }
+    render(<MediaContentDisplay content={content} />)
+    expect(screen.getByTestId('mcd-img')).toHaveAttribute('src', 'blob:display-pack')
   })
 
   it('fails closed for an unknown kind without fabricating content', () => {

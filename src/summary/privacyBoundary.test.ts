@@ -33,7 +33,7 @@ describe('Slice 15 privacy and version invariants', () => {
     expect(SYNC_SCHEMA_VERSION).toBe(2)
     expect(SUPPORTED_SCHEMA_VERSION).toBe(1)
     expect(PERSISTENCE_WIRE_VERSION).toBe(1)
-    expect(PERSISTENCE_DB_VERSION).toBe(2)
+    expect(PERSISTENCE_DB_VERSION).toBe(3)
     expect(SESSION_SUMMARY_CONTRACT_VERSION).toBe(1)
     expect(SESSION_SUMMARY_CONTRACT_KIND).toBe('classroom-quiz-show/session-summary')
   })

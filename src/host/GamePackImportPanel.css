@@ -1,0 +1,67 @@
+/*
+ * Host-only portable-pack import surface (Slice 19).
+ */
+
+.pack-import {
+  margin-top: var(--space-5);
+}
+
+.pack-import h3 {
+  margin: var(--space-2) 0 0.25rem;
+  font-size: 1rem;
+  color: var(--state-accent);
+}
+
+.pack-import h4 {
+  margin-top: 0;
+  font-size: 0.95rem;
+  color: var(--state-accent);
+}
+
+.pack-import__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 var(--space-4);
+}
+
+.pack-import__file {
+  max-width: 100%;
+}
+
+.pack-import__result--ok {
+  border-left: 3px solid var(--state-ok, #2a7);
+  padding-left: var(--space-2);
+}
+
+.pack-import__result--bad {
+  border-left: 3px solid var(--state-bad, #c33);
+  padding-left: var(--space-2);
+}
+
+.pack-import__headline {
+  margin: 0 0 0.35rem;
+  font-weight: 600;
+}
+
+.pack-import__issues {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.pack-import__issue {
+  margin-bottom: 0.35rem;
+}
+
+.pack-import__issue-stage,
+.pack-import__issue-code,
+.pack-import__issue-path {
+  margin-right: 0.35rem;
+  font-size: 0.85em;
+}
+
+.pack-import__nested {
+  margin-top: 0.25rem;
+  padding-left: 1rem;
+  font-size: 0.9em;
+}
