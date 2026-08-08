@@ -278,3 +278,99 @@ report; do not treat a receipt line as predicting its own commit hash.
 
 Historical verification rows above remain for earlier heads; they are not rewritten.
 Post-repair exact-head verification is recorded by the repair commit / executor report.
+
+## 21. Final independent-review lifecycle / hydration repair (PR #50)
+
+**Authorization:**
+`AUTHORIZE-CQS-SLICE-19-PR50-BBCB05B-FINAL-INDEPENDENT-REVIEW-REPAIR-1`
+
+**Evidence state:**
+`CQS-SLICE-19-PR50-BBCB05B-FINAL-INDEPENDENT-REVIEW-REPAIR-ES-1`
+
+**Pre-repair exact head:** `bbcb05b789056f545a12c2fcc33136653b32aa7d`
+
+**Canonical base:** `a1726e59ac437b84e785f8cfe53740e229de244c`
+
+**Repair commit / product head:** `8c087647d0545682d0b87ae78fa97b208e5c51e9`
+
+Prior Findings A–F / concurrency / S2871 repairs remain preserved (no revert).
+
+### Reproduce-first (at bbcb05b, before edit)
+
+| ID | Probe result |
+| --- | --- |
+| G | PASS documenting bug: unchanged `setPackGcContext(def)` scheduled `gcUnreferencedPackScopes` |
+| H | Code confirmed `discardRecovery` had no GC; recovery boot retained pack scope; orphan after discard was the gap |
+| I | PASS documenting bug: delayed unguarded hydrate A overwrote guarded B (`scopeKey` became A) |
+| J | PASS documenting bug: failed export cleared registry but left published scope A |
+| K | PASS documenting bug: `decodeImage` called before `MAX_PACK_MEDIA_BYTES + 1` reject |
+
+### Findings G–K dispositions
+
+| ID | Finding | Disposition |
+| --- | --- | --- |
+| G | Repeated GC on ordinary host renders via aggregate `persistence` effect dep | Repaired: depend on stable `setPackGcContext`; idempotent no-op when definition+registry unchanged |
+| H | Discard recovery left durable pack scope orphaned | Repaired: `await gcPackMedia()` only after successful `clearActiveSession` |
+| I | `loadSaved` unguarded hydrate raced FoundationControls generation guard | Repaired: removed direct `hydrateActivePackMedia` from `loadSaved`; FC effect is sole active-definition hydration owner |
+| J | Failed canonical export cleared registry but not published scope | Repaired: `enqueueActivePackResourceScopePublish(adapter, null)` on current failed export |
+| K | Builder size reject after decode | Repaired: acquire → per-asset size → cumulative → sniff → decode → hash/store |
+
+### Repair paths (this lane)
+
+- `src/host/FoundationControls.tsx`
+- `src/host/useHostPersistence.ts`
+- `src/host/useHostPersistence.test.tsx`
+- `src/pack/buildPack.ts`
+- `src/pack/buildImport.test.ts`
+- `src/pack/hydratePackMedia.ts`
+- `src/pack/hydratePackMedia.test.ts`
+- this receipt (tip-fill)
+
+### Focused verification (post-repair)
+
+- `npm test -- --run src/pack/buildImport.test.ts src/pack/hydratePackMedia.test.ts src/host/useHostPersistence.test.tsx` → **33 passed**
+- `CI=1 npx playwright test tests/e2e/portable-packs.spec.ts` → **18 passed**
+- `CI=1 npx playwright test tests/e2e/persistence-recovery.spec.ts` → **15 passed**
+- `git diff --check` clean
+
+### Exact-head local verification at `8c08764…`
+
+Host: `Ricks-MacBook-Air.local` / user `macdaddy` /
+cwd `/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show-slice19` /
+branch `feat/slice-19-portable-packs` / clean worktree.
+
+- `git diff --check a1726e59…...HEAD` clean
+- `npm run verify`: lint **0 errors / 3 warnings** (ThemeProvider react-refresh, pre-existing);
+  typecheck OK; unit **124 files / 2225 passed / 1 skipped**; build not in `verify` script
+- `CI=1 npm run verify:all`: lint/typecheck/unit/build OK; Playwright **322 passed / 14 skipped / 0 flaky / 3 failed / 9 did-not-run**
+- Failed cases: exact inherited Final-wager signature on all three projects
+  (`Expected: Saved: 100` / `Received: Not saved yet`), retries exhausted (attempt + retry #1 + retry #2);
+  9 did-not-run = serial dependents after that failure — not repaired
+
+### GitHub Actions at `8c08764…` (run `31278017209`)
+
+- Lint/typecheck/unit/build job `93154665489`: **success** (unit **2225 passed / 1 skipped**)
+- Playwright e2e job `93154665522`: **success** — **331 passed / 14 skipped / 3 flaky / 0 terminal failures**
+  (same Final mid-refresh signature retry-resolved on retry #1 across desktop/projector/mobile)
+
+### Sonar at `8c08764…`
+
+- Analyzed revision: `8c087647d0545682d0b87ae78fa97b208e5c51e9`
+- Quality Gate: **OK / passed**
+- Reliability Rating: **1.0 (A)**; `new_reliability_rating` **1.0**; **new_bugs = 0**; bugs = 0
+- S2871 unresolved issues: **0**
+- GitHub check `SonarCloud Code Analysis`: **success**
+
+### Reviews / threads
+
+- Human reviews: none observed
+- Requested reviewers: none
+- Unresolved review threads: none
+- Auto-merge: off
+
+### Explicit non-claims
+
+- No merge SHA / squash SHA / merge timestamp
+- No Slice 20+ / no `CQS-OD-066` / no Final-wager repair
+- No STATUS/`Complete` claim
+- Tip-fill receipt SHA recorded only after that commit exists; do not treat this section as predicting its own hash.
