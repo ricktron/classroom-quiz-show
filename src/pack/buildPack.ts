@@ -116,6 +116,30 @@ export async function buildPackFromDefinition(
     }
 
     const bytes = acquired.bytes
+
+    if (bytes.length > MAX_PACK_MEDIA_BYTES) {
+      return packFailure([
+        packIssue(
+          'pack-media-too-large',
+          'media',
+          entry.sourcePath,
+          `Media at ${JSON.stringify(entry.sourcePath)} exceeds the ${MAX_PACK_MEDIA_BYTES}-byte per-asset limit.`,
+        ),
+      ])
+    }
+
+    totalMediaBytes += bytes.length
+    if (totalMediaBytes > MAX_PACK_TOTAL_MEDIA_BYTES) {
+      return packFailure([
+        packIssue(
+          'pack-media-budget-exceeded',
+          'media',
+          entry.sourcePath,
+          `Total pack media size ${totalMediaBytes} exceeds the ${MAX_PACK_TOTAL_MEDIA_BYTES}-byte budget.`,
+        ),
+      ])
+    }
+
     const sniff = sniffMediaBytes(bytes)
     if (sniff.status !== 'success') {
       return packFailure([
@@ -145,29 +169,6 @@ export async function buildPackFromDefinition(
           ),
         ])
       }
-    }
-
-    if (bytes.length > MAX_PACK_MEDIA_BYTES) {
-      return packFailure([
-        packIssue(
-          'pack-media-too-large',
-          'media',
-          entry.sourcePath,
-          `Media at ${JSON.stringify(entry.sourcePath)} exceeds the ${MAX_PACK_MEDIA_BYTES}-byte per-asset limit.`,
-        ),
-      ])
-    }
-
-    totalMediaBytes += bytes.length
-    if (totalMediaBytes > MAX_PACK_TOTAL_MEDIA_BYTES) {
-      return packFailure([
-        packIssue(
-          'pack-media-budget-exceeded',
-          'media',
-          entry.sourcePath,
-          `Total pack media size ${totalMediaBytes} exceeds the ${MAX_PACK_TOTAL_MEDIA_BYTES}-byte budget.`,
-        ),
-      ])
     }
 
     const packPath = toPackMediaPath(entry.sourcePath)

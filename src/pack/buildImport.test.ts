@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { buildPackFromDefinition } from './buildPack'
 import { importPackFromBytes } from './importPack'
 import { importGameFromUnknown } from '../import/importGame'
@@ -188,6 +188,71 @@ describe('pack build/import round trip', () => {
     expect(over.status).toBe('failure')
     if (over.status !== 'failure') return
     expect(over.issues[0]?.code).toBe('pack-media-too-large')
+  })
+
+  it('rejects MAX_PACK_MEDIA_BYTES + 1 before decodeImage runs', async () => {
+    const imported = importGameFromUnknown(
+      boardGameFile({
+        categories: [category('a', { tiles: [tile('a-1', { prompt: imagePrompt() })] })],
+      }),
+    )
+    expect(imported.status).toBe('success')
+    if (imported.status !== 'success') return
+
+    const decodeImage = vi.fn(async () => true)
+    const over = await buildPackFromDefinition(imported.definition, {
+      acquireMediaBytes: pngResolver(pngSized(MAX_PACK_MEDIA_BYTES + 1)),
+      decodeImage,
+    })
+    expect(over.status).toBe('failure')
+    if (over.status !== 'failure') return
+    expect(over.issues[0]?.code).toBe('pack-media-too-large')
+    expect(decodeImage).toHaveBeenCalledTimes(0)
+  })
+
+  it('rejects cumulative over-budget media before decoding the over-budget asset', async () => {
+    const paths = Array.from({ length: 7 }, (_, index) => `media-fixtures/decode-budget-${index}.png`)
+    const imported = importGameFromUnknown(
+      boardGameFile({
+        categories: [
+          category('a', {
+            tiles: paths.map((path, index) =>
+              tile(`a-${index}`, {
+                prompt: imagePrompt({
+                  source: { kind: 'same-origin-path', path },
+                }),
+              }),
+            ),
+          }),
+        ],
+      }),
+    )
+    expect(imported.status).toBe('success')
+    if (imported.status !== 'success') return
+
+    const base = Math.floor(MAX_PACK_TOTAL_MEDIA_BYTES / 7)
+    const sizes = Array.from({ length: 7 }, () => base)
+    let sum = base * 7
+    let cursor = 0
+    while (sum < MAX_PACK_TOTAL_MEDIA_BYTES + 1) {
+      sizes[cursor % sizes.length]! += 1
+      sum += 1
+      cursor += 1
+    }
+    expect(sizes.every((size) => size <= MAX_PACK_MEDIA_BYTES)).toBe(true)
+
+    const decodeImage = vi.fn(async () => true)
+    const overBudget = await buildPackFromDefinition(imported.definition, {
+      acquireMediaBytes: pathResolver(
+        new Map(paths.map((path, index) => [path, pngSized(sizes[index]!)])),
+      ),
+      decodeImage,
+    })
+    expect(overBudget.status).toBe('failure')
+    if (overBudget.status !== 'failure') return
+    expect(overBudget.issues[0]?.code).toBe('pack-media-budget-exceeded')
+    // The failing asset must not be decoded; prior in-budget assets may be.
+    expect(decodeImage.mock.calls.length).toBeLessThan(paths.length)
   })
 
   it('accepts cumulative media of exactly MAX_PACK_TOTAL_MEDIA_BYTES and rejects +1', async () => {

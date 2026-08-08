@@ -7,12 +7,8 @@ import type { SessionEvent } from '../state/events'
 import type { PrivateGameState } from '../state/privateState'
 import type { DispatchResult } from '../state/store'
 import { systemClock, type Clock } from '../time/clock'
-import {
-  collectReferencedPackScopeKeys,
-  hydratePackMediaForDefinition,
-} from '../pack/hydratePackMedia'
+import { collectReferencedPackScopeKeys } from '../pack/hydratePackMedia'
 import { gcUnreferencedPackScopes } from '../pack/packMediaPersistence'
-import { getSharedPackResourceRegistry } from '../pack/resourceRegistry'
 import {
   COORDINATION_BROADCAST_CHANNEL,
   HOST_WRITER_LEASE_TTL_MS,
@@ -212,30 +208,20 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
 
   const setPackGcContext = useCallback(
     (definition: GameDefinition | null, roundRegistry: RoundRegistry): void => {
-      const previous = packGcContextRef.current.definition
+      const previous = packGcContextRef.current
+      if (previous.definition === definition && previous.roundRegistry === roundRegistry) {
+        return
+      }
       packGcContextRef.current = { definition, roundRegistry }
       // GC only when a previously loaded definition is replaced or cleared.
       // Skip the initial null boot context: recoverable active-session pack
       // scopes are not yet represented in `activeDefinition` and must survive
       // until Resume rehydrates the definition into the GC keep-set.
-      if (previous !== null) {
+      if (previous.definition !== null) {
         void gcPackMedia()
       }
     },
     [gcPackMedia],
-  )
-
-  const hydrateActivePackMedia = useCallback(
-    async (definition: GameDefinition, roundRegistry: RoundRegistry): Promise<void> => {
-      if (!storageReadyRef.current) return
-      await hydratePackMediaForDefinition(
-        adapter,
-        definition,
-        getSharedPackResourceRegistry(),
-        roundRegistry,
-      )
-    },
-    [adapter],
   )
 
   const leadershipOptions = useMemo(
@@ -627,10 +613,13 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       setMessage('Recovery could not be cleared. The host is usable, but the warning may return after refresh.')
       return { ok: false, message: result.message }
     }
+    // Recovery no longer protects pack scopes. Scan with null active definition so
+    // unreferenced recovery scopes are removed while saved-definition refs remain.
+    await gcPackMedia()
     setDurabilityStatus('idle')
     setMessage('Recovery discarded. Started with an empty host session.')
     return { ok: true, message: 'Recovery discarded.' }
-  }, [adapter, canUseStorage])
+  }, [adapter, canUseStorage, gcPackMedia])
 
   const refreshLibrary = useCallback(async (): Promise<PersistenceActionResult> => {
     if (!canUseStorage()) return { ok: false, message: 'Persistence is unavailable.' }
@@ -743,14 +732,15 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         setMessage(message)
         return { ok: false, message }
       }
-      await hydrateActivePackMedia(loaded.value, loadRegistry)
+      // Pack-media hydration for the accepted definition is owned solely by
+      // FoundationControls' generation-guarded active-definition effect.
       // Safe if the caller passed a raw store dispatch (no enqueue) or a wrapped
       // leadership dispatch (already enqueued): writeActiveSession is generation-gated.
       persistHistory(getHistory(), loadRegistry)
       setMessage('Saved definition loaded into the active session.')
       return { ok: true, message: 'Saved definition loaded.' }
     },
-    [adapter, canUseStorage, clock, hydrateActivePackMedia, leadership, persistHistory],
+    [adapter, canUseStorage, clock, leadership, persistHistory],
   )
 
   const dispatchSessionCommand = useCallback(

@@ -71,6 +71,7 @@ export async function hydratePackMediaForDefinition(
   if (exported.status !== 'success') {
     if (options.isCurrent && !options.isCurrent()) return
     packRegistry.clear()
+    enqueueActivePackResourceScopePublish(adapter, null)
     return
   }
   await hydratePackMediaForGameText(adapter, exported.jsonText, packRegistry, options)

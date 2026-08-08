@@ -89,10 +89,13 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
   useFinalWagerExpiry({ game, dispatch, clock })
 
   const packHydrationGenerationRef = useRef(0)
+  const setPackGcContext = persistence.setPackGcContext
+  const persistenceAdapter = persistence.adapter
+  const persistenceStoreEpoch = persistence.storeEpoch
 
   useEffect(() => {
-    persistence.setPackGcContext?.(game?.definition ?? null, registry)
-  }, [game?.definition, persistence, registry])
+    setPackGcContext?.(game?.definition ?? null, registry)
+  }, [game?.definition, registry, setPackGcContext])
 
   useEffect(() => {
     const generation = packHydrationGenerationRef.current + 1
@@ -102,18 +105,18 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
     if (definition === null) {
       getSharedPackResourceRegistry().clear()
       if (isCurrent()) {
-        enqueueActivePackResourceScopePublish(persistence.adapter, null)
+        enqueueActivePackResourceScopePublish(persistenceAdapter, null)
       }
       return
     }
     void hydratePackMediaForDefinition(
-      persistence.adapter,
+      persistenceAdapter,
       definition,
       getSharedPackResourceRegistry(),
       registry,
       { isCurrent },
     )
-  }, [game?.definition, persistence.adapter, registry, persistence.storeEpoch])
+  }, [game?.definition, persistenceAdapter, registry, persistenceStoreEpoch])
 
   return (
     <section className="foundation" aria-labelledby="foundation-title">

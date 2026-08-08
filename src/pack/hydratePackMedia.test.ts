@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createMemoryPersistenceAdapter } from '../persistence/memoryAdapter'
 import { createDefaultRegistry } from '../game/defaultRegistry'
+import { createGameDefinition } from '../game/gameDefinition'
+import { roundId, roundType } from '../game/ids'
 import { importGameFromUnknown } from '../import/importGame'
 import { boardGameFile, category, imagePrompt, tile } from '../test/categoryBoardFixtures'
 import { exportGameDefinition } from '../export/exportGame'
@@ -8,6 +10,7 @@ import { saveDefinition } from '../persistence/savedDefinitions'
 import {
   collectReferencedPackScopeKeys,
   enqueueActivePackResourceScopePublish,
+  hydratePackMediaForDefinition,
   hydratePackMediaForGameText,
 } from './hydratePackMedia'
 import {
@@ -182,6 +185,85 @@ describe('hydratePackMedia concurrency', () => {
       expect(await readActivePackResourceScope(adapter)).toBe(scopeB)
     })
     expect(packRegistry.scopeKey).toBe(scopeB)
+  })
+
+  it('clears published active scope when a current canonical export fails', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    const defA = await definitionWithId('export-fail-a')
+    const scopeA = await commitScopeForDefinition(adapter, defA)
+    const packRegistry = createPackResourceRegistry({
+      createObjectURL: () => 'blob:export-fail',
+      revokeObjectURL: () => undefined,
+    })
+    await hydratePackMediaForDefinition(adapter, defA, packRegistry, registry)
+    await vi.waitFor(async () => {
+      expect(await readActivePackResourceScope(adapter)).toBe(scopeA)
+    })
+    expect(packRegistry.scopeKey).toBe(scopeA)
+
+    const unexportable = createGameDefinition({
+      id: 'export-fail-unexportable',
+      title: 'Unexportable',
+      rounds: [
+        {
+          id: roundId('r1'),
+          type: roundType('not-a-real-round-type'),
+          title: 'Nope',
+          config: { note: 'x' },
+        },
+      ],
+    })
+    expect(exportGameDefinition(unexportable, { registry }).status).toBe('failure')
+
+    await hydratePackMediaForDefinition(adapter, unexportable, packRegistry, registry, {
+      isCurrent: () => true,
+    })
+    expect(packRegistry.scopeKey).toBeNull()
+    await vi.waitFor(async () => {
+      expect(await readActivePackResourceScope(adapter)).toBeNull()
+    })
+  })
+
+  it('ignores a stale failed-export clear after a newer valid hydration', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    const defB = await definitionWithId('stale-export-b')
+    const scopeB = await commitScopeForDefinition(adapter, defB)
+    const packRegistry = createPackResourceRegistry({
+      createObjectURL: () => 'blob:stale-export',
+      revokeObjectURL: () => undefined,
+    })
+
+    const unexportable = createGameDefinition({
+      id: 'stale-export-unexportable',
+      title: 'Unexportable',
+      rounds: [
+        {
+          id: roundId('r1'),
+          type: roundType('not-a-real-round-type'),
+          title: 'Nope',
+          config: { note: 'x' },
+        },
+      ],
+    })
+
+    let generation = 0
+    const staleToken = ++generation
+    const staleIsCurrent = () => staleToken === generation
+    generation += 1
+    await hydratePackMediaForDefinition(adapter, defB, packRegistry, registry, {
+      isCurrent: () => true,
+    })
+    await vi.waitFor(async () => {
+      expect(await readActivePackResourceScope(adapter)).toBe(scopeB)
+    })
+
+    await hydratePackMediaForDefinition(adapter, unexportable, packRegistry, registry, {
+      isCurrent: staleIsCurrent,
+    })
+    expect(packRegistry.scopeKey).toBe(scopeB)
+    expect(await readActivePackResourceScope(adapter)).toBe(scopeB)
   })
 })
 
