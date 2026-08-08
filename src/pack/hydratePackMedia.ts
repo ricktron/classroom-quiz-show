@@ -13,34 +13,50 @@ import { resourceScopeKeyFromGameText } from './resourceScope'
  *
  * Loads durable assets for a definition's resource scope and activates them in
  * the shared in-memory registry used by media resolution.
+ *
+ * Callers that fire overlapping hydrations must pass `isCurrent` so a stale
+ * asynchronous completion cannot reactivate an older resource scope.
  */
+
+export interface PackMediaHydrationOptions {
+  /** Latest-request-wins guard: return false when a newer hydration/clear superseded this one. */
+  readonly isCurrent?: () => boolean
+}
 
 export async function hydratePackMediaForDefinition(
   adapter: PersistenceAdapter,
   definition: GameDefinition,
   packRegistry: PackResourceRegistry,
   roundRegistry: RoundRegistry,
+  options: PackMediaHydrationOptions = {},
 ): Promise<void> {
   const exported = exportGameDefinition(definition, { registry: roundRegistry })
   if (exported.status !== 'success') {
+    if (options.isCurrent && !options.isCurrent()) return
     packRegistry.clear()
     return
   }
-  await hydratePackMediaForGameText(adapter, exported.jsonText, packRegistry)
+  await hydratePackMediaForGameText(adapter, exported.jsonText, packRegistry, options)
 }
 
 export async function hydratePackMediaForGameText(
   adapter: PersistenceAdapter,
   gameJsonText: string,
   packRegistry: PackResourceRegistry,
+  options: PackMediaHydrationOptions = {},
 ): Promise<void> {
   const scopeKey = await resourceScopeKeyFromGameText(gameJsonText)
+  if (options.isCurrent && !options.isCurrent()) return
+
   const records = await loadPackMediaAssets(adapter, scopeKey)
+  if (options.isCurrent && !options.isCurrent()) return
+
   if (records.length === 0) {
     packRegistry.clear()
     await publishActivePackResourceScope(adapter, null)
     return
   }
+
   const assets = new Map<string, PackResourceAsset>()
   for (const record of records) {
     assets.set(record.sourcePath, {
@@ -49,6 +65,9 @@ export async function hydratePackMediaForGameText(
       sha256: record.sha256,
     })
   }
+
+  if (options.isCurrent && !options.isCurrent()) return
+
   packRegistry.setActiveScope(scopeKey, assets)
   await publishActivePackResourceScope(adapter, scopeKey)
 }

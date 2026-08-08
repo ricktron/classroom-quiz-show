@@ -78,11 +78,19 @@ export function createHostedMediaResolver(env: HostedMediaFetchEnv): ResolveMedi
       }
     }
 
-    let bytes: Uint8Array
-    try {
-      const buffer = await response.arrayBuffer()
-      bytes = new Uint8Array(buffer)
-    } catch {
+    const bounded = await readResponseBodyBounded(response, MAX_PACK_MEDIA_BYTES)
+    if (bounded.status === 'too-large') {
+      return {
+        status: 'failure',
+        issue: packIssue(
+          'pack-media-too-large',
+          'media',
+          sourcePath,
+          `Media at ${JSON.stringify(sourcePath)} exceeds the ${MAX_PACK_MEDIA_BYTES}-byte limit.`,
+        ),
+      }
+    }
+    if (bounded.status !== 'success') {
       return {
         status: 'failure',
         issue: packIssue(
@@ -93,18 +101,7 @@ export function createHostedMediaResolver(env: HostedMediaFetchEnv): ResolveMedi
         ),
       }
     }
-
-    if (bytes.length > MAX_PACK_MEDIA_BYTES) {
-      return {
-        status: 'failure',
-        issue: packIssue(
-          'pack-media-too-large',
-          'media',
-          sourcePath,
-          `Media at ${JSON.stringify(sourcePath)} is ${bytes.length} bytes, which exceeds the ${MAX_PACK_MEDIA_BYTES}-byte limit.`,
-        ),
-      }
-    }
+    const bytes = bounded.bytes
 
     const sniff = sniffMediaBytes(bytes)
     if (sniff.status !== 'success') {
@@ -163,4 +160,56 @@ export function registryFromAssets(assets: ReadonlyMap<string, PackResourceAsset
       return assets.get(sourcePath)?.bytes ?? null
     },
   }
+}
+
+/**
+ * Consume a Response body incrementally, stopping at the first byte past `maxBytes`.
+ * Does not fall back to unbounded `arrayBuffer()` when no readable body is available.
+ */
+export async function readResponseBodyBounded(
+  response: Response,
+  maxBytes: number,
+): Promise<
+  | { readonly status: 'success'; readonly bytes: Uint8Array }
+  | { readonly status: 'too-large' }
+  | { readonly status: 'failure' }
+> {
+  const body = response.body
+  if (!body || typeof body.getReader !== 'function') {
+    return { status: 'failure' }
+  }
+
+  const reader = body.getReader()
+  const chunks: Uint8Array[] = []
+  let total = 0
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      if (!value || value.byteLength === 0) continue
+
+      if (total + value.byteLength > maxBytes) {
+        try {
+          await reader.cancel()
+        } catch {
+          // Best-effort cancel when the stream overruns the cap.
+        }
+        return { status: 'too-large' }
+      }
+
+      total += value.byteLength
+      chunks.push(value)
+    }
+  } catch {
+    return { status: 'failure' }
+  }
+
+  const bytes = new Uint8Array(total)
+  let offset = 0
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset)
+    offset += chunk.byteLength
+  }
+  return { status: 'success', bytes }
 }

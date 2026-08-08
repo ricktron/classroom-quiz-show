@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSessionStore } from './useSessionStore'
 import { useHostSync } from './useHostSync'
 import { PUBLIC_STATUS_CODES } from '../state/status'
@@ -86,11 +86,16 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
   // turns a deadline into a COMMAND and decides nothing.
   useFinalWagerExpiry({ game, dispatch, clock })
 
+  const packHydrationGenerationRef = useRef(0)
+
   useEffect(() => {
     persistence.setPackGcContext?.(game?.definition ?? null, registry)
   }, [game?.definition, persistence, registry])
 
   useEffect(() => {
+    const generation = packHydrationGenerationRef.current + 1
+    packHydrationGenerationRef.current = generation
+    const isCurrent = (): boolean => packHydrationGenerationRef.current === generation
     const definition = game?.definition ?? null
     if (definition === null) {
       getSharedPackResourceRegistry().clear()
@@ -102,6 +107,7 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
       definition,
       getSharedPackResourceRegistry(),
       registry,
+      { isCurrent },
     )
   }, [game?.definition, persistence.adapter, registry, persistence.storeEpoch])
 

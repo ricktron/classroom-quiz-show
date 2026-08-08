@@ -75,11 +75,17 @@ export { readPackZip, type ReadPackZipResult } from './zipRead'
 export {
   createHostedMediaResolver,
   createRegistryMediaResolver,
+  readResponseBodyBounded,
   registryFromAssets,
   type HostedMediaFetchEnv,
   type LocalMediaRegistry,
   type ResolveMediaBytes,
 } from './acquireMedia'
+
+export {
+  browserDecodeImage,
+  type BrowserDecodeImageEnv,
+} from './browserDecodeImage'
 
 export { resourceScopeKeyFromGameBytes, resourceScopeKeyFromGameText } from './resourceScope'
 
@@ -96,6 +102,7 @@ export {
   hydratePackMediaForDefinition,
   hydratePackMediaForGameText,
   collectReferencedPackScopeKeys,
+  type PackMediaHydrationOptions,
 } from './hydratePackMedia'
 
 export {

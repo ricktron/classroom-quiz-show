@@ -409,7 +409,12 @@ export async function importPackFromBytes(
     }
 
     if (options.decodeImage) {
-      const decoded = await options.decodeImage(mediaBytes, sniff.mediaType)
+      let decoded = false
+      try {
+        decoded = await options.decodeImage(mediaBytes, sniff.mediaType)
+      } catch {
+        decoded = false
+      }
       if (!decoded) {
         return packFailure([
           packIssue(

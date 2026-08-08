@@ -5,15 +5,21 @@ import type { PrivateGameState } from '../state/privateState'
 import type { RoundRegistry } from '../game/registry'
 import type { PersistenceAdapter } from '../persistence/adapter'
 import {
+  MAX_PACK_INPUT_BYTES,
   PACK_EXTENSION,
+  collectReferencedPackScopeKeys,
   commitPackAssets,
   createPackAssetStorage,
+  gcUnreferencedPackScopes,
   getSharedPackResourceRegistry,
+  hydratePackMediaForDefinition,
   importPackFromBytes,
+  packIssue,
   type ImportPackResult,
   type PackIssue,
   type PackResourceRegistry,
 } from '../pack'
+import { browserDecodeImage } from '../pack/browserDecodeImage'
 import { publishActivePackResourceScope } from '../pack/packMediaScopeSync'
 import './GamePackImportPanel.css'
 
@@ -91,8 +97,31 @@ export function GamePackImportPanel({
         return
       }
 
+      if (file.size > MAX_PACK_INPUT_BYTES) {
+        setAttempt({
+          result: {
+            status: 'failure',
+            issues: [
+              packIssue(
+                'pack-input-too-large',
+                'transport',
+                '',
+                `The pack file is ${file.size} bytes, which exceeds the ${MAX_PACK_INPUT_BYTES}-byte limit.`,
+                { context: { length: file.size, limit: MAX_PACK_INPUT_BYTES } },
+              ),
+            ],
+          },
+          load: { kind: 'none' },
+          attemptNumber,
+        })
+        return
+      }
+
       const bytes = await readFileBytes(file)
-      const imported = await importPackFromBytes(bytes, { registry })
+      const imported = await importPackFromBytes(bytes, {
+        registry,
+        decodeImage: browserDecodeImage,
+      })
 
       if (imported.status !== 'success') {
         setAttempt({ result: imported, load: { kind: 'none' }, attemptNumber })
@@ -133,6 +162,19 @@ export function GamePackImportPanel({
       if (dispatched.status !== 'accepted') {
         packRegistry.clear()
         await publishActivePackResourceScope(adapter, null)
+        const keepScopeKeys = await collectReferencedPackScopeKeys(adapter, {
+          activeDefinition: activeGame?.definition ?? null,
+          roundRegistry: registry,
+        })
+        await gcUnreferencedPackScopes(adapter, { keepScopeKeys })
+        if (activeGame?.definition) {
+          await hydratePackMediaForDefinition(
+            adapter,
+            activeGame.definition,
+            packRegistry,
+            registry,
+          )
+        }
         setAttempt({
           result: imported,
           load: {

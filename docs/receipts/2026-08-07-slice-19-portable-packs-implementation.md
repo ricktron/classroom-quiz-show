@@ -235,3 +235,46 @@ orchestrator review and separate merge authorization.
 Filled after the tip-fill commit and push (does not claim merge). Tip SHA is
 recorded in the commit message body of the tip-fill commit and in the executor
 report; do not treat a receipt line as predicting its own commit hash.
+
+## 20. Independent-review repair (PR #50)
+
+**Authorization:**
+`AUTHORIZE-CQS-SLICE-19-PR50-C59898F-INDEPENDENT-REVIEW-REPAIR-1`
+
+**Evidence state:**
+`CQS-SLICE-19-PR50-C59898F-INDEPENDENT-REVIEW-REPAIR-ES-1`
+
+**Pre-repair exact head:** `c59898f301477733078473c4a2e6c52ced7a0fc1`
+
+**Canonical base:** `a1726e59ac437b84e785f8cfe53740e229de244c`
+
+**S2871 repair at c59898f:** preserved (no revert).
+
+### Independent-review findings (confirmed at c59898f)
+
+| ID | Finding | Disposition |
+| --- | --- | --- |
+| A | UI read whole file before `MAX_PACK_INPUT_BYTES` | Repaired: pre-read `File.size` transport reject |
+| B | Hosted media used unbounded `arrayBuffer()` | Repaired: incremental bounded body reader |
+| C | Production panels omitted `decodeImage` | Repaired: `browserDecodeImage` wired import+export |
+| D | Builder used total-media constant per asset | Repaired: `MAX_PACK_MEDIA_BYTES` per asset |
+| E | GC only after deleteSaved | Repaired: GC on save/replace/active-context + failed-activation cleanup |
+| F | Export lacked case-collision preflight | Repaired: `createPackPathTracker` before ZIP write |
+| Concurrency | Stale hydration could republish old scope | Reproduced + repaired: latest-request-wins `isCurrent` |
+
+### Repair paths
+
+- `src/host/GamePackImportPanel.tsx` (+ tests)
+- `src/host/GamePackExportPanel.tsx` (+ tests)
+- `src/host/FoundationControls.tsx`
+- `src/host/useHostPersistence.ts`
+- `src/pack/acquireMedia.ts` (+ `acquireMedia.test.ts`)
+- `src/pack/buildPack.ts` / `importPack.ts` / `buildImport.test.ts`
+- `src/pack/hydratePackMedia.ts` (+ `hydratePackMedia.test.ts`)
+- `src/pack/browserDecodeImage.ts` (+ test)
+- `src/pack/limits.test.ts` / `zipRead.test.ts` / `index.ts`
+- `tests/e2e/portable-packs.spec.ts`
+- this receipt
+
+Historical verification rows above remain for earlier heads; they are not rewritten.
+Post-repair exact-head verification is recorded by the repair commit / executor report.

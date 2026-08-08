@@ -13,6 +13,7 @@ import {
   type PackResourceRegistry,
 } from '../pack'
 import type { ResolveMediaBytes } from '../pack/acquireMedia'
+import { browserDecodeImage } from '../pack/browserDecodeImage'
 import './GamePackExportPanel.css'
 
 /**
@@ -73,6 +74,7 @@ export function GamePackExportPanel({
       const built = await buildPackFromDefinition(captured, {
         registry,
         acquireMediaBytes: resolver,
+        decodeImage: browserDecodeImage,
       })
 
       if (built.status !== 'success') {

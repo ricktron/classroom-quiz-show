@@ -3,17 +3,18 @@ import { isGameDefinition, type GameDefinition } from '../game/gameDefinition'
 import type { RoundRegistry } from '../game/registry'
 import { createDefaultRegistry } from '../game/defaultRegistry'
 import type { ResolveMediaBytes } from './acquireMedia'
-import { PACK_EXTENSION } from './constants'
+import { GAME_ENTRY_PATH, MANIFEST_PATH, PACK_EXTENSION } from './constants'
 import { sha256Hex } from './hash'
 import { packFailure, packIssue, type PackIssue } from './issues'
 import {
+  MAX_PACK_MEDIA_BYTES,
   MAX_PACK_MEDIA_COUNT,
   MAX_PACK_TOTAL_MEDIA_BYTES,
 } from './limits'
 import { inventoryPackMedia } from './mediaInventory'
 import { sniffMediaBytes, type SniffedMediaType } from './mediaSniff'
 import { buildManifest, type PackManifest } from './manifest'
-import { toPackMediaPath } from './paths'
+import { createPackPathTracker, toPackMediaPath } from './paths'
 import { encodeUtf8 } from './utf8'
 import { writePackZip } from './zipWrite'
 
@@ -92,6 +93,20 @@ export async function buildPackFromDefinition(
     readonly sha256: string
   }[] = []
   const zipMedia = new Map<string, Uint8Array>()
+  const pathTracker = createPackPathTracker()
+  for (const reserved of [MANIFEST_PATH, GAME_ENTRY_PATH]) {
+    const reservedTrack = pathTracker.add(reserved)
+    if (!reservedTrack.ok) {
+      return packFailure([
+        packIssue(
+          reservedTrack.reason === 'duplicate' ? 'pack-duplicate-entry' : 'pack-unsafe-path',
+          'container',
+          reserved,
+          `Pack reserved path ${JSON.stringify(reserved)} collides with another entry.`,
+        ),
+      ])
+    }
+  }
   let totalMediaBytes = 0
 
   for (const entry of inventory) {
@@ -114,7 +129,12 @@ export async function buildPackFromDefinition(
     }
 
     if (options.decodeImage) {
-      const decoded = await options.decodeImage(bytes, sniff.mediaType)
+      let decoded = false
+      try {
+        decoded = await options.decodeImage(bytes, sniff.mediaType)
+      } catch {
+        decoded = false
+      }
       if (!decoded) {
         return packFailure([
           packIssue(
@@ -127,17 +147,18 @@ export async function buildPackFromDefinition(
       }
     }
 
-    totalMediaBytes += bytes.length
-    if (bytes.length > MAX_PACK_TOTAL_MEDIA_BYTES) {
+    if (bytes.length > MAX_PACK_MEDIA_BYTES) {
       return packFailure([
         packIssue(
           'pack-media-too-large',
           'media',
           entry.sourcePath,
-          `Media at ${JSON.stringify(entry.sourcePath)} exceeds per-asset limits.`,
+          `Media at ${JSON.stringify(entry.sourcePath)} exceeds the ${MAX_PACK_MEDIA_BYTES}-byte per-asset limit.`,
         ),
       ])
     }
+
+    totalMediaBytes += bytes.length
     if (totalMediaBytes > MAX_PACK_TOTAL_MEDIA_BYTES) {
       return packFailure([
         packIssue(
@@ -157,6 +178,20 @@ export async function buildPackFromDefinition(
           'media',
           entry.sourcePath,
           `Media path ${JSON.stringify(entry.sourcePath)} is not a valid pack path.`,
+        ),
+      ])
+    }
+
+    const tracked = pathTracker.add(packPath)
+    if (!tracked.ok) {
+      return packFailure([
+        packIssue(
+          tracked.reason === 'duplicate' ? 'pack-duplicate-entry' : 'pack-unsafe-path',
+          'media',
+          entry.sourcePath,
+          tracked.reason === 'duplicate'
+            ? `Duplicate pack entry ${JSON.stringify(packPath)}.`
+            : `Case-variant collision for pack entry ${JSON.stringify(packPath)}.`,
         ),
       ])
     }

@@ -200,13 +200,6 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     roundRegistry: RoundRegistry
   }>({ definition: null, roundRegistry: registry })
 
-  const setPackGcContext = useCallback(
-    (definition: GameDefinition | null, roundRegistry: RoundRegistry): void => {
-      packGcContextRef.current = { definition, roundRegistry }
-    },
-    [],
-  )
-
   const gcPackMedia = useCallback(async (): Promise<void> => {
     if (!storageReadyRef.current) return
     const { definition, roundRegistry } = packGcContextRef.current
@@ -216,6 +209,14 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     })
     await gcUnreferencedPackScopes(adapter, { keepScopeKeys })
   }, [adapter])
+
+  const setPackGcContext = useCallback(
+    (definition: GameDefinition | null, roundRegistry: RoundRegistry): void => {
+      packGcContextRef.current = { definition, roundRegistry }
+      void gcPackMedia()
+    },
+    [gcPackMedia],
+  )
 
   const hydrateActivePackMedia = useCallback(
     async (definition: GameDefinition, roundRegistry: RoundRegistry): Promise<void> => {
@@ -652,6 +653,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         return { ok: false, message: 'Replace confirmation required.' }
       }
       await updateLibrary()
+      await gcPackMedia()
       const message =
         result.value === 'noop'
           ? 'Saved definition already matches this game; nothing changed.'
@@ -659,7 +661,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       setMessage(message)
       return { ok: true, message }
     },
-    [adapter, canUseStorage, leadership, updateLibrary],
+    [adapter, canUseStorage, gcPackMedia, leadership, updateLibrary],
   )
 
   const replaceCurrentDefinition = useCallback(
@@ -674,11 +676,12 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         return { ok: false, message: result.message }
       }
       await updateLibrary()
+      await gcPackMedia()
       const message = result.value === 'noop' ? 'Saved definition already matched this game.' : 'Saved definition replaced.'
       setMessage(message)
       return { ok: true, message }
     },
-    [adapter, canUseStorage, leadership, updateLibrary],
+    [adapter, canUseStorage, gcPackMedia, leadership, updateLibrary],
   )
 
   const deleteSaved = useCallback(

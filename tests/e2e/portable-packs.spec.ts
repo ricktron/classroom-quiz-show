@@ -350,6 +350,57 @@ test('refresh recovery keeps pack media when hosted path is blocked', async ({
   })
 })
 
+test('malformed raster with valid PNG magic fails pack import decode validation', async ({
+  page,
+}) => {
+  const { writePackZip } = await import('../../src/pack/zipWrite')
+  const { buildManifest } = await import('../../src/pack/manifest')
+  const { sha256Hex } = await import('../../src/pack/hash')
+  const { encodeUtf8 } = await import('../../src/pack/utf8')
+
+  const gameBytes = encodeUtf8(`${JSON.stringify(IMAGE_PACK_GAME)}\n`)
+  const gameSha256 = await sha256Hex(gameBytes)
+  const malformed = Buffer.alloc(64, 0)
+  malformed[0] = 0x89
+  malformed[1] = 0x50
+  malformed[2] = 0x4e
+  malformed[3] = 0x47
+  malformed[4] = 0x0d
+  malformed[5] = 0x0a
+  malformed[6] = 0x1a
+  malformed[7] = 0x0a
+  const mediaBytes = new Uint8Array(malformed)
+  const mediaSha = await sha256Hex(mediaBytes)
+  const manifest = buildManifest({
+    gameBytes,
+    gameSha256,
+    media: [{ sourcePath: MEDIA_PATH, bytes: mediaBytes, sha256: mediaSha }],
+  })
+  const packBytes = Buffer.from(
+    writePackZip({
+      manifest,
+      gameBytes,
+      media: new Map([[`media/${MEDIA_PATH}`, mediaBytes]]),
+    }),
+  )
+
+  await openHost(page)
+  await initSession(page)
+  const dir = await mkdtemp(join(tmpdir(), 'cqs-pack-bad-raster-'))
+  const filePath = join(dir, 'bad-raster.cqs-pack')
+  await writeFile(filePath, packBytes)
+  try {
+    await page.getByTestId('pack-import-file').setInputFiles(filePath)
+    await expect(page.getByTestId('pack-import-result')).toContainText(/pack import failed/i, {
+      timeout: 30_000,
+    })
+    await expect(page.getByTestId('pack-import-issues')).toContainText('pack-media-decode-failed')
+    await expect(page.getByTestId('pack-import-active-game')).toHaveText('none')
+  } finally {
+    await unlink(filePath).catch(() => undefined)
+  }
+})
+
 test('export-after-import produces an independent pack without hosted media', async ({
   browser,
   context,

@@ -54,10 +54,11 @@ describe('pack zip read safety', () => {
     expect(result.issues[0]?.code).toBe('pack-malformed-container')
   })
 
-  it('rejects duplicate exact paths', async () => {
+  it('accepts a pack archive that includes one distinct media entry path', async () => {
+    // Exact duplicate ZIP entry names cannot be expressed via zipSync's object map.
+    // Duplicate/case-collision rejection is covered by createPackPathTracker unit tests
+    // and by import-time tracker usage in readPackZip.
     const gameBytes = new Uint8Array([0x7b, 0x7d])
-    const base = await validEmptyPackBytes()
-    void base
     const archive: Record<string, Uint8Array> = {
       [MANIFEST_PATH]: new Uint8Array([0x7b, 0x7d]),
       [GAME_ENTRY_PATH]: gameBytes,
