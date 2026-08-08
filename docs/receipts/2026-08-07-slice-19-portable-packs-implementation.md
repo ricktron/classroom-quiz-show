@@ -374,3 +374,36 @@ branch `feat/slice-19-portable-packs` / clean worktree.
 - No Slice 20+ / no `CQS-OD-066` / no Final-wager repair
 - No STATUS/`Complete` claim
 - Tip-fill receipt SHA recorded only after that commit exists; do not treat this section as predicting its own hash.
+
+## 22. Post-merge disposition
+
+Historical sections above remain preserved as observations at their original
+times (including earlier “In review”, “unmerged”, and “STOP BEFORE MERGE”
+wording).
+
+Subsequently, under merge authorization
+`AUTHORIZE-CQS-SLICE-19-PR50-972C07B-EXACT-HEAD-SQUASH-MERGE-AND-POST-MERGE-VERIFICATION-1`
+(evidence state `CQS-SLICE-19-PR50-972C07B-MERGE-ES-1`), PR #50 was exact-head
+squash-merged:
+
+| Fact | Value |
+| --- | --- |
+| Reviewed head | `972c07ba61042401f71c999b959a15997e3fbe51` |
+| Squash | `95573e2468ee67f9e6e5a221de002f35d6421249` |
+| Sole parent | `a1726e59ac437b84e785f8cfe53740e229de244c` |
+| Identical tree | `a0c6ec813525cf80ac6210eef594cc5a026a9d00` |
+| Reviewed-head → squash diff | empty |
+| Path count | **63** |
+| Merged at | **2026-08-08T21:25:37Z** (**2026-08-08 16:25:37 CDT**) |
+| Post-merge CI | run `31279280945` **success** |
+| Pages | run `31279280960` **success** at exact squash |
+| Post-merge-main Sonar at squash | **not observed / not claimed** |
+| PR-head Sonar at `972c07b…` | green (pre-merge evidence only) |
+| Inherited Final flake | unresolved; not repaired |
+
+Canonical documentation reconciliation for Complete status is tracked under
+`AUTHORIZE-CQS-SLICE-19-POST-MERGE-RECONCILIATION-1` /
+`CQS-SLICE-19-POST-MERGE-RECONCILIATION-ES-1` in
+[`2026-08-08-slice-19-post-merge-reconciliation.md`](2026-08-08-slice-19-post-merge-reconciliation.md).
+No further Slice 19 product repair is owed. This append grants **no** Slice 20
+authority and does not claim that the reconciliation PR itself has merged.

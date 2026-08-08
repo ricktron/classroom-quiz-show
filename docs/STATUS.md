@@ -1,6 +1,48 @@
 # Status
 
-**Current completed product slice:** Slice 18 — Audience Display System
+**Current completed product slice:** Slice 19 — Self-Contained Portable Packs
+**Slice 19 state:** **Complete** — PR
+[#50](https://github.com/ricktron/classroom-quiz-show/pull/50) was exact-head
+squash-merged at `95573e2468ee67f9e6e5a221de002f35d6421249` (merged
+**2026-08-08T21:25:37Z** / **2026-08-08 16:25:37 CDT**) from final reviewed head
+`972c07ba61042401f71c999b959a15997e3fbe51` (authorized base
+`a1726e59ac437b84e785f8cfe53740e229de244c`, the squash commit's **sole**
+parent). Reviewed-head and squash trees are identical
+(`a0c6ec813525cf80ac6210eef594cc5a026a9d00`) and the direct diff between them is
+empty (**exactly 63** paths). The delivery adds self-contained portable packs
+(`.cqs-pack`, pack format **v1**): exact Slice 12 canonical JSON plus embedded
+supported raster media; safe bounded ZIP import/export with integrity limits;
+PNG/JPEG/WebP/GIF pack raster support (SVG remains hosted/plain-JSON only);
+durable pack media via IndexedDB schema **2 → 3**; host-private resource scope;
+clean-environment offline media proof; Save/Load/recovery; export-after-import;
+pack metadata not projected publicly. Plain JSON import/export is retained. Sole
+dependency addition: exact `fflate@0.8.3`. Independent-review hardening retained
+in the merged tree includes pre-read pack cap, bounded hosted media streaming,
+production raster decode, correct per-asset limit, export/import collision
+symmetry, durable last-reference GC, recovery-discard cleanup,
+latest-request-wins / single hydration owner, failed-export published-scope
+clearing, and size reject before decode. Commands/events/reducer/replay and
+public wire remain unchanged. Public-state wire remains **8**; sync envelope
+**2**; canonical game-file schema **1**; GameDefinition model **1**; private
+active-session wire **1**; IndexedDB schema **3**; Session Summary contract
+**1**; completed-summary envelope **1**; competitive profile **1**. Post-merge
+CI run `31279280945` **success** (lint/typecheck/unit/build `93157871416`
+**success** — **124** test files / **2225** passed / **1** skipped; Playwright
+`93157871440` **success** — **331** passed / **14** skipped / **3** flaky /
+**0** terminal failures); Pages run `31279280960` **success** (build
+`93157871523`, deploy `93157934430`, deployment `5812844129`, environment
+`github-pages`, SHA `95573e2…`). **No** SonarCloud check-run was bound to
+post-merge squash `95573e2…` — do not invent post-merge-main Sonar; PR-head
+Sonar at reviewed head `972c07b…` was green (Quality Gate OK; Reliability A /
+1.0; new bugs 0; S2871 unresolved 0) and remains **pre-merge / PR-head
+evidence only**. The three flaky cases were the inherited Final mid-refresh
+signature (`Saved: 100` / `Not saved yet`) on `desktop-1080p`, `projector-720p`,
+and `mobile-host`, each retry-resolved on retry #1; the flake remains
+unresolved and is not claimed repaired by Slice 19. See
+[`architecture/ADR-017-self-contained-portable-packs.md`](architecture/ADR-017-self-contained-portable-packs.md),
+[`receipts/2026-08-07-slice-19-portable-packs-implementation.md`](receipts/2026-08-07-slice-19-portable-packs-implementation.md),
+and
+[`receipts/2026-08-08-slice-19-post-merge-reconciliation.md`](receipts/2026-08-08-slice-19-post-merge-reconciliation.md).
 **Slice 18 state:** **Complete** — PR
 [#46](https://github.com/ricktron/classroom-quiz-show/pull/46) was squash-merged
 at `91c7708626caeaa28b15617a1f0938f4944f7680` (merged
@@ -22,20 +64,20 @@ tests. **No** private-state import in audience production code; no sanitizer
 expansion; no command/event/reducer, game-authority, persistence, package,
 dependency, workflow, or deployment change; no new ADR. Public-state wire remains
 **8**; sync envelope **2**; canonical game-file schema **1**; GameDefinition
-model **1**; private active-session wire **1**; IndexedDB schema **2**; Session
-Summary contract **1**; completed-summary envelope **1**; competitive profile
-**1**. Post-merge CI run `31138847378` **success** (lint/typecheck/unit/build
-`92744217239` **success** — **110** test files / **2126** passed / **1**
-skipped; Playwright `92744217248` **success** — **313** passed / **14** skipped
-/ **3** flaky / **0** terminal failures); SonarCloud check `92746422985`
-**success** (Quality Gate passed; dashboard branch label was a historical-looking
-quirk — the GitHub check-run was bound to squash `91c7708…`); Pages run
-`31138847376` **success** (build `92744216668`, deploy `92744302090`,
-deployment `5787310456`, status `16468338818`, SHA `91c7708…`). The three flaky
-cases were the inherited Final mid-refresh signature
-(`Saved: 100` / `Not saved yet`) on `desktop-1080p`, `projector-720p`, and
-`mobile-host`, each retry-resolved on retry #1; the flake remains unresolved and
-is not claimed repaired by Slice 18. No live-route or physical-projector
+model **1**; private active-session wire **1**; IndexedDB schema **2** at Slice
+18 completion; Session Summary contract **1**; completed-summary envelope **1**;
+competitive profile **1**. Post-merge CI run `31138847378` **success**
+(lint/typecheck/unit/build `92744217239` **success** — **110** test files /
+**2126** passed / **1** skipped; Playwright `92744217248` **success** —
+**313** passed / **14** skipped / **3** flaky / **0** terminal failures);
+SonarCloud check `92746422985` **success** (Quality Gate passed; dashboard
+branch label was a historical-looking quirk — the GitHub check-run was bound to
+squash `91c7708…`); Pages run `31138847376` **success** (build `92744216668`,
+deploy `92744302090`, deployment `5787310456`, status `16468338818`, SHA
+`91c7708…`). The three flaky cases were the inherited Final mid-refresh
+signature (`Saved: 100` / `Not saved yet`) on `desktop-1080p`, `projector-720p`,
+and `mobile-host`, each retry-resolved on retry #1; the flake remains unresolved
+and is not claimed repaired by Slice 18. No live-route or physical-projector
 verification was performed in post-merge verification. See
 [`plans/CQS-DESIGN-PHASE-2B-DIRECTION.md`](plans/CQS-DESIGN-PHASE-2B-DIRECTION.md),
 [`receipts/2026-08-06-slice-18-audience-display-local-verification.md`](receipts/2026-08-06-slice-18-audience-display-local-verification.md),
@@ -138,24 +180,24 @@ wire and IndexedDB schema all remain **1**; no dependency added. See
 [`architecture/ADR-014-final-wager-round.md`](architecture/ADR-014-final-wager-round.md)
 and
 [`receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
-**Previous slice:** Slice 17 — Theme and Design-Token Foundation (`Complete`,
-squash-merged via PR #44 at `dee2f3c…`; reconciliation PR #45)
-**Current delivery frontier:** Slice 18 product implementation is **`Complete`**
-on `main` via PR [#46](https://github.com/ricktron/classroom-quiz-show/pull/46)
-squash `91c7708626caeaa28b15617a1f0938f4944f7680` (merged
-**2026-08-07T01:41:48Z**) from reviewed head
-`bd946f323f381931f706d3a2ff3957d911b5c696`; sole parent
-`6e29121d850cf4b4a4ba366c706225f208166f93`; trees identical at
-`bc95d77efc15e3f63a3ea15c397df53e904767fc`; direct head-to-squash diff empty;
-exactly **22** paths. After this reconciliation content is on `main`, Slice 18
-is terminally complete — no further Slice 18 delivery, repair, merge,
-reconciliation, registration, or canonicalization lane is owed. Slice 17 remains
-terminally `Complete` (PR #44 / #45). At this frontier, IndexedDB schema is
-**2**; public-state wire **8**, sync envelope **2**; canonical game-file schema
-**1**, GameDefinition model **1**, private active-session wire **1**, Session
-Summary contract **1**, completed-summary envelope **1**, and competitive
-profile **1** — all unchanged by Slice 18. Slice 19 — Self-Contained Portable
-Packs is the next planned product frontier and remains separately unauthorized.
+**Previous slice:** Slice 18 — Audience Display System (`Complete`, squash-merged
+via PR #46 at `91c7708…`; reconciliation PR #47)
+**Current delivery frontier:** Slice 19 product implementation is **`Complete`**
+on `main` via PR [#50](https://github.com/ricktron/classroom-quiz-show/pull/50)
+squash `95573e2468ee67f9e6e5a221de002f35d6421249` (merged
+**2026-08-08T21:25:37Z**) from reviewed head
+`972c07ba61042401f71c999b959a15997e3fbe51`; sole parent
+`a1726e59ac437b84e785f8cfe53740e229de244c`; trees identical at
+`a0c6ec813525cf80ac6210eef594cc5a026a9d00`; direct head-to-squash diff empty;
+exactly **63** paths. After this reconciliation content is on `main`, Slice 19
+is terminally complete — no further Slice 19 product delivery, repair, merge,
+reconciliation, registration, or canonicalization lane is owed. Slice 18 remains
+terminally `Complete` (PR #46 / #47). At this frontier, pack format is **1**;
+IndexedDB schema is **3**; public-state wire **8**; sync envelope **2**;
+canonical game-file schema **1**; GameDefinition model **1**; private
+active-session wire **1**; Session Summary contract **1**; completed-summary
+envelope **1**; competitive profile **1**. Slice 20 — Spreadsheet Authoring Seed
+is the next planned product frontier and remains separately unauthorized.
 **Roadmap:** **23 slices**, amended 2026-08-07 by
 [`decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md)
 (`CQS-PLAN-S03`; documentation-only). **Amendment 004 planning delivery is
@@ -172,12 +214,12 @@ merge-evidence pointer:
 [`decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
 (`CQS-PLAN-S02`) rebalanced 18→22 slices; Amendment 001
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
-grew the plan from 11 to 18 slices (PR #13, `752a3fe`, 2026-07-26). Slices 1–18
-are `Complete`; Slices 19–23 remain `Planned`, unstarted, and unauthorized for
-implementation. CQS-PLAN-S03 grants **no** Slice 19, Slice 22 audio, or Slice
-23 qualification authority. Phase 2B’s MVP consumers (Slices 17–18) are both
-`Complete`; Phase 3 design-system readiness has served the theme-foundation →
-audience-display sequence; post-MVP arcs remain inactive; theme song remains
+grew the plan from 11 to 18 slices (PR #13, `752a3fe`, 2026-07-26). Slices 1–19
+are `Complete`; Slices 20–23 remain `Planned` and unauthorized for
+implementation. This STATUS grants **no** Slice 20, Slice 21, Slice 22 audio, or
+Slice 23 qualification authority. Phase 2B’s MVP consumers (Slices 17–18) are
+both `Complete`; Phase 3 design-system readiness has served the theme-foundation
+→ audience-display sequence; post-MVP arcs remain inactive; theme song remains
 post-MVP; `CQS-OD-066` remains unresolved; the inherited Final mid-refresh
 recovery flake remains unresolved.
 
@@ -425,9 +467,10 @@ inherited Final mid-refresh recovery flake remains unresolved. `CQS-OD-066`
 remains unresolved. No physical-projector, accessibility, WCAG, or Raspberry Pi
 certification is claimed. No ADR was warranted.
 
-**Next action:** separately authorized Slice 19 — Self-Contained Portable Packs
-lane. No further Phase 3 readiness registration, Slice 17, or Slice 18 product
-lane is owed after this reconciliation content is on `main`.
+**Next action:** separately authorized Slice 20 — Spreadsheet Authoring Seed
+lane. Slice 19 is `Complete` via PR #50. No further Phase 3 readiness
+registration, Slice 17, Slice 18, or Slice 19 product lane is owed after this
+reconciliation content is on `main`.
 
 ## Remaining-MVP rebalance planning (CQS-PLAN-S02) — Complete
 
@@ -506,10 +549,11 @@ was squash-merged via PR
 or merge action.** The Slice 16 PR #41 post-merge canonicalization recorded in
 [`receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md`](receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md)
 closes the remaining stale-routing defect. Phase 3 design-system readiness was
-satisfied and then consumed by completed Slices 17–18 (PR #44, PR #46). The next
-safe action is separately authorized Slice 19 orchestration — not further review
-of PR #36, PR #38, PR #40, PR #41, PR #44, or PR #46, and not Slice 19
-implementation from this surface alone.
+satisfied and then consumed by completed Slices 17–18 (PR #44, PR #46). Slice 19
+has since completed via PR #50. The next safe action is separately authorized
+Slice 20 orchestration — not further review of PR #36, PR #38, PR #40, PR #41,
+PR #44, PR #46, or PR #50, and not Slice 20 implementation from this surface
+alone.
 
 ## Slice 14 merge evidence
 
@@ -1606,7 +1650,8 @@ merge and post-merge evidence in
 | Slice 16 ledger | **Complete** via PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) at `bc3cea65…` |
 | Slice 17 theme/tokens | **Complete** via PR [#44](https://github.com/ricktron/classroom-quiz-show/pull/44) at `dee2f3c…` |
 | Slice 18 audience display | **Complete** via PR [#46](https://github.com/ricktron/classroom-quiz-show/pull/46) at `91c7708…` |
-| Slice 19+, post-MVP arcs, `CQS-OD-066` | **Unauthorized / inactive / unresolved** |
+| Slice 19 portable packs | **Complete** via PR [#50](https://github.com/ricktron/classroom-quiz-show/pull/50) at `95573e2…` |
+| Slice 20+, post-MVP arcs, `CQS-OD-066` | **Unauthorized / inactive / unresolved** |
 
 ## Slice 16 work (Complete)
 
@@ -1722,15 +1767,16 @@ that reconciliation adds evidence only and grants **no** product authority.
 **Current** MVP count is the **23-slice** plan.
 
 **Recommended next action (after this reconciliation content is on `main`):**
-return to the Program Orchestrator for a new, separately authorized Slice 19 —
-Self-Contained Portable Packs lane. Slice 19 remains `Planned` and unauthorized.
-Slices 19–23 remain `Planned` and unauthorized (including Slice 22 Minimal
-Presentation Audio and Slice 23 Classroom Release Qualification). Do not begin
-Slice 19, Slice 22 audio implementation, Slice 23 qualification, or post-MVP
-work from this surface. Post-MVP arcs remain inactive; theme song remains
-post-MVP; `CQS-OD-066` remains unresolved; the inherited Final mid-refresh
-recovery flake remains unresolved. No Slice 19 implementation authority exists.
-Phase 3 readiness has served the theme-foundation → audience-display sequence.
+return to the Program Orchestrator for a new, separately authorized Slice 20 —
+Spreadsheet Authoring Seed lane. Slice 19 is `Complete` via PR #50. Slices
+20–23 remain `Planned` and unauthorized (including Slice 21, Slice 22 Minimal
+Presentation Audio, and Slice 23 Classroom Release Qualification). Do not begin
+Slice 20, Slice 21, Slice 22 audio implementation, Slice 23 qualification, or
+post-MVP work from this surface. Post-MVP arcs remain inactive; theme song
+remains post-MVP; `CQS-OD-066` remains unresolved; the inherited Final
+mid-refresh recovery flake remains unresolved. No Slice 20 implementation
+authority exists. Phase 3 readiness has served the theme-foundation →
+audience-display sequence.
 
 **Roadmap Amendment 003 (`CQS-PLAN-S02`) delivery and post-merge
 reconciliation remain complete on `main`** (PR #35 squash `2ebeb240…`; PR #36
