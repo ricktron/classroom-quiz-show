@@ -1,4 +1,5 @@
 import { isValidSameOriginPath } from '../game/media/limits'
+import { getSharedPackResourceRegistry } from '../pack/resourceRegistry'
 
 /**
  * Join a validated same-origin relative media path against an app base URL.
@@ -25,5 +26,7 @@ export function joinBaseAndMediaPath(base: string, path: string): string | null 
  * must fail closed (no `<img src>`).
  */
 export function resolveSameOriginMediaSrc(path: string): string | null {
+  const packSrc = getSharedPackResourceRegistry().resolveSrc(path)
+  if (packSrc !== null) return packSrc
   return joinBaseAndMediaPath(import.meta.env.BASE_URL || '/', path)
 }

@@ -38,7 +38,7 @@ const ANSWER_KEY_WARNING =
   'Portable game files contain answer keys, alternates, and teacher notes. Keep them on the host side.'
 
 const MEDIA_WARNING =
-  'This file preserves media paths but does not include the referenced media files.'
+  'This JSON file preserves media paths only — it does not include the referenced image bytes. Use portable pack export to share embedded media.'
 
 export function GameExportPanel({
   definition,

@@ -1,9 +1,12 @@
+import { useEffect, useRef } from 'react'
 import { useSessionStore } from './useSessionStore'
 import { useHostSync } from './useHostSync'
 import { PUBLIC_STATUS_CODES } from '../state/status'
 import { createSampleGame, createSampleGameWithUnsupportedRound } from '../game/sampleGame'
 import { GameImportPanel } from './GameImportPanel'
 import { GameExportPanel } from './GameExportPanel'
+import { GamePackImportPanel } from './GamePackImportPanel'
+import { GamePackExportPanel } from './GamePackExportPanel'
 import { CategoryBoardHostPanel } from './CategoryBoardHostPanel'
 import { TeamScoringPanel } from './TeamScoringPanel'
 import { SessionSummaryPanel } from './SessionSummaryPanel'
@@ -15,6 +18,11 @@ import { useResponseTimerExpiry } from './useResponseTimerExpiry'
 import { useFinalWagerExpiry } from './useFinalWagerExpiry'
 import { systemClock, type Clock } from '../time/clock'
 import { useHostPersistence } from './useHostPersistence'
+import {
+  enqueueActivePackResourceScopePublish,
+  hydratePackMediaForDefinition,
+} from '../pack/hydratePackMedia'
+import { getSharedPackResourceRegistry } from '../pack/resourceRegistry'
 import { PersistenceControls } from './PersistenceControls'
 import { CompletedSummaryLedgerPanel } from './CompletedSummaryLedgerPanel'
 import './FoundationControls.css'
@@ -79,6 +87,36 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
   // The Final round's own scheduled clock read (Slice 14). Same discipline: it
   // turns a deadline into a COMMAND and decides nothing.
   useFinalWagerExpiry({ game, dispatch, clock })
+
+  const packHydrationGenerationRef = useRef(0)
+  const setPackGcContext = persistence.setPackGcContext
+  const persistenceAdapter = persistence.adapter
+  const persistenceStoreEpoch = persistence.storeEpoch
+
+  useEffect(() => {
+    setPackGcContext?.(game?.definition ?? null, registry)
+  }, [game?.definition, registry, setPackGcContext])
+
+  useEffect(() => {
+    const generation = packHydrationGenerationRef.current + 1
+    packHydrationGenerationRef.current = generation
+    const isCurrent = (): boolean => packHydrationGenerationRef.current === generation
+    const definition = game?.definition ?? null
+    if (definition === null) {
+      getSharedPackResourceRegistry().clear()
+      if (isCurrent()) {
+        enqueueActivePackResourceScopePublish(persistenceAdapter, null)
+      }
+      return
+    }
+    void hydratePackMediaForDefinition(
+      persistenceAdapter,
+      definition,
+      getSharedPackResourceRegistry(),
+      registry,
+      { isCurrent },
+    )
+  }, [game?.definition, persistenceAdapter, registry, persistenceStoreEpoch])
 
   return (
     <section className="foundation" aria-labelledby="foundation-title">
@@ -392,12 +430,22 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
         activeGame={game}
       />
 
+      <GamePackImportPanel
+        dispatch={dispatch}
+        registry={registry}
+        hasSession={hasSession}
+        activeGame={game}
+        adapter={persistence.adapter}
+      />
+
       </fieldset>
 
       <GameExportPanel
         definition={game?.definition ?? null}
         registry={registry}
       />
+
+      <GamePackExportPanel definition={game?.definition ?? null} registry={registry} />
     </section>
   )
 }

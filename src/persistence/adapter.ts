@@ -5,6 +5,7 @@ export type PersistenceStoreName =
   | 'activeSessions'
   | 'coordination'
   | 'completedSummaries'
+  | 'packMediaAssets'
 
 export interface PersistenceTx {
   get(store: PersistenceStoreName, key: string): Promise<unknown>

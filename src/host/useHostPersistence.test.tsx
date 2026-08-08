@@ -1,8 +1,9 @@
 import { act, render, waitFor } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createDefaultRegistry } from '../game/defaultRegistry'
 import type { GameDefinition } from '../game/gameDefinition'
-import { importGameFromJsonText } from '../import/importGame'
+import { importGameFromJsonText, importGameFromUnknown } from '../import/importGame'
+import { exportGameDefinition } from '../export/exportGame'
 import {
   ACTIVE_SESSION_KEY,
   OBJECT_STORE_ACTIVE_SESSIONS,
@@ -13,6 +14,7 @@ import {
   createMemoryPersistenceAdapter,
   persistenceErr,
   readActiveSession,
+  saveDefinition,
   writeActiveSession,
   type PersistenceAdapter,
   type PersistenceStoreName,
@@ -23,13 +25,88 @@ import type { SessionEvent } from '../state/events'
 import type { DispatchResult } from '../state/store'
 import { createSessionStore } from '../state/store'
 import { CANONICAL_SAMPLE_FINAL_WAGER_FILE } from '../import/sampleGameFile'
-import { boardGameFileText } from '../test/categoryBoardFixtures'
+import {
+  boardGameFile,
+  boardGameFileText,
+  category,
+  imagePrompt,
+  tile,
+} from '../test/categoryBoardFixtures'
 import { gameFileText } from '../test/gameFileFixtures'
 import { createManualClock } from '../time/clock'
+import * as hydratePackMedia from '../pack/hydratePackMedia'
+import {
+  commitPackMediaAssets,
+  listPackMediaScopeKeys,
+} from '../pack/packMediaPersistence'
+import * as packMediaPersistence from '../pack/packMediaPersistence'
+import { resourceScopeKeyFromGameText } from '../pack/resourceScope'
+import { TINY_PNG_BYTES } from '../pack/testFixtures'
 import { useHostPersistence, type UseHostPersistence } from './useHostPersistence'
 import { useSessionStore, type UseSessionStore } from './useSessionStore'
 
 const AT = 1_000_000
+const packRegistry = createDefaultRegistry()
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
+
+async function packDefinition(id: string, path: string): Promise<GameDefinition> {
+  const imported = importGameFromUnknown(
+    boardGameFile(
+      {
+        categories: [
+          category('a', {
+            tiles: [
+              tile('a-1', {
+                prompt: imagePrompt({
+                  source: { kind: 'same-origin-path', path },
+                }),
+              }),
+            ],
+          }),
+        ],
+      },
+      { id, title: id },
+    ),
+  )
+  if (imported.status !== 'success') throw new Error('pack fixture import failed')
+  return imported.definition
+}
+
+async function commitPackScope(
+  adapter: PersistenceAdapter,
+  definition: GameDefinition,
+  sourcePath: string,
+): Promise<string> {
+  const exported = exportGameDefinition(definition, { registry: packRegistry })
+  if (exported.status !== 'success') throw new Error('pack fixture export failed')
+  const scopeKey = await resourceScopeKeyFromGameText(exported.jsonText)
+  const committed = await commitPackMediaAssets(adapter, {
+    resourceScopeKey: scopeKey,
+    gameId: definition.id,
+    gameSha256: scopeKey,
+    mediaAssets: [
+      {
+        sourcePath,
+        bytes: TINY_PNG_BYTES,
+        mediaType: 'image/png',
+        sha256: 'abc',
+      },
+    ],
+  })
+  if (committed.status !== 'success') throw new Error('pack fixture commit failed')
+  return scopeKey
+}
+
+function packBackedHistory(definition: GameDefinition): readonly SessionEvent[] {
+  const store = createSessionStore()
+  store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 'pack-session' })
+  const result = store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT, definition })
+  if (result.status !== 'accepted') throw new Error('pack history initialize failed')
+  return store.getHistory()
+}
 
 interface HarnessApi {
   readonly persistence: UseHostPersistence
@@ -375,6 +452,133 @@ describe('useHostPersistence', () => {
     })
     await waitFor(() => expect(api().persistence.ledgerStatus).toBe('saved'))
     expect(api().persistence.completedListings).toHaveLength(1)
+  })
+
+  it('does not schedule pack-media GC when setPackGcContext receives unchanged inputs', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    const def = await packDefinition('gc-stable', 'media-fixtures/gc-stable.png')
+    const gcSpy = vi.spyOn(packMediaPersistence, 'gcUnreferencedPackScopes')
+    const { api } = renderHarness(adapter)
+    await waitFor(() => expect(api().persistence.bootPhase).toBe('ready'))
+
+    act(() => {
+      api().persistence.setPackGcContext?.(null, api().registry)
+    })
+    act(() => {
+      api().persistence.setPackGcContext?.(def, api().registry)
+    })
+    await Promise.resolve()
+    expect(gcSpy).toHaveBeenCalledTimes(0)
+
+    act(() => {
+      api().persistence.setPackGcContext?.(def, api().registry)
+    })
+    act(() => {
+      api().persistence.setPackGcContext?.(def, api().registry)
+    })
+    await Promise.resolve()
+    expect(gcSpy).toHaveBeenCalledTimes(0)
+
+    const other = await packDefinition('gc-other', 'media-fixtures/gc-other.png')
+    act(() => {
+      api().persistence.setPackGcContext?.(other, api().registry)
+    })
+    await waitFor(() => expect(gcSpy).toHaveBeenCalledTimes(1))
+  })
+
+  it('removes an unreferenced recovery pack scope after discard and keeps saved references', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    const recoveryDef = await packDefinition('recovery-only', 'media-fixtures/recovery-only.png')
+    const savedDef = await packDefinition('saved-keep', 'media-fixtures/saved-keep.png')
+    const recoveryScope = await commitPackScope(
+      adapter,
+      recoveryDef,
+      'media-fixtures/recovery-only.png',
+    )
+    const savedScope = await commitPackScope(adapter, savedDef, 'media-fixtures/saved-keep.png')
+    const saved = await saveDefinition(adapter, savedDef, { mode: 'save', registry: packRegistry })
+    expect(saved.ok).toBe(true)
+    await seedActiveSession(adapter, packBackedHistory(recoveryDef))
+
+    const { api, view } = renderHarness(adapter)
+    await waitFor(() => expect(api().persistence.bootPhase).toBe('recovery'))
+    await waitFor(async () => {
+      expect(new Set(await listPackMediaScopeKeys(adapter))).toEqual(
+        new Set([recoveryScope, savedScope]),
+      )
+    })
+
+    await act(async () => {
+      const result = await api().persistence.discardRecovery()
+      expect(result.ok).toBe(true)
+    })
+    await waitFor(() => expect(api().persistence.bootPhase).toBe('ready'))
+    await waitFor(async () => {
+      expect(await listPackMediaScopeKeys(adapter)).toEqual([savedScope])
+    })
+    expect(await listPackMediaScopeKeys(adapter)).not.toContain(recoveryScope)
+    view.unmount()
+  })
+
+  it('removes a recovery-only pack scope after discard when nothing else references it', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    const recoveryDef = await packDefinition('recovery-orphan', 'media-fixtures/recovery-orphan.png')
+    const recoveryScope = await commitPackScope(
+      adapter,
+      recoveryDef,
+      'media-fixtures/recovery-orphan.png',
+    )
+    await seedActiveSession(adapter, packBackedHistory(recoveryDef))
+
+    const { api, view } = renderHarness(adapter)
+    await waitFor(() => expect(api().persistence.bootPhase).toBe('recovery'))
+    await waitFor(async () => {
+      expect(await listPackMediaScopeKeys(adapter)).toEqual([recoveryScope])
+    })
+
+    await act(async () => {
+      expect(await api().persistence.discardRecovery()).toMatchObject({ ok: true })
+    })
+    await waitFor(() => expect(api().persistence.bootPhase).toBe('ready'))
+    await waitFor(async () => {
+      expect(await listPackMediaScopeKeys(adapter)).toEqual([])
+    })
+    view.unmount()
+  })
+
+  it('loadSaved does not hydrate pack media directly', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    const { api } = renderHarness(adapter)
+    await waitFor(() => expect(api().persistence.bootPhase).toBe('ready'))
+
+    act(() => {
+      api().dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 'load-authority' })
+      api().dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT, definition: definition() })
+    })
+    await act(async () => {
+      expect(
+        await api().persistence.saveCurrentDefinition(
+          api().session.store.getState().session?.game?.definition ?? null,
+          api().registry,
+        ),
+      ).toMatchObject({ ok: true })
+    })
+
+    const hydrateSpy = vi.spyOn(hydratePackMedia, 'hydratePackMediaForDefinition')
+    await act(async () => {
+      const result = await api().persistence.loadSaved({
+        gameId: 'sample-game',
+        activeGame: api().session.store.getState().session?.game ?? null,
+        dispatch: api().session.dispatch,
+        getHistory: () => api().session.store.getHistory(),
+        registry: api().registry,
+        confirmedReplace: true,
+      })
+      expect(result.ok).toBe(true)
+    })
+    expect(hydrateSpy).not.toHaveBeenCalled()
   })
 
   it('recovers timer histories by replaying future and past deadlines exactly', async () => {

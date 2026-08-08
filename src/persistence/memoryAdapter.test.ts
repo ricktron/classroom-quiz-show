@@ -29,6 +29,16 @@ describe('MemoryPersistenceAdapter', () => {
     ).toEqual({ ok: true, value: undefined })
   })
 
+  it('includes the pack media assets store', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    expect(
+      await adapter.withTransaction(['packMediaAssets'], async (tx) => {
+        await tx.put('packMediaAssets', 'scope\0media/a.png', { bytes: [1] })
+      }),
+    ).toEqual({ ok: true, value: undefined })
+  })
+
   it('rolls back a transaction when work throws', async () => {
     const adapter = createMemoryPersistenceAdapter()
     await adapter.open()

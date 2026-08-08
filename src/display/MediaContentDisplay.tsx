@@ -1,10 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { PublicPromptContent } from '../state/publicState'
+import {
+  ensureDisplayPackMediaHydration,
+  subscribePackScopeAnnouncements,
+} from '../pack/packMediaScopeSync'
 import { resolveSameOriginMediaSrc } from './resolveSameOriginMediaSrc'
 import './MediaContentDisplay.css'
 
 /**
- * Projector-safe renderer for `PublicPromptContent` (Slice 11).
+ * Projector-safe renderer for `PublicPromptContent` (Slice 11 + Slice 19).
  *
  * Accepts ONLY the public DTO — never private domain types — so the display
  * bundle cannot pull trusted board definitions into the projector path.
@@ -14,6 +18,10 @@ import './MediaContentDisplay.css'
  *            failure, "Image unavailable" and the authored alt as visible
  *            fallback text (no invented clue content)
  *  - unknown kind → unavailable (exhaustive switch; no silent default content)
+ *
+ * Slice 19: image prompts may resolve through host-private pack media hydrated
+ * from IndexedDB into the shared runtime registry. No pack metadata enters
+ * PublicState.
  */
 
 export interface MediaContentDisplayProps {
@@ -67,10 +75,30 @@ function ImagePrompt({
   readonly content: Extract<PublicPromptContent, { kind: 'image' }>
 }) {
   const path = content.source.path
-  const src = resolveSameOriginMediaSrc(path)
+  const [hydrateTick, setHydrateTick] = useState(0)
   // Path-scoped failure: a prior failed source must not poison a later valid
   // source, and a stale onError from an abandoned src must be ignored.
   const [failedForPath, setFailedForPath] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    void ensureDisplayPackMediaHydration().then((changed) => {
+      if (!cancelled && changed) setHydrateTick((tick) => tick + 1)
+    })
+    const unsubscribe = subscribePackScopeAnnouncements(() => {
+      void ensureDisplayPackMediaHydration().then((changed) => {
+        if (!cancelled && changed) setHydrateTick((tick) => tick + 1)
+      })
+    })
+    return () => {
+      cancelled = true
+      unsubscribe()
+    }
+  }, [path])
+
+  // hydrateTick forces re-resolve after async pack registry hydration.
+  void hydrateTick
+  const src = resolveSameOriginMediaSrc(path)
   const failed = src === null || failedForPath === path
 
   if (failed || src === null) {
