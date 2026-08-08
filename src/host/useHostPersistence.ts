@@ -212,8 +212,15 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
 
   const setPackGcContext = useCallback(
     (definition: GameDefinition | null, roundRegistry: RoundRegistry): void => {
+      const previous = packGcContextRef.current.definition
       packGcContextRef.current = { definition, roundRegistry }
-      void gcPackMedia()
+      // GC only when a previously loaded definition is replaced or cleared.
+      // Skip the initial null boot context: recoverable active-session pack
+      // scopes are not yet represented in `activeDefinition` and must survive
+      // until Resume rehydrates the definition into the GC keep-set.
+      if (previous !== null) {
+        void gcPackMedia()
+      }
     },
     [gcPackMedia],
   )
