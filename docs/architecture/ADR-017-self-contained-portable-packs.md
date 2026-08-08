@@ -1,7 +1,13 @@
 # ADR-017 — Self-contained portable packs
 
-- **Status:** Proposed (Slice 19) — **In review**; not merged
+- **Status:** Accepted
 - **Date:** 2026-08-07
+- **Accepted:** 2026-08-08 (implementation PR
+  [#50](https://github.com/ricktron/classroom-quiz-show/pull/50); exact reviewed
+  head `972c07ba61042401f71c999b959a15997e3fbe51`; squash
+  `95573e2468ee67f9e6e5a221de002f35d6421249`; merged **2026-08-08T21:25:37Z**;
+  post-merge verification complete; post-merge reconciliation
+  [`../receipts/2026-08-08-slice-19-post-merge-reconciliation.md`](../receipts/2026-08-08-slice-19-post-merge-reconciliation.md))
 - **Slice:** 19 — Self-Contained Portable Packs
 - **Authorization:** `AUTHORIZE-CQS-SLICE-19-PORTABLE-PACKS-IMPLEMENTATION-1`,
   `AUTHORIZE-CQS-SLICE-19-PACK-ARCHITECTURE-DISPOSITION-1`
@@ -184,15 +190,17 @@ structured `pack-media-type-unsupported`. Pack import rejects the same.
 
 ### 18. Media byte sniff and decode validation
 
-Pure pack logic is testable without DOM. Browser export/import may inject a
-narrow decode adapter (`createImageBitmap` or equivalent) using ephemeral Blob
-URLs that are revoked immediately. MIME comes from sniffed bytes only.
+Pure pack logic is testable without DOM. Production browser export/import wire
+`browserDecodeImage` (narrow `createImageBitmap` adapter) using ephemeral Blob
+URLs that are revoked immediately. MIME comes from sniffed bytes only. Oversized
+acquired assets are rejected before decode.
 
 ### 19. Media acquisition
 
 Injectable `resolveMediaBytes(sourcePath)` boundary. Hosted export: same-origin
-fetch via `BASE_URL`, status check, byte limits, sniff. Re-export after import:
-read durable pack bytes from the runtime resource layer — no network required.
+fetch via `BASE_URL`, status check, Content-Length and streamed body bounded by
+`MAX_PACK_MEDIA_BYTES`, then sniff. Re-export after import: read durable pack
+bytes from the runtime resource layer — no network required.
 
 Export TOCTOU: capture definition → canonical JSON → inventory → acquire → build;
 async work packages the captured snapshot only.
@@ -235,13 +243,18 @@ manifest text, scores, or session state in durable rows.
 Imported pack media survives ordinary refresh, active-session recovery, Save
 definition, and later Load. Saved canonical JSON does not gain pack metadata;
 hydration derives scope from exported JSON text and loads matching durable bytes.
+Active-definition hydration is latest-request-wins under a single authoritative
+host owner; Load must not introduce an unguarded competing hydration.
 
 ### 25. Cleanup / GC
 
 Remove unreferenced pack scopes when active game and saved definitions no longer
-need them. Replace scope atomically on re-import of same canonical artifact.
-Reset persistence clears pack media store. Revoke runtime object URLs on scope
-replacement and cleanup.
+need them (last-reference GC). After successful recovery discard, scan with null
+active definition so recovery-only scopes are removed while saved-definition
+references remain. Failed current hydrations clear both the local registry and
+the published active-scope pointer. Replace scope atomically on re-import of the
+same canonical artifact. Reset persistence clears pack media store. Revoke
+runtime object URLs on scope replacement and cleanup.
 
 ### 26. Export after import
 
@@ -334,5 +347,11 @@ explicitly excluded from pack privacy/session isolation rules above.
 Implementation receipt:
 [`../receipts/2026-08-07-slice-19-portable-packs-implementation.md`](../receipts/2026-08-07-slice-19-portable-packs-implementation.md)
 
-**STOP BEFORE MERGE** — this ADR documents proposed in-review work; merge and
-Accepted status require separate owner authorization after exact-head review.
+Post-merge reconciliation receipt:
+[`../receipts/2026-08-08-slice-19-post-merge-reconciliation.md`](../receipts/2026-08-08-slice-19-post-merge-reconciliation.md)
+
+**Accepted disposition** — implementation PR #50 exact-head squash-merged at
+`95573e2468ee67f9e6e5a221de002f35d6421249` from reviewed head
+`972c07ba61042401f71c999b959a15997e3fbe51` (merged **2026-08-08T21:25:37Z**);
+post-merge CI and Pages succeeded on that squash; durable Accepted status is
+recorded with the Slice 19 post-merge reconciliation.

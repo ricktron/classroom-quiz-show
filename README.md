@@ -491,15 +491,30 @@ claimed from that merge verification. See
 [`docs/receipts/2026-08-06-slice-18-audience-display-local-verification.md`](docs/receipts/2026-08-06-slice-18-audience-display-local-verification.md),
 and
 [`docs/receipts/2026-08-06-slice-18-post-merge-reconciliation.md`](docs/receipts/2026-08-06-slice-18-post-merge-reconciliation.md).
-**PR #46 requires no further review or merge action.** Slices 1–18 are Complete.
-Slices 19–23 remain Planned and unauthorized under the **23-slice** MVP plan
+**PR #46 requires no further review or merge action.**
+**Slice 19 — Self-Contained Portable Packs. Complete** — exact-head
+squash-merged via PR [#50](https://github.com/ricktron/classroom-quiz-show/pull/50)
+at `95573e2468ee67f9e6e5a221de002f35d6421249` (merged **2026-08-08T21:25:37Z**)
+from reviewed head `972c07ba61042401f71c999b959a15997e3fbe51` (authorized base /
+squash sole parent `a1726e59ac437b84e785f8cfe53740e229de244c`). Reviewed-head and
+squash trees are identical (`a0c6ec813525cf80ac6210eef594cc5a026a9d00`); direct
+diff empty (**exactly 63** paths). Delivers `.cqs-pack` pack format **v1**
+(exact canonical JSON + embedded PNG/JPEG/WebP/GIF raster media; plain JSON
+retained; IndexedDB schema **3**; public wire **8** / sync **2** / canonical
+schema **1** / GameDefinition **1** unchanged; exact `fflate@0.8.3`). See
+[`docs/architecture/ADR-017-self-contained-portable-packs.md`](docs/architecture/ADR-017-self-contained-portable-packs.md),
+[`docs/receipts/2026-08-07-slice-19-portable-packs-implementation.md`](docs/receipts/2026-08-07-slice-19-portable-packs-implementation.md),
+and
+[`docs/receipts/2026-08-08-slice-19-post-merge-reconciliation.md`](docs/receipts/2026-08-08-slice-19-post-merge-reconciliation.md).
+**PR #50 requires no further review or merge action.** Slices 1–19 are Complete.
+Slices 20–23 remain Planned and unauthorized under the **23-slice** MVP plan
 ([`docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md);
 prior Amendment 003:
 [`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
-The next planned product frontier is Slice 19 — Self-Contained Portable Packs,
-which remains separately unauthorized. Slice 22 Minimal Presentation Audio and
-Slice 23 Classroom Release Qualification remain unauthorized. Theme song
-remains post-MVP. The inherited Final mid-refresh recovery flake remains
+The next planned product frontier is Slice 20 — Spreadsheet Authoring Seed,
+which remains separately unauthorized. Slice 21, Slice 22 Minimal Presentation
+Audio, and Slice 23 Classroom Release Qualification remain unauthorized. Theme
+song remains post-MVP. The inherited Final mid-refresh recovery flake remains
 unresolved; `CQS-OD-066` remains unresolved.
 
 > ⚠️ **Sony Buzz physical certification is bounded, not a supported-hardware
