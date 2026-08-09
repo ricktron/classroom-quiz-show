@@ -9,7 +9,7 @@ import type { ImportResult } from '../import/result'
 import type { RoundRegistry } from '../game/registry'
 import { compileApprovedDraft } from './compileDraft'
 import { authoringIssue, type AuthoringIssue } from './issues'
-import { revalidateDraft } from './validateDraft'
+import { preserveStructuralAuthoringIssues, revalidateDraft } from './validateDraft'
 import type { AuthoringDraft } from './types'
 
 export type ApproveAndImportResult =
@@ -27,8 +27,13 @@ export type ApproveAndImportResult =
     }
 
 export function markDraftApproved(draft: AuthoringDraft): AuthoringDraft {
-  const fresh = revalidateDraft(draft)
+  // Authority boundary: preserve unresolved parse/structural blockers. UI
+  // disabled state and caller discipline are not trust gates.
+  const fresh = revalidateDraft(draft, preserveStructuralAuthoringIssues(draft.issues))
   if (fresh.status === 'blocked') return fresh
+  if (fresh.issues.some((issue) => issue.severity === 'blocker')) {
+    return { ...fresh, status: 'blocked' }
+  }
   return { ...fresh, status: 'approved' }
 }
 

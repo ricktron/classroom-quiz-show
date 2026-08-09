@@ -5,7 +5,8 @@
 - **Slice:** 20 — Spreadsheet Authoring Seed
 - **Authorization:**
   `AUTHORIZE-CQS-SLICE-20-SPREADSHEET-AUTHORING-SEED-IMPLEMENTATION-1`,
-  `AUTHORIZE-CQS-SLICE-20-SHEETJS-CE-0.20.3-DEPENDENCY-1`
+  `AUTHORIZE-CQS-SLICE-20-SHEETJS-CE-0.20.3-DEPENDENCY-1`,
+  `AUTHORIZE-CQS-SLICE-20-PR52-F1-F3-BOUNDED-REPAIR-1`
 - **Depends on:** [ADR-004](ADR-004-canonical-validation-import.md),
   [ADR-005](ADR-005-category-board-round.md),
   [ADR-006](ADR-006-teams-and-scoring.md),
@@ -105,13 +106,18 @@ or contradictory metadata fails closed. Filename is never authority.
 ### 8. Sheet contracts
 
 `GAME`: Title, GameKey, optional ResponseSeconds, optional Team1Name…Team8Name.
+Format 1 requires **exactly one** populated semantic data row on `GAME`.
+Additional populated rows are blockers (`ambiguous-semantic-rows`); there is no
+silent “first row wins” interpretation.
 
 `CLUES`: one clue/row with CategoryOrder, Category, ClueOrder, Value, Prompt,
 Answer, optional Alternate1…8, Notes, Multiplier.
 
 `FINAL` (Board + Final only): Prompt, Answer, optional alternates/notes /
-FinalRoundTitle. Compiler round order: `category-board` then terminal
-`final-wager`.
+FinalRoundTitle. Format 1 requires **exactly one** populated semantic data row
+when the profile requires `FINAL`. Additional populated rows are blockers
+(`ambiguous-semantic-rows`). Compiler round order: `category-board` then
+terminal `final-wager`.
 
 Unknown sheets are ignored with an explicit warning and never treated as game
 content.
@@ -128,8 +134,13 @@ Centralized limits in `src/authoring/limits.ts`. Semantic limits reuse
 canonical constants with identical meaning. Transport preflight (fflate)
 enforces compressed bytes, entry count, advertised expanded sizes where
 observable, and VBA-entry rejection before SheetJS parse. SheetJS adapt
-additionally bounds sheets, columns, parsed cells, merges, and raw cell string
-length. Do not claim an uncompressed pre-parse cap beyond what is enforced.
+additionally bounds sheets, columns, **represented worksheet row span**,
+**represented range area (`rowCount × columnCount`)**, parsed cells, merges,
+and raw cell string length. Row-span and range-area bounds constrain the
+iteration/allocation domain **before** nested worksheet traversal begins;
+non-empty parsed-cell budgets alone are not sufficient against sparse `!ref`
+declarations. Do not claim an uncompressed pre-parse cap beyond what is
+enforced.
 
 ### 11. Formula / macro policy
 
@@ -177,7 +188,12 @@ rewrite, or revision history.
 ### 17. Approval gate
 
 Parsing success ≠ approval. Approval is explicit, game-level, and disabled while
-blockers remain. Approval does not auto-start gameplay.
+blockers remain. The approval API itself is fail-closed: unresolved
+parse/structural blockers (including `formula-not-allowed` and other
+non-semantic issues preserved across content revalidation) must prevent
+`approveAndImportDraft` from compiling or calling `importGameFromJsonText`.
+UI disabled state is not an authority boundary. Approval does not auto-start
+gameplay.
 
 ### 18. Canonical compiler
 

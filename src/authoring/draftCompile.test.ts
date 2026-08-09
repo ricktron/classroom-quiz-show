@@ -170,4 +170,41 @@ describe('authoring draft + compiler', () => {
     expect(store.getState().session?.game).toBeNull()
     expect(store.getPublicState()).toEqual(beforePublic)
   })
+
+  it('approveAndImportDraft refuses unresolved formula-not-allowed blockers (trust boundary)', async () => {
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({
+        formulaCells: [{ sheet: 'CLUES', a1: 'E2', formula: '1+1', cached: 'Mars' }],
+      }),
+      'formula-approve.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    expect(parsed.draft.status).toBe('blocked')
+    expect(parsed.draft.issues.some((i) => i.code === 'formula-not-allowed')).toBe(true)
+
+    const result = approveAndImportDraft(parsed.draft, { registry })
+    expect(result.status).toBe('failure')
+    if (result.status !== 'failure') return
+    expect(result.issues.some((i) => i.code === 'formula-not-allowed')).toBe(true)
+    expect(result.draft.status).toBe('blocked')
+    expect(result.importResult).toBeUndefined()
+    expect(isGameDefinition(result.draft as unknown)).toBe(false)
+  })
+
+  it('approveAndImportDraft refuses unresolved hidden-semantic-content blockers', async () => {
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({ hideClues: true }),
+      'hidden-approve.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    expect(parsed.draft.issues.some((i) => i.code === 'hidden-semantic-content')).toBe(true)
+
+    const result = approveAndImportDraft(parsed.draft, { registry })
+    expect(result.status).toBe('failure')
+    if (result.status !== 'failure') return
+    expect(result.issues.some((i) => i.code === 'hidden-semantic-content')).toBe(true)
+    expect(result.importResult).toBeUndefined()
+  })
 })

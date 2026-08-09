@@ -155,3 +155,85 @@ by Slice 20. Signature unchanged from inherited flake.
 
 **STOP BEFORE MERGE.** One review-ready non-draft PR; auto-merge off; no branch
 deletion; no destructive worktree cleanup.
+
+---
+
+## 13. Bounded independent-review repair (F1–F3)
+
+- **Date:** 2026-08-08
+- **Repair authorization:**
+  `AUTHORIZE-CQS-SLICE-20-PR52-F1-F3-BOUNDED-REPAIR-1`
+- **Repair evidence state:**
+  `CQS-SLICE-20-PR52-F1-F3-BOUNDED-REPAIR-ES-1`
+- **Initial independently reviewed head (pre-repair):**
+  `7cfe1bcb6685f06e296c939310a5db3eef5bcdb8`
+- **Canonical PR base (unchanged):**
+  `ded704dfc09616183979a75234314eef1f311caa`
+- **Branch / PR:** `feat/slice-20-spreadsheet-authoring-seed` / [#52](https://github.com/ricktron/classroom-quiz-show/pull/52)
+- **Host / user / CWD:** `Ricks-MacBook-Air.local` / `macdaddy` /
+  `/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show-slice20`
+
+### 13.1 Findings repaired (as observed on `7cfe1bc…`)
+
+| ID | Severity | Observation before repair |
+| --- | --- | --- |
+| F1 | Critical | Tiny XLSX with `!ref` `A1:AF1048576` (~15 KB) accepted by adapt after ~18.4 s and ~3.1 GB heap delta; `MAX_PARSED_CELLS` did not bound sparse iteration |
+| F2 | Critical | Draft with unresolved `formula-not-allowed` reached `approveAndImportDraft` success and trusted `GameDefinition` because `revalidateDraft` dropped parse blockers |
+| F3 | High | Two populated GAME or FINAL rows silently used `dataRows[0]` with no diagnostic; draft remained `ready_for_approval` |
+
+F4 (security-test naming/truthfulness) addressed only insofar as sparse-range
+coverage is distinct from ZIP/container expansion tests. F5 is PR-body
+freshness after push. F6 (E2E soft coverage) not expanded.
+
+### 13.2 Repair implementation
+
+- **F1:** `MAX_WORKBOOK_ROWS` / `MAX_WORKBOOK_RANGE_CELLS` enforced in
+  `sheetjsAdapter` before nested traversal/allocation; safe range-area
+  arithmetic; `resource-limit-exceeded` with sheet context
+- **F2:** `preserveStructuralAuthoringIssues` + approval-path
+  `revalidateDraft(..., preserved)` so unresolved parse/structural blockers
+  cannot be approved/compiled/imported
+- **F3:** Format-1 GAME/FINAL require exactly one populated semantic data row;
+  extras emit `ambiguous-semantic-rows`; templates no longer include a second
+  GAME “invalid note” row (guidance moved to INSTRUCTIONS)
+
+### 13.3 Historical truth preserved
+
+This section does **not** rewrite §2–§12 as if the defects never existed. The
+initial reviewed head `7cfe1bc…` remains the pre-repair evidence baseline.
+
+### 13.4 Local verification (pre-push; head after repair commit)
+
+| Gate | Result |
+| --- | --- |
+| Focused authoring (`security`/`parser`/`draftCompile`/`templates`) | **42** passed |
+| `git diff --check` | clean |
+| `npm run verify` | lint + typecheck clean; **2272** passed / **1** skipped / **0** failed |
+| `npm run build` | success; JS bundle ~1212.53 kB / gzip 361.21 kB |
+| Focused Playwright (`spreadsheet-authoring.spec.ts`, desktop-1080p, `CI=1`) | **6** passed |
+| Full Playwright (`CI=1`, fresh preview, `reuseExistingServer=false`) | **340** passed / **14** skipped / **9** did not run / **3** failed |
+
+Full Playwright failures are the inherited Final mid-refresh signature on all
+three projects (`desktop-1080p`, `projector-720p`, `mobile-host`):
+
+```text
+Expected: Saved: 100
+Received: Not saved yet
+```
+
+Each failed attempt 1 + retry #1 + retry #2 (retries exhausted → terminal
+failures this run). **Not repaired** by this bounded repair. No additional
+reruns were performed to manufacture green. Spreadsheet authoring e2e cases
+passed across the matrix.
+
+### 13.5 Explicit non-claims (repair)
+
+- No merge of PR #52
+- No claim that the new repair head has completed independent review
+- Old-head CI/Sonar/Pages greens do not transfer to the repair head
+- Inherited Final flake not claimed fixed
+
+## 14. Post-repair stop state
+
+**STOP BEFORE MERGE.** New exact repair head requires a fresh independent
+exact-head review. No merge authorization in this lane. No Slice 21.

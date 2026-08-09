@@ -89,24 +89,9 @@ function gameSheet(profile: WorkbookProfile): XLSX.WorkSheet {
     '',
     '',
   ]
-  const invalidNote = [
-    'INVALID PATTERN NOTE: do not put formulas in Title/GameKey (example rejected: =1+1)',
-    'invalid-demo-key',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-  ]
-  return aoaToSheet([
-    header,
-    profile === 'classic-board' ? classicRow : finalRow,
-    invalidNote,
-  ])
+  // Format 1 allows exactly one populated GAME data row. Invalid-pattern
+  // guidance lives in INSTRUCTIONS, not as a second semantic GAME row.
+  return aoaToSheet([header, profile === 'classic-board' ? classicRow : finalRow])
 }
 
 function cluesSheet(): XLSX.WorkSheet {

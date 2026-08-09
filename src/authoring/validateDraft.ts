@@ -51,6 +51,29 @@ export function computeDraftStatus(issues: readonly AuthoringIssue[]): DraftStat
   return 'ready_for_approval'
 }
 
+/**
+ * Structural / parse-time issues that semantic revalidation does not recompute.
+ * Preserved across correction and approval so unresolved blockers cannot be
+ * dropped by content-only revalidation.
+ */
+export function preserveStructuralAuthoringIssues(
+  issues: readonly AuthoringIssue[],
+): AuthoringIssue[] {
+  return issues.filter(
+    (issue) =>
+      issue.family === 'transport' ||
+      issue.family === 'workbook' ||
+      issue.code === 'formula-not-allowed' ||
+      issue.code === 'excel-error-cell' ||
+      issue.code === 'hidden-semantic-content' ||
+      issue.code === 'unsupported-media-field' ||
+      issue.code === 'duplicate-header' ||
+      issue.code === 'missing-header' ||
+      issue.code === 'missing-sheet' ||
+      issue.code === 'ambiguous-semantic-rows',
+  )
+}
+
 export function validateDraftContent(draft: AuthoringDraft): AuthoringIssue[] {
   const issues: AuthoringIssue[] = []
 

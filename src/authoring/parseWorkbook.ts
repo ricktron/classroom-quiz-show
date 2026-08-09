@@ -36,8 +36,8 @@ import { authoringIssue, columnLetter, type AuthoringIssue } from './issues'
 import {
   MAX_ALTERNATES,
   MAX_CLUE_ROWS,
-  MAX_FINAL_ROWS,
-  MAX_GAME_ROWS,
+  MAX_FINAL_SEMANTIC_DATA_ROWS,
+  MAX_GAME_SEMANTIC_DATA_ROWS,
   MAX_RESPONSE_SECONDS,
   MAX_TEAMS,
   MAX_TOTAL_AUTHORED_TEXT,
@@ -514,17 +514,23 @@ function parseGameSheet(
     )
     return null
   }
-  if (dataRows.length > MAX_GAME_ROWS) {
+  if (dataRows.length > MAX_GAME_SEMANTIC_DATA_ROWS) {
+    const extra = dataRows[MAX_GAME_SEMANTIC_DATA_ROWS]!
     issues.push(
       authoringIssue(
-        'resource-limit-exceeded',
+        'ambiguous-semantic-rows',
         'blocker',
         'workbook',
-        `GAME sheet exceeds ${MAX_GAME_ROWS} data rows.`,
-        { sheet: GAME_SHEET },
+        `GAME sheet must contain exactly ${MAX_GAME_SEMANTIC_DATA_ROWS} populated data row; found ${dataRows.length}.`,
+        {
+          sheet: GAME_SHEET,
+          row: extra[0]?.row,
+          a1: extra[0]?.a1,
+        },
       ),
     )
-    return null
+    // Continue parsing the first row into a blocked draft for review; approval
+    // remains fail-closed while this blocker is unresolved.
   }
 
   const row = dataRows[0]!
@@ -881,17 +887,23 @@ function parseFinal(
     )
     return undefined
   }
-  if (dataRows.length > MAX_FINAL_ROWS) {
+  if (dataRows.length > MAX_FINAL_SEMANTIC_DATA_ROWS) {
+    const extra = dataRows[MAX_FINAL_SEMANTIC_DATA_ROWS]!
     issues.push(
       authoringIssue(
-        'resource-limit-exceeded',
+        'ambiguous-semantic-rows',
         'blocker',
         'workbook',
-        `FINAL sheet exceeds ${MAX_FINAL_ROWS} data rows.`,
-        { sheet: FINAL_SHEET },
+        `FINAL sheet must contain exactly ${MAX_FINAL_SEMANTIC_DATA_ROWS} populated data row; found ${dataRows.length}.`,
+        {
+          sheet: FINAL_SHEET,
+          row: extra[0]?.row,
+          a1: extra[0]?.a1,
+        },
       ),
     )
-    return undefined
+    // Continue parsing the first row into a blocked draft for review; approval
+    // remains fail-closed while this blocker is unresolved.
   }
 
   const row = dataRows[0]!

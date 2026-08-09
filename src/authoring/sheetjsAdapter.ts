@@ -11,6 +11,8 @@ import {
   MAX_PARSED_CELLS,
   MAX_RAW_CELL_STRING_LENGTH,
   MAX_WORKBOOK_COLUMNS,
+  MAX_WORKBOOK_RANGE_CELLS,
+  MAX_WORKBOOK_ROWS,
   MAX_WORKBOOK_SHEETS,
 } from './limits'
 import { authoringIssue, columnLetter, toA1, type AuthoringIssue } from './issues'
@@ -225,6 +227,43 @@ export function adaptSheetJsWorkbook(bytes: Uint8Array): AdaptWorkbookResult {
             'blocker',
             'workbook',
             `Sheet ${name} has ${colCount} columns (limit ${MAX_WORKBOOK_COLUMNS}).`,
+            { sheet: name },
+          ),
+        ],
+      }
+    }
+
+    // Bound the iteration/allocation domain before nested traversal. Parsed-cell
+    // budgets only count non-empty cells and do not protect sparse !ref spans.
+    const rowCount = range.e.r - range.s.r + 1
+    if (rowCount > MAX_WORKBOOK_ROWS) {
+      return {
+        status: 'failure',
+        issues: [
+          authoringIssue(
+            'resource-limit-exceeded',
+            'blocker',
+            'workbook',
+            `Sheet ${name} represents ${rowCount} rows (limit ${MAX_WORKBOOK_ROWS}).`,
+            { sheet: name },
+          ),
+        ],
+      }
+    }
+    if (
+      rowCount > 0 &&
+      colCount > 0 &&
+      (colCount > Math.floor(Number.MAX_SAFE_INTEGER / rowCount) ||
+        rowCount * colCount > MAX_WORKBOOK_RANGE_CELLS)
+    ) {
+      return {
+        status: 'failure',
+        issues: [
+          authoringIssue(
+            'resource-limit-exceeded',
+            'blocker',
+            'workbook',
+            `Sheet ${name} represents too many cell slots (limit ${MAX_WORKBOOK_RANGE_CELLS}).`,
             { sheet: name },
           ),
         ],

@@ -49,6 +49,7 @@ export type AuthoringIssueCode =
   | 'identity-normalization-failed'
   | 'control-characters'
   | 'whitespace-only'
+  | 'ambiguous-semantic-rows'
 
 export interface AuthoringIssue {
   readonly code: AuthoringIssueCode

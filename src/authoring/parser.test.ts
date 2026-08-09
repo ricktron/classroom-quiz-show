@@ -3,7 +3,9 @@ import { zipSync } from 'fflate'
 import { parseWorkbookBytes } from './parseWorkbook'
 import { buildTestWorkbookBytes } from './testWorkbookFactory'
 import { generateWorkbookTemplate } from './generateTemplate'
-import { CLUE_HEADERS, GAME_HEADERS } from './contract'
+import { CLUE_HEADERS, FINAL_HEADERS, GAME_HEADERS } from './contract'
+import { approveAndImportDraft } from './approveAndImport'
+import { createDefaultRegistry } from '../game/defaultRegistry'
 import { MAX_WORKBOOK_ARCHIVE_ENTRIES, MAX_WORKBOOK_BYTES } from './limits'
 import { isGameDefinition } from '../game/gameDefinition'
 
@@ -189,5 +191,83 @@ describe('workbook parser', () => {
     const clue = result.draft.board.categories[0]?.clues[0]
     expect(clue?.provenance.sheet).toBe('CLUES')
     expect(clue?.provenance.a1Prompt).toMatch(/^E\d+$/)
+  })
+
+  it('blocks GAME sheets with more than one populated semantic data row', async () => {
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({
+        gameRows: [
+          [...GAME_HEADERS],
+          ['Title A', 'game-a', 30, '', '', '', '', '', '', '', ''],
+          ['Title B', 'game-b', 30, '', '', '', '', '', '', '', ''],
+        ],
+      }),
+      'multi-game.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    expect(parsed.draft.status).toBe('blocked')
+    const ambiguous = parsed.draft.issues.find((i) => i.code === 'ambiguous-semantic-rows')
+    expect(ambiguous).toBeDefined()
+    expect(ambiguous?.sheet).toBe('GAME')
+    expect(ambiguous?.row).toBe(3)
+
+    const approval = approveAndImportDraft(parsed.draft, { registry: createDefaultRegistry() })
+    expect(approval.status).toBe('failure')
+    if (approval.status !== 'failure') return
+    expect(approval.issues.some((i) => i.code === 'ambiguous-semantic-rows')).toBe(true)
+  })
+
+  it('accepts GAME sheets with exactly one populated semantic data row', async () => {
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({
+        gameRows: [
+          [...GAME_HEADERS],
+          ['Only Title', 'only-game', 30, '', '', '', '', '', '', '', ''],
+        ],
+      }),
+      'one-game.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    expect(parsed.draft.issues.some((i) => i.code === 'ambiguous-semantic-rows')).toBe(false)
+    expect(parsed.draft.game.title).toBe('Only Title')
+  })
+
+  it('blocks FINAL sheets with more than one populated semantic data row', async () => {
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({
+        profile: 'board-plus-final',
+        finalRows: [
+          [...FINAL_HEADERS],
+          ['Prompt A', 'Answer A', '', '', '', '', '', '', '', '', '', 'Final'],
+          ['Prompt B', 'Answer B', '', '', '', '', '', '', '', '', '', 'Final'],
+        ],
+      }),
+      'multi-final.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    expect(parsed.draft.status).toBe('blocked')
+    const ambiguous = parsed.draft.issues.find((i) => i.code === 'ambiguous-semantic-rows')
+    expect(ambiguous).toBeDefined()
+    expect(ambiguous?.sheet).toBe('FINAL')
+    expect(ambiguous?.row).toBe(3)
+
+    const approval = approveAndImportDraft(parsed.draft, { registry: createDefaultRegistry() })
+    expect(approval.status).toBe('failure')
+    if (approval.status !== 'failure') return
+    expect(approval.issues.some((i) => i.code === 'ambiguous-semantic-rows')).toBe(true)
+  })
+
+  it('accepts FINAL sheets with exactly one populated semantic data row', async () => {
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({ profile: 'board-plus-final' }),
+      'one-final.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    expect(parsed.draft.issues.some((i) => i.code === 'ambiguous-semantic-rows')).toBe(false)
+    expect(parsed.draft.final?.prompt.length).toBeGreaterThan(0)
   })
 })

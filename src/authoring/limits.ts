@@ -80,6 +80,23 @@ export const MAX_CLUE_ROWS = 64
 /** Maximum columns accepted on any semantic sheet. */
 export const MAX_WORKBOOK_COLUMNS = 32
 
+/**
+ * Maximum represented worksheet row span (`!ref` inclusive) accepted before
+ * SheetJS-adapt traversal/allocation. Sized for Slice 20 workbook domain
+ * (instructions ≈46 rows, CLUES header + ≤64 data rows), not Excel's
+ * theoretical maximum.
+ */
+export const MAX_WORKBOOK_ROWS = 128
+
+/**
+ * Maximum represented worksheet cell slots (`rowCount * columnCount`) accepted
+ * before adapt traversal/allocation. Bounds sparse `!ref` area independently
+ * of non-empty parsed-cell counting. Kept below `MAX_WORKBOOK_ROWS *
+ * MAX_WORKBOOK_COLUMNS` so area defense can fire without requiring an illegal
+ * column count; still far above legal Slice 20 sheets (CLUES ≤65×32).
+ */
+export const MAX_WORKBOOK_RANGE_CELLS = 3_000
+
 /** Maximum parsed non-empty cell values across semantic sheets. */
 export const MAX_PARSED_CELLS = 4_000
 
@@ -92,6 +109,10 @@ export const MAX_RAW_CELL_STRING_LENGTH = 2_000
 /** Aggregate authored text budget across semantic cells. */
 export const MAX_TOTAL_AUTHORED_TEXT = 200_000
 
-/** Maximum rows on GAME / FINAL data regions (excluding header). */
-export const MAX_GAME_ROWS = 8
-export const MAX_FINAL_ROWS = 4
+/**
+ * Format-1 GAME / FINAL semantic multiplicity: exactly one populated data row
+ * each (when the profile requires FINAL). These are semantic contracts, not
+ * resource-traversal allowances.
+ */
+export const MAX_GAME_SEMANTIC_DATA_ROWS = 1
+export const MAX_FINAL_SEMANTIC_DATA_ROWS = 1
