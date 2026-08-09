@@ -33,9 +33,10 @@ the round-based engine direction into it.
 > `91c7708626caeaa28b15617a1f0938f4944f7680`; Slice 17 via PR #44 squash
 > `dee2f3c219f9e60113a374ce0ec876ae20c40bc1`; Slice 16 via PR #40 squash
 > `bc3cea65cab8db1481b0b2420be580cc69932f3d`); Slices 21–23 remain `Planned`
-> and unauthorized. The next product frontier remains separately authorized
-> Slice 21 — Sony Buzz Supported-Profile Operationalization. Post-MVP arcs
-> still require separate authorization.
+> and unauthorized. The next planned product frontier is Slice 21 — Sony Buzz
+> Supported-Profile Operationalization; it remains unauthorized and requires
+> separate owner authorization before implementation. Post-MVP arcs still
+> require separate authorization.
 
 > **Phase 2B design direction is accepted program guidance (2026-08-03).**
 > The accepted audience-display design direction is registered in
@@ -115,8 +116,9 @@ systems.
 > [`../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md`](../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md).
 > **No product implementation is authorized by Amendment 004.** Slice 19 has
 > since been delivered via PR #50. Slice 20 has since been delivered via PR #52.
-> **Current** unauthorized product frontiers are Slices 21–23; next product
-> frontier remains separately authorized Slice 21.
+> **Current** unauthorized product frontiers are Slices 21–23; the next planned
+> product frontier is Slice 21, which remains unauthorized and requires separate
+> owner authorization before implementation.
 
 | #   | Slice                          | Focus (summary)                                                                 | Depends on |
 | --- | ------------------------------ | ------------------------------------------------------------------------------- | ---------- |
@@ -724,8 +726,9 @@ head `d8f6308eccea5144ab1c6b5f49afdfcc2b7d5b5b` (authorized base
 `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0`. Slices 21–23 remain `Planned`,
 unstarted, and unauthorized under the 23-slice plan (Amendment 004; Amendment
 003 delivery merged at `2ebeb240…`; post-merge reconciliation merged at
-`da6b4dc…`). Immediate next action: separately authorized Slice 21 lane — **not**
-implementation from this surface alone.
+`da6b4dc…`). Immediate next action: return to the Program Orchestrator to obtain
+separate authorization for Slice 21 — **not** implementation from this surface
+alone.
 
 ## Slice 8 — scope, acceptance, non-goals
 
@@ -1081,8 +1084,8 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   `95573e2468ee67f9e6e5a221de002f35d6421249`. Slice 20 is **`Complete`** via PR
   [#52](https://github.com/ricktron/classroom-quiz-show/pull/52) at
   `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0`. Slices 21–23 remain `Planned` and
-  unauthorized. Immediate action: separately authorized Slice 21 lane — stop
-  before unauthorized implementation.
+  unauthorized. Immediate action: return to the Program Orchestrator to obtain
+  separate authorization for Slice 21 — stop before unauthorized implementation.
 
 ### Slice 12 — Portable export & round-trip import
 
