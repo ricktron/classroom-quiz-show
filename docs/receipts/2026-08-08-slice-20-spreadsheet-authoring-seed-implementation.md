@@ -241,7 +241,77 @@ passed across the matrix.
 - Old-head CI/Sonar/Pages greens do not transfer to the repair head
 - Inherited Final flake not claimed fixed
 
-## 14. Post-repair stop state
+## 14. Post-repair stop state (after F1–F3)
 
-**STOP BEFORE MERGE.** New exact repair head requires a fresh independent
-exact-head review. No merge authorization in this lane. No Slice 21.
+**STOP BEFORE MERGE** relative to the F1–F3 repair tip. Independent final
+review of live PR head `6ca0020ebdae6b71ab2b01afea20534f4aa69eb2` rejected
+that head for incomplete generalized F2 workbook-source blocker preservation
+(below). No merge authorization. No Slice 21.
+
+## 15. Final independent review — generalized F2 rejection
+
+- **Reviewed head (rejected):**
+  `6ca0020ebdae6b71ab2b01afea20534f4aa69eb2`
+- **Evidence state cited by review:**
+  `CQS-SLICE-20-PR52-FINAL-INDEPENDENT-REVIEW-ES-1`
+- **Accepted as closed on that head:** F1 sparse-range defense; F3 GAME/FINAL
+  ambiguity; original F2 formula/hidden cases
+- **Rejected:** generalized workbook-source blocker preservation incomplete
+
+| ID | Severity | Observation on `6ca0020…` (reproduced before repair) |
+| --- | --- | --- |
+| F2-G1 | Critical | Invalid optional cells (`ResponseSeconds`/`Multiplier`/`Notes` type errors) normalized to `undefined`; `invalid-type` dropped on approval; `approveAndImportDraft` succeeded |
+| F2-G2 | Critical | Invalid clue rows omitted from draft while source blockers dropped on approval; surviving rows imported |
+| F2-G3 | Critical | `applyDraftCorrection` used a narrower code allowlist; unrelated title correction erased `invalid-type` / `excel-error-cell`; approval then succeeded |
+
+This section does **not** rewrite §13 as if those defects never existed.
+
+## 16. Generalized F2 trust-gate repair
+
+- **Repair authorization:**
+  `AUTHORIZE-CQS-SLICE-20-PR52-F2-GENERALIZED-TRUST-GATE-REPAIR-1`
+- **Repair evidence state:**
+  `CQS-SLICE-20-PR52-F2-GENERALIZED-TRUST-GATE-REPAIR-ES-1`
+- **Exact authorized repair base/head:**
+  `6ca0020ebdae6b71ab2b01afea20534f4aa69eb2`
+- **Canonical PR base (unchanged):**
+  `ded704dfc09616183979a75234314eef1f311caa`
+- **Branch / PR:** `feat/slice-20-spreadsheet-authoring-seed` / [#52](https://github.com/ricktron/classroom-quiz-show/pull/52)
+- **Host / user / CWD:** `Ricks-MacBook-Air.local` / `macdaddy` /
+  `/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show-slice20`
+
+### 16.1 Repair implementation
+
+- Replaced partial issue-code preservation allowlists with shared
+  `isWorkbookSourceIssue` / `preserveWorkbookSourceIssues` keyed on
+  `AuthoringIssue.family` ∈ {`transport`, `workbook`, `cell`}
+- Both `markDraftApproved` / `approveAndImportDraft` and
+  `applyDraftCorrection` use that single policy
+- Parser issue-family audit: no classification changes required; parser-origin
+  blockers that normalize away or omit draft rows were already `cell` /
+  `workbook` / `transport`
+- ADR-018 §15–§17 record the durable diagnostic lifecycle
+- Focused regressions cover F2-G1/G2/G3 reproductions, original F2, F1/F3,
+  clean draft correction, and clean Classic / Board+Final approval
+
+### 16.2 Product repair SHA (code)
+
+`747c40da350e18794d6029788c9d73ee7e1538b7`
+
+Docs-only receipt/PR-tip commits may advance the live PR head after this SHA.
+Independent exact-head review must re-observe the live PR #52 head via
+Git/GitHub and must not assume this receipt’s tip is current.
+
+### 16.3 Explicit non-claims (generalized F2 repair)
+
+- No merge of PR #52
+- No claim that the new repair head has completed independent final review
+- Old-head CI/Sonar/Pages greens do not transfer
+- Inherited Final flake not claimed fixed
+- No Slice 21
+
+## 17. Stop state after generalized F2 repair
+
+**STOP BEFORE MERGE.** New exact live PR head requires one final independent
+exact-head review focused on the shared diagnostic lifecycle before merge
+authorization can be prepared.
