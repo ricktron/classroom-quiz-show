@@ -68,9 +68,9 @@ Slices 1–20 are Complete. Phase 2B’s MVP consumers (Slices 17–18) are both
 `Complete`. Phase 3 design-system readiness has served the theme-foundation →
 audience-display sequence
 ([`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)).
-**Recommended next action:** separately authorized
-**Slice 21 — Sony Buzz Supported-Profile Operationalization** —
-`PLANNED / NOT STARTED / REQUIRES SEPARATE AUTHORIZATION`. Do **not** begin
+**Recommended next action:** next planned frontier is Slice 21 — Sony Buzz
+Supported-Profile Operationalization; implementation requires separate owner
+authorization (`PLANNED` / not started / not yet authorized). Do **not** begin
 Slice 21, Slice 22 audio, Slice 23 qualification, or post-MVP work from this
 handoff alone. Theme song remains post-MVP. `CQS-OD-066` remains unresolved.
 The inherited Final mid-refresh recovery flake remains unresolved and was not
@@ -411,7 +411,8 @@ defers to `AGENTS.md` and adds no separate authority.
   **PR #52 requires no further review or merge action.**
 - **Slices 21–23:** `Planned`, unstarted, and unauthorized (23-slice plan;
   Amendment 004). Next planned frontier: Slice 21 — Sony Buzz Supported-Profile
-  Operationalization (`PLANNED` / not started / separately unauthorized).
+  Operationalization (`PLANNED` / not started / requires separate owner
+  authorization).
 - **What Slice 14 adds:** the SECOND playable round type, `final-wager` — and
   the important thing about it is where it lives. It is registered by application
   code in the same registry as `category-board`, validated by the same import
@@ -1079,13 +1080,14 @@ product lane is owed. After PR #53 merges, Slice 20 is terminally canonical in
 docs (no further Slice 20 reconciliation lane). Phase 3 design-system readiness
 has served the theme-foundation → audience-display sequence.
 **Recommended next action (after this reconciliation content is on `main`):**
-return to the Program Orchestrator for a new, separately authorized
-**Slice 21 — Sony Buzz Supported-Profile Operationalization** lane
-(`PLANNED` / not started / separately unauthorized). Slices 21–23 remain
-unauthorized for implementation (including Slice 22 audio and Slice 23
-qualification). This handoff grants **no** authority. Post-MVP arcs remain
-inactive. Theme song remains post-MVP. `CQS-OD-066` remains unresolved. The
-inherited Final mid-refresh recovery flake remains unresolved.
+return to the Program Orchestrator to obtain separate authorization for
+**Slice 21 — Sony Buzz Supported-Profile Operationalization**. Slice 21 is the
+next planned frontier; it remains `PLANNED`, not started, and implementation
+remains separately unauthorized. Slices 21–23 remain unauthorized for
+implementation (including Slice 22 audio and Slice 23 qualification). This
+handoff grants **no** authority. Post-MVP arcs remain inactive. Theme song
+remains post-MVP. `CQS-OD-066` remains unresolved. The inherited Final
+mid-refresh recovery flake remains unresolved.
 
 ## Registered design direction — Phase 2B audience display (2026-08-03)
 
@@ -1125,8 +1127,8 @@ on `main` (PR #44). Slice 18 — Audience Display System is `Complete` on `main`
 (PR #46). MVP Phase 2B consumers **Slices 17–18 are both `Complete`**: the token
 foundation and the accepted audience-display composition have been delivered.
 Phase 2B remains a design/planning lineage, not a numbered slice. Phase 3
-readiness has served that sequence. Next planned frontier: Slice 19
-(unauthorized).
+readiness has served that sequence. Next planned frontier: Slice 21
+(requires separate owner authorization; not started).
 
 **Boundaries this direction does not move.** The public buzz state remains
 `activeTeamKey` plus an anonymous `waitingCount` — never a public ordered queue.
@@ -1212,9 +1214,9 @@ readiness is complete when
 [`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)
 was satisfied and consumed by completed Slices 17–18 (PR #44, `dee2f3c…`;
 PR #46, `91c7708…`). Slice 19 is **`Complete`** (PR #50, `95573e2…`). Slice 20
-is **`Complete`** (PR #52, `86e8f5e6…`). The immediate planned frontier is a
-separately authorized **Slice 21 — Sony Buzz Supported-Profile
-Operationalization** lane (`PLANNED` / not started / separately unauthorized).
+is **`Complete`** (PR #52, `86e8f5e6…`). The immediate planned frontier is
+**Slice 21 — Sony Buzz Supported-Profile Operationalization**
+(`PLANNED` / not started / requires separate owner authorization).
 Slice 13 is **`Complete`**
 (PR #27, `6cf4d25…`). Slice 12 is **`Complete`** (PR #25, `cdb499a…`). Slice 11
 is **`Complete`** (PR #23, `5d47b2f`). Slice 10 remains **`Complete`** under the

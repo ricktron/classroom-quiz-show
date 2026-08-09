@@ -513,12 +513,13 @@ inherited Final mid-refresh recovery flake remains unresolved. `CQS-OD-066`
 remains unresolved. No physical-projector, accessibility, WCAG, or Raspberry Pi
 certification is claimed. No ADR was warranted.
 
-**Current next action (repository frontier):** separately authorized Slice 21 —
-Sony Buzz Supported-Profile Operationalization (`PLANNED` / not started /
-separately unauthorized). Slice 20 is now `Complete` via PR #52; Slice 19 is
-`Complete` via PR #50. No further Phase 3 readiness registration, Slice 17,
-Slice 18, Slice 19, or Slice 20 product lane is owed after this reconciliation
-content is on `main`.
+**Current next action (repository frontier):** Slice 21 — Sony Buzz
+Supported-Profile Operationalization is the next planned product frontier. It
+is `PLANNED`, not started, and requires separate owner authorization before
+implementation. Slice 20 is now `Complete` via PR #52; Slice 19 is `Complete`
+via PR #50. No further Phase 3 readiness registration, Slice 17, Slice 18,
+Slice 19, or Slice 20 product lane is owed after this reconciliation content is
+on `main`.
 
 ## Remaining-MVP rebalance planning (CQS-PLAN-S02) — Complete
 
@@ -599,11 +600,11 @@ or merge action.** The Slice 16 PR #41 post-merge canonicalization recorded in
 closes the remaining stale-routing defect. Phase 3 design-system readiness was
 satisfied and then consumed by completed Slices 17–18 (PR #44, PR #46). Slice 19
 has since completed via PR #50. Slice 20 has since completed via PR #52. The
-current next safe action is separately authorized Slice 21 — Sony Buzz
-Supported-Profile Operationalization (`PLANNED` / not started / separately
-unauthorized) — not further review of PR #36, PR #38, PR #40, PR #41, PR #44,
-PR #46, PR #50, or PR #52, and not Slice 21 implementation from this surface
-alone.
+current next safe action is the next planned frontier, Slice 21 — Sony Buzz
+Supported-Profile Operationalization (`PLANNED` / not started / requires
+separate owner authorization) — not further review of PR #36, PR #38, PR #40,
+PR #41, PR #44, PR #46, PR #50, or PR #52, and not Slice 21 implementation from
+this surface alone.
 
 ## Slice 14 merge evidence
 
@@ -1821,9 +1822,10 @@ that reconciliation adds evidence only and grants **no** product authority.
 **Current** MVP count is the **23-slice** plan.
 
 **Recommended next action (after this reconciliation content is on `main`):**
-return to the Program Orchestrator for a new, separately authorized
-**Slice 21 — Sony Buzz Supported-Profile Operationalization** lane
-(`PLANNED` / not started / separately unauthorized). Slice 20 is terminally
+return to the Program Orchestrator to obtain separate authorization for
+**Slice 21 — Sony Buzz Supported-Profile Operationalization**. Slice 21 is the
+next planned product frontier; it remains `PLANNED`, not started, and
+implementation remains separately unauthorized. Slice 20 is terminally
 `Complete`. Slices 21–23 remain `Planned` and unauthorized (including Slice 22
 Minimal Presentation Audio and Slice 23 Classroom Release Qualification). Do
 **not** begin Slice 21, Slice 22 audio implementation, Slice 23 qualification,
