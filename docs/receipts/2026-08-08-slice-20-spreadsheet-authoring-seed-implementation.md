@@ -6,7 +6,9 @@
 - **Host:** `Ricks-MacBook-Air.local`
 - **User:** `macdaddy`
 - **CWD / worktree:** `/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show-slice20`
-- **PR:** to be recorded after `gh pr create` (non-draft, auto-merge off)
+- **PR:** [#52](https://github.com/ricktron/classroom-quiz-show/pull/52) —
+  `feat(slice-20): add spreadsheet authoring seed` (non-draft, auto-merge off)
+- **Implementation HEAD:** `008e253836ddf8f46627223918827ef1fc821cf0`
 - **Slice state after this work:** `In review` (unmerged)
 - **STOP BEFORE MERGE**
 
