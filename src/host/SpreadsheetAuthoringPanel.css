@@ -1,0 +1,70 @@
+.spreadsheet-authoring {
+  margin-top: var(--space-5);
+}
+
+.spreadsheet-authoring h3 {
+  margin: var(--space-2) 0 0.25rem;
+  font-size: 1rem;
+  color: var(--state-accent);
+}
+
+.spreadsheet-authoring h4 {
+  margin-top: 0;
+  font-size: 0.95rem;
+  color: var(--state-accent);
+}
+
+.spreadsheet-authoring__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 var(--space-4);
+}
+
+.spreadsheet-authoring__label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--fg-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.spreadsheet-authoring__board {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+}
+
+.spreadsheet-authoring__category ul {
+  margin: 0.25rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.spreadsheet-authoring__corrections {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.spreadsheet-authoring__corrections label {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+}
+
+.spreadsheet-authoring__corrections input {
+  padding: 0.35rem 0.5rem;
+  background: var(--surface-canvas);
+  color: var(--fg-primary);
+  border: 1px solid var(--border-subtle);
+}
+
+.spreadsheet-authoring__error {
+  color: var(--state-danger, #b00020);
+  font-size: 0.9rem;
+}
+
+.foundation__tag--slice20 {
+  background: color-mix(in srgb, var(--state-accent) 18%, transparent);
+}

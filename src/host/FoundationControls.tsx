@@ -4,6 +4,7 @@ import { useHostSync } from './useHostSync'
 import { PUBLIC_STATUS_CODES } from '../state/status'
 import { createSampleGame, createSampleGameWithUnsupportedRound } from '../game/sampleGame'
 import { GameImportPanel } from './GameImportPanel'
+import { SpreadsheetAuthoringPanel } from './SpreadsheetAuthoringPanel'
 import { GameExportPanel } from './GameExportPanel'
 import { GamePackImportPanel } from './GamePackImportPanel'
 import { GamePackExportPanel } from './GamePackExportPanel'
@@ -424,6 +425,13 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
       <CompletedSummaryLedgerPanel persistence={persistence} />
 
       <GameImportPanel
+        dispatch={dispatch}
+        registry={registry}
+        hasSession={hasSession}
+        activeGame={game}
+      />
+
+      <SpreadsheetAuthoringPanel
         dispatch={dispatch}
         registry={registry}
         hasSession={hasSession}

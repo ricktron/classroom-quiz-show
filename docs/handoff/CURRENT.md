@@ -41,7 +41,16 @@ see
 **Slice 14 — Final-wager round is `Complete`** (PR
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32)).
 **Slice 13 — Local persistence & recovery is `Complete`** (PR #27).
-**Slices 20–23 remain `Planned` and unauthorized** under the **23-slice** MVP
+**Slice 20 — Spreadsheet Authoring Seed** has an authorized implementation lane
+on branch `feat/slice-20-spreadsheet-authoring-seed` (authorized base
+`ded704dfc09616183979a75234314eef1f311caa`) under
+`AUTHORIZE-CQS-SLICE-20-SPREADSHEET-AUTHORING-SEED-IMPLEMENTATION-1`. It is
+**unmerged**, **not** canonically `Complete`, and awaits independent exact-head
+review (see
+[`../architecture/ADR-018-spreadsheet-authoring-seed.md`](../architecture/ADR-018-spreadsheet-authoring-seed.md)
+and
+[`../receipts/2026-08-08-slice-20-spreadsheet-authoring-seed-implementation.md`](../receipts/2026-08-08-slice-20-spreadsheet-authoring-seed-implementation.md)).
+**Slices 21–23 remain `Planned` and unauthorized** under the **23-slice** MVP
 plan amended by
 [`../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md)
 (`CQS-PLAN-S03`, documentation-only). **Amendment 004 is merged and canonical**
@@ -55,17 +64,11 @@ Slices 1–19 are Complete. Phase 2B’s MVP consumers (Slices 17–18) are both
 `Complete`. Phase 3 design-system readiness has served the theme-foundation →
 audience-display sequence
 ([`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)).
-**The next planned product frontier is Slice 20 — Spreadsheet Authoring Seed.**
-Slice 20 is **not** authorized by this handoff. Slice 21, Slice 22 Minimal
-Presentation Audio, and Slice 23 Classroom Release Qualification remain
-unauthorized.
-**Recommended next action (after this reconciliation content is on `main`):**
-return to the Program Orchestrator for a new, separately authorized Slice 20 —
-Spreadsheet Authoring Seed planning/implementation lane. No authority is
-granted by this handoff itself. Do not begin Slice 20, Slice 21, Slice 22
-audio, Slice 23 qualification, or post-MVP work from this handoff alone. Theme
-song remains post-MVP. `CQS-OD-066` remains unresolved. The inherited Final
-mid-refresh recovery flake remains unresolved and was not repaired by Slice 19.
+**Recommended next action:** independent exact-head review of the Slice 20
+implementation PR — **not** merge from this handoff alone, and **not** Slice 21 /
+Slice 22 audio / Slice 23 / post-MVP work. Theme song remains post-MVP.
+`CQS-OD-066` remains unresolved. The inherited Final mid-refresh recovery flake
+remains unresolved and was not repaired by Slice 19 or Slice 20.
 
 Coding agents and contributors should read root
 [`../../AGENTS.md`](../../AGENTS.md) before changing the repository. Claude

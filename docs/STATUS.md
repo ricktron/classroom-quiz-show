@@ -197,7 +197,13 @@ IndexedDB schema is **3**; public-state wire **8**; sync envelope **2**;
 canonical game-file schema **1**; GameDefinition model **1**; private
 active-session wire **1**; Session Summary contract **1**; completed-summary
 envelope **1**; competitive profile **1**. Slice 20 — Spreadsheet Authoring Seed
-is the next planned product frontier and remains separately unauthorized.
+has an authorized implementation lane in review on branch
+`feat/slice-20-spreadsheet-authoring-seed` (base
+`ded704dfc09616183979a75234314eef1f311caa`); it is **not** merged and is **not**
+canonically `Complete`. See
+[`architecture/ADR-018-spreadsheet-authoring-seed.md`](architecture/ADR-018-spreadsheet-authoring-seed.md)
+and
+[`receipts/2026-08-08-slice-20-spreadsheet-authoring-seed-implementation.md`](receipts/2026-08-08-slice-20-spreadsheet-authoring-seed-implementation.md).
 **Roadmap:** **23 slices**, amended 2026-08-07 by
 [`decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md)
 (`CQS-PLAN-S03`; documentation-only). **Amendment 004 planning delivery is
@@ -215,9 +221,10 @@ merge-evidence pointer:
 (`CQS-PLAN-S02`) rebalanced 18→22 slices; Amendment 001
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 grew the plan from 11 to 18 slices (PR #13, `752a3fe`, 2026-07-26). Slices 1–19
-are `Complete`; Slices 20–23 remain `Planned` and unauthorized for
-implementation. This STATUS grants **no** Slice 20, Slice 21, Slice 22 audio, or
-Slice 23 qualification authority. Phase 2B’s MVP consumers (Slices 17–18) are
+are `Complete`; Slice 20 is authorized for this implementation PR only and remains
+unmerged/`In review`; Slices 21–23 remain `Planned` and unauthorized. This STATUS
+grants **no** merge authority, and **no** Slice 21, Slice 22 audio, or Slice 23
+qualification authority. Phase 2B’s MVP consumers (Slices 17–18) are
 both `Complete`; Phase 3 design-system readiness has served the theme-foundation
 → audience-display sequence; post-MVP arcs remain inactive; theme song remains
 post-MVP; `CQS-OD-066` remains unresolved; the inherited Final mid-refresh
