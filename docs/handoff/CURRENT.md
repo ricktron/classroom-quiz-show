@@ -1,11 +1,10 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with **Slices 1–20 all product-`Complete` and merged to `main`**
-after this Slice 20 post-merge reconciliation lands.
-**Slice 20 — Spreadsheet Authoring Seed is terminally `Complete`** after
+the repository with **Slices 1–20 all product-`Complete` and merged to `main`**.
+**Slice 20 — Spreadsheet Authoring Seed is terminally `Complete`.** Product
 implementation PR [#52](https://github.com/ricktron/classroom-quiz-show/pull/52)
-(exact-head squash-merged at `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0` from
+was exact-head squash-merged at `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0` from
 accepted exact head `45142b96ce91c2f7498dbaa6a47cae278b7c4068`, merged
 **2026-08-09T04:11:33Z**, sole parent `ded704dfc09616183979a75234314eef1f311caa`,
 accepted-head and squash trees identical at
@@ -15,16 +14,19 @@ exactly **33** paths; final independent acceptance
 REST squash merge under
 `AUTHORIZE-CQS-SLICE-20-PR52-EXACT-HEAD-SQUASH-MERGE-AND-POST-MERGE-VERIFICATION-1`;
 post-merge local `npm run verify` **2283** passed / **1** skipped; main CI run
-`31294040220` **success**; Pages run `31294040228` **success**) **and this
-post-merge reconciliation’s eventual landing** on `main` (see
+`31294040220` **success**; Pages run `31294040228` **success**. Its docs
+reconciliation PR [#53](https://github.com/ricktron/classroom-quiz-show/pull/53)
+was squash-merged at `e98b478492da6352e0d70efb6af8e8f7e1c17b53` on
+**2026-08-09T20:29:40Z**. Slice 20 is terminally canonical in repository
+documentation (see
 [`../architecture/ADR-018-spreadsheet-authoring-seed.md`](../architecture/ADR-018-spreadsheet-authoring-seed.md),
 [`../receipts/2026-08-08-slice-20-spreadsheet-authoring-seed-implementation.md`](../receipts/2026-08-08-slice-20-spreadsheet-authoring-seed-implementation.md)
 (historical implementation evidence),
 [`../receipts/2026-08-09-slice-20-post-merge-reconciliation.md`](../receipts/2026-08-09-slice-20-post-merge-reconciliation.md),
 and [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md)).
-**PR #52 requires no further implementation, review, or merge action.** No
-further Slice 20 product delivery, repair, merge, reconciliation, registration,
-or canonicalization lane remains after this reconciliation lands.
+**PR #52 and PR #53 require no further implementation, review, or merge action.**
+No further Slice 20 product delivery, repair, merge, reconciliation,
+registration, or canonicalization lane is owed.
 Stable Slice 20 architecture on canonical main: workbook format **1**;
 AuthoringDraft **1**; Classic Board + Board + Final only; SheetJS CE **0.20.3**;
 shared workbook-source diagnostic lifecycle; approval → canonical JSON →
@@ -1051,11 +1053,13 @@ Merge evidence:
 [`../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md`](../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md).
 CQS-PLAN-S03 planning/merge authority is exhausted; post-merge reconciliation
 adds evidence only.
-**Slice 20 — Spreadsheet Authoring Seed is `Complete`** (product PR
-[#52](https://github.com/ricktron/classroom-quiz-show/pull/52) at
-`86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0`; docs reconciliation via open PR
-[#53](https://github.com/ricktron/classroom-quiz-show/pull/53) — not yet
-merged).
+**Slice 20 — Spreadsheet Authoring Seed is `Complete`.** Product PR
+[#52](https://github.com/ricktron/classroom-quiz-show/pull/52) was
+squash-merged at `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0`. Its docs
+reconciliation PR [#53](https://github.com/ricktron/classroom-quiz-show/pull/53)
+was squash-merged at `e98b478492da6352e0d70efb6af8e8f7e1c17b53` on
+**2026-08-09T20:29:40Z**. Slice 20 is terminally canonical in repository
+documentation.
 **Slice 19 — Self-Contained Portable Packs is `Complete`** (PR
 [#50](https://github.com/ricktron/classroom-quiz-show/pull/50) at
 `95573e2468ee67f9e6e5a221de002f35d6421249`).
@@ -1073,14 +1077,15 @@ merged).
 **Slice 14 — Final-wager round is `Complete`** (PR
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32)).
 
-**PR #52, PR #50, PR #48, PR #46, PR #45, PR #44, PR #41, PR #40, PR #38, and
-PR #36 require no further product review or merge action.** Slice 20 product
-delivery is `Complete` and post-merge verified on `main`. No further Slice 20
-product lane is owed. After PR #53 merges, Slice 20 is terminally canonical in
-docs (no further Slice 20 reconciliation lane). Phase 3 design-system readiness
-has served the theme-foundation → audience-display sequence.
-**Recommended next action (after this reconciliation content is on `main`):**
-return to the Program Orchestrator to obtain separate authorization for
+**PR #53, PR #52, PR #50, PR #48, PR #46, PR #45, PR #44, PR #41, PR #40, PR #38,
+and PR #36 require no further product review or merge action.** Slice 20
+product delivery is `Complete`, post-merge verified, and canonically reconciled
+on `main`. Slice 20 is terminally canonical in docs. No further Slice 20
+product, repair, merge, reconciliation, registration, or canonicalization lane
+is owed. Phase 3 design-system readiness has served the theme-foundation →
+audience-display sequence.
+**Recommended next action:**
+return to the Program Orchestrator to obtain separate owner authorization for
 **Slice 21 — Sony Buzz Supported-Profile Operationalization**. Slice 21 is the
 next planned frontier; it remains `PLANNED`, not started, and implementation
 remains separately unauthorized. Slices 21–23 remain unauthorized for

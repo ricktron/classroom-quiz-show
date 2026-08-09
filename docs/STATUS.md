@@ -229,9 +229,9 @@ squash `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0` (merged
 `45142b96ce91c2f7498dbaa6a47cae278b7c4068`; sole parent
 `ded704dfc09616183979a75234314eef1f311caa`; trees identical at
 `246749b2c1ab699b766194be22f7f4aa8e37195a`; direct head-to-squash diff empty;
-exactly **33** paths. After this reconciliation content is on `main`, Slice 20
-is terminally complete — no further Slice 20 product delivery, repair, merge,
-reconciliation, registration, or canonicalization lane is owed. Slice 19 remains
+exactly **33** paths. Slice 20 is terminally complete — no further Slice 20
+product delivery, repair, merge, reconciliation, registration, or
+canonicalization lane is owed. Slice 19 remains
 terminally `Complete` (PR #50 / #51). At this frontier, workbook format is **1**;
 AuthoringDraft is **1**; pack format is **1**; IndexedDB schema is **3**;
 public-state wire **8**; sync envelope **2**; canonical game-file schema **1**;
@@ -518,8 +518,7 @@ Supported-Profile Operationalization is the next planned product frontier. It
 is `PLANNED`, not started, and requires separate owner authorization before
 implementation. Slice 20 is now `Complete` via PR #52; Slice 19 is `Complete`
 via PR #50. No further Phase 3 readiness registration, Slice 17, Slice 18,
-Slice 19, or Slice 20 product lane is owed after this reconciliation content is
-on `main`.
+Slice 19, or Slice 20 product lane is owed.
 
 ## Remaining-MVP rebalance planning (CQS-PLAN-S02) — Complete
 
@@ -1802,9 +1801,9 @@ post-merge reconciliation:
 via implementation PR [#52](https://github.com/ricktron/classroom-quiz-show/pull/52)
 (exact-head squash `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0` from accepted head
 `45142b96ce91c2f7498dbaa6a47cae278b7c4068`, merged **2026-08-09T04:11:33Z**).
-**PR #52 requires no further review or merge action.** After this
-reconciliation content is on `main`, no further Slice 20 product delivery,
-repair, merge, reconciliation, registration, or canonicalization lane is owed.
+**PR #52 requires no further review or merge action.** No further Slice 20
+product delivery, repair, merge, reconciliation, registration, or
+canonicalization lane is owed.
 Slice 19 remains terminally `Complete` (PR #50 / #51). Slice 18 remains
 terminally `Complete` (PR #46 / #47). Slice 17 remains terminally `Complete`
 (PR #44 / #45). Phase 2B’s MVP consumers (Slices 17–18) are both `Complete`.
@@ -1821,8 +1820,8 @@ recorded in
 that reconciliation adds evidence only and grants **no** product authority.
 **Current** MVP count is the **23-slice** plan.
 
-**Recommended next action (after this reconciliation content is on `main`):**
-return to the Program Orchestrator to obtain separate authorization for
+**Recommended next action:**
+return to the Program Orchestrator to obtain separate owner authorization for
 **Slice 21 — Sony Buzz Supported-Profile Operationalization**. Slice 21 is the
 next planned product frontier; it remains `PLANNED`, not started, and
 implementation remains separately unauthorized. Slice 20 is terminally
