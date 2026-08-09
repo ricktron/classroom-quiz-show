@@ -506,16 +506,30 @@ schema **1** / GameDefinition **1** unchanged; exact `fflate@0.8.3`). See
 [`docs/receipts/2026-08-07-slice-19-portable-packs-implementation.md`](docs/receipts/2026-08-07-slice-19-portable-packs-implementation.md),
 and
 [`docs/receipts/2026-08-08-slice-19-post-merge-reconciliation.md`](docs/receipts/2026-08-08-slice-19-post-merge-reconciliation.md).
-**PR #50 requires no further review or merge action.** Slices 1–19 are Complete.
-Slices 20–23 remain Planned and unauthorized under the **23-slice** MVP plan
+**PR #50 requires no further review or merge action.** **Slice 20 — Spreadsheet
+Authoring Seed is `Complete`** via PR
+[#52](https://github.com/ricktron/classroom-quiz-show/pull/52) exact-head squash
+`86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0` from accepted head
+`45142b96ce91c2f7498dbaa6a47cae278b7c4068` (merged **2026-08-09T04:11:33Z**).
+Workbook format **1** / AuthoringDraft **1**; Classic Board + Board + Final;
+SheetJS CE **0.20.3**; shared workbook-source diagnostic lifecycle; approval →
+canonical JSON → `importGameFromJsonText`; no second importer; IndexedDB remains
+**3**; public wire **8** / sync **2** / canonical schema **1** / GameDefinition
+**1** unchanged. See
+[`docs/architecture/ADR-018-spreadsheet-authoring-seed.md`](docs/architecture/ADR-018-spreadsheet-authoring-seed.md),
+[`docs/receipts/2026-08-08-slice-20-spreadsheet-authoring-seed-implementation.md`](docs/receipts/2026-08-08-slice-20-spreadsheet-authoring-seed-implementation.md),
+and
+[`docs/receipts/2026-08-09-slice-20-post-merge-reconciliation.md`](docs/receipts/2026-08-09-slice-20-post-merge-reconciliation.md).
+**PR #52 requires no further review or merge action.** Slices 1–20 are Complete.
+Slices 21–23 remain Planned and unauthorized under the **23-slice** MVP plan
 ([`docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md);
 prior Amendment 003:
 [`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
-The next planned product frontier is Slice 20 — Spreadsheet Authoring Seed,
-which remains separately unauthorized. Slice 21, Slice 22 Minimal Presentation
-Audio, and Slice 23 Classroom Release Qualification remain unauthorized. Theme
-song remains post-MVP. The inherited Final mid-refresh recovery flake remains
-unresolved; `CQS-OD-066` remains unresolved.
+The next planned product frontier is Slice 21 — Sony Buzz Supported-Profile
+Operationalization (`PLANNED` / not started / separately unauthorized). Slice 22
+Minimal Presentation Audio and Slice 23 Classroom Release Qualification remain
+unauthorized. Theme song remains post-MVP. The inherited Final mid-refresh
+recovery flake remains unresolved; `CQS-OD-066` remains unresolved.
 
 > ⚠️ **Sony Buzz physical certification is bounded, not a supported-hardware
 > list.** OADL2-S07 completed physical certification for one exact tested

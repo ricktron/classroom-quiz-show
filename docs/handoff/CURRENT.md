@@ -1,26 +1,39 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with **Slices 1–19 all product-`Complete` and merged to `main`**
-after this Slice 19 post-merge reconciliation lands.
-**Slice 19 — Self-Contained Portable Packs is terminally `Complete`** after
-implementation PR [#50](https://github.com/ricktron/classroom-quiz-show/pull/50)
-(exact-head squash-merged at `95573e2468ee67f9e6e5a221de002f35d6421249` from
-reviewed head `972c07ba61042401f71c999b959a15997e3fbe51`, merged
-**2026-08-08T21:25:37Z**, sole parent `a1726e59ac437b84e785f8cfe53740e229de244c`,
-reviewed-head and squash trees identical at
-`a0c6ec813525cf80ac6210eef594cc5a026a9d00`, direct head-to-squash diff empty,
-exactly **63** paths; post-merge CI and Pages green on exact squash; PR-head
-Sonar green at `972c07b…` labeled as pre-merge evidence only — no
-post-merge-main Sonar at `95573e2…`) **and this post-merge reconciliation’s
-eventual landing** on `main` (see
-[`../architecture/ADR-017-self-contained-portable-packs.md`](../architecture/ADR-017-self-contained-portable-packs.md),
-[`../receipts/2026-08-07-slice-19-portable-packs-implementation.md`](../receipts/2026-08-07-slice-19-portable-packs-implementation.md),
-[`../receipts/2026-08-08-slice-19-post-merge-reconciliation.md`](../receipts/2026-08-08-slice-19-post-merge-reconciliation.md),
+the repository with **Slices 1–20 all product-`Complete` and merged to `main`**
+after this Slice 20 post-merge reconciliation lands.
+**Slice 20 — Spreadsheet Authoring Seed is terminally `Complete`** after
+implementation PR [#52](https://github.com/ricktron/classroom-quiz-show/pull/52)
+(exact-head squash-merged at `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0` from
+accepted exact head `45142b96ce91c2f7498dbaa6a47cae278b7c4068`, merged
+**2026-08-09T04:11:33Z**, sole parent `ded704dfc09616183979a75234314eef1f311caa`,
+accepted-head and squash trees identical at
+`246749b2c1ab699b766194be22f7f4aa8e37195a`, direct head-to-squash diff empty,
+exactly **33** paths; final independent acceptance
+`CQS-SLICE-20-PR52-FINAL-ACCEPTANCE-REVIEW-ES-1` **PASS**; atomic expected-head
+REST squash merge under
+`AUTHORIZE-CQS-SLICE-20-PR52-EXACT-HEAD-SQUASH-MERGE-AND-POST-MERGE-VERIFICATION-1`;
+post-merge local `npm run verify` **2283** passed / **1** skipped; main CI run
+`31294040220` **success**; Pages run `31294040228` **success**) **and this
+post-merge reconciliation’s eventual landing** on `main` (see
+[`../architecture/ADR-018-spreadsheet-authoring-seed.md`](../architecture/ADR-018-spreadsheet-authoring-seed.md),
+[`../receipts/2026-08-08-slice-20-spreadsheet-authoring-seed-implementation.md`](../receipts/2026-08-08-slice-20-spreadsheet-authoring-seed-implementation.md)
+(historical implementation evidence),
+[`../receipts/2026-08-09-slice-20-post-merge-reconciliation.md`](../receipts/2026-08-09-slice-20-post-merge-reconciliation.md),
 and [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md)).
-**PR #50 requires no further implementation, review, or merge action.** No
-further Slice 19 product delivery, repair, merge, reconciliation, registration,
+**PR #52 requires no further implementation, review, or merge action.** No
+further Slice 20 product delivery, repair, merge, reconciliation, registration,
 or canonicalization lane remains after this reconciliation lands.
+Stable Slice 20 architecture on canonical main: workbook format **1**;
+AuthoringDraft **1**; Classic Board + Board + Final only; SheetJS CE **0.20.3**;
+shared workbook-source diagnostic lifecycle; approval → canonical JSON →
+`importGameFromJsonText` (one importer); no persistent drafts; no schema / public
+wire / sync / IndexedDB version changes.
+**Slice 19 — Self-Contained Portable Packs is terminally `Complete`**
+(implementation PR [#50](https://github.com/ricktron/classroom-quiz-show/pull/50)
+/ reconciliation PR [#51](https://github.com/ricktron/classroom-quiz-show/pull/51)).
+**PR #50 and PR #51 require no further review or merge action.**
 **Slice 18 — Audience Display System is terminally `Complete`**
 (implementation PR [#46](https://github.com/ricktron/classroom-quiz-show/pull/46)
 squash-merged at `91c7708626caeaa28b15617a1f0938f4944f7680` from reviewed head
@@ -41,15 +54,6 @@ see
 **Slice 14 — Final-wager round is `Complete`** (PR
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32)).
 **Slice 13 — Local persistence & recovery is `Complete`** (PR #27).
-**Slice 20 — Spreadsheet Authoring Seed** has an authorized implementation lane
-on branch `feat/slice-20-spreadsheet-authoring-seed` (authorized base
-`ded704dfc09616183979a75234314eef1f311caa`) under
-`AUTHORIZE-CQS-SLICE-20-SPREADSHEET-AUTHORING-SEED-IMPLEMENTATION-1`. It is
-**unmerged**, **not** canonically `Complete`, and awaits independent exact-head
-review (see
-[`../architecture/ADR-018-spreadsheet-authoring-seed.md`](../architecture/ADR-018-spreadsheet-authoring-seed.md)
-and
-[`../receipts/2026-08-08-slice-20-spreadsheet-authoring-seed-implementation.md`](../receipts/2026-08-08-slice-20-spreadsheet-authoring-seed-implementation.md)).
 **Slices 21–23 remain `Planned` and unauthorized** under the **23-slice** MVP
 plan amended by
 [`../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md)
@@ -60,15 +64,17 @@ planning/merge authority is exhausted. Prior Amendment 003
 ([`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md),
 `CQS-PLAN-S02`) delivery **merged** via PR #35; post-merge reconciliation
 **merged** via PR #36.
-Slices 1–19 are Complete. Phase 2B’s MVP consumers (Slices 17–18) are both
+Slices 1–20 are Complete. Phase 2B’s MVP consumers (Slices 17–18) are both
 `Complete`. Phase 3 design-system readiness has served the theme-foundation →
 audience-display sequence
 ([`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)).
-**Recommended next action:** independent exact-head review of the Slice 20
-implementation PR — **not** merge from this handoff alone, and **not** Slice 21 /
-Slice 22 audio / Slice 23 / post-MVP work. Theme song remains post-MVP.
-`CQS-OD-066` remains unresolved. The inherited Final mid-refresh recovery flake
-remains unresolved and was not repaired by Slice 19 or Slice 20.
+**Recommended next action:** separately authorized
+**Slice 21 — Sony Buzz Supported-Profile Operationalization** —
+`PLANNED / NOT STARTED / REQUIRES SEPARATE AUTHORIZATION`. Do **not** begin
+Slice 21, Slice 22 audio, Slice 23 qualification, or post-MVP work from this
+handoff alone. Theme song remains post-MVP. `CQS-OD-066` remains unresolved.
+The inherited Final mid-refresh recovery flake remains unresolved and was not
+repaired by Slice 19 or Slice 20.
 
 Coding agents and contributors should read root
 [`../../AGENTS.md`](../../AGENTS.md) before changing the repository. Claude
@@ -387,8 +393,24 @@ defers to `AGENTS.md` and adds no separate authority.
   [`../receipts/2026-08-06-slice-18-post-merge-reconciliation.md`](../receipts/2026-08-06-slice-18-post-merge-reconciliation.md).
   **PR #46 requires no further review or merge action.** After this
   reconciliation lands, no further Slice 18 product lane remains.
-- **Slices 19–23:** `Planned`, unstarted, and unauthorized (23-slice plan;
-  Amendment 004).
+- **Slice 19 — Self-Contained Portable Packs:** **`Complete`.** Exact-head
+  squash-merged via PR [#50](https://github.com/ricktron/classroom-quiz-show/pull/50)
+  at `95573e2468ee67f9e6e5a221de002f35d6421249` from reviewed head
+  `972c07ba61042401f71c999b959a15997e3fbe51`. Pack format **1**; IndexedDB **3**;
+  exact `fflate@0.8.3`. See ADR-017 and
+  [`../receipts/2026-08-08-slice-19-post-merge-reconciliation.md`](../receipts/2026-08-08-slice-19-post-merge-reconciliation.md).
+  **PR #50 / #51 require no further review or merge action.**
+- **Slice 20 — Spreadsheet Authoring Seed:** **`Complete`.** Exact-head
+  squash-merged via PR [#52](https://github.com/ricktron/classroom-quiz-show/pull/52)
+  at `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0` from accepted head
+  `45142b96ce91c2f7498dbaa6a47cae278b7c4068` (merged **2026-08-09T04:11:33Z**).
+  Workbook format **1** / AuthoringDraft **1**; SheetJS CE **0.20.3**; one
+  importer. See ADR-018 and
+  [`../receipts/2026-08-09-slice-20-post-merge-reconciliation.md`](../receipts/2026-08-09-slice-20-post-merge-reconciliation.md).
+  **PR #52 requires no further review or merge action.**
+- **Slices 21–23:** `Planned`, unstarted, and unauthorized (23-slice plan;
+  Amendment 004). Next planned frontier: Slice 21 — Sony Buzz Supported-Profile
+  Operationalization (`PLANNED` / not started / separately unauthorized).
 - **What Slice 14 adds:** the SECOND playable round type, `final-wager` — and
   the important thing about it is where it lives. It is registered by application
   code in the same registry as `category-board`, validated by the same import
