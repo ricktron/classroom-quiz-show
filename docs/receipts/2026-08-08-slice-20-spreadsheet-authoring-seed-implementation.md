@@ -202,7 +202,11 @@ freshness after push. F6 (E2E soft coverage) not expanded.
 This section does **not** rewrite §2–§12 as if the defects never existed. The
 initial reviewed head `7cfe1bc…` remains the pre-repair evidence baseline.
 
-### 13.4 Local verification (pre-push; head after repair commit)
+### 13.4 Exact repair head
+
+`b0f550252da3b123553fcae872fb3f9246160278`
+
+### 13.5 Local verification on repair head `b0f5502…`
 
 | Gate | Result |
 | --- | --- |
@@ -226,7 +230,7 @@ failures this run). **Not repaired** by this bounded repair. No additional
 reruns were performed to manufacture green. Spreadsheet authoring e2e cases
 passed across the matrix.
 
-### 13.5 Explicit non-claims (repair)
+### 13.6 Explicit non-claims (repair)
 
 - No merge of PR #52
 - No claim that the new repair head has completed independent review
