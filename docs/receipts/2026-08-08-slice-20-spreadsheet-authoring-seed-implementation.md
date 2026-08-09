@@ -202,11 +202,16 @@ freshness after push. F6 (E2E soft coverage) not expanded.
 This section does **not** rewrite §2–§12 as if the defects never existed. The
 initial reviewed head `7cfe1bc…` remains the pre-repair evidence baseline.
 
-### 13.4 Exact repair head
+### 13.4 Exact repair heads
 
-`b0f550252da3b123553fcae872fb3f9246160278`
+| Role | SHA |
+| --- | --- |
+| F1–F3 repair implementation | `b0f550252da3b123553fcae872fb3f9246160278` |
+| Current PR tip (includes this receipt bind) | `f9bc4ed7e5286033e148c6f8b6a93247645c7330` |
 
-### 13.5 Local verification on repair head `b0f5502…`
+Independent exact-head review must target the current PR tip.
+
+### 13.5 Local verification on repair implementation `b0f5502…` (tip `f9bc4ed…` docs-only delta)
 
 | Gate | Result |
 | --- | --- |
