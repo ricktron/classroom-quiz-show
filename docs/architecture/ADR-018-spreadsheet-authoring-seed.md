@@ -1,13 +1,23 @@
 # ADR-018 — Spreadsheet authoring seed
 
-- **Status:** Proposed (implementation on branch; unmerged)
+- **Status:** Accepted — merged via PR #52
 - **Date:** 2026-08-08
+- **Accepted:** 2026-08-09 (implementation PR
+  [#52](https://github.com/ricktron/classroom-quiz-show/pull/52); accepted exact
+  head `45142b96ce91c2f7498dbaa6a47cae278b7c4068`; squash
+  `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0`; merged **2026-08-09T04:11:33Z**;
+  final acceptance `CQS-SLICE-20-PR52-FINAL-ACCEPTANCE-REVIEW-ES-1` **PASS**;
+  merge evidence `CQS-SLICE-20-PR52-MERGE-ES-1`; post-merge verification
+  complete; post-merge reconciliation
+  [`../receipts/2026-08-09-slice-20-post-merge-reconciliation.md`](../receipts/2026-08-09-slice-20-post-merge-reconciliation.md))
 - **Slice:** 20 — Spreadsheet Authoring Seed
 - **Authorization:**
   `AUTHORIZE-CQS-SLICE-20-SPREADSHEET-AUTHORING-SEED-IMPLEMENTATION-1`,
   `AUTHORIZE-CQS-SLICE-20-SHEETJS-CE-0.20.3-DEPENDENCY-1`,
   `AUTHORIZE-CQS-SLICE-20-PR52-F1-F3-BOUNDED-REPAIR-1`,
-  `AUTHORIZE-CQS-SLICE-20-PR52-F2-GENERALIZED-TRUST-GATE-REPAIR-1`
+  `AUTHORIZE-CQS-SLICE-20-PR52-F2-GENERALIZED-TRUST-GATE-REPAIR-1`,
+  `AUTHORIZE-CQS-SLICE-20-PR52-EXACT-HEAD-SQUASH-MERGE-AND-POST-MERGE-VERIFICATION-1`,
+  `AUTHORIZE-CQS-SLICE-20-POST-MERGE-RECONCILIATION-CLASS-B-DELIVERY-1`
 - **Depends on:** [ADR-004](ADR-004-canonical-validation-import.md),
   [ADR-005](ADR-005-category-board-round.md),
   [ADR-006](ADR-006-teams-and-scoring.md),
