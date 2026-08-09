@@ -6,7 +6,8 @@
 - **Authorization:**
   `AUTHORIZE-CQS-SLICE-20-SPREADSHEET-AUTHORING-SEED-IMPLEMENTATION-1`,
   `AUTHORIZE-CQS-SLICE-20-SHEETJS-CE-0.20.3-DEPENDENCY-1`,
-  `AUTHORIZE-CQS-SLICE-20-PR52-F1-F3-BOUNDED-REPAIR-1`
+  `AUTHORIZE-CQS-SLICE-20-PR52-F1-F3-BOUNDED-REPAIR-1`,
+  `AUTHORIZE-CQS-SLICE-20-PR52-F2-GENERALIZED-TRUST-GATE-REPAIR-1`
 - **Depends on:** [ADR-004](ADR-004-canonical-validation-import.md),
   [ADR-005](ADR-005-category-board-round.md),
   [ADR-006](ADR-006-teams-and-scoring.md),
@@ -179,21 +180,36 @@ closed. Row sorting with unchanged order keys preserves identity.
 Bounded issue vocabulary with sheet / row / column / A1 / field / draft path /
 optional canonical path. Never invent A1 provenance.
 
+Diagnostic lifecycle by `AuthoringIssue.family` (durable authority distinction;
+not a per-code preservation allowlist):
+
+| Family | Role |
+| --- | --- |
+| `transport` / `workbook` / `cell` | Workbook-source diagnostics from workbook bytes/structure. Survive draft revalidation, unrelated in-app correction, and approval. Unresolved blockers require workbook correction + re-upload in workbook format 1. |
+| `draft` | Current normalized-draft semantic diagnostics. Recomputed after in-app correction. |
+| `canonical` | Compile/import diagnostics. Regenerated on later approval/import. |
+
+Normalization or omission of malformed workbook input never converts an
+unresolved source blocker into valid absence (invalid optional fields
+normalized to `undefined`, and invalid clue rows omitted from
+`AuthoringDraft`, retain their workbook-source blockers).
+
 ### 16. Correction model
 
-Hybrid: bounded in-app correction for ordinary draft fields; structural
-workbook failures require re-upload. No board designer, question bank, AI
-rewrite, or revision history.
+Hybrid: bounded in-app correction for ordinary draft fields; workbook-source
+diagnostics (`transport` / `workbook` / `cell`) require re-upload in format 1.
+Approval and correction share one `preserveWorkbookSourceIssues` /
+`isWorkbookSourceIssue` policy. No board designer, question bank, AI rewrite,
+source-cell override tracking, or revision history in this seed.
 
 ### 17. Approval gate
 
 Parsing success ≠ approval. Approval is explicit, game-level, and disabled while
-blockers remain. The approval API itself is fail-closed: unresolved
-parse/structural blockers (including `formula-not-allowed` and other
-non-semantic issues preserved across content revalidation) must prevent
-`approveAndImportDraft` from compiling or calling `importGameFromJsonText`.
-UI disabled state is not an authority boundary. Approval does not auto-start
-gameplay.
+blockers remain. The approval API itself is fail-closed: before compile, the
+draft must include preserved workbook-source issues plus fresh draft semantic
+issues; any unresolved blocker prevents `approveAndImportDraft` from compiling
+or calling `importGameFromJsonText`. UI disabled state is not an authority
+boundary. Approval does not auto-start gameplay.
 
 ### 18. Canonical compiler
 

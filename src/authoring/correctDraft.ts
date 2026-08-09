@@ -5,7 +5,7 @@
  */
 
 import type { AuthoringDraft, DraftClue, DraftCategory } from './types'
-import { revalidateDraft } from './validateDraft'
+import { preserveWorkbookSourceIssues, revalidateDraft } from './validateDraft'
 import { authoringIssue } from './issues'
 
 export type DraftCorrection =
@@ -189,18 +189,7 @@ export function applyDraftCorrection(
       return draft
   }
 
-  // Preserve structural/workbook issues that cannot be fixed in-app.
-  const structural = draft.issues.filter(
-    (issue) =>
-      issue.family === 'transport' ||
-      issue.family === 'workbook' ||
-      issue.code === 'formula-not-allowed' ||
-      issue.code === 'hidden-semantic-content' ||
-      issue.code === 'unsupported-media-field' ||
-      issue.code === 'duplicate-header' ||
-      issue.code === 'missing-header' ||
-      issue.code === 'missing-sheet',
-  )
-
-  return revalidateDraft(next, structural)
+  // Same shared workbook-source policy as approval: transport/workbook/cell
+  // diagnostics require workbook correction + re-upload in format 1.
+  return revalidateDraft(next, preserveWorkbookSourceIssues(draft.issues))
 }

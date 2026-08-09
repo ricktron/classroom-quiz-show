@@ -9,9 +9,18 @@ import { applyDraftCorrection } from './correctDraft'
 import { compileApprovedDraft } from './compileDraft'
 import { parseWorkbookBytes } from './parseWorkbook'
 import { buildTestWorkbookBytes } from './testWorkbookFactory'
-import { CLUE_HEADERS } from './contract'
+import { CLUE_HEADERS, GAME_HEADERS } from './contract'
+import { MAX_CATEGORY_TITLE_LENGTH } from './limits'
+import {
+  isWorkbookSourceIssue,
+  preserveWorkbookSourceIssues,
+} from './validateDraft'
 
 const registry = createDefaultRegistry()
+
+function clueCount(draft: { board: { categories: ReadonlyArray<{ clues: readonly unknown[] }> } }) {
+  return draft.board.categories.reduce((n, c) => n + c.clues.length, 0)
+}
 
 describe('authoring draft + compiler', () => {
   it('draft is not a GameDefinition and cannot initialize a game', async () => {
@@ -206,5 +215,299 @@ describe('authoring draft + compiler', () => {
     if (result.status !== 'failure') return
     expect(result.issues.some((i) => i.code === 'hidden-semantic-content')).toBe(true)
     expect(result.importResult).toBeUndefined()
+  })
+
+  it('shared workbook-source policy is family-based, not issue-code allowlists', () => {
+    const cellInvalid = {
+      code: 'invalid-type' as const,
+      severity: 'blocker' as const,
+      family: 'cell' as const,
+      message: 'x',
+    }
+    const draftLimit = {
+      code: 'numeric-out-of-range' as const,
+      severity: 'blocker' as const,
+      family: 'draft' as const,
+      message: 'y',
+    }
+    expect(isWorkbookSourceIssue(cellInvalid)).toBe(true)
+    expect(isWorkbookSourceIssue(draftLimit)).toBe(false)
+    expect(preserveWorkbookSourceIssues([cellInvalid, draftLimit])).toEqual([cellInvalid])
+  })
+
+  it('invalid ResponseSeconds cannot approve after normalization to undefined', async () => {
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({
+        gameRows: [[...GAME_HEADERS], ['Title', 'key-abc', 'abc', '', '', '', '', '', '', '', '']],
+      }),
+      'resp-abc.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    expect(parsed.draft.status).toBe('blocked')
+    expect(parsed.draft.game.responseSeconds).toBeUndefined()
+    expect(
+      parsed.draft.issues.some((i) => i.code === 'invalid-type' && i.family === 'cell'),
+    ).toBe(true)
+
+    const result = approveAndImportDraft(parsed.draft, { registry })
+    expect(result.status).toBe('failure')
+    if (result.status !== 'failure') return
+    expect(result.issues.some((i) => i.code === 'invalid-type')).toBe(true)
+    expect(result.importResult).toBeUndefined()
+  })
+
+  it('invalid Multiplier cannot approve after normalization to undefined', async () => {
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({
+        clueRows: [
+          [...CLUE_HEADERS],
+          [1, 'Rocks', 1, 100, 'Prompt', 'Answer', '', '', '', '', '', '', '', '', '', 'abc'],
+        ],
+      }),
+      'mult-abc.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    expect(parsed.draft.status).toBe('blocked')
+    expect(parsed.draft.board.categories[0]?.clues[0]?.multiplier).toBeUndefined()
+    expect(
+      parsed.draft.issues.some((i) => i.code === 'invalid-type' && i.family === 'cell'),
+    ).toBe(true)
+
+    const result = approveAndImportDraft(parsed.draft, { registry })
+    expect(result.status).toBe('failure')
+    if (result.status !== 'failure') return
+    expect(result.issues.some((i) => i.code === 'invalid-type')).toBe(true)
+    expect(result.importResult).toBeUndefined()
+  })
+
+  it('boolean Notes invalid-type cannot approve after normalization to absent', async () => {
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({
+        clueRows: [
+          [...CLUE_HEADERS],
+          [1, 'Rocks', 1, 100, 'Prompt', 'Answer', '', '', '', '', '', '', '', '', 'note', 1],
+        ],
+        booleanCells: [{ sheet: 'CLUES', a1: 'O2', value: true }],
+      }),
+      'bool-notes.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    expect(parsed.draft.board.categories[0]?.clues[0]?.notes).toBeUndefined()
+    expect(
+      parsed.draft.issues.some((i) => i.code === 'invalid-type' && i.family === 'cell'),
+    ).toBe(true)
+
+    const result = approveAndImportDraft(parsed.draft, { registry })
+    expect(result.status).toBe('failure')
+    if (result.status !== 'failure') return
+    expect(result.issues.some((i) => i.code === 'invalid-type')).toBe(true)
+    expect(result.importResult).toBeUndefined()
+  })
+
+  it('omitted missing-Prompt clue keeps source blocker through approval', async () => {
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({
+        clueRows: [
+          [...CLUE_HEADERS],
+          [1, 'Rocks', 1, 100, 'Valid P1', 'A1', '', '', '', '', '', '', '', '', '', 1],
+          [1, 'Rocks', 2, 200, '', 'A2', '', '', '', '', '', '', '', '', '', 1],
+          [1, 'Rocks', 3, 300, 'Valid P3', 'A3', '', '', '', '', '', '', '', '', '', 1],
+        ],
+      }),
+      'omit-prompt.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    expect(clueCount(parsed.draft)).toBe(2)
+    expect(
+      parsed.draft.issues.some(
+        (i) =>
+          (i.code === 'required-value-missing' || i.code === 'whitespace-only') &&
+          i.family === 'cell',
+      ),
+    ).toBe(true)
+
+    const result = approveAndImportDraft(parsed.draft, { registry })
+    expect(result.status).toBe('failure')
+    if (result.status !== 'failure') return
+    expect(
+      result.issues.some(
+        (i) => i.code === 'required-value-missing' || i.code === 'whitespace-only',
+      ),
+    ).toBe(true)
+    expect(result.importResult).toBeUndefined()
+  })
+
+  it('omitted whitespace-only Answer keeps source blocker through approval', async () => {
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({
+        clueRows: [
+          [...CLUE_HEADERS],
+          [1, 'Rocks', 1, 100, 'Valid P1', 'A1', '', '', '', '', '', '', '', '', '', 1],
+          [1, 'Rocks', 2, 200, 'Valid P2', '   ', '', '', '', '', '', '', '', '', '', 1],
+        ],
+      }),
+      'omit-ws.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    expect(clueCount(parsed.draft)).toBe(1)
+    expect(
+      parsed.draft.issues.some((i) => i.code === 'whitespace-only' && i.family === 'cell'),
+    ).toBe(true)
+
+    const result = approveAndImportDraft(parsed.draft, { registry })
+    expect(result.status).toBe('failure')
+    if (result.status !== 'failure') return
+    expect(result.issues.some((i) => i.code === 'whitespace-only')).toBe(true)
+    expect(result.importResult).toBeUndefined()
+  })
+
+  it('omitted control-character Prompt keeps source blocker through approval', async () => {
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({
+        clueRows: [
+          [...CLUE_HEADERS],
+          [1, 'Rocks', 1, 100, 'Valid P1', 'A1', '', '', '', '', '', '', '', '', '', 1],
+          [1, 'Rocks', 2, 200, 'Bad\u0000Prompt', 'A2', '', '', '', '', '', '', '', '', '', 1],
+        ],
+      }),
+      'omit-ctrl.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    expect(clueCount(parsed.draft)).toBe(1)
+    expect(
+      parsed.draft.issues.some((i) => i.code === 'control-characters' && i.family === 'cell'),
+    ).toBe(true)
+
+    const result = approveAndImportDraft(parsed.draft, { registry })
+    expect(result.status).toBe('failure')
+    if (result.status !== 'failure') return
+    expect(result.issues.some((i) => i.code === 'control-characters')).toBe(true)
+    expect(result.importResult).toBeUndefined()
+  })
+
+  it('duplicate CategoryOrder/ClueOrder keeps source blocker through approval', async () => {
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({
+        clueRows: [
+          [...CLUE_HEADERS],
+          [1, 'Rocks', 1, 100, 'P1', 'A1', '', '', '', '', '', '', '', '', '', 1],
+          [1, 'Rocks', 1, 200, 'P2', 'A2', '', '', '', '', '', '', '', '', '', 1],
+        ],
+      }),
+      'dup-id.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    expect(clueCount(parsed.draft)).toBe(1)
+    expect(
+      parsed.draft.issues.some(
+        (i) => i.code === 'duplicate-authoring-identity' && i.family === 'cell',
+      ),
+    ).toBe(true)
+
+    const result = approveAndImportDraft(parsed.draft, { registry })
+    expect(result.status).toBe('failure')
+    if (result.status !== 'failure') return
+    expect(result.issues.some((i) => i.code === 'duplicate-authoring-identity')).toBe(true)
+    expect(result.importResult).toBeUndefined()
+  })
+
+  it('unrelated title correction cannot erase invalid-type source blocker', async () => {
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({
+        gameRows: [[...GAME_HEADERS], ['Title', 'key-abc', 'abc', '', '', '', '', '', '', '', '']],
+      }),
+      'corr-type.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    const corrected = applyDraftCorrection(parsed.draft, {
+      kind: 'game-title',
+      title: 'Corrected Title',
+    })
+    expect(corrected.game.title).toBe('Corrected Title')
+    expect(
+      corrected.issues.some((i) => i.code === 'invalid-type' && i.family === 'cell'),
+    ).toBe(true)
+    expect(corrected.status).toBe('blocked')
+
+    const result = approveAndImportDraft(corrected, { registry })
+    expect(result.status).toBe('failure')
+    if (result.status !== 'failure') return
+    expect(result.issues.some((i) => i.code === 'invalid-type')).toBe(true)
+    expect(result.importResult).toBeUndefined()
+  })
+
+  it('unrelated title correction cannot erase excel-error-cell source blocker', async () => {
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({
+        clueRows: [
+          [...CLUE_HEADERS],
+          [1, 'Rocks', 1, 100, 'Prompt', 'Answer', '', '', '', '', '', '', '', '', 'note', 1],
+        ],
+        errorCells: [{ sheet: 'CLUES', a1: 'O2', error: '#N/A' }],
+      }),
+      'corr-err.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    expect(parsed.draft.issues.some((i) => i.code === 'excel-error-cell')).toBe(true)
+
+    const corrected = applyDraftCorrection(parsed.draft, {
+      kind: 'game-title',
+      title: 'Corrected Title',
+    })
+    expect(
+      corrected.issues.some((i) => i.code === 'excel-error-cell' && i.family === 'cell'),
+    ).toBe(true)
+    expect(corrected.status).toBe('blocked')
+
+    const result = approveAndImportDraft(corrected, { registry })
+    expect(result.status).toBe('failure')
+    if (result.status !== 'failure') return
+    expect(result.issues.some((i) => i.code === 'excel-error-cell')).toBe(true)
+    expect(result.importResult).toBeUndefined()
+  })
+
+  it('draft-family blockers remain correctable in-app after revalidation', async () => {
+    const longCategory = 'C'.repeat(MAX_CATEGORY_TITLE_LENGTH + 1)
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({
+        clueRows: [
+          [...CLUE_HEADERS],
+          [1, longCategory, 1, 100, 'Prompt', 'Answer', '', '', '', '', '', '', '', '', '', 1],
+        ],
+      }),
+      'draft-corr.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    expect(parsed.draft.status).toBe('blocked')
+    expect(
+      parsed.draft.issues.some(
+        (i) => i.code === 'numeric-out-of-range' && i.family === 'draft',
+      ),
+    ).toBe(true)
+
+    const corrected = applyDraftCorrection(parsed.draft, {
+      kind: 'category-title',
+      categoryOrder: 1,
+      title: 'Rocks',
+    })
+    expect(
+      corrected.issues.some((i) => i.code === 'numeric-out-of-range' && i.family === 'draft'),
+    ).toBe(false)
+    expect(corrected.status).toBe('ready_for_approval')
+
+    const result = approveAndImportDraft(corrected, { registry })
+    expect(result.status).toBe('success')
+    if (result.status !== 'success') return
+    expect(result.importResult.definition).toBeDefined()
   })
 })

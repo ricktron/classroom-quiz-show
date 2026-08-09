@@ -52,26 +52,27 @@ export function computeDraftStatus(issues: readonly AuthoringIssue[]): DraftStat
 }
 
 /**
- * Structural / parse-time issues that semantic revalidation does not recompute.
- * Preserved across correction and approval so unresolved blockers cannot be
- * dropped by content-only revalidation.
+ * Workbook-source diagnostics originate from workbook bytes/structure
+ * (`transport` / `workbook` / `cell`). They are not recomputed from normalized
+ * draft state, so they must survive draft revalidation, unrelated correction,
+ * and approval until the workbook is re-uploaded (format 1).
+ *
+ * Do not preserve by individual issue-code allowlists — family is the durable
+ * authority distinction. `draft` issues are recomputed; `canonical` issues are
+ * regenerated on later approval/import.
  */
-export function preserveStructuralAuthoringIssues(
+export function isWorkbookSourceIssue(issue: AuthoringIssue): boolean {
+  return (
+    issue.family === 'transport' ||
+    issue.family === 'workbook' ||
+    issue.family === 'cell'
+  )
+}
+
+export function preserveWorkbookSourceIssues(
   issues: readonly AuthoringIssue[],
 ): AuthoringIssue[] {
-  return issues.filter(
-    (issue) =>
-      issue.family === 'transport' ||
-      issue.family === 'workbook' ||
-      issue.code === 'formula-not-allowed' ||
-      issue.code === 'excel-error-cell' ||
-      issue.code === 'hidden-semantic-content' ||
-      issue.code === 'unsupported-media-field' ||
-      issue.code === 'duplicate-header' ||
-      issue.code === 'missing-header' ||
-      issue.code === 'missing-sheet' ||
-      issue.code === 'ambiguous-semantic-rows',
-  )
+  return issues.filter(isWorkbookSourceIssue)
 }
 
 export function validateDraftContent(draft: AuthoringDraft): AuthoringIssue[] {

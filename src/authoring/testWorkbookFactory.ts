@@ -50,6 +50,16 @@ export interface BuildWorkbookOptions {
     readonly formula: string
     readonly cached?: string | number
   }>
+  readonly errorCells?: ReadonlyArray<{
+    readonly sheet: string
+    readonly a1: string
+    readonly error?: string
+  }>
+  readonly booleanCells?: ReadonlyArray<{
+    readonly sheet: string
+    readonly a1: string
+    readonly value: boolean
+  }>
 }
 
 export function buildTestWorkbookBytes(options: BuildWorkbookOptions = {}): Uint8Array {
@@ -136,6 +146,26 @@ export function buildTestWorkbookBytes(options: BuildWorkbookOptions = {}): Uint
       v: formula.cached ?? 2,
       f: formula.formula,
       w: String(formula.cached ?? 2),
+    }
+  }
+
+  for (const error of options.errorCells ?? []) {
+    const sheet = wb.Sheets[error.sheet]
+    if (!sheet) continue
+    sheet[error.a1] = {
+      t: 'e',
+      v: 0x2a,
+      w: error.error ?? '#N/A',
+    }
+  }
+
+  for (const bool of options.booleanCells ?? []) {
+    const sheet = wb.Sheets[bool.sheet]
+    if (!sheet) continue
+    sheet[bool.a1] = {
+      t: 'b',
+      v: bool.value,
+      w: bool.value ? 'TRUE' : 'FALSE',
     }
   }
 
