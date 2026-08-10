@@ -34,7 +34,8 @@ the round-based engine direction into it.
 > `dee2f3c219f9e60113a374ce0ec876ae20c40bc1`; Slice 16 via PR #40 squash
 > `bc3cea65cab8db1481b0b2420be580cc69932f3d`); Slices 21–23 remain `Planned`
 > and Slice 22–23 unauthorized. Slice 21 is in authorized delivery and **not**
-> `Complete` until final four-handset physical RC and merge. Post-MVP arcs still
+> `Complete` until final exact-head acceptance and merge (three-controller
+> product RC PASS; owner disposition sufficient). Post-MVP arcs still
 > require separate authorization.
 
 > **Phase 2B design direction is accepted program guidance (2026-08-03).**
@@ -53,7 +54,8 @@ the round-based engine direction into it.
 > authority by themselves. Phase 2B is **not** a numbered MVP slice. Slice 19 is
 > now `Complete` via PR #50. Slice 20 is now `Complete` via PR #52. The next
 > planned frontier under delivery is Slice 21 — Sony Buzz Supported-Profile
-> Operationalization (authorized; **not** Complete; final four-handset RC owed).
+> Operationalization (authorized; **not** Complete; three-controller RC PASS;
+> pairing-friction UX reconciliation; final exact-head acceptance owed).
 
 ## Product direction (approved)
 
@@ -141,7 +143,7 @@ systems.
 | 18  | **Audience Display System** | Accepted Phase 2B audience-display implementation; privacy tests; prefer public wire 8. **(`Complete` — squash-merged via PR #46 at `91c7708…` from reviewed head `bd946f3…`.)** | 14, 17 |
 | 19  | **Self-Contained Portable Packs** | Versioned offline pack of canonical JSON + local media; safe import/export; round-trip proof. **Complete — squash-merged via PR #50 at `95573e2…` from exact reviewed head `972c07b…`; see ADR-017.** | 4, 11, 12 |
 | 20  | **Spreadsheet Authoring Seed** | Classic Board and Board+Final workbooks → draft → teacher approval → canonical JSON → existing importer. **Complete — squash-merged via PR #52 at `86e8f5e…` from accepted head `45142b9…`; see ADR-018.** | 4, 5, 12, 14 |
-| 21  | **Sony Buzz Supported-Profile Operationalization** | One exact supported profile (macOS/Chrome/Namtai `Wbuzz` `054c:1000`/4 handsets/keyboard fallback); permanent keep-alive. **In delivery — not Complete; final four-handset physical RC owed (handset #3 / group 15–19). See ADR-019.** | 9, 10, 13 |
+| 21  | **Sony Buzz Supported-Profile Operationalization** | One exact supported profile (macOS/Chrome/Namtai `Wbuzz` `054c:1000`/four-slot design/keyboard fallback); permanent keep-alive. **In delivery — three-controller product RC PASS; owner disposition sufficient; pairing-friction UX reconciliation; not Complete until final acceptance + merge. See ADR-019.** | 9, 10, 13 |
 | 22  | **Minimal Presentation Audio** | Bounded application-owned non-authoritative live cues (buzz/claim, award, incorrect, timer expiry, game complete); host mute/volume; offline licensing-safe assets; visual parity. | 18 (arch); sequenced after 21 |
 | 23  | **Classroom Release Qualification** | Teacher-reliant classroom proof incl. Slice 22 audio gates and Phase 2B visual-fidelity calibration; no new architecture or features; Pi 5 observational only. | 15–22 |
 
@@ -1422,10 +1424,11 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
 - **Impact:** schema no · public-wire no · storage **yes** · UI **yes** ·
   hardware **yes** · deployment possibly.
 - **Status:** `In delivery` — authorized implementation under
-  `AUTHORIZE-CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE-IMPLEMENTATION-1`; **not**
-  `Complete` until final four-handset physical RC and merge. ADR-019 proposed.
-- **Owner gate:** final RC + independent exact-head acceptance before merge;
-  infeasibility escalation is owner-only.
+  `AUTHORIZE-CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE-IMPLEMENTATION-1`;
+  three-controller product RC **PASS**; pairing-friction UX reconciliation;
+  **not** `Complete` until final exact-head acceptance and merge. ADR-019.
+- **Owner gate:** final exact-head acceptance before merge; infeasibility
+  escalation is owner-only.
 
 ### Slice 22 — Minimal Presentation Audio
 

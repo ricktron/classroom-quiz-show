@@ -73,11 +73,17 @@ audience-display sequence
 **Recommended next action:** Slice 21 — Sony Buzz Supported-Profile
 Operationalization has an authorized implementation candidate under
 `AUTHORIZE-CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE-IMPLEMENTATION-1` (exact base
-`0433f30d9a950d0a196feaf5bb7a57411df77e37`). Slice 21 is **not** `Complete`:
-**FINAL FOUR-HANDSET PHYSICAL RC: OWED** (handset #3 / group `15–19`). Advance
-via independent exact-head acceptance, then physical RC on the accepted exact
-head before merge. See ADR-019 and
+`0433f30d9a950d0a196feaf5bb7a57411df77e37`). Three-controller physical product
+RC **PASS** (`CQS-SLICE-21-PR55-THREE-CONTROLLER-PRODUCT-RC-ES-1`); owner
+accepted three available handsets as sufficient for Slice 21 completion
+(groups `0–4` / `5–9` / `10–14`; fourth slot historical / owner-accepted).
+Pairing-friction UX reconciliation is in delivery on PR #55. Slice 21 is
+**not** `Complete` until final exact-head independent acceptance and merge. See
+ADR-019 and
 [`../receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md`](../receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md).
+**Future product delta (Program Orchestrator):** Buzzer Check / Controller
+Tutorial minigame (reaction-time warm-up, full-button teach-in) remains
+out-of-scope for this repair.
 Do **not** begin Slice 22 audio, Slice 23 qualification, or post-MVP work from
 this handoff alone. Theme song remains post-MVP. `CQS-OD-066` remains
 unresolved. The inherited Final mid-refresh recovery flake remains unresolved

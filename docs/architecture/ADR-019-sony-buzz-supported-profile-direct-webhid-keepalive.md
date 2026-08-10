@@ -1,14 +1,18 @@
 # ADR-019 — Sony Buzz supported profile (direct WebHID keep-alive)
 
-- **Status:** Proposed — implementation in progress on
-  `feat/slice-21-sony-buzz-supported-profile` (not merge-complete; four-handset
-  physical RC owed)
-- **Date:** 2026-08-09
+- **Status:** Accepted for three-controller product RC + pairing-friction UX
+  reconciliation on `feat/slice-21-sony-buzz-supported-profile` (PR #55 open;
+  **not** merge-complete; **not** Slice `Complete` until final exact-head
+  acceptance and merge)
+- **Date:** 2026-08-09 (owner three-controller disposition + pairing UX
+  reconciled 2026-08-10)
 - **Slice:** 21 — Sony Buzz Supported-Profile Operationalization
 - **Authorization:**
   `AUTHORIZE-CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE-IMPLEMENTATION-1`
 - **Evidence state:**
-  `CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE-IMPLEMENTATION-ES-1`
+  `CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE-IMPLEMENTATION-ES-1`;
+  three-controller product RC
+  `CQS-SLICE-21-PR55-THREE-CONTROLLER-PRODUCT-RC-ES-1` (**PASS**)
 - **Depends on:** [ADR-009](ADR-009-generic-gamepad-adapter.md),
   [ADR-010](ADR-010-sony-buzz-profile-and-setup.md),
   [ADR-013](ADR-013-local-persistence-recovery.md),
@@ -46,13 +50,34 @@ keep-alive ownership.
 | Nominal cadence | ≈ 2000 ms (not a guaranteed browser deadline) |
 | Strong soak | 271 sends / 0 failures / 0 overlaps |
 | Background | substantial hidden-tab sends; large timer gaps possible |
-| Groups | `0–4`, `5–9`, `10–14` observed; `15–19` **UNTESTED / FINAL RC OWED** |
+| Groups | Discovery observed `0–4`, `5–9`, `10–14`; `15–19` untested in discovery |
 | Replug | Gamepad index `0 → 1`; WebHID reacquisition succeeded |
 | Already-open | `InvalidStateError: The device is already open.` observed; converge safely |
 | USB hub replug | observed once — **not** a general hub-support claim |
 
-Physical handset #3 / browser group `15–19` remains final RC owed and blocks
-final four-handset support certification and merge authorization.
+### Owner three-controller product RC disposition (2026-08-10)
+
+Physical product RC on exact head `3b0e97fce8edfbd7f007c9eacbf6ba5873444d1e`
+(`CQS-SLICE-21-PR55-THREE-CONTROLLER-PRODUCT-RC-ES-1`) **PASS** with three
+available handsets:
+
+| Handset | Group | Status |
+| --- | --- | --- |
+| #1 | `0–4` | Fresh product RC |
+| #2 | `5–9` | Fresh product RC |
+| #4 | `10–14` | Fresh product RC |
+| (unavailable #3) | `15–19` / slot 4 | Historical / owner-accepted — **not** a fresh four-handset claim |
+
+Owner accepted three-controller RC as **sufficient for Slice 21 completion**
+pending final exact-head acceptance review and merge. Do not claim all four
+slots were freshly product-tested.
+
+Pairing/recovery friction was a material usability finding (WebHID `healthy`
+≠ controllers transmitting; incorrect BIND+Red recovery superseded by set-level
+solid-blue-then-BIND). No core transport/input product defect was found.
+Teacher UX must separate receiver transport, controller-input readiness, and
+team-mapping readiness, and expose a guided “Repair controller connection”
+flow using existing Disable → pair → Connect controls.
 
 ## Decision
 
@@ -121,7 +146,7 @@ Static product recipe (slots, not physical handset numbers):
 slot 1: 0–4
 slot 2: 5–9
 slot 3: 10–14
-slot 4: 15–19   # final RC owed until four-handset certification
+slot 4: 15–19   # four-slot design; fresh RC covered three available handsets
 ```
 
 Within each group: Red=base, Yellow=+1, Green=+2, Orange=+3, Blue=+4.
@@ -156,11 +181,15 @@ reactivating older decisions.
 
 ### 9. Host UX and keyboard fallback
 
-Progressive disclosure: Status, Connect/Enable, team assignments, test buttons,
-keyboard fallback note, advanced diagnostics. Permission only via deliberate
-Connect. Keyboard buzzing remains available in every Sony health/failure state.
+Progressive disclosure: teacher readiness layers (receiver / controllers /
+mapping), Connect/Disable, Repair controller connection (guided set-level
+pairing), team assignments, Buzzer Check (non-gameplay diagnostic), keyboard
+fallback note, advanced diagnostics. Permission only via deliberate Connect.
+Keyboard buzzing remains available in every Sony health/failure state.
 Zero-team games show a Controllers empty state pointing to teams-bearing import
 rather than hiding Controllers entirely.
+
+Receiver `healthy` alone is never “Sony Buzz ready.”
 
 ### 10. Privacy
 
@@ -170,9 +199,11 @@ completed summaries.
 
 ### 11. Support boundary and nonclaims
 
-Supported statement (when certified) must identify Namtai wireless Wbuzz
-`054c:1000`, four paired wireless handsets, tested macOS/build, tested Chrome,
-exact CQS candidate/release, and keyboard fallback.
+Supported statement (when merge-complete) must identify Namtai wireless Wbuzz
+`054c:1000`, the four-slot profile design, tested macOS/build, tested Chrome,
+exact CQS candidate/release, keyboard fallback, and the owner three-controller
+fresh-RC disposition (groups `0–4` / `5–9` / `10–14`) without claiming a fresh
+fourth-handset product RC.
 
 Explicit nonclaims: wired `054c:0002`; other Sony/Namtai/Buzz hardware; arbitrary
 USB hubs; Windows; Linux; Raspberry Pi; Safari; Firefox; Edge; ChromeOS; mobile
@@ -180,10 +211,16 @@ OSes; guaranteed 2-second background cadence.
 
 ### 12. RC requirements
 
-Final independent acceptance for merge requires four-handset physical RC on the
-exact candidate head, including group `15–19` / physical handset #3. Product
-changes affecting HID/lifecycle/Gamepad/mapping/persistence/setup/input after RC
-require affected physical retest.
+Three-controller physical product RC on exact head `3b0e97f…` is **PASS**
+(`CQS-SLICE-21-PR55-THREE-CONTROLLER-PRODUCT-RC-ES-1`). Owner disposition:
+sufficient for Slice 21 completion. Final merge still requires exact-head
+independent acceptance review of the current candidate (including pairing-
+friction UX reconciliation) — not a mandatory fresh four-handset RC.
+
+Product changes affecting HID/lifecycle/Gamepad/mapping/persistence/setup/input
+semantics after RC require affected physical retest. Teacher-copy / readiness /
+guided-repair UX alone may transfer the completed three-controller RC when
+transport and input semantics are unchanged.
 
 ### 13. Version consequences
 
@@ -200,13 +237,16 @@ require affected physical retest.
 ### 14. Non-goals
 
 Slice 22 audio; Slice 23 qualification; phone/network buzzers; WebHID gameplay
-input; multiple-choice Sony mechanics; buzzer/reaction/timer minigames; broad
-hardware libraries; rewriting OADL2 history; repairing inherited Final refresh
-flake; consuming `CQS-OD-066`.
+input; multiple-choice Sony mechanics; Buzzer Check / Controller Tutorial
+minigame (reaction-time scoring, timer warm-up, competition results — retain as
+future Program Orchestrator product delta); broad hardware libraries; rewriting
+OADL2 history; repairing inherited Final refresh flake; consuming `CQS-OD-066`.
 
 ## Consequences
 
 - Teachers get an in-app Connect → keep-alive → slot→team → save path for the
-  exact Wbuzz profile without shell helpers.
-- Merge remains gated on four-handset physical RC.
+  exact Wbuzz profile without shell helpers, plus readiness layers and a guided
+  Repair controller connection flow that reuses Disable → Connect.
+- Merge remains gated on final exact-head acceptance — not on fabricating a
+  fourth fresh handset RC after owner three-controller disposition.
 - ADR-010 candidate/manual capture remains available as advanced diagnosis.

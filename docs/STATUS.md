@@ -516,9 +516,14 @@ certification is claimed. No ADR was warranted.
 **Current next action (repository frontier):** Slice 21 — Sony Buzz
 Supported-Profile Operationalization has an authorized implementation candidate
 under `AUTHORIZE-CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE-IMPLEMENTATION-1`
-(exact base `0433f30d9a950d0a196feaf5bb7a57411df77e37`). Slice 21 is **not**
-`Complete`: final four-handset physical RC (handset #3 / group `15–19`) remains
-**OWED** before merge authorization. See ADR-019 and
+(exact base `0433f30d9a950d0a196feaf5bb7a57411df77e37`). Three-controller
+physical product RC **PASS**
+(`CQS-SLICE-21-PR55-THREE-CONTROLLER-PRODUCT-RC-ES-1` on head `3b0e97f…`);
+owner accepted three available handsets as sufficient (groups `0–4` / `5–9` /
+`10–14`; slot 4 / `15–19` historical / owner-accepted — not a fresh four-handset
+claim). Pairing-friction UX reconciliation is in delivery on PR #55. Slice 21 is
+**not** `Complete` until final exact-head independent acceptance and merge. See
+ADR-019 and
 [`receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md`](receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md).
 Slice 22 Minimal Presentation Audio remains `Planned` / unauthorized. Slice 20
 is `Complete` via PR #52; Slice 19 is `Complete` via PR #50. No further Phase 3
@@ -1826,15 +1831,16 @@ that reconciliation adds evidence only and grants **no** product authority.
 **Current** MVP count is the **23-slice** plan.
 
 **Recommended next action:**
-advance the Slice 21 implementation candidate through independent exact-head
-acceptance, then complete **final four-handset physical RC** on that accepted
-exact head (physical handset #3 / browser group `15–19`) before merge. Slice 21
-is authorized but **not** `Complete`. Do **not** begin Slice 22 audio, Slice 23
-qualification, or post-MVP work from this surface. Slice 20 is terminally
-`Complete`. Post-MVP arcs remain inactive; theme song remains post-MVP;
-`CQS-OD-066` remains unresolved; the inherited Final mid-refresh recovery flake
-remains unresolved. Phase 3 readiness has served the theme-foundation →
-audience-display sequence.
+advance the Slice 21 pairing-friction UX reconciliation / current PR #55 head
+through **final exact-head independent acceptance**, then merge authorization
+preparation. Three-controller physical product RC is **PASS** (owner disposition
+sufficient; fourth slot historical / owner-accepted — not a fresh four-handset
+claim). Slice 21 is authorized but **not** `Complete` until that acceptance and
+merge. Do **not** begin Slice 22 audio, Slice 23 qualification, or post-MVP work
+from this surface. Slice 20 is terminally `Complete`. Post-MVP arcs remain
+inactive; theme song remains post-MVP; `CQS-OD-066` remains unresolved; the
+inherited Final mid-refresh recovery flake remains unresolved. Phase 3 readiness
+has served the theme-foundation → audience-display sequence.
 
 **Roadmap Amendment 003 (`CQS-PLAN-S02`) delivery and post-merge
 reconciliation remain complete on `main`** (PR #35 squash `2ebeb240…`; PR #36

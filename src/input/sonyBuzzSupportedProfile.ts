@@ -59,7 +59,8 @@ export const SONY_BUZZ_COLOR_OFFSET: Readonly<Record<SonyBuzzColor, number>> = {
 
 /**
  * Four handset *slots* (not physical handset numbers).
- * Bases: 0, 5, 10, 15. Slot 4 (15–19) is final RC owed until four-handset cert.
+ * Bases: 0, 5, 10, 15. Fresh product RC certified groups 0–4 / 5–9 / 10–14;
+ * slot 4 (15–19) remains historical / owner-accepted for Slice 21 completion.
  */
 export const SONY_BUZZ_SLOT_BASES: readonly number[] = [0, 5, 10, 15] as const
 
@@ -231,5 +232,15 @@ export function materializeSupportedProfileMapping(args: {
   return { ok: true, mapping: validated.mapping }
 }
 
+/**
+ * Owner disposition after three-controller product RC
+ * (`CQS-SLICE-21-PR55-THREE-CONTROLLER-PRODUCT-RC-ES-1`).
+ *
+ * Do not claim all four slots were freshly product-tested.
+ */
 export const SONY_BUZZ_RC_OWED_NOTE =
-  'Physical handset slot group 15–19 (slot 4) remains UNTESTED / FINAL RC OWED until four-handset certification on the exact candidate head.'
+  'Four-slot Namtai Wbuzz 054c:1000 profile design. Fresh product RC used three available handsets (groups 0–4, 5–9, 10–14). Slot 4 / group 15–19 remains historical / owner-accepted — not a fresh four-handset claim. Owner accepted three-controller RC as sufficient for Slice 21 completion.'
+
+/** Short teacher-facing note for slot UI (no “final RC owed” gate language). */
+export const SONY_BUZZ_SLOT4_TEACHER_NOTE =
+  'Slot 4 is part of the four-slot profile design. Fresh RC covered three available controllers; assign Slot 4 only when that handset is present.'

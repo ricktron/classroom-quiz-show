@@ -423,15 +423,15 @@ test('simulated Sony Buzz candidate supports setup capture, apply, and test mode
   await expect(host.getByTestId('sbs-status')).toContainText(/Applied handset profile/i)
   await expect(host.getByTestId('gih-control-basalts')).toContainText('Controller 1 · button 1')
 
-  // Test mode reports presses and does not change gameplay on host or display.
-  // Entering test mode re-primes — wait for a baseline poll before pressing.
+  // Buzzer Check reports presses and does not change gameplay on host or display.
+  // Entering Buzzer Check re-primes — wait for a baseline poll before pressing.
   await host.getByTestId('sbs-test-mode').click()
-  await expect(host.getByTestId('sbs-test-outcome')).toContainText(/Test mode is on/i)
+  await expect(host.getByTestId('sbs-test-outcome')).toContainText(/Buzzer Check is on/i)
   await settleGamepadPolls(host)
   await pressSimulatedGamepadButton(host, 0)
-  await expect(host.getByTestId('sbs-test-outcome')).toContainText(/Test:/i, { timeout: 10_000 })
+  await expect(host.getByTestId('sbs-test-outcome')).toContainText(/Buzzer Check:/i, { timeout: 10_000 })
   await expect(host.getByTestId('gih-outcome')).toContainText(/no gameplay change/i)
-  // Test mode must not accept a buzz into the queue or project an active respondent.
+  // Buzzer Check must not accept a buzz into the queue or project an active respondent.
   await expect(host.getByTestId('lih-active')).toContainText(/Nobody has buzzed yet/i)
   await expect(display.getByTestId('bqd-active')).toHaveCount(0)
   await expect(display.getByTestId('tsb-score-t0')).toHaveText('0')

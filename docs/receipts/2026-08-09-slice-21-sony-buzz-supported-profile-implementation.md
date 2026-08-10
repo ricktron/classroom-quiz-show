@@ -20,12 +20,20 @@
 
 Implementation delivered for review. Slice 21 is **not Complete**.
 
-```text
-FINAL FOUR-HANDSET PHYSICAL RC: OWED
-```
+Historical note at receipt close: `FINAL FOUR-HANDSET PHYSICAL RC: OWED` was the
+then-current gate language. **Do not rewrite that historical row away.**
 
-Physical handset #3 / browser group `15–19` remains untested on the candidate
-head. Do not issue final independent acceptance for merge until RC completes.
+### Later disposition (additive; 2026-08-10)
+
+Three-controller product RC **PASS** on exact head
+`3b0e97fce8edfbd7f007c9eacbf6ba5873444d1e`
+(`CQS-SLICE-21-PR55-THREE-CONTROLLER-PRODUCT-RC-ES-1`). Owner accepted three
+available handsets as sufficient for Slice 21 completion (groups `0–4` / `5–9` /
+`10–14`). Slot 4 / group `15–19` remains historical / owner-accepted — **not** a
+fresh four-handset claim. Incorrect BIND+Red recovery was superseded by
+set-level solid-blue-then-BIND; pairing remained a material usability friction
+finding with **no** core product defect. Pairing-friction UX reconciliation
+follows on the same PR lane.
 
 ## Synthetic / CI evidence
 
