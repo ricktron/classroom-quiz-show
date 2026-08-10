@@ -1,6 +1,7 @@
 # Status
 
-**Current completed product slice:** Slice 20 — Spreadsheet Authoring Seed
+**Current completed product slice:** Slice 21 — Sony Buzz
+Supported-Profile Operationalization
 **Slice 20 state:** **Complete** — PR
 [#52](https://github.com/ricktron/classroom-quiz-show/pull/52) was exact-head
 squash-merged at `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0` (merged
