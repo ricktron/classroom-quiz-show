@@ -178,7 +178,10 @@ a Slice 22 repair target.
 ## PR
 
 - **PR:** [#58](https://github.com/ricktron/classroom-quiz-show/pull/58)
-- **Exact PR head SHA:** `dcbc357bf1a4ac96a1228f682632fb04414b23a5`
-- **Commits:** `5610c407f5aa2f87715d3c4355cf95c7e4f41912`, `dcbc357bf1a4ac96a1228f682632fb04414b23a5`
+- **Commits on branch:**
+  - `5610c407f5aa2f87715d3c4355cf95c7e4f41912` — implementation
+  - `dcbc357bf1a4ac96a1228f682632fb04414b23a5` — README in-review routing
+  - `4ad264251c073f83389120a778a770d2d3a9e14c` — receipt PR metadata
+- **Exact PR head SHA:** re-observe branch tip at review time (`git rev-parse origin/feat/slice-22-minimal-presentation-audio`)
 - **Draft:** no
 - **Merge:** not authorized by this receipt
