@@ -1,16 +1,30 @@
 # ADR-020 — Minimal presentation audio
 
-- **Status:** Proposed (implementation PR; not yet Accepted/merged)
+- **Status:** Accepted — merged via PR #58
 - **Date:** 2026-08-10
+- **Accepted:** 2026-08-10 (implementation PR
+  [#58](https://github.com/ricktron/classroom-quiz-show/pull/58); accepted exact
+  head `5def971d4c9884c81796d5769b263bae84ee4dc1`; squash
+  `e69e81b07979ca03da798037fb2a935cca35f7b9`; merged **2026-08-10T21:55:12Z**;
+  sole parent `dd2fd4a09b20764f69505bbd76a96782cc895453`; trees identical at
+  `66125483f04f2a942ce93dd2c8f818addbeb5363`; owner listening RC
+  `CQS-SLICE-22-PR58-OWNER-LISTENING-RC-ES-1` **PASS**; terminal post-merge
+  verification **PASS** (CI `31436040805`; Pages `31436040772`); post-merge
+  reconciliation
+  [`../receipts/2026-08-10-slice-22-post-merge-canonical-reconciliation.md`](../receipts/2026-08-10-slice-22-post-merge-canonical-reconciliation.md))
 - **Slice:** 22 — Minimal Presentation Audio
 - **Authorization:**
-  `AUTHORIZE-CQS-SLICE-22-MINIMAL-PRESENTATION-AUDIO-IMPLEMENTATION-2`
-  (repair:
-  `AUTHORIZE-CQS-SLICE-22-PR58-INDEPENDENT-EXACT-HEAD-REVIEW-REPAIR-1`)
+  `AUTHORIZE-CQS-SLICE-22-MINIMAL-PRESENTATION-AUDIO-IMPLEMENTATION-2`,
+  `AUTHORIZE-CQS-SLICE-22-PR58-INDEPENDENT-EXACT-HEAD-REVIEW-REPAIR-1`,
+  `AUTHORIZE-CQS-SLICE-22-PR58-OWNER-LISTENING-RC-ACCEPTANCE-1`,
+  `AUTHORIZE-CQS-SLICE-22-POST-MERGE-CANONICAL-RECONCILIATION-1`
 - **Evidence state:**
-  `CQS-SLICE-22-MINIMAL-PRESENTATION-AUDIO-IMPLEMENTATION-ES-2`
-  (repair evidence:
-  `CQS-SLICE-22-PR58-INDEPENDENT-REVIEW-REPAIR-ES-1`)
+  `CQS-SLICE-22-MINIMAL-PRESENTATION-AUDIO-IMPLEMENTATION-ES-2`;
+  repair `CQS-SLICE-22-PR58-INDEPENDENT-REVIEW-REPAIR-ES-1`;
+  owner listening `CQS-SLICE-22-PR58-OWNER-LISTENING-RC-ES-1` (**PASS**);
+  terminal post-merge
+  `CQS-SLICE-22-PR58-TERMINAL-POST-MERGE-VERIFICATION-ES-1` (**PASS**);
+  reconciliation `CQS-SLICE-22-POST-MERGE-CANONICAL-RECONCILIATION-ES-1`
 - **Depends on:** accepted gameplay facts already owned by Slices 2–18
   (buzz queue, scoring, timers, Final settlement, session end); PWA
   precache (Slice 1); host session-store lifecycle

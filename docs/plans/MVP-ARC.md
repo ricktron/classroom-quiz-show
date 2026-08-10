@@ -25,7 +25,9 @@ the round-based engine direction into it.
 > `b9e30be96af7d2276cae310ef2601cad4424a635` (merged **2026-08-07T18:15:39Z**).
 > Merge evidence:
 > [`../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md`](../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md).
-> Slices 1–21 remain `Complete` (Slice 21 via PR #55 squash
+> Slices 1–22 remain `Complete` (Slice 22 via PR #58 squash
+> `e69e81b07979ca03da798037fb2a935cca35f7b9` from accepted head
+> `5def971d4c9884c81796d5769b263bae84ee4dc1`; Slice 21 via PR #55 squash
 > `b1e6d669e91b55b20261e86a47d7818f069b0252` from accepted head
 > `3bd6c91330298c4374db137e3ce220e0d28a5c2f`; Slice 20 via PR #52 squash
 > `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0` from accepted head
@@ -34,11 +36,9 @@ the round-based engine direction into it.
 > `972c07ba61042401f71c999b959a15997e3fbe51`; Slice 18 via PR #46 squash
 > `91c7708626caeaa28b15617a1f0938f4944f7680`; Slice 17 via PR #44 squash
 > `dee2f3c219f9e60113a374ce0ec876ae20c40bc1`; Slice 16 via PR #40 squash
-> `bc3cea65cab8db1481b0b2420be580cc69932f3d`); Slices 22–23 remain `Planned`
-> and unauthorized. Slice 21 three-controller product RC PASS with owner
-> disposition sufficient (fresh groups `0–4` / `5–9` / `10–14`; slot 4
-> historical / owner-accepted). Post-MVP arcs still require separate
-> authorization.
+> `bc3cea65cab8db1481b0b2420be580cc69932f3d`); Slice 23 remains `Planned` and
+> unauthorized / not started. Slice 22 owner listening RC PASS. Post-MVP arcs
+> still require separate authorization.
 
 > **Phase 2B design direction is accepted program guidance (2026-08-03).**
 > The accepted audience-display design direction is registered in
@@ -55,9 +55,10 @@ the round-based engine direction into it.
 > 003, and Phase 3 readiness never granted Slice 18 (or Slice 19) implementation
 > authority by themselves. Phase 2B is **not** a numbered MVP slice. Slice 19 is
 > now `Complete` via PR #50. Slice 20 is now `Complete` via PR #52. Slice 21 is
-> now `Complete` via PR #55. The next planned frontier is Slice 22 — Minimal
-> Presentation Audio (`Planned` / unauthorized; requires separate owner
-> authorization).
+> now `Complete` via PR #55. Slice 22 is now `Complete` via PR #58. The next
+> planned frontier is Slice 23 — Classroom Release Qualification (`Planned` /
+> unauthorized / not started; requires separate Program Orchestrator
+> authority).
 
 ## Product direction (approved)
 
@@ -119,10 +120,10 @@ systems.
 > [`../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md`](../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md).
 > **No product implementation is authorized by Amendment 004.** Slice 19 has
 > since been delivered via PR #50. Slice 20 has since been delivered via PR #52.
-> Slice 21 has since been delivered via PR #55. **Current** unauthorized product
-> frontiers are Slices 22–23; the next planned product frontier is Slice 22,
-> which remains unauthorized and requires separate owner authorization before
-> implementation.
+> Slice 21 has since been delivered via PR #55. Slice 22 has since been delivered
+> via PR #58. **Current** unauthorized product frontier is Slice 23; the next
+> planned product frontier is Slice 23, which remains unauthorized / not started
+> and requires separate Program Orchestrator authority before implementation.
 
 | #   | Slice                          | Focus (summary)                                                                 | Depends on |
 | --- | ------------------------------ | ------------------------------------------------------------------------------- | ---------- |
@@ -147,7 +148,7 @@ systems.
 | 19  | **Self-Contained Portable Packs** | Versioned offline pack of canonical JSON + local media; safe import/export; round-trip proof. **Complete — squash-merged via PR #50 at `95573e2…` from exact reviewed head `972c07b…`; see ADR-017.** | 4, 11, 12 |
 | 20  | **Spreadsheet Authoring Seed** | Classic Board and Board+Final workbooks → draft → teacher approval → canonical JSON → existing importer. **Complete — squash-merged via PR #52 at `86e8f5e…` from accepted head `45142b9…`; see ADR-018.** | 4, 5, 12, 14 |
 | 21  | **Sony Buzz Supported-Profile Operationalization** | One exact supported profile (macOS/Chrome/Namtai `Wbuzz` `054c:1000`/four-slot design/keyboard fallback); permanent keep-alive. **Complete — exact-head squash-merged via PR #55 (`b1e6d66…`) from accepted head `3bd6c91…`. Three-controller product RC PASS; owner disposition sufficient. See ADR-019.** | 9, 10, 13 |
-| 22  | **Minimal Presentation Audio** | Bounded application-owned non-authoritative live cues (buzz/claim, award, incorrect, timer expiry, game complete); host mute/volume; offline licensing-safe assets; visual parity. **In implementation review** (not Complete). | 18 (arch); sequenced after 21 |
+| 22  | **Minimal Presentation Audio** | Bounded application-owned non-authoritative live cues (buzz/claim, award, incorrect, timer expiry, game complete); host mute/volume; offline licensing-safe assets; visual parity. **Complete — exact-head squash-merged via PR #58 (`e69e81b…`) from accepted head `5def971…`; owner listening RC PASS; see ADR-020.** | 18 (arch); sequenced after 21 |
 | 23  | **Classroom Release Qualification** | Teacher-reliant classroom proof incl. Slice 22 audio gates and Phase 2B visual-fidelity calibration; no new architecture or features; Pi 5 observational only. | 15–22 |
 
 Additional round engines (image-identification, timeline-ordering, matching,
@@ -729,11 +730,13 @@ head `d8f6308eccea5144ab1c6b5f49afdfcc2b7d5b5b` (authorized base
 [#52](https://github.com/ricktron/classroom-quiz-show/pull/52) at
 `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0`. **Slice 21 is `Complete`** via PR
 [#55](https://github.com/ricktron/classroom-quiz-show/pull/55) at
-`b1e6d669e91b55b20261e86a47d7818f069b0252`. Slices 22–23 remain `Planned` and
-unauthorized under the 23-slice plan (Amendment 004; Amendment 003 delivery
-merged at `2ebeb240…`; post-merge reconciliation merged at `da6b4dc…`).
-Immediate next action: return to the Program Orchestrator to obtain separate
-authorization for Slice 22 — **not** implementation from this surface alone.
+`b1e6d669e91b55b20261e86a47d7818f069b0252`. **Slice 22 is `Complete`** via PR
+[#58](https://github.com/ricktron/classroom-quiz-show/pull/58) at
+`e69e81b07979ca03da798037fb2a935cca35f7b9`. Slice 23 remains `Planned` and
+unauthorized / not started under the 23-slice plan (Amendment 004; Amendment 003
+delivery merged at `2ebeb240…`; post-merge reconciliation merged at `da6b4dc…`).
+Immediate next action: return to the Program Orchestrator for separate Slice 23
+authority — **not** qualification from this surface alone.
 
 ## Slice 8 — scope, acceptance, non-goals
 
@@ -1090,9 +1093,12 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   [#52](https://github.com/ricktron/classroom-quiz-show/pull/52) at
   `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0`. Slice 21 is **`Complete`** via PR
   [#55](https://github.com/ricktron/classroom-quiz-show/pull/55) at
-  `b1e6d669e91b55b20261e86a47d7818f069b0252`. Slices 22–23 remain `Planned` and
-  unauthorized. Immediate action: return to the Program Orchestrator to obtain
-  separate authorization for Slice 22 — stop before unauthorized implementation.
+  `b1e6d669e91b55b20261e86a47d7818f069b0252`. Slice 22 is **`Complete`** via PR
+  [#58](https://github.com/ricktron/classroom-quiz-show/pull/58) at
+  `e69e81b07979ca03da798037fb2a935cca35f7b9`. Slice 23 remains `Planned` and
+  unauthorized / not started. Immediate action: return to the Program
+  Orchestrator for separate Slice 23 authority — stop before unauthorized
+  qualification.
 
 ### Slice 12 — Portable export & round-trip import
 
@@ -1465,8 +1471,14 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   assets only · game authority no.
 - **Completion evidence:** `verify:all` green; mute + stale/repeated cue tests;
   no unapproved contract/version changes.
-- **Status:** `Planned` — unstarted / unauthorized.
-- **Owner gate:** separate authorization to begin implementation.
+- **Status:** `Complete` — exact-head squash-merged via PR #58 at
+  `e69e81b07979ca03da798037fb2a935cca35f7b9` from accepted head
+  `5def971d4c9884c81796d5769b263bae84ee4dc1` (merged **2026-08-10T21:55:12Z**);
+  owner listening RC **PASS**; ADR-020 **Accepted**; terminal post-merge
+  verification **PASS**; canonical reconciliation receipt
+  [`../receipts/2026-08-10-slice-22-post-merge-canonical-reconciliation.md`](../receipts/2026-08-10-slice-22-post-merge-canonical-reconciliation.md).
+- **Owner gate:** satisfied for product delivery; no further Slice 22 product
+  lane owed.
 
 ### Slice 23 — Classroom Release Qualification
 

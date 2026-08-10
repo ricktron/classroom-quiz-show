@@ -530,10 +530,17 @@ Exact supported profile `cqs.sony-buzz.namtai-wbuzz-wireless.v1` (Namtai wireles
 Wbuzz `054c:1000`); direct WebHID keep-alive; Gamepad gameplay input; keyboard
 fallback; IndexedDB **4**; ADR-019. Three-controller physical product RC
 **PASS** (groups `0–4` / `5–9` / `10–14`; slot 4 / `15–19` historical /
-owner-accepted — not a fresh four-handset claim). Slices 1–21 are Complete.
-Slice 22 Minimal Presentation Audio is **in implementation review** (not
-Complete; owner listening RC pending; see ADR-020). Slice 23 Classroom Release
-Qualification remains Planned and unauthorized under the **23-slice** MVP plan
+owner-accepted — not a fresh four-handset claim). **Slice 22 — Minimal
+Presentation Audio is `Complete`** via PR
+[#58](https://github.com/ricktron/classroom-quiz-show/pull/58) exact-head squash
+`e69e81b07979ca03da798037fb2a935cca35f7b9` from accepted head
+`5def971d4c9884c81796d5769b263bae84ee4dc1` (merged **2026-08-10T21:55:12Z**).
+Host-only presentation cues (`active-claim` · `positive-award` · `incorrect` ·
+`timer-expired` · `game-complete`); Enable Sound / mute / volume (default
+**0.35**); five original offline WAVs; ADR-020. Owner listening RC **PASS**.
+**PR #58 requires no further product review or merge action.** Slices 1–22 are
+Complete. Slice 23 Classroom Release Qualification remains Planned and
+unauthorized / not started under the **23-slice** MVP plan
 ([`docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md);
 prior Amendment 003:
 [`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
@@ -541,6 +548,8 @@ Theme song remains post-MVP. The inherited Final mid-refresh recovery flake
 remains unresolved; `CQS-OD-066` remains unresolved. See
 [`docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md`](docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md),
 [`docs/architecture/ADR-020-minimal-presentation-audio.md`](docs/architecture/ADR-020-minimal-presentation-audio.md),
+[`docs/receipts/2026-08-10-slice-22-minimal-presentation-audio-implementation.md`](docs/receipts/2026-08-10-slice-22-minimal-presentation-audio-implementation.md),
+[`docs/receipts/2026-08-10-slice-22-post-merge-canonical-reconciliation.md`](docs/receipts/2026-08-10-slice-22-post-merge-canonical-reconciliation.md),
 and
 [`docs/receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md`](docs/receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md).
 

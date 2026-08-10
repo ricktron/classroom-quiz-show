@@ -9,9 +9,9 @@
   `dd2fd4a09b20764f69505bbd76a96782cc895453`
   (`docs(slice-21): repair current status declaration (#57)`)
 - **Branch:** `feat/slice-22-minimal-presentation-audio`
-- **Slice status claim:** implementation review-ready only — **not** canonically
-  Complete; owner listening RC accepted (evidence recorded); no merge
-  authorization implied
+- **Slice status claim (historical at implementation tip):** implementation
+  review-ready only — owner listening RC accepted before merge; product later
+  squash-merged via PR #58 (see **Terminal post-merge status** below)
 
 ## Preflight (observed before mutation)
 
@@ -218,9 +218,11 @@ current five asset bytes. Automated tests still do not substitute for owner
 listening; this record binds the RC to the exact pre-listening head and hashes
 above.
 
-Slice 22 remains **not** canonically Complete before merge. No merge
-authorization is implied. Successor work (including any separate teacher host
-UX observation) is **not** part of this evidence record and was **not** started.
+At listening-acceptance time Slice 22 was **not** yet canonically Complete
+(merge still required). Successor work (including any separate teacher host UX
+observation) was **not** part of that evidence record and was **not** started.
+Terminal merge / Complete status is recorded in **Terminal post-merge status**
+below.
 
 ## Independent exact-head review repair
 
@@ -255,7 +257,8 @@ WAV assets / generator: **unchanged** (same five SHA-256 values as above).
 
 Owner listening RC was still **PENDING** at repair time; owner acceptance is
 recorded in **Owner listening RC** above against exact pre-listening head
-`f488c305…`. Slice 22 remains **not** Complete. Slice 23 **not** started.
+`f488c305…`. At repair time Slice 22 was still pre-merge. Slice 23 was **not**
+started (and remains not started after terminal merge).
 
 ### Repair verification (observed)
 
@@ -302,8 +305,37 @@ a Slice 22 repair target.
     through prior independently reviewed head
   - `c6ca619a4862018155829ddf59cc1c9272541531` — independent exact-head review
     repair (F-AUD-01 / F-TEST-01 / F-A11Y-01)
-  - subsequent docs commits record repair evidence only
-- **Exact PR head SHA:** re-observe branch tip
-  (`git rev-parse origin/feat/slice-22-minimal-presentation-audio`)
-- **Draft:** no
-- **Merge:** not authorized by this receipt
+  - subsequent docs commits record repair / listening evidence only
+  - final independently accepted exact head:
+    `5def971d4c9884c81796d5769b263bae84ee4dc1`
+- **Draft:** no (at merge)
+- **Merge:** completed — see **Terminal post-merge status**
+
+## Terminal post-merge status
+
+- **Guarded squash:** `e69e81b07979ca03da798037fb2a935cca35f7b9`
+- **Accepted exact head:** `5def971d4c9884c81796d5769b263bae84ee4dc1`
+- **Authorized pre-merge base / sole parent:**
+  `dd2fd4a09b20764f69505bbd76a96782cc895453`
+- **Merged:** **2026-08-10T21:55:12Z** (squash; server-side expected-head guard)
+- **Accepted-head / squash tree:** identical
+  (`66125483f04f2a942ce93dd2c8f818addbeb5363`); direct diff empty; **28** paths
+- **Owner listening RC:** **PASS**
+- **Terminal post-merge verification:** **PASS**
+  (`AUTHORIZE-CQS-SLICE-22-PR58-TERMINAL-POST-MERGE-VERIFICATION-1` /
+  `CQS-SLICE-22-PR58-TERMINAL-POST-MERGE-VERIFICATION-ES-1`)
+- **Post-merge CI:** run `31436040805` **success** — unit **2397** passed /
+  **1** skipped / **140** files; Playwright **355** passed / **14** skipped /
+  **3** inherited retry-resolved flaky / **0** terminal failures
+- **Pages:** run `31436040772` **success** (deployment `5840609387`,
+  `github-pages`)
+- **Canonical reconciliation authorization:**
+  `AUTHORIZE-CQS-SLICE-22-POST-MERGE-CANONICAL-RECONCILIATION-1` /
+  `CQS-SLICE-22-POST-MERGE-CANONICAL-RECONCILIATION-ES-1`
+- **ADR-020:** **Accepted — merged via PR #58**
+- **Slice 22 product delivery:** terminally **Complete** after post-merge
+  canonical reconciliation lands
+- **Durable reconciliation receipt:**
+  [`2026-08-10-slice-22-post-merge-canonical-reconciliation.md`](2026-08-10-slice-22-post-merge-canonical-reconciliation.md)
+- **PR #58:** requires no further product review or merge action
+- **Slice 23:** not started
