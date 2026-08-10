@@ -147,7 +147,7 @@ systems.
 | 19  | **Self-Contained Portable Packs** | Versioned offline pack of canonical JSON + local media; safe import/export; round-trip proof. **Complete — squash-merged via PR #50 at `95573e2…` from exact reviewed head `972c07b…`; see ADR-017.** | 4, 11, 12 |
 | 20  | **Spreadsheet Authoring Seed** | Classic Board and Board+Final workbooks → draft → teacher approval → canonical JSON → existing importer. **Complete — squash-merged via PR #52 at `86e8f5e…` from accepted head `45142b9…`; see ADR-018.** | 4, 5, 12, 14 |
 | 21  | **Sony Buzz Supported-Profile Operationalization** | One exact supported profile (macOS/Chrome/Namtai `Wbuzz` `054c:1000`/four-slot design/keyboard fallback); permanent keep-alive. **Complete — exact-head squash-merged via PR #55 (`b1e6d66…`) from accepted head `3bd6c91…`. Three-controller product RC PASS; owner disposition sufficient. See ADR-019.** | 9, 10, 13 |
-| 22  | **Minimal Presentation Audio** | Bounded application-owned non-authoritative live cues (buzz/claim, award, incorrect, timer expiry, game complete); host mute/volume; offline licensing-safe assets; visual parity. | 18 (arch); sequenced after 21 |
+| 22  | **Minimal Presentation Audio** | Bounded application-owned non-authoritative live cues (buzz/claim, award, incorrect, timer expiry, game complete); host mute/volume; offline licensing-safe assets; visual parity. **In implementation review** (not Complete). | 18 (arch); sequenced after 21 |
 | 23  | **Classroom Release Qualification** | Teacher-reliant classroom proof incl. Slice 22 audio gates and Phase 2B visual-fidelity calibration; no new architecture or features; Pi 5 observational only. | 15–22 |
 
 Additional round engines (image-identification, timeline-ordering, matching,
