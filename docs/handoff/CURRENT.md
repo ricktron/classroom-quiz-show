@@ -1,7 +1,28 @@
 # Handoff — Current
 
 This is the entry point for the next contributor or coding agent. It reflects
-the repository with **Slices 1–21 all product-`Complete` and merged to `main`**.
+the repository with **Slices 1–22 all product-`Complete` and merged to `main`**.
+**Slice 22 — Minimal Presentation Audio is terminally `Complete`.** Product
+implementation PR [#58](https://github.com/ricktron/classroom-quiz-show/pull/58)
+was exact-head squash-merged at `e69e81b07979ca03da798037fb2a935cca35f7b9` from
+accepted exact head `5def971d4c9884c81796d5769b263bae84ee4dc1`, merged
+**2026-08-10T21:55:12Z**, sole parent `dd2fd4a09b20764f69505bbd76a96782cc895453`,
+accepted-head and squash trees identical at
+`66125483f04f2a942ce93dd2c8f818addbeb5363`, direct head-to-squash diff empty,
+exactly **28** paths; owner listening RC **PASS**
+(`CQS-SLICE-22-PR58-OWNER-LISTENING-RC-ES-1`); terminal post-merge CI run
+`31436040805` **success**; Pages run `31436040772` **success**. See
+[`../architecture/ADR-020-minimal-presentation-audio.md`](../architecture/ADR-020-minimal-presentation-audio.md),
+[`../receipts/2026-08-10-slice-22-minimal-presentation-audio-implementation.md`](../receipts/2026-08-10-slice-22-minimal-presentation-audio-implementation.md),
+and
+[`../receipts/2026-08-10-slice-22-post-merge-canonical-reconciliation.md`](../receipts/2026-08-10-slice-22-post-merge-canonical-reconciliation.md).
+**PR #58 requires no further product review or merge action.** No further
+Slice 22 product delivery, listening, repair, or merge lane is owed.
+Stable Slice 22 architecture on canonical main: host-only presentation cues
+`active-claim` · `positive-award` · `incorrect` · `timer-expired` ·
+`game-complete`; Enable Sound / mute / volume (default **0.35**); five original
+offline WAVs; ADR-020 **Accepted**; no authoritative contract change; no new
+runtime dependency.
 **Slice 21 — Sony Buzz Supported-Profile Operationalization is terminally
 `Complete`.** Product implementation PR
 [#55](https://github.com/ricktron/classroom-quiz-show/pull/55) was exact-head
@@ -59,8 +80,8 @@ see
 **Slice 14 — Final-wager round is `Complete`** (PR
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32)).
 **Slice 13 — Local persistence & recovery is `Complete`** (PR #27).
-**Slices 22–23 remain `Planned` and unauthorized** under the **23-slice** MVP
-plan amended by
+**Slice 23 remains `Planned` and unauthorized / not started** under the
+**23-slice** MVP plan amended by
 [`../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md)
 (`CQS-PLAN-S03`, documentation-only). **Amendment 004 is merged and canonical**
 via PR [#48](https://github.com/ricktron/classroom-quiz-show/pull/48).
@@ -69,21 +90,18 @@ planning/merge authority is exhausted. Prior Amendment 003
 ([`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md),
 `CQS-PLAN-S02`) delivery **merged** via PR #35; post-merge reconciliation
 **merged** via PR #36.
-Slices 1–21 are Complete. Phase 2B’s MVP consumers (Slices 17–18) are both
+Slices 1–22 are Complete. Phase 2B’s MVP consumers (Slices 17–18) are both
 `Complete`. Phase 3 design-system readiness has served the theme-foundation →
 audience-display sequence
 ([`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)).
-**Recommended next action:** independent exact-head review of the Slice 22
-implementation PR under
-`AUTHORIZE-CQS-SLICE-22-MINIMAL-PRESENTATION-AUDIO-IMPLEMENTATION-2` (exact base
-`dd2fd4a09b20764f69505bbd76a96782cc895453`). Slice 22 is in implementation
-review only — **not** Complete; owner listening RC pending; no merge from this
-handoff. Slice 23 Classroom
-Release Qualification remains unauthorized. Do **not** begin Slice 23
-qualification, or post-MVP work from this handoff alone. Theme song
-remains post-MVP. `CQS-OD-066` remains unresolved. The inherited Final
+**Recommended next action:** return to the Program Orchestrator. Slice 22 is
+terminally Complete; **PR #58 requires no further product review or merge
+action**. Any subsequent work (including Slice 23 Classroom Release
+Qualification) requires separate Program Orchestrator authority. Do **not**
+begin Slice 23 qualification or post-MVP work from this handoff alone. Theme
+song remains post-MVP. `CQS-OD-066` remains unresolved. The inherited Final
 mid-refresh recovery flake remains unresolved and was not repaired by
-Slices 19–21. Known LOW debt **F-UX-01** (demote ordinary-setup WebHID/Gamepad
+Slices 19–22. Known LOW debt **F-UX-01** (demote ordinary-setup WebHID/Gamepad
 jargon into Advanced diagnostics) is retained polish.
 
 Coding agents and contributors should read root
@@ -429,9 +447,15 @@ defers to `AGENTS.md` and adds no separate authority.
   controller RC PASS. See ADR-019 and
   [`../receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md`](../receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md).
   **PR #55 requires no further product review or merge action.**
-- **Slices 22–23:** Slice 22 — Minimal Presentation Audio is **in implementation
-  review** (not Complete; owner listening RC pending). Slice 23 remains
-  `Planned` / unauthorized.
+- **Slice 22 — Minimal Presentation Audio:** **`Complete`.** Exact-head
+  squash-merged via PR [#58](https://github.com/ricktron/classroom-quiz-show/pull/58)
+  at `e69e81b07979ca03da798037fb2a935cca35f7b9` from accepted head
+  `5def971d4c9884c81796d5769b263bae84ee4dc1` (merged **2026-08-10T21:55:12Z**).
+  Owner listening RC **PASS**. See ADR-020 and
+  [`../receipts/2026-08-10-slice-22-post-merge-canonical-reconciliation.md`](../receipts/2026-08-10-slice-22-post-merge-canonical-reconciliation.md).
+  **PR #58 requires no further product review or merge action.**
+- **Slice 23 — Classroom Release Qualification:** remains `Planned` /
+  unauthorized / not started.
 - **What Slice 14 adds:** the SECOND playable round type, `final-wager` — and
   the important thing about it is where it lives. It is registered by application
   code in the same registry as `category-board`, validated by the same import
@@ -1055,11 +1079,11 @@ arcs remain inactive; **decision 66 (`CQS-OD-066`) remains unresolved**.
 
 ## Next action
 
-**Slices 1–21 and planning slice CQS-PLAN-S01 are `Complete` and
-merged** (Slice 21 product via PR #55; Slice 20 product via PR #52; this
-section’s routing is current after Slice 21 post-merge reconciliation). Phase 2B
-design direction is registered and its MVP consumers (Slices 17–18) are both
-`Complete`. **Roadmap Amendment 003
+**Slices 1–22 and planning slice CQS-PLAN-S01 are `Complete` and
+merged** (Slice 22 product via PR #58; Slice 21 product via PR #55; Slice 20
+product via PR #52; this section’s routing is current after Slice 22 post-merge
+reconciliation). Phase 2B design direction is registered and its MVP consumers
+(Slices 17–18) are both `Complete`. **Roadmap Amendment 003
 (`CQS-PLAN-S02`) delivery and post-merge reconciliation are complete on
 `main`** (PR #35 at `2ebeb240…`; PR #36 at
 `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`; see
@@ -1074,6 +1098,11 @@ Merge evidence:
 [`../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md`](../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md).
 CQS-PLAN-S03 planning/merge authority is exhausted; post-merge reconciliation
 adds evidence only.
+**Slice 22 — Minimal Presentation Audio is `Complete`.** Product PR
+[#58](https://github.com/ricktron/classroom-quiz-show/pull/58) was
+squash-merged at `e69e81b07979ca03da798037fb2a935cca35f7b9` from accepted head
+`5def971d4c9884c81796d5769b263bae84ee4dc1` (merged **2026-08-10T21:55:12Z**).
+Owner listening RC **PASS**. ADR-020 **Accepted**.
 **Slice 21 — Sony Buzz Supported-Profile Operationalization is `Complete`.**
 Product PR [#55](https://github.com/ricktron/classroom-quiz-show/pull/55) was
 squash-merged at `b1e6d669e91b55b20261e86a47d7818f069b0252` from accepted head
@@ -1102,19 +1131,17 @@ documentation.
 **Slice 14 — Final-wager round is `Complete`** (PR
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32)).
 
-**PR #55, PR #53, PR #52, PR #50, PR #48, PR #46, PR #45, PR #44, PR #41, PR #40,
-PR #38, and PR #36 require no further product review or merge action.** Slice 21
-product delivery is `Complete`, post-merge verified, and canonically reconciled
-by this docs lane. Slice 20 is terminally canonical in docs. No further
-Slice 20 or Slice 21 product, repair, merge, registration, or canonicalization
-lane is owed after this reconciliation merges. Phase 3 design-system readiness
-has served the theme-foundation → audience-display sequence.
+**PR #58, PR #55, PR #53, PR #52, PR #50, PR #48, PR #46, PR #45, PR #44, PR #41,
+PR #40, PR #38, and PR #36 require no further product review or merge action.**
+Slice 22 product delivery is `Complete`, post-merge verified, and canonically
+reconciled by this docs lane. No further Slice 20–22 product, repair, merge,
+or canonicalization lane is owed after this reconciliation merges. Phase 3
+design-system readiness has served the theme-foundation → audience-display
+sequence.
 **Recommended next action:**
-return to the Program Orchestrator to obtain separate owner authorization for
-**Slice 22 — Minimal Presentation Audio**. Slice 22 is the next planned frontier;
-it remains `PLANNED`, not started, and implementation remains separately
-unauthorized. Slices 22–23 remain unauthorized for implementation (including
-Slice 22 audio and Slice 23 qualification). This handoff grants **no**
+return to the Program Orchestrator. Slice 23 — Classroom Release Qualification
+is the only remaining numbered MVP slice and remains `PLANNED`, not started, and
+separately unauthorized. This handoff grants **no** Slice 23 or post-MVP
 authority. Post-MVP arcs remain inactive. Theme song remains post-MVP.
 `CQS-OD-066` remains unresolved. The inherited Final mid-refresh recovery flake
 remains unresolved.
@@ -1157,8 +1184,8 @@ on `main` (PR #44). Slice 18 — Audience Display System is `Complete` on `main`
 (PR #46). MVP Phase 2B consumers **Slices 17–18 are both `Complete`**: the token
 foundation and the accepted audience-display composition have been delivered.
 Phase 2B remains a design/planning lineage, not a numbered slice. Phase 3
-readiness has served that sequence. Next planned frontier: Slice 22
-(requires separate owner authorization; not started).
+readiness has served that sequence. Next planned frontier: Slice 23
+(requires separate Program Orchestrator authority; not started).
 
 **Boundaries this direction does not move.** The public buzz state remains
 `activeTeamKey` plus an anonymous `waitingCount` — never a public ordered queue.
@@ -1247,8 +1274,9 @@ readiness is complete when
 was satisfied and consumed by completed Slices 17–18 (PR #44, `dee2f3c…`;
 PR #46, `91c7708…`). Slice 19 is **`Complete`** (PR #50, `95573e2…`). Slice 20
 is **`Complete`** (PR #52, `86e8f5e6…`). Slice 21 is **`Complete`** (PR #55,
-`b1e6d66…`). The immediate planned frontier is **Slice 22 — Minimal Presentation
-Audio** (`PLANNED` / not started / requires separate owner authorization).
+`b1e6d66…`). Slice 22 is **`Complete`** (PR #58, `e69e81b…`). The immediate
+planned frontier is **Slice 23 — Classroom Release Qualification** (`PLANNED` /
+not started / requires separate Program Orchestrator authority).
 Slice 13 is **`Complete`**
 (PR #27, `6cf4d25…`). Slice 12 is **`Complete`** (PR #25, `cdb499a…`). Slice 11
 is **`Complete`** (PR #23, `5d47b2f`). Slice 10 remains **`Complete`** under the
@@ -1263,10 +1291,10 @@ Recording this direction authorizes no work of any kind.
 **Recorded 2026-07-27 as deferred team-specific / custom / identity-pack
 direction.** That richer team-sound work remains **not** authorized and is
 **not** MVP Slice 22. Under Amendment 004, the active roadmap is **23 slices**,
-and a distinct **Minimal Presentation Audio** slice (Slice 22) delivers a tiny
-generic application-owned cue layer (ADR-020 / Slice 22 implementation receipt;
-in review, not Complete). This deferred team/identity-pack direction remains
-post-MVP.
+and a distinct **Minimal Presentation Audio** slice (Slice 22) delivered a tiny
+generic application-owned cue layer (ADR-020 **Accepted** / Slice 22
+implementation receipt; terminally **Complete** via PR #58). This deferred
+team/identity-pack direction remains post-MVP.
 
 The owner still wants **optional team buzz-in audio cues** eventually,
 potentially including farm-animal sounds, funny voices, generic game-show
@@ -1313,8 +1341,9 @@ reconciliation. Recording this direction authorizes no work of any kind.
 
 Do **not**: reopen or redefine Slice 14 (it is `Complete` and merged — PR #32 at
 `ce2e103…`); reopen Slice 15, Slice 16, Slice 17, Slice 18, Slice 19, Slice 20,
-or Slice 21 product lanes; begin Slices 22–23 without separate authority; treat
-this handoff as Slice 22 audio authorization; expose private Final
+Slice 21, or Slice 22 product lanes; begin Slice 23 without separate Program
+Orchestrator authority; treat this handoff as Slice 23 qualification
+authorization; expose private Final
 or queue data
 (see the Final and buzz-queue privacy boundaries below); claim Child B
 guidance/onboarding delivery is merged from this handoff;
@@ -1344,11 +1373,11 @@ re-scope or re-implement the merged `final-wager` round itself; extend the
 Slice 11 media contract beyond text and same-origin static images, add remote
 media, audio/video, or timer/media coupling; extend Slice 17’s closed theme
 registry without separate authority, or add team colours beyond the application
-palette; add audio playback, an audio file, mute/volume UI, an audio schema, an
-audio event, a sound-pack manifest, a custom-upload path, a theme song, or an
-attribution asset without separate Slice 22 (or later) authority (Amendment 004
-plans Minimal Presentation Audio but authorizes none of the implementation; the
-deferred team buzz-sound direction authorizes none of the richer pack work);
+palette; expand beyond Slice 22’s shipped five-cue host presentation layer —
+including a sound-pack manifest, custom-upload path, theme song, team/identity
+pack sounds, or an attribution asset — without separate later authority (Slice
+22 / ADR-020 shipped the bounded MVP cue layer via PR #58; the deferred team
+buzz-sound direction authorizes none of the richer pack work);
 add spreadsheet/CSV/XLSX/Google Sheets import, an authoring UI, pack
 management, a saved game library, or remote URL import; add a backend, accounts,
 cross-device sync, analytics, or AI services; add any further playable round type;
