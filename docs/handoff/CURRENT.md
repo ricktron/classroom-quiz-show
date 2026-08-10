@@ -72,8 +72,8 @@ audience-display sequence
 ([`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)).
 **Recommended next action:** Slice 21 open implementation PR
 [#55](https://github.com/ricktron/classroom-quiz-show/pull/55)
-(`feat/slice-21-sony-buzz-supported-profile`, head
-`136105531062dcebadaf67b247b26a7358b055c9`, exact base
+(`feat/slice-21-sony-buzz-supported-profile`, product feature commit
+`74898b6f57c624c3b48b8f0fd70a5b2c5807a6b2`, exact base
 `0433f30d9a950d0a196feaf5bb7a57411df77e37`) under
 `AUTHORIZE-CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE-IMPLEMENTATION-1`. Slice 21
 is **not** `Complete`: **FINAL FOUR-HANDSET PHYSICAL RC: OWED** (handset #3 /
