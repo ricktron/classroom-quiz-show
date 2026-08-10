@@ -8,6 +8,8 @@
 - **Date:** 2026-08-09
 - **Exact authorized base:** `0433f30d9a950d0a196feaf5bb7a57411df77e37`
 - **Branch:** `feat/slice-21-sony-buzz-supported-profile`
+- **Implementation HEAD (delivery):** `74898b6f57c624c3b48b8f0fd70a5b2c5807a6b2`
+- **PR:** [#55](https://github.com/ricktron/classroom-quiz-show/pull/55) (open, non-draft; auto-merge off; not merge-authorized)
 - **ADR:**
   [`../architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md`](../architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md)
 

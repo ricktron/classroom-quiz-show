@@ -70,13 +70,14 @@ Slices 1–20 are Complete. Phase 2B’s MVP consumers (Slices 17–18) are both
 `Complete`. Phase 3 design-system readiness has served the theme-foundation →
 audience-display sequence
 ([`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)).
-**Recommended next action:** Slice 21 — Sony Buzz Supported-Profile
-Operationalization is authorized
-(`AUTHORIZE-CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE-IMPLEMENTATION-1`) with
-implementation on `feat/slice-21-sony-buzz-supported-profile` from exact base
-`0433f30d9a950d0a196feaf5bb7a57411df77e37`. Slice 21 is **not** `Complete`:
-**FINAL FOUR-HANDSET PHYSICAL RC: OWED** (handset #3 / group `15–19`). See
-ADR-019 and
+**Recommended next action:** Slice 21 open implementation PR
+[#55](https://github.com/ricktron/classroom-quiz-show/pull/55)
+(`feat/slice-21-sony-buzz-supported-profile`, head
+`74898b6f57c624c3b48b8f0fd70a5b2c5807a6b2`, exact base
+`0433f30d9a950d0a196feaf5bb7a57411df77e37`) under
+`AUTHORIZE-CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE-IMPLEMENTATION-1`. Slice 21
+is **not** `Complete`: **FINAL FOUR-HANDSET PHYSICAL RC: OWED** (handset #3 /
+group `15–19`). See ADR-019 and
 [`../receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md`](../receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md).
 Do **not** begin Slice 22 audio, Slice 23 qualification, or post-MVP work from
 this handoff alone. Theme song remains post-MVP. `CQS-OD-066` remains
