@@ -209,7 +209,7 @@ Slice 23 **not** started.
 | Generator determinism | consecutive runs identical hashes; working tree WAV bytes unchanged |
 | Production WAV emit | 5 hashed assets under `dist/assets/` |
 | Precache | all 5 cue filenames present in `dist/sw.js` |
-| Exact repaired PR head | filled after push |
+| Exact repaired PR head | `c6ca619a4862018155829ddf59cc1c9272541531` |
 
 WAV / generator changed? **no**
 
