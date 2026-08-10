@@ -70,13 +70,28 @@ Slices 1–20 are Complete. Phase 2B’s MVP consumers (Slices 17–18) are both
 `Complete`. Phase 3 design-system readiness has served the theme-foundation →
 audience-display sequence
 ([`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)).
-**Recommended next action:** next planned frontier is Slice 21 — Sony Buzz
-Supported-Profile Operationalization; implementation requires separate owner
-authorization (`PLANNED` / not started / not yet authorized). Do **not** begin
-Slice 21, Slice 22 audio, Slice 23 qualification, or post-MVP work from this
-handoff alone. Theme song remains post-MVP. `CQS-OD-066` remains unresolved.
-The inherited Final mid-refresh recovery flake remains unresolved and was not
-repaired by Slice 19 or Slice 20.
+**Recommended next action:** Slice 21 — Sony Buzz Supported-Profile
+Operationalization has an authorized implementation candidate under
+`AUTHORIZE-CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE-IMPLEMENTATION-1` (exact base
+`0433f30d9a950d0a196feaf5bb7a57411df77e37`). Three-controller physical product
+RC **PASS** (`CQS-SLICE-21-PR55-THREE-CONTROLLER-PRODUCT-RC-ES-1`); owner
+accepted three available handsets as sufficient for Slice 21 completion
+(groups `0–4` / `5–9` / `10–14`; fourth slot historical / owner-accepted).
+Pairing-friction UX reconciliation is in delivery on PR #55, including
+owner-observed LED-state pairing cues (off blink → keep holding through rapid
+red/blue → solid blue → BIND → blink ack → RED). Slice 21 is **not**
+`Complete` until final exact-head independent acceptance and merge. See
+ADR-019 and
+[`../receipts/2026-08-10-slice-21-pairing-friction-ux-reconciliation.md`](../receipts/2026-08-10-slice-21-pairing-friction-ux-reconciliation.md).
+**Guidance delta (Program Orchestrator):** hardware setup copy should prefer
+observable device states over approximate timing whenever both exist.
+**Future product delta (Program Orchestrator):** Buzzer Check / Controller
+Tutorial minigame (reaction-time warm-up, full-button teach-in) remains
+out-of-scope for this repair.
+Do **not** begin Slice 22 audio, Slice 23 qualification, or post-MVP work from
+this handoff alone. Theme song remains post-MVP. `CQS-OD-066` remains
+unresolved. The inherited Final mid-refresh recovery flake remains unresolved
+and was not repaired by Slice 19 or Slice 20.
 
 Coding agents and contributors should read root
 [`../../AGENTS.md`](../../AGENTS.md) before changing the repository. Claude

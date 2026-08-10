@@ -16,6 +16,7 @@ const STORE_NAMES: ReadonlySet<PersistenceStoreName> = new Set([
   'coordination',
   'completedSummaries',
   'packMediaAssets',
+  'sonyBuzzMappings',
 ])
 
 /**
@@ -114,6 +115,7 @@ function createEmptyDatabase(): DatabaseMap {
     coordination: new Map(),
     completedSummaries: new Map(),
     packMediaAssets: new Map(),
+    sonyBuzzMappings: new Map(),
   }
 }
 
@@ -136,6 +138,9 @@ function cloneDatabase(database: DatabaseMap): DatabaseMap {
     ),
     packMediaAssets: new Map(
       [...database.packMediaAssets.entries()].map(([key, value]) => [key, cloneStoredValue(value)]),
+    ),
+    sonyBuzzMappings: new Map(
+      [...database.sonyBuzzMappings.entries()].map(([key, value]) => [key, cloneStoredValue(value)]),
     ),
   }
 }

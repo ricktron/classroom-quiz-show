@@ -32,7 +32,7 @@ describe('Slice 17 isolation invariants', () => {
     expect(SYNC_SCHEMA_VERSION).toBe(2)
     expect(PRIVATE_STATE_SCHEMA_VERSION).toBe(1)
     expect(PERSISTENCE_WIRE_VERSION).toBe(1)
-    expect(PERSISTENCE_DB_VERSION).toBe(3)
+    expect(PERSISTENCE_DB_VERSION).toBe(4)
     expect(SESSION_SUMMARY_CONTRACT_VERSION).toBe(1)
     expect(COMPLETED_SUMMARY_RECORD_VERSION).toBe(1)
     expect(COMPETITIVE_PROFILE_VERSION).toBe(1)

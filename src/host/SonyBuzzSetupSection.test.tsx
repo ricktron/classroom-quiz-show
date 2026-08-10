@@ -20,6 +20,8 @@ import {
 } from '../test/gamepadFixtures'
 import { GAMEPAD_DEVICE_CLASSIFICATION_LABEL } from '../input/gamepadDeviceProfile'
 import { GAMEPAD_DEVICE_CLASSIFICATION_MESSAGE } from '../input/gamepadDeviceProfile'
+import { createMemoryPersistenceAdapter } from '../persistence'
+import { createFakeWebHidTransport } from '../input/webHidTransport'
 
 /**
  * Sony Buzz! setup section — component behaviour (Slice 10).
@@ -87,6 +89,8 @@ function renderPanel(store: SessionStore = boardStore()): Panel {
       clock={clock}
       source={source}
       scheduler={driver}
+      persistenceAdapter={createMemoryPersistenceAdapter()}
+      webHidTransport={createFakeWebHidTransport({ available: false })}
     />,
   )
   return {
@@ -425,7 +429,7 @@ describe('test mode', () => {
     )
     panel.poll()
 
-    expect(screen.getByTestId('sbs-test-outcome')).toHaveTextContent(/Test: Red Team · Buzz/i)
+    expect(screen.getByTestId('sbs-test-outcome')).toHaveTextContent(/Buzzer Check: Red Team · Buzz/i)
     expect(screen.getByTestId('gih-outcome')).toHaveTextContent(/no gameplay change/i)
     expect(queueOf(store).order).toEqual([])
     expect(store.getState().revision).toBe(revisionBefore)
@@ -480,5 +484,75 @@ describe('copy guardrails', () => {
     panel.poll()
     fireEvent.click(screen.getByTestId('sbs-capture'))
     expect(screen.getByTestId('sbs-status').textContent?.toLowerCase()).toContain('blue')
+  })
+
+  it('states three-controller disposition without a four-fresh-controller claim', () => {
+    const panel = renderPanel()
+    panel.poll()
+    expect(screen.getByTestId('sbs-intro')).toHaveTextContent(/three available controllers/i)
+    expect(screen.getByTestId('sbs-slot-disposition')).toHaveTextContent(/four-slot profile design/i)
+    expect(screen.getByTestId('sbs-slot-disposition').textContent?.toLowerCase() ?? '').not.toContain(
+      'final rc owed',
+    )
+    expect(screen.getByTestId('sbs-slot-4').closest('label')?.textContent ?? '').toMatch(/optional fourth/i)
+  })
+})
+
+describe('teacher readiness layers', () => {
+  it('separates receiver health from Sony Buzz ready', () => {
+    const panel = renderPanel()
+    panel.poll()
+    expect(screen.getByTestId('sbs-teacher-summary')).toBeInTheDocument()
+    expect(screen.getByTestId('sbs-readiness-note')).toHaveTextContent(
+      /Receiver connected does not mean controllers are ready/i,
+    )
+    expect(screen.getByTestId('sbs-teacher-summary')).not.toHaveTextContent(/^Sony Buzz ready/)
+    expect(screen.getByTestId('sbs-transport-health')).toHaveTextContent('unsupported-api')
+  })
+
+  it('keeps keyboard fallback visible beside readiness', () => {
+    const panel = renderPanel()
+    panel.poll()
+    expect(screen.getByTestId('sbs-keyboard-fallback')).toBeInTheDocument()
+  })
+})
+
+describe('repair controller connection flow', () => {
+  it('walks teacher pairing steps in order without BIND+Red shortcut', () => {
+    const panel = renderPanel()
+    panel.poll()
+    fireEvent.click(screen.getByTestId('sbs-repair-connection'))
+    expect(screen.getByTestId('sbs-repair-flow')).toBeInTheDocument()
+    expect(screen.getByTestId('sbs-repair-keepalive-note')).toHaveTextContent(/paused for pairing/i)
+    expect(screen.getByTestId('sbs-repair-step-power-off')).toHaveTextContent(
+      /slow blue off-state blink/i,
+    )
+    fireEvent.click(screen.getByTestId('sbs-repair-advance'))
+    const pairing = screen.getByTestId('sbs-repair-step-solid-blue')
+    expect(pairing).toHaveTextContent(/KEEP HOLDING POWER/i)
+    expect(pairing).toHaveTextContent(/rapid red\/blue flashes/i)
+    expect(pairing).toHaveTextContent(/Do not press BIND until every participating controller is solid blue/i)
+    expect(screen.getByTestId('sbs-repair-advance')).toHaveTextContent(
+      /All controller lights are solid blue/i,
+    )
+    fireEvent.click(screen.getByTestId('sbs-repair-advance'))
+    expect(screen.getByTestId('sbs-repair-step-bind-blink')).toHaveTextContent(
+      /blink to acknowledge pairing/i,
+    )
+    expect(screen.getByTestId('sbs-repair-advance')).toHaveTextContent(/They blinked/i)
+    fireEvent.click(screen.getByTestId('sbs-repair-advance'))
+    expect(screen.getByTestId('sbs-repair-step-observe-red')).toHaveTextContent(/Press RED/i)
+    expect(screen.getByTestId('sbs-discovered-none')).toHaveTextContent(/No controllers detected yet/i)
+    expect(screen.getByTestId('sbs-run-buzzer-check')).toHaveTextContent(/Run Buzzer Check/i)
+  })
+
+  it('Hardware changed opens the same repair path', () => {
+    const panel = renderPanel()
+    panel.poll()
+    fireEvent.click(screen.getByTestId('sbs-hardware-changed'))
+    expect(screen.getByTestId('sbs-repair-flow')).toHaveTextContent(/Hardware changed/i)
+    expect(screen.getByTestId('sbs-buzzer-check-bridge')).toHaveTextContent(
+      /Repair controller connection → Buzzer Check → Confirm team assignments/i,
+    )
   })
 })
