@@ -177,4 +177,8 @@ a Slice 22 repair target.
 
 ## PR
 
-Filled after open: number, URL, exact head SHA.
+- **PR:** [#58](https://github.com/ricktron/classroom-quiz-show/pull/58)
+- **Exact PR head SHA:** `dcbc357bf1a4ac96a1228f682632fb04414b23a5`
+- **Commits:** `5610c407f5aa2f87715d3c4355cf95c7e4f41912`, `dcbc357bf1a4ac96a1228f682632fb04414b23a5`
+- **Draft:** no
+- **Merge:** not authorized by this receipt
