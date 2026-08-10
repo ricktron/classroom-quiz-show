@@ -319,7 +319,8 @@ owner-accepted hardware-independent scope. A later bounded physical
 certification (OADL2-S07) exists for one exact configuration under a temporary
 keep-alive — see the current physical-certification note below and
 [`docs/receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](docs/receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md).
-Permanent supported-profile operationalization remains Slice 21. See
+Permanent supported-profile operationalization was delivered by Slice 21
+(**`Complete`** via PR #55). See
 [`docs/architecture/ADR-010-sony-buzz-profile-and-setup.md`](docs/architecture/ADR-010-sony-buzz-profile-and-setup.md)
 and
 [`docs/receipts/2026-07-28-slice-10-post-merge-reconciliation.md`](docs/receipts/2026-07-28-slice-10-post-merge-reconciliation.md).
@@ -335,8 +336,8 @@ No schema, `PublicState`, sync protocol, command, event or reducer change.
   presses without dispatching gameplay.
 - **Physical certification (later):** OADL2-S07 recorded a bounded host claim for
   one exact tested configuration; it is not a generalized supported-hardware
-  list. Slice 21 is intended to close permanent keep-alive / supported-profile
-  operationalization.
+  list. Slice 21 closed permanent keep-alive / supported-profile
+  operationalization for the exact Namtai Wbuzz profile.
 
 **Slice 11 — Media contract. Complete** — PR #23 was squash-merged at
 `5d47b2f641e1a96c2066ec22731f4e751288b39a` (merged **2026-07-28T04:56:27Z**) from
@@ -520,35 +521,36 @@ canonical JSON → `importGameFromJsonText`; no second importer; IndexedDB remai
 [`docs/receipts/2026-08-08-slice-20-spreadsheet-authoring-seed-implementation.md`](docs/receipts/2026-08-08-slice-20-spreadsheet-authoring-seed-implementation.md),
 and
 [`docs/receipts/2026-08-09-slice-20-post-merge-reconciliation.md`](docs/receipts/2026-08-09-slice-20-post-merge-reconciliation.md).
-**PR #52 requires no further review or merge action.** Slices 1–20 are Complete.
-Slices 21–23 remain Planned and unauthorized under the **23-slice** MVP plan
+**PR #52 requires no further review or merge action.** **Slice 21 — Sony Buzz
+Supported-Profile Operationalization is `Complete`** via PR
+[#55](https://github.com/ricktron/classroom-quiz-show/pull/55) exact-head squash
+`b1e6d669e91b55b20261e86a47d7818f069b0252` from accepted head
+`3bd6c91330298c4374db137e3ce220e0d28a5c2f` (merged **2026-08-10T14:39:15Z**).
+Exact supported profile `cqs.sony-buzz.namtai-wbuzz-wireless.v1` (Namtai wireless
+Wbuzz `054c:1000`); direct WebHID keep-alive; Gamepad gameplay input; keyboard
+fallback; IndexedDB **4**; ADR-019. Three-controller physical product RC
+**PASS** (groups `0–4` / `5–9` / `10–14`; slot 4 / `15–19` historical /
+owner-accepted — not a fresh four-handset claim). Slices 1–21 are Complete.
+Slice 22 Minimal Presentation Audio and Slice 23 Classroom Release Qualification
+remain Planned and unauthorized under the **23-slice** MVP plan
 ([`docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md);
 prior Amendment 003:
 [`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
-Slice 21 — Sony Buzz Supported-Profile Operationalization is authorized and in
-delivery (direct WebHID keep-alive for Namtai Wbuzz `054c:1000`; IndexedDB
-**4**; ADR-019) but **not** `Complete`. Three-controller physical product RC
-**PASS**; owner accepted three available handsets as sufficient (four-slot
-profile design; slot 4 / group `15–19` historical / owner-accepted — not a fresh
-four-handset claim). Pairing-friction UX reconciliation is in delivery on PR
-#55. Final exact-head independent acceptance remains before merge. Slice 22
-Minimal Presentation Audio and Slice 23 Classroom Release Qualification remain
-unauthorized. Theme song remains post-MVP. The inherited Final mid-refresh
-recovery flake remains unresolved; `CQS-OD-066` remains unresolved. See
-[`docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md`](docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md).
+Theme song remains post-MVP. The inherited Final mid-refresh recovery flake
+remains unresolved; `CQS-OD-066` remains unresolved. See
+[`docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md`](docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md)
+and
+[`docs/receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md`](docs/receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md).
 
-> ⚠️ **Sony Buzz physical certification is bounded, not a supported-hardware
-> list.** OADL2-S07 completed physical certification for one exact tested
-> configuration: macOS · Chrome · Namtai wireless `Wbuzz` · vendor/product
-> `054c:1000` · four labeled handsets · with a temporary external HID output
-> keep-alive active. Guided setup, test mode, primary-Red gameplay
-> identification, rising-edge behavior, one simultaneous A+B ordering
-> observation, and keyboard fallback passed under that temporary keep-alive.
-> This does **not** claim wired Sony Buzz, Windows, Linux, Raspberry Pi,
-> Bluetooth, all Sony revisions, or operation without the keep-alive. Permanent
-> packaged keep-alive, hot-plug recovery, and supported-profile
-> operationalization remain unresolved; **Slice 21** is intended to close that
-> exact gap. See
+> ⚠️ **Sony Buzz support is one exact profile, not a hardware catalog.** Slice 21
+> operationalizes Namtai wireless `Wbuzz` `054c:1000` on the owner-tested
+> macOS + Chrome stack with CQS direct WebHID keep-alive and Gamepad gameplay
+> input. Fresh product RC used three available handsets (groups `0–4` / `5–9` /
+> `10–14`); the four-slot design retains historical/owner-accepted group
+> `15–19`. This does **not** claim wired Sony Buzz (`054c:0002`), Windows,
+> Linux, Raspberry Pi, Bluetooth, Safari/Firefox/Edge/ChromeOS/mobile, arbitrary
+> USB hubs, or guaranteed exact 2-second background scheduling. OADL2-S07 remains
+> historical temporary keep-alive evidence — see
 > [`docs/receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](docs/receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md).
 > Slice 9’s generic Gamepad adapter remains unit-proven against a fake source
 > for hardware-independent behavior; browser tests still cover the
@@ -574,12 +576,11 @@ Slice 10 adds a host-private Sony Buzz! setup surface (candidate classification,
 capture recipe, and setup test mode) and is `Complete` under its
 hardware-independent implementation boundary. Bounded physical certification is
 recorded separately under OADL2-S07; it does not establish a generalized
-compatibility claim. Permanent supported-profile operationalization remains
-Slice 21 work. No WebHID or Bluetooth of any kind, no networked or
-student-device buzzing, and no audio/video/remote media or content-defined
-themes. The projector display is the Slice 18 board-first audience composition
-(not the pre-Phase-2B vertical stack), still consuming only sanitized public
-state on wire **8**.
+compatibility claim. Permanent supported-profile operationalization is
+**`Complete`** via Slice 21 (PR #55). No networked or student-device buzzing, and
+no audio/video/remote media or content-defined themes. The projector display is
+the Slice 18 board-first audience composition (not the pre-Phase-2B vertical
+stack), still consuming only sanitized public state on wire **8**.
 The host has local IndexedDB persistence for the active event history and a saved
 definitions library: after a refresh with an unfinished session, the teacher gets
 an explicit **Resume session** or **Discard recovery** choice, and saved

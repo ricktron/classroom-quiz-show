@@ -1,18 +1,31 @@
 # ADR-019 — Sony Buzz supported profile (direct WebHID keep-alive)
 
-- **Status:** Accepted for three-controller product RC + pairing-friction UX
-  reconciliation on `feat/slice-21-sony-buzz-supported-profile` (PR #55 open;
-  **not** merge-complete; **not** Slice `Complete` until final exact-head
-  acceptance and merge)
-- **Date:** 2026-08-09 (owner three-controller disposition + pairing UX
-  reconciled 2026-08-10)
+- **Status:** Accepted — merged via PR #55
+- **Date:** 2026-08-09
+- **Accepted:** 2026-08-10 (implementation PR
+  [#55](https://github.com/ricktron/classroom-quiz-show/pull/55); accepted exact
+  head `3bd6c91330298c4374db137e3ce220e0d28a5c2f`; squash
+  `b1e6d669e91b55b20261e86a47d7818f069b0252`; merged **2026-08-10T14:39:15Z**;
+  sole parent `0433f30d9a950d0a196feaf5bb7a57411df77e37`; trees identical at
+  `22c5e3d3416db05cbd28b3893d07780d72ae1af9`; final acceptance
+  `CQS-SLICE-21-PR55-FINAL-EXACT-HEAD-ACCEPTANCE-REVIEW-ES-1` **PASS**; merge
+  evidence
+  `CQS-SLICE-21-PR55-EXACT-HEAD-SQUASH-MERGE-AND-TERMINAL-POST-MERGE-VERIFICATION-ES-1`;
+  terminal post-merge CI/Pages success; post-merge reconciliation
+  [`../receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md`](../receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md))
 - **Slice:** 21 — Sony Buzz Supported-Profile Operationalization
 - **Authorization:**
-  `AUTHORIZE-CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE-IMPLEMENTATION-1`
+  `AUTHORIZE-CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE-IMPLEMENTATION-1`,
+  `AUTHORIZE-CQS-SLICE-21-PR55-EXACT-HEAD-SQUASH-MERGE-AND-TERMINAL-POST-MERGE-VERIFICATION-1`,
+  `AUTHORIZE-CQS-SLICE-21-POST-MERGE-CANONICAL-RECONCILIATION-1`
 - **Evidence state:**
   `CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE-IMPLEMENTATION-ES-1`;
   three-controller product RC
-  `CQS-SLICE-21-PR55-THREE-CONTROLLER-PRODUCT-RC-ES-1` (**PASS**)
+  `CQS-SLICE-21-PR55-THREE-CONTROLLER-PRODUCT-RC-ES-1` (**PASS**);
+  final acceptance
+  `CQS-SLICE-21-PR55-FINAL-EXACT-HEAD-ACCEPTANCE-REVIEW-ES-1` (**PASS**);
+  merge
+  `CQS-SLICE-21-PR55-EXACT-HEAD-SQUASH-MERGE-AND-TERMINAL-POST-MERGE-VERIFICATION-ES-1`
 - **Depends on:** [ADR-009](ADR-009-generic-gamepad-adapter.md),
   [ADR-010](ADR-010-sony-buzz-profile-and-setup.md),
   [ADR-013](ADR-013-local-persistence-recovery.md),
@@ -68,9 +81,9 @@ available handsets:
 | #4 | `10–14` | Fresh product RC |
 | (unavailable #3) | `15–19` / slot 4 | Historical / owner-accepted — **not** a fresh four-handset claim |
 
-Owner accepted three-controller RC as **sufficient for Slice 21 completion**
-pending final exact-head acceptance review and merge. Do not claim all four
-slots were freshly product-tested.
+Owner accepted three-controller RC as **sufficient for Slice 21 completion**.
+Final exact-head acceptance and merge completed. Do not claim all four slots
+were freshly product-tested.
 
 Pairing/recovery friction was a material usability finding (WebHID `healthy`
 ≠ controllers transmitting; incorrect BIND+Red recovery superseded by set-level
@@ -206,11 +219,10 @@ completed summaries.
 
 ### 11. Support boundary and nonclaims
 
-Supported statement (when merge-complete) must identify Namtai wireless Wbuzz
-`054c:1000`, the four-slot profile design, tested macOS/build, tested Chrome,
-exact CQS candidate/release, keyboard fallback, and the owner three-controller
-fresh-RC disposition (groups `0–4` / `5–9` / `10–14`) without claiming a fresh
-fourth-handset product RC.
+Supported statement identifies Namtai wireless Wbuzz `054c:1000`, the four-slot
+profile design, tested macOS/build, tested Chrome, exact merged CQS release,
+keyboard fallback, and the owner three-controller fresh-RC disposition (groups
+`0–4` / `5–9` / `10–14`) without claiming a fresh fourth-handset product RC.
 
 Explicit nonclaims: wired `054c:0002`; other Sony/Namtai/Buzz hardware; arbitrary
 USB hubs; Windows; Linux; Raspberry Pi; Safari; Firefox; Edge; ChromeOS; mobile
@@ -220,14 +232,11 @@ OSes; guaranteed 2-second background cadence.
 
 Three-controller physical product RC on exact head `3b0e97f…` is **PASS**
 (`CQS-SLICE-21-PR55-THREE-CONTROLLER-PRODUCT-RC-ES-1`). Owner disposition:
-sufficient for Slice 21 completion. Final merge still requires exact-head
-independent acceptance review of the current candidate (including pairing-
-friction UX reconciliation) — not a mandatory fresh four-handset RC.
-
-Product changes affecting HID/lifecycle/Gamepad/mapping/persistence/setup/input
-semantics after RC require affected physical retest. Teacher-copy / readiness /
-guided-repair UX alone may transfer the completed three-controller RC when
-transport and input semantics are unchanged.
+sufficient for Slice 21 completion. Final exact-head acceptance **PASS** at
+`3bd6c91…`; exact tree landed via squash `b1e6d66…`. No physical retest remains
+owed — post-RC UX/copy/docs/test deltas did not alter HID transport, keep-alive
+lifecycle, Gamepad polling, gameplay input, mapping, persistence, or false-edge
+semantics. Not a mandatory fresh four-handset RC.
 
 ### 13. Version consequences
 
@@ -254,6 +263,9 @@ OADL2 history; repairing inherited Final refresh flake; consuming `CQS-OD-066`.
 - Teachers get an in-app Connect → keep-alive → slot→team → save path for the
   exact Wbuzz profile without shell helpers, plus readiness layers and a guided
   Repair controller connection flow that reuses Disable → Connect.
-- Merge remains gated on final exact-head acceptance — not on fabricating a
-  fourth fresh handset RC after owner three-controller disposition.
+- Slice 21 product delivery is merged and post-merge verified; canonical docs
+  reconciliation closes residual F-DOC-01 routing without fabricating a fourth
+  fresh handset RC.
+- Known LOW polish debt (F-UX-01): ordinary setup still exposes some
+  WebHID/Gamepad jargon that should later demote into Advanced diagnostics.
 - ADR-010 candidate/manual capture remains available as advanced diagnosis.
