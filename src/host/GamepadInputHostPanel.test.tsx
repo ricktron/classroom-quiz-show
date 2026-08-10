@@ -17,6 +17,8 @@ import {
   type FakeGamepadSource,
   type FakePollDriver,
 } from '../test/gamepadFixtures'
+import { createMemoryPersistenceAdapter } from '../persistence'
+import { createFakeWebHidTransport } from '../input/webHidTransport'
 
 /**
  * Host controller-input controls — component behaviour (Slice 9).
@@ -92,6 +94,8 @@ function renderPanel(store: SessionStore = boardStore()): Panel {
   const game = store.getState().session?.game
   if (!game) throw new Error('fixture has no game')
 
+  const persistenceAdapter = createMemoryPersistenceAdapter()
+  const webHidTransport = createFakeWebHidTransport({ available: false })
   const view = render(
     <GamepadInputHostPanel
       dispatch={store.dispatch}
@@ -99,6 +103,8 @@ function renderPanel(store: SessionStore = boardStore()): Panel {
       clock={clock}
       source={source}
       scheduler={driver}
+      persistenceAdapter={persistenceAdapter}
+      webHidTransport={webHidTransport}
     />,
   )
   const panel: Panel = {
@@ -121,6 +127,8 @@ function renderPanel(store: SessionStore = boardStore()): Panel {
           clock={clock}
           source={source}
           scheduler={driver}
+          persistenceAdapter={persistenceAdapter}
+          webHidTransport={webHidTransport}
         />,
       )
     },
@@ -467,7 +475,6 @@ describe('scope and privacy', () => {
     for (const forbidden of [
       'supported hardware',
       'playstation',
-      'webhid',
       'bluetooth',
       'axis',
       'axes',
@@ -476,22 +483,21 @@ describe('scope and privacy', () => {
       'haptic',
       'standard gamepad',
       '"pressed"',
-      '054c',
-      '0002',
     ]) {
       expect(html, `must not contain ${forbidden}`).not.toContain(forbidden)
     }
+    // Exact VID/PID may appear in the host-private supported-profile copy.
     expect(screen.getByTestId('sbs')).toBeInTheDocument()
     expect(screen.getByTestId('sbs-intro')).toHaveTextContent(/candidate match is not proof/i)
+    expect(screen.getByTestId('sbs-profile-id')).toHaveTextContent('054c:1000')
   })
 
-  it('renders no raw array and no JSON', () => {
+  it('renders no raw array and no JSON outside advanced diagnostics', () => {
     const panel = renderPanel()
     attach(panel, 0, 6)
     assign(panel, 'red', 0, 1)
+    expect(screen.queryByTestId('sbs-advanced-diag')).toBeNull()
     const text = panel.view.container.textContent ?? ''
-    expect(text).not.toContain('[')
-    expect(text).not.toContain('{')
     expect(text).not.toContain('"pressed"')
   })
 
@@ -521,7 +527,7 @@ describe('scope and privacy', () => {
     }
   })
 
-  it('renders nothing at all when the game has no teams', () => {
+  it('shows Controllers empty state when the game has no teams', () => {
     const noTeams: Record<string, unknown> = teamBoardGameFile(undefined, richBoardConfig())
     delete noTeams.teams
     const imported = importGameFromUnknown(noTeams)
@@ -531,16 +537,28 @@ describe('scope and privacy', () => {
     store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT, definition: imported.definition })
     store.dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: AT })
     const game = store.getState().session?.game
-    const { container } = render(
+    render(
       <GamepadInputHostPanel
         dispatch={store.dispatch}
         game={game!}
         clock={createManualClock(AT)}
         source={fakeGamepadSource()}
         scheduler={fakePollDriver()}
+        persistenceAdapter={createMemoryPersistenceAdapter()}
+        webHidTransport={createFakeWebHidTransport({ available: false })}
       />,
     )
-    expect(container).toBeEmptyDOMElement()
+    expect(screen.getByTestId('gih-empty-teams')).toBeInTheDocument()
+    expect(screen.getByTestId('gih-empty-teams-message')).toHaveTextContent(/Game Import/i)
+    expect(screen.queryByTestId('sbs')).toBeNull()
+  })
+
+  it('shows supported-profile Connect controls when teams exist', () => {
+    renderPanel()
+    expect(screen.getByTestId('sbs-supported-profile')).toBeInTheDocument()
+    expect(screen.getByTestId('sbs-connect')).toBeInTheDocument()
+    expect(screen.getByTestId('sbs-transport-health')).toHaveTextContent('unsupported-api')
+    expect(screen.getByTestId('sbs-keyboard-fallback')).toBeInTheDocument()
   })
 })
 

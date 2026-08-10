@@ -20,6 +20,8 @@ import {
 } from '../test/gamepadFixtures'
 import { GAMEPAD_DEVICE_CLASSIFICATION_LABEL } from '../input/gamepadDeviceProfile'
 import { GAMEPAD_DEVICE_CLASSIFICATION_MESSAGE } from '../input/gamepadDeviceProfile'
+import { createMemoryPersistenceAdapter } from '../persistence'
+import { createFakeWebHidTransport } from '../input/webHidTransport'
 
 /**
  * Sony Buzz! setup section — component behaviour (Slice 10).
@@ -87,6 +89,8 @@ function renderPanel(store: SessionStore = boardStore()): Panel {
       clock={clock}
       source={source}
       scheduler={driver}
+      persistenceAdapter={createMemoryPersistenceAdapter()}
+      webHidTransport={createFakeWebHidTransport({ available: false })}
     />,
   )
   return {

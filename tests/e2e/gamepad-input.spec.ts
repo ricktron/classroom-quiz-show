@@ -448,3 +448,35 @@ test('simulated Sony Buzz candidate supports setup capture, apply, and test mode
   await host.close()
   await display.close()
 })
+
+test('Controllers empty state and supported-profile host surface (Slice 21)', async ({
+  context,
+}) => {
+  test.slow()
+  const host = await context.newPage()
+  const display = await context.newPage()
+  await openHost(host)
+  await openDisplay(display)
+
+  await host.getByRole('button', { name: /initialize \/ reset session/i }).click()
+  await host.getByRole('button', { name: /initialize sample game/i }).click()
+  await host.getByRole('button', { name: /advance to next round/i }).click()
+  await expect(host.getByTestId('gih-empty-teams')).toBeVisible()
+  await expect(host.getByTestId('gih-empty-teams-message')).toContainText(/Game Import/i)
+
+  await startBoard(host)
+  await expect(host.getByTestId('sbs-supported-profile')).toBeVisible()
+  await expect(host.getByTestId('sbs-connect')).toBeVisible()
+  await expect(host.getByTestId('sbs-slot-1')).toBeVisible()
+  await expect(host.getByTestId('sbs-keyboard-fallback')).toContainText(
+    /Keyboard buzzing remains available/i,
+  )
+
+  const displayHtml = (await display.content()).toLowerCase()
+  for (const absent of ['sony buzz', '054c', '1000', 'webhid', 'sbs-supported-profile']) {
+    expect(displayHtml, `display must not contain "${absent}"`).not.toContain(absent)
+  }
+
+  await host.close()
+  await display.close()
+})

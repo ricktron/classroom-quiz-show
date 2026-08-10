@@ -70,13 +70,18 @@ Slices 1–20 are Complete. Phase 2B’s MVP consumers (Slices 17–18) are both
 `Complete`. Phase 3 design-system readiness has served the theme-foundation →
 audience-display sequence
 ([`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)).
-**Recommended next action:** next planned frontier is Slice 21 — Sony Buzz
-Supported-Profile Operationalization; implementation requires separate owner
-authorization (`PLANNED` / not started / not yet authorized). Do **not** begin
-Slice 21, Slice 22 audio, Slice 23 qualification, or post-MVP work from this
-handoff alone. Theme song remains post-MVP. `CQS-OD-066` remains unresolved.
-The inherited Final mid-refresh recovery flake remains unresolved and was not
-repaired by Slice 19 or Slice 20.
+**Recommended next action:** Slice 21 — Sony Buzz Supported-Profile
+Operationalization is authorized
+(`AUTHORIZE-CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE-IMPLEMENTATION-1`) with
+implementation on `feat/slice-21-sony-buzz-supported-profile` from exact base
+`0433f30d9a950d0a196feaf5bb7a57411df77e37`. Slice 21 is **not** `Complete`:
+**FINAL FOUR-HANDSET PHYSICAL RC: OWED** (handset #3 / group `15–19`). See
+ADR-019 and
+[`../receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md`](../receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md).
+Do **not** begin Slice 22 audio, Slice 23 qualification, or post-MVP work from
+this handoff alone. Theme song remains post-MVP. `CQS-OD-066` remains
+unresolved. The inherited Final mid-refresh recovery flake remains unresolved
+and was not repaired by Slice 19 or Slice 20.
 
 Coding agents and contributors should read root
 [`../../AGENTS.md`](../../AGENTS.md) before changing the repository. Claude

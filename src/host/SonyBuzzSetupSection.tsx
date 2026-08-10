@@ -22,16 +22,28 @@ import {
   type LocalInputAction,
 } from '../input/logicalAction'
 import type { GamepadControlRef, GamepadMapping } from '../input/gamepadMapping'
+import {
+  SONY_BUZZ_COLORS,
+  SONY_BUZZ_HANDSET_SLOT_COUNT,
+  SONY_BUZZ_RC_OWED_NOTE,
+  SONY_BUZZ_SUPPORTED_PROFILE_ID,
+  sonyBuzzSlotId,
+  type SonyBuzzSlotId,
+  type SonyBuzzSlotTeamAssociation,
+} from '../input/sonyBuzzSupportedProfile'
+import type { SonyBuzzTransportSnapshot } from '../input/sonyBuzzKeepAliveLifecycle'
 import type { GamepadControllerInfo } from './useGamepadBuzzInput'
 import './SonyBuzzSetupSection.css'
 
 /**
- * Host-private Sony Buzz! setup surface (Slice 10).
+ * Host-private Sony Buzz! setup surface (Slices 10 + 21).
  *
  * A bounded child of {@link GamepadInputHostPanel}. It does not own a poll loop —
  * capture and test-mode edges arrive from the parent’s single
- * `useGamepadBuzzInput` lifecycle. It scores nothing, arms nothing, and never
- * claims hardware support.
+ * `useGamepadBuzzInput` lifecycle. It scores nothing, arms nothing.
+ *
+ * Slice 21 adds the supported Namtai Wbuzz profile (WebHID keep-alive +
+ * host-private team associations). Manual capture remains available.
  */
 
 export interface SonyBuzzSetupSectionProps {
@@ -53,6 +65,20 @@ export interface SonyBuzzSetupSectionProps {
   /** Deliver a captured control from the parent poll owner. */
   readonly pendingCapture: GamepadControlRef | null
   readonly onPendingCaptureConsumed: () => void
+  /** Slice 21 supported-profile controls. */
+  readonly supportedProfile?: SonyBuzzSupportedProfileSectionProps
+}
+
+export interface SonyBuzzSupportedProfileSectionProps {
+  readonly transport: SonyBuzzTransportSnapshot
+  readonly associations: readonly SonyBuzzSlotTeamAssociation[]
+  readonly mappingStatus: string
+  readonly wbuzzPresent: boolean
+  readonly onConnect: () => void
+  readonly onDisableKeepAlive: () => void
+  readonly onSetSlotTeam: (slotId: SonyBuzzSlotId, teamId: string | null) => void
+  readonly onSaveAssociations: () => void
+  readonly onClearSavedMapping: () => void
 }
 
 export interface SonyBuzzTestObservation {
@@ -73,6 +99,150 @@ function mappingWords(mapping: GamepadReportedMapping): string {
   return `browser mapping “${mapping.value}”`
 }
 
+function SupportedProfileBlock({
+  teams,
+  supportedProfile,
+}: {
+  teams: readonly TeamDefinition[]
+  supportedProfile: SonyBuzzSupportedProfileSectionProps
+}) {
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const slots = useMemo(() => {
+    const map = new Map<SonyBuzzSlotId, string>()
+    for (const a of supportedProfile.associations) map.set(a.slotId, a.teamId)
+    return map
+  }, [supportedProfile.associations])
+
+  return (
+    <div className="sbs__supported" data-testid="sbs-supported-profile">
+      <h5 className="sbs__heading">Supported profile (Namtai Wbuzz)</h5>
+      <p className="host__note" data-testid="sbs-profile-id">
+        Profile <code>{SONY_BUZZ_SUPPORTED_PROFILE_ID}</code> — exact USB{' '}
+        <code>054c:1000</code> only. Receiver keep-alive is health-only; Gamepad
+        remains the gameplay input path. Keyboard buzzing stays available.
+      </p>
+
+      <dl className="sbs__status" data-testid="sbs-transport-status">
+        <dt>Status</dt>
+        <dd data-testid="sbs-transport-health">{supportedProfile.transport.health}</dd>
+        <dt>Message</dt>
+        <dd data-testid="sbs-transport-message">{supportedProfile.transport.teacherMessage}</dd>
+        <dt>Gamepad Wbuzz</dt>
+        <dd data-testid="sbs-wbuzz-present">
+          {supportedProfile.wbuzzPresent
+            ? 'Detected (20 buttons)'
+            : 'Not detected yet — press a handset after Connect'}
+        </dd>
+        <dt>Saved mapping</dt>
+        <dd data-testid="sbs-mapping-status">{supportedProfile.mappingStatus}</dd>
+      </dl>
+
+      <div className="sbs__actions">
+        <button
+          type="button"
+          className="btn btn--secondary"
+          data-testid="sbs-connect"
+          onClick={() => supportedProfile.onConnect()}
+        >
+          Connect Sony Buzz
+        </button>
+        <button
+          type="button"
+          className="btn btn--secondary"
+          data-testid="sbs-disable-keepalive"
+          onClick={() => supportedProfile.onDisableKeepAlive()}
+        >
+          Disable Sony Buzz for now
+        </button>
+      </div>
+
+      <h5 className="sbs__heading">Team assignments (handset slots)</h5>
+      <p className="host__note">
+        Slots are profile positions, not physical handset numbers. Slot 4
+        (buttons 15–19) is final RC owed until four-handset certification.
+      </p>
+      <ul className="sbs__slot-list" data-testid="sbs-slot-assignments">
+        {Array.from({ length: SONY_BUZZ_HANDSET_SLOT_COUNT }, (_, i) => {
+          const slotId = sonyBuzzSlotId(i)!
+          const value = slots.get(slotId) ?? ''
+          return (
+            <li key={slotId}>
+              <label>
+                Slot {slotId}
+                {slotId === 4 ? ' (RC owed)' : ''}
+                <select
+                  data-testid={`sbs-slot-${slotId}`}
+                  value={value}
+                  onChange={(e) => {
+                    const next = e.target.value
+                    supportedProfile.onSetSlotTeam(slotId, next.length === 0 ? null : next)
+                  }}
+                >
+                  <option value="">Unassigned</option>
+                  {teams.map((team) => (
+                    <option key={team.id} value={team.id}>
+                      {team.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </li>
+          )
+        })}
+      </ul>
+      <div className="sbs__actions">
+        <button
+          type="button"
+          className="btn btn--secondary"
+          data-testid="sbs-save-mapping"
+          onClick={() => supportedProfile.onSaveAssociations()}
+        >
+          Save team mapping
+        </button>
+        <button
+          type="button"
+          className="btn btn--secondary"
+          data-testid="sbs-clear-mapping"
+          onClick={() => supportedProfile.onClearSavedMapping()}
+        >
+          Clear saved Sony mapping
+        </button>
+      </div>
+
+      <p className="host__note">
+        Test mode below reports colors ({SONY_BUZZ_COLORS.join(', ')}) without
+        changing the game. Secondary colors never score.
+      </p>
+
+      <button
+        type="button"
+        className="btn btn--secondary"
+        data-testid="sbs-toggle-advanced"
+        onClick={() => setShowAdvanced((v) => !v)}
+      >
+        {showAdvanced ? 'Hide advanced diagnostics' : 'Advanced diagnostics'}
+      </button>
+      {showAdvanced ? (
+        <pre className="sbs__diag" data-testid="sbs-advanced-diag">
+          {JSON.stringify(
+            {
+              health: supportedProfile.transport.health,
+              sends: supportedProfile.transport.sends,
+              failures: supportedProfile.transport.failures,
+              lastError: supportedProfile.transport.lastError,
+              deviceLabel: supportedProfile.transport.deviceLabel,
+              framingOk: supportedProfile.transport.framingOk,
+              rcOwed: SONY_BUZZ_RC_OWED_NOTE,
+            },
+            null,
+            2,
+          )}
+        </pre>
+      ) : null}
+    </div>
+  )
+}
+
 export function SonyBuzzSetupSection({
   teams,
   controllers,
@@ -86,6 +256,7 @@ export function SonyBuzzSetupSection({
   lastTestObservation,
   pendingCapture,
   onPendingCaptureConsumed,
+  supportedProfile,
 }: SonyBuzzSetupSectionProps) {
   const initialTeamId = teams[0]?.id ?? ''
   const [teamId, setTeamId] = useState<string>(initialTeamId)
@@ -157,14 +328,21 @@ export function SonyBuzzSetupSection({
   return (
     <section className="sbs" aria-labelledby="sbs-title" data-testid="sbs">
       <h4 id="sbs-title" className="sbs__heading">
-        Sony Buzz! setup (session-local)
+        Sony Buzz
       </h4>
       <p className="host__note" data-testid="sbs-intro">
-        Guided capture for a preferred hardware target. A candidate match is not
+        Supported Namtai Wbuzz profile uses host-private saved team mapping.
+        Manual guided capture remains available below. A candidate match is not
         proof the hardware works here. Keyboard buzzing remains available.
-        Assignments from this setup are for this browser tab only and are lost when
-        this page reloads.
+        Manual capture assignments from this setup are for this browser tab only
+        and are lost when this page reloads.
       </p>
+
+      {supportedProfile ? (
+        <SupportedProfileBlock teams={teams} supportedProfile={supportedProfile} />
+      ) : null}
+
+      <h5 className="sbs__heading">Manual capture (advanced)</h5>
 
       <p className="host__note" data-testid="sbs-surface-state" aria-live="polite">
         {surfaceState}

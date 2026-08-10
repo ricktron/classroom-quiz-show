@@ -6,6 +6,7 @@ export type PersistenceStoreName =
   | 'coordination'
   | 'completedSummaries'
   | 'packMediaAssets'
+  | 'sonyBuzzMappings'
 
 export interface PersistenceTx {
   get(store: PersistenceStoreName, key: string): Promise<unknown>

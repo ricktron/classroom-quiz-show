@@ -37,6 +37,9 @@ import {
   SonyBuzzSetupSection,
   type SonyBuzzTestObservation,
 } from './SonyBuzzSetupSection'
+import { useSonyBuzzSupportedProfile } from './useSonyBuzzSupportedProfile'
+import type { PersistenceAdapter } from '../persistence'
+import type { WebHidTransport } from '../input/webHidTransport'
 import { systemClock, type Clock } from '../time/clock'
 import './GamepadInputHostPanel.css'
 
@@ -83,6 +86,10 @@ export interface GamepadInputHostPanelProps {
   readonly source?: GamepadSource
   /** Injectable poll scheduler. Defaults to one `requestAnimationFrame` loop. */
   readonly scheduler?: GamepadPollScheduler
+  /** Injectable persistence for Sony mapping (tests). */
+  readonly persistenceAdapter?: PersistenceAdapter
+  /** Injectable WebHID transport (tests). */
+  readonly webHidTransport?: WebHidTransport
 }
 
 /** What the panel is currently doing about button capture. */
@@ -121,8 +128,11 @@ export function GamepadInputHostPanel({
   clock = systemClock,
   source,
   scheduler,
+  persistenceAdapter,
+  webHidTransport,
 }: GamepadInputHostPanelProps) {
   const teams = game.definition.teams
+  const gameId = game.definition.id
 
   const [enabled, setEnabled] = useState(false)
   const [capture, setCapture] = useState<CaptureState>({ mode: 'idle' })
@@ -139,6 +149,14 @@ export function GamepadInputHostPanel({
   const [sonyPendingCapture, setSonyPendingCapture] = useState<GamepadControlRef | null>(null)
   const [lastTestObservation, setLastTestObservation] =
     useState<SonyBuzzTestObservation | null>(null)
+
+  const sony = useSonyBuzzSupportedProfile({
+    gameId,
+    teams,
+    controllers: diagnostics.controllers,
+    transport: webHidTransport,
+    persistenceAdapter,
+  })
 
   // The loaded game can change under the panel. Bindings for teams that no longer
   // exist are pruned rather than left pointing at nothing; a RENAMED team keeps
@@ -215,6 +233,21 @@ export function GamepadInputHostPanel({
     }
   }, [])
 
+  // Apply supported-profile materialized mapping when associations/controller change.
+  const sonyMappingKey = useMemo(() => {
+    const m = sony.materializedMapping
+    return `${sony.wbuzzController?.controllerIndex ?? 'none'}|${m.bindings
+      .map((b) => `${b.controllerIndex}:${b.buttonIndex}:${b.teamId}:${b.action.kind}`)
+      .join(';')}`
+  }, [sony.materializedMapping, sony.wbuzzController?.controllerIndex])
+
+  useEffect(() => {
+    if (sony.materializedMapping.bindings.length === 0) return
+    const validation = validateGamepadMapping(sony.materializedMapping, teams)
+    if (!validation.ok) return
+    setMapping(validation.mapping)
+  }, [sonyMappingKey, sony.materializedMapping, teams])
+
   useGamepadBuzzInput({
     enabled,
     capturing,
@@ -228,6 +261,7 @@ export function GamepadInputHostPanel({
     onOutcome,
     onDiagnostics: setDiagnostics,
     onCapture,
+    reprimeToken: sony.reprimeToken,
   })
 
   const applyMapping = useCallback(
@@ -264,7 +298,22 @@ export function GamepadInputHostPanel({
   }, [])
 
   if (game.gameLifecycle !== 'active') return null
-  if (teams.length === 0) return null
+
+  if (teams.length === 0) {
+    return (
+      <section className="gih" aria-labelledby="gih-title" data-testid="gih-empty-teams">
+        <div className="foundation__tag foundation__tag--slice9">
+          Controller input — host controls, private
+        </div>
+        <h3 id="gih-title">Controllers</h3>
+        <p className="gih__hint" data-testid="gih-empty-teams-message">
+          Controller and Sony Buzz setup need a game with teams. Use Game Import to
+          load a teams-bearing sample (for example the category-board sample file),
+          then return here. Keyboard buzzing also needs teams once a round is open.
+        </p>
+      </section>
+    )
+  }
 
   const supported = diagnostics.status !== 'unsupported'
   const readable = diagnostics.status === 'ok'
@@ -275,7 +324,7 @@ export function GamepadInputHostPanel({
   return (
     <section className="gih" aria-labelledby="gih-title">
       <div className="foundation__tag foundation__tag--slice9">
-        Controller input (Slice 9) — host controls, private
+        Controller input (Slices 9–21) — host controls, private
       </div>
       <h3 id="gih-title">Controllers</h3>
 
@@ -353,11 +402,12 @@ export function GamepadInputHostPanel({
 
       <h4 className="gih__heading">Assign a button</h4>
       <p className="host__note" data-testid="gih-lifetime-note">
-        Controller buttons are settings for this browser tab only. They are not
-        part of the game file, not part of the game’s history, and{' '}
-        <strong>they are lost when this page reloads</strong>. Only the buzz action
-        does anything in this version — the other actions can be assigned and are
-        deliberately inert.
+        Manual controller buttons are settings for this browser tab only. They are
+        not part of the game file, not part of the game’s history, and{' '}
+        <strong>they are lost when this page reloads</strong>. Sony Buzz supported
+        profile team assignments can be saved host-privately in this browser. Only
+        the buzz action does anything in this version — the other actions can be
+        assigned and are deliberately inert.
       </p>
 
       <div className="gih__action-picker">
@@ -477,6 +527,23 @@ export function GamepadInputHostPanel({
         lastTestObservation={lastTestObservation}
         pendingCapture={sonyPendingCapture}
         onPendingCaptureConsumed={onSonyPendingCaptureConsumed}
+        supportedProfile={{
+          transport: sony.transport,
+          associations: sony.associations,
+          mappingStatus: sony.mappingStatus,
+          wbuzzPresent: sony.wbuzzController != null,
+          onConnect: () => {
+            void sony.connect()
+          },
+          onDisableKeepAlive: () => sony.disableKeepAlive(),
+          onSetSlotTeam: sony.setSlotTeam,
+          onSaveAssociations: () => {
+            void sony.saveAssociations()
+          },
+          onClearSavedMapping: () => {
+            void sony.clearSavedMapping()
+          },
+        }}
       />
     </section>
   )

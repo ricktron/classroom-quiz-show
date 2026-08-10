@@ -525,11 +525,14 @@ Slices 21–23 remain Planned and unauthorized under the **23-slice** MVP plan
 ([`docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md);
 prior Amendment 003:
 [`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
-The next planned product frontier is Slice 21 — Sony Buzz Supported-Profile
-Operationalization (`PLANNED` / not started / separately unauthorized). Slice 22
-Minimal Presentation Audio and Slice 23 Classroom Release Qualification remain
-unauthorized. Theme song remains post-MVP. The inherited Final mid-refresh
-recovery flake remains unresolved; `CQS-OD-066` remains unresolved.
+Slice 21 — Sony Buzz Supported-Profile Operationalization is authorized and in
+delivery (direct WebHID keep-alive for Namtai Wbuzz `054c:1000`; IndexedDB
+**4**; ADR-019) but **not** `Complete`: final four-handset physical RC remains
+owed. Slice 22 Minimal Presentation Audio and Slice 23 Classroom Release
+Qualification remain unauthorized. Theme song remains post-MVP. The inherited
+Final mid-refresh recovery flake remains unresolved; `CQS-OD-066` remains
+unresolved. See
+[`docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md`](docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md).
 
 > ⚠️ **Sony Buzz physical certification is bounded, not a supported-hardware
 > list.** OADL2-S07 completed physical certification for one exact tested

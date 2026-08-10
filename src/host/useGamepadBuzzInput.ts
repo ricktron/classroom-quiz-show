@@ -208,6 +208,12 @@ export interface UseGamepadBuzzInputOptions {
   readonly onDiagnostics?: (diagnostics: GamepadDiagnostics) => void
   /** Told about the first fresh press while capturing. Suppresses gameplay. */
   readonly onCapture?: (control: GamepadControlRef) => void
+  /**
+   * Opaque token from an external lifecycle owner (e.g. WebHID keep-alive).
+   * Any change forces a Gamepad edge-baseline re-prime without creating a second
+   * poll loop.
+   */
+  readonly reprimeToken?: number
 }
 
 export function useGamepadBuzzInput({
@@ -223,6 +229,7 @@ export function useGamepadBuzzInput({
   onOutcome,
   onDiagnostics,
   onCapture,
+  reprimeToken = 0,
 }: UseGamepadBuzzInputOptions): void {
   // Everything the loop reads lives in a ref, so the loop is registered ONCE and
   // is never torn down and rebuilt as game state changes. Re-registering a poll
@@ -265,15 +272,16 @@ export function useGamepadBuzzInput({
    * the passive effect cannot treat a held or just-pressed button as a fresh
    * gameplay edge after leaving capture/test mode (or after enable/mapping change).
    */
-  const gate = useRef({ enabled, capturing, testMode, mapping })
+  const gate = useRef({ enabled, capturing, testMode, mapping, reprimeToken })
   if (
     gate.current.enabled !== enabled ||
     gate.current.capturing !== capturing ||
     gate.current.testMode !== testMode ||
-    gate.current.mapping !== mapping
+    gate.current.mapping !== mapping ||
+    gate.current.reprimeToken !== reprimeToken
   ) {
     baseline.current = null
-    gate.current = { enabled, capturing, testMode, mapping }
+    gate.current = { enabled, capturing, testMode, mapping, reprimeToken }
   }
 
   // Resolved once each. Defaults are built here rather than in the parameter list
@@ -292,7 +300,7 @@ export function useGamepadBuzzInput({
   // (Defense in depth beside the synchronous gate clear above.)
   useEffect(() => {
     baseline.current = null
-  }, [enabled, capturing, testMode, mapping])
+  }, [enabled, capturing, testMode, mapping, reprimeToken])
 
   useEffect(() => {
     const reprime = () => {
