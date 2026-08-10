@@ -24,14 +24,30 @@ Stable Slice 22 architecture on canonical main: host-only presentation cues
 offline WAVs; ADR-020 **Accepted**; no authoritative contract change; no new
 runtime dependency.
 **Slice 21 — Sony Buzz Supported-Profile Operationalization is terminally
-`Complete`.** Product PR [#55](https://github.com/ricktron/classroom-quiz-show/pull/55)
-squash `b1e6d669e91b55b20261e86a47d7818f069b0252` from accepted head
-`3bd6c91330298c4374db137e3ce220e0d28a5c2f` (merged **2026-08-10T14:39:15Z**).
-See
-[`../architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md`](../architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md)
+`Complete`.** Product implementation PR
+[#55](https://github.com/ricktron/classroom-quiz-show/pull/55) was exact-head
+squash-merged at `b1e6d669e91b55b20261e86a47d7818f069b0252` from accepted exact
+head `3bd6c91330298c4374db137e3ce220e0d28a5c2f`, merged **2026-08-10T14:39:15Z**,
+sole parent `0433f30d9a950d0a196feaf5bb7a57411df77e37`, accepted-head and squash
+trees identical at `22c5e3d3416db05cbd28b3893d07780d72ae1af9`, direct
+head-to-squash diff empty, exactly **37** paths; final independent acceptance
+`CQS-SLICE-21-PR55-FINAL-EXACT-HEAD-ACCEPTANCE-REVIEW-ES-1` **PASS**; atomic
+expected-head REST squash merge under
+`AUTHORIZE-CQS-SLICE-21-PR55-EXACT-HEAD-SQUASH-MERGE-AND-TERMINAL-POST-MERGE-VERIFICATION-1`;
+terminal post-merge CI run `31399326956` **success**; Pages run `31399326758`
+**success**. See
+[`../architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md`](../architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md),
+[`../receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md`](../receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md),
+[`../receipts/2026-08-10-slice-21-pairing-friction-ux-reconciliation.md`](../receipts/2026-08-10-slice-21-pairing-friction-ux-reconciliation.md),
 and
 [`../receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md`](../receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md).
-**PR #55 requires no further product review or merge action.**
+**PR #55 requires no further product review or merge action.** No further
+Slice 21 product delivery, repair, or merge lane is owed.
+Stable Slice 21 architecture on canonical main: profile
+`cqs.sony-buzz.namtai-wbuzz-wireless.v1`; Namtai Wbuzz `054c:1000`; WebHID
+keep-alive / Gamepad gameplay / keyboard fallback; IndexedDB **4**; Sony mapping
+**1**; supported profile **1**; three-controller RC PASS (groups `0–4` / `5–9` /
+`10–14`; slot 4 historical / owner-accepted); F-UX-01 LOW polish debt retained.
 **Slice 20 — Spreadsheet Authoring Seed is terminally `Complete`.** Product
 implementation PR [#52](https://github.com/ricktron/classroom-quiz-show/pull/52)
 was exact-head squash-merged at `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0` from

@@ -162,24 +162,6 @@ After this reconciliation lands on `main`:
 
 Historical Slice 21 and earlier receipts left unchanged by design.
 
-## Out-of-scope observations (not acted on)
-
-Reserved for Program Orchestrator handoff only — **not** designed or
-implemented here:
-
-### A. Teacher-host usability
-
-Current teacher-facing operating workflow is not sufficiently discoverable
-without detailed instructions; foundation/testing/import/device panels obscure
-the normal game-running path.
-
-### B. Cross-device LAN
-
-Current host/display synchronization uses browser `BroadcastChannel` and does
-not provide synchronized host/display operation across two physical computers.
-Cross-device LAN/Pi/phone-host operation would require a network-capable
-transport.
-
 ## Non-claims
 
 - This receipt does **not** merge itself.
@@ -187,9 +169,8 @@ transport.
 - F-UX-01 is **not** repaired here.
 - Inherited Final flake is **not** repaired here.
 - `CQS-OD-066` remains unresolved.
-- No product-code, WAV, generator, Vite/PWA, dependency, host-UX, or LAN change
-  in this lane.
-- No speculative successor architecture inserted into Slice 22 canon.
+- No product-code, WAV, generator, Vite/PWA, or dependency change in this lane.
+- No successor work was designed or implemented in this lane.
 
 ## Verification (this lane)
 

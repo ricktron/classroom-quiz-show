@@ -1,21 +1,6 @@
 # Status
 
 **Current completed product slice:** Slice 22 — Minimal Presentation Audio
-**Slice 21 state:** **Complete** — PR
-[#55](https://github.com/ricktron/classroom-quiz-show/pull/55) was exact-head
-squash-merged at `b1e6d669e91b55b20261e86a47d7818f069b0252` (merged
-**2026-08-10T14:39:15Z**) from accepted exact head
-`3bd6c91330298c4374db137e3ce220e0d28a5c2f` (authorized canonical base
-`0433f30d9a950d0a196feaf5bb7a57411df77e37`, the squash commit's **sole**
-parent). Accepted-head and squash trees are identical
-(`22c5e3d3416db05cbd28b3893d07780d72ae1af9`); exactly **37** paths. Exact
-supported profile `cqs.sony-buzz.namtai-wbuzz-wireless.v1`; IndexedDB **4**;
-ADR-019 **Accepted**. Three-controller physical product RC **PASS**. Canonical
-reconciliation via PR [#56](https://github.com/ricktron/classroom-quiz-show/pull/56)
-and status repair PR [#57](https://github.com/ricktron/classroom-quiz-show/pull/57).
-**PR #55 / #56 / #57 require no further Slice 21 product or reconciliation
-action.** See
-[`receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md`](receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md).
 **Slice 20 state:** **Complete** — PR
 [#52](https://github.com/ricktron/classroom-quiz-show/pull/52) was exact-head
 squash-merged at `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0` (merged
