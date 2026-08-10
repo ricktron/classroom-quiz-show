@@ -26,6 +26,8 @@ import {
 import { getSharedPackResourceRegistry } from '../pack/resourceRegistry'
 import { PersistenceControls } from './PersistenceControls'
 import { CompletedSummaryLedgerPanel } from './CompletedSummaryLedgerPanel'
+import { usePresentationAudio } from './usePresentationAudio'
+import { AudioControls } from './AudioControls'
 import './FoundationControls.css'
 
 /**
@@ -72,6 +74,7 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
     storeEpoch: persistence.storeEpoch,
   })
   useHostSync(store, clock)
+  const presentationAudio = usePresentationAudio(store)
 
   const now = () => clock.now()
   const hasSession = state.session !== null
@@ -136,6 +139,8 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
         dispatch={dispatch}
         getHistory={() => store.getHistory()}
       />
+
+      <AudioControls audio={presentationAudio} />
 
       <fieldset
         className="foundation__session-controls"

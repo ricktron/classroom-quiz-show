@@ -241,9 +241,14 @@ game-file schema **1**; GameDefinition model **1**; private active-session wire
 competitive profile **1**. Three-controller physical product RC **PASS**
 (groups `0–4` / `5–9` / `10–14`; slot 4 / `15–19` historical / owner-accepted).
 Known LOW polish debt **F-UX-01**: ordinary setup still exposes some
-WebHID/Gamepad jargon. The next planned product frontier is Slice 22 — Minimal
-Presentation Audio; it remains **`Planned` / not started / separately
-unauthorized**. See
+WebHID/Gamepad jargon. Slice 22 — Minimal Presentation Audio is **authorized
+and in implementation review** on branch
+`feat/slice-22-minimal-presentation-audio` under
+`AUTHORIZE-CQS-SLICE-22-MINIMAL-PRESENTATION-AUDIO-IMPLEMENTATION-2` (exact base
+`dd2fd4a09b20764f69505bbd76a96782cc895453`). It is **not** canonically
+`Complete` until independent exact-head review, owner listening RC, and merge.
+See ADR-020 and the Slice 22 implementation receipt. Slice 23 remains
+unauthorized. See
 [`architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md`](architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md),
 [`receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md`](receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md),
 [`receipts/2026-08-10-slice-21-pairing-friction-ux-reconciliation.md`](receipts/2026-08-10-slice-21-pairing-friction-ux-reconciliation.md),
@@ -529,8 +534,8 @@ owner accepted three available handsets as sufficient (groups `0–4` / `5–9` 
 `10–14`; slot 4 / `15–19` historical / owner-accepted — not a fresh four-handset
 claim). Terminal post-merge verification **PASS**. See ADR-019 and
 [`receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md`](receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md).
-**Next planned frontier:** Slice 22 Minimal Presentation Audio remains
-`Planned` / unauthorized. Slice 20 is `Complete` via PR #52; Slice 19 is
+**Next planned frontier:** Slice 22 Minimal Presentation Audio is **in
+implementation review** (not Complete; owner listening RC pending). Slice 20 is `Complete` via PR #52; Slice 19 is
 `Complete` via PR #50. No further Phase 3 readiness registration, Slice 17,
 Slice 18, Slice 19, Slice 20, or Slice 21 product lane is owed.
 
@@ -1853,10 +1858,10 @@ that reconciliation adds evidence only and grants **no** product authority.
 **Current** MVP count is the **23-slice** plan.
 
 **Recommended next action:**
-return to the Program Orchestrator to obtain separate owner authorization for
-**Slice 22 — Minimal Presentation Audio**. Slice 22 remains `PLANNED`, not
-started, and unauthorized. Do **not** begin Slice 22 audio, Slice 23
-qualification, or post-MVP work from this surface. Known LOW debt **F-UX-01**
+independent exact-head review of the Slice 22 implementation PR (owner listening
+RC pending before merge acceptance). Slice 22 is **not** canonically Complete.
+Do **not** begin Slice 23 qualification or post-MVP work from this surface.
+Known LOW debt **F-UX-01**
 (demote WebHID/Gamepad jargon from ordinary setup) is retained polish, not a
 Slice 21 blocker. Post-MVP arcs remain inactive; theme song remains post-MVP;
 `CQS-OD-066` remains unresolved; the inherited Final mid-refresh recovery flake
@@ -1876,7 +1881,7 @@ the owner direction recorded in
 [`handoff/CURRENT.md`](handoff/CURRENT.md). **Team-specific / custom /
 identity-pack buzz-in audio remains deferred post-MVP owner direction**
 (recorded in the same place, 2026-07-27). Distinct from that deferral,
-**Minimal Presentation Audio** is planned MVP Slice 22 under merged Amendment
-004 and remains **unauthorized for implementation**. No audio file, playback
-code, audio schema, audio event, or sound-pack manifest exists yet; the active
+**Minimal Presentation Audio** is MVP Slice 22 under merged Amendment
+004 and is **in implementation review** (not Complete; owner listening RC
+pending). Slice 23 remains unauthorized. The active
 MVP roadmap is **23 slices**.

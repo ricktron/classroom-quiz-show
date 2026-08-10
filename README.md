@@ -531,14 +531,16 @@ Wbuzz `054c:1000`); direct WebHID keep-alive; Gamepad gameplay input; keyboard
 fallback; IndexedDB **4**; ADR-019. Three-controller physical product RC
 **PASS** (groups `0–4` / `5–9` / `10–14`; slot 4 / `15–19` historical /
 owner-accepted — not a fresh four-handset claim). Slices 1–21 are Complete.
-Slice 22 Minimal Presentation Audio and Slice 23 Classroom Release Qualification
-remain Planned and unauthorized under the **23-slice** MVP plan
+Slice 22 Minimal Presentation Audio is **in implementation review** (not
+Complete; owner listening RC pending; see ADR-020). Slice 23 Classroom Release
+Qualification remains Planned and unauthorized under the **23-slice** MVP plan
 ([`docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md);
 prior Amendment 003:
 [`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
 Theme song remains post-MVP. The inherited Final mid-refresh recovery flake
 remains unresolved; `CQS-OD-066` remains unresolved. See
-[`docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md`](docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md)
+[`docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md`](docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md),
+[`docs/architecture/ADR-020-minimal-presentation-audio.md`](docs/architecture/ADR-020-minimal-presentation-audio.md),
 and
 [`docs/receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md`](docs/receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md).
 

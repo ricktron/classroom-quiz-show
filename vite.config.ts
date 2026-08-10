@@ -30,7 +30,7 @@ export default defineConfig(({ command, isPreview }) => {
         // Precache the app shell. Offline support covers the shell + routes
         // only; no gameplay data is cached (there is no gameplay yet).
         workbox: {
-          globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
+          globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest,wav}'],
           cleanupOutdatedCaches: true,
           clientsClaim: true,
         },

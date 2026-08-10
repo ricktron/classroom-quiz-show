@@ -73,11 +73,14 @@ Slices 1–21 are Complete. Phase 2B’s MVP consumers (Slices 17–18) are both
 `Complete`. Phase 3 design-system readiness has served the theme-foundation →
 audience-display sequence
 ([`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)).
-**Recommended next action:** return to the Program Orchestrator to obtain
-separate owner authorization for **Slice 22 — Minimal Presentation Audio**.
-Slice 22 remains `PLANNED`, not started, and unauthorized. Slice 23 Classroom
-Release Qualification remains unauthorized. Do **not** begin Slice 22 audio,
-Slice 23 qualification, or post-MVP work from this handoff alone. Theme song
+**Recommended next action:** independent exact-head review of the Slice 22
+implementation PR under
+`AUTHORIZE-CQS-SLICE-22-MINIMAL-PRESENTATION-AUDIO-IMPLEMENTATION-2` (exact base
+`dd2fd4a09b20764f69505bbd76a96782cc895453`). Slice 22 is in implementation
+review only — **not** Complete; owner listening RC pending; no merge from this
+handoff. Slice 23 Classroom
+Release Qualification remains unauthorized. Do **not** begin Slice 23
+qualification, or post-MVP work from this handoff alone. Theme song
 remains post-MVP. `CQS-OD-066` remains unresolved. The inherited Final
 mid-refresh recovery flake remains unresolved and was not repaired by
 Slices 19–21. Known LOW debt **F-UX-01** (demote ordinary-setup WebHID/Gamepad
@@ -426,9 +429,9 @@ defers to `AGENTS.md` and adds no separate authority.
   controller RC PASS. See ADR-019 and
   [`../receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md`](../receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md).
   **PR #55 requires no further product review or merge action.**
-- **Slices 22–23:** `Planned`, unstarted, and unauthorized (23-slice plan;
-  Amendment 004). Next planned frontier: Slice 22 — Minimal Presentation Audio
-  (`PLANNED` / not started / requires separate owner authorization).
+- **Slices 22–23:** Slice 22 — Minimal Presentation Audio is **in implementation
+  review** (not Complete; owner listening RC pending). Slice 23 remains
+  `Planned` / unauthorized.
 - **What Slice 14 adds:** the SECOND playable round type, `final-wager` — and
   the important thing about it is where it lives. It is registered by application
   code in the same registry as `category-board`, validated by the same import
@@ -1260,10 +1263,10 @@ Recording this direction authorizes no work of any kind.
 **Recorded 2026-07-27 as deferred team-specific / custom / identity-pack
 direction.** That richer team-sound work remains **not** authorized and is
 **not** MVP Slice 22. Under Amendment 004, the active roadmap is **23 slices**,
-and a distinct **Minimal Presentation Audio** slice (Slice 22) plans a tiny
-generic application-owned cue layer — still **unauthorized for
-implementation**. Nothing in the codebase implements, anticipates, or reserves
-space for audio playback yet.
+and a distinct **Minimal Presentation Audio** slice (Slice 22) delivers a tiny
+generic application-owned cue layer (ADR-020 / Slice 22 implementation receipt;
+in review, not Complete). This deferred team/identity-pack direction remains
+post-MVP.
 
 The owner still wants **optional team buzz-in audio cues** eventually,
 potentially including farm-animal sounds, funny voices, generic game-show
