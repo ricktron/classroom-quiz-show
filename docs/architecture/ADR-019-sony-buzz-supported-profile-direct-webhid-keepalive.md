@@ -79,6 +79,13 @@ Teacher UX must separate receiver transport, controller-input readiness, and
 team-mapping readiness, and expose a guided “Repair controller connection”
 flow using existing Disable → pair → Connect controls.
 
+Owner-observed handset LED cues for that guided flow (supported-profile
+operating cues; not invented meanings): slow blue blink ≈ off; rapid red/blue
+flashes ≈ normal power-on (keep holding); solid blue = pairing-ready; BIND only
+after all participating controllers are solid blue; blink acknowledgement after
+BIND; then RED verification. Prefer observable LED states over approximate
+“N seconds” timing.
+
 ## Decision
 
 ### 1. Exact supported profile

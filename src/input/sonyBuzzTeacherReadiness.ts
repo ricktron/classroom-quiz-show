@@ -238,25 +238,26 @@ export function repairStepCopy(step: Exclude<SonyBuzzRepairStep, 'idle' | 'done'
   switch (step) {
     case 'power-off':
       return {
-        title: 'Step 1 — Power off',
-        body: 'Turn the Buzz controllers off.',
+        title: 'Step 1 — Turn controllers off',
+        body: 'Turn each Buzz controller off. The controller shows the slow blue off-state blink.',
         cta: 'Controllers are off',
       }
     case 'solid-blue':
       return {
-        title: 'Step 2 — Pairing lights',
-        body: 'Hold POWER on each controller for about 4 seconds until its blue pairing light stays on (solid blue). Do not press BIND yet.',
+        title: 'Step 2 — Enter pairing mode',
+        body:
+          'Press and KEEP HOLDING POWER on each controller. You will first see the normal rapid red/blue flashes — that is the normal power-on indication, not pairing-ready yet. Keep holding; do not release at those flashes. Release only when the blue light stays solid. This can take a few seconds; use the solid blue light, not the timer, as your cue. Do not press BIND until every participating controller is solid blue.',
         cta: 'All controller lights are solid blue',
       }
     case 'bind-blink':
       return {
-        title: 'Step 3 — Receiver BIND',
-        body: 'Hold BIND on the receiver until the controllers blink.',
+        title: 'Step 3 — Bind the set',
+        body: 'When every controller has a solid blue light, hold BIND on the receiver. The controllers should blink to acknowledge pairing.',
         cta: 'They blinked',
       }
     case 'observe-red':
       return {
-        title: 'Step 4 — Check controllers',
+        title: 'Step 4 — Verify',
         body: 'Press RED on each controller. Newly responding controllers appear below. You do not need button numbers or browser indexes.',
         cta: null,
       }

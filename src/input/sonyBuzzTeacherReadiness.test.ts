@@ -126,10 +126,27 @@ describe('repair flow order and copy', () => {
     expect(nextRepairStep('observe-red')).toBe('done')
   })
 
-  it('exposes teacher CTAs without BIND+Red shortcut language', () => {
-    expect(repairStepCopy('solid-blue').cta).toBe('All controller lights are solid blue')
-    expect(repairStepCopy('bind-blink').cta).toBe('They blinked')
-    expect(repairStepCopy('solid-blue').body).toMatch(/Do not press BIND yet/i)
-    expect(repairStepCopy('observe-red').body).toMatch(/Press RED/i)
+  it('teaches LED state sequence, not timer-first pairing', () => {
+    const off = repairStepCopy('power-off')
+    expect(off.body).toMatch(/slow blue off-state blink/i)
+
+    const pair = repairStepCopy('solid-blue')
+    expect(pair.cta).toBe('All controller lights are solid blue')
+    expect(pair.body).toMatch(/KEEP HOLDING POWER/i)
+    expect(pair.body).toMatch(/rapid red\/blue flashes/i)
+    expect(pair.body).toMatch(/normal power-on indication/i)
+    expect(pair.body).toMatch(/Keep holding/i)
+    expect(pair.body).toMatch(/do not release at those flashes/i)
+    expect(pair.body).toMatch(/solid blue light, not the timer/i)
+    expect(pair.body).toMatch(/Do not press BIND until every participating controller is solid blue/i)
+    expect(pair.body).not.toMatch(/about 4 seconds until/i)
+
+    const bind = repairStepCopy('bind-blink')
+    expect(bind.cta).toBe('They blinked')
+    expect(bind.body).toMatch(/When every controller has a solid blue light, hold BIND/i)
+    expect(bind.body).toMatch(/blink to acknowledge pairing/i)
+
+    const verify = repairStepCopy('observe-red')
+    expect(verify.body).toMatch(/Press RED/i)
   })
 })

@@ -44,6 +44,23 @@ seven-zero-byte keep-alive.
 - Future Buzzer Check / Controller Tutorial minigame retained as Program
   Orchestrator delta (not implemented).
 
+### Owner-observed LED cue refinement (additive; later same day)
+
+Initial repair copy said “hold POWER ~4 seconds until solid blue.” Fresh owner
+observation refined the teacher cues (copy/test only; no transport change):
+
+- slow blue blink ≈ off state;
+- rapid red/blue flashes ≈ normal power-on (keep holding; do not release yet);
+- solid blue = pairing-ready;
+- BIND only after every participating controller is solid blue;
+- controllers blinking after BIND = pairing acknowledgement;
+- then RED verification.
+
+## Guidance delta (for Program Orchestrator)
+
+Hardware setup instructions should prefer observable device states over
+approximate timing whenever both exist.
+
 ## Physical evidence transfer
 
 | Path | Changed? |

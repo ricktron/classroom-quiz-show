@@ -77,10 +77,14 @@ Operationalization has an authorized implementation candidate under
 RC **PASS** (`CQS-SLICE-21-PR55-THREE-CONTROLLER-PRODUCT-RC-ES-1`); owner
 accepted three available handsets as sufficient for Slice 21 completion
 (groups `0–4` / `5–9` / `10–14`; fourth slot historical / owner-accepted).
-Pairing-friction UX reconciliation is in delivery on PR #55. Slice 21 is
-**not** `Complete` until final exact-head independent acceptance and merge. See
+Pairing-friction UX reconciliation is in delivery on PR #55, including
+owner-observed LED-state pairing cues (off blink → keep holding through rapid
+red/blue → solid blue → BIND → blink ack → RED). Slice 21 is **not**
+`Complete` until final exact-head independent acceptance and merge. See
 ADR-019 and
-[`../receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md`](../receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md).
+[`../receipts/2026-08-10-slice-21-pairing-friction-ux-reconciliation.md`](../receipts/2026-08-10-slice-21-pairing-friction-ux-reconciliation.md).
+**Guidance delta (Program Orchestrator):** hardware setup copy should prefer
+observable device states over approximate timing whenever both exist.
 **Future product delta (Program Orchestrator):** Buzzer Check / Controller
 Tutorial minigame (reaction-time warm-up, full-button teach-in) remains
 out-of-scope for this repair.

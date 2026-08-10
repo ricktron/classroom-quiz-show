@@ -524,14 +524,22 @@ describe('repair controller connection flow', () => {
     fireEvent.click(screen.getByTestId('sbs-repair-connection'))
     expect(screen.getByTestId('sbs-repair-flow')).toBeInTheDocument()
     expect(screen.getByTestId('sbs-repair-keepalive-note')).toHaveTextContent(/paused for pairing/i)
-    expect(screen.getByTestId('sbs-repair-step-power-off')).toHaveTextContent(/Turn the Buzz controllers off/i)
+    expect(screen.getByTestId('sbs-repair-step-power-off')).toHaveTextContent(
+      /slow blue off-state blink/i,
+    )
     fireEvent.click(screen.getByTestId('sbs-repair-advance'))
-    expect(screen.getByTestId('sbs-repair-step-solid-blue')).toHaveTextContent(/Do not press BIND yet/i)
+    const pairing = screen.getByTestId('sbs-repair-step-solid-blue')
+    expect(pairing).toHaveTextContent(/KEEP HOLDING POWER/i)
+    expect(pairing).toHaveTextContent(/rapid red\/blue flashes/i)
+    expect(pairing).toHaveTextContent(/Do not press BIND until every participating controller is solid blue/i)
     expect(screen.getByTestId('sbs-repair-advance')).toHaveTextContent(
       /All controller lights are solid blue/i,
     )
     fireEvent.click(screen.getByTestId('sbs-repair-advance'))
-    expect(screen.getByTestId('sbs-repair-step-bind-blink')).toHaveTextContent(/They blinked/i)
+    expect(screen.getByTestId('sbs-repair-step-bind-blink')).toHaveTextContent(
+      /blink to acknowledge pairing/i,
+    )
+    expect(screen.getByTestId('sbs-repair-advance')).toHaveTextContent(/They blinked/i)
     fireEvent.click(screen.getByTestId('sbs-repair-advance'))
     expect(screen.getByTestId('sbs-repair-step-observe-red')).toHaveTextContent(/Press RED/i)
     expect(screen.getByTestId('sbs-discovered-none')).toHaveTextContent(/No controllers detected yet/i)
