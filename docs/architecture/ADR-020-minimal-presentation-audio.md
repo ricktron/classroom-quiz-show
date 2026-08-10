@@ -5,8 +5,12 @@
 - **Slice:** 22 — Minimal Presentation Audio
 - **Authorization:**
   `AUTHORIZE-CQS-SLICE-22-MINIMAL-PRESENTATION-AUDIO-IMPLEMENTATION-2`
+  (repair:
+  `AUTHORIZE-CQS-SLICE-22-PR58-INDEPENDENT-EXACT-HEAD-REVIEW-REPAIR-1`)
 - **Evidence state:**
   `CQS-SLICE-22-MINIMAL-PRESENTATION-AUDIO-IMPLEMENTATION-ES-2`
+  (repair evidence:
+  `CQS-SLICE-22-PR58-INDEPENDENT-REVIEW-REPAIR-ES-1`)
 - **Depends on:** accepted gameplay facts already owned by Slices 2–18
   (buzz queue, scoring, timers, Final settlement, session end); PWA
   precache (Slice 1); host session-store lifecycle
@@ -170,6 +174,27 @@ new cue. No queues, priority schedulers, mixing buses, or ducking.
 
 Cue derivation already collapses known double-cue cases (incorrect + promotion).
 
+### Suspended-context resume (binding)
+
+If `AudioContext.state === 'running'`, start the requested cue normally.
+
+If the context is **suspended** when a cue arrives:
+
+1. Request `resume()`
+2. **Do not** create or start an `AudioBufferSourceNode` yet
+3. Start the cue only after `resume()` resolves successfully and the context is
+   usable
+4. If `resume()` rejects: consume the cue; create/start no source; throw
+   nothing into gameplay; leave no scheduled stale source
+5. If another cue arrives before resume finishes: only the **latest** eligible
+   cue may start (monotonic generation/token; no playback queue)
+6. If mute becomes active, or the controller is disposed, before resume
+   finishes: the pending cue must not start
+7. A future successful resume or new cue must **not** resurrect an earlier
+   failed or superseded cue
+
+Muted / failed / superseded pending cues never become a backlog.
+
 ## Mute / volume / page-memory lifecycle
 
 Host controls: Enable Sound, mute/unmute, master volume.
@@ -223,8 +248,12 @@ short decoded buffers.
 Audio never carries information unavailable visually. Muted / deaf /
 hard-of-hearing users retain full functionality.
 
-- Enable Sound has an accessible name
-- Mute uses `role="switch"` with checked state
+- Enable Sound has an accessible name (inactive only)
+- Failed activation exposes a single **Retry** action (not Enable + Retry)
+- Mute/unmute uses `role="switch"` with stable accessible name
+  **Presentation sound**; `aria-checked=true` means sound is **on**
+  (unchecked when muted). Visible label may remain action-oriented
+  (Mute / Unmute)
 - Volume is a labelled range input
 - Status/error text is readable (`role="status"`)
 - Keyboard operable

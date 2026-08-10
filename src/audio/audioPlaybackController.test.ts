@@ -14,7 +14,11 @@ function fakeWavBytes(): ArrayBuffer {
 }
 
 function createFakeAudioContext() {
-  const sources: Array<{ stop: ReturnType<typeof vi.fn>; start: ReturnType<typeof vi.fn> }> = []
+  const sources: Array<{
+    stop: ReturnType<typeof vi.fn>
+    start: ReturnType<typeof vi.fn>
+    connect: ReturnType<typeof vi.fn>
+  }> = []
   const gain = { gain: { value: 1 }, connect: vi.fn(), disconnect: vi.fn() }
   const ctx = {
     state: 'suspended' as AudioContextState,
@@ -201,5 +205,143 @@ describe('audioPlaybackController', () => {
     first.dispose()
     expect(sources[0]?.stop).toHaveBeenCalled()
     expect(ctx.close).toHaveBeenCalled()
+  })
+
+  describe('suspended-context resume (F-AUD-01)', () => {
+    async function readySuspendedController() {
+      // Activate with the default resume (sets running). Deferred resume mocks
+      // are installed only after activation so activate cannot deadlock.
+      const { ctx, sources } = createFakeAudioContext()
+      const controller = createAudioPlaybackController({
+        registry,
+        AudioContextCtor: vi.fn(function AudioContext() {
+          return ctx
+        }) as unknown as typeof AudioContext,
+        fetchImpl: vi.fn(async () => ({
+          ok: true,
+          arrayBuffer: async () => fakeWavBytes(),
+        })) as unknown as typeof fetch,
+      })
+      await controller.activate()
+      ctx.state = 'suspended'
+      ctx.resume.mockClear()
+      ctx.createBufferSource.mockClear()
+      sources.length = 0
+      return { ctx, sources, controller }
+    }
+
+    function deferResume(ctx: ReturnType<typeof createFakeAudioContext>['ctx']) {
+      let resolveResume!: () => void
+      const resumeGate = new Promise<void>((resolve) => {
+        resolveResume = resolve
+      })
+      ctx.resume.mockImplementation(async () => {
+        await resumeGate
+        ctx.state = 'running'
+      })
+      return { resolveResume }
+    }
+
+    it('suspended context + successful resume starts the current cue once', async () => {
+      const { ctx, sources, controller } = await readySuspendedController()
+      const { resolveResume } = deferResume(ctx)
+
+      controller.playCue('active-claim')
+      expect(ctx.createBufferSource).not.toHaveBeenCalled()
+      expect(sources).toHaveLength(0)
+
+      resolveResume()
+      await vi.waitFor(() => {
+        expect(ctx.createBufferSource).toHaveBeenCalledTimes(1)
+      })
+      expect(sources).toHaveLength(1)
+      expect(sources[0]?.start).toHaveBeenCalledTimes(1)
+    })
+
+    it('suspended context + rejected resume creates no source and does not throw', async () => {
+      const { ctx, sources, controller } = await readySuspendedController()
+      ctx.resume.mockImplementation(async () => {
+        throw new Error('resume denied')
+      })
+
+      expect(() => controller.playCue('positive-award')).not.toThrow()
+      await Promise.resolve()
+      await Promise.resolve()
+      expect(ctx.createBufferSource).not.toHaveBeenCalled()
+      expect(sources).toHaveLength(0)
+    })
+
+    it('later cue after resume recovery plays only the new cue', async () => {
+      const { ctx, sources, controller } = await readySuspendedController()
+      let shouldReject = true
+      ctx.resume.mockImplementation(async () => {
+        if (shouldReject) {
+          throw new Error('resume denied')
+        }
+        ctx.state = 'running'
+      })
+
+      expect(() => controller.playCue('active-claim')).not.toThrow()
+      await Promise.resolve()
+      await Promise.resolve()
+      expect(sources).toHaveLength(0)
+
+      shouldReject = false
+      ctx.state = 'suspended'
+      controller.playCue('incorrect')
+      await vi.waitFor(() => {
+        expect(sources).toHaveLength(1)
+      })
+      expect(sources[0]?.start).toHaveBeenCalledTimes(1)
+      expect(ctx.createBufferSource).toHaveBeenCalledTimes(1)
+    })
+
+    it('cue A awaiting resume is superseded when cue B arrives', async () => {
+      const { ctx, sources, controller } = await readySuspendedController()
+      const { resolveResume } = deferResume(ctx)
+
+      controller.playCue('active-claim')
+      controller.playCue('timer-expired')
+      expect(ctx.createBufferSource).not.toHaveBeenCalled()
+
+      resolveResume()
+      await vi.waitFor(() => {
+        expect(sources).toHaveLength(1)
+      })
+      // Only latest cue starts; superseded A never creates a source.
+      expect(ctx.createBufferSource).toHaveBeenCalledTimes(1)
+      expect(sources[0]?.start).toHaveBeenCalledTimes(1)
+    })
+
+    it('mute while resume pending prevents the pending cue from starting', async () => {
+      const { ctx, sources, controller } = await readySuspendedController()
+      const { resolveResume } = deferResume(ctx)
+
+      controller.playCue('game-complete')
+      controller.setMuted(true)
+      resolveResume()
+      await Promise.resolve()
+      await Promise.resolve()
+      expect(ctx.createBufferSource).not.toHaveBeenCalled()
+      expect(sources).toHaveLength(0)
+
+      // Unmute creates no backlog of the superseded pending cue.
+      controller.setMuted(false)
+      await Promise.resolve()
+      expect(sources).toHaveLength(0)
+    })
+
+    it('dispose while resume pending prevents the pending cue from starting', async () => {
+      const { ctx, sources, controller } = await readySuspendedController()
+      const { resolveResume } = deferResume(ctx)
+
+      controller.playCue('active-claim')
+      controller.dispose()
+      resolveResume()
+      await Promise.resolve()
+      await Promise.resolve()
+      expect(ctx.createBufferSource).not.toHaveBeenCalled()
+      expect(sources).toHaveLength(0)
+    })
   })
 })

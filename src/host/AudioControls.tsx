@@ -17,6 +17,7 @@ export function AudioControls({ audio }: AudioControlsProps) {
   const activating = status.activation === 'activating'
   const failed = status.activation === 'failed'
   const inactive = status.activation === 'inactive'
+  const soundOn = ready && !status.muted
 
   return (
     <section className="audio-controls" aria-labelledby="audio-controls-title" data-testid="audio-controls">
@@ -29,7 +30,7 @@ export function AudioControls({ audio }: AudioControlsProps) {
       </p>
 
       <div className="audio-controls__row" role="group" aria-label="Sound activation">
-        {(inactive || failed) && (
+        {inactive && (
           <button
             type="button"
             className="btn"
@@ -43,10 +44,15 @@ export function AudioControls({ audio }: AudioControlsProps) {
             Enable Sound
           </button>
         )}
+        {activating && (
+          <button type="button" className="btn" data-testid="audio-enabling" disabled>
+            Enabling…
+          </button>
+        )}
         {failed && (
           <button
             type="button"
-            className="btn btn--secondary"
+            className="btn"
             data-testid="audio-retry"
             aria-label="Retry enabling sound"
             disabled={activating}
@@ -65,8 +71,8 @@ export function AudioControls({ audio }: AudioControlsProps) {
           className="btn btn--secondary"
           data-testid="audio-mute"
           role="switch"
-          aria-checked={status.muted}
-          aria-label={status.muted ? 'Unmute sound' : 'Mute sound'}
+          aria-checked={soundOn}
+          aria-label="Presentation sound"
           disabled={!ready}
           onClick={() => {
             setMuted(!status.muted)

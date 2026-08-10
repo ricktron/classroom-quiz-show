@@ -9,6 +9,10 @@
  * - mute/volume are presentation-only page memory
  *
  * Audio failure never throws into gameplay callers.
+ *
+ * Suspended-context rule: never create/start an AudioBufferSourceNode until
+ * resume() resolves successfully. Failed or superseded pending cues are
+ * consumed (no backlog / no resurrection).
  */
 
 import { CORE_CUE_REGISTRY, type CueRegistry } from './cueRegistry'
@@ -43,7 +47,7 @@ export interface AudioPlaybackControllerOptions {
   readonly registry?: CueRegistry
   readonly AudioContextCtor?: typeof AudioContext
   readonly fetchImpl?: typeof fetch
-  /** Optional diagnostics sink (e2e / unit). Not a UI surface. */
+  /** Optional unit-test DI seam. Creates no production-visible state. */
   readonly onPlayAttempt?: (cueId: PresentationCueId) => void
 }
 
@@ -93,6 +97,8 @@ export function createAudioPlaybackController(
   const buffers = new Map<PresentationCueId, AudioBuffer>()
   const listeners = new Set<() => void>()
   let disposed = false
+  /** Monotonic token — invalidates pending resume starts (latest-cue-wins). */
+  let playGeneration = 0
 
   function emit(): void {
     for (const listener of [...listeners]) {
@@ -111,6 +117,10 @@ export function createAudioPlaybackController(
   function applyGain(): void {
     if (masterGain === null) return
     masterGain.gain.value = muted ? 0 : volume
+  }
+
+  function invalidatePendingPlayback(): void {
+    playGeneration += 1
   }
 
   async function decodeAll(): Promise<void> {
@@ -215,6 +225,22 @@ export function createAudioPlaybackController(
     activeSource = null
   }
 
+  function startBufferSource(cueId: PresentationCueId): void {
+    if (context === null || masterGain === null) return
+    const buffer = buffers.get(cueId)
+    if (buffer === undefined) return
+
+    stopActiveSource()
+    const source = context.createBufferSource()
+    source.buffer = buffer
+    source.connect(masterGain)
+    source.onended = () => {
+      if (activeSource === source) activeSource = null
+    }
+    activeSource = source
+    source.start(0)
+  }
+
   function playCue(cueId: PresentationCueId): void {
     if (disposed) return
     if (activation !== 'ready') return
@@ -226,20 +252,34 @@ export function createAudioPlaybackController(
 
     try {
       onPlayAttempt?.(cueId)
-      stopActiveSource()
+      const generation = ++playGeneration
+
+      if (context.state === 'running') {
+        startBufferSource(cueId)
+        return
+      }
+
       if (context.state === 'suspended') {
-        void context.resume().catch(() => {
-          // consumed — no backlog
-        })
+        // Do not create/start a source until resume succeeds.
+        stopActiveSource()
+        void context
+          .resume()
+          .then(() => {
+            if (disposed) return
+            if (generation !== playGeneration) return
+            if (muted) return
+            if (activation !== 'ready') return
+            if (context === null || masterGain === null) return
+            if (context.state === 'suspended') return
+            startBufferSource(cueId)
+          })
+          .catch(() => {
+            // Resume failure consumes the cue — no source, no backlog.
+          })
+        return
       }
-      const source = context.createBufferSource()
-      source.buffer = buffer
-      source.connect(masterGain)
-      source.onended = () => {
-        if (activeSource === source) activeSource = null
-      }
-      activeSource = source
-      source.start(0)
+
+      // Closed / unknown states: consume without scheduling.
     } catch {
       // Playback exceptions stay presentation-local.
       activeSource = null
@@ -248,8 +288,13 @@ export function createAudioPlaybackController(
 
   function setMuted(next: boolean): void {
     if (disposed) return
+    const wasMuted = muted
     muted = Boolean(next)
     applyGain()
+    if (muted && !wasMuted) {
+      // Pending resume must not start after mute (no unmute backlog).
+      invalidatePendingPlayback()
+    }
     if (activation === 'ready') {
       message = muted ? 'Sound muted.' : 'Sound enabled.'
     }
@@ -278,6 +323,7 @@ export function createAudioPlaybackController(
     dispose() {
       if (disposed) return
       disposed = true
+      invalidatePendingPlayback()
       stopActiveSource()
       buffers.clear()
       try {

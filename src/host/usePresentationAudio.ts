@@ -18,7 +18,6 @@ import {
   type AudioPlaybackStatus,
 } from '../audio/audioPlaybackController'
 import { observePresentationCues } from '../audio/observePresentationCues'
-import type { PresentationCueId } from '../audio/presentationCueId'
 
 export interface UsePresentationAudioResult {
   readonly status: AudioPlaybackStatus
@@ -28,46 +27,16 @@ export interface UsePresentationAudioResult {
   readonly controller: AudioPlaybackController
 }
 
-declare global {
-  interface Window {
-    /** Bounded e2e diagnostics seam — not a public product API. */
-    __CQS_PRESENTATION_AUDIO__?: {
-      readonly getPlayLog: () => readonly PresentationCueId[]
-      readonly clearPlayLog: () => void
-      readonly getStatus: () => AudioPlaybackStatus
-    }
-  }
-}
-
-const playLog: PresentationCueId[] = []
-
-function installDiagnostics(controller: AudioPlaybackController): void {
-  if (typeof window === 'undefined') return
-  window.__CQS_PRESENTATION_AUDIO__ = {
-    getPlayLog: () => [...playLog],
-    clearPlayLog: () => {
-      playLog.length = 0
-    },
-    getStatus: () => controller.getStatus(),
-  }
-}
-
 export function usePresentationAudio(store: SessionStore): UsePresentationAudioResult {
   const controllerRef = useRef<AudioPlaybackController | null>(null)
   if (controllerRef.current === null) {
-    controllerRef.current = getDocumentAudioPlaybackController({
-      onPlayAttempt: (cueId) => {
-        playLog.push(cueId)
-      },
-    })
-    installDiagnostics(controllerRef.current)
+    controllerRef.current = getDocumentAudioPlaybackController()
   }
   const controller = controllerRef.current
 
   const [status, setStatus] = useState<AudioPlaybackStatus>(() => controller.getStatus())
 
   useEffect(() => {
-    installDiagnostics(controller)
     return controller.subscribe(() => {
       setStatus(controller.getStatus())
     })

@@ -71,12 +71,13 @@ function ControlledAudio({ controller }: { readonly controller: AudioPlaybackCon
 }
 
 describe('AudioControls', () => {
-  it('shows Enable Sound and accessible mute/volume controls', async () => {
+  it('inactive exposes Enable Sound; switch uses stable Presentation sound name', async () => {
     const controller = createAudioPlaybackController(fakeDeps())
     render(<ControlledAudio controller={controller} />)
 
     expect(screen.getByTestId('audio-controls')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /enable sound/i })).toBeEnabled()
+    expect(screen.queryByTestId('audio-retry')).not.toBeInTheDocument()
     expect(screen.getByTestId('audio-mute')).toBeDisabled()
     expect(screen.getByTestId('audio-volume')).toBeDisabled()
     expect(screen.getByTestId('audio-status')).toHaveTextContent(/sound is off/i)
@@ -86,20 +87,35 @@ describe('AudioControls', () => {
     })
 
     expect(screen.getByTestId('audio-status')).toHaveTextContent(/sound enabled/i)
+    expect(screen.queryByTestId('audio-enable')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('audio-retry')).not.toBeInTheDocument()
     expect(screen.getByTestId('audio-mute')).toBeEnabled()
     expect(screen.getByTestId('audio-volume')).toBeEnabled()
-    expect(screen.getByTestId('audio-mute')).toHaveAttribute('role', 'switch')
-    expect(screen.getByLabelText(/mute sound|unmute sound/i)).toBeInTheDocument()
 
-    fireEvent.click(screen.getByTestId('audio-mute'))
+    const muteSwitch = screen.getByRole('switch', { name: 'Presentation sound' })
+    expect(muteSwitch).toHaveAttribute('aria-checked', 'true')
+    expect(muteSwitch).toHaveTextContent('Mute')
+
+    fireEvent.click(muteSwitch)
+    expect(screen.getByRole('switch', { name: 'Presentation sound' })).toHaveAttribute(
+      'aria-checked',
+      'false',
+    )
+    expect(screen.getByTestId('audio-mute')).toHaveTextContent('Unmute')
     expect(screen.getByTestId('audio-status')).toHaveTextContent(/muted/i)
+
+    fireEvent.click(screen.getByRole('switch', { name: 'Presentation sound' }))
+    expect(screen.getByRole('switch', { name: 'Presentation sound' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
 
     fireEvent.change(screen.getByTestId('audio-volume'), { target: { value: '0.5' } })
     expect(controller.getStatus().volume).toBe(0.5)
     controller.dispose()
   })
 
-  it('shows activation failure status and retry without implying gameplay impact', () => {
+  it('failure state exposes exactly one retry action', () => {
     const controller = createAudioPlaybackController(fakeDeps())
     const audio: UsePresentationAudioResult = {
       status: {
@@ -116,6 +132,8 @@ describe('AudioControls', () => {
     render(<AudioControls audio={audio} />)
     expect(screen.getByTestId('audio-status')).toHaveTextContent(/could not be enabled/i)
     expect(screen.getByTestId('audio-retry')).toBeInTheDocument()
+    expect(screen.queryByTestId('audio-enable')).not.toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: /retry/i })).toHaveLength(1)
     controller.dispose()
   })
 })

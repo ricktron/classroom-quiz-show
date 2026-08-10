@@ -161,6 +161,58 @@ Sonar: not separately inspected from this executor environment; PR checks will r
 
 PR may be `REVIEW_READY - OWNER_LISTENING_RC_PENDING`.
 
+## Independent exact-head review repair
+
+- **Repair authorization:**
+  `AUTHORIZE-CQS-SLICE-22-PR58-INDEPENDENT-EXACT-HEAD-REVIEW-REPAIR-1`
+- **Evidence state:**
+  `CQS-SLICE-22-PR58-INDEPENDENT-REVIEW-REPAIR-ES-1`
+- **Prior independently reviewed exact head:**
+  `6338b1579ec75e559508afbdd499c794daab490e`
+- **Exact-head guard (pre-mutation):** PR #58 open, non-draft, unmerged;
+  base `main` @ `dd2fd4a09b20764f69505bbd76a96782cc895453`; head exactly
+  `6338b157…`; `origin/main` unchanged at authorized base
+
+### Findings repaired
+
+| ID | Repair |
+| --- | --- |
+| F-AUD-01 | Suspended-context: create/start `AudioBufferSourceNode` only after successful `resume()`; rejected resume consumes; monotonic generation invalidates superseded/muted/disposed pending cues; no playback queue |
+| F-TEST-01 | Removed production `window.__CQS_PRESENTATION_AUDIO__`, play log, and `installDiagnostics`. Playwright records `AudioBufferSourceNode.start()` via `addInitScript` AudioContext wrapper only |
+| F-A11Y-01 | Switch name **Presentation sound** with `aria-checked={!muted}` (checked = sound on). Failure state exposes a single **Retry** (inactive → Enable Sound; ready → neither) |
+
+### New / updated focused tests
+
+- Suspended + successful resume starts once
+- Suspended + rejected resume → no source; does not throw
+- Later cue after recovery plays only the new cue
+- Cue A awaiting resume superseded by cue B
+- Mute / dispose while resume pending → pending cue does not start
+- Switch accessible name/state; single retry on failure
+
+WAV assets / generator: **unchanged** (same five SHA-256 values as above).
+
+Owner listening RC remains **PENDING**. Slice 22 remains **not** Complete.
+Slice 23 **not** started.
+
+### Repair verification (observed)
+
+| Check | Result |
+| --- | --- |
+| `git diff --check` | clean |
+| Focused audio unit | **47** passed (4 files) |
+| `npm run verify` | PASS — lint (0 errors / 3 pre-existing theme warnings), typecheck, **2397** unit passed / **1** skipped (**140** files) |
+| `npm run verify:all` | PASS — verify + build + e2e |
+| Playwright | **358** passed / **14** skipped / **0** terminal failures |
+| Focused audio e2e | presentation-audio passed on desktop / projector / mobile projects |
+| WAV hashes unchanged | yes — five SHA-256 values identical to implementation table |
+| Generator determinism | consecutive runs identical hashes; working tree WAV bytes unchanged |
+| Production WAV emit | 5 hashed assets under `dist/assets/` |
+| Precache | all 5 cue filenames present in `dist/sw.js` |
+| Exact repaired PR head | filled after push |
+
+WAV / generator changed? **no**
+
 ## Contract / dependency verdicts
 
 - `NO AUTHORITATIVE CONTRACT CHANGE REQUIRED`
@@ -182,6 +234,7 @@ a Slice 22 repair target.
   - `5610c407f5aa2f87715d3c4355cf95c7e4f41912` — implementation
   - `dcbc357bf1a4ac96a1228f682632fb04414b23a5` — README in-review routing
   - `4ad264251c073f83389120a778a770d2d3a9e14c` — receipt PR metadata
+  - _(repair commit SHA filled after commit)_
 - **Exact PR head SHA:** re-observe branch tip at review time (`git rev-parse origin/feat/slice-22-minimal-presentation-audio`)
 - **Draft:** no
 - **Merge:** not authorized by this receipt
