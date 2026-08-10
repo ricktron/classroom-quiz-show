@@ -209,9 +209,12 @@ Slice 23 **not** started.
 | Generator determinism | consecutive runs identical hashes; working tree WAV bytes unchanged |
 | Production WAV emit | 5 hashed assets under `dist/assets/` |
 | Precache | all 5 cue filenames present in `dist/sw.js` |
-| Exact repaired PR head | `c6ca619a4862018155829ddf59cc1c9272541531` |
+| Exact repaired PR head | re-observe `origin/feat/slice-22-minimal-presentation-audio` after push |
 
 WAV / generator changed? **no**
+
+Repair product commit (code): `c6ca619a4862018155829ddf59cc1c9272541531`  
+Prior independently reviewed head: `6338b1579ec75e559508afbdd499c794daab490e`
 
 ## Contract / dependency verdicts
 
@@ -230,11 +233,15 @@ a Slice 22 repair target.
 ## PR
 
 - **PR:** [#58](https://github.com/ricktron/classroom-quiz-show/pull/58)
-- **Commits on branch:**
+- **Commits on branch (product + repair; tip re-observed after push):**
   - `5610c407f5aa2f87715d3c4355cf95c7e4f41912` — implementation
   - `dcbc357bf1a4ac96a1228f682632fb04414b23a5` — README in-review routing
-  - `4ad264251c073f83389120a778a770d2d3a9e14c` — receipt PR metadata
-  - _(repair commit SHA filled after commit)_
-- **Exact PR head SHA:** re-observe branch tip at review time (`git rev-parse origin/feat/slice-22-minimal-presentation-audio`)
+  - `4ad264251c073f83389120a778a770d2d3a9e14c` / `6338b157…` — receipt metadata
+    through prior independently reviewed head
+  - `c6ca619a4862018155829ddf59cc1c9272541531` — independent exact-head review
+    repair (F-AUD-01 / F-TEST-01 / F-A11Y-01)
+  - subsequent docs commits record repair evidence only
+- **Exact PR head SHA:** re-observe branch tip
+  (`git rev-parse origin/feat/slice-22-minimal-presentation-audio`)
 - **Draft:** no
 - **Merge:** not authorized by this receipt
