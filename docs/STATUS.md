@@ -840,7 +840,9 @@ surface does not claim that the Child B delivery branch or PR is merged.
 > clean `main` at `5575be3` passed (**1415** unit tests; **202** e2e passed /
 > **2** skipped). Completion covers the owner-accepted hardware-independent
 > scope; **physical Sony Buzz! certification has a bounded host claim under a
-> temporary keep-alive** (permanent keep-alive architecture still unresolved).
+> temporary keep-alive** (permanent keep-alive remained unresolved at that
+> stage; later resolved for the exact supported Namtai wireless `Wbuzz`
+> `054c:1000` profile by Slice 21 / ADR-019).
 > OADL2-S07 on the correct host (`macdaddy` / `Ricks-MacBook-Air.local`, wireless
 > Namtai `Wbuzz` `054c:1000`) showed that, on this macOS/Chrome configuration, a
 > temporary external HID **output** keep-alive kept handsets responsive, enabled
@@ -1035,7 +1037,9 @@ Squash-merged via PR #21 at `5575be3` from reviewed head `2885933`. Completion
 covers the owner-accepted hardware-independent scope. Physical validation on
 owner wireless hardware was completed under OADL2-S07 with a **temporary**
 external keep-alive; see the bounded claim in the S07 receipt. Permanent
-keep-alive architecture remains unresolved; no wired claim; no SKU list.
+keep-alive remained unresolved at that stage and was later resolved for the
+exact supported Namtai wireless `Wbuzz` `054c:1000` profile by Slice 21 /
+ADR-019; no wired claim; no SKU list.
 
 > **The headline is what did NOT change:** no schema, no `PublicState`, no sync
 > protocol version, no command, no event, no reducer, no queue logic, no timer
@@ -1055,7 +1059,7 @@ keep-alive architecture remains unresolved; no wired claim; no SKU list.
 | Device identity, classification, capture state and button indices host-private — never projected | Implemented |
 | **`PublicState` unchanged; wire version unchanged at 6; sync envelope unchanged at 2** | Implemented |
 | ADR-010 recorded | Implemented |
-| **Physical Sony Buzz! validation on owner hardware** | **OADL2-S07 (2026-08-01/02): browser 4×5 + Playwright-assisted CQS setup/test/gameplay/keyboard PASS under temporary keep-alive; bounded claim only; permanent keep-alive unresolved** |
+| **Physical Sony Buzz! validation on owner hardware** | **OADL2-S07 (2026-08-01/02): browser 4×5 + Playwright-assisted CQS setup/test/gameplay/keyboard PASS under temporary keep-alive; bounded claim only; permanent keep-alive unresolved at that stage — later resolved for the exact supported `Wbuzz` profile by Slice 21 / ADR-019** |
 | Supported/compatibility/certified language | **Bounded host claim only — see S07 receipt; no permanent keep-alive claim** |
 | WebHID, Bluetooth, USB drivers | **Not implemented** |
 | Scoring restricted to the active respondent (`OG-6`) | **Still deferred — not implemented** |
@@ -1632,7 +1636,9 @@ None.
   external HID output keep-alive (Gamepad API cannot send that keep-alive). See
   the bounded claim and non-claims in
   ([receipt](receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md)).
-  Permanent keep-alive architecture remains unresolved.
+  Permanent keep-alive remained unresolved at that stage; Slice 21 / ADR-019
+  later resolved it for the exact supported Namtai wireless `Wbuzz` `054c:1000`
+  profile.
 - **Controller buzzing starts switched OFF** and nothing is bound by default —
   there is deliberately no assumed "buzz button".
 - **Slice 9 maps BUTTONS only.** No axes, sticks, analog triggers, motion,

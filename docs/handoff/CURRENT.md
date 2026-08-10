@@ -262,8 +262,9 @@ defers to `AGENTS.md` and adds no separate authority.
   setup test mode, and host setup surface (`SonyBuzzSetupSection`). Physical
   hardware certification after OADL2-S07 has a **bounded host claim** under a
   temporary external keep-alive (Playwright-assisted CQS setup/test/gameplay/
-  keyboard); permanent keep-alive architecture remains unresolved — see the S07
-  receipt.
+  keyboard); permanent keep-alive remained unresolved at that stage and was
+  later resolved for the exact supported Namtai wireless `Wbuzz` `054c:1000`
+  profile by Slice 21 / ADR-019 — see the S07 receipt.
   Rationale in
   [`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md);
   receipts
@@ -504,8 +505,9 @@ defers to `AGENTS.md` and adds no separate authority.
   envelope, commands, events and the reducer are unchanged.** Session-local mapping
   lifetime is unchanged. Physical hardware certification after OADL2-S07 has a
   **bounded host claim** under a temporary external keep-alive (Playwright-
-  assisted CQS setup/test/gameplay/keyboard); permanent keep-alive architecture
-  remains unresolved. See
+  assisted CQS setup/test/gameplay/keyboard); permanent keep-alive remained
+  unresolved at that stage and was later resolved for the exact supported
+  Namtai wireless `Wbuzz` `054c:1000` profile by Slice 21 / ADR-019. See
   [`../architecture/ADR-010-sony-buzz-profile-and-setup.md`](../architecture/ADR-010-sony-buzz-profile-and-setup.md)
   and
   [`../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md).
@@ -926,7 +928,9 @@ hotspots). Durable evidence in the receipts under [`../receipts/`](../receipts/)
   wireless `Wbuzz` under a temporary external HID output keep-alive (Gamepad API
   cannot send it) — see the bounded claim in
   [`../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md).
-  Permanent keep-alive architecture remains unresolved.
+  Permanent keep-alive remained unresolved at that stage; Slice 21 / ADR-019
+  later resolved it for the exact supported Namtai wireless `Wbuzz` `054c:1000`
+  profile.
 - **Controller buzzing starts switched OFF** and nothing is bound by default —
   there is deliberately no assumed "buzz button".
 - **Slice 9 maps BUTTONS only** — no axes, sticks, analog triggers, motion,
@@ -1186,7 +1190,9 @@ setup test mode) is **`Complete`** under the owner-accepted hardware-independent
 boundary; physical certification was completed 2026-08-01/02 (OADL2-S07) under a
 temporary external keep-alive with a **bounded** host claim — see
 [`../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md`](../receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md).
-Permanent keep-alive architecture remains unresolved.
+Permanent keep-alive remained unresolved at that stage; Slice 21 / ADR-019
+later resolved it for the exact supported Namtai wireless `Wbuzz` `054c:1000`
+profile.
 
 Slice allocation is unchanged by this direction:
 
@@ -1194,7 +1200,7 @@ Slice allocation is unchanged by this direction:
 | --- | --- | --- |
 | **8** | The hardware-independent **logical** input contract, and keyboard input as its first consumer. | `Complete` (PR #16, `167128d`) |
 | **9** | The generic **Gamepad** adapter and configurable mappings. | `Complete` (PR #19, `d16f90d`) |
-| **10** | **Sony Buzz!** detection, validation, a recommended profile, handset assignment, and the host setup UX. | `Complete` (PR #21, `5575be3`) — hardware-independent scope; OADL2-S07 bounded physical claim under temp keep-alive (see receipt); permanent keep-alive unresolved |
+| **10** | **Sony Buzz!** detection, validation, a recommended profile, handset assignment, and the host setup UX. | `Complete` (PR #21, `5575be3`) — hardware-independent scope; OADL2-S07 bounded physical claim under temp keep-alive (see receipt); permanent keep-alive unresolved at that stage — later resolved for the exact supported `Wbuzz` profile by Slice 21 / ADR-019 |
 
 **A final event vocabulary for secondary actions was deliberately NOT defined in
 advance, and neither Slice 8 nor Slice 9 defined one.** Slice 9 made the four
@@ -1314,8 +1320,12 @@ not directly inspected; over-claim Sony Buzz! beyond ADR-019’s exact supported
 profile and the three-controller owner disposition (or treat OADL2-S07 as the
 sole permanent keep-alive authority); add WebHID,
 Bluetooth, USB or HID code beyond what Slice 21’s supported-profile boundary
-already uses; persist a Gamepad mapping to localStorage, IndexedDB, a game file or the
-sync channel; map axes, sticks, analog triggers, motion or haptics; use a
+already uses; persist a raw browser controller index/device `id` or the generic
+session-local Gamepad mapping as durable identity in localStorage, a game file,
+or the sync channel — the only authorized cross-session Sony controller
+association is ADR-019’s host-private supported-profile slot→team mapping
+contract v1 in IndexedDB v4, and it never persists `controllerIndex`; map axes,
+sticks, analog triggers, motion or haptics; use a
 browser controller index or device `id` as a durable identity; poll the Gamepad
 API from the reducer, a render, the sanitizer, replay, command planning or the
 display route; add a global polling service; give a secondary logical action any

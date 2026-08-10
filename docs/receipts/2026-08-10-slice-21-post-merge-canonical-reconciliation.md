@@ -126,7 +126,33 @@ team confirmation. Prefer observable LED states over approximate timing.
 | ID | Severity | Disposition |
 | --- | --- | --- |
 | **F-DOC-01** | MEDIUM | **Closed** — stale “Slices 21–23 unauthorized” / Slice 21 pending routing repaired as a family across README, STATUS, CURRENT, MVP-ARC |
+| **F-DOC-02** | MEDIUM | **Closed by independent-review repair** — CURRENT’s prohibited-actions persistence wording now distinguishes the prohibited raw controller index/device identity and generic session-local Gamepad-mapping persistence from ADR-019’s authorized host-private slot→team mapping contract v1 in IndexedDB v4 |
+| **F-DOC-03** | MEDIUM | **Closed by independent-review repair** — present-tense “permanent keep-alive … remains unresolved” residuals in STATUS, CURRENT, and the ADR-010 Status line reworded temporally: unresolved at the Slice 10 / OADL2-S07 stage; later resolved for the exact supported Namtai wireless `Wbuzz` `054c:1000` profile by Slice 21 / ADR-019 |
 | **F-UX-01** | LOW | **Retained** — ordinary setup still exposes some WebHID/Gamepad jargon; demote to Advanced diagnostics later (end-of-MVP polish candidate) |
+
+## Independent exact-head review repair lineage
+
+- Reviewed failing PR #56 head:
+  `e6b0f591bfa33cd9f35196189ef0dc8ed345d094`
+- Independent review evidence state:
+  `CQS-SLICE-21-PR56-INDEPENDENT-EXACT-HEAD-REVIEW-ES-1`
+- Findings: **F-DOC-02** (MEDIUM), **F-DOC-03** (MEDIUM)
+- Repair authorization:
+  `AUTHORIZE-CQS-SLICE-21-PR56-INDEPENDENT-REVIEW-DOCS-REPAIR-1`
+- Repair evidence state:
+  `CQS-SLICE-21-PR56-INDEPENDENT-REVIEW-DOCS-REPAIR-ES-1`
+- Corrected architectural interpretation: the only authorized cross-session
+  Sony controller association is ADR-019’s host-private supported-profile
+  slot→team mapping contract **v1** in IndexedDB **v4**; it never persists
+  `controllerIndex`. Raw browser controller index/device identity and generic
+  session-local Gamepad mappings remain non-persistable as durable identity.
+- `docs/architecture/ADR-010-sony-buzz-profile-and-setup.md` added as the
+  authorized seventh reconciliation docs path (its canonical Status line
+  carried the same F-DOC-03 contradiction).
+- No product code. No physical retest. Historical Slice 10 / OADL2-S07
+  receipts unchanged.
+- Review notes N-01/N-02 retained as end-of-MVP polish candidates; N-03
+  requires no repair. None repaired in this bounded pass.
 
 ## Canonical result
 
@@ -154,6 +180,8 @@ After this reconciliation lands on `main`:
 4. `docs/plans/MVP-ARC.md`
 5. `docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md`
 6. `docs/receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md` (this file)
+7. `docs/architecture/ADR-010-sony-buzz-profile-and-setup.md` (added by the
+   independent-review docs repair — Status-line F-DOC-03 correction only)
 
 Historical Slice 21 receipts left unchanged by design.
 
