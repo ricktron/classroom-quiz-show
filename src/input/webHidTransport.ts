@@ -171,7 +171,7 @@ export function createFakeHidDevice(
     readonly productName?: string
     readonly opened?: boolean
     readonly outputReports?: readonly SonyBuzzOutputReportCandidate[]
-    readonly openBehavior?: 'ok' | 'already-open' | 'fail'
+    readonly openBehavior?: 'ok' | 'already-open' | 'already-open-but-closed' | 'fail'
     readonly sendBehavior?: 'ok' | 'fail'
   } = {},
 ): CqsHidDeviceHandle & {
@@ -194,6 +194,13 @@ export function createFakeHidDevice(
     sendCalls,
     async open() {
       if (options.openBehavior === 'fail') throw new Error('open failed')
+      if (options.openBehavior === 'already-open-but-closed') {
+        // Surface an already-open-like InvalidStateError while remaining closed.
+        opened = false
+        const err = new Error('The device is already open.')
+        err.name = 'InvalidStateError'
+        throw err
+      }
       if (options.openBehavior === 'already-open' || opened) {
         opened = true
         const err = new Error('The device is already open.')

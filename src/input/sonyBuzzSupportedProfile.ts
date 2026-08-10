@@ -171,9 +171,20 @@ export function matchesExpectedWbuzzGamepadTopology(
   return axisCount === SONY_BUZZ_EXPECTED_AXIS_COUNT
 }
 
+/**
+ * Deterministic UTF-16 code-unit ordering for team ids (same semantics as
+ * default JS string `<`/`>`, without relying on Array.prototype.sort's
+ * default comparefn — Sonar typescript:S2871).
+ */
+function compareTeamIdStrings(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0
+}
+
 /** Stable signature of the current team set for fail-closed association. */
 export function teamSetSignature(teams: readonly Pick<TeamDefinition, 'id'>[]): string {
-  return [...teams.map((t) => t.id)].sort().join('\u001f')
+  return [...teams.map((t) => String(t.id))]
+    .sort(compareTeamIdStrings)
+    .join('\u001f')
 }
 
 export interface SonyBuzzSlotTeamAssociation {

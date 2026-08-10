@@ -11,6 +11,7 @@ import {
   SONY_BUZZ_SUPPORTED_PRODUCT_ID,
   SONY_BUZZ_SUPPORTED_PROFILE_ID,
   SONY_BUZZ_SUPPORTED_VENDOR_ID,
+  teamSetSignature,
   validateSupportedWbuzzOutputFraming,
 } from './sonyBuzzSupportedProfile'
 import { PRIMARY_BUZZ } from './logicalAction'
@@ -107,5 +108,21 @@ describe('sonyBuzzSupportedProfile', () => {
       teams: [{ id: teamId('red') }],
     })
     expect(result.ok).toBe(false)
+  })
+
+  it('teamSetSignature is deterministic and order-independent', () => {
+    const a = teamId('alpha')
+    const b = teamId('beta')
+    const c = teamId('gamma')
+    const forward = teamSetSignature([{ id: a }, { id: b }, { id: c }])
+    const reverse = teamSetSignature([{ id: c }, { id: b }, { id: a }])
+    const shuffled = teamSetSignature([{ id: b }, { id: a }, { id: c }])
+    expect(forward).toBe(reverse)
+    expect(forward).toBe(shuffled)
+    expect(forward).toBe(`${String(a)}\u001f${String(b)}\u001f${String(c)}`)
+    expect(teamSetSignature([{ id: a }, { id: b }])).not.toBe(forward)
+    expect(teamSetSignature([{ id: a }, { id: c }])).not.toBe(
+      teamSetSignature([{ id: a }, { id: b }]),
+    )
   })
 })

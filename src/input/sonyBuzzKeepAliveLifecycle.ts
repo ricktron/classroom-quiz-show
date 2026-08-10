@@ -111,7 +111,14 @@ export function createSonyBuzzKeepAliveLifecycle(
   let device: CqsHidDeviceHandle | null = null
   let framing: SonyBuzzOutputFraming | null = null
   let timer: ReturnType<typeof setInterval> | null = null
+  /**
+   * Lifecycle-owned physical send gate. Generation invalidation must NOT clear
+   * this — an in-flight browser Promise still owns the shared WebHID channel
+   * until it settles. At most one sendReport may be in flight for this owner.
+   */
   let inFlight = false
+  /** Generation that should send once the current physical send settles. */
+  let deferredSendGeneration: number | null = null
   let lastSuccessfulSendAt: number | null = null
   let lastError: string | null = null
   let sends = 0
@@ -173,14 +180,31 @@ export function createSonyBuzzKeepAliveLifecycle(
     return expectedGeneration !== generation
   }
 
+  function clearDeferredSend(): void {
+    deferredSendGeneration = null
+  }
+
+  function scheduleDeferredSend(expectedGeneration: number): void {
+    deferredSendGeneration = expectedGeneration
+  }
+
   async function sendOnce(expectedGeneration: number): Promise<void> {
     if (invalidateStale(expectedGeneration)) return
     if (!enabled || !device || !framing) return
-    if (inFlight) return
+    if (inFlight) {
+      // Defer for the current generation; do not open a second physical send.
+      scheduleDeferredSend(expectedGeneration)
+      return
+    }
     inFlight = true
     try {
       const payload = keepalivePayload()
-      await device.sendReport(SONY_BUZZ_KEEPALIVE_REPORT_ID, payload as unknown as BufferSource)
+      // Capture handle for this physical send; generation may invalidate later.
+      const sendingDevice = device
+      await sendingDevice.sendReport(
+        SONY_BUZZ_KEEPALIVE_REPORT_ID,
+        payload as unknown as BufferSource,
+      )
       if (invalidateStale(expectedGeneration)) return
       sends += 1
       lastSuccessfulSendAt = now()
@@ -199,6 +223,17 @@ export function createSonyBuzzKeepAliveLifecycle(
       emit()
     } finally {
       inFlight = false
+      const deferred = deferredSendGeneration
+      deferredSendGeneration = null
+      if (
+        deferred != null &&
+        !invalidateStale(deferred) &&
+        enabled &&
+        device &&
+        framing
+      ) {
+        void sendOnce(deferred)
+      }
     }
   }
 
@@ -216,7 +251,7 @@ export function createSonyBuzzKeepAliveLifecycle(
     if (handle.opened) return true
     try {
       await handle.open()
-      return !invalidateStale(expectedGeneration)
+      return !invalidateStale(expectedGeneration) && handle.opened
     } catch (error) {
       const name =
         error instanceof DOMException
@@ -226,10 +261,15 @@ export function createSonyBuzzKeepAliveLifecycle(
             : ''
       const message = error instanceof Error ? error.message : String(error)
       if (name === 'InvalidStateError' && /already open/i.test(message)) {
-        // Compatible already-open current object (physical discovery observed this).
-        return !invalidateStale(expectedGeneration)
+        // Only converge when the current handle is genuinely open/usable.
+        if (invalidateStale(expectedGeneration)) return false
+        if (handle.opened) return true
+        lastError = `${name}: ${message} (handle not open)`
+        return false
       }
-      lastError = error instanceof Error ? `${error.name}: ${error.message}` : 'open failed'
+      if (!invalidateStale(expectedGeneration)) {
+        lastError = error instanceof Error ? `${error.name}: ${error.message}` : 'open failed'
+      }
       return false
     }
   }
@@ -247,7 +287,9 @@ export function createSonyBuzzKeepAliveLifecycle(
     generation += 1
     const myGeneration = generation
     stopTimer()
-    inFlight = false
+    clearDeferredSend()
+    // Do NOT clear inFlight: a prior generation's unresolved sendReport still
+    // owns the shared channel until that Promise settles.
     health = mode === 'recover' ? 'recovering' : 'connecting'
     emit()
 
@@ -324,7 +366,8 @@ export function createSonyBuzzKeepAliveLifecycle(
   async function handleDisconnect(): Promise<void> {
     generation += 1
     stopTimer()
-    inFlight = false
+    clearDeferredSend()
+    // Retain inFlight until any already-issued sendReport settles.
     device = null
     framing = null
     if (!enabled) {
@@ -372,8 +415,8 @@ export function createSonyBuzzKeepAliveLifecycle(
       enabled = false
       generation += 1
       stopTimer()
-      inFlight = false
-      // Keep device reference closed safely
+      clearDeferredSend()
+      // Keep device reference closed safely; do not falsely free inFlight.
       const closing = device
       device = null
       framing = null
@@ -417,6 +460,7 @@ export function createSonyBuzzKeepAliveLifecycle(
     dispose() {
       generation += 1
       stopTimer()
+      clearDeferredSend()
       unsubscribeDisconnect()
       listeners.clear()
       const closing = device

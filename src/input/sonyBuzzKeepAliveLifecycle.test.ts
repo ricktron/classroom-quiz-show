@@ -95,13 +95,60 @@ describe('sonyBuzzKeepAliveLifecycle', () => {
     life.dispose()
   })
 
-  it('converges already-open InvalidStateError', async () => {
+  it('converges already-open InvalidStateError when handle is actually open', async () => {
     const device = createFakeHidDevice({ openBehavior: 'already-open', opened: false })
     const transport = createFakeWebHidTransport({ requestResult: device })
     const life = createSonyBuzzKeepAliveLifecycle({ transport, setIntervalFn, clearIntervalFn })
     await life.connect()
     expect(life.getSnapshot().health).toBe('healthy')
+    expect(device.opened).toBe(true)
     expect(device.sendCalls.length).toBeGreaterThan(0)
+    life.dispose()
+  })
+
+  it('does not treat already-open InvalidStateError as success when handle remains closed', async () => {
+    const device = createFakeHidDevice({
+      openBehavior: 'already-open-but-closed',
+      opened: false,
+    })
+    const transport = createFakeWebHidTransport({ requestResult: device })
+    const life = createSonyBuzzKeepAliveLifecycle({ transport, setIntervalFn, clearIntervalFn })
+    await life.connect()
+    expect(life.getSnapshot().health).toBe('failed')
+    expect(device.opened).toBe(false)
+    expect(device.sendCalls).toHaveLength(0)
+    expect(life.getSnapshot().lastError).toMatch(/already open/i)
+    life.dispose()
+  })
+
+  it('stale generation already-open error cannot reactivate a stale handle', async () => {
+    const gate = { resolve: undefined as undefined | (() => void) }
+    const device = createFakeHidDevice({ opened: false })
+    const slowAlreadyOpen = {
+      ...device,
+      get opened() {
+        return device.opened
+      },
+      async open() {
+        await new Promise<void>((resolve) => {
+          gate.resolve = resolve
+        })
+        device.setOpened(true)
+        const err = new Error('The device is already open.')
+        err.name = 'InvalidStateError'
+        throw err
+      },
+    }
+    const transport = createFakeWebHidTransport({ requestResult: slowAlreadyOpen })
+    const life = createSonyBuzzKeepAliveLifecycle({ transport, setIntervalFn, clearIntervalFn })
+    const connecting = life.connect()
+    await Promise.resolve()
+    life.disable()
+    gate.resolve?.()
+    await connecting
+    expect(life.getSnapshot().health).toBe('disabled')
+    expect(intervals).toHaveLength(0)
+    expect(device.sendCalls).toHaveLength(0)
     life.dispose()
   })
 
@@ -248,5 +295,234 @@ describe('sonyBuzzKeepAliveLifecycle', () => {
     await connectPromise
     expect(maxInFlight).toBe(1)
     life.dispose()
+  })
+
+  it('reconnect while prior send is blocked does not overlap physical sends', async () => {
+    let concurrent = 0
+    let maxConcurrent = 0
+    let sendStarts = 0
+    const gates: Array<() => void> = []
+    const device = createFakeHidDevice({ opened: true })
+    const blocking = {
+      ...device,
+      async open() {
+        device.setOpened(true)
+      },
+      async sendReport(reportId: number, data: BufferSource) {
+        sendStarts += 1
+        concurrent += 1
+        maxConcurrent = Math.max(maxConcurrent, concurrent)
+        await new Promise<void>((resolve) => {
+          gates.push(resolve)
+        })
+        try {
+          return await device.sendReport(reportId, data)
+        } finally {
+          concurrent -= 1
+        }
+      },
+    }
+    const transport = createFakeWebHidTransport({
+      requestResult: blocking,
+      granted: [blocking],
+    })
+    const life = createSonyBuzzKeepAliveLifecycle({ transport, setIntervalFn, clearIntervalFn })
+    const firstConnect = life.connect()
+    for (let i = 0; i < 20 && gates.length === 0; i += 1) {
+      await Promise.resolve()
+    }
+    expect(sendStarts).toBe(1)
+    expect(maxConcurrent).toBe(1)
+
+    const reconnect = life.connect()
+    for (let i = 0; i < 20; i += 1) {
+      await Promise.resolve()
+    }
+    // New generation is otherwise ready (timer armed) but must not begin send #2 yet.
+    expect(life.getSnapshot().health).toBe('healthy')
+    expect(intervals.length).toBe(1)
+    expect(sendStarts).toBe(1)
+    expect(maxConcurrent).toBe(1)
+
+    gates[0]!()
+    await firstConnect
+    await reconnect
+    for (let i = 0; i < 20; i += 1) {
+      await Promise.resolve()
+    }
+    // Deferred current-generation send may proceed after the first settles.
+    expect(sendStarts).toBeGreaterThanOrEqual(2)
+    expect(maxConcurrent).toBe(1)
+    life.dispose()
+  })
+
+  it('disable while prior send is blocked prevents new sends and ignores stale completion', async () => {
+    let concurrent = 0
+    let maxConcurrent = 0
+    let sendStarts = 0
+    const gate = { resolve: undefined as undefined | (() => void) }
+    const device = createFakeHidDevice({ opened: true })
+    const blocking = {
+      ...device,
+      async open() {
+        device.setOpened(true)
+      },
+      async sendReport(reportId: number, data: BufferSource) {
+        sendStarts += 1
+        concurrent += 1
+        maxConcurrent = Math.max(maxConcurrent, concurrent)
+        await new Promise<void>((resolve) => {
+          gate.resolve = resolve
+        })
+        try {
+          return await device.sendReport(reportId, data)
+        } finally {
+          concurrent -= 1
+        }
+      },
+    }
+    const transport = createFakeWebHidTransport({ requestResult: blocking, granted: [blocking] })
+    const life = createSonyBuzzKeepAliveLifecycle({ transport, setIntervalFn, clearIntervalFn })
+    const connecting = life.connect()
+    for (let i = 0; i < 20 && gate.resolve == null; i += 1) {
+      await Promise.resolve()
+    }
+    expect(sendStarts).toBe(1)
+
+    life.disable()
+    expect(life.getSnapshot().health).toBe('disabled')
+    expect(intervals).toHaveLength(0)
+    expect(sendStarts).toBe(1)
+
+    gate.resolve?.()
+    await connecting
+    for (let i = 0; i < 20; i += 1) {
+      await Promise.resolve()
+    }
+    tickAll()
+    expect(life.getSnapshot().health).toBe('disabled')
+    expect(life.getSnapshot().lastSuccessfulSendAt).toBeNull()
+    expect(life.getSnapshot().sends).toBe(0)
+    expect(intervals).toHaveLength(0)
+    expect(sendStarts).toBe(1)
+    expect(maxConcurrent).toBe(1)
+    life.dispose()
+  })
+
+  it('disconnect while send is blocked invalidates handle and serializes later reacquisition', async () => {
+    let concurrent = 0
+    let maxConcurrent = 0
+    let sendStarts = 0
+    const gates: Array<() => void> = []
+    const device = createFakeHidDevice({ opened: true })
+    const blocking = {
+      ...device,
+      async open() {
+        device.setOpened(true)
+      },
+      async sendReport(reportId: number, data: BufferSource) {
+        sendStarts += 1
+        concurrent += 1
+        maxConcurrent = Math.max(maxConcurrent, concurrent)
+        await new Promise<void>((resolve) => {
+          gates.push(resolve)
+        })
+        try {
+          return await device.sendReport(reportId, data)
+        } finally {
+          concurrent -= 1
+        }
+      },
+    }
+    const transport = createFakeWebHidTransport({
+      requestResult: blocking,
+      granted: [blocking],
+    })
+    const life = createSonyBuzzKeepAliveLifecycle({ transport, setIntervalFn, clearIntervalFn })
+    const connecting = life.connect()
+    for (let i = 0; i < 20 && gates.length === 0; i += 1) {
+      await Promise.resolve()
+    }
+    expect(sendStarts).toBe(1)
+
+    transport.emitDisconnect(blocking)
+    await Promise.resolve()
+    expect(life.getSnapshot().health).toBe('disconnected')
+    expect(intervals).toHaveLength(0)
+    expect(sendStarts).toBe(1)
+
+    gates[0]!()
+    await connecting
+    for (let i = 0; i < 20; i += 1) {
+      await Promise.resolve()
+    }
+    expect(sendStarts).toBe(1)
+    expect(life.getSnapshot().health).toBe('disconnected')
+
+    transport.setGranted([blocking])
+    await life.connect()
+    for (let i = 0; i < 20 && gates.length < 2; i += 1) {
+      await Promise.resolve()
+    }
+    expect(sendStarts).toBe(2)
+    expect(maxConcurrent).toBe(1)
+    gates[1]!()
+    for (let i = 0; i < 20; i += 1) {
+      await Promise.resolve()
+    }
+    expect(life.getSnapshot().health).toBe('healthy')
+    expect(maxConcurrent).toBe(1)
+    life.dispose()
+  })
+
+  it('dispose while send is blocked prevents stale completion from mutating owner state', async () => {
+    let concurrent = 0
+    let maxConcurrent = 0
+    let sendStarts = 0
+    const gate = { resolve: undefined as undefined | (() => void) }
+    const device = createFakeHidDevice({ opened: true })
+    const blocking = {
+      ...device,
+      async open() {
+        device.setOpened(true)
+      },
+      async sendReport(reportId: number, data: BufferSource) {
+        sendStarts += 1
+        concurrent += 1
+        maxConcurrent = Math.max(maxConcurrent, concurrent)
+        await new Promise<void>((resolve) => {
+          gate.resolve = resolve
+        })
+        try {
+          return await device.sendReport(reportId, data)
+        } finally {
+          concurrent -= 1
+        }
+      },
+    }
+    const transport = createFakeWebHidTransport({ requestResult: blocking, granted: [blocking] })
+    const life = createSonyBuzzKeepAliveLifecycle({ transport, setIntervalFn, clearIntervalFn })
+    const connecting = life.connect()
+    for (let i = 0; i < 20 && gate.resolve == null; i += 1) {
+      await Promise.resolve()
+    }
+    expect(sendStarts).toBe(1)
+    const sendsBeforeDispose = life.getSnapshot().sends
+    const failuresBeforeDispose = life.getSnapshot().failures
+
+    life.dispose()
+    gate.resolve?.()
+    await connecting
+    for (let i = 0; i < 20; i += 1) {
+      await Promise.resolve()
+    }
+    // Stale completion must not credit the disposed owner.
+    expect(life.getSnapshot().sends).toBe(sendsBeforeDispose)
+    expect(life.getSnapshot().failures).toBe(failuresBeforeDispose)
+    expect(life.getSnapshot().enabled).toBe(false)
+    expect(life.getSnapshot().lastSuccessfulSendAt).toBeNull()
+    expect(intervals).toHaveLength(0)
+    expect(sendStarts).toBe(1)
+    expect(maxConcurrent).toBe(1)
   })
 })
