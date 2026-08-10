@@ -518,7 +518,7 @@ Supported-Profile Operationalization is authorized and has open implementation
 PR [#55](https://github.com/ricktron/classroom-quiz-show/pull/55) under
 `AUTHORIZE-CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE-IMPLEMENTATION-1` (exact base
 `0433f30d9a950d0a196feaf5bb7a57411df77e37`; delivery head
-`74898b6f57c624c3b48b8f0fd70a5b2c5807a6b2`). Slice 21 is **not** `Complete`:
+`136105531062dcebadaf67b247b26a7358b055c9`). Slice 21 is **not** `Complete`:
 final four-handset physical RC (handset #3 / group `15–19`) remains **OWED**
 before merge authorization. See ADR-019 and
 [`receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md`](receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md).
