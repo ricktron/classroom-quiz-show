@@ -10,7 +10,8 @@
   (`docs(slice-21): repair current status declaration (#57)`)
 - **Branch:** `feat/slice-22-minimal-presentation-audio`
 - **Slice status claim:** implementation review-ready only — **not** canonically
-  Complete; owner listening RC pending; no merge authorization implied
+  Complete; owner listening RC accepted (evidence recorded); no merge
+  authorization implied
 
 ## Preflight (observed before mutation)
 
@@ -157,9 +158,69 @@ Sonar: not separately inspected from this executor environment; PR checks will r
 
 ## Owner listening RC
 
-**PENDING** — automated tests do not establish auditory acceptance.
+**PASS — OWNER LISTENING RC ACCEPTED**
 
-PR may be `REVIEW_READY - OWNER_LISTENING_RC_PENDING`.
+- **Listening authorization:**
+  `AUTHORIZE-CQS-SLICE-22-PR58-OWNER-LISTENING-RC-ACCEPTANCE-1`
+- **Evidence state:**
+  `CQS-SLICE-22-PR58-OWNER-LISTENING-RC-ES-1`
+- **Exact pre-listening independently accepted PR head:**
+  `f488c30508afe5820e401d42af07f678fd50afbf`
+- **Date:** 2026-08-10
+- **Parent implementation authorization:**
+  `AUTHORIZE-CQS-SLICE-22-MINIMAL-PRESENTATION-AUDIO-IMPLEMENTATION-2`
+- **Parent independent-review repair authorization:**
+  `AUTHORIZE-CQS-SLICE-22-PR58-INDEPENDENT-EXACT-HEAD-REVIEW-REPAIR-1`
+
+### Owner observations (August 10, 2026)
+
+The owner personally exercised the exact Slice 22 audio assets and runtime
+behavior represented by reviewed head
+`f488c30508afe5820e401d42af07f678fd50afbf`:
+
+1. Owner directly played all five committed WAV assets on macOS using `afplay`.
+2. All five files played successfully.
+3. Owner characterized the sounds as working great; no sound-design change was
+   requested.
+4. Owner then exercised the application through the host workflow.
+5. All five presentation cues played successfully from the application.
+6. Owner confirmed that each sound was wired to the correct button/game
+   situation.
+7. No asset replacement, volume redesign, cue-semantic change, or audio-wiring
+   repair was requested.
+
+### Accepted cue families
+
+`active-claim` · `positive-award` · `incorrect` · `timer-expired` ·
+`game-complete`
+
+### Exact accepted WAV SHA-256 (unchanged; re-verified before this record)
+
+| Cue | SHA-256 |
+| --- | --- |
+| `active-claim` | `e59f046eebeacad2b91986a391974aaf3466bb9d2dc00aea30101e74059a2de0` |
+| `positive-award` | `3020b9f2d9ee35e393499a7baf139c15c97c165d4de1da50277bd2bbc70a6b4c` |
+| `incorrect` | `8d26a95438066d3852537f56bc40e469b023a92602a3e03e08b9c0e7b464a345` |
+| `timer-expired` | `a434927bbfec464da805cbb634a4b82fe7c29cb1e539f5686715d40f16e212a9` |
+| `game-complete` | `90bff69b8b3538106849a607c2ce0df6a7a68efd788f36a4f0c88b911ec592b0` |
+
+### Gate outcomes
+
+| Gate | Result |
+| --- | --- |
+| Direct-file playback (`afplay`) | **PASS** |
+| In-application runtime / wiring | **PASS** |
+| Asset / design / cue-semantic / wiring change requested | **no** |
+| Owner auditory/listening gate for current five asset bytes | **closed** |
+
+This acceptance closes the required human auditory/listening gate for the
+current five asset bytes. Automated tests still do not substitute for owner
+listening; this record binds the RC to the exact pre-listening head and hashes
+above.
+
+Slice 22 remains **not** canonically Complete before merge. No merge
+authorization is implied. Successor work (including any separate teacher host
+UX observation) is **not** part of this evidence record and was **not** started.
 
 ## Independent exact-head review repair
 
@@ -192,8 +253,9 @@ PR may be `REVIEW_READY - OWNER_LISTENING_RC_PENDING`.
 
 WAV assets / generator: **unchanged** (same five SHA-256 values as above).
 
-Owner listening RC remains **PENDING**. Slice 22 remains **not** Complete.
-Slice 23 **not** started.
+Owner listening RC was still **PENDING** at repair time; owner acceptance is
+recorded in **Owner listening RC** above against exact pre-listening head
+`f488c305…`. Slice 22 remains **not** Complete. Slice 23 **not** started.
 
 ### Repair verification (observed)
 
