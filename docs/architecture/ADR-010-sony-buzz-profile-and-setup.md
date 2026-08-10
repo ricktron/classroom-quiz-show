@@ -3,7 +3,10 @@
 - **Status:** Accepted for the hardware-independent portion (Slice 10);
   **`Complete`** after PR #21 squash-merge and post-merge reconciliation —
   OADL2-S07 recorded a **bounded** physical claim under a temporary external
-  keep-alive; permanent keep-alive architecture remains unresolved
+  keep-alive; permanent keep-alive remained unresolved at that stage and was
+  later resolved for the exact Namtai wireless `Wbuzz` `054c:1000` supported
+  profile by Slice 21 /
+  [ADR-019](ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md)
 - **Date:** 2026-07-27
 - **Slice:** 10 — Sony Buzz! mapping, validation & host setup UX
 - **Depends on:** [ADR-002](ADR-002-state-event-sync-core.md),

@@ -222,28 +222,32 @@ and
 [`receipts/2026-08-03-slice-14-post-merge-reconciliation.md`](receipts/2026-08-03-slice-14-post-merge-reconciliation.md).
 **Previous slice:** Slice 19 — Self-Contained Portable Packs (`Complete`,
 exact-head squash-merged via PR #50 at `95573e2…`; reconciliation PR #51)
-**Current delivery frontier:** Slice 20 product implementation is **`Complete`**
-on `main` via PR [#52](https://github.com/ricktron/classroom-quiz-show/pull/52)
-squash `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0` (merged
-**2026-08-09T04:11:33Z**) from accepted exact head
-`45142b96ce91c2f7498dbaa6a47cae278b7c4068`; sole parent
-`ded704dfc09616183979a75234314eef1f311caa`; trees identical at
-`246749b2c1ab699b766194be22f7f4aa8e37195a`; direct head-to-squash diff empty;
-exactly **33** paths. Slice 20 is terminally complete — no further Slice 20
-product delivery, repair, merge, reconciliation, registration, or
-canonicalization lane is owed. Slice 19 remains
-terminally `Complete` (PR #50 / #51). At this frontier, workbook format is **1**;
-AuthoringDraft is **1**; pack format is **1**; IndexedDB schema is **3**;
-public-state wire **8**; sync envelope **2**; canonical game-file schema **1**;
-GameDefinition model **1**; private active-session wire **1**; Session Summary
-contract **1**; completed-summary envelope **1**; competitive profile **1**. The
-next planned product frontier is Slice 21 — Sony Buzz Supported-Profile
-Operationalization; it remains **`Planned` / not started / separately
+**Current delivery frontier:** Slice 21 product implementation is **`Complete`**
+on `main` via PR [#55](https://github.com/ricktron/classroom-quiz-show/pull/55)
+squash `b1e6d669e91b55b20261e86a47d7818f069b0252` (merged
+**2026-08-10T14:39:15Z**) from accepted exact head
+`3bd6c91330298c4374db137e3ce220e0d28a5c2f`; sole parent
+`0433f30d9a950d0a196feaf5bb7a57411df77e37`; trees identical at
+`22c5e3d3416db05cbd28b3893d07780d72ae1af9`; direct head-to-squash diff empty;
+exactly **37** paths; terminal post-merge CI run `31399326956` **success**;
+Pages run `31399326758` **success**. Slice 20 remains terminally `Complete`
+(PR #52). Slice 19 remains terminally `Complete` (PR #50 / #51). At this
+frontier, workbook format is **1**; AuthoringDraft is **1**; pack format is
+**1**; IndexedDB schema is **4**; Sony mapping contract **1**; Sony supported
+profile **1**; public-state wire **8**; sync envelope **2**; canonical
+game-file schema **1**; GameDefinition model **1**; private active-session wire
+**1**; Session Summary contract **1**; completed-summary envelope **1**;
+competitive profile **1**. Three-controller physical product RC **PASS**
+(groups `0–4` / `5–9` / `10–14`; slot 4 / `15–19` historical / owner-accepted).
+Known LOW polish debt **F-UX-01**: ordinary setup still exposes some
+WebHID/Gamepad jargon. The next planned product frontier is Slice 22 — Minimal
+Presentation Audio; it remains **`Planned` / not started / separately
 unauthorized**. See
-[`architecture/ADR-018-spreadsheet-authoring-seed.md`](architecture/ADR-018-spreadsheet-authoring-seed.md),
-[`receipts/2026-08-08-slice-20-spreadsheet-authoring-seed-implementation.md`](receipts/2026-08-08-slice-20-spreadsheet-authoring-seed-implementation.md),
+[`architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md`](architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md),
+[`receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md`](receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md),
+[`receipts/2026-08-10-slice-21-pairing-friction-ux-reconciliation.md`](receipts/2026-08-10-slice-21-pairing-friction-ux-reconciliation.md),
 and
-[`receipts/2026-08-09-slice-20-post-merge-reconciliation.md`](receipts/2026-08-09-slice-20-post-merge-reconciliation.md).
+[`receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md`](receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md).
 **Roadmap:** **23 slices**, amended 2026-08-07 by
 [`decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md)
 (`CQS-PLAN-S03`; documentation-only). **Amendment 004 planning delivery is
@@ -260,9 +264,9 @@ merge-evidence pointer:
 [`decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)
 (`CQS-PLAN-S02`) rebalanced 18→22 slices; Amendment 001
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
-grew the plan from 11 to 18 slices (PR #13, `752a3fe`, 2026-07-26). Slices 1–20
-are `Complete`; Slices 21–23 remain `Planned` and unauthorized. This STATUS
-grants **no** Slice 21, Slice 22 audio, or Slice 23 qualification authority.
+grew the plan from 11 to 18 slices (PR #13, `752a3fe`, 2026-07-26). Slices 1–21
+are `Complete`; Slices 22–23 remain `Planned` and unauthorized. This STATUS
+grants **no** Slice 22 audio or Slice 23 qualification authority.
 Phase 2B’s MVP consumers (Slices 17–18) are both `Complete`; Phase 3
 design-system readiness has served the theme-foundation → audience-display
 sequence; post-MVP arcs remain inactive; theme song remains post-MVP;
@@ -514,21 +518,20 @@ remains unresolved. No physical-projector, accessibility, WCAG, or Raspberry Pi
 certification is claimed. No ADR was warranted.
 
 **Current next action (repository frontier):** Slice 21 — Sony Buzz
-Supported-Profile Operationalization has an authorized implementation candidate
-under `AUTHORIZE-CQS-SLICE-21-SONY-BUZZ-SUPPORTED-PROFILE-IMPLEMENTATION-1`
-(exact base `0433f30d9a950d0a196feaf5bb7a57411df77e37`). Three-controller
+Supported-Profile Operationalization is **`Complete`** on `main` via PR
+[#55](https://github.com/ricktron/classroom-quiz-show/pull/55) squash
+`b1e6d669e91b55b20261e86a47d7818f069b0252` (merged **2026-08-10T14:39:15Z**)
+from accepted head `3bd6c91330298c4374db137e3ce220e0d28a5c2f`. Three-controller
 physical product RC **PASS**
 (`CQS-SLICE-21-PR55-THREE-CONTROLLER-PRODUCT-RC-ES-1` on head `3b0e97f…`);
 owner accepted three available handsets as sufficient (groups `0–4` / `5–9` /
 `10–14`; slot 4 / `15–19` historical / owner-accepted — not a fresh four-handset
-claim). Pairing-friction UX reconciliation is in delivery on PR #55. Slice 21 is
-**not** `Complete` until final exact-head independent acceptance and merge. See
-ADR-019 and
-[`receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md`](receipts/2026-08-09-slice-21-sony-buzz-supported-profile-implementation.md).
-Slice 22 Minimal Presentation Audio remains `Planned` / unauthorized. Slice 20
-is `Complete` via PR #52; Slice 19 is `Complete` via PR #50. No further Phase 3
-readiness registration, Slice 17, Slice 18, Slice 19, or Slice 20 product lane
-is owed.
+claim). Terminal post-merge verification **PASS**. See ADR-019 and
+[`receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md`](receipts/2026-08-10-slice-21-post-merge-canonical-reconciliation.md).
+**Next planned frontier:** Slice 22 Minimal Presentation Audio remains
+`Planned` / unauthorized. Slice 20 is `Complete` via PR #52; Slice 19 is
+`Complete` via PR #50. No further Phase 3 readiness registration, Slice 17,
+Slice 18, Slice 19, Slice 20, or Slice 21 product lane is owed.
 
 ## Remaining-MVP rebalance planning (CQS-PLAN-S02) — Complete
 
@@ -608,12 +611,12 @@ or merge action.** The Slice 16 PR #41 post-merge canonicalization recorded in
 [`receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md`](receipts/2026-08-05-slice-16-pr41-post-merge-canonicalization.md)
 closes the remaining stale-routing defect. Phase 3 design-system readiness was
 satisfied and then consumed by completed Slices 17–18 (PR #44, PR #46). Slice 19
-has since completed via PR #50. Slice 20 has since completed via PR #52. The
-current next safe action is the next planned frontier, Slice 21 — Sony Buzz
-Supported-Profile Operationalization (`PLANNED` / not started / requires
-separate owner authorization) — not further review of PR #36, PR #38, PR #40,
-PR #41, PR #44, PR #46, PR #50, or PR #52, and not Slice 21 implementation from
-this surface alone.
+has since completed via PR #50. Slice 20 has since completed via PR #52. Slice 21
+has since completed via PR #55. The current next safe action is the next planned
+frontier, Slice 22 — Minimal Presentation Audio (`PLANNED` / not started /
+requires separate owner authorization) — not further review of PR #36, PR #38,
+PR #40, PR #41, PR #44, PR #46, PR #50, PR #52, or PR #55, and not Slice 22
+implementation from this surface alone.
 
 ## Slice 14 merge evidence
 
@@ -837,7 +840,9 @@ surface does not claim that the Child B delivery branch or PR is merged.
 > clean `main` at `5575be3` passed (**1415** unit tests; **202** e2e passed /
 > **2** skipped). Completion covers the owner-accepted hardware-independent
 > scope; **physical Sony Buzz! certification has a bounded host claim under a
-> temporary keep-alive** (permanent keep-alive architecture still unresolved).
+> temporary keep-alive** (permanent keep-alive remained unresolved at that
+> stage; later resolved for the exact supported Namtai wireless `Wbuzz`
+> `054c:1000` profile by Slice 21 / ADR-019).
 > OADL2-S07 on the correct host (`macdaddy` / `Ricks-MacBook-Air.local`, wireless
 > Namtai `Wbuzz` `054c:1000`) showed that, on this macOS/Chrome configuration, a
 > temporary external HID **output** keep-alive kept handsets responsive, enabled
@@ -1032,7 +1037,9 @@ Squash-merged via PR #21 at `5575be3` from reviewed head `2885933`. Completion
 covers the owner-accepted hardware-independent scope. Physical validation on
 owner wireless hardware was completed under OADL2-S07 with a **temporary**
 external keep-alive; see the bounded claim in the S07 receipt. Permanent
-keep-alive architecture remains unresolved; no wired claim; no SKU list.
+keep-alive remained unresolved at that stage and was later resolved for the
+exact supported Namtai wireless `Wbuzz` `054c:1000` profile by Slice 21 /
+ADR-019; no wired claim; no SKU list.
 
 > **The headline is what did NOT change:** no schema, no `PublicState`, no sync
 > protocol version, no command, no event, no reducer, no queue logic, no timer
@@ -1052,7 +1059,7 @@ keep-alive architecture remains unresolved; no wired claim; no SKU list.
 | Device identity, classification, capture state and button indices host-private — never projected | Implemented |
 | **`PublicState` unchanged; wire version unchanged at 6; sync envelope unchanged at 2** | Implemented |
 | ADR-010 recorded | Implemented |
-| **Physical Sony Buzz! validation on owner hardware** | **OADL2-S07 (2026-08-01/02): browser 4×5 + Playwright-assisted CQS setup/test/gameplay/keyboard PASS under temporary keep-alive; bounded claim only; permanent keep-alive unresolved** |
+| **Physical Sony Buzz! validation on owner hardware** | **OADL2-S07 (2026-08-01/02): browser 4×5 + Playwright-assisted CQS setup/test/gameplay/keyboard PASS under temporary keep-alive; bounded claim only; permanent keep-alive unresolved at that stage — later resolved for the exact supported `Wbuzz` profile by Slice 21 / ADR-019** |
 | Supported/compatibility/certified language | **Bounded host claim only — see S07 receipt; no permanent keep-alive claim** |
 | WebHID, Bluetooth, USB drivers | **Not implemented** |
 | Scoring restricted to the active respondent (`OG-6`) | **Still deferred — not implemented** |
@@ -1629,7 +1636,9 @@ None.
   external HID output keep-alive (Gamepad API cannot send that keep-alive). See
   the bounded claim and non-claims in
   ([receipt](receipts/2026-08-01-oadl2-s07-sony-buzz-physical-certification.md)).
-  Permanent keep-alive architecture remains unresolved.
+  Permanent keep-alive remained unresolved at that stage; Slice 21 / ADR-019
+  later resolved it for the exact supported Namtai wireless `Wbuzz` `054c:1000`
+  profile.
 - **Controller buzzing starts switched OFF** and nothing is bound by default —
   there is deliberately no assumed "buzz button".
 - **Slice 9 maps BUTTONS only.** No axes, sticks, analog triggers, motion,
@@ -1712,7 +1721,8 @@ merge and post-merge evidence in
 | Slice 18 audience display | **Complete** via PR [#46](https://github.com/ricktron/classroom-quiz-show/pull/46) at `91c7708…` |
 | Slice 19 portable packs | **Complete** via PR [#50](https://github.com/ricktron/classroom-quiz-show/pull/50) at `95573e2…` |
 | Slice 20 spreadsheet authoring seed | **Complete** via PR [#52](https://github.com/ricktron/classroom-quiz-show/pull/52) at `86e8f5e…` |
-| Slice 21+, post-MVP arcs, `CQS-OD-066` | **Unauthorized / inactive / unresolved** |
+| Slice 21 Sony Buzz supported profile | **Complete** via PR [#55](https://github.com/ricktron/classroom-quiz-show/pull/55) at `b1e6d66…` |
+| Slice 22+, post-MVP arcs, `CQS-OD-066` | **Unauthorized / inactive / unresolved** |
 
 ## Slice 16 work (Complete)
 
@@ -1807,17 +1817,23 @@ post-merge reconciliation:
 
 ## Next safe action
 
-**Slice 20 — Spreadsheet Authoring Seed is terminally `Complete`** on `main`
-via implementation PR [#52](https://github.com/ricktron/classroom-quiz-show/pull/52)
-(exact-head squash `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0` from accepted head
-`45142b96ce91c2f7498dbaa6a47cae278b7c4068`, merged **2026-08-09T04:11:33Z**).
-**PR #52 requires no further review or merge action.** No further Slice 20
-product delivery, repair, merge, reconciliation, registration, or
-canonicalization lane is owed.
+**Slice 21 — Sony Buzz Supported-Profile Operationalization is terminally
+`Complete`** on `main` via implementation PR
+[#55](https://github.com/ricktron/classroom-quiz-show/pull/55) (exact-head squash
+`b1e6d669e91b55b20261e86a47d7818f069b0252` from accepted head
+`3bd6c91330298c4374db137e3ce220e0d28a5c2f`, merged **2026-08-10T14:39:15Z**).
+Terminal post-merge CI (`31399326956`) and Pages (`31399326758`) **success**.
+Three-controller physical product RC **PASS** (owner disposition sufficient;
+fourth slot historical / owner-accepted — not a fresh four-handset claim).
+**PR #55 requires no further product review or merge action.** Canonical docs
+reconciliation for Slice 21 is the open docs-only follow-on under
+`AUTHORIZE-CQS-SLICE-21-POST-MERGE-CANONICAL-RECONCILIATION-1`.
+**Slice 20 — Spreadsheet Authoring Seed remains terminally `Complete`** on `main`
+via PR [#52](https://github.com/ricktron/classroom-quiz-show/pull/52).
 Slice 19 remains terminally `Complete` (PR #50 / #51). Slice 18 remains
 terminally `Complete` (PR #46 / #47). Slice 17 remains terminally `Complete`
 (PR #44 / #45). Phase 2B’s MVP consumers (Slices 17–18) are both `Complete`.
-Slices **1–20** are `Complete`.
+Slices **1–21** are `Complete`.
 
 **Roadmap Amendment 004 (`CQS-PLAN-S03`) is merged and canonical on `main`**
 via PR [#48](https://github.com/ricktron/classroom-quiz-show/pull/48) (squash
@@ -1831,16 +1847,15 @@ that reconciliation adds evidence only and grants **no** product authority.
 **Current** MVP count is the **23-slice** plan.
 
 **Recommended next action:**
-advance the Slice 21 pairing-friction UX reconciliation / current PR #55 head
-through **final exact-head independent acceptance**, then merge authorization
-preparation. Three-controller physical product RC is **PASS** (owner disposition
-sufficient; fourth slot historical / owner-accepted — not a fresh four-handset
-claim). Slice 21 is authorized but **not** `Complete` until that acceptance and
-merge. Do **not** begin Slice 22 audio, Slice 23 qualification, or post-MVP work
-from this surface. Slice 20 is terminally `Complete`. Post-MVP arcs remain
-inactive; theme song remains post-MVP; `CQS-OD-066` remains unresolved; the
-inherited Final mid-refresh recovery flake remains unresolved. Phase 3 readiness
-has served the theme-foundation → audience-display sequence.
+return to the Program Orchestrator to obtain separate owner authorization for
+**Slice 22 — Minimal Presentation Audio**. Slice 22 remains `PLANNED`, not
+started, and unauthorized. Do **not** begin Slice 22 audio, Slice 23
+qualification, or post-MVP work from this surface. Known LOW debt **F-UX-01**
+(demote WebHID/Gamepad jargon from ordinary setup) is retained polish, not a
+Slice 21 blocker. Post-MVP arcs remain inactive; theme song remains post-MVP;
+`CQS-OD-066` remains unresolved; the inherited Final mid-refresh recovery flake
+remains unresolved. Phase 3 readiness has served the theme-foundation →
+audience-display sequence.
 
 **Roadmap Amendment 003 (`CQS-PLAN-S02`) delivery and post-merge
 reconciliation remain complete on `main`** (PR #35 squash `2ebeb240…`; PR #36
