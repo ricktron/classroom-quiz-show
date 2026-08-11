@@ -102,9 +102,6 @@ export function GamePackExportPanel({
 
   return (
     <section className="pack-export" aria-labelledby="pack-export-title">
-      <div className="foundation__tag foundation__tag--slice19">
-        Portable pack export (Slice 19) — host-only, not gameplay
-      </div>
       <h3 id="pack-export-title">Export portable pack file</h3>
       <p className="host__note">
         Download the loaded game as a self-contained <code>.cqs-pack</code> archive with embedded

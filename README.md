@@ -7,6 +7,12 @@ classroom. A teacher runs a private **host** screen; students watch a public
 Coding agents and contributors should read
 [`AGENTS.md`](AGENTS.md) before changing the repository.
 
+## Teacher quick start
+
+Teachers: see [`docs/teacher/QUICK_START.md`](docs/teacher/QUICK_START.md) for the
+ordinary classroom path — open Host, load a game, set up teams/controllers, open
+the audience Display, and begin play.
+
 > **Not a Jeopardy clone.** The category-and-point-value board is the _first_
 > round type this engine supports, not the whole product. See
 > [`docs/architecture/GAME-ENGINE-BOUNDARIES.md`](docs/architecture/GAME-ENGINE-BOUNDARIES.md).
@@ -598,12 +604,10 @@ an explicit **Resume session** or **Discard recovery** choice, and saved
 definitions can be saved and loaded later on the same device. A second host tab
 uses read-only follower mode while another host tab owns local persistence. None
 of this persistence UI or saved-library content is projected to the display, and
-controller mappings remain session-local by design. Importing is still limited to
-pasting canonical JSON (no file picker, spreadsheet, or remote import). The host
-"Foundation / testing controls" and the import harness remain diagnostics that
-prove the state core, the game/round model and the ingestion boundary — the
-category-board, teams & scoring, response-window and buzz-in panels are the game
-controls. Those other systems arrive in later slices. See [`docs/STATUS.md`](docs/STATUS.md) and
+controller mappings remain session-local by design. Teachers load content through
+ordinary host controls (JSON import, spreadsheet authoring, or portable pack).
+See [`docs/teacher/QUICK_START.md`](docs/teacher/QUICK_START.md),
+[`docs/STATUS.md`](docs/STATUS.md), and
 [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md).
 
 ## Requirements

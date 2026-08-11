@@ -57,11 +57,10 @@ function HostRouteContent(): ReactElement {
         <h1 id="host-title">Host control</h1>
 
         <section className="host__status" aria-live="polite">
-          <h2>No active game</h2>
+          <h2>Ready to run class</h2>
           <p>
-            No game session or round is running. Game setup, rounds, and scoring
-            arrive in a later slice — this foundation deliberately ships without
-            them.
+            Load a game below, set up teams and optional buzzers, then open the audience display
+            for the projector. See the repository teacher quick start for a short walkthrough.
           </p>
         </section>
 
@@ -88,11 +87,9 @@ function HostRouteContent(): ReactElement {
 /**
  * Private teacher host screen.
  *
- * There is still NO gameplay here — no board, scoring, teams, timers, or answer
- * reveal. Slice 2 adds a clearly-labeled "Foundation / testing controls" panel
- * that owns the authoritative in-memory state store, shows private state and the
- * append-only event history (host-only), and publishes sanitized public state to
- * the display. It must never be projected, hence the persistent warning banner.
+ * Owns the working classroom quiz-show host surface: content loading, gameplay
+ * panels when a game is loaded, and secondary advanced diagnostics. It must
+ * never be projected, hence the persistent warning banner.
  *
  * Slice 17 adds a session-local theme selector below the private-host banner.
  * Theme choice is presentation-only: no persistence, events, or public wire.
