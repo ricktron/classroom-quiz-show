@@ -239,6 +239,45 @@ describe('PersistenceControls', () => {
     )
   })
 
+  it('does not reload or claim complete success when keyboard prefs could not be removed', async () => {
+    // Partial destruction: IndexedDB deletion succeeded, keyboard-mapping
+    // removal failed. The aggregate result is non-success, so there must be no
+    // "all data cleared" copy and no success reload.
+    const clearAllLocalData = vi.fn(async () => ({
+      ok: false,
+      message:
+        'Could not clear all local CQS data. Stored Classroom Quiz Show game data was deleted, but the saved buzz-key preferences on this device could not be removed.',
+    }))
+    const reloadPage = vi.fn()
+    render(
+      <PersistenceControls
+        persistence={persistence({ clearAllLocalData })}
+        activeGame={null}
+        activeDefinition={definition()}
+        registry={createDefaultRegistry()}
+        dispatch={vi.fn()}
+        getHistory={() => []}
+        reloadPage={reloadPage}
+      />,
+    )
+
+    fireEvent.click(screen.getByTestId('persistence-clear-all-action'))
+    fireEvent.click(screen.getByTestId('persistence-clear-all-action'))
+    await waitFor(() => expect(clearAllLocalData).toHaveBeenCalledTimes(1))
+    await waitFor(() =>
+      expect(screen.getByTestId('persistence-clear-all-message')).toHaveTextContent(
+        /could not clear all local cqs data/i,
+      ),
+    )
+    expect(screen.getByTestId('persistence-clear-all-message')).toHaveTextContent(
+      /buzz-key preferences on this device could not be removed/i,
+    )
+    expect(reloadPage).not.toHaveBeenCalled()
+    expect(screen.getByTestId('persistence-clear-all-message')).not.toHaveTextContent(
+      /all local classroom quiz show data on this browser was cleared/i,
+    )
+  })
+
   it('does not reload when clear fails', async () => {
     const clearAllLocalData = vi.fn(async () => ({
       ok: false,

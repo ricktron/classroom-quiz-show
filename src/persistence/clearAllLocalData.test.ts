@@ -143,6 +143,102 @@ describe('clearAllLocalCqsData', () => {
     expect(storage.data[KEYBOARD_MAPPING_STORAGE_KEY]).toBe('keep-me')
   })
 
+  it('fails the aggregate when keyboard removal fails after IndexedDB deletion succeeded', async () => {
+    // The partial-destruction case: deleteDatabase succeeds, then localStorage
+    // exists but removeItem throws. Success here would be a false "all local
+    // CQS data cleared" claim while the buzz-key mapping still exists.
+    const deleteRequest = {
+      onsuccess: null as ((event: Event) => void) | null,
+      onerror: null as ((event: Event) => void) | null,
+      onblocked: null as ((event: Event) => void) | null,
+    }
+    const factory = {
+      deleteDatabase: () => {
+        queueMicrotask(() => deleteRequest.onsuccess?.(new Event('success')))
+        return deleteRequest
+      },
+    } as unknown as IDBFactory
+
+    const adapter = createIndexedDbPersistenceAdapter({
+      indexedDB: factory,
+      dbName: 'cqs-clear-keyboard-fail-test',
+    })
+    const storage: LocalConfigStorage = {
+      getItem: () => 'still-here',
+      setItem: () => {},
+      removeItem: () => {
+        throw new Error('storage denied removeItem')
+      },
+    }
+
+    const result = await clearAllLocalCqsData({
+      adapter,
+      indexedDB: factory,
+      dbName: 'cqs-clear-keyboard-fail-test',
+      localConfigStorage: storage,
+    })
+
+    expect(result.ok).toBe(false)
+    expect(result).toMatchObject({ ok: false, code: 'keyboard-clear-failed' })
+    if (!result.ok) {
+      // The message must be truthful about the partial destruction: game data
+      // gone, keyboard prefs not removed, aggregate NOT a success.
+      expect(result.message).toMatch(/could not clear all local cqs data/i)
+      expect(result.message).toMatch(/game data was deleted/i)
+      expect(result.message).toMatch(/could not be removed/i)
+      expect(result.message).not.toMatch(/all local classroom quiz show data on this browser was cleared/i)
+    }
+
+    // Durable data is already destroyed, so the adapter must remain sealed —
+    // a reopen here could let a stale write repopulate the deleted database.
+    expect(await adapter.open()).toMatchObject({ ok: false, code: 'unavailable' })
+  })
+
+  it('fails the aggregate when keyboard removal fails after the memory adapter cleared', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    const storage: LocalConfigStorage = {
+      getItem: () => 'still-here',
+      setItem: () => {},
+      removeItem: () => {
+        throw new Error('storage denied removeItem')
+      },
+    }
+
+    const result = await clearAllLocalCqsData({ adapter, localConfigStorage: storage })
+    expect(result).toMatchObject({ ok: false, code: 'keyboard-clear-failed' })
+  })
+
+  it('treats absent local storage as nothing durable to clear, not a failure', async () => {
+    // No usable localStorage (private mode / managed device) means there is no
+    // CQS keyboard-mapping storage to remove — distinct from a removal failure.
+    const deleteRequest = {
+      onsuccess: null as ((event: Event) => void) | null,
+      onerror: null as ((event: Event) => void) | null,
+      onblocked: null as ((event: Event) => void) | null,
+    }
+    const factory = {
+      deleteDatabase: () => {
+        queueMicrotask(() => deleteRequest.onsuccess?.(new Event('success')))
+        return deleteRequest
+      },
+    } as unknown as IDBFactory
+
+    const adapter = createIndexedDbPersistenceAdapter({
+      indexedDB: factory,
+      dbName: 'cqs-clear-no-storage-test',
+    })
+
+    const result = await clearAllLocalCqsData({
+      adapter,
+      indexedDB: factory,
+      dbName: 'cqs-clear-no-storage-test',
+      localConfigStorage: null,
+    })
+
+    expect(result).toEqual({ ok: true, value: undefined })
+  })
+
   it.runIf(typeof globalThis.indexedDB !== 'undefined')(
     'deletes a real IndexedDB database and clears keyboard prefs',
     async () => {

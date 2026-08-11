@@ -14,6 +14,11 @@ export type PersistenceErrorCode =
   | 'delete-blocked'
   /** IndexedDB deleteDatabase failed (not blocked). */
   | 'delete-failed'
+  /**
+   * Aggregate reset partial failure: durable database destruction succeeded,
+   * but the CQS keyboard-mapping localStorage key could not be removed.
+   */
+  | 'keyboard-clear-failed'
 
 export type PersistenceOk<T> = { readonly ok: true; readonly value: T }
 export type PersistenceErr = {
