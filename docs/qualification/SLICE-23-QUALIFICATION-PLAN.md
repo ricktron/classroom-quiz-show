@@ -362,6 +362,32 @@ is direct: a Final wager silently lost across a mid-round refresh, which is a
 release-blocking data-loss class of defect. If disproven, it reverts to a
 harness flake — but that must be **shown**, not assumed from the retry.
 
+### Two-sample flake rate at an identical product tree
+
+Two CI runs were observed against product trees **byte-identical to the
+authorized base**, giving an unusually clean natural experiment — the only thing
+varying between them is runner timing.
+
+| Run | Head | Passed | Skipped | Flaky | Projects that flaked |
+| --- | --- | --- | --- | --- | --- |
+| `31446536299` | `9fb3ee5…` | 355 | 14 | **3** | `desktop-1080p`, `projector-720p`, `mobile-host` |
+| `31447234996` | `7948a3a…` | 356 | 14 | **2** | `projector-720p`, `mobile-host` |
+
+**5 of 6 project-runs flaked**, and the set of affected projects **changed
+between runs** with no product change whatsoever (`desktop-1080p` flaked in the
+first sample and passed first-try in the second).
+
+This further weakens hypothesis **(B) deterministic test-harness flake** — a
+deterministic harness defect would fail the same projects every time. The
+observed behaviour is that of a **genuine nondeterministic race** whose outcome
+tracks machine timing, which is consistent with either §43 **(A) actual product
+defect** or **(C) environment race with no demonstrated product impact**.
+
+Distinguishing (A) from (C) is exactly what the focused reproduction above is
+for, and it is now the **highest-value single experiment remaining in Slice 23**:
+a ~90 % per-project reproduction rate means the answer is cheap to obtain once a
+working toolchain exists. **No disposition is made here.**
+
 ---
 
 ## 6. Teacher-workflow map as currently implemented
@@ -690,7 +716,7 @@ team-setup, keyboard, or display-workflow observation was performed.
 | `CQS-Q23-LOW-01` / F-UX-01 | **UNDISPOSITIONED** — neither promoted nor dismissed |
 | `CQS-Q23-LOW-02` | **NEW** — recorded from CI build output; routed to a live measurement gate |
 | `CQS-Q23-CLASS-B-01` | **Unchanged** — Class B continuation candidate, not a Slice 23 defect |
-| Inherited Final mid-refresh flake | **STILL UNDISPOSITIONED**, but §5 analysis sharpened; hypothesis (A) actual product defect is now the leading one |
+| Inherited Final mid-refresh flake | **STILL UNDISPOSITIONED**, but §5 analysis sharpened by two independent same-tree samples (3 flaky then 2 flaky, 5 of 6 project-runs); a deterministic harness defect is now weakly supported |
 
 Per the packet, a provisional Stage-0 label is **not** preserved merely because
 Stage 0 used it. None of the six teacher-workflow severities has been confirmed,
