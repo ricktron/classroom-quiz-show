@@ -3,12 +3,16 @@
 **Slice identifier:** `CQS-SLICE-23-CLASSROOM-RELEASE-QUALIFICATION`
 **Authorization:** `AUTHORIZE-CQS-SLICE-23-CLASSROOM-RELEASE-QUALIFICATION-1`
 **Evidence state:** `CQS-SLICE-23-CLASSROOM-RELEASE-QUALIFICATION-ES-1`
-**Stage:** **Stage 0 — read-only discovery only.**
+**Stage:** **Stage 0 — read-only discovery**, plus the recorded Stage B / Stage C
+execution attempt under packet
+`CQS-SLICE-23-STAGE-B-C-LOCAL-QUALIFICATION-PACKET-1` (§14).
 
-> **This document establishes no qualification verdict.** No qualification gate
-> has been executed. No product code was mutated. Slice 23 is **not** claimed
-> implemented, executed, or terminal. The overall CQS MVP is **not** claimed
-> complete, and this document must never be read as claiming it.
+> **This document establishes no qualification verdict.** Stage A
+> (canonical/preflight) passed as a repository-provenance gate; **no substantive
+> classroom or product qualification gate has been executed or dispositioned.**
+> No product code was mutated. Slice 23 is **not** claimed implemented,
+> executed, or terminal. The overall CQS MVP is **not** claimed complete, and
+> this document must never be read as claiming it.
 
 ---
 
@@ -125,11 +129,20 @@ or live-route claim can originate in this session.**
 
 ### Effect on staging
 
-Stages **B** (automated baseline), **I** (deployment/PWA/offline/reset on
-production), and every gate requiring a running build must execute on an
-environment with access to `cdn.sheetjs.com` and `ricktron.github.io` — an owner
-machine or CI. Stages requiring physical hardware, projector, audio, and
-screen-reader observation were always owner-assisted.
+The two hard stops have **different and non-interchangeable** scopes:
+
+- **HS-1 (dependency host)** blocks every gate that needs the project toolchain
+  or a running build — Stages **B, C, D, E, F**, and the local half of **I**.
+  These require reachability of the normal project dependency hosts, including
+  `cdn.sheetjs.com`. **They do not inherently require GitHub Pages access**, and
+  must not be described as if they did.
+- **HS-2 (deployed environment)** blocks only the gates that qualify the
+  *deployed* product: production deployment verification, PWA install/update,
+  production offline behaviour, and deployed-commit provenance. These
+  additionally require access to the GitHub Pages environment.
+
+Stages requiring physical hardware, projector, audio, and screen-reader
+observation were always owner-assisted and are unaffected by either hard stop.
 
 ---
 
@@ -372,9 +385,9 @@ production URL (or npm run dev)
 
 | Stage | Content | Status |
 | --- | --- | --- |
-| A | Canonical/preflight | **DONE — PASS** (§1 above) |
-| B | Clean automated baseline (`verify`, `verify:all`, matrices) | **BLOCKED by HS-1** |
-| C | Clean-teacher first-launch workflow (clean profile) | **BLOCKED by HS-1** — expected to confirm BLOCKER-01/02 |
+| A | Canonical/preflight | **DONE — PASS** (§1, §14) — provenance gate only |
+| B | Clean automated baseline (`verify`, `verify:all`, matrices) | **ATTEMPTED — BLOCKED by HS-1** (§14) |
+| C | Clean-teacher first-launch workflow (clean profile) | **ATTEMPTED — BLOCKED by HS-1** (§14); still expected to confirm BLOCKER-01/02 |
 | D | Import / authoring / pack / data lifecycle | **BLOCKED by HS-1** |
 | E | Gameplay, Final, undo, recovery (+ flake disposition) | **BLOCKED by HS-1** |
 | F | Presentation / accessibility / themes / screen reader | **BLOCKED by HS-1** (screen reader also owner-assisted) |
@@ -451,8 +464,10 @@ does not resolve it. Routed to the Program Orchestrator unchanged.
 
 ## 12. Explicit non-claims
 
-- **No** qualification gate has passed or failed. Stage-0 findings are
-  provisional and static.
+- **Stage A (canonical/preflight) passed.** That is a repository-provenance
+  gate, not a classroom gate. **No substantive classroom or product
+  qualification gate has been dispositioned** — every Stage-0 product finding
+  below is provisional and static.
 - **No** unit, Playwright, lint, typecheck, build, Sonar, Pages, or CI result is
   claimed from this session; the toolchain could not be installed (HS-1).
 - **No** production, PWA, offline, update, or deployed-commit claim (HS-2).
@@ -468,9 +483,12 @@ does not resolve it. Routed to the Program Orchestrator unchanged.
 
 ## 13. Recommended Program Orchestrator next action
 
-1. **Decide the qualification execution environment.** Stages B–F and I need a
-   machine that can reach `cdn.sheetjs.com` and `ricktron.github.io`. Without
-   one, Slice 23 cannot progress past Stage A regardless of authority.
+1. **Decide the qualification execution environment.** Stages B–F need a machine
+   that can reach the normal project dependency hosts (including
+   `cdn.sheetjs.com`); the deployment, PWA, and production-offline gates
+   additionally need access to the GitHub Pages environment. Without a machine
+   meeting the first requirement, Slice 23 cannot progress past Stage A — this
+   is an **environment** constraint, not an authority constraint.
 2. **Rule on the teacher-surface findings before funding the full matrix.** If
    `CQS-Q23-BLOCKER-01`/`-02` confirm live, the economical path is to authorize
    a bounded host-surface repair packet first, then qualify — rather than
@@ -478,6 +496,119 @@ does not resolve it. Routed to the Program Orchestrator unchanged.
 3. **Do not treat this document as authority** to repair, to implement any
    continuation candidate, to merge, or to declare MVP completion.
 
-**SLICE 23 AUTHORITY ENDS AT STAGE 0 IN THIS SESSION.** Any post-Stage-0
-execution, any bounded repair, and any post-23 MVP implementation require
-separate Program Orchestrator sequencing and owner authorization.
+### Authority boundary (corrected)
+
+`AUTHORIZE-CQS-SLICE-23-CLASSROOM-RELEASE-QUALIFICATION-1` **already permits
+continued Slice 23 qualification execution.** Post-Stage-0 qualification does
+**not** require fresh owner authorization; it requires an environment capable of
+running it. An earlier revision of this document overstated the boundary by
+implying otherwise, and that statement is withdrawn.
+
+Separate authorization **remains required** for:
+
+- product repair of any kind;
+- post-Slice-23 MVP implementation;
+- merge, where governance requires exact-head authorization;
+- any otherwise unauthorized mutation.
+
+---
+
+## 14. Stage B / Stage C execution attempt
+
+**Packet:** `CQS-SLICE-23-STAGE-B-C-LOCAL-QUALIFICATION-PACKET-1`
+**Parent authorization:** `AUTHORIZE-CQS-SLICE-23-CLASSROOM-RELEASE-QUALIFICATION-1`
+
+The packet directed Stage B and Stage C to run on a local environment able to
+reach the normal project dependency hosts and GitHub Pages. **The session
+executing this packet was not such an environment**, and the two hard stops were
+re-tested directly rather than assumed.
+
+### Preflight — PASS
+
+| Item | Observed value |
+| --- | --- |
+| Host / user / cwd | `vm` / `root` / `/home/user/classroom-quiz-show` |
+| Platform | `Linux 6.18.5-fc-v20 x86_64` (**not** a local macOS environment) |
+| `origin/main` | `c047ca71640c3d717eacd1092a899ca6d16b2115` — **unchanged** |
+| PR #60 head at packet start | `9fb3ee5caffc4f08f9f48425fcffe4786dffa9cf` |
+| Working tree | clean |
+| Worktrees | exactly one |
+| Node / npm | `v22.22.2` / `10.9.7` |
+
+Canonical main has **not** moved, so the authorized base holds and no refreshed
+base authority is required.
+
+### Stage B — NOT EXECUTED (blocked)
+
+| Check | Result |
+| --- | --- |
+| `npm ci` | **FAIL — exit 1**, `npm error code E403`, `403 Forbidden - GET https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz` |
+| `git diff --check` | **clean** |
+| `npm run verify` | **NOT RUN** — toolchain not installable |
+| `npm run verify:all` | **NOT RUN** — toolchain not installable |
+| Lint / typecheck / unit / Playwright / build | **NOT RUN** — no totals claimed |
+
+Re-tested this packet, both still denied by egress policy:
+
+- `https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz` → `CONNECT tunnel
+  failed, response 403`
+- `https://ricktron.github.io/classroom-quiz-show/` → `CONNECT tunnel failed,
+  response 403`
+
+No usable cached copy of the tarball exists; `npm ci` fails even with a warm
+npm cache directory present.
+
+**No unit, component, Playwright, retry, flake, lint, typecheck, or build figure
+is claimed.** The inherited Final mid-refresh issue therefore remains
+**undispositioned**, exactly as §5 requires — and it must not be classified from
+a retry-resolved full-suite run in any case.
+
+### Stage C — NOT EXECUTED (blocked)
+
+Stage C requires driving the running application from a clean browser profile.
+That depends on a production build, which depends on the failed install. **No
+clean-browser evidence exists**, and no clean-teacher startup, game-import,
+team-setup, keyboard, or display-workflow observation was performed.
+
+### Finding dispositions after this packet
+
+| Finding | Disposition |
+| --- | --- |
+| `CQS-Q23-BLOCKER-01` | **UNDISPOSITIONED** — provisional severity retained, *not* confirmed |
+| `CQS-Q23-BLOCKER-02` | **UNDISPOSITIONED** — provisional severity retained, *not* confirmed |
+| `CQS-Q23-HIGH-01` | **UNDISPOSITIONED** — static evidence only |
+| `CQS-Q23-HIGH-02` | **UNDISPOSITIONED** — static evidence only |
+| `CQS-Q23-HIGH-03` | **UNDISPOSITIONED** — static evidence only |
+| `CQS-Q23-LOW-01` / F-UX-01 | **UNDISPOSITIONED** — neither promoted nor dismissed |
+
+Per the packet, a provisional Stage-0 label is **not** preserved merely because
+Stage 0 used it. None of these severities has been confirmed, lowered, raised,
+or rejected from live behaviour, because no live behaviour was observed.
+
+### §71 hard-stop rule — NOT TRIGGERED
+
+The §71 hard stop fires only on a **confirmed** BLOCKER. Neither blocker was
+confirmed, so the rule did not fire and **no bounded repair packet is issued by
+this document**. Issuing one now would rest on static evidence alone and would
+name product paths for a defect not yet reproduced — which is precisely what the
+packet's evidence discipline forbids.
+
+Qualification nonetheless remains stopped, for the unrelated reason that its
+execution environment is unavailable.
+
+### Evidence invalidation / transfer
+
+No new evidence was produced, so nothing is invalidated and nothing transfers.
+All Stage-0 static observations remain valid as static observations at
+`c047ca7…`; none has been upgraded to CLEAN-BROWSER class.
+
+### What is needed to complete this packet
+
+An environment that can reach the normal project dependency hosts (including
+`cdn.sheetjs.com`) is sufficient for Stages B and C. GitHub Pages access is
+**not** required for Stage B or Stage C — only for the deployment, PWA, and
+production-offline gates later.
+
+When that environment is available, this packet resumes at Stage B with no
+change to its instructions, and Stage C should be run before any expensive
+matrix work.
