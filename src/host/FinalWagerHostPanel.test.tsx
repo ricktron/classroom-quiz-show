@@ -135,6 +135,67 @@ describe('wager entry distinguishes a draft from a committed value', () => {
     expect(screen.getByTestId('fwh-save-wager-red')).toHaveTextContent(/correct wager/i)
   })
 
+  it('A/B: shows Saving until durability catches up, then Saved', () => {
+    const store = wagerStore()
+    store.dispatch({ type: 'RECORD_FINAL_WAGER', issuedAt: AT, roundId: ROUND, teamId: 'red', wager: 100 })
+    const historyLength = store.getHistory().length
+    const { rerender } = render(
+      <FinalWagerHostPanel
+        dispatch={vi.fn()}
+        game={gameOf(store)}
+        clock={createManualClock(AT)}
+        eventHistoryLength={historyLength}
+        activeSessionDurability={{
+          durableEventCount: historyLength - 1,
+          pendingEventCount: historyLength,
+          failed: false,
+          storageAvailable: true,
+        }}
+      />,
+    )
+    expect(screen.getByTestId('fwh-committed-wager-red')).toHaveTextContent('Saving…')
+    rerender(
+      <FinalWagerHostPanel
+        dispatch={vi.fn()}
+        game={gameOf(store)}
+        clock={createManualClock(AT)}
+        eventHistoryLength={historyLength}
+        activeSessionDurability={{
+          durableEventCount: historyLength,
+          pendingEventCount: null,
+          failed: false,
+          storageAvailable: true,
+        }}
+      />,
+    )
+    expect(screen.getByTestId('fwh-committed-wager-red')).toHaveTextContent('Saved: 100')
+  })
+
+  it('D: persistence failure does not claim Saved and offers retry', () => {
+    const store = wagerStore()
+    store.dispatch({ type: 'RECORD_FINAL_WAGER', issuedAt: AT, roundId: ROUND, teamId: 'red', wager: 50 })
+    const historyLength = store.getHistory().length
+    const onRetry = vi.fn()
+    render(
+      <FinalWagerHostPanel
+        dispatch={vi.fn()}
+        game={gameOf(store)}
+        clock={createManualClock(AT)}
+        eventHistoryLength={historyLength}
+        activeSessionDurability={{
+          durableEventCount: historyLength - 1,
+          pendingEventCount: null,
+          failed: true,
+          storageAvailable: true,
+        }}
+        onRetryActiveSessionPersist={onRetry}
+      />,
+    )
+    expect(screen.getByTestId('fwh-committed-wager-red')).toHaveTextContent(/could not save/i)
+    fireEvent.click(screen.getByTestId('fwh-retry-persist-red'))
+    expect(onRetry).toHaveBeenCalledTimes(1)
+  })
+
   it('disables the lock until every eligible team has a wager, and says why', () => {
     const store = wagerStore()
     store.dispatch({ type: 'RECORD_FINAL_WAGER', issuedAt: AT, roundId: ROUND, teamId: 'red', wager: 0 })
