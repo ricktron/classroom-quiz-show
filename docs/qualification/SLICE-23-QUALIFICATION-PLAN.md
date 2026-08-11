@@ -3,16 +3,16 @@
 **Slice identifier:** `CQS-SLICE-23-CLASSROOM-RELEASE-QUALIFICATION`
 **Authorization:** `AUTHORIZE-CQS-SLICE-23-CLASSROOM-RELEASE-QUALIFICATION-1`
 **Evidence state:** `CQS-SLICE-23-CLASSROOM-RELEASE-QUALIFICATION-ES-1`
-**Stage:** **Stage 0 — read-only discovery**, plus the recorded Stage B / Stage C
-execution attempt under packet
-`CQS-SLICE-23-STAGE-B-C-LOCAL-QUALIFICATION-PACKET-1` (§14).
+**Stage:** Stage 0 discovery (§1–§13) + packet-1 Stage B/C attempt (§14) +
+**packet-2 local Mac Stage B / Stage C / Final disposition (§15)** under
+`CQS-SLICE-23-STAGE-B-C-FINAL-LOCAL-MAC-QUALIFICATION-PACKET-2`.
 
-> **This document establishes no qualification verdict.** Stage A
-> (canonical/preflight) passed as a repository-provenance gate; **no substantive
-> classroom or product qualification gate has been executed or dispositioned.**
-> No product code was mutated. Slice 23 is **not** claimed implemented,
-> executed, or terminal. The overall CQS MVP is **not** claimed complete, and
-> this document must never be read as claiming it.
+> **This document establishes no classroom-release PASS.** Stage A passed as a
+> provenance gate. Packet 2 executed local Stage B/C and dispositioned the
+> inherited Final mid-refresh issue. **§71 hard stop is TRIGGERED.** Two bounded
+> repair packets are prepared below; **neither repair is implemented here.** No
+> product code was mutated. Slice 23 is **not** terminal. The overall CQS MVP is
+> **not** claimed complete.
 
 ---
 
@@ -463,17 +463,17 @@ production URL (or npm run dev)
 
 | Stage | Content | Status |
 | --- | --- | --- |
-| A | Canonical/preflight | **DONE — PASS** (§1, §14) — provenance gate only |
-| B | Clean automated baseline (`verify`, `verify:all`, matrices) | **PARTIAL** (§14) — local blocked by HS-1; exact-head **CI baseline green** (2397 unit / 355 e2e / 3 inherited flaky) |
-| C | Clean-teacher first-launch workflow (clean profile) | **ATTEMPTED — BLOCKED by HS-1** (§14); still expected to confirm BLOCKER-01/02 |
-| D | Import / authoring / pack / data lifecycle | **BLOCKED by HS-1** |
-| E | Gameplay, Final, undo, recovery (+ flake disposition) | **BLOCKED by HS-1** |
-| F | Presentation / accessibility / themes / screen reader | **BLOCKED by HS-1** (screen reader also owner-assisted) |
+| A | Canonical/preflight | **DONE — PASS** (§1, §14, §15) — provenance gate only |
+| B | Clean automated baseline (`verify`, `verify:all`, matrices) | **LOCAL EXECUTED (§15)** — `verify` PASS; `verify:all` FAIL (inherited Final signature terminal on all 3 projects after retries). Exact-head CI baseline remains green evidence (§14) |
+| C | Clean-teacher first-launch workflow (clean profile) | **EXECUTED (§15)** — BLOCKER-01/02 **CONFIRMED**; §71 **TRIGGERED** |
+| D | Import / authoring / pack / data lifecycle | **NOT RUN** — §71 hard stop; would be invalidated by teacher-surface repair |
+| E | Gameplay, Final, undo, recovery (+ flake disposition) | **Focused Final only (§15)** — dispositioned **RELEASE BLOCKER**; broad matrix not run |
+| F | Presentation / accessibility / themes / screen reader | **NOT RUN** — §71 hard stop |
 | G | Physical projector, viewing distance, audio | **Owner-assisted; not attempted** |
 | H | Supported Sony profile (transferred + focused current) | **Owner-assisted; not attempted** |
-| I | Deployment / PWA / update / offline / reset | **BLOCKED by HS-1 and HS-2** |
-| J | Findings, limitations, continuation analysis | Partially started (§4, §9) |
-| K | Repair loops | **Not authorized** |
+| I | Deployment / PWA / update / offline / reset | **NOT RUN** (HS-2 still blocks Pages from VM history; Mac packet did not claim Pages) |
+| J | Findings, limitations, continuation analysis | Updated (§4, §9, §15) |
+| K | Repair loops | **Packets prepared; NOT authorized / NOT implemented** |
 | L | Terminal independent review | Not reached |
 
 **Recommendation:** Stages C and D should run **before** heavy automation
@@ -546,11 +546,13 @@ does not resolve it. Routed to the Program Orchestrator unchanged.
   gate, not a classroom gate. **No substantive classroom or product
   qualification gate has been dispositioned** — every Stage-0 product finding
   below is provisional and static.
-- **No LOCAL** unit, Playwright, lint, typecheck, or build result is claimed; the
-  toolchain could not be installed (HS-1). An exact-head **CI** baseline and
-  SonarCloud gate **are** claimed, under their own evidence class, in §14 — CI
-  evidence is not local `verify:all` evidence and does not satisfy the
-  Definition of Done.
+- Packet-1 VM session: **No LOCAL** unit/Playwright/lint/typecheck/build figures
+  from that blocked environment. Exact-head **CI** figures in §14 remain valid
+  under their own class.
+- Packet-2 local Mac (§15): local `npm ci`, `verify`, and `verify:all` **are**
+  claimed. Local `verify:all` **failed** on the inherited Final mid-refresh
+  signature (terminal after retries). That failure is dispositioned in §15; it
+  does not authorize repair in this PR.
 - **No** Pages deployment result is claimed (HS-2).
 - **No** production, PWA, offline, update, or deployed-commit claim (HS-2).
 - **No** physical projector, viewing-distance, audio, hardware, or screen-reader
@@ -565,18 +567,15 @@ does not resolve it. Routed to the Program Orchestrator unchanged.
 
 ## 13. Recommended Program Orchestrator next action
 
-1. **Decide the qualification execution environment.** Stages B–F need a machine
-   that can reach the normal project dependency hosts (including
-   `cdn.sheetjs.com`); the deployment, PWA, and production-offline gates
-   additionally need access to the GitHub Pages environment. Without a machine
-   meeting the first requirement, Slice 23 cannot progress past Stage A — this
-   is an **environment** constraint, not an authority constraint.
-2. **Rule on the teacher-surface findings before funding the full matrix.** If
-   `CQS-Q23-BLOCKER-01`/`-02` confirm live, the economical path is to authorize
-   a bounded host-surface repair packet first, then qualify — rather than
-   documenting a matrix against a surface that is about to change.
-3. **Do not treat this document as authority** to repair, to implement any
-   continuation candidate, to merge, or to declare MVP completion.
+1. **Authorize the two bounded repair packets in §15 separately** (teacher-surface
+   first is economical; Final-recovery is independently release-blocking).
+2. **Do not fund the broad Stage D–I matrix** until teacher-surface repair is
+   accepted — §71 hard stop is triggered and host-surface repair would invalidate
+   that matrix.
+3. **Do not treat this document as authority** to implement either repair, to
+   merge PR #60, or to declare MVP completion.
+4. After repairs merge to a new authorized product base, re-authorize Slice 23
+   qualification continuation from that base.
 
 ### Authority boundary (corrected)
 
@@ -692,8 +691,11 @@ Re-tested this packet, both still denied by egress policy:
 No usable cached copy of the tarball exists; `npm ci` fails even with a warm
 npm cache directory present.
 
-**No unit, component, Playwright, retry, flake, lint, typecheck, or build figure
-is claimed.** The inherited Final mid-refresh issue therefore remains
+**No LOCAL** unit, component, Playwright, retry, flake, lint, typecheck, or
+build figure is claimed from the blocked VM execution (HS-1). Exact-head
+**AUTOMATED CI** figures above **are** claimed and remain valid evidence under
+their own class; they do not substitute for literal local `verify` /
+`verify:all`. The inherited Final mid-refresh issue therefore remains
 **undispositioned**, exactly as §5 requires — and it must not be classified from
 a retry-resolved full-suite run in any case.
 
@@ -753,13 +755,269 @@ All Stage-0 teacher-workflow observations remain **static** observations at
 `c047ca7…`. **None has been upgraded to CLEAN-BROWSER class**, and the CI
 baseline does not upgrade them.
 
-### What is needed to complete this packet
+### What packet 1 still needed
 
 An environment that can reach the normal project dependency hosts (including
-`cdn.sheetjs.com`) is sufficient for Stages B and C. GitHub Pages access is
-**not** required for Stage B or Stage C — only for the deployment, PWA, and
-production-offline gates later.
+`cdn.sheetjs.com`) was sufficient for Stages B and C. **Packet 2 (§15) supplied
+that environment on the owner's local Mac and executed those stages.**
 
-When that environment is available, this packet resumes at Stage B with no
-change to its instructions, and Stage C should be run before any expensive
-matrix work.
+---
+
+## 15. Packet 2 — local Mac Stage B / Stage C / Final disposition
+
+**Packet:** `CQS-SLICE-23-STAGE-B-C-FINAL-LOCAL-MAC-QUALIFICATION-PACKET-2`
+**Parent authorization:** `AUTHORIZE-CQS-SLICE-23-CLASSROOM-RELEASE-QUALIFICATION-1`
+**Product base (unchanged):** `c047ca71640c3d717eacd1092a899ca6d16b2115`
+**Starting PR head observed:** `8220be60129fb4ef3a1c7ffbf9a77534f3f441cf`
+(packet text expected `7948a3a…`; remote had already advanced by one
+qualification-only docs commit recording the two-sample flake rate — product
+tree still identical to base)
+**Execution host:** `Ricks-MacBook-Air.local` / user `macdaddy` /
+cwd worktree `…/classroom-quiz-show-slice23` / macOS **26.5.1** (Build 25F80) /
+Darwin 25.5.0 arm64 / Node **v26.0.0** / npm **11.12.1**
+
+### Product-tree equality proof
+
+```
+git diff --name-only origin/main...HEAD
+→ docs/qualification/SLICE-23-QUALIFICATION-PLAN.md
+```
+
+Zero product, dependency, or configuration paths. Only this qualification
+record differs from authorized main.
+
+### Stage B — literal local baseline
+
+| Check | Result |
+| --- | --- |
+| `npm ci` | **PASS** (exit 0; SheetJS CDN reachable on this Mac) |
+| `git diff --check` | **PASS** (clean) |
+| `npm run verify` | **PASS** — lint 0 errors / 3 pre-existing react-refresh warnings; typecheck pass; unit **140 files / 2397 passed / 1 skipped** |
+| `npm run verify:all` (`CI=1`) | **FAIL** — lint/typecheck/unit/build PASS; Playwright **346 passed / 14 skipped / 3 failed / 9 did not run**; the 3 failures are the inherited Final mid-refresh case on all three projects, each exhausting retries 0/1/2 with stable `Not saved yet` for the full 5s assertion |
+| Production build | **PASS** — vite built in 1.81s; `index-BYR1CyC_.js` 1246.02 kB (gzip 372.22 kB); PWA `generateSW` precache **22 entries (1455.44 KiB)** |
+| Flakes / retries | Not “flaky-then-pass”: **9/9** attempt rows for the Final mid-refresh case failed under `CI=1` retries=2 during `verify:all` |
+
+Prior exact-head CI baseline (§14) remains valid automated evidence of the same
+product tree, but **does not substitute** for this literal local run. Local
+`verify:all` is **not** green.
+
+### Stage C — clean-teacher first-run (production preview)
+
+- **Profile:** fresh Chromium `launchPersistentContext` temp user-data-dir
+  (no inherited IndexedDB / SW / cache).
+- **Server:** `npm run build` artifact served by `vite preview` on
+  `http://localhost:4173/classroom-quiz-show/` (exact current head bundle).
+- **Driver constraint (user-level):** labels/roles only; no testids for the
+  teacher path; technical inspection only after user-level failures recorded.
+
+| Step | Result |
+| --- | --- |
+| Launch / begin | Root shows “Choose a screen” with **Open Host** / **Open Display** — discoverable |
+| Enter host | Host banner + Theme + **“No active game”** + stale copy that setup/rounds/scoring **“arrive in a later slice”** (false at this base) |
+| Harness branding | Visible tag **“Foundation / testing controls — not gameplay”**; heading **“State & event core (Slice 2)”**; copy **“They are diagnostics, not a game.”** |
+| Create/import/select without hidden knowledge | **FAIL.** “Import game” after loading the board+Final sample reports **“Import succeeded — validated but NOT loaded. Initialize a session first, then import again.”** “Initialize sample game” is **disabled** until session init |
+| Prerequisite control | Only **“Initialize / reset session”** inside the not-gameplay panel unlocks loading — developer vocabulary required |
+| After init + import + advance | Category board, teams (sample Basalts/Tectonics), keyboard/local input, controllers/Sony Buzz, Open display — all present |
+| Team configuration | Sample teams present; no separate teacher “add/rename team” flow required for the sample path |
+| Keyboard discoverability | Present after a game is loaded; not a first-screen cue |
+| Controller-setup discoverability | Controllers / Sony Buzz present after game load; still nested in the foundation harness |
+| Display-opening discoverability | **“Open display in new window”** visible above the fold on first host landing — good |
+| Ready for normal gameplay? | **Only after** using developer-vocab session init and scrolling to import — **not** a credible ordinary-teacher first-run route |
+
+**Ordinary-teacher credible first-run route without developer vocabulary?** **NO.**
+
+### Finding dispositions (live evidence)
+
+#### `CQS-Q23-BLOCKER-01` — **CONFIRMED BLOCKER**
+
+- **Evidence class:** CLEAN-BROWSER (production preview, fresh profile)
+- **Reproduction:** Open Host from a clean profile; read the first screen
+- **Expected:** teacher can identify the normal gameplay starting workflow
+- **Actual:** product says gameplay arrives later; real controls sit under
+  “not gameplay” / “diagnostics, not a game”
+- **Workflow:** startup → understand where to begin
+- **Severity:** **BLOCKER** (confirmed; not lowered)
+- **Release implication:** first-run abandonment / inability to trust the host
+- **Routing:** teacher-surface repair packet (§15.1)
+
+#### `CQS-Q23-BLOCKER-02` — **CONFIRMED BLOCKER**
+
+- **Evidence class:** CLEAN-BROWSER
+- **Reproduction:** Load board+Final sample → Import game **without** session init
+- **Expected:** teacher can load a playable game without a hidden prerequisite
+- **Actual:** validated-but-not-loaded + “Initialize a session first…”; sample
+  init button disabled until session exists
+- **Workflow:** create/import/select a game
+- **Severity:** **BLOCKER** (confirmed)
+- **Release implication:** hard stop on clean-install golden path
+- **Routing:** teacher-surface repair packet (§15.1) — same boundary as BLOCKER-01
+
+#### `CQS-Q23-HIGH-01` — **CONFIRMED HIGH**
+
+- **Evidence class:** CLEAN-BROWSER (section order after game load)
+- **Actual:** Import / spreadsheet / pack sections appear **after** board,
+  local input, controllers, and teams in the host document order
+- **Severity:** **HIGH** (confirmed)
+- **Routing:** include in teacher-surface repair packet
+
+#### `CQS-Q23-HIGH-02` — **CONFIRMED HIGH**
+
+- **Evidence class:** STATIC + CLEAN-BROWSER (UI does not substitute)
+- **Actual:** no teacher guide / quick start; README remains developer-centric
+- **Severity:** **HIGH** (confirmed)
+- **Routing:** teacher-surface repair packet (docs or in-product first-run)
+
+#### `CQS-Q23-HIGH-03` — **CONFIRMED HIGH**
+
+- **Evidence class:** CLEAN-BROWSER + static code
+- **Actual:** no “clear all local CQS data” control observed; `clearAll` regex
+  false on loaded host
+- **Severity:** **HIGH** (confirmed as absence-of-capability)
+- **Routing:** may ship with teacher-surface repair or a separately bounded
+  retention-control packet; not required to share Final-recovery boundary
+
+#### `CQS-Q23-LOW-01` / F-UX-01 — **RETAINED LOW**
+
+- After a game loads, keyboard and controller/Sony surfaces are findable.
+- No live evidence in this packet promoted F-UX-01 beyond LOW polish debt.
+- **Not collapsed into BLOCKER-01.**
+
+### §71 hard-stop result — **TRIGGERED**
+
+Ordinary teacher lacks a credible first-run route **and** BLOCKER-01/02 are
+confirmed. Broad Stages D–I matrices were **not** run. Focused Final
+investigation continued per packet instruction.
+
+### Inherited Final mid-refresh — focused disposition
+
+**Method:**
+
+1. `CI=1 npx playwright test tests/e2e/final-wager.spec.ts -g "a refresh mid-Final resumes every committed wager" --retries=0 --repeat-each=5 --workers=1`
+2. Temporary outside-repo probe (`/tmp/cqs-slice23-final-diag/probe-immediate.mjs`)
+   against production preview: save wager → **immediate** reload → resume;
+   IndexedDB `classroom-quiz-show-persistence` / `activeSessions` / `current`
+   inspected **after** reload (not before — a pre-reload IDB read accidentally
+   settles the write queue and masks the defect).
+3. Contrast run with `SETTLE_MS=1000` before reload.
+
+**Attempt counts (Playwright, retries disabled):**
+
+| Project | Attempts | Failures | Passes |
+| --- | --- | --- | --- |
+| desktop-1080p | 5 | **5** | 0 |
+| projector-720p | 5 | **5** | 0 |
+| mobile-host | 5 | **4** | 1 |
+| **Total** | **15** | **14** | **1** |
+
+**Immediate-reload IndexedDB probe:** **10/10** →
+`A_not_durable_at_reload` — after UI showed `Saved: 100`, post-reload durable
+session ended at `FINAL_WAGER_STARTED` with **zero**
+`FINAL_TEAM_WAGER_RECORDED` events; resume UI stayed `Not saved yet` for 5s.
+
+**Settle 1000 ms before reload:** **6/6 PASS** — durable row then contained
+`FINAL_TEAM_WAGER_RECORDED` wager 100 for `basalts`, and UI restored
+`Saved: 100`.
+
+**Boundary classification:** **A** — wager was **not** durably persisted at the
+moment the UI reported it saved; recovery/hydration is not the primary failure
+when the write has completed (settle case proves B/C are not required to explain
+the signature). Root mechanism consistent with `dispatchSessionCommand` →
+in-memory accept → UI `Saved: N` from replayed state while `persistHistory` is
+async/`void` on the write queue (`useHostPersistence.ts`).
+
+#### Final disposition (exactly one)
+
+**RELEASE BLOCKER — REPAIR REQUIRED**
+
+**Release implication:** a teacher can be told a Final wager is saved, refresh
+(or crash) before the async write lands, Resume, and silently lose the committed
+wager. Retry-resolution in CI is insufficient and must not be treated as
+non-blocking.
+
+### 15.1 Bounded repair packet — teacher surface
+
+- **Finding IDs:** `CQS-Q23-BLOCKER-01`, `CQS-Q23-BLOCKER-02`,
+  `CQS-Q23-HIGH-01`, `CQS-Q23-HIGH-02` (and optionally `HIGH-03`)
+- **Exact product base:** `c047ca71640c3d717eacd1092a899ca6d16b2115`
+- **Exact qualification head:** PR #60 head carrying this §15 record
+- **Reproduction:** clean profile → Open Host → attempt import without session
+  init; observe stale “later slice” / “not gameplay” framing
+- **Invariant:** ordinary teacher can reach a playable game from the visible
+  entry point without developer vocabulary or hidden prerequisites; host chrome
+  must not deny that gameplay exists
+- **Minimal proposed product paths:** `src/routes/HostRoute.tsx`,
+  `src/host/FoundationControls.tsx`, import gating in
+  `src/host/GameImportPanel.tsx` (and pack/spreadsheet siblings), optional
+  teacher quick-start doc under product-facing docs — **not** engine/reducer
+  changes
+- **Proposed repair shape:** (1) replace stale/hostile host framing with a
+  teacher-facing session start; (2) auto-start or clearly label the session
+  prerequisite without “diagnostics” burial; (3) move content-loading above
+  gameplay panels; (4) add a short teacher start path
+- **Focused tests:** clean-path Playwright using **visible labels only**;
+  regression that import works without scavenger-hunting Initialize/reset
+- **Evidence invalidated by repair:** Stage C teacher-path observations;
+  any later host-UI screenshots; portions of e2e that hard-code the current
+  Initialize/import order (re-prove)
+- **Evidence transferable:** engine/reducer/unit totals; Final durability
+  defect (separate); Slice 21 hardware / Slice 22 listening transfer notes
+- **Authorization required:** explicit owner/program repair authorization —
+  **DO NOT IMPLEMENT under this qualification packet**
+
+### 15.2 Bounded repair packet — Final wager durability / recovery
+
+- **Finding ID:** inherited Final mid-refresh / `FINAL_TEAM_WAGER_RECORDED`
+  durability race (Slice 23 disposition: release blocker)
+- **Exact product base:** `c047ca71640c3d717eacd1092a899ca6d16b2115`
+- **Exact qualification head:** PR #60 head carrying this §15 record
+- **Reproduction:** Final begin → save wager 100 → UI `Saved: 100` → immediate
+  reload → Resume → `Not saved yet`; IndexedDB lacks wager event
+- **Invariant:** UI must not report a wager `Saved` unless that
+  `FINAL_TEAM_WAGER_RECORDED` event is durably present (or an explicit
+  in-flight/failed persistence state is shown); Resume must restore every
+  durably committed wager
+- **Minimal proposed product paths:** `src/host/useHostPersistence.ts`
+  (`persistHistory` / `dispatchSessionCommand` write barrier), possibly
+  `PersistenceWriteQueue` await-before-ack; Final host panel only if it needs
+  an explicit pending/failed affordance — **not** teacher-chrome redesign
+- **Proposed repair shape:** await durable active-session write (or confirmed
+  queue flush) before treating the command as teacher-visible “saved”; add
+  focused regression that fails on immediate reload without artificial settle
+- **Focused tests:** existing
+  `tests/e2e/final-wager.spec.ts` mid-refresh case with retries disabled;
+  unit/component coverage that save acknowledgment waits for persistence result
+- **Evidence invalidated:** Final flake disposition runs; Playwright Final
+  mid-refresh history; local `verify:all` Final portion
+- **Evidence transferable:** teacher-surface BLOCKER evidence (separate
+  boundary); unrelated unit suites; Slice 21/22 transferred hardware/listening
+- **Authorization required:** explicit owner/program repair authorization —
+  **DO NOT IMPLEMENT under this qualification packet**
+
+These two packets must **not** be collapsed into one “fix Slice 23” delivery:
+teacher chrome and persistence write-barrier are distinct invariants.
+
+### Evidence invalidated / transferable (packet 2)
+
+- **Invalidated by future teacher-surface repair:** Stage C clean-teacher path;
+  host copy/order observations
+- **Invalidated by future Final-durability repair:** Final focused probe results;
+  mid-refresh e2e failure counts
+- **Transferable until product changes:** Stage A provenance; product-tree
+  equality proof; unit totals at this base; build/PWA composition; Slice 21
+  physical controller transfer notes; Slice 22 listening transfer notes; §14 CI
+  baseline as historical automated evidence of pre-repair tree
+
+### Packet 2 non-claims
+
+- **No product repair implemented**
+- **No merge of PR #60**
+- **OVERALL CQS MVP = NOT COMPLETE**
+- Broad classroom matrix (projector, a11y, PWA deploy, full hardware) **not**
+  claimed
+
+### Recommended Slice Orchestrator next action
+
+Authorize **§15.1 teacher-surface repair** and **§15.2 Final-durability repair**
+as separate packets against product base `c047ca7…`. Do not merge this
+qualification PR as a product delivery. Do not start post-Slice-23 MVP
+functionality.
