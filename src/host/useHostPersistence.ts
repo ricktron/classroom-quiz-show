@@ -10,12 +10,14 @@ import { systemClock, type Clock } from '../time/clock'
 import { collectReferencedPackScopeKeys } from '../pack/hydratePackMedia'
 import { gcUnreferencedPackScopes } from '../pack/packMediaPersistence'
 import {
+  CLEAR_ALL_LOCAL_DATA_SUCCESS_MESSAGE,
   COORDINATION_BROADCAST_CHANNEL,
   HOST_WRITER_LEASE_TTL_MS,
   PersistenceWriteQueue,
   acquireOrRenewHostLease,
   clearAllCompletedSummaries,
   clearActiveSession,
+  clearAllLocalCqsData,
   createIndexedDbPersistenceAdapter,
   createTabId,
   deleteCompletedSummary,
@@ -158,6 +160,12 @@ export interface UseHostPersistence {
     recordId: string,
     label: string | null,
   ) => Promise<PersistenceActionResult>
+  /**
+   * Teacher aggregate wipe of all CQS-owned durable local data on this browser.
+   * On success the caller must hard-reload so stale in-memory state cannot
+   * repopulate storage. Blocked/failed deletion never reports success.
+   */
+  readonly clearAllLocalData: () => Promise<PersistenceActionResult>
   /** Keeps pack-media GC aware of the active loaded definition. */
   readonly setPackGcContext?: (
     definition: GameDefinition | null,
@@ -686,6 +694,48 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     [adapter, mutateCompletedLedger],
   )
 
+  const clearAllLocalData = useCallback(async (): Promise<PersistenceActionResult> => {
+    // Invalidate in-flight active-session writes before tearing down storage.
+    writeQueue.nextActiveSessionGeneration()
+    storageReadyRef.current = false
+    setDurabilityStatus('saving')
+    setMessage('Clearing all local Classroom Quiz Show data…')
+
+    const result = await writeQueue.enqueue(() => clearAllLocalCqsData({ adapter }))
+
+    if (!result.ok) {
+      storageReadyRef.current = false
+      setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
+      setMessage(result.message)
+      // Attempt reopen after a failed wipe so the teacher can retry.
+      const reopened = await adapter.open()
+      if (reopened.ok) {
+        storageReadyRef.current = true
+        setDurabilityStatus('idle')
+        void renewLease()
+        void updateLibrary()
+        void updateCompletedLedger()
+      }
+      return { ok: false, message: result.message }
+    }
+
+    setLibrary([])
+    setCompletedListings([])
+    setRecovery(null)
+    setInvalidRecovery(null)
+    setInitialHistory([])
+    setDurableEventCount(0)
+    setPendingEventCount(null)
+    setActiveSessionPersistFailed(false)
+    setCurrentCompletionSave(null)
+    setBootPhase('ready')
+    setLeadership('unknown')
+    setDurabilityStatus('unavailable')
+    setMessage(CLEAR_ALL_LOCAL_DATA_SUCCESS_MESSAGE)
+    setStoreEpoch((epoch) => epoch + 1)
+    return { ok: true, message: CLEAR_ALL_LOCAL_DATA_SUCCESS_MESSAGE }
+  }, [adapter, renewLease, updateCompletedLedger, updateLibrary, writeQueue])
+
   const resume = useCallback(() => {
     if (!recovery) return
     setInitialHistory(recovery.events)
@@ -920,6 +970,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     deleteCompletedRecord,
     clearAllCompletedRecords,
     updateCompletedClassLabel,
+    clearAllLocalData,
     setPackGcContext,
   }
 }

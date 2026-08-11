@@ -37,6 +37,10 @@
   margin-top: var(--space-4);
 }
 
+.persistence__clear-all {
+  margin-top: var(--space-4);
+}
+
 .persistence__actions {
   display: flex;
   flex-wrap: wrap;

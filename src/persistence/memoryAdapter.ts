@@ -29,6 +29,8 @@ export class MemoryPersistenceAdapter implements PersistenceAdapter {
   readonly kind = 'memory'
 
   private opened = false
+  private destructionInProgress = false
+  private sealed = false
   private readonly options: MemoryPersistenceAdapterOptions
   private data: DatabaseMap = createEmptyDatabase()
   private mutex: Promise<void> = Promise.resolve()
@@ -37,7 +39,39 @@ export class MemoryPersistenceAdapter implements PersistenceAdapter {
     this.options = options
   }
 
+  beginDestructiveReset(): void {
+    this.destructionInProgress = true
+    this.opened = false
+  }
+
+  finishDestructiveReset(success: boolean): void {
+    this.destructionInProgress = false
+    if (success) {
+      this.sealed = true
+      this.opened = false
+      this.data = createEmptyDatabase()
+    }
+  }
+
+  sealForDestruction(): void {
+    this.beginDestructiveReset()
+    this.finishDestructiveReset(true)
+  }
+
+  /** Test/helper: replace all store maps with empty ones (does not seal). */
+  replaceWithEmptyDatabase(): void {
+    this.data = createEmptyDatabase()
+  }
+
   async open(): Promise<PersistenceResult<void>> {
+    if (this.sealed || this.destructionInProgress) {
+      return persistenceErr(
+        'unavailable',
+        this.sealed
+          ? 'Local persistence was sealed after a data reset and will not reopen in this tab.'
+          : 'Local persistence is temporarily closed while clearing all local CQS data.',
+      )
+    }
     if (this.options.unavailable || this.options.failOpen) {
       return persistenceErr('unavailable', 'Persistence storage is unavailable.')
     }

@@ -54,6 +54,20 @@ explicit choice to **resume** the unfinished session or discard recovery. Saved
 game definitions stay on this device only; nothing requires an account or cloud
 login.
 
+## 7. Clear all local CQS data
+
+Classroom Quiz Show stores its durable data only in this browser on this device
+(saved games, unfinished sessions, completed summaries, pack media, controller
+team mappings, and buzz-key preferences).
+
+On the Host, under **Persistence & recovery**, choose **Clear all local CQS
+data**, read the warning, and confirm. CQS reports success only after deletion
+finishes, then reloads a clean Host. If another CQS tab still has storage open,
+the clear is blocked — close other CQS tabs/windows and try again.
+
+This does **not** uninstall a progressive web app or clear the browser’s ordinary
+HTTP cache.
+
 ## Tips
 
 - Host = teacher controls. Display = projector.

@@ -48,6 +48,7 @@ function persistence(overrides: Partial<UseHostPersistence> = {}): UseHostPersis
     refreshCompletedLedger: vi.fn(async () => ({ ok: true, message: 'Refreshed.' })),
     deleteCompletedRecord: vi.fn(async () => ({ ok: true, message: 'Deleted.' })),
     clearAllCompletedRecords: vi.fn(async () => ({ ok: true, message: 'Cleared.' })),
+    clearAllLocalData: vi.fn(async () => ({ ok: true, message: 'All local data cleared.' })),
     updateCompletedClassLabel: vi.fn(async () => ({ ok: true, message: 'Updated.' })),
     ...overrides,
   }
@@ -162,5 +163,107 @@ describe('PersistenceControls', () => {
     expect(screen.getByRole('heading', { name: /persistence & recovery/i })).toBeVisible()
     expect(screen.getByLabelText(/persistence status/i)).toBeVisible()
     expect(screen.getByRole('button', { name: /save current definition/i })).toBeVisible()
+  })
+
+  it('shows the clear-all control and requires confirmation before wiping', async () => {
+    const clearAllLocalData = vi.fn(async () => ({
+      ok: true,
+      message:
+        'All local Classroom Quiz Show data on this browser was cleared. Reloading a clean host.',
+    }))
+    const reloadPage = vi.fn()
+    render(
+      <PersistenceControls
+        persistence={persistence({ clearAllLocalData })}
+        activeGame={null}
+        activeDefinition={definition()}
+        registry={createDefaultRegistry()}
+        dispatch={vi.fn()}
+        getHistory={() => []}
+        reloadPage={reloadPage}
+      />,
+    )
+
+    expect(screen.getByTestId('persistence-clear-all')).toBeVisible()
+    expect(screen.getByRole('heading', { name: /clear all local cqs data/i })).toBeVisible()
+    fireEvent.click(screen.getByTestId('persistence-clear-all-action'))
+    expect(clearAllLocalData).not.toHaveBeenCalled()
+    expect(screen.getByTestId('persistence-clear-all-warning')).toBeVisible()
+
+    fireEvent.click(screen.getByTestId('persistence-clear-all-action'))
+    await waitFor(() => expect(clearAllLocalData).toHaveBeenCalledTimes(1))
+    expect(reloadPage).toHaveBeenCalledTimes(1)
+  })
+
+  it('cancel leaves confirmation without calling clear', () => {
+    const clearAllLocalData = vi.fn(async () => ({ ok: true, message: 'Cleared.' }))
+    renderControls(persistence({ clearAllLocalData }))
+
+    fireEvent.click(screen.getByTestId('persistence-clear-all-action'))
+    fireEvent.click(screen.getByTestId('persistence-clear-all-cancel'))
+    expect(clearAllLocalData).not.toHaveBeenCalled()
+    expect(screen.queryByTestId('persistence-clear-all-warning')).toBeNull()
+    expect(screen.getByTestId('persistence-clear-all-action')).toHaveTextContent(
+      /clear all local cqs data/i,
+    )
+  })
+
+  it('does not reload or claim success when clear is blocked', async () => {
+    const clearAllLocalData = vi.fn(async () => ({
+      ok: false,
+      message:
+        'Could not clear all local CQS data because another Classroom Quiz Show tab or window still has storage open. Close other CQS tabs and windows, then try again.',
+    }))
+    const reloadPage = vi.fn()
+    render(
+      <PersistenceControls
+        persistence={persistence({ clearAllLocalData })}
+        activeGame={null}
+        activeDefinition={definition()}
+        registry={createDefaultRegistry()}
+        dispatch={vi.fn()}
+        getHistory={() => []}
+        reloadPage={reloadPage}
+      />,
+    )
+
+    fireEvent.click(screen.getByTestId('persistence-clear-all-action'))
+    fireEvent.click(screen.getByTestId('persistence-clear-all-action'))
+    await waitFor(() => expect(clearAllLocalData).toHaveBeenCalledTimes(1))
+    expect(reloadPage).not.toHaveBeenCalled()
+    expect(screen.getByTestId('persistence-clear-all-message')).toHaveTextContent(
+      /close other cqs tabs/i,
+    )
+    expect(screen.getByTestId('persistence-clear-all-message')).not.toHaveTextContent(
+      /was cleared/i,
+    )
+  })
+
+  it('does not reload when clear fails', async () => {
+    const clearAllLocalData = vi.fn(async () => ({
+      ok: false,
+      message:
+        'Could not clear all local CQS data. Local storage may still contain Classroom Quiz Show data on this browser.',
+    }))
+    const reloadPage = vi.fn()
+    render(
+      <PersistenceControls
+        persistence={persistence({ clearAllLocalData })}
+        activeGame={null}
+        activeDefinition={definition()}
+        registry={createDefaultRegistry()}
+        dispatch={vi.fn()}
+        getHistory={() => []}
+        reloadPage={reloadPage}
+      />,
+    )
+
+    fireEvent.click(screen.getByTestId('persistence-clear-all-action'))
+    fireEvent.click(screen.getByTestId('persistence-clear-all-action'))
+    await waitFor(() => expect(clearAllLocalData).toHaveBeenCalledTimes(1))
+    expect(reloadPage).not.toHaveBeenCalled()
+    expect(screen.getByTestId('persistence-clear-all-message')).toHaveTextContent(
+      /may still contain/i,
+    )
   })
 })

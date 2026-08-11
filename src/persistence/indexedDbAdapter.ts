@@ -42,13 +42,63 @@ export class IndexedDbPersistenceAdapter implements PersistenceAdapter {
   private readonly factory: IDBFactory | null
   private readonly dbName: string
   private db: IDBDatabase | null = null
+  /** When true, open() refuses so a wipe cannot recreate the DB mid-flight. */
+  private destructionInProgress = false
+  /** When true, this adapter instance will never reopen (post-success wipe). */
+  private sealed = false
 
   constructor(options: IndexedDbPersistenceAdapterOptions = {}) {
     this.factory = options.indexedDB ?? globalThis.indexedDB ?? null
     this.dbName = options.dbName ?? PERSISTENCE_DB_NAME
   }
 
+  /** Database name this adapter targets (for deleteDatabase / diagnostics). */
+  get databaseName(): string {
+    return this.dbName
+  }
+
+  /** IndexedDB factory this adapter uses, or null when unavailable. */
+  get indexedDBFactory(): IDBFactory | null {
+    return this.factory
+  }
+
+  /**
+   * Close the live connection and refuse reopen until `finishDestructiveReset`
+   * runs. Prevents stale writes from recreating the DB during deleteDatabase.
+   */
+  beginDestructiveReset(): void {
+    this.destructionInProgress = true
+    this.db?.close()
+    this.db = null
+  }
+
+  /**
+   * End a destructive reset. On success the adapter stays sealed; on failure it
+   * may open again so the teacher can retry after closing other tabs.
+   */
+  finishDestructiveReset(success: boolean): void {
+    this.destructionInProgress = false
+    if (success) {
+      this.sealed = true
+      this.db?.close()
+      this.db = null
+    }
+  }
+
+  sealForDestruction(): void {
+    this.beginDestructiveReset()
+    this.finishDestructiveReset(true)
+  }
+
   async open(): Promise<PersistenceResult<void>> {
+    if (this.sealed || this.destructionInProgress) {
+      return persistenceErr(
+        'unavailable',
+        this.sealed
+          ? 'Local persistence was sealed after a data reset and will not reopen in this tab.'
+          : 'Local persistence is temporarily closed while clearing all local CQS data.',
+      )
+    }
     if (!this.factory) {
       return persistenceErr('unavailable', 'IndexedDB is unavailable in this browser.')
     }

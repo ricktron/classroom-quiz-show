@@ -1,6 +1,7 @@
 export * from './activeSession'
 export * from './adapter'
 export * from './constants'
+export * from './clearAllLocalData'
 export * from './completedSummaries'
 export * from './coordination'
 export * from './indexedDbAdapter'

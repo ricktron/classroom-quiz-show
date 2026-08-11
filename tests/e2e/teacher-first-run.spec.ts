@@ -69,6 +69,7 @@ test('teacher quick-start documents the supported MVP host path', async () => {
   expect(quickStart).toMatch(/Load a game/i)
   expect(quickStart).toMatch(/Open display/i)
   expect(quickStart).toMatch(/resume/i)
+  expect(quickStart).toMatch(/Clear all local CQS data/i)
   expect(quickStart).not.toMatch(/arrive in a later slice/i)
   expect(quickStart).not.toMatch(/foundation \/ testing controls/i)
 })

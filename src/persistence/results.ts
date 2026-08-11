@@ -10,6 +10,10 @@ export type PersistenceErrorCode =
   | 'internal'
   | 'upgrade-blocked'
   | 'quota-exceeded'
+  /** IndexedDB deleteDatabase was blocked by another open connection. */
+  | 'delete-blocked'
+  /** IndexedDB deleteDatabase failed (not blocked). */
+  | 'delete-failed'
 
 export type PersistenceOk<T> = { readonly ok: true; readonly value: T }
 export type PersistenceErr = {

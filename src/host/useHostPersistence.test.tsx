@@ -645,6 +645,46 @@ describe('useHostPersistence', () => {
       view.unmount()
     }
   })
+
+  it('clearAllLocalData wipes every store and seals the adapter so state cannot repopulate', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await seedActiveSession(adapter, activeHistory())
+    await adapter.withTransaction(
+      [
+        OBJECT_STORE_ACTIVE_SESSIONS,
+        OBJECT_STORE_COMPLETED_SUMMARIES,
+        'savedDefinitions',
+        'coordination',
+        'packMediaAssets',
+        'sonyBuzzMappings',
+      ],
+      async (tx) => {
+        await tx.put('savedDefinitions', 'sample-game', { gameId: 'sample-game', title: 'Sample' })
+        await tx.put(OBJECT_STORE_COMPLETED_SUMMARIES, 'done-1', { recordId: 'done-1' })
+        await tx.put('coordination', 'host-writer', { tabId: 'other' })
+        await tx.put('packMediaAssets', 'scope\0a.png', { bytes: [1] })
+        await tx.put('sonyBuzzMappings', 'current', { mappingVersion: 1 })
+      },
+    )
+
+    const { api } = renderHarness(adapter)
+    await waitFor(() => expect(api().persistence.bootPhase).toBe('recovery'))
+    expect(api().persistence.library.length).toBeGreaterThanOrEqual(0)
+
+    let result: { ok: boolean; message: string } | undefined
+    await act(async () => {
+      result = await api().persistence.clearAllLocalData()
+    })
+    expect(result?.ok).toBe(true)
+    expect(result?.message).toMatch(/cleared/i)
+    expect(api().persistence.library).toEqual([])
+    expect(api().persistence.completedListings).toEqual([])
+    expect(api().persistence.recovery).toBeNull()
+    expect(api().persistence.initialHistory).toEqual([])
+
+    // Sealed memory adapter must not reopen and accept writes from this tab.
+    expect(await adapter.open()).toMatchObject({ ok: false, code: 'unavailable' })
+  })
 })
 
 function activeTimerHistory(deadline: number): readonly SessionEvent[] {
