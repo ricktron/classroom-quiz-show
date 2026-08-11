@@ -13,6 +13,7 @@ import {
   CANONICAL_SAMPLE_WITH_DUPLICATE_TILE_ID,
   CANONICAL_SAMPLE_WITH_UNKNOWN_ROUND_TYPE,
 } from '../import/sampleGameFile'
+import { ensureSession } from './ensureSession'
 import './GameImportPanel.css'
 
 /**
@@ -80,10 +81,11 @@ export function GameImportPanel({
       return
     }
 
-    if (!hasSession) {
+    const session = ensureSession(hasSession, dispatch)
+    if (session.status === 'failed') {
       setAttempt({
         result,
-        load: { kind: 'not-loaded', reason: 'Initialize a session first, then import again.' },
+        load: { kind: 'not-loaded', reason: session.reason },
         attemptNumber,
       })
       return
@@ -106,14 +108,12 @@ export function GameImportPanel({
 
   return (
     <section className="import" aria-labelledby="import-title">
-      <div className="foundation__tag foundation__tag--slice4">
-        Validation &amp; import pipeline (Slice 4) — host-only, not gameplay
-      </div>
       <h3 id="import-title">Import a game file</h3>
       <p className="host__note">
         Paste a canonical <code>classroom-quiz-show/game</code> JSON file. Every import —
         including the built-in samples — is validated by the same pipeline. Nothing is
-        loaded unless validation succeeds.
+        loaded unless validation succeeds. If no game session exists yet, import starts one
+        automatically.
       </p>
 
       <div className="import__actions" role="group" aria-label="Sample game files">

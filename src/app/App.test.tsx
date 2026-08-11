@@ -56,12 +56,13 @@ describe('route resolution', () => {
     )
   })
 
-  it('host route warns it is private and shows no active game', () => {
+  it('host route warns it is private and presents a ready classroom surface', () => {
     renderAt(ROUTES.host)
     expect(screen.getByText(/do not project this screen/i)).toBeInTheDocument()
     expect(
-      screen.getByRole('heading', { name: /no active game/i }),
+      screen.getByRole('heading', { name: /ready to run class/i }),
     ).toBeInTheDocument()
+    expect(screen.queryByText(/arrive in a later slice/i)).not.toBeInTheDocument()
   })
 
   it('display route shows a safe waiting state', () => {

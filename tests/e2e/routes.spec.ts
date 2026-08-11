@@ -17,7 +17,8 @@ test('host route loads directly and warns it is private', async ({ page }) => {
   await page.goto('#/host')
   await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
   await expect(page.getByText(/do not project this screen/i)).toBeVisible()
-  await expect(page.getByRole('heading', { name: /no active game/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /ready to run class/i })).toBeVisible()
+  await expect(page.getByText(/arrive in a later slice/i)).toHaveCount(0)
 })
 
 test('display route loads directly with a safe waiting state', async ({ page }) => {
@@ -86,7 +87,8 @@ test('refresh preserves display access', async ({ page }) => {
 test('mobile / narrow host route remains usable', async ({ page }) => {
   await page.goto('#/host')
   // Core host affordances must be visible and reachable at any viewport.
-  await expect(page.getByRole('heading', { name: /no active game/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /ready to run class/i })).toBeVisible()
+  await expect(page.getByText(/arrive in a later slice/i)).toHaveCount(0)
   await expect(
     page.getByRole('button', { name: /open display in new window/i }),
   ).toBeVisible()

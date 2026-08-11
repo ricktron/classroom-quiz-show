@@ -52,6 +52,22 @@ describe('HostRoute theme selector', () => {
     expect(screen.getByRole('radio', { name: 'High contrast' })).not.toBeChecked()
   })
 
+  it('presents the host as a working classroom surface without stale future-slice copy', () => {
+    renderHost()
+    expect(screen.getByRole('heading', { name: /ready to run class/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /load a game/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /classroom controls/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /start new game session/i })).toBeInTheDocument()
+    expect(screen.queryByText(/arrive in a later slice/i)).not.toBeInTheDocument()
+    expect(
+      screen.queryByText(/foundation \/ testing controls — not gameplay/i),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText(/they are diagnostics, not a game/i)).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /open display in new window/i }),
+    ).toBeInTheDocument()
+  })
+
   it('applies high contrast immediately when selected', () => {
     renderHost()
     act(() => {

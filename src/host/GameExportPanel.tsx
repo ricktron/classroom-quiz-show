@@ -87,9 +87,6 @@ export function GameExportPanel({
 
   return (
     <section className="export" aria-labelledby="export-title">
-      <div className="foundation__tag foundation__tag--slice12">
-        Portable export (Slice 12) — host-only, not gameplay
-      </div>
       <h3 id="export-title">Export portable game file</h3>
       <p className="host__note">
         Download the loaded authored game as a canonical{' '}

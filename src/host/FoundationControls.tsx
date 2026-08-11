@@ -28,29 +28,16 @@ import { PersistenceControls } from './PersistenceControls'
 import { CompletedSummaryLedgerPanel } from './CompletedSummaryLedgerPanel'
 import { usePresentationAudio } from './usePresentationAudio'
 import { AudioControls } from './AudioControls'
+import { nextHostSessionId } from './ensureSession'
 import './FoundationControls.css'
 
 /**
- * Foundation / testing controls (NOT gameplay).
+ * Teacher-facing host classroom controls.
  *
- * This panel exists only to prove the state/event core and the Slice 3 game &
- * round model + registry end to end from the host surface: it dispatches the
- * foundation command vocabulary, renders the authoritative PRIVATE state +
- * append-only event history (host-only — never projected), and publishes
- * sanitized public state to any open display.
- *
- * These are deliberately labeled as foundation/testing controls. They are not
- * game controls — there is no board, questions, answers, scoring, teams, timers,
- * or reveal here (those arrive in later slices). The "game" here is only a small
- * in-memory definition of NON-gameplay placeholder rounds used to exercise the
- * model, plus one deliberately-unsupported round to prove fail-closed handling.
+ * Ordinary first-run workflow comes first: persistence/recovery, sound, load a
+ * game, then gameplay panels when a game is loaded. Developer diagnostics remain
+ * available in a secondary Advanced diagnostics section.
  */
-
-let sessionCounter = 0
-function nextSessionId(): string {
-  sessionCounter += 1
-  return `session-${sessionCounter}`
-}
 
 export interface FoundationControlsProps {
   /**
@@ -123,12 +110,11 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
   }, [game?.definition, persistenceAdapter, registry, persistenceStoreEpoch])
 
   return (
-    <section className="foundation" aria-labelledby="foundation-title">
-      <div className="foundation__tag">Foundation / testing controls — not gameplay</div>
-      <h2 id="foundation-title">State &amp; event core (Slice 2)</h2>
+    <section className="foundation" aria-labelledby="classroom-controls-title">
+      <h2 id="classroom-controls-title">Classroom controls</h2>
       <p className="host__note foundation__intro">
-        These controls demonstrate the command → event → replay core and the
-        private→public boundary. They are diagnostics, not a game.
+        Load a game, set up teams and optional buzzers, then open the audience display for the
+        projector. This is the working classroom quiz-show host — not a placeholder shell.
       </p>
 
       <PersistenceControls
@@ -147,332 +133,338 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
         disabled={!persistence.canDispatchSessionCommands}
         aria-label="Session command controls"
       >
-        <legend className="foundation__session-legend">Session commands</legend>
+        <legend className="foundation__session-legend">Session command controls</legend>
 
-      <div className="foundation__actions" role="group" aria-label="Foundation commands">
-        <button
-          type="button"
-          className="btn"
-          onClick={() => dispatch({ type: 'INIT_SESSION', issuedAt: now(), sessionId: nextSessionId() })}
-        >
-          Initialize / reset session
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          disabled={!hasSession}
-          onClick={() => dispatch({ type: 'ADVANCE_SEQUENCE', issuedAt: now() })}
-        >
-          Advance sequence
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          disabled={!hasSession}
-          onClick={() => dispatch({ type: 'MARK_WAITING', issuedAt: now() })}
-        >
-          Mark waiting
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          disabled={!hasSession}
-          onClick={() =>
-            dispatch({ type: 'SET_HOST_NOTE', issuedAt: now(), note: 'private host memo (never projected)' })
-          }
-        >
-          Set private note
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          onClick={() => dispatch({ type: 'UNDO', issuedAt: now() })}
-        >
-          Undo last reversible
-        </button>
-      </div>
+        <section className="foundation__teacher-setup" aria-labelledby="load-game-title">
+          <h3 id="load-game-title">Load a game</h3>
+          <p className="host__note">
+            Choose a supported content path below. If no session exists yet, loading starts one
+            automatically. Use <strong>Start new game session</strong> when you want an explicit
+            fresh session first.
+          </p>
+          <div className="foundation__actions" role="group" aria-label="Start game session">
+            <button
+              type="button"
+              className="btn"
+              data-testid="start-new-game-session"
+              onClick={() =>
+                dispatch({
+                  type: 'INIT_SESSION',
+                  issuedAt: now(),
+                  sessionId: nextHostSessionId(),
+                })
+              }
+            >
+              Start new game session
+            </button>
+          </div>
 
-      <fieldset className="foundation__status" disabled={!hasSession}>
-        <legend>Public status</legend>
-        {PUBLIC_STATUS_CODES.map((code) => (
-          <button
-            key={code}
-            type="button"
-            className="btn btn--secondary foundation__status-btn"
-            onClick={() => dispatch({ type: 'SET_PUBLIC_STATUS', issuedAt: now(), code })}
-          >
-            {code}
-          </button>
-        ))}
-      </fieldset>
+          <GameImportPanel
+            dispatch={dispatch}
+            registry={registry}
+            hasSession={hasSession}
+            activeGame={game}
+          />
 
-      <div className="foundation__grid">
-        <div className="foundation__panel" aria-label="Private authoritative state">
-          <h3>Private state (host-only)</h3>
-          <dl className="foundation__kv">
-            <dt>revision</dt>
-            <dd data-testid="private-revision">{state.revision}</dd>
-            <dt>session</dt>
-            <dd data-testid="private-session">{state.session ? state.session.sessionId : '—'}</dd>
-            <dt>lifecycle</dt>
-            <dd>{state.session ? state.session.lifecycle : '—'}</dd>
-            <dt>counter</dt>
-            <dd data-testid="private-counter">{state.session ? state.session.counter : '—'}</dd>
-            <dt>status code</dt>
-            <dd>{state.session ? state.session.publicStatusCode : '—'}</dd>
-            <dt>host notes</dt>
-            <dd>{state.session && state.session.hostNotes ? state.session.hostNotes : '—'}</dd>
-            <dt>applied events</dt>
-            <dd>{state.diagnostics.appliedEventCount}</dd>
-          </dl>
-        </div>
+          <SpreadsheetAuthoringPanel
+            dispatch={dispatch}
+            registry={registry}
+            hasSession={hasSession}
+            activeGame={game}
+          />
 
-        <div className="foundation__panel" aria-label="Append-only event history">
-          <h3>Event history (append-only)</h3>
-          {history.length === 0 ? (
-            <p className="host__note">No events yet.</p>
-          ) : (
-            <ol className="foundation__history" data-testid="event-history">
-              {history.map((event) => (
-                <li key={event.id} className="foundation__event">
-                  <span className="foundation__event-seq">#{event.seq}</span>
-                  <span className="foundation__event-type">{event.type}</span>
-                  <span className="foundation__event-flag">
-                    {event.reversible ? 'reversible' : 'irreversible'}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          )}
-        </div>
-      </div>
+          <GamePackImportPanel
+            dispatch={dispatch}
+            registry={registry}
+            hasSession={hasSession}
+            activeGame={game}
+            adapter={persistence.adapter}
+          />
 
-      <div className="foundation__tag foundation__tag--slice3">
-        Game &amp; round model (Slice 3) — foundation, not gameplay
-      </div>
-      <p className="host__note foundation__intro">
-        These two samples are <strong>trusted in-memory fixtures</strong> built by the
-        application through the domain constructor — they are not an import path. Untrusted
-        content goes through the import pipeline below.
-      </p>
+          <div className="foundation__panel" aria-label="Loaded game">
+            <h3>Loaded game</h3>
+            {!hasGame ? (
+              <p className="host__note">No game loaded yet.</p>
+            ) : (
+              <dl className="foundation__kv">
+                <dt>game title</dt>
+                <dd data-testid="game-title">{game.definition.title}</dd>
+                <dt>lifecycle</dt>
+                <dd data-testid="game-lifecycle">{game.gameLifecycle}</dd>
+                <dt>current round index</dt>
+                <dd data-testid="game-current-index">
+                  {game.currentRoundIndex === null ? '—' : game.currentRoundIndex}
+                </dd>
+                <dt>current round support</dt>
+                <dd data-testid="game-current-support">{game.currentRoundSupport ?? '—'}</dd>
+                <dt>round count</dt>
+                <dd>{game.definition.rounds.length}</dd>
+              </dl>
+            )}
+          </div>
+        </section>
 
-      <div className="foundation__actions" role="group" aria-label="Game foundation commands">
-        <button
-          type="button"
-          className="btn"
-          disabled={!hasSession}
-          onClick={() =>
-            dispatch({ type: 'INITIALIZE_GAME', issuedAt: now(), definition: createSampleGame() })
-          }
-        >
-          Initialize sample game
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          disabled={!hasSession}
-          onClick={() =>
-            dispatch({
-              type: 'INITIALIZE_GAME',
-              issuedAt: now(),
-              definition: createSampleGameWithUnsupportedRound(),
-            })
-          }
-        >
-          Initialize sample with unsupported round
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          disabled={!hasGame}
-          onClick={() => dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: now() })}
-        >
-          Advance to next round
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          disabled={!hasGame}
-          onClick={() => dispatch({ type: 'END_GAME_SESSION', issuedAt: now() })}
-        >
-          End game session
-        </button>
-      </div>
-
-      <div className="foundation__panel" aria-label="Game session (host-only)">
-        <h3>Game session (host-only diagnostics)</h3>
-        {!hasGame ? (
-          <p className="host__note">No game loaded. Initialize a sample game above.</p>
-        ) : (
-          <>
-            <dl className="foundation__kv">
-              <dt>game title</dt>
-              <dd data-testid="game-title">{game.definition.title}</dd>
-              <dt>lifecycle</dt>
-              <dd data-testid="game-lifecycle">{game.gameLifecycle}</dd>
-              <dt>current round index</dt>
-              <dd data-testid="game-current-index">
-                {game.currentRoundIndex === null ? '—' : game.currentRoundIndex}
-              </dd>
-              <dt>current round support</dt>
-              <dd data-testid="game-current-support">{game.currentRoundSupport ?? '—'}</dd>
-              <dt>round count</dt>
-              <dd>{game.definition.rounds.length}</dd>
-            </dl>
-            <ol className="foundation__history" data-testid="game-rounds">
-              {game.definition.rounds.map((round, index) => {
-                const known = registry.isKnown(round.type)
-                return (
-                  <li key={round.id} className="foundation__event">
-                    <span className="foundation__event-seq">#{index}</span>
-                    <span className="foundation__event-type">{round.type}</span>
-                    <span className="foundation__event-flag">
-                      {known ? 'supported' : 'UNSUPPORTED'}
-                    </span>
-                    <button
-                      type="button"
-                      className="btn btn--secondary foundation__status-btn"
-                      onClick={() =>
-                        dispatch({ type: 'SELECT_ROUND', issuedAt: now(), roundId: round.id })
-                      }
-                    >
-                      Select
-                    </button>
-                  </li>
-                )
-              })}
-            </ol>
-          </>
+        {/*
+          Gameplay surfaces render only when a game is loaded. They stay above
+          advanced diagnostics so teachers reach board/teams/controllers first.
+        */}
+        {game && <CategoryBoardHostPanel dispatch={dispatch} game={game} clock={clock} />}
+        {game && <ResponseTimerHostPanel dispatch={dispatch} game={game} clock={clock} />}
+        {game && (
+          <FinalWagerHostPanel
+            dispatch={dispatch}
+            game={game}
+            clock={clock}
+            eventHistoryLength={history.length}
+            activeSessionDurability={{
+              durableEventCount: persistence.durableEventCount,
+              pendingEventCount: persistence.pendingEventCount,
+              failed: persistence.activeSessionPersistFailed,
+              storageAvailable: persistence.durabilityStatus !== 'unavailable',
+            }}
+            onRetryActiveSessionPersist={() => {
+              void persistence.retryActiveSessionPersist(() => store.getHistory(), registry)
+            }}
+          />
         )}
-      </div>
+        {game && <LocalInputHostPanel dispatch={dispatch} game={game} clock={clock} />}
+        {game && <GamepadInputHostPanel dispatch={dispatch} game={game} clock={clock} />}
+        {game && (
+          <TeamScoringPanel dispatch={dispatch} game={game} history={history} clock={clock} />
+        )}
+        {game && (
+          <SessionSummaryPanel
+            game={game}
+            history={history}
+            saveStatus={
+              persistence.currentCompletionSave?.sessionId === state.session?.sessionId
+                ? (persistence.currentCompletionSave?.status ?? 'idle')
+                : 'idle'
+            }
+            saveMessage={
+              persistence.currentCompletionSave?.sessionId === state.session?.sessionId
+                ? persistence.ledgerMessage
+                : undefined
+            }
+            onRetrySave={() => void persistence.retryCurrentCompletionSave()}
+            onDeleteSavedCopy={
+              persistence.currentCompletionSave?.status === 'saved' &&
+              persistence.currentCompletionSave.recordId
+                ? () => {
+                    const recordId = persistence.currentCompletionSave?.recordId
+                    if (recordId) void persistence.deleteCompletedRecord(recordId)
+                  }
+                : undefined
+            }
+          />
+        )}
 
-      {/*
-        The one GAMEPLAY surface (Slice 5). It renders only when the current
-        round is a playable category board; every other state (no game, no
-        round, a placeholder round, an unsupported round) renders nothing here
-        and the foundation diagnostics above remain the whole host surface.
-      */}
-      {game && <CategoryBoardHostPanel dispatch={dispatch} game={game} clock={clock} />}
+        <CompletedSummaryLedgerPanel persistence={persistence} />
 
-      {/*
-        Timers & arming (Slice 7). A third bounded panel: it arms and times, it
-        reveals nothing, and it scores nothing — the same separation that keeps
-        the board panel and the scoring panel apart.
-      */}
-      {game && <ResponseTimerHostPanel dispatch={dispatch} game={game} clock={clock} />}
+        <section className="foundation__diagnostics" aria-labelledby="advanced-diagnostics-title">
+          <h3 id="advanced-diagnostics-title">Advanced diagnostics</h3>
+          <p className="host__note foundation__intro">
+            Optional developer and troubleshooting controls. They are not required for ordinary
+            classroom setup.
+          </p>
 
-      {/*
-        The Final wager round (Slice 14) — the second playable round type. Like
-        its siblings it is a bounded panel: it owns Final and nothing else, and it
-        renders only when the current round IS a playable Final.
-      */}
-      {game && (
-        <FinalWagerHostPanel
-          dispatch={dispatch}
-          game={game}
-          clock={clock}
-          eventHistoryLength={history.length}
-          activeSessionDurability={{
-            durableEventCount: persistence.durableEventCount,
-            pendingEventCount: persistence.pendingEventCount,
-            failed: persistence.activeSessionPersistFailed,
-            storageAvailable: persistence.durabilityStatus !== 'unavailable',
-          }}
-          onRetryActiveSessionPersist={() => {
-            void persistence.retryActiveSessionPersist(() => store.getHistory(), registry)
-          }}
-        />
-      )}
+          <div className="foundation__actions" role="group" aria-label="Foundation commands">
+            <button
+              type="button"
+              className="btn btn--secondary"
+              onClick={() =>
+                dispatch({
+                  type: 'INIT_SESSION',
+                  issuedAt: now(),
+                  sessionId: nextHostSessionId(),
+                })
+              }
+            >
+              Initialize / reset session
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={!hasSession}
+              onClick={() => dispatch({ type: 'ADVANCE_SEQUENCE', issuedAt: now() })}
+            >
+              Advance sequence
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={!hasSession}
+              onClick={() => dispatch({ type: 'MARK_WAITING', issuedAt: now() })}
+            >
+              Mark waiting
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={!hasSession}
+              onClick={() =>
+                dispatch({
+                  type: 'SET_HOST_NOTE',
+                  issuedAt: now(),
+                  note: 'private host memo (never projected)',
+                })
+              }
+            >
+              Set private note
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              onClick={() => dispatch({ type: 'UNDO', issuedAt: now() })}
+            >
+              Undo last reversible
+            </button>
+          </div>
 
-      {/*
-        Local input & the buzz queue (Slice 8). A fourth bounded panel: it
-        configures keyboard input and runs the queue, and — like its siblings — it
-        reveals nothing, times nothing and scores nothing. Arming stays in the
-        timer panel above, so the application has exactly one arming control.
-      */}
-      {game && <LocalInputHostPanel dispatch={dispatch} game={game} clock={clock} />}
+          <fieldset className="foundation__status" disabled={!hasSession}>
+            <legend>Public status</legend>
+            {PUBLIC_STATUS_CODES.map((code) => (
+              <button
+                key={code}
+                type="button"
+                className="btn btn--secondary foundation__status-btn"
+                onClick={() => dispatch({ type: 'SET_PUBLIC_STATUS', issuedAt: now(), code })}
+              >
+                {code}
+              </button>
+            ))}
+          </fieldset>
 
-      {/*
-        Generic controller input (Slice 9). The other half of the local-input
-        area, kept as its own bounded panel: it configures CONTROLLER input and
-        nothing else, and it feeds the very same boundary the keyboard panel above
-        does — one queue, one command, one event, one projection. Keyboard buzzing
-        is unaffected by anything here, including a browser with no Gamepad API at
-        all. No model, vendor or colour surface exists (Slice 10 owns that).
-      */}
-      {game && <GamepadInputHostPanel dispatch={dispatch} game={game} clock={clock} />}
+          <div className="foundation__grid">
+            <div className="foundation__panel" aria-label="Private authoritative state">
+              <h3>Private state (host-only)</h3>
+              <dl className="foundation__kv">
+                <dt>revision</dt>
+                <dd data-testid="private-revision">{state.revision}</dd>
+                <dt>session</dt>
+                <dd data-testid="private-session">
+                  {state.session ? state.session.sessionId : '—'}
+                </dd>
+                <dt>lifecycle</dt>
+                <dd>{state.session ? state.session.lifecycle : '—'}</dd>
+                <dt>counter</dt>
+                <dd data-testid="private-counter">
+                  {state.session ? state.session.counter : '—'}
+                </dd>
+                <dt>status code</dt>
+                <dd>{state.session ? state.session.publicStatusCode : '—'}</dd>
+                <dt>host notes</dt>
+                <dd>
+                  {state.session && state.session.hostNotes ? state.session.hostNotes : '—'}
+                </dd>
+                <dt>applied events</dt>
+                <dd>{state.diagnostics.appliedEventCount}</dd>
+              </dl>
+            </div>
 
-      {/*
-        Teams & scoring (Slice 6). It sits BESIDE the board panel, not inside it,
-        because revealing content and awarding points are separate decisions —
-        neither panel can trigger the other's action.
-      */}
-      {game && (
-        <TeamScoringPanel dispatch={dispatch} game={game} history={history} clock={clock} />
-      )}
+            <div className="foundation__panel" aria-label="Append-only event history">
+              <h3>Event history (append-only)</h3>
+              {history.length === 0 ? (
+                <p className="host__note">No events yet.</p>
+              ) : (
+                <ol className="foundation__history" data-testid="event-history">
+                  {history.map((event) => (
+                    <li key={event.id} className="foundation__event">
+                      <span className="foundation__event-seq">#{event.seq}</span>
+                      <span className="foundation__event-type">{event.type}</span>
+                      <span className="foundation__event-flag">
+                        {event.reversible ? 'reversible' : 'irreversible'}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
+          </div>
 
-      {/*
-        Session summary (Slice 15). Host-only, current completed session only.
-        Derivation lives in `src/summary/`; this panel presents the typed result
-        when the replayed lifecycle is ended — no new route, no modal, no export.
-      */}
-      {game && (
-        <SessionSummaryPanel
-          game={game}
-          history={history}
-          saveStatus={
-            persistence.currentCompletionSave?.sessionId === state.session?.sessionId
-              ? persistence.currentCompletionSave?.status ?? 'idle'
-              : 'idle'
-          }
-          saveMessage={
-            persistence.currentCompletionSave?.sessionId === state.session?.sessionId
-              ? persistence.ledgerMessage
-              : undefined
-          }
-          onRetrySave={() => void persistence.retryCurrentCompletionSave()}
-          onDeleteSavedCopy={
-            persistence.currentCompletionSave?.status === 'saved' &&
-            persistence.currentCompletionSave.recordId
-              ? () => {
-                  const recordId = persistence.currentCompletionSave?.recordId
-                  if (recordId) void persistence.deleteCompletedRecord(recordId)
-                }
-              : undefined
-          }
-        />
-      )}
+          <p className="host__note foundation__intro">
+            These two samples are <strong>trusted in-memory fixtures</strong> built by the
+            application through the domain constructor — they are not an import path. Untrusted
+            content goes through the import pipeline above.
+          </p>
 
-      <CompletedSummaryLedgerPanel persistence={persistence} />
+          <div className="foundation__actions" role="group" aria-label="Game foundation commands">
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={!hasSession}
+              onClick={() =>
+                dispatch({ type: 'INITIALIZE_GAME', issuedAt: now(), definition: createSampleGame() })
+              }
+            >
+              Initialize sample game
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={!hasSession}
+              onClick={() =>
+                dispatch({
+                  type: 'INITIALIZE_GAME',
+                  issuedAt: now(),
+                  definition: createSampleGameWithUnsupportedRound(),
+                })
+              }
+            >
+              Initialize sample with unsupported round
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={!hasGame}
+              onClick={() => dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: now() })}
+            >
+              Advance to next round
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              disabled={!hasGame}
+              onClick={() => dispatch({ type: 'END_GAME_SESSION', issuedAt: now() })}
+            >
+              End game session
+            </button>
+          </div>
 
-      <GameImportPanel
-        dispatch={dispatch}
-        registry={registry}
-        hasSession={hasSession}
-        activeGame={game}
-      />
-
-      <SpreadsheetAuthoringPanel
-        dispatch={dispatch}
-        registry={registry}
-        hasSession={hasSession}
-        activeGame={game}
-      />
-
-      <GamePackImportPanel
-        dispatch={dispatch}
-        registry={registry}
-        hasSession={hasSession}
-        activeGame={game}
-        adapter={persistence.adapter}
-      />
-
+          <div className="foundation__panel" aria-label="Game session (host-only)">
+            <h3>Game session (host-only diagnostics)</h3>
+            {!hasGame ? (
+              <p className="host__note">No game loaded. Load a game above, or initialize a sample.</p>
+            ) : (
+              <ol className="foundation__history" data-testid="game-rounds">
+                {game.definition.rounds.map((round, index) => {
+                  const known = registry.isKnown(round.type)
+                  return (
+                    <li key={round.id} className="foundation__event">
+                      <span className="foundation__event-seq">#{index}</span>
+                      <span className="foundation__event-type">{round.type}</span>
+                      <span className="foundation__event-flag">
+                        {known ? 'supported' : 'UNSUPPORTED'}
+                      </span>
+                      <button
+                        type="button"
+                        className="btn btn--secondary foundation__status-btn"
+                        onClick={() =>
+                          dispatch({ type: 'SELECT_ROUND', issuedAt: now(), roundId: round.id })
+                        }
+                      >
+                        Select
+                      </button>
+                    </li>
+                  )
+                })}
+              </ol>
+            )}
+          </div>
+        </section>
       </fieldset>
 
-      <GameExportPanel
-        definition={game?.definition ?? null}
-        registry={registry}
-      />
+      <GameExportPanel definition={game?.definition ?? null} registry={registry} />
 
       <GamePackExportPanel definition={game?.definition ?? null} registry={registry} />
     </section>

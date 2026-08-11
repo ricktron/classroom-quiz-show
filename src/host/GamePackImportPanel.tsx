@@ -21,6 +21,7 @@ import {
 } from '../pack'
 import { browserDecodeImage } from '../pack/browserDecodeImage'
 import { publishActivePackResourceScope } from '../pack/packMediaScopeSync'
+import { ensureSession } from './ensureSession'
 import './GamePackImportPanel.css'
 
 /**
@@ -78,25 +79,6 @@ export function GamePackImportPanel({
     setBusy(true)
 
     try {
-      if (!hasSession) {
-        setAttempt({
-          result: {
-            status: 'failure',
-            issues: [
-              {
-                code: 'pack-commit-failed',
-                stage: 'commit',
-                path: '',
-                message: 'Initialize a session first, then import the pack again.',
-              },
-            ],
-          },
-          load: { kind: 'not-loaded', reason: 'Initialize a session first, then import again.' },
-          attemptNumber,
-        })
-        return
-      }
-
       if (file.size > MAX_PACK_INPUT_BYTES) {
         setAttempt({
           result: {
@@ -125,6 +107,16 @@ export function GamePackImportPanel({
 
       if (imported.status !== 'success') {
         setAttempt({ result: imported, load: { kind: 'none' }, attemptNumber })
+        return
+      }
+
+      const session = ensureSession(hasSession, dispatch)
+      if (session.status === 'failed') {
+        setAttempt({
+          result: imported,
+          load: { kind: 'not-loaded', reason: session.reason },
+          attemptNumber,
+        })
         return
       }
 
@@ -215,14 +207,12 @@ export function GamePackImportPanel({
 
   return (
     <section className="pack-import" aria-labelledby="pack-import-title">
-      <div className="foundation__tag foundation__tag--slice19">
-        Portable pack import (Slice 19) — host-only, not gameplay
-      </div>
       <h3 id="pack-import-title">Import portable pack file</h3>
       <p className="host__note">
         Choose a self-contained <code>{PACK_EXTENSION}</code> file. Pack import validates the
         container, canonical game JSON, and embedded media before loading. Failures leave the
-        active game unchanged.
+        active game unchanged. If no game session exists yet, a successful pack import starts one
+        automatically.
       </p>
 
       <div className="pack-import__actions">

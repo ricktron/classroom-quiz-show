@@ -112,14 +112,32 @@ describe('GameImportPanel', () => {
     expect(screen.getByTestId('import-result')).toHaveTextContent(/import failed/i)
   })
 
-  it('validates without a session but refuses to load, saying why', () => {
+  it('starts a session automatically when importing with no prior session', () => {
     const { store } = renderPanel({ hasSession: false })
     pasteAndImport(gameFileText())
 
     const result = screen.getByTestId('import-result')
-    expect(result).toHaveTextContent(/validated but NOT loaded/i)
-    expect(result).toHaveTextContent(/initialize a session first/i)
-    expect(store.getHistory()).toHaveLength(0)
+    expect(result).toHaveTextContent(/import succeeded — game loaded/i)
+    expect(result).not.toHaveTextContent(/initialize a session first/i)
+    expect(store.getHistory().some((event) => event.type === 'SESSION_INITIALIZED')).toBe(true)
+    expect(store.getHistory().some((event) => event.type === 'GAME_INITIALIZED')).toBe(true)
+    expect(store.getState().session?.game?.definition.id).toBe('sample-game')
+  })
+
+  it('does not reset an already active session when importing', () => {
+    const { store } = renderPanel({ hasSession: true })
+    const sessionIdBefore = store.getState().session?.sessionId
+    const initCountBefore = store
+      .getHistory()
+      .filter((event) => event.type === 'SESSION_INITIALIZED').length
+
+    pasteAndImport(gameFileText())
+
+    expect(screen.getByTestId('import-result')).toHaveTextContent(/import succeeded — game loaded/i)
+    expect(store.getState().session?.sessionId).toBe(sessionIdBefore)
+    expect(
+      store.getHistory().filter((event) => event.type === 'SESSION_INITIALIZED'),
+    ).toHaveLength(initCountBefore)
   })
 
   it('runs the built-in sample through the same pipeline', () => {

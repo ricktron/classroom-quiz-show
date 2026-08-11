@@ -1,6 +1,6 @@
 /*
- * Foundation / testing controls. Host-only diagnostics surface for Slice 2 —
- * deliberately utilitarian, clearly separated from the (future) game UI.
+ * Teacher-facing classroom host controls. Ordinary setup first; advanced
+ * diagnostics are secondary and do not dominate the first-run path.
  */
 .foundation {
   width: 100%;
@@ -11,6 +11,24 @@
   border: 1px solid var(--border-panel);
   border-radius: var(--radius);
   text-align: left;
+}
+
+.foundation__teacher-setup {
+  margin-bottom: var(--space-5);
+}
+
+.foundation__diagnostics {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  border: 1px dashed var(--border-panel);
+  border-radius: var(--radius);
+  background: var(--surface-disabled);
+}
+
+.foundation__diagnostics > h3 {
+  margin-top: 0;
+  color: var(--fg-muted);
+  font-size: 1rem;
 }
 
 .foundation__tag {

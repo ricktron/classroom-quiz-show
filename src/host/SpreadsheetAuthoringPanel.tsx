@@ -13,6 +13,7 @@ import {
   type AuthoringIssue,
   type DraftCorrection,
 } from '../authoring'
+import { ensureSession } from './ensureSession'
 import './SpreadsheetAuthoringPanel.css'
 
 /**
@@ -127,11 +128,9 @@ export function SpreadsheetAuthoringPanel({
 
   function onLoadTrusted(): void {
     if (!trusted) return
-    if (!hasSession) {
-      setLoad({
-        kind: 'not-loaded',
-        reason: 'Initialize a session first, then load the approved game.',
-      })
+    const session = ensureSession(hasSession, dispatch)
+    if (session.status === 'failed') {
+      setLoad({ kind: 'not-loaded', reason: session.reason })
       return
     }
     const dispatched = dispatch({
@@ -155,14 +154,12 @@ export function SpreadsheetAuthoringPanel({
 
   return (
     <section className="spreadsheet-authoring" aria-labelledby="spreadsheet-authoring-title">
-      <div className="foundation__tag foundation__tag--slice20">
-        Spreadsheet authoring seed (Slice 20) — host-only, not gameplay
-      </div>
       <h3 id="spreadsheet-authoring-title">Spreadsheet authoring</h3>
       <p className="host__note">
         Download a template, fill it manually or with a model-neutral external authoring tool,
         upload the <code>.xlsx</code> workbook, review diagnostics, approve, then load through the
-        existing import boundary. Workbooks never become playable without explicit approval.
+        existing import boundary. Workbooks never become playable without explicit approval. If no
+        game session exists yet, loading starts one automatically.
       </p>
 
       <div className="spreadsheet-authoring__actions" role="group" aria-label="Workbook templates">
