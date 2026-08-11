@@ -116,8 +116,10 @@ Consequences:
   project toolchain. **It is not a lint finding and must not be recorded as
   one.**
 
-**No unit total, no Playwright total, no lint or typecheck result is claimed by
-this document.** Substituting or repinning the dependency would be a dependency
+**No LOCAL unit, Playwright, lint, typecheck, or build result is claimed by this
+document.** An exact-head **CI** baseline was subsequently recovered and is
+recorded separately in §14 under its own evidence class; the two must not be
+conflated (§79). Substituting or repinning the dependency would be a dependency
 and supply-chain change, which Slice 23 explicitly forbids.
 
 ### HS-2 — Production deployment verification is impossible here
@@ -264,6 +266,24 @@ Ordinary setup still exposes some WebHID/Gamepad vocabulary. Per §7 this remain
 dismissed at Stage 0.** Note that `CQS-Q23-BLOCKER-01` concerns a *different and
 much larger* jargon surface than F-UX-01, and must not be collapsed into it.
 
+### `CQS-Q23-LOW-02` (new, from CI run `31446536299`) — single ~1.25 MB JS chunk on first load
+
+- **Evidence class:** AUTOMATED CI (exact head) — production build output.
+- **Observed:** `dist/assets/index-BYR1CyC_.js` is **1 246.02 kB (gzip
+  374.25 kB)**, tripping Vite's 500 kB chunk warning. Total PWA precache is
+  **1 455.44 KiB across 22 entries**.
+- **Why it is only LOW:** the app is a PWA with `registerType: 'autoUpdate'` and
+  precaching, so this is a **one-time** cost per install/update rather than a
+  per-lesson cost, and no code-splitting regression is implied — the bundle
+  legitimately carries the whole engine plus SheetJS.
+- **Why it is recorded at all:** first load happens on school Wi-Fi, in front of
+  a class, at the least forgiving possible moment. Whether that is acceptable is
+  a **live measurement question** on a real school network, not something the
+  build log can settle.
+- **Routing:** measure during the Stage I / classroom-startup gate. Do **not**
+  treat as a defect or optimize speculatively — §85 forbids redesign from
+  qualification, and no optimization is authorized.
+
 ### `CQS-Q23-CLASS-B-01` — non-registry CDN dependency is a beta-distribution risk
 
 **Class B — continuation candidate, not a Slice 23 defect.** The `xlsx`
@@ -309,6 +329,38 @@ because packaging/distribution is an open MVP-continuation question (§87).
 **Retry-resolution alone will not be accepted as sufficient** (§43). If step 2
 shows the commit is acknowledged to the host before it is durable, that is a
 product defect regardless of test-harness behaviour.
+
+### Sharpened analysis from CI run `31446536299` (added under packet 1)
+
+The `mobile-host` failure context records:
+
+```
+14 × locator resolved to
+  <span class="fwh__committed" data-testid="fwh-committed-wager-basalts">Not saved yet</span>
+   - unexpected value "Not saved yet"
+```
+
+This **materially narrows the hypothesis space, and not in the product's
+favour.** The locator resolved **14 times across the full 5 000 ms timeout** and
+reported `Not saved yet` every time. That is not the shape of an assertion
+arriving a few milliseconds early: after `Resume session`, the panel rendered a
+**stable** committed-wager state of "not saved" for five continuous seconds.
+
+Consequently hypothesis **(B) "deterministic test-harness flake only"** is now
+**weakly supported**, and the leading hypothesis is that the resumed session
+genuinely **did not contain the committed wager** on that attempt — i.e. a wager
+the teacher was told was `Saved: 100` did not survive refresh-and-resume. The
+same sequence succeeded on retry, so the behaviour is **nondeterministic**,
+consistent with an ordering/durability race between the wager write and the
+reload rather than with a rendering delay.
+
+**This is not yet a disposition, and must not be reported as one.** It is a
+recorded update to the analysis that raises the prior probability of §43
+outcome **(A) actual product defect** and correspondingly raises the priority of
+running the focused reproduction above. If confirmed, the classroom consequence
+is direct: a Final wager silently lost across a mid-round refresh, which is a
+release-blocking data-loss class of defect. If disproven, it reverts to a
+harness flake — but that must be **shown**, not assumed from the retry.
 
 ---
 
@@ -386,7 +438,7 @@ production URL (or npm run dev)
 | Stage | Content | Status |
 | --- | --- | --- |
 | A | Canonical/preflight | **DONE — PASS** (§1, §14) — provenance gate only |
-| B | Clean automated baseline (`verify`, `verify:all`, matrices) | **ATTEMPTED — BLOCKED by HS-1** (§14) |
+| B | Clean automated baseline (`verify`, `verify:all`, matrices) | **PARTIAL** (§14) — local blocked by HS-1; exact-head **CI baseline green** (2397 unit / 355 e2e / 3 inherited flaky) |
 | C | Clean-teacher first-launch workflow (clean profile) | **ATTEMPTED — BLOCKED by HS-1** (§14); still expected to confirm BLOCKER-01/02 |
 | D | Import / authoring / pack / data lifecycle | **BLOCKED by HS-1** |
 | E | Gameplay, Final, undo, recovery (+ flake disposition) | **BLOCKED by HS-1** |
@@ -468,8 +520,12 @@ does not resolve it. Routed to the Program Orchestrator unchanged.
   gate, not a classroom gate. **No substantive classroom or product
   qualification gate has been dispositioned** — every Stage-0 product finding
   below is provisional and static.
-- **No** unit, Playwright, lint, typecheck, build, Sonar, Pages, or CI result is
-  claimed from this session; the toolchain could not be installed (HS-1).
+- **No LOCAL** unit, Playwright, lint, typecheck, or build result is claimed; the
+  toolchain could not be installed (HS-1). An exact-head **CI** baseline and
+  SonarCloud gate **are** claimed, under their own evidence class, in §14 — CI
+  evidence is not local `verify:all` evidence and does not satisfy the
+  Definition of Done.
+- **No** Pages deployment result is claimed (HS-2).
 - **No** production, PWA, offline, update, or deployed-commit claim (HS-2).
 - **No** physical projector, viewing-distance, audio, hardware, or screen-reader
   observation was performed.
@@ -538,7 +594,9 @@ re-tested directly rather than assumed.
 Canonical main has **not** moved, so the authorized base holds and no refreshed
 base authority is required.
 
-### Stage B — NOT EXECUTED (blocked)
+### Stage B — LOCAL execution blocked; exact-head CI baseline recovered instead
+
+#### B-local — NOT EXECUTED
 
 | Check | Result |
 | --- | --- |
@@ -546,7 +604,57 @@ base authority is required.
 | `git diff --check` | **clean** |
 | `npm run verify` | **NOT RUN** — toolchain not installable |
 | `npm run verify:all` | **NOT RUN** — toolchain not installable |
-| Lint / typecheck / unit / Playwright / build | **NOT RUN** — no totals claimed |
+
+#### B-CI — EXECUTED, exact head, all checks green
+
+**Evidence class: AUTOMATED CI (exact head) — explicitly NOT local `verify:all`,
+and per §79 not interchangeable with it.**
+
+PR #60's product tree is **byte-identical to the authorized base** (the only
+difference from `c047ca7…` is this qualification document), so CI on the PR head
+is a valid automated baseline **of the product at the authorized base**.
+
+CI run `31446536299`, head `9fb3ee5caffc4f08f9f48425fcffe4786dffa9cf`, both jobs
+**success**:
+
+| Check | Result |
+| --- | --- |
+| `npm ci` | **success** (CI runners reach `cdn.sheetjs.com`) |
+| Lint | **success** |
+| Typecheck | **success** |
+| Unit / component | **140 test files, 2397 passed, 1 skipped (2398)**, 71.99 s |
+| Production build | **success** — vite 7.3.6, 348 modules |
+| PWA | `generateSW`, **precache 22 entries (1455.44 KiB)**, includes all five Slice 22 `.wav` cues |
+| Playwright | **355 passed / 14 skipped / 3 flaky / 0 terminal failures**, 8.8 m, 3 projects |
+| SonarCloud | Quality Gate **passed** — 0 new issues, 0 accepted issues, 0 security hotspots |
+
+**Precision required:** the constituent checks of `verify:all` all passed at the
+exact head, but the literal `npm run verify` / `npm run verify:all` scripts were
+**not invoked** — CI runs the same commands as discrete steps. This document
+does **not** claim "`verify:all` green" in the Definition-of-Done sense; that
+still requires a local run per the DoD.
+
+**§81 provenance is satisfied for this run:** CI sets `CI=true`, so
+`reuseExistingServer: !process.env.CI` evaluates false and Playwright built and
+served a fresh bundle from the exact head. No stale-server risk applies here.
+
+The unit totals (**2397 / 1 skipped / 140 files**) match those recorded in
+`docs/STATUS.md` for the Slice 22 frontier, independently corroborating that the
+qualification base is the product `main` describes.
+
+#### Flakes — NOT hidden, NOT dispositioned
+
+All **3** flaky cases are the single inherited signature, one per project:
+
+```
+[desktop-1080p]  tests/e2e/final-wager.spec.ts:281 › a refresh mid-Final resumes every committed wager
+[projector-720p] tests/e2e/final-wager.spec.ts:281 › a refresh mid-Final resumes every committed wager
+[mobile-host]    tests/e2e/final-wager.spec.ts:281 › a refresh mid-Final resumes every committed wager
+```
+
+Each retry-resolved. **Per §43 this is NOT a disposition**, and a retry-resolved
+full-suite run is explicitly insufficient to classify it. See §5 for the
+sharpened analysis this run enables.
 
 Re-tested this packet, both still denied by egress policy:
 
@@ -580,10 +688,17 @@ team-setup, keyboard, or display-workflow observation was performed.
 | `CQS-Q23-HIGH-02` | **UNDISPOSITIONED** — static evidence only |
 | `CQS-Q23-HIGH-03` | **UNDISPOSITIONED** — static evidence only |
 | `CQS-Q23-LOW-01` / F-UX-01 | **UNDISPOSITIONED** — neither promoted nor dismissed |
+| `CQS-Q23-LOW-02` | **NEW** — recorded from CI build output; routed to a live measurement gate |
+| `CQS-Q23-CLASS-B-01` | **Unchanged** — Class B continuation candidate, not a Slice 23 defect |
+| Inherited Final mid-refresh flake | **STILL UNDISPOSITIONED**, but §5 analysis sharpened; hypothesis (A) actual product defect is now the leading one |
 
 Per the packet, a provisional Stage-0 label is **not** preserved merely because
-Stage 0 used it. None of these severities has been confirmed, lowered, raised,
-or rejected from live behaviour, because no live behaviour was observed.
+Stage 0 used it. None of the six teacher-workflow severities has been confirmed,
+lowered, raised, or rejected from live behaviour, because **no clean-browser
+behaviour was observed**. The CI baseline exercises the product's automated
+suites; it does **not** exercise the ordinary-teacher path, which is precisely
+what BLOCKER-01/02 concern — a suite written by developers who know where the
+controls are cannot detect that a teacher would not find them.
 
 ### §71 hard-stop rule — NOT TRIGGERED
 
@@ -598,9 +713,19 @@ execution environment is unavailable.
 
 ### Evidence invalidation / transfer
 
-No new evidence was produced, so nothing is invalidated and nothing transfers.
-All Stage-0 static observations remain valid as static observations at
-`c047ca7…`; none has been upgraded to CLEAN-BROWSER class.
+Nothing is invalidated — no product code changed, so no prior evidence is
+disturbed. Slice 21 physical controller evidence and Slice 22 owner listening
+evidence both continue to transfer exactly as described in §11.
+
+Newly **established** evidence: the CI baseline (`AUTOMATED CI, exact head`) for
+lint, typecheck, unit, build, PWA precache composition, and Playwright at
+`9fb3ee5…`, whose product tree equals the authorized base. This transfers to any
+later qualification stage **so long as no product code changes**; the first
+product repair invalidates the Playwright and build portions of it.
+
+All Stage-0 teacher-workflow observations remain **static** observations at
+`c047ca7…`. **None has been upgraded to CLEAN-BROWSER class**, and the CI
+baseline does not upgrade them.
 
 ### What is needed to complete this packet
 
