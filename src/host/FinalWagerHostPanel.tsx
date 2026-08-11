@@ -35,6 +35,12 @@ import { findTeamById } from '../game/teams/definition'
 import { formatSignedDelta } from '../game/teams/scoring'
 import { systemClock, type Clock } from '../time/clock'
 import { formatRemaining } from '../time/duration'
+import {
+  FULLY_DURABLE_SESSION,
+  finalWagerCommitAcknowledgement,
+  isActiveSessionHistoryDurable,
+  type ActiveSessionDurabilityView,
+} from './finalWagerCommitAcknowledgement'
 import './FinalWagerHostPanel.css'
 
 /**
@@ -65,9 +71,10 @@ import './FinalWagerHostPanel.css'
  * ## Drafts versus committed values
  *
  * The wager and response inputs hold local DRAFT text. A draft is UI state and is
- * lost on reload; a committed value is an event and survives refresh. The panel
- * states which is which per team rather than leaving a teacher to guess whether a
- * number in a box has actually been saved.
+ * lost on reload; a committed value is an event and survives refresh **once the
+ * active-session write has been acknowledged**. Until that durable write
+ * completes, the panel shows "Saving…" rather than "Saved", so a teacher is
+ * never told a wager is saved before recovery can restore it.
  */
 
 export interface FinalWagerHostPanelProps {
@@ -75,6 +82,16 @@ export interface FinalWagerHostPanelProps {
   readonly game: PrivateGameState
   /** Injectable clock — the dispatch edge, and the only place `now` is read. */
   readonly clock?: Clock
+  /** Append-only event history length (in-memory). */
+  readonly eventHistoryLength?: number
+  /**
+   * Active-session durability view from host persistence. Defaults to "fully
+   * durable" so isolated panel tests that drive an in-memory store still see
+   * Saved once a wager is committed in memory.
+   */
+  readonly activeSessionDurability?: ActiveSessionDurabilityView
+  /** Optional retry after a failed active-session write. */
+  readonly onRetryActiveSessionPersist?: () => void
 }
 
 /** Host-facing description of each Final phase. Host-only copy. */
@@ -105,6 +122,9 @@ export function FinalWagerHostPanel({
   dispatch,
   game,
   clock = systemClock,
+  eventHistoryLength = 0,
+  activeSessionDurability = FULLY_DURABLE_SESSION,
+  onRetryActiveSessionPersist,
 }: FinalWagerHostPanelProps) {
   const roundIndex = game.currentRoundIndex
   const round = roundIndex === null ? null : (game.definition.rounds[roundIndex] ?? null)
@@ -117,6 +137,7 @@ export function FinalWagerHostPanel({
   const [responseSeconds, setResponseSeconds] = useState<number>(authoredSeconds)
   const [wagerDrafts, setWagerDrafts] = useState<Record<string, string>>({})
   const [responseDrafts, setResponseDrafts] = useState<Record<string, string>>({})
+  const wagersDurable = isActiveSessionHistoryDurable(eventHistoryLength, activeSessionDurability)
 
   // Rendered only for a playable Final round. Every other state (no game, no
   // round, a board round, an unregistered type) renders nothing at all.
@@ -246,11 +267,26 @@ export function FinalWagerHostPanel({
                       className="fwh__committed"
                       data-testid={`fwh-committed-wager-${eligible.teamId}`}
                     >
-                      {committed === null
-                        ? 'Not saved yet'
-                        : `Saved: ${committed}`}
+                      {finalWagerCommitAcknowledgement(
+                        committed,
+                        eventHistoryLength,
+                        activeSessionDurability,
+                      )}
                     </span>
                   </div>
+                  {committed !== null &&
+                    activeSessionDurability.failed &&
+                    eventHistoryLength > activeSessionDurability.durableEventCount &&
+                    onRetryActiveSessionPersist && (
+                      <button
+                        type="button"
+                        className="btn btn--secondary"
+                        data-testid={`fwh-retry-persist-${eligible.teamId}`}
+                        onClick={() => onRetryActiveSessionPersist()}
+                      >
+                        Retry save
+                      </button>
+                    )}
                 </div>
               )
             })}
@@ -261,7 +297,7 @@ export function FinalWagerHostPanel({
               type="button"
               className="btn"
               data-testid="fwh-lock-wagers"
-              disabled={!active || !everyWagerCommitted(final)}
+              disabled={!active || !everyWagerCommitted(final) || !wagersDurable}
               onClick={() => send({ type: 'LOCK_FINAL_WAGERS', issuedAt: now(), roundId })}
             >
               Lock all wagers
@@ -269,6 +305,11 @@ export function FinalWagerHostPanel({
             {!everyWagerCommitted(final) && (
               <span className="host__note" data-testid="fwh-wagers-incomplete">
                 Every eligible team needs a saved wager — an explicit 0 counts.
+              </span>
+            )}
+            {everyWagerCommitted(final) && !wagersDurable && (
+              <span className="host__note" data-testid="fwh-wagers-persisting">
+                Waiting until every wager is saved on this device before locking.
               </span>
             )}
           </div>

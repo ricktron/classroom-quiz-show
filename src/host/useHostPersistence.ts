@@ -106,6 +106,16 @@ export interface UseHostPersistence {
   readonly invalidRecovery: InvalidRecoveryPayload | null
   readonly leadership: PersistenceLeadership
   readonly durabilityStatus: PersistenceDurabilityStatus
+  /**
+   * How much of the in-memory event history is confirmed in active-session
+   * storage. Final (and any other) teacher-facing "Saved" copy must consult this
+   * rather than treating an accepted command as durable.
+   */
+  readonly durableEventCount: number
+  /** History length of the in-flight active-session write, if any. */
+  readonly pendingEventCount: number | null
+  /** True when the latest active-session write attempt failed. */
+  readonly activeSessionPersistFailed: boolean
   readonly ledgerStatus: LedgerStatus
   readonly ledgerMessage: string
   readonly currentCompletionSave: CurrentCompletionSave | null
@@ -117,6 +127,11 @@ export interface UseHostPersistence {
   readonly canDispatchSessionCommands: boolean
   readonly resume: () => void
   readonly discardRecovery: () => Promise<PersistenceActionResult>
+  /** Re-attempts writing the current history after an active-session save failure. */
+  readonly retryActiveSessionPersist: (
+    getHistory: () => readonly SessionEvent[],
+    registry: RoundRegistry,
+  ) => Promise<PersistenceActionResult>
   readonly refreshLibrary: () => Promise<PersistenceActionResult>
   readonly saveCurrentDefinition: (
     definition: GameDefinition | null,
@@ -173,6 +188,9 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   const [invalidRecovery, setInvalidRecovery] = useState<InvalidRecoveryPayload | null>(null)
   const [leadership, setLeadership] = useState<PersistenceLeadership>('unknown')
   const [durabilityStatus, setDurabilityStatus] = useState<PersistenceDurabilityStatus>('loading')
+  const [durableEventCount, setDurableEventCount] = useState(0)
+  const [pendingEventCount, setPendingEventCount] = useState<number | null>(null)
+  const [activeSessionPersistFailed, setActiveSessionPersistFailed] = useState(false)
   const [ledgerStatus, setLedgerStatus] = useState<LedgerStatus>('idle')
   const [ledgerMessage, setLedgerMessage] = useState('Completed-session ledger is ready.')
   const [currentCompletionSave, setCurrentCompletionSave] =
@@ -362,6 +380,9 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       setRecovery(null)
       setInvalidRecovery(null)
       setInitialHistory([])
+      setDurableEventCount(0)
+      setPendingEventCount(null)
+      setActiveSessionPersistFailed(false)
       setBootPhase('ready')
       setDurabilityStatus('idle')
       setMessage('Local persistence is ready. No unfinished active session was found.')
@@ -370,6 +391,10 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     if (read.kind === 'resumable') {
       setRecovery({ events: read.events, savedAt: read.savedAt })
       setInvalidRecovery(null)
+      // The on-disk record is already durable; Resume loads that exact length.
+      setDurableEventCount(read.events.length)
+      setPendingEventCount(null)
+      setActiveSessionPersistFailed(false)
       setBootPhase('recovery')
       setDurabilityStatus('idle')
       setMessage('An unfinished active session was found. Resume or discard it before continuing.')
@@ -377,6 +402,9 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     }
     setRecovery(null)
     setInvalidRecovery({ code: read.code, message: read.message })
+    setDurableEventCount(0)
+    setPendingEventCount(null)
+    setActiveSessionPersistFailed(false)
     setBootPhase('invalid-recovery')
     setDurabilityStatus('failed')
     setMessage('Stored recovery data is invalid. Discard it to continue with an empty host session.')
@@ -384,21 +412,93 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
 
   const persistHistory = useCallback(
     (history: readonly SessionEvent[], writeRegistry: RoundRegistry): void => {
-      if (!storageReadyRef.current || leadership !== 'leader') return
+      const length = history.length
+      // Mark pending synchronously in the same turn as the accepted command so
+      // the first paint after Save cannot show a false durable "Saved".
       const token = latestWriteToken.current + 1
       latestWriteToken.current = token
+      setPendingEventCount(length)
+      setActiveSessionPersistFailed(false)
+
+      if (!storageReadyRef.current || leadership !== 'leader') {
+        setPendingEventCount(null)
+        setActiveSessionPersistFailed(true)
+        if (!storageReadyRef.current) {
+          setDurabilityStatus('unavailable')
+          setMessage('Local persistence is unavailable. Recent changes might not survive refresh.')
+        } else {
+          setDurabilityStatus('failed')
+          setMessage('This tab cannot save the active session until it holds the persistence lease.')
+        }
+        return
+      }
+
       setDurabilityStatus('saving')
       setMessage('Saving active session.')
       void writeActiveSession(adapter, history, clock.now(), writeQueue, writeRegistry).then((result) => {
         if (latestWriteToken.current !== token) return
         if (result.ok) {
+          setDurableEventCount(length)
+          setPendingEventCount(null)
+          setActiveSessionPersistFailed(false)
           setDurabilityStatus('saved')
           setMessage('Active session saved locally.')
         } else {
+          setPendingEventCount(null)
+          setActiveSessionPersistFailed(true)
           setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
           setMessage('Active session could not be saved. Recent changes might not survive refresh.')
         }
       })
+    },
+    [adapter, clock, leadership, writeQueue],
+  )
+
+  const retryActiveSessionPersist = useCallback(
+    async (
+      getHistory: () => readonly SessionEvent[],
+      writeRegistry: RoundRegistry,
+    ): Promise<PersistenceActionResult> => {
+      const history = getHistory()
+      if (history.length === 0) {
+        return { ok: false, message: 'There is no active session history to save.' }
+      }
+      const length = history.length
+      const token = latestWriteToken.current + 1
+      latestWriteToken.current = token
+      setPendingEventCount(length)
+      setActiveSessionPersistFailed(false)
+
+      if (!storageReadyRef.current || leadership !== 'leader') {
+        setPendingEventCount(null)
+        setActiveSessionPersistFailed(true)
+        const message = !storageReadyRef.current
+          ? 'Local persistence is unavailable. Recent changes might not survive refresh.'
+          : 'This tab cannot save the active session until it holds the persistence lease.'
+        setDurabilityStatus(!storageReadyRef.current ? 'unavailable' : 'failed')
+        setMessage(message)
+        return { ok: false, message }
+      }
+
+      setDurabilityStatus('saving')
+      setMessage('Saving active session.')
+      const result = await writeActiveSession(adapter, history, clock.now(), writeQueue, writeRegistry)
+      if (latestWriteToken.current !== token) {
+        return { ok: true, message: 'A newer save replaced this retry.' }
+      }
+      if (result.ok) {
+        setDurableEventCount(length)
+        setPendingEventCount(null)
+        setActiveSessionPersistFailed(false)
+        setDurabilityStatus('saved')
+        setMessage('Active session saved locally.')
+        return { ok: true, message: 'Active session saved locally.' }
+      }
+      setPendingEventCount(null)
+      setActiveSessionPersistFailed(true)
+      setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
+      setMessage('Active session could not be saved. Recent changes might not survive refresh.')
+      return { ok: false, message: result.message }
     },
     [adapter, clock, leadership, writeQueue],
   )
@@ -589,6 +689,9 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   const resume = useCallback(() => {
     if (!recovery) return
     setInitialHistory(recovery.events)
+    setDurableEventCount(recovery.events.length)
+    setPendingEventCount(null)
+    setActiveSessionPersistFailed(false)
     setStoreEpoch((epoch) => epoch + 1)
     setBootPhase('ready')
     setDurabilityStatus('idle')
@@ -598,12 +701,18 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   const discardRecovery = useCallback(async (): Promise<PersistenceActionResult> => {
     if (!canUseStorage()) {
       setInitialHistory([])
+      setDurableEventCount(0)
+      setPendingEventCount(null)
+      setActiveSessionPersistFailed(false)
       setStoreEpoch((epoch) => epoch + 1)
       setBootPhase('ready')
       return { ok: false, message: 'Persistence is unavailable; starting with an empty in-memory session.' }
     }
     const result = await clearActiveSession(adapter)
     setInitialHistory([])
+    setDurableEventCount(0)
+    setPendingEventCount(null)
+    setActiveSessionPersistFailed(false)
     setStoreEpoch((epoch) => epoch + 1)
     setRecovery(null)
     setInvalidRecovery(null)
@@ -784,6 +893,9 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     invalidRecovery,
     leadership,
     durabilityStatus,
+    durableEventCount,
+    pendingEventCount,
+    activeSessionPersistFailed,
     ledgerStatus,
     ledgerMessage,
     currentCompletionSave,
@@ -795,6 +907,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     canDispatchSessionCommands: bootPhase === 'ready' && leadership !== 'follower',
     resume,
     discardRecovery,
+    retryActiveSessionPersist,
     refreshLibrary,
     saveCurrentDefinition,
     replaceCurrentDefinition,

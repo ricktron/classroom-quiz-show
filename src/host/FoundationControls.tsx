@@ -366,7 +366,23 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
         its siblings it is a bounded panel: it owns Final and nothing else, and it
         renders only when the current round IS a playable Final.
       */}
-      {game && <FinalWagerHostPanel dispatch={dispatch} game={game} clock={clock} />}
+      {game && (
+        <FinalWagerHostPanel
+          dispatch={dispatch}
+          game={game}
+          clock={clock}
+          eventHistoryLength={history.length}
+          activeSessionDurability={{
+            durableEventCount: persistence.durableEventCount,
+            pendingEventCount: persistence.pendingEventCount,
+            failed: persistence.activeSessionPersistFailed,
+            storageAvailable: persistence.durabilityStatus !== 'unavailable',
+          }}
+          onRetryActiveSessionPersist={() => {
+            void persistence.retryActiveSessionPersist(() => store.getHistory(), registry)
+          }}
+        />
+      )}
 
       {/*
         Local input & the buzz queue (Slice 8). A fourth bounded panel: it

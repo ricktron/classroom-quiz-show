@@ -219,6 +219,55 @@ describe('useHostPersistence', () => {
     expect(stored).toEqual({ ok: true, value: { kind: 'none' } })
   })
 
+  it('marks Final-relevant durability pending until the active-session write lands', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    const { api } = renderHarness(adapter)
+    await waitFor(() => expect(api().persistence.bootPhase).toBe('ready'))
+
+    const imported = importGameFromJsonText(CANONICAL_SAMPLE_FINAL_WAGER_FILE)
+    if (imported.status !== 'success') throw new Error('sample import failed')
+
+    await act(async () => {
+      api().dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 's1' })
+      api().dispatch({
+        type: 'INITIALIZE_GAME',
+        issuedAt: AT,
+        definition: imported.definition,
+      })
+    })
+
+    await waitFor(() => expect(api().persistence.pendingEventCount).toBeNull())
+    await waitFor(() =>
+      expect(api().persistence.durableEventCount).toBe(api().session.store.getHistory().length),
+    )
+    expect(api().persistence.activeSessionPersistFailed).toBe(false)
+
+    // Gate the next write so "Saved" cannot race ahead of durability.
+    let releaseWrite: (() => void) | null = null
+    const gate = new Promise<void>((resolve) => {
+      releaseWrite = resolve
+    })
+    const originalPut = adapter.withTransaction.bind(adapter)
+    vi.spyOn(adapter, 'withTransaction').mockImplementation(async (stores, work) => {
+      if (stores.includes(OBJECT_STORE_ACTIVE_SESSIONS)) {
+        await gate
+      }
+      return originalPut(stores, work)
+    })
+
+    await act(async () => {
+      api().dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: AT })
+    })
+    expect(api().persistence.pendingEventCount).toBe(api().session.store.getHistory().length)
+    expect(api().persistence.durableEventCount).toBeLessThan(api().session.store.getHistory().length)
+
+    await act(async () => {
+      releaseWrite?.()
+    })
+    await waitFor(() => expect(api().persistence.pendingEventCount).toBeNull())
+    expect(api().persistence.durableEventCount).toBe(api().session.store.getHistory().length)
+  })
+
   it('shows invalid recovery as fail-closed and still offers discard', async () => {
     const adapter = createMemoryPersistenceAdapter()
     await adapter.open()
