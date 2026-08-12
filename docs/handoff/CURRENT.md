@@ -178,7 +178,10 @@ defers to `AGENTS.md` and adds no separate authority.
 > is the **23-slice** plan per Amendment 004 (**merged** via PR #48). Slice 19
 > product delivery has since completed via PR #50; Slice 20 product delivery has
 > since completed via PR #52; Slice 21 product delivery has since completed via
-> PR #55; **current** remaining unauthorized product frontiers are Slices 22–23.
+> PR #55. At the time Amendment 003 was adopted, the remaining unauthorized
+> product frontiers were Slices 22–23. That historical statement has since been
+> superseded: Slice 22 is **Complete** and Slice 23 is currently **IN
+> QUALIFICATION / NOT TERMINAL**.
 > Post-MVP arcs remain inactive. Theme song remains
 > post-MVP. `CQS-OD-066` remains unresolved.
 

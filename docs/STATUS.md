@@ -1749,7 +1749,7 @@ merge and post-merge evidence in
 | Current-session-only lifecycle; no completed-session storage | Implemented |
 | No summary in `PublicState`, sync, projector, or portable export | Proven by tests |
 | Public-state wire / sync / game-file / persistence / IndexedDB versions | **Unchanged** (8 / 2 / 1 / 1 / 1) |
-| Inherited Final mid-refresh recovery flake | **Unresolved** (not caused/worsened by Slice 15) |
+| Inherited Final mid-refresh recovery flake | Unresolved at Slice 15 completion (not caused/worsened by Slice 15); later **CLOSED / REPAIRED / MERGED / VERIFIED** via PR [#61](https://github.com/ricktron/classroom-quiz-show/pull/61) |
 | Slice 16 ledger | **Complete** via PR [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) at `bc3cea65…` |
 | Slice 17 theme/tokens | **Complete** via PR [#44](https://github.com/ricktron/classroom-quiz-show/pull/44) at `dee2f3c…` |
 | Slice 18 audience display | **Complete** via PR [#46](https://github.com/ricktron/classroom-quiz-show/pull/46) at `91c7708…` |

@@ -10,7 +10,11 @@
 - **Parent authorization:** `AUTHORIZE-CQS-SLICE-23-CLASSROOM-RELEASE-QUALIFICATION-1`
 - **Reconciliation authorization:**
   `AUTHORIZE-CQS-SLICE-23-POST-REPAIR-EVIDENCE-RECONCILIATION-AND-RESUMPTION-PREP-1`
+- **Correction authorization:**
+  `AUTHORIZE-CQS-SLICE-23-PR64-FRONTIER-DOCUMENT-CONTRADICTION-CORRECTION-1`
 - **Evidence-state ID:** `CQS-SLICE-23-POST-REPAIR-EVIDENCE-RECONCILIATION-ES-1`
+- **Correction evidence-state ID:**
+  `CQS-SLICE-23-PR64-FRONTIER-DOCUMENT-CONTRADICTION-CORRECTION-ES-1`
 - **Kind:** documentation / evidence reconciliation only (**STOP BEFORE MERGE**)
 - **Repository:** `ricktron/classroom-quiz-show`
 - **Worktree:** `/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show-slice23-recon`
@@ -55,10 +59,11 @@ PASS; `CI=1 npm run verify:all` PASS; **143** unit files / **2424** passed /
 
 ## Files changed
 
-1. `docs/qualification/SLICE-23-QUALIFICATION-PLAN.md` (new canonical record)
-2. `docs/STATUS.md`
-3. `docs/handoff/CURRENT.md`
-4. `docs/receipts/2026-08-11-slice-23-post-repair-evidence-reconciliation.md` (this file)
+1. `README.md` (living current-status frontier; added by PR #64 frontier-document contradiction correction)
+2. `docs/qualification/SLICE-23-QUALIFICATION-PLAN.md` (new canonical record)
+3. `docs/STATUS.md`
+4. `docs/handoff/CURRENT.md`
+5. `docs/receipts/2026-08-11-slice-23-post-repair-evidence-reconciliation.md` (this file)
 
 No product code, tests, dependencies, workflows, or deployment config.
 
@@ -138,7 +143,8 @@ record. Separate explicit closure only after this reconciliation merges.
 
 - Ordinary repository `verify`/`verify:all` was **not** re-run as new
   qualification evidence in this docs lane.
-- MVP-ARC / README / other historical planning docs were **not** mutated; STATUS
-  owns current slice status. Any remaining “Slice 23 Planned/unauthorized”
-  wording outside the changed paths is historical planning text, not this
-  reconciliation’s current frontier.
+- `README.md` is a living current-status surface and is included in this
+  reconciliation PR so it agrees with STATUS / CURRENT / the qualification plan.
+  Remaining “Slice 23 Planned/unauthorized” wording in MVP-ARC, Amendment 004,
+  and historical receipts is historical planning text, not this reconciliation’s
+  current frontier.
