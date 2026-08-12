@@ -562,14 +562,19 @@ Repair lanes PR [#61](https://github.com/ricktron/classroom-quiz-show/pull/61)
 reset / M1), and reconciliation
 [#64](https://github.com/ricktron/classroom-quiz-show/pull/64) are **TERMINAL**.
 Historical PR [#60](https://github.com/ricktron/classroom-quiz-show/pull/60) is
-**CLOSED / UNMERGED / HISTORICAL / SUPERSEDED**. Broad Stages D–I executable
-qualification has resumed; **owner evidence is still owed** (screen reader,
-physical projector/audio, Sony smoke, PWA install, owner-live). See
+**CLOSED / UNMERGED / HISTORICAL / SUPERSEDED**. Broad Stages D–I are
+**executed**; owner evidence is **complete** (VoiceOver, physical
+projector/audio, Sony smoke, installed PWA/owner-live). Verdict:
+`CQS_S23_D_I_QUALIFICATION_REVIEW_READY`. Qualification evidence PR
+[#65](https://github.com/ricktron/classroom-quiz-show/pull/65) is **OPEN /
+UNMERGED** and ready for fresh independent exact-head review — Slice 23 is
+**not** terminal. See
 [`docs/receipts/2026-08-12-slice-23-broad-d-i-qualification.md`](docs/receipts/2026-08-12-slice-23-broad-d-i-qualification.md).
-Known LOW debt **F-UX-01** (`CQS-Q23-LOW-01`) remains open. Theme song remains
-post-MVP. The inherited Final mid-refresh durability race is **CLOSED** via
-PR #61. `CQS-OD-066` remains unresolved. Required post-Slice-23 MVP
-functionality has **not** begun. **OVERALL CQS MVP is NOT COMPLETE.** See
+Known LOW debt **F-UX-01** (`CQS-Q23-LOW-01`) and **LOW-02** remain open;
+`CLASS-B-01` remains Class B. Theme song remains post-MVP. The inherited Final
+mid-refresh durability race is **CLOSED** via PR #61. `CQS-OD-066` remains
+unresolved. Required post-Slice-23 MVP functionality (including C-3 desktop
+packaging) has **not** begun. **OVERALL CQS MVP is NOT COMPLETE.** See
 [`docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md`](docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md),
 [`docs/architecture/ADR-020-minimal-presentation-audio.md`](docs/architecture/ADR-020-minimal-presentation-audio.md),
 [`docs/receipts/2026-08-10-slice-22-minimal-presentation-audio-implementation.md`](docs/receipts/2026-08-10-slice-22-minimal-presentation-audio-implementation.md),
