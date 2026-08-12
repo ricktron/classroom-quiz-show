@@ -2,27 +2,28 @@
 
 **Current completed product slice:** Slice 22 — Minimal Presentation Audio
 **Slice 23 state:** **IN QUALIFICATION / NOT TERMINAL** — Classroom Release
-Qualification is authorized and in progress on repaired canonical `main`
-`22647fdc004d5e60aee2903c38cd8079731e63af`. Broad Stages D–I have **not**
-resumed. Three terminal repair lanes are **CLOSED / MERGED / POST-MERGE
-VERIFIED**: PR [#61](https://github.com/ricktron/classroom-quiz-show/pull/61)
-Final wager durability (`cd5f5580b6befa0b268a5227f60c67d09d512b05`); PR
-[#62](https://github.com/ricktron/classroom-quiz-show/pull/62) teacher first-run
-surface (`b5c91c05dd081cac9e7d25ff41175830f8ba9ef4`); PR
-[#63](https://github.com/ricktron/classroom-quiz-show/pull/63) aggregate
-local-data reset (`22647fdc004d5e60aee2903c38cd8079731e63af`). Historical
-qualification evidence remains in open PR
-[#60](https://github.com/ricktron/classroom-quiz-show/pull/60) head
-`6a6d34430fc765e9a63fa9bd2eac073e6b4ef201` (superseded for current product
-state; pending safe closure after canonical reconciliation merges). Canonical
-qualification record:
+Qualification resumed on canonical `main`
+`06f486c952bb40f03e376839b04a7b72bab6d0c3` (PR
+[#64](https://github.com/ricktron/classroom-quiz-show/pull/64) reconciliation
+squash). Broad Stages D–I executable work is **IN PROGRESS / PARTIAL** —
+non-owner gates largely dispositioned; **owner evidence still owed** (screen
+reader, physical projector/audio, Sony hardware smoke, PWA install, owner-live
+deploy path). Verdict so far:
+`CQS_S23_D_I_OWNER_EVIDENCE_REQUIRED`. Terminal repair lanes remain **CLOSED /
+MERGED / POST-MERGE VERIFIED**: PR
+[#61](https://github.com/ricktron/classroom-quiz-show/pull/61),
+[#62](https://github.com/ricktron/classroom-quiz-show/pull/62),
+[#63](https://github.com/ricktron/classroom-quiz-show/pull/63). Historical
+qualification PR [#60](https://github.com/ricktron/classroom-quiz-show/pull/60)
+is **CLOSED / UNMERGED / HISTORICAL / SUPERSEDED** (head
+`6a6d34430fc765e9a63fa9bd2eac073e6b4ef201`). Canonical qualification record:
 [`qualification/SLICE-23-QUALIFICATION-PLAN.md`](qualification/SLICE-23-QUALIFICATION-PLAN.md).
-Reconciliation receipt:
-[`receipts/2026-08-11-slice-23-post-repair-evidence-reconciliation.md`](receipts/2026-08-11-slice-23-post-repair-evidence-reconciliation.md).
+D–I resumption receipt:
+[`receipts/2026-08-12-slice-23-broad-d-i-qualification.md`](receipts/2026-08-12-slice-23-broad-d-i-qualification.md).
 **OVERALL CQS MVP is NOT COMPLETE.** Post-Slice-23 required MVP functionality
 is **not begun**. Closed findings: BLOCKER-01, BLOCKER-02, HIGH-01, HIGH-02,
 HIGH-03, Final durability race, M1. Open: `LOW-01` / `F-UX-01`, `LOW-02`,
-`CLASS-B-01`, remaining D–I gates, `CQS-OD-066` unresolved.
+`CLASS-B-01`, owner D–I gates, `CQS-OD-066` unresolved.
 **Slice 20 state:** **Complete** — PR
 [#52](https://github.com/ricktron/classroom-quiz-show/pull/52) was exact-head
 squash-merged at `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0` (merged
@@ -271,7 +272,7 @@ public-state wire **8**; sync envelope **2**; canonical game-file schema **1**;
 GameDefinition model **1**; private active-session wire **1**; Session Summary
 contract **1**; completed-summary envelope **1**; competitive profile **1**.
 Known LOW polish debt **F-UX-01** remains retained (`CQS-Q23-LOW-01`). Slice 23
-is **IN QUALIFICATION / NOT TERMINAL** on canonical `main` `22647fdc…`; see
+is **IN QUALIFICATION / NOT TERMINAL** on canonical `main` `06f486c…`; see
 [`qualification/SLICE-23-QUALIFICATION-PLAN.md`](qualification/SLICE-23-QUALIFICATION-PLAN.md).
 Slice 22 product evidence remains:
 [`architecture/ADR-020-minimal-presentation-audio.md`](architecture/ADR-020-minimal-presentation-audio.md),
@@ -553,8 +554,8 @@ warranted.
 
 **Current next action (repository frontier):** Slice 23 — Classroom Release
 Qualification is **IN QUALIFICATION / NOT TERMINAL** on canonical `main`
-`22647fdc004d5e60aee2903c38cd8079731e63af`. Repair lanes PR #61 / #62 / #63 are
-terminal. Broad Stages D–I have **not** resumed. After this reconciliation
+`06f486c952bb40f03e376839b04a7b72bab6d0c3`. Repair lanes PR #61 / #62 / #63 / #64 are
+terminal. Broad Stages D–I executable work has **resumed**; owner evidence still owed. After this reconciliation
 merges, resume D–I from the repaired base per
 [`qualification/SLICE-23-QUALIFICATION-PLAN.md`](qualification/SLICE-23-QUALIFICATION-PLAN.md).
 Slice 22 remains terminally **`Complete`** on `main` via PR
@@ -646,10 +647,10 @@ satisfied and then consumed by completed Slices 17–18 (PR #44, PR #46). Slice 
 has since completed via PR #50. Slice 20 has since completed via PR #52. Slice 21
 has since completed via PR #55. Slice 22 has since completed via PR #58. The
 current MVP frontier is Slice 23 — Classroom Release Qualification (**IN
-QUALIFICATION / NOT TERMINAL** on `22647fdc…`; repairs terminal; broad D–I not
+QUALIFICATION / NOT TERMINAL** on `06f486c…`; repairs terminal; broad D–I partial / owner owed
 yet resumed) — not further review of PR #36, PR #38, PR #40, PR #41, PR #44,
 PR #46, PR #50, PR #52, PR #55, PR #58, PR #61, PR #62, or PR #63. PR #60
-remains open as historical qualification evidence pending safe closure after
+is **CLOSED / UNMERGED / HISTORICAL / SUPERSEDED** (no longer pending closure). Historical note after
 this reconciliation merges.
 
 ## Slice 14 merge evidence
@@ -1757,7 +1758,7 @@ merge and post-merge evidence in
 | Slice 20 spreadsheet authoring seed | **Complete** via PR [#52](https://github.com/ricktron/classroom-quiz-show/pull/52) at `86e8f5e…` |
 | Slice 21 Sony Buzz supported profile | **Complete** via PR [#55](https://github.com/ricktron/classroom-quiz-show/pull/55) at `b1e6d66…` |
 | Slice 22 Minimal Presentation Audio | **Complete** via PR [#58](https://github.com/ricktron/classroom-quiz-show/pull/58) at `e69e81b…` |
-| Slice 23 Classroom Release Qualification | **IN QUALIFICATION / NOT TERMINAL** on `22647fdc…`; repairs PR #61/#62/#63 terminal; broad D–I not resumed |
+| Slice 23 Classroom Release Qualification | **IN QUALIFICATION / NOT TERMINAL** on `06f486c…`; repairs PR #61/#62/#63/#64 terminal; D–I partial / owner evidence owed |
 | Post-Slice-23 MVP continuation | **Exists / not begun** |
 | Post-MVP arcs / `CQS-OD-066` | **Inactive / unresolved** |
 
@@ -1892,9 +1893,9 @@ that reconciliation adds evidence only and grants **no** product authority.
 independently review and merge this Slice 23 post-repair evidence
 reconciliation (docs-only). Do **not** merge it from this STATUS text alone.
 After merge/verification, resume Slice 23 broad qualification Stages D–I from
-canonical `main` `22647fdc004d5e60aee2903c38cd8079731e63af`. Slice 22 remains
+canonical `main` `06f486c952bb40f03e376839b04a7b72bab6d0c3`. Slice 22 remains
 terminally **`Complete`** via PR #58; **PR #58 / #61 / #62 / #63 require no
-further product review or merge action**. PR #60 remains **open** as historical
+further product review or merge action**. PR #60 is **CLOSED / UNMERGED / HISTORICAL / SUPERSEDED**. Historical
 qualification evidence until a separate explicit closure after this
 reconciliation merges. Do **not** declare Slice 23 terminal, do **not** execute
 D–I from this STATUS surface, do **not** repair `LOW-01` / `F-UX-01` here, and

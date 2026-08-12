@@ -81,21 +81,24 @@ see
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32)).
 **Slice 13 — Local persistence & recovery is `Complete`** (PR #27).
 **Slice 23 — Classroom Release Qualification is `IN QUALIFICATION / NOT
-TERMINAL`** on canonical `main` `22647fdc004d5e60aee2903c38cd8079731e63af`
+TERMINAL`** on canonical `main` `06f486c952bb40f03e376839b04a7b72bab6d0c3`
 under the **23-slice** MVP plan amended by
 [`../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md)
 (`CQS-PLAN-S03`, documentation-only). Repair lanes PR
 [#61](https://github.com/ricktron/classroom-quiz-show/pull/61),
-[#62](https://github.com/ricktron/classroom-quiz-show/pull/62), and
-[#63](https://github.com/ricktron/classroom-quiz-show/pull/63) are **CLOSED /
-MERGED / POST-MERGE VERIFIED**. Broad Stages D–I have **not** resumed.
-Canonical qualification record:
+[#62](https://github.com/ricktron/classroom-quiz-show/pull/62),
+[#63](https://github.com/ricktron/classroom-quiz-show/pull/63), and
+reconciliation PR [#64](https://github.com/ricktron/classroom-quiz-show/pull/64)
+are **TERMINAL**. Broad Stages D–I executable qualification has **resumed**;
+non-owner gates are largely dispositioned; **owner evidence is still owed**.
+Current packet verdict: `CQS_S23_D_I_OWNER_EVIDENCE_REQUIRED`. Canonical
+qualification record:
 [`../qualification/SLICE-23-QUALIFICATION-PLAN.md`](../qualification/SLICE-23-QUALIFICATION-PLAN.md).
-Reconciliation receipt:
-[`../receipts/2026-08-11-slice-23-post-repair-evidence-reconciliation.md`](../receipts/2026-08-11-slice-23-post-repair-evidence-reconciliation.md).
+D–I receipt:
+[`../receipts/2026-08-12-slice-23-broad-d-i-qualification.md`](../receipts/2026-08-12-slice-23-broad-d-i-qualification.md).
 Historical qualification PR [#60](https://github.com/ricktron/classroom-quiz-show/pull/60)
-(`6a6d34430fc765e9a63fa9bd2eac073e6b4ef201`) remains **open** — superseded for
-current product state; pending safe closure after this reconciliation merges.
+(`6a6d34430fc765e9a63fa9bd2eac073e6b4ef201`) is **CLOSED / UNMERGED /
+HISTORICAL / SUPERSEDED**.
 **Amendment 004 is merged and canonical** via PR
 [#48](https://github.com/ricktron/classroom-quiz-show/pull/48).
 **PR #48 requires no further review or merge action.** CQS-PLAN-S03
@@ -107,11 +110,11 @@ Slices 1–22 are Complete. Phase 2B’s MVP consumers (Slices 17–18) are both
 `Complete`. Phase 3 design-system readiness has served the theme-foundation →
 audience-display sequence
 ([`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)).
-**Recommended next action:** independently review and merge this Slice 23
-post-repair evidence reconciliation (docs-only). After merge/verification,
-resume Stages D–I from `22647fdc…`. Do **not** declare Slice 23 terminal, do
-**not** execute D–I from this handoff, do **not** close PR #60 yet, do **not**
-repair `LOW-01` / `F-UX-01`, and do **not** begin post-Slice-23 MVP
+**Recommended next action:** complete the compact owner evidence checklist for
+Stages F (VoiceOver), G (physical projector/audio), H (Sony smoke), and I
+(PWA install + owner-live deploy). Then return results to the Slice
+Orchestrator for D–I disposition. Do **not** declare Slice 23 terminal, do
+**not** repair `LOW-01` / `F-UX-01`, and do **not** begin post-Slice-23 MVP
 functionality. Theme song remains post-MVP. `CQS-OD-066` remains unresolved.
 The inherited Final mid-refresh durability race is **CLOSED** via PR #61.
 Known LOW debt **F-UX-01** (`CQS-Q23-LOW-01`) is retained polish. `LOW-02` and
@@ -473,7 +476,7 @@ defers to `AGENTS.md` and adds no separate authority.
   [`../receipts/2026-08-10-slice-22-post-merge-canonical-reconciliation.md`](../receipts/2026-08-10-slice-22-post-merge-canonical-reconciliation.md).
   **PR #58 requires no further product review or merge action.**
 - **Slice 23 — Classroom Release Qualification:** **`IN QUALIFICATION / NOT
-  TERMINAL`** on canonical `main` `22647fdc004d5e60aee2903c38cd8079731e63af`.
+  TERMINAL`** on canonical `main` `06f486c952bb40f03e376839b04a7b72bab6d0c3`.
   Repairs PR #61 / #62 / #63 terminal; broad D–I not yet resumed. PR #60
   historical / superseded / still open pending canonical reconciliation merge.
   See [`../qualification/SLICE-23-QUALIFICATION-PLAN.md`](../qualification/SLICE-23-QUALIFICATION-PLAN.md).
@@ -1161,10 +1164,10 @@ theme-foundation → audience-display sequence.
 **Recommended next action:**
 independently review and merge this Slice 23 post-repair evidence
 reconciliation. After merge/verification, resume Slice 23 broad qualification
-Stages D–I from canonical `main` `22647fdc004d5e60aee2903c38cd8079731e63af`.
-Slice 23 is **IN QUALIFICATION / NOT TERMINAL**. PR #60 remains open as
+Stages D–I owner evidence on canonical `main` `06f486c952bb40f03e376839b04a7b72bab6d0c3`.
+Slice 23 is **IN QUALIFICATION / NOT TERMINAL**. PR #60 is CLOSED/UNMERGED/HISTORICAL/SUPERSEDED; prior note as
 historical evidence until a separate explicit closure. This handoff grants
-**no** authority to declare Slice 23 terminal, execute D–I here, close PR #60,
+**no** authority to declare Slice 23 terminal, or begin post-Slice-23 work here; PR #60 already closed;
 repair `LOW-01` / `F-UX-01`, or begin post-Slice-23 MVP functionality.
 Post-MVP arcs remain inactive. Theme song remains post-MVP. `CQS-OD-066`
 remains unresolved. The inherited Final mid-refresh durability race is
@@ -1300,7 +1303,7 @@ PR #46, `91c7708…`). Slice 19 is **`Complete`** (PR #50, `95573e2…`). Slice 
 is **`Complete`** (PR #52, `86e8f5e6…`). Slice 21 is **`Complete`** (PR #55,
 `b1e6d66…`). Slice 22 is **`Complete`** (PR #58, `e69e81b…`). The immediate
 MVP frontier is **Slice 23 — Classroom Release Qualification** (`IN
-QUALIFICATION / NOT TERMINAL` on `22647fdc…`; repairs terminal; broad D–I not
+QUALIFICATION / NOT TERMINAL` on `06f486c…`; repairs terminal; broad D–I partial / owner owed
 yet resumed).
 Slice 13 is **`Complete`**
 (PR #27, `6cf4d25…`). Slice 12 is **`Complete`** (PR #25, `cdb499a…`). Slice 11

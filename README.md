@@ -551,19 +551,25 @@ Host-only presentation cues (`active-claim` · `positive-award` · `incorrect` �
 **PR #58 requires no further product review or merge action.** Slices 1–22 are
 Complete. Slice 23 — Classroom Release Qualification is **IN QUALIFICATION /
 NOT TERMINAL** on canonical `main`
-`22647fdc004d5e60aee2903c38cd8079731e63af` under the **23-slice** MVP plan
+`06f486c952bb40f03e376839b04a7b72bab6d0c3` under the **23-slice** MVP plan
 ([`docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md);
 prior Amendment 003:
 [`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
 Repair lanes PR [#61](https://github.com/ricktron/classroom-quiz-show/pull/61)
 (Final wager durability), [#62](https://github.com/ricktron/classroom-quiz-show/pull/62)
-(teacher first-run / HIGH-01 / HIGH-02), and
+(teacher first-run / HIGH-01 / HIGH-02),
 [#63](https://github.com/ricktron/classroom-quiz-show/pull/63) (HIGH-03 aggregate
-reset / M1) are **TERMINAL**. Broad Stages D–I have **not** resumed. Known LOW
-debt **F-UX-01** (`CQS-Q23-LOW-01`) remains open. Theme song remains post-MVP.
-The inherited Final mid-refresh durability race is **CLOSED** via PR #61.
-`CQS-OD-066` remains unresolved. Required post-Slice-23 MVP functionality has
-**not** begun. **OVERALL CQS MVP is NOT COMPLETE.** See
+reset / M1), and reconciliation
+[#64](https://github.com/ricktron/classroom-quiz-show/pull/64) are **TERMINAL**.
+Historical PR [#60](https://github.com/ricktron/classroom-quiz-show/pull/60) is
+**CLOSED / UNMERGED / HISTORICAL / SUPERSEDED**. Broad Stages D–I executable
+qualification has resumed; **owner evidence is still owed** (screen reader,
+physical projector/audio, Sony smoke, PWA install, owner-live). See
+[`docs/receipts/2026-08-12-slice-23-broad-d-i-qualification.md`](docs/receipts/2026-08-12-slice-23-broad-d-i-qualification.md).
+Known LOW debt **F-UX-01** (`CQS-Q23-LOW-01`) remains open. Theme song remains
+post-MVP. The inherited Final mid-refresh durability race is **CLOSED** via
+PR #61. `CQS-OD-066` remains unresolved. Required post-Slice-23 MVP
+functionality has **not** begun. **OVERALL CQS MVP is NOT COMPLETE.** See
 [`docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md`](docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md),
 [`docs/architecture/ADR-020-minimal-presentation-audio.md`](docs/architecture/ADR-020-minimal-presentation-audio.md),
 [`docs/receipts/2026-08-10-slice-22-minimal-presentation-audio-implementation.md`](docs/receipts/2026-08-10-slice-22-minimal-presentation-audio-implementation.md),

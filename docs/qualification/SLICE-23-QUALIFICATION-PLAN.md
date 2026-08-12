@@ -4,12 +4,17 @@
 **Parent authorization:** `AUTHORIZE-CQS-SLICE-23-CLASSROOM-RELEASE-QUALIFICATION-1`
 **Reconciliation authorization:**
 `AUTHORIZE-CQS-SLICE-23-POST-REPAIR-EVIDENCE-RECONCILIATION-AND-RESUMPTION-PREP-1`
-**Evidence-state ID:** `CQS-SLICE-23-POST-REPAIR-EVIDENCE-RECONCILIATION-ES-1`
+**D–I resumption authorization:**
+`AUTHORIZE-CQS-SLICE-23-BROAD-STAGES-D-I-QUALIFICATION-RESUMPTION-1`
+**Evidence-state ID (current frontier):**
+`CQS-SLICE-23-BROAD-STAGES-D-I-QUALIFICATION-RESUMPTION-ES-1`
+**Prior reconciliation evidence-state:**
+`CQS-SLICE-23-POST-REPAIR-EVIDENCE-RECONCILIATION-ES-1`
 **Canonical qualification record on repaired `main`.**
 
-> **How to read this document.** Sections 1–12 are the **CURRENT POST-REPAIR
-> QUALIFICATION STATE** at canonical `main`
-> `22647fdc004d5e60aee2903c38cd8079731e63af`. Section 13 preserves **HISTORICAL
+> **How to read this document.** Sections 1–12 are the **CURRENT POST-REPAIR /
+> D–I RESUMPTION STATE** at canonical `main`
+> `06f486c952bb40f03e376839b04a7b72bab6d0c3`. Section 13 preserves **HISTORICAL
 > PRE-REPAIR EVIDENCE** from PR
 > [#60](https://github.com/ricktron/classroom-quiz-show/pull/60) head
 > `6a6d34430fc765e9a63fa9bd2eac073e6b4ef201`, originally observed against
@@ -18,10 +23,13 @@
 > history; they are **not** current product-state conclusions.
 
 > **This document establishes no classroom-release PASS.** Slice 23 is **IN
-> QUALIFICATION / NOT TERMINAL**. Broad Stages D–I have **not** been executed
-> on the repaired base. The overall CQS MVP is **NOT COMPLETE**. No product
-> code, test, dependency, workflow, or deployment configuration is changed by
-> this reconciliation.
+> QUALIFICATION / NOT TERMINAL**. Broad Stages D–I executable work has
+> **resumed**; owner-required gates remain. Current packet verdict:
+> `CQS_S23_D_I_OWNER_EVIDENCE_REQUIRED`. See
+> [`../receipts/2026-08-12-slice-23-broad-d-i-qualification.md`](../receipts/2026-08-12-slice-23-broad-d-i-qualification.md).
+> The overall CQS MVP is **NOT COMPLETE**. No product code, test, dependency,
+> workflow, or deployment configuration is changed by this qualification
+> evidence lane.
 
 ---
 
@@ -29,15 +37,18 @@
 
 | Item | Current value |
 | --- | --- |
-| Canonical `main` | `22647fdc004d5e60aee2903c38cd8079731e63af` |
+| Canonical `main` | `06f486c952bb40f03e376839b04a7b72bab6d0c3` |
 | Slices 1–22 | **COMPLETE** |
 | Slice 23 | **IN QUALIFICATION / NOT TERMINAL** |
 | Final wager durability (PR #61) | **CLOSED / MERGED / POST-MERGE VERIFIED** |
 | Teacher first-run surface (PR #62) | **CLOSED / MERGED / POST-MERGE VERIFIED** |
 | Aggregate local-data reset (PR #63) | **CLOSED / MERGED / POST-MERGE VERIFIED** |
+| Post-repair reconciliation (PR #64) | **CLOSED / MERGED / POST-MERGE VERIFIED** |
+| Historical qualification PR #60 | **CLOSED / UNMERGED / HISTORICAL / SUPERSEDED** |
 | OVERALL CQS MVP | **NOT COMPLETE** |
 | Required post-Slice-23 MVP continuation | still exists / **not begun** in this packet |
 | Post-MVP arcs | **inactive** |
+| D–I packet verdict (so far) | `CQS_S23_D_I_OWNER_EVIDENCE_REQUIRED` |
 
 Contract versions at this base (unchanged by this docs lane; held from
 `docs/STATUS.md` / repaired product):
@@ -118,7 +129,7 @@ from the teacher path; teacher quick start added
 | Authorized base | `b5c91c05dd081cac9e7d25ff41175830f8ba9ef4` |
 | Rejected head (historical) | `6f38f48181fb9f7a6578d4adc02d0d98734ccb08` |
 | Corrected / accepted head | `c430c1fcd21b61ea67092a542fe0630631e98c9e` |
-| Squash / current canonical `main` | `22647fdc004d5e60aee2903c38cd8079731e63af` |
+| Squash (ancestor of current `main`) | `22647fdc004d5e60aee2903c38cd8079731e63af` |
 | Merge | **2026-08-12T01:23:39Z** |
 | Lane | **TERMINAL** |
 
@@ -144,17 +155,17 @@ claim that broad D–I already ran.
 
 | Stage | Content | Current disposition |
 | --- | --- | --- |
-| **A** | Canonical / preflight | **CURRENT BASE RE-ESTABLISHED** — canonical `main` = `22647fdc…`. Prior provenance evidence retained historically (§13). |
-| **B** | Clean automated baseline | **CURRENT GREEN EVIDENCE EXISTS** (PR #63 post-merge; see §4.1). Do not claim a separate matrix not actually executed in this reconciliation packet. |
-| **C** | Clean-teacher first launch | **PRE-REPAIR BLOCKERS CLOSED.** PR #62 clean-teacher regression evidence transfers. Current clean-teacher E2E remains green after PR #63. The §71 hard stop caused by BLOCKER-01/02 is therefore **CLEARED FOR QUALIFICATION RESUMPTION**. §71 **did fire historically** (§13.9) and is not rewritten as never having fired. |
-| **D** | Import / authoring / pack / data lifecycle | **NOT YET BROADLY RUN POST-REPAIR.** Transferred: teacher loading path repaired/verified; aggregate reset repaired/verified; reset E2E current. These do **not** automatically satisfy all of Stage D. |
-| **E** | Gameplay / Final / undo / recovery | **NOT YET BROADLY RUN POST-REPAIR.** Transferred: Final immediate-refresh durability repair verified; full automated e2e current. Do **not** substitute focused Final evidence for all gameplay/recovery qualification. |
-| **F** | Presentation / accessibility / themes / screen reader | **NOT YET RUN / DISPOSITIONED** as a broad Slice 23 gate. |
-| **G** | Physical projector / viewing distance / audio | **OWNER-ASSISTED / NOT YET RUN AS SLICE 23 GATE.** Slice 22 owner listening transfers only where causally valid. |
-| **H** | Supported Sony profile | **PRIOR SLICE 21 PHYSICAL EVIDENCE TRANSFERS** where causally valid. Focused current integration/qualification remains to run. Fourth-handset unavailable evidence is **not** automatically reopened. `F-UX-01` remains **LOW**. |
-| **I** | Deployment / PWA / update / offline / reset | **PARTIAL EVIDENCE ONLY.** Reset subgate: **REPAIRED / VERIFIED** via PR #63. Deployment / PWA install / update / offline / deployed-commit and owner live-deployment gates: **STILL TO RUN**. |
-| **J** | Findings / limitations / continuation | **ACTIVE / UPDATED BY THIS RECONCILIATION.** |
-| **K** | Repair loops | **THREE TERMINAL REPAIR LANES COMPLETE:** PR #61, PR #62, PR #63. Additional repair only if new qualification evidence requires it. |
+| **A** | Canonical / preflight | **CURRENT BASE RE-ESTABLISHED** — canonical `main` = `06f486c…` (PR #64). |
+| **B** | Clean automated baseline | **CURRENT GREEN** — local `npm run verify` + build on `06f486c…`; CI run `31618313458` success. Local full e2e first attempt harness-interrupted (`ERR_CONNECTION_REFUSED`); do not treat as product Class A. |
+| **C** | Clean-teacher first launch | **PASS / CLEARED.** §71 cleared for resumption; clean-teacher path re-verified post-repair. |
+| **D** | Import / authoring / pack / data lifecycle | **PASS** (executable). See 2026-08-12 D–I receipt. |
+| **E** | Gameplay / Final / undo / recovery | **PASS** (executable). Final immediate-refresh durability re-verified. |
+| **F** | Presentation / accessibility / themes / screen reader | **PARTIAL** — keyboard/semantic/themes/resolutions PASS; **actual screen reader OWNER EVIDENCE REQUIRED**. |
+| **G** | Physical projector / viewing distance / audio | **OWNER EVIDENCE REQUIRED.** Slice 22 listening transfers for cue content; release routing owed. |
+| **H** | Supported Sony profile | **TRANSFER + OWNER SMOKE OWED.** Slice 21 physical evidence transfers; current hardware smoke not fabricated. `F-UX-01` remains **LOW**. |
+| **I** | Deployment / PWA / update / offline / reset | **PARTIAL** — deployed provenance/golden path/offline shell/reset PASS; PWA install + owner-live + full update simulation **OWED**. `CLASS-B-01` retained; `LOW-02` measured/retained. |
+| **J** | Findings / limitations / continuation | **ACTIVE** — no new Class A; Class B / LOW / OD-066 unchanged in severity. |
+| **K** | Repair loops | **FOUR TERMINAL LANES COMPLETE:** PR #61–#64. No new repair authorized from this packet. |
 | **L** | Terminal independent review | **NOT REACHED.** |
 
 ### 4.1 Stage B — transferred PR #63 post-merge baseline
@@ -189,7 +200,7 @@ Do not treat this reconciliation as new substantive D–I qualification evidence
 | PR #63 | Aggregate reset / retention-deletion / M1 correction evidence |
 | Slice 21 | Physical Sony controller evidence, causally unaffected |
 | Slice 22 | Owner listening evidence, causally unaffected |
-| Current `verify:all` | Canonical repaired product baseline at `22647fdc…` |
+| Current `verify:all` | Canonical repaired product baseline (PR #63 post-merge at `22647fdc…`; current main `06f486c…` CI also green) |
 
 ### HISTORICAL ONLY
 
@@ -275,28 +286,29 @@ decision. **Do not resolve it here.**
 
 ## 9. PR #60 disposition
 
-PR [#60](https://github.com/ricktron/classroom-quiz-show/pull/60) is **not
-modified by this packet.**
+PR [#60](https://github.com/ricktron/classroom-quiz-show/pull/60) is **historical
+only** and must not be treated as current product state.
 
 | Item | Value |
 | --- | --- |
 | Role | **HISTORICAL QUALIFICATION-EVIDENCE PR** |
 | Current product-state role | **SUPERSEDED FOR CURRENT PRODUCT STATE** |
-| Closure | **PENDING SAFE CLOSURE AFTER CANONICAL RECONCILIATION MERGES** |
-| State observed at reconciliation | **OPEN**, non-draft, unmerged |
+| Closure | **CLOSED / UNMERGED / HISTORICAL / SUPERSEDED** (closed **2026-08-12T20:45:09Z**; `mergedAt` null) |
 | Head | `6a6d34430fc765e9a63fa9bd2eac073e6b4ef201` |
 | Base (stale vs repaired `main`) | `c047ca71640c3d717eacd1092a899ca6d16b2115` |
 
 PR #60 contains valuable historical evidence but is based on pre-repair `main`
-and now conflicts with repaired canonical `main`. It must **NOT** be:
+and conflicts with repaired canonical `main`. It must **NOT** be:
 
 - rebased;
 - force-updated;
 - merged into repaired `main`;
 - used as the current qualification record.
 
-After **this** reconciliation PR is independently reviewed and merged, PR #60
-may be closed as superseded under a **separate explicit closure action**.
+Living frontier docs must **not** describe PR #60 as still pending closure.
+Current canonical qualification evidence lives on `main` at `06f486c…` plus the
+D–I resumption receipt
+[`../receipts/2026-08-12-slice-23-broad-d-i-qualification.md`](../receipts/2026-08-12-slice-23-broad-d-i-qualification.md).
 
 ---
 
