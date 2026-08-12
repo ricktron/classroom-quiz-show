@@ -80,11 +80,24 @@ see
 **Slice 14 — Final-wager round is `Complete`** (PR
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32)).
 **Slice 13 — Local persistence & recovery is `Complete`** (PR #27).
-**Slice 23 remains `Planned` and unauthorized / not started** under the
-**23-slice** MVP plan amended by
+**Slice 23 — Classroom Release Qualification is `IN QUALIFICATION / NOT
+TERMINAL`** on canonical `main` `22647fdc004d5e60aee2903c38cd8079731e63af`
+under the **23-slice** MVP plan amended by
 [`../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md)
-(`CQS-PLAN-S03`, documentation-only). **Amendment 004 is merged and canonical**
-via PR [#48](https://github.com/ricktron/classroom-quiz-show/pull/48).
+(`CQS-PLAN-S03`, documentation-only). Repair lanes PR
+[#61](https://github.com/ricktron/classroom-quiz-show/pull/61),
+[#62](https://github.com/ricktron/classroom-quiz-show/pull/62), and
+[#63](https://github.com/ricktron/classroom-quiz-show/pull/63) are **CLOSED /
+MERGED / POST-MERGE VERIFIED**. Broad Stages D–I have **not** resumed.
+Canonical qualification record:
+[`../qualification/SLICE-23-QUALIFICATION-PLAN.md`](../qualification/SLICE-23-QUALIFICATION-PLAN.md).
+Reconciliation receipt:
+[`../receipts/2026-08-11-slice-23-post-repair-evidence-reconciliation.md`](../receipts/2026-08-11-slice-23-post-repair-evidence-reconciliation.md).
+Historical qualification PR [#60](https://github.com/ricktron/classroom-quiz-show/pull/60)
+(`6a6d34430fc765e9a63fa9bd2eac073e6b4ef201`) remains **open** — superseded for
+current product state; pending safe closure after this reconciliation merges.
+**Amendment 004 is merged and canonical** via PR
+[#48](https://github.com/ricktron/classroom-quiz-show/pull/48).
 **PR #48 requires no further review or merge action.** CQS-PLAN-S03
 planning/merge authority is exhausted. Prior Amendment 003
 ([`../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](../decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md),
@@ -94,15 +107,16 @@ Slices 1–22 are Complete. Phase 2B’s MVP consumers (Slices 17–18) are both
 `Complete`. Phase 3 design-system readiness has served the theme-foundation →
 audience-display sequence
 ([`../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md`](../plans/CQS-PHASE-3-DESIGN-SYSTEM-READINESS.md)).
-**Recommended next action:** return to the Program Orchestrator. Slice 22 is
-terminally Complete; **PR #58 requires no further product review or merge
-action**. Any subsequent work (including Slice 23 Classroom Release
-Qualification) requires separate Program Orchestrator authority. Do **not**
-begin Slice 23 qualification or post-MVP work from this handoff alone. Theme
-song remains post-MVP. `CQS-OD-066` remains unresolved. The inherited Final
-mid-refresh recovery flake remains unresolved and was not repaired by
-Slices 19–22. Known LOW debt **F-UX-01** (demote ordinary-setup WebHID/Gamepad
-jargon into Advanced diagnostics) is retained polish.
+**Recommended next action:** independently review and merge this Slice 23
+post-repair evidence reconciliation (docs-only). After merge/verification,
+resume Stages D–I from `22647fdc…`. Do **not** declare Slice 23 terminal, do
+**not** execute D–I from this handoff, do **not** close PR #60 yet, do **not**
+repair `LOW-01` / `F-UX-01`, and do **not** begin post-Slice-23 MVP
+functionality. Theme song remains post-MVP. `CQS-OD-066` remains unresolved.
+The inherited Final mid-refresh durability race is **CLOSED** via PR #61.
+Known LOW debt **F-UX-01** (`CQS-Q23-LOW-01`) is retained polish. `LOW-02` and
+`CLASS-B-01` remain classified as in the qualification plan. **OVERALL CQS MVP
+is NOT COMPLETE.**
 
 Coding agents and contributors should read root
 [`../../AGENTS.md`](../../AGENTS.md) before changing the repository. Claude
@@ -164,7 +178,10 @@ defers to `AGENTS.md` and adds no separate authority.
 > is the **23-slice** plan per Amendment 004 (**merged** via PR #48). Slice 19
 > product delivery has since completed via PR #50; Slice 20 product delivery has
 > since completed via PR #52; Slice 21 product delivery has since completed via
-> PR #55; **current** remaining unauthorized product frontiers are Slices 22–23.
+> PR #55. At the time Amendment 003 was adopted, the remaining unauthorized
+> product frontiers were Slices 22–23. That historical statement has since been
+> superseded: Slice 22 is **Complete** and Slice 23 is currently **IN
+> QUALIFICATION / NOT TERMINAL**.
 > Post-MVP arcs remain inactive. Theme song remains
 > post-MVP. `CQS-OD-066` remains unresolved.
 
@@ -364,7 +381,8 @@ defers to `AGENTS.md` and adds no separate authority.
   authoritative history/replay only; unavailable authored rounds without
   fabricated metrics; truthful timer-reset counting; no completed-session
   storage; public wire **8**, sync **2**, schema/persistence/IndexedDB **1**
-  unchanged. Inherited Final mid-refresh recovery flake remains unresolved.
+  unchanged. Inherited Final mid-refresh recovery flake was unresolved at
+  Slice 15 completion and is now **CLOSED** via PR #61.
   Rationale in
   [`../architecture/ADR-015-session-summary-contract.md`](../architecture/ADR-015-session-summary-contract.md);
   evidence in
@@ -454,8 +472,11 @@ defers to `AGENTS.md` and adds no separate authority.
   Owner listening RC **PASS**. See ADR-020 and
   [`../receipts/2026-08-10-slice-22-post-merge-canonical-reconciliation.md`](../receipts/2026-08-10-slice-22-post-merge-canonical-reconciliation.md).
   **PR #58 requires no further product review or merge action.**
-- **Slice 23 — Classroom Release Qualification:** remains `Planned` /
-  unauthorized / not started.
+- **Slice 23 — Classroom Release Qualification:** **`IN QUALIFICATION / NOT
+  TERMINAL`** on canonical `main` `22647fdc004d5e60aee2903c38cd8079731e63af`.
+  Repairs PR #61 / #62 / #63 terminal; broad D–I not yet resumed. PR #60
+  historical / superseded / still open pending canonical reconciliation merge.
+  See [`../qualification/SLICE-23-QUALIFICATION-PLAN.md`](../qualification/SLICE-23-QUALIFICATION-PLAN.md).
 - **What Slice 14 adds:** the SECOND playable round type, `final-wager` — and
   the important thing about it is where it lives. It is registered by application
   code in the same registry as `category-board`, validated by the same import
@@ -1081,8 +1102,8 @@ arcs remain inactive; **decision 66 (`CQS-OD-066`) remains unresolved**.
 
 **Slices 1–22 and planning slice CQS-PLAN-S01 are `Complete` and
 merged** (Slice 22 product via PR #58; Slice 21 product via PR #55; Slice 20
-product via PR #52; this section’s routing is current after Slice 22 post-merge
-reconciliation). Phase 2B design direction is registered and its MVP consumers
+product via PR #52; this section’s routing is current after Slice 23 post-repair
+evidence reconciliation). Phase 2B design direction is registered and its MVP consumers
 (Slices 17–18) are both `Complete`. **Roadmap Amendment 003
 (`CQS-PLAN-S02`) delivery and post-merge reconciliation are complete on
 `main`** (PR #35 at `2ebeb240…`; PR #36 at
@@ -1131,20 +1152,23 @@ documentation.
 **Slice 14 — Final-wager round is `Complete`** (PR
 [#32](https://github.com/ricktron/classroom-quiz-show/pull/32)).
 
-**PR #58, PR #55, PR #53, PR #52, PR #50, PR #48, PR #46, PR #45, PR #44, PR #41,
-PR #40, PR #38, and PR #36 require no further product review or merge action.**
-Slice 22 product delivery is `Complete`, post-merge verified, and canonically
-reconciled by this docs lane. No further Slice 20–22 product, repair, merge,
-or canonicalization lane is owed after this reconciliation merges. Phase 3
-design-system readiness has served the theme-foundation → audience-display
-sequence.
+**PR #63, PR #62, PR #61, PR #58, PR #55, PR #53, PR #52, PR #50, PR #48, PR #46,
+PR #45, PR #44, PR #41, PR #40, PR #38, and PR #36 require no further product
+review or merge action.** Slice 22 product delivery is `Complete` and
+post-merge verified. Slice 23 repair lanes are terminal. No further Slice 20–22
+product lane is owed. Phase 3 design-system readiness has served the
+theme-foundation → audience-display sequence.
 **Recommended next action:**
-return to the Program Orchestrator. Slice 23 — Classroom Release Qualification
-is the only remaining numbered MVP slice and remains `PLANNED`, not started, and
-separately unauthorized. This handoff grants **no** Slice 23 or post-MVP
-authority. Post-MVP arcs remain inactive. Theme song remains post-MVP.
-`CQS-OD-066` remains unresolved. The inherited Final mid-refresh recovery flake
-remains unresolved.
+independently review and merge this Slice 23 post-repair evidence
+reconciliation. After merge/verification, resume Slice 23 broad qualification
+Stages D–I from canonical `main` `22647fdc004d5e60aee2903c38cd8079731e63af`.
+Slice 23 is **IN QUALIFICATION / NOT TERMINAL**. PR #60 remains open as
+historical evidence until a separate explicit closure. This handoff grants
+**no** authority to declare Slice 23 terminal, execute D–I here, close PR #60,
+repair `LOW-01` / `F-UX-01`, or begin post-Slice-23 MVP functionality.
+Post-MVP arcs remain inactive. Theme song remains post-MVP. `CQS-OD-066`
+remains unresolved. The inherited Final mid-refresh durability race is
+**CLOSED** via PR #61. **OVERALL CQS MVP is NOT COMPLETE.**
 
 ## Registered design direction — Phase 2B audience display (2026-08-03)
 
@@ -1184,8 +1208,8 @@ on `main` (PR #44). Slice 18 — Audience Display System is `Complete` on `main`
 (PR #46). MVP Phase 2B consumers **Slices 17–18 are both `Complete`**: the token
 foundation and the accepted audience-display composition have been delivered.
 Phase 2B remains a design/planning lineage, not a numbered slice. Phase 3
-readiness has served that sequence. Next planned frontier: Slice 23
-(requires separate Program Orchestrator authority; not started).
+readiness has served that sequence. Current MVP frontier: Slice 23
+(**IN QUALIFICATION / NOT TERMINAL**; broad D–I not yet resumed).
 
 **Boundaries this direction does not move.** The public buzz state remains
 `activeTeamKey` plus an anonymous `waitingCount` — never a public ordered queue.
@@ -1275,8 +1299,9 @@ was satisfied and consumed by completed Slices 17–18 (PR #44, `dee2f3c…`;
 PR #46, `91c7708…`). Slice 19 is **`Complete`** (PR #50, `95573e2…`). Slice 20
 is **`Complete`** (PR #52, `86e8f5e6…`). Slice 21 is **`Complete`** (PR #55,
 `b1e6d66…`). Slice 22 is **`Complete`** (PR #58, `e69e81b…`). The immediate
-planned frontier is **Slice 23 — Classroom Release Qualification** (`PLANNED` /
-not started / requires separate Program Orchestrator authority).
+MVP frontier is **Slice 23 — Classroom Release Qualification** (`IN
+QUALIFICATION / NOT TERMINAL` on `22647fdc…`; repairs terminal; broad D–I not
+yet resumed).
 Slice 13 is **`Complete`**
 (PR #27, `6cf4d25…`). Slice 12 is **`Complete`** (PR #25, `cdb499a…`). Slice 11
 is **`Complete`** (PR #23, `5d47b2f`). Slice 10 remains **`Complete`** under the
@@ -1341,9 +1366,10 @@ reconciliation. Recording this direction authorizes no work of any kind.
 
 Do **not**: reopen or redefine Slice 14 (it is `Complete` and merged — PR #32 at
 `ce2e103…`); reopen Slice 15, Slice 16, Slice 17, Slice 18, Slice 19, Slice 20,
-Slice 21, or Slice 22 product lanes; begin Slice 23 without separate Program
-Orchestrator authority; treat this handoff as Slice 23 qualification
-authorization; expose private Final
+Slice 21, or Slice 22 product lanes; declare Slice 23 terminal or overall MVP
+complete; execute broad Stages D–I from this handoff; close or rebase PR #60
+before canonical reconciliation merges; repair `LOW-01` / `F-UX-01` without
+separate authority; begin post-Slice-23 MVP functionality; expose private Final
 or queue data
 (see the Final and buzz-queue privacy boundaries below); claim Child B
 guidance/onboarding delivery is merged from this handoff;

@@ -416,7 +416,9 @@ empty. It adds a versioned host-private current-session summary
 history/replay only: unavailable authored rounds are listed without fabricated
 metrics; timer-reset counts require a non-idle pre-event response timer; no
 completed-session storage; no public-wire or persistence version change. The
-inherited Final mid-refresh recovery flake remains unresolved. See
+inherited Final mid-refresh recovery flake was unresolved at Slice 15
+completion (not caused/worsened by Slice 15) and is later **CLOSED** via PR
+[#61](https://github.com/ricktron/classroom-quiz-show/pull/61). See
 [`docs/architecture/ADR-015-session-summary-contract.md`](docs/architecture/ADR-015-session-summary-contract.md)
 and
 [`docs/receipts/2026-08-04-slice-15-post-merge-reconciliation.md`](docs/receipts/2026-08-04-slice-15-post-merge-reconciliation.md).
@@ -432,8 +434,9 @@ competitive-profile grouping, bounded retention/deletion/class labels, and
 compatible game/team/class rollups; IndexedDB schema moves **1 → 2**, while
 public wire **8**, sync **2**, game-file schema **1**, private active-session
 wire **1**, and Session Summary contract **1** remain unchanged. The inherited
-Final mid-refresh recovery flake remains unresolved and is not claimed repaired.
-See
+Final mid-refresh recovery flake was unresolved at Slice 16 completion and is
+not claimed repaired by Slice 16; it is later **CLOSED** via PR
+[#61](https://github.com/ricktron/classroom-quiz-show/pull/61). See
 [`docs/architecture/ADR-016-completed-summary-ledger-compatible-reporting.md`](docs/architecture/ADR-016-completed-summary-ledger-compatible-reporting.md),
 [`docs/receipts/2026-08-04-slice-16-local-verification.md`](docs/receipts/2026-08-04-slice-16-local-verification.md),
 [`docs/receipts/2026-08-04-slice-16-semantic-review-r1.md`](docs/receipts/2026-08-04-slice-16-semantic-review-r1.md),
@@ -492,7 +495,8 @@ completed-summary envelope **1**; competitive profile **1**. Post-merge CI,
 SonarCloud, and Pages were green on the squash; Playwright concluded
 **313 passed** / **14 skipped** / **3 flaky** (inherited Final mid-refresh
 `Saved: 100` / `Not saved yet` retry-resolved; unresolved and not claimed
-repaired by Slice 18). No physical-projector or live-route certification is
+repaired by Slice 18; later **CLOSED** via PR
+[#61](https://github.com/ricktron/classroom-quiz-show/pull/61)). No physical-projector or live-route certification is
 claimed from that merge verification. See
 [`docs/plans/CQS-DESIGN-PHASE-2B-DIRECTION.md`](docs/plans/CQS-DESIGN-PHASE-2B-DIRECTION.md),
 [`docs/receipts/2026-08-06-slice-18-audience-display-local-verification.md`](docs/receipts/2026-08-06-slice-18-audience-display-local-verification.md),
@@ -545,13 +549,21 @@ Host-only presentation cues (`active-claim` · `positive-award` · `incorrect` �
 `timer-expired` · `game-complete`); Enable Sound / mute / volume (default
 **0.35**); five original offline WAVs; ADR-020. Owner listening RC **PASS**.
 **PR #58 requires no further product review or merge action.** Slices 1–22 are
-Complete. Slice 23 Classroom Release Qualification remains Planned and
-unauthorized / not started under the **23-slice** MVP plan
+Complete. Slice 23 — Classroom Release Qualification is **IN QUALIFICATION /
+NOT TERMINAL** on canonical `main`
+`22647fdc004d5e60aee2903c38cd8079731e63af` under the **23-slice** MVP plan
 ([`docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md);
 prior Amendment 003:
 [`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
-Theme song remains post-MVP. The inherited Final mid-refresh recovery flake
-remains unresolved; `CQS-OD-066` remains unresolved. See
+Repair lanes PR [#61](https://github.com/ricktron/classroom-quiz-show/pull/61)
+(Final wager durability), [#62](https://github.com/ricktron/classroom-quiz-show/pull/62)
+(teacher first-run / HIGH-01 / HIGH-02), and
+[#63](https://github.com/ricktron/classroom-quiz-show/pull/63) (HIGH-03 aggregate
+reset / M1) are **TERMINAL**. Broad Stages D–I have **not** resumed. Known LOW
+debt **F-UX-01** (`CQS-Q23-LOW-01`) remains open. Theme song remains post-MVP.
+The inherited Final mid-refresh durability race is **CLOSED** via PR #61.
+`CQS-OD-066` remains unresolved. Required post-Slice-23 MVP functionality has
+**not** begun. **OVERALL CQS MVP is NOT COMPLETE.** See
 [`docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md`](docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md),
 [`docs/architecture/ADR-020-minimal-presentation-audio.md`](docs/architecture/ADR-020-minimal-presentation-audio.md),
 [`docs/receipts/2026-08-10-slice-22-minimal-presentation-audio-implementation.md`](docs/receipts/2026-08-10-slice-22-minimal-presentation-audio-implementation.md),
