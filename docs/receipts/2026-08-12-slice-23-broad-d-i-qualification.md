@@ -57,10 +57,10 @@
 | `git diff --check` | clean | 0 |
 | `npm run verify` | **143** files / **2424** passed / **2** skipped | 0 |
 | `npm run build` | PASS; main JS **1256.80 kB** (gzip **375.32 kB**); PWA precache **22** entries (**1466.29 KiB**) | 0 |
-| `CI=1 npm run test:e2e` (local first attempt) | **345** passed / **14** skipped / **4** failed / **2** flaky / **16** did not run — failures were `net::ERR_CONNECTION_REFUSED` after preview died mid-run (**harness**, not product Class A) | recorded; do not treat as product defect |
-| CI Playwright on exact head `06f486c…` | **success** (job Playwright e2e) | supporting current baseline |
-| Focused local (reuse preview): `theme-system.spec.ts` desktop-1080p | **9** passed | 0 |
-| Focused local: Final tie e2e | **1** passed (`a tied Final presents both choices…`) | 0 |
+| `CI=1 npm run test:e2e` (local on `06f486c…`) | **367** passed / **14** skipped / **0** failed — `test-results/.last-run.json` `status: passed` (~8.8m) | 0 |
+| Prior tee-log interleaving noise | A truncated mid-log `ERR_CONNECTION_REFUSED` fragment appeared in an overwritten log file during a port-collision retry; **not** the terminal result and **not** a product Class A | harness artifact only |
+| CI Playwright on exact head `06f486c…` | run [`31618313458`](https://github.com/ricktron/classroom-quiz-show/actions/runs/31618313458) **success** | supporting current baseline |
+| Clean-browser Stage D–F / E / I harness | PASS dispositions recorded under `/tmp/cqs-s23-di-qual-evidence/` (local evidence; not committed) | CLEAN-BROWSER |
 
 Automated baseline is **supporting** evidence. It does **not** substitute for D–I classroom qualification.
 
@@ -145,12 +145,12 @@ Browser viewport simulation does **not** satisfy Stage G. Slice 22 owner-listene
 | Clean deployed golden path | **PASS** | CLEAN-BROWSER vs Pages — Open Host → load sample |
 | PWA manifest / SW | **PASS** (supporting) | manifest OK; SW active after ready |
 | PWA install UI | **OWNER EVIDENCE REQUIRED** | install affordance needs owner browser |
-| Offline shell | **PASS** | offline reload still showed host shell |
-| Offline gameplay / local-data | **PASS** (supporting) | host available offline after prior load; grid may require Resume |
+| Offline shell | **PASS** | offline landing + host shell load after SW prime |
+| Offline gameplay / local-data | **PASS** | offline reload offers Resume; after Resume, saved game restores and load controls re-enable (disabled during recovery is expected, not a defect) |
 | SheetJS / `CLASS-B-01` | **RETAIN CLASS-B** | deployed template download works; no current promised release failure; supply-chain/install risk remains |
 | Update flow | **OWNER_OR_MANUAL / evidence owed** | only one live build; cannot safely simulate stale→new without publishing |
 | Deployed/PWA reset | **PASS** | aggregate clear-all on Pages |
-| `LOW-02` startup measure | **RETAIN LOW** | main JS transfer ≈ **378 420** bytes (~370 KiB gzip) on owner Mac; load ≈ **400 ms**; not reclassified; **not optimized** |
+| `LOW-02` startup measure | **RETAIN LOW** | production main chunk `index-gkuM_rRh.js` **1 256.80 kB** (gzip **375.32 kB**); PWA precache **22** entries / **1466.29 KiB**; deployed Pages cold launch ≈ **1.2 s** to landing in this packet; not reclassified; **not optimized** |
 | Owner live deployment | **OWNER EVIDENCE REQUIRED** | automated path PASS; classroom sense observation owed |
 
 ## Findings
@@ -216,5 +216,6 @@ smoke, I install + owner-live; update-flow note).
 4. `docs/qualification/SLICE-23-QUALIFICATION-PLAN.md`
 5. `docs/receipts/2026-08-12-slice-23-broad-d-i-qualification.md` (this file)
 
-Docs-only. **Evidence PR not opened yet** while owner gates are being requested in
-this run.
+Docs-only. Evidence PR opened under state **C** (owner evidence cannot be
+completed in this run; durable partial record preserved). **NOT merged** by this
+packet.

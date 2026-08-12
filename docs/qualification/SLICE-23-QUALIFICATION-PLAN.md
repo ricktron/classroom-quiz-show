@@ -156,7 +156,7 @@ claim that broad D–I already ran.
 | Stage | Content | Current disposition |
 | --- | --- | --- |
 | **A** | Canonical / preflight | **CURRENT BASE RE-ESTABLISHED** — canonical `main` = `06f486c…` (PR #64). |
-| **B** | Clean automated baseline | **CURRENT GREEN** — local `npm run verify` + build on `06f486c…`; CI run `31618313458` success. Local full e2e first attempt harness-interrupted (`ERR_CONNECTION_REFUSED`); do not treat as product Class A. |
+| **B** | Clean automated baseline | **CURRENT GREEN** — local `npm run verify` + build + `CI=1 npm run test:e2e` (**367** passed / **14** skipped) on `06f486c…`; CI run `31618313458` success. |
 | **C** | Clean-teacher first launch | **PASS / CLEARED.** §71 cleared for resumption; clean-teacher path re-verified post-repair. |
 | **D** | Import / authoring / pack / data lifecycle | **PASS** (executable). See 2026-08-12 D–I receipt. |
 | **E** | Gameplay / Final / undo / recovery | **PASS** (executable). Final immediate-refresh durability re-verified. |
