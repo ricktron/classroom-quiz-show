@@ -15,6 +15,8 @@ export interface PersistenceControlsProps {
   readonly registry: RoundRegistry
   readonly dispatch: (command: SessionCommand) => DispatchResult
   readonly getHistory: () => readonly SessionEvent[]
+  /** Injected for tests; production hard-reloads after a successful aggregate wipe. */
+  readonly reloadPage?: () => void
 }
 
 export function PersistenceControls({
@@ -24,10 +26,13 @@ export function PersistenceControls({
   registry,
   dispatch,
   getHistory,
+  reloadPage = defaultReloadPage,
 }: PersistenceControlsProps) {
   const [replaceArmed, setReplaceArmed] = useState(false)
   const [pendingLoadId, setPendingLoadId] = useState<string | null>(null)
   const [actionMessage, setActionMessage] = useState<string | null>(null)
+  const [confirmClearAll, setConfirmClearAll] = useState(false)
+  const [clearAllBusy, setClearAllBusy] = useState(false)
   const readOnly = persistence.leadership === 'follower'
   const controlsReady = persistence.bootPhase === 'ready' && !readOnly
   const statusText = useMemo(() => statusLine(persistence), [persistence])
@@ -61,6 +66,23 @@ export function PersistenceControls({
   async function discard(): Promise<void> {
     const result = await persistence.discardRecovery()
     setActionMessage(result.message)
+  }
+
+  async function clearAllLocalData(): Promise<void> {
+    if (!confirmClearAll) {
+      setConfirmClearAll(true)
+      return
+    }
+    setClearAllBusy(true)
+    const result = await persistence.clearAllLocalData()
+    setClearAllBusy(false)
+    setActionMessage(result.message)
+    if (!result.ok) {
+      // Keep confirmation armed so the teacher can retry after closing other tabs.
+      return
+    }
+    setConfirmClearAll(false)
+    reloadPage()
   }
 
   return (
@@ -208,8 +230,72 @@ export function PersistenceControls({
           {actionMessage ?? persistence.message}
         </p>
       </div>
+
+      <div
+        className="foundation__panel persistence__clear-all"
+        data-testid="persistence-clear-all"
+      >
+        <h4>Clear all local CQS data</h4>
+        <p className="host__note">
+          Removes Classroom Quiz Show data stored on this browser and device only:
+          saved games, unfinished sessions, completed summaries, pack media,
+          controller team mappings, coordination records, and buzz-key preferences.
+          This does not uninstall a progressive web app or clear the browser&apos;s
+          ordinary HTTP cache. There is no undo and nothing is synced to an account
+          or another device.
+        </p>
+        {confirmClearAll && (
+          <p
+            className="host__note persistence__warning"
+            data-testid="persistence-clear-all-warning"
+            role="alert"
+          >
+            Confirm that you want to permanently delete all local Classroom Quiz Show
+            data on this browser. Close other CQS tabs first if a previous attempt was
+            blocked.
+          </p>
+        )}
+        <div className="persistence__actions">
+          <button
+            type="button"
+            className="btn btn--secondary"
+            data-testid="persistence-clear-all-action"
+            disabled={persistence.bootPhase === 'loading' || clearAllBusy}
+            onClick={() => void clearAllLocalData()}
+          >
+            {clearAllBusy
+              ? 'Clearing local data…'
+              : confirmClearAll
+                ? 'Confirm clear all local CQS data — no undo'
+                : 'Clear all local CQS data'}
+          </button>
+          {confirmClearAll && !clearAllBusy && (
+            <button
+              type="button"
+              className="btn btn--secondary"
+              data-testid="persistence-clear-all-cancel"
+              onClick={() => setConfirmClearAll(false)}
+            >
+              Cancel
+            </button>
+          )}
+        </div>
+        <p
+          className="host__note persistence__message"
+          data-testid="persistence-clear-all-message"
+          aria-live="polite"
+        >
+          {actionMessage && /clear all local|could not clear all local/i.test(actionMessage)
+            ? actionMessage
+            : null}
+        </p>
+      </div>
     </section>
   )
+}
+
+function defaultReloadPage(): void {
+  window.location.reload()
 }
 
 function durabilityWarning(
