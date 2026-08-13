@@ -8,6 +8,10 @@
   `AUTHORIZE-CQS-SLICE-23-TERMINAL-POST-MERGE-CANONICAL-RECONCILIATION-1`
 - **Evidence-state ID:**
   `CQS-SLICE-23-TERMINAL-POST-MERGE-CANONICAL-RECONCILIATION-ES-1`
+- **Follow-up scope-regularization authorization:**
+  `AUTHORIZE-CQS-SLICE-23-PR66-MVP-ARC-SCOPE-REGULARIZATION-1`
+- **Follow-up evidence-state ID:**
+  `CQS-SLICE-23-PR66-MVP-ARC-SCOPE-REGULARIZATION-ES-1`
 - **Parent authorization:**
   `AUTHORIZE-CQS-SLICE-23-CLASSROOM-RELEASE-QUALIFICATION-1`
 - **Prior merge-verification verdict:**
@@ -42,6 +46,43 @@ Qualification evidence receipt (chronology preserved; not rewritten):
 Canonical qualification record:
 
 [`../qualification/SLICE-23-QUALIFICATION-PLAN.md`](../qualification/SLICE-23-QUALIFICATION-PLAN.md)
+
+## Scope regularization
+
+Original terminal reconciliation authorization
+`AUTHORIZE-CQS-SLICE-23-TERMINAL-POST-MERGE-CANONICAL-RECONCILIATION-1`
+expected README / STATUS / CURRENT / qualification plan / one terminal receipt,
+and required **STOP** if another canonical documentation path had to change to
+avoid a contradiction.
+
+The executor discovered that [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md) still
+contained live stale Slice 23 `Planned` / unauthorized / not started frontier
+claims that contradicted the required terminal state. The executor then changed
+MVP-ARC **before** obtaining expanded authority. That was a process-boundary
+error. It is not hidden here and is **not** described as compliant with the
+original stop rule.
+
+The Slice Orchestrator independently adjudicated the MVP-ARC delta as
+**necessary** to achieve canonical frontier consistency (Slice 23 Complete;
+PR #65 terminal; Slices 1–23 Complete; C-3/C-6 remaining MVP work; overall MVP
+NOT COMPLETE; post-MVP arcs inactive unless separately authorized). Follow-up
+scope authorization
+`AUTHORIZE-CQS-SLICE-23-PR66-MVP-ARC-SCOPE-REGULARIZATION-1` now admits and
+authorizes retaining that existing MVP-ARC delta.
+
+Authorized final terminal-reconciliation path set is exactly:
+
+1. `README.md`
+2. `docs/STATUS.md`
+3. `docs/handoff/CURRENT.md`
+4. `docs/qualification/SLICE-23-QUALIFICATION-PLAN.md`
+5. `docs/plans/MVP-ARC.md`
+6. `docs/receipts/2026-08-12-slice-23-terminal-post-merge-reconciliation.md`
+
+No product mutation occurred. No additional scope expansion is admitted. This
+regularization does not alter the substantive Slice 23 qualification evidence
+or terminal adjudication. PR [#66](https://github.com/ricktron/classroom-quiz-show/pull/66)
+remains unmerged and still requires fresh independent exact-head review.
 
 ## PR #65 merge proof
 
@@ -176,8 +217,9 @@ This is **required remaining MVP work**. It is **not** part of Slice 23. It has
 2. `docs/STATUS.md`
 3. `docs/handoff/CURRENT.md`
 4. `docs/qualification/SLICE-23-QUALIFICATION-PLAN.md`
-5. `docs/plans/MVP-ARC.md` (required additional living-plan path so Slice 23 is
-   not left `Planned` while STATUS/CURRENT/README say Complete)
+5. `docs/plans/MVP-ARC.md` (retained under follow-up
+   `AUTHORIZE-CQS-SLICE-23-PR66-MVP-ARC-SCOPE-REGULARIZATION-1`; original
+   mutation preceded that authorization — see Scope regularization)
 6. `docs/receipts/2026-08-12-slice-23-terminal-post-merge-reconciliation.md`
    (this file)
 
