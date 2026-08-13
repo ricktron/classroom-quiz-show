@@ -84,7 +84,7 @@ authorized product repairs, not Slice 23 feature origin.
 | Final-wager durability race | **CLOSED / REPAIRED / MERGED / VERIFIED** | PR [#61](https://github.com/ricktron/classroom-quiz-show/pull/61) |
 | PR #63 M1 keyboard-clear false-success | **CLOSED / CORRECTED / RE-REVIEWED / MERGED / VERIFIED** | PR #63 corrected head |
 | `CQS-Q23-LOW-01` / `F-UX-01` | **OPEN / RETAINED / LOW** | not repaired |
-| `CQS-Q23-LOW-02` | **OPEN / LOW** — measure during live startup or deployment qualification | not optimized |
+| `CQS-Q23-LOW-02` | **OPEN / LOW** — measured during Stage I; retained | not optimized |
 | `CQS-Q23-CLASS-B-01` | **Class B continuation candidate** | not a Slice 23 defect; not re-pinned |
 | `CQS-OD-066` | **UNRESOLVED** | does not block Slice 23 classroom qualification on existing evidence |
 
@@ -156,9 +156,11 @@ qualification.
 
 ## 4. Current Stage A–L matrix
 
-Preserve the established Stage A–L structure. Dispositions below are the
-starting point for **resumed** qualification on repaired `main`. They do **not**
-claim that broad D–I already ran.
+Preserve the established Stage A–L structure. Dispositions below record the
+**executed current D–I matrix** on repaired `main`, including completed owner
+evidence. They do **not** declare Slice 23 terminal. Evidence-class distinctions
+remain: §4.1 is transferred PR #63 post-merge baseline, not new D–I evidence;
+Stages D–I themselves are executed and recorded in the 2026-08-12 receipt.
 
 | Stage | Content | Current disposition |
 | --- | --- | --- |
@@ -233,15 +235,19 @@ Do **not** erase their historical role:
 
 ### `CQS-Q23-LOW-02` — large first-load JS chunk
 
-**Status: LOW / MEASURE DURING LIVE STARTUP OR DEPLOYMENT QUALIFICATION.**
+**Status: OPEN / LOW.** Measured during Stage I; retained. **Do not optimize it
+in this packet.**
 
 Historical observation (CI run `31446536299` on the pre-repair tree):
 `dist/assets/index-BYR1CyC_.js` was **1 246.02 kB (gzip 374.25 kB)**, tripping
 Vite’s 500 kB chunk warning; PWA precache **1 455.44 KiB across 22 entries**.
 
+Current Stage I measurement (D–I receipt, qualification build): initial JS
+**1256.80 kB**; gzip **375.32 kB**; precache **22** entries; precache size
+**1466.29 KiB**.
+
 This remains a **one-time** install/update cost question for school Wi-Fi, not a
-speculative optimization target. **Do not optimize it in this packet.** Re-measure
-on the live/deployed qualification build during Stage I / classroom startup.
+speculative optimization target.
 
 ### `CQS-Q23-CLASS-B-01` — non-registry `cdn.sheetjs.com` dependency
 
@@ -367,17 +373,20 @@ Separate authorization remains required for:
 
 ---
 
-## 12. Explicit non-claims (this reconciliation)
+## 12. Explicit non-claims (this evidence / correction lane)
 
 - **No** product code, schema, contract, test, dependency, workflow, or
-  deployment configuration was changed.
-- **No** broad Stages D–I qualification was executed here.
+  deployment configuration was changed in this evidence/correction lane.
+- Broad Stages D–I are **not** being re-run here; they were already executed
+  and recorded.
 - **No** repair of `LOW-01` / `F-UX-01`.
 - **No** SheetJS re-pin; **no** first-load chunk optimization.
 - **No** post-Slice-23 MVP functionality begun.
 - Slice 23 is **not** terminal.
 - **OVERALL CQS MVP = NOT COMPLETE.**
-- PR #60 was **not** modified, rebased, merged, or closed.
+- PR #65 is **not** merged.
+- PR #60 remains **CLOSED / UNMERGED / HISTORICAL / SUPERSEDED** and is not
+  being reopened or merged.
 - This document does **not** merge itself.
 
 Canonical routing companions:

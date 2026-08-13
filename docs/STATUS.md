@@ -296,9 +296,10 @@ merge-evidence pointer:
 (`CQS-PLAN-S02`) rebalanced 18→22 slices; Amendment 001
 [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md)
 grew the plan from 11 to 18 slices (PR #13, `752a3fe`, 2026-07-26). Slices 1–22
-are `Complete`; Slice 23 is **IN QUALIFICATION / REPAIRS TERMINAL / BROAD
-MATRIX NOT YET RESUMED**. This STATUS does **not** declare Slice 23 terminal
-and does **not** declare the overall CQS MVP complete.
+are `Complete`; Slice 23 is **IN QUALIFICATION / NOT TERMINAL** — broad Stages
+D–I are executed, owner evidence is complete, and PR #65 remains open/unmerged
+at verdict `CQS_S23_D_I_QUALIFICATION_REVIEW_READY`. This STATUS does **not**
+declare Slice 23 terminal and does **not** declare the overall CQS MVP complete.
 Phase 2B’s MVP consumers (Slices 17–18) are both `Complete`; Phase 3
 design-system readiness has served the theme-foundation → audience-display
 sequence; post-MVP arcs remain inactive; theme song remains post-MVP;
