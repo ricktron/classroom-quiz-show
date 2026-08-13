@@ -23,20 +23,23 @@ the audience Display, and begin play.
 
 - Slices **1–23** / the original 23-slice foundation/qualification roadmap:
   **Complete**.
-- **Overall CQS MVP is not complete.** Completing that numbered plan does not
-  complete the product.
-- Known required remaining MVP continuation: **C-3 / C-6 desktop launch /
-  distribution** — **OPEN / NOT BEGUN**.
-- Next Program-level work requires **separate owner authorization**. The next
-  planned Program action is initializing the CQS REAL MVP Program Orchestrator.
-  This README does **not** authorize REAL MVP product implementation and does
-  **not** define that future program in detail.
+- **`CQS-REAL-MVP-1` is ACTIVE / CANONICALLY REGISTERED.** Canonical Program
+  plan:
+  [`docs/plans/CQS-REAL-MVP-ARC.md`](docs/plans/CQS-REAL-MVP-ARC.md).
+- Current planned Program frontier:
+  `CQS-REAL-MVP-S02-DESKTOP-ARCHITECTURE-QUALIFICATION`. S02 requires
+  **separate owner/Program authorization**.
+- Routing is not authority. This README does **not** authorize S02 or product
+  implementation.
 - Post-MVP arcs remain inactive.
 
 Live status, open items, and contract versions:
 [`docs/STATUS.md`](docs/STATUS.md). Contributor routing:
-[`docs/handoff/CURRENT.md`](docs/handoff/CURRENT.md). Historical 23-slice plan
-of record: [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md).
+[`docs/handoff/CURRENT.md`](docs/handoff/CURRENT.md). Current REAL MVP
+Program plan:
+[`docs/plans/CQS-REAL-MVP-ARC.md`](docs/plans/CQS-REAL-MVP-ARC.md).
+Historical 23-slice plan of record:
+[`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md).
 
 The live site is <https://ricktron.github.io/classroom-quiz-show/>.
 

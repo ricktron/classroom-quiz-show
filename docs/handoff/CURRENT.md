@@ -4,6 +4,10 @@ Entry point for the next contributor or coding agent.
 
 This file routes. It does **not** grant product implementation authority.
 
+```text
+routing ≠ authority
+```
+
 Read root [`../../AGENTS.md`](../../AGENTS.md) before changing the
 repository. For delivery, repair, review, qualification, or release work,
 also read
@@ -20,13 +24,16 @@ also read
 | Boundary | State |
 | --- | --- |
 | 23-slice foundation/qualification roadmap | **COMPLETE** |
-| Slice 23 classroom qualification | **COMPLETE / QUALIFIED / MERGED / POST-MERGE VERIFIED** |
-| Overall CQS MVP | **NOT COMPLETE** |
-| C-3 / C-6 desktop launch / distribution | **OPEN / NOT BEGUN** — required remaining MVP continuation |
-| REAL MVP product implementation | **NOT AUTHORIZED** by this handoff |
-| Post-MVP arcs | **Inactive** |
+| Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
+| Guidance Polish S01 | **TERMINALLY COMPLETE** |
+| `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
+| Current Program frontier | S02 desktop architecture qualification |
+| S02 | **NOT AUTHORIZED** pending separate Program authority |
+| Post-MVP arcs | **INACTIVE** |
 
-**Roadmap sequence complete ≠ product MVP complete.**
+[`../plans/MVP-ARC.md`](../plans/MVP-ARC.md) is the historical completed
+23-slice plan of record. It is **not** the current REAL MVP authority
+surface. There is no Slice 24.
 
 ## Read these
 
@@ -34,11 +41,14 @@ also read
 2. [`../PROJECT.md`](../PROJECT.md)
 3. [`../STATUS.md`](../STATUS.md)
 4. This file
-5. [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md) — historical 23-slice plan of
-   record, not the future REAL MVP sequence
-6. [`../governance/EXECUTION-GUIDANCE.md`](../governance/EXECUTION-GUIDANCE.md)
+5. [`../plans/CQS-REAL-MVP-ARC.md`](../plans/CQS-REAL-MVP-ARC.md) — current
+   REAL MVP Program plan of record. Read it **before** acting on REAL MVP
+   continuation.
+6. [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md) — historical completed
+   23-slice plan of record, not the current REAL MVP sequence
+7. [`../governance/EXECUTION-GUIDANCE.md`](../governance/EXECUTION-GUIDANCE.md)
    for delivery / review / evidence / repair rules
-7. Task-relevant ADRs and receipts
+8. Task-relevant ADRs and receipts
 
 Teacher classroom path:
 [`../teacher/QUICK_START.md`](../teacher/QUICK_START.md).
@@ -49,7 +59,8 @@ Slice 23 qualification record:
 ## What is complete
 
 Slices **1–23** are `Complete` and merged. The original numbered MVP
-foundation/qualification plan is finished.
+foundation/qualification plan is finished. Guidance Polish S01 is
+terminally complete.
 
 Playable classroom engine on that foundation:
 
@@ -59,6 +70,9 @@ Playable classroom engine on that foundation:
   profile;
 - spreadsheet authoring, portable packs, local persistence, audience
   display, minimal presentation audio.
+
+Those remain **existing qualified foundations**. Do not rewrite them as
+unfinished from scratch.
 
 Slice 23 terminal evidence:
 
@@ -70,16 +84,29 @@ Historical per-slice merge chronology is preserved in
 
 ## What remains open
 
-| Item | State |
+See the REAL MVP gap register in
+[`../plans/CQS-REAL-MVP-ARC.md`](../plans/CQS-REAL-MVP-ARC.md).
+
+| Item | Program-adoption state |
 | --- | --- |
-| **C-3 / C-6** desktop launch / packaging | **OPEN / NOT BEGUN** |
-| `LOW-01` / `F-UX-01` | retained LOW polish |
-| `LOW-02` | retained LOW (startup/precache measure) |
-| `CLASS-B-01` | retained Class B (SheetJS packaging/supply-chain) |
-| `CQS-OD-066` | unresolved |
-| **C-7** Raspberry Pi 5 | not promoted; not an MVP gate |
-| **C-8** LAN host/display | future direction; not begun |
-| Theme song / identity-pack audio / additional round types | post-MVP; inactive |
+| conventional macOS / Windows installation | **OPEN** |
+| simple desktop launch | **OPEN** |
+| desktop Host/Display lifecycle | **OPEN** |
+| release artifacts/version/update path | **OPEN** |
+| in-app teacher team setup | **OPEN** |
+| teacher-simple progressive disclosure | **POLISH REQUIRED** |
+| controller `F-UX-01` | **POLISH REQUIRED** |
+| feedback/support path | **OPEN** |
+| flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** |
+| packaged offline/recovery and OS qualification | **OPEN** |
+| clean-room teacher qualification | **OPEN** |
+| **C-3** / **C-6** | **OPEN / REQUIRED** |
+| `CQS-Q23-CLASS-B-01` | **RELEASE/ARCHITECTURE DISPOSITION REQUIRED** |
+| `CQS-Q23-LOW-02` | **OPEN LOW / MONITOR ONLY** |
+| `CQS-OD-066` | **DEFERRED / NOT REQUIRED FOR REAL MVP** |
+| **C-7** Raspberry Pi 5 | outside REAL MVP; not an MVP gate |
+| **C-8** LAN host/display | outside REAL MVP; not begun |
+| Theme song / identity-pack audio / additional round types | post-MVP; **INACTIVE** |
 
 Contract versions: see [`../STATUS.md`](../STATUS.md).
 
@@ -87,14 +114,17 @@ Contract versions: see [`../STATUS.md`](../STATUS.md).
 
 Do **not**:
 
-- begin desktop packaging / C-3 / C-6;
-- begin REAL MVP product implementation;
+- begin `CQS-REAL-MVP-S02-DESKTOP-ARCHITECTURE-QUALIFICATION`;
+- select a desktop wrapper or add desktop dependencies;
+- begin desktop packaging / C-3 / C-6 implementation;
 - begin Raspberry Pi work;
 - begin LAN / cross-device host-display work;
-- begin controller-polish implementation or repair `LOW-01` / `F-UX-01`
-  without a later bounded authorization;
+- begin controller-polish implementation without a later bounded
+  authorization;
+- promote additional gameplay modes into REAL MVP;
 - activate post-MVP arcs;
-- declare overall CQS MVP complete because the 23-slice roadmap is complete;
+- declare the teacher-adoptable product complete because the 23-slice
+  roadmap is complete;
 - reopen completed Slices 1–23 product or qualification lanes;
 - reopen, rebase, or merge historical PR #60;
 - treat this handoff as product authority.
@@ -106,15 +136,18 @@ phones, no networked buzzers, no executable imported content) remain in
 
 ## Next Program-level action
 
-**Initialize the CQS REAL MVP Program Orchestrator under separate owner
-authorization.**
+`CQS-REAL-MVP-S02-DESKTOP-ARCHITECTURE-QUALIFICATION` is the next planned
+Program frontier and requires separate owner/Program authorization.
 
-That is routing, not product authority. C-3/C-6 remains the known required
-MVP continuation for that future program to plan. No REAL MVP product
-implementation is authorized here.
+```text
+routing ≠ authority
+```
+
+Do **not** authorize or begin S02 from this handoff.
 
 ## Architecture pointers
 
+- REAL MVP Program plan: [`../plans/CQS-REAL-MVP-ARC.md`](../plans/CQS-REAL-MVP-ARC.md)
 - Routing: [`../architecture/ADR-001-github-pages-routing.md`](../architecture/ADR-001-github-pages-routing.md)
 - State/event/sync: [`../architecture/ADR-002-state-event-sync-core.md`](../architecture/ADR-002-state-event-sync-core.md)
 - Import: [`../architecture/ADR-004-canonical-validation-import.md`](../architecture/ADR-004-canonical-validation-import.md)
