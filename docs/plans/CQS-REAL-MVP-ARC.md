@@ -3,10 +3,14 @@
 - **Document id:** `CQS-REAL-MVP-ARC`
 - **Program:** `CQS-REAL-MVP-1`
 - **Registering slice:** `CQS-REAL-MVP-S01-PROGRAM-CANON-REGISTRATION`
+- **S02 slice:** `CQS-REAL-MVP-S02-DESKTOP-ARCHITECTURE-QUALIFICATION`
 - **Authorization:** `AUTHORIZE-CQS-REAL-MVP-S01-PROGRAM-CANON-REGISTRATION-1`
+- **S02 authorization:**
+  `AUTHORIZE-CQS-REAL-MVP-S02-DESKTOP-ARCHITECTURE-QUALIFICATION-1`
 - **Date:** 2026-08-13
 - **Status:** **ACTIVE / CANONICALLY REGISTERED**
-- **Kind:** Program canon registration. **No product implementation authority.**
+- **Kind:** Program canon registration plus S02 architecture-qualification
+  candidate. **No production desktop implementation. No S03 authority.**
 
 This document is the canonical **CQS REAL MVP Program** plan of record. It
 registers `CQS-REAL-MVP-1` as the current owner-approved Program without
@@ -31,19 +35,22 @@ naming a successor slice grants no implementation authority
 
 ## 1. Authority and non-claims
 
-S01 registers Program canon only. It does **not**:
+S01 registered Program canon only. It did **not** select a desktop wrapper.
 
-- implement product behavior;
-- select a desktop wrapper;
-- add desktop dependencies or configuration;
+S02 records the evidence-based desktop architecture decision. It does
+**not**:
+
+- implement a production Electron (or other) shell;
+- add desktop dependencies or configuration to the production tree;
 - create a release workflow or installer;
 - resolve signing, notarization, or paid-account questions;
-- authorize or begin `CQS-REAL-MVP-S02-DESKTOP-ARCHITECTURE-QUALIFICATION`;
+- authorize or begin
+  `CQS-REAL-MVP-S03-DESKTOP-DISTRIBUTION-AND-RELEASE-FOUNDATION`;
 - reopen Slices 1–23;
 - activate post-MVP arcs;
 - promote Raspberry Pi, LAN, or additional gameplay modes into REAL MVP.
 
-A named next frontier is **not** implementation authority. S02 requires
+A named next frontier is **not** implementation authority. S03 requires
 **separate owner/Program authorization**.
 
 ---
@@ -149,7 +156,7 @@ authority.
 | conventional macOS installation | **OPEN** |
 | conventional Windows installation | **OPEN** |
 | simple desktop launch | **OPEN** |
-| desktop Host/Display lifecycle | **OPEN** |
+| desktop Host/Display lifecycle | **OPEN** (architecture qualified by S02; production shell not implemented) |
 | release artifacts/version/update path | **OPEN** |
 | in-app teacher team setup | **OPEN** |
 | teacher-simple progressive disclosure | **POLISH REQUIRED** |
@@ -162,7 +169,7 @@ authority.
 | clean-room teacher qualification | **OPEN** |
 | C-3 | **OPEN / REQUIRED** |
 | C-6 | **OPEN / REQUIRED** |
-| `CQS-Q23-CLASS-B-01` | **RELEASE/ARCHITECTURE DISPOSITION REQUIRED** |
+| `CQS-Q23-CLASS-B-01` | **ACCEPTABLE FOR S03 WITH DOCUMENTED CONTROL** |
 | `CQS-Q23-LOW-02` | **OPEN LOW / MONITOR ONLY** |
 | `CQS-OD-066` | **DEFERRED / NOT REQUIRED FOR REAL MVP** |
 
@@ -173,7 +180,9 @@ Retained finding identity is preserved:
 - `LOW-02` (`CQS-Q23-LOW-02`) remains measured startup/precache size and the
   recorded installed-PWA Chrome-tab close caveat; **OPEN LOW / MONITOR ONLY**.
 - `CLASS-B-01` (`CQS-Q23-CLASS-B-01`) remains the SheetJS packaging /
-  supply-chain concern; **RELEASE/ARCHITECTURE DISPOSITION REQUIRED**.
+  supply-chain concern; **ACCEPTABLE FOR S03 WITH DOCUMENTED CONTROL**
+  (build-time `cdn.sheetjs.com` fetch; bundled at runtime; do not re-pin
+  in S02). S03 CI/local desktop builds must be able to reach that host.
 - `CQS-OD-066` remains unresolved GCS learning-target linkage and is
   **not required** to complete REAL MVP.
 
@@ -197,9 +206,10 @@ The Program Orchestrator may amend this sequence if evidence materially
 changes assumptions. Naming a successor slice grants **no implementation
 authority**.
 
-S01 is the registering slice. S02 is the current Program frontier and
-**requires separate Program/owner authorization**. S02 is **not
-authorized** by this document.
+S01 is the registering slice. S02 selected Electron as the primary desktop
+architecture (ADR-021 Proposed until accepted by merge). S03 is the next
+planned Program frontier and **requires separate Program/owner
+authorization**. S03 is **not authorized** by this document.
 
 There is no Slice 24.
 
@@ -207,20 +217,26 @@ There is no Slice 24.
 
 ## 8. Architecture state
 
-S01 makes **no desktop-wrapper decision**.
+S02 selects **Electron** as the primary REAL MVP desktop architecture.
 
-Recorded comparison state only:
+The decision is recorded in
+[`../architecture/ADR-021-real-mvp-desktop-architecture-electron.md`](../architecture/ADR-021-real-mvp-desktop-architecture-electron.md)
+and the qualification receipt
+[`../receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md`](../receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md).
+ADR-021 is **Proposed** until accepted by merge. No production Electron
+shell, dependency, or installer is added by S02.
 
-- **Electron** is the **leading architecture-qualification candidate**
-  because its current primary documentation supports WebHID and native
-  multi-window behavior relevant to existing CQS invariants.
-- **Tauri** remains a **serious comparison candidate** whose OS-webview
-  behavior, particularly WKWebView on macOS, requires compatibility proof
-  before adoption.
-- **PWA/Web** remains a supported alternate.
+Disposition of the S01 comparison set:
 
-S02 owns the evidence-based architecture decision. This document does
-**not** select Electron, Tauri, Neutralino, or any other wrapper.
+- **Electron** — **selected**. Thin Chromium shell around the existing
+  React/Vite core. Preserves Host/Display windows, IndexedDB origin
+  identity, keyboard, Gamepad API, Web Audio, and the ADR-019 WebHID
+  keep-alive / Gamepad gameplay split. Physical packaged Sony
+  requalification remains S03/S06 debt and is not claimed here.
+- **Tauri** — **rejected** as the primary wrapper. Official Tauri 2 macOS
+  webview is WKWebView; system WKWebView has no `navigator.hid`. A native
+  HID keep-alive would be a second controller architecture.
+- **PWA/Web** — remains a supported alternate. Not replaced.
 
 Permanent architecture that this Program must preserve:
 
@@ -244,7 +260,9 @@ These are **recommendations only**, not adopted release architecture:
 - Signing/notarization and paid-account requirements remain owner gates.
 
 S01 does not create a release workflow, installer, version scheme, or
-update implementation.
+update implementation. S02 does not either. Electron is compatible with
+manual versioned GitHub Releases replacement if application identity is
+kept stable; that implementation belongs to S03.
 
 ---
 
@@ -288,10 +306,11 @@ Canonical product identity:
 
 ## 12. Next Program frontier
 
-`CQS-REAL-MVP-S02-DESKTOP-ARCHITECTURE-QUALIFICATION` is the next planned
-Program frontier and requires separate owner/Program authorization.
+`CQS-REAL-MVP-S03-DESKTOP-DISTRIBUTION-AND-RELEASE-FOUNDATION` is the next
+planned Program frontier and requires separate owner/Program
+authorization.
 
 ```text
 routing ≠ authority
-S02: NOT AUTHORIZED pending separate Program authority
+S03: NOT AUTHORIZED pending separate Program authority
 ```

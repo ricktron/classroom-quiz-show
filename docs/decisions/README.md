@@ -107,6 +107,12 @@ This project separates two kinds of durable decision records:
      wire **8**, sync **2**, game-file schema **1**, active-session wire **1**,
      and Session Summary **1** unchanged (Slice 16, Complete — merged via PR
      #40).
+   - [`ADR-021-real-mvp-desktop-architecture-electron.md`](../architecture/ADR-021-real-mvp-desktop-architecture-electron.md)
+     — REAL MVP desktop architecture: Electron thin shell around the existing
+     React/Vite core; Tauri rejected on macOS WKWebView WebHID; PWA/Web
+     retained as the alternate. **Proposed** by
+     `CQS-REAL-MVP-S02`. Production shell remains S03 and is not authorized
+     by this index entry.
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).

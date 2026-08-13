@@ -27,8 +27,9 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S02 desktop architecture qualification |
-| S02 | **NOT AUTHORIZED** pending separate Program authority |
+| Current Program frontier | S03 desktop distribution and release foundation |
+| S02 | Electron selected (**ADR-021 Proposed**); production shell **not** implemented |
+| S03 | **NOT AUTHORIZED** pending separate Program authority |
 | Post-MVP arcs | **INACTIVE** |
 
 [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md) is the historical completed
@@ -91,7 +92,7 @@ See the REAL MVP gap register in
 | --- | --- |
 | conventional macOS / Windows installation | **OPEN** |
 | simple desktop launch | **OPEN** |
-| desktop Host/Display lifecycle | **OPEN** |
+| desktop Host/Display lifecycle | **OPEN** (architecture qualified; production shell not implemented) |
 | release artifacts/version/update path | **OPEN** |
 | in-app teacher team setup | **OPEN** |
 | teacher-simple progressive disclosure | **POLISH REQUIRED** |
@@ -101,7 +102,7 @@ See the REAL MVP gap register in
 | packaged offline/recovery and OS qualification | **OPEN** |
 | clean-room teacher qualification | **OPEN** |
 | **C-3** / **C-6** | **OPEN / REQUIRED** |
-| `CQS-Q23-CLASS-B-01` | **RELEASE/ARCHITECTURE DISPOSITION REQUIRED** |
+| `CQS-Q23-CLASS-B-01` | **ACCEPTABLE FOR S03 WITH DOCUMENTED CONTROL** |
 | `CQS-Q23-LOW-02` | **OPEN LOW / MONITOR ONLY** |
 | `CQS-OD-066` | **DEFERRED / NOT REQUIRED FOR REAL MVP** |
 | **C-7** Raspberry Pi 5 | outside REAL MVP; not an MVP gate |
@@ -114,9 +115,11 @@ Contract versions: see [`../STATUS.md`](../STATUS.md).
 
 Do **not**:
 
-- begin `CQS-REAL-MVP-S02-DESKTOP-ARCHITECTURE-QUALIFICATION`;
-- select a desktop wrapper or add desktop dependencies;
+- begin `CQS-REAL-MVP-S03-DESKTOP-DISTRIBUTION-AND-RELEASE-FOUNDATION`;
+- add production Electron/Tauri dependencies or a production desktop shell;
 - begin desktop packaging / C-3 / C-6 implementation;
+- treat the S02 Electron decision as merged production architecture before
+  this candidate is merged;
 - begin Raspberry Pi work;
 - begin LAN / cross-device host-display work;
 - begin controller-polish implementation without a later bounded
@@ -136,18 +139,21 @@ phones, no networked buzzers, no executable imported content) remain in
 
 ## Next Program-level action
 
-`CQS-REAL-MVP-S02-DESKTOP-ARCHITECTURE-QUALIFICATION` is the next planned
-Program frontier and requires separate owner/Program authorization.
+`CQS-REAL-MVP-S03-DESKTOP-DISTRIBUTION-AND-RELEASE-FOUNDATION` is the next
+planned Program frontier and requires separate owner/Program authorization.
 
 ```text
 routing ≠ authority
 ```
 
-Do **not** authorize or begin S02 from this handoff.
+Do **not** authorize or begin S03 from this handoff. ADR-021 remains
+Proposed until accepted by merge.
 
 ## Architecture pointers
 
 - REAL MVP Program plan: [`../plans/CQS-REAL-MVP-ARC.md`](../plans/CQS-REAL-MVP-ARC.md)
+- Desktop architecture: [`../architecture/ADR-021-real-mvp-desktop-architecture-electron.md`](../architecture/ADR-021-real-mvp-desktop-architecture-electron.md)
+- S02 qualification receipt: [`../receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md`](../receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md)
 - Routing: [`../architecture/ADR-001-github-pages-routing.md`](../architecture/ADR-001-github-pages-routing.md)
 - State/event/sync: [`../architecture/ADR-002-state-event-sync-core.md`](../architecture/ADR-002-state-event-sync-core.md)
 - Import: [`../architecture/ADR-004-canonical-validation-import.md`](../architecture/ADR-004-canonical-validation-import.md)
