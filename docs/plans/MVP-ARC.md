@@ -1,9 +1,22 @@
 # MVP Arc — Classroom Quiz Show
 
-This document records the approved planning packet, the round-based engine
-direction, and the slice sequence. It is the durable plan of record in this
-repository. It does **not** silently rewrite the approved plan; it incorporates
-the round-based engine direction into it.
+This document is the **historical 23-slice plan of record**.
+
+```text
+23-slice plan: COMPLETE
+overall CQS MVP: NOT COMPLETE
+future REAL MVP Program: separate planning / authority
+known required continuation: C-3/C-6 desktop launch/distribution
+```
+
+It records the approved planning packet, the round-based engine direction, and
+the completed slice sequence. It does **not** silently rewrite that plan. It is
+**not** the future REAL MVP Program roadmap. Do not add Slice 24/25 merely to
+continue numbering. Any future program plan requires separate owner authority
+and becomes current only when canonically adopted.
+
+Live status and contributor routing live in [`../STATUS.md`](../STATUS.md) and
+[`../handoff/CURRENT.md`](../handoff/CURRENT.md).
 
 > **Expanded-vision planning exists as post-MVP direction (2026-08-03).**
 > A planning-only documentation slice (`CQS-PLAN-S01`) recorded the owner's
@@ -17,30 +30,18 @@ the round-based engine direction into it.
 > (`CQS-PLAN-S02`) later rebalanced the remaining MVP from 18 to 22 slices
 > (**merged to `main`** via PR #35 at squash
 > `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`, with post-merge reconciliation
-> via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`). **The current MVP
-> sequence is the 23-slice plan below**, per
+> via PR #36 at `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`). **The historical
+> completed sequence is the 23-slice plan below**, per
 > [`../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](../decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md)
 > (`CQS-PLAN-S03`), **merged to `main`** via PR #48 at squash
 > `a73e6f86bf0757aa118cb9c3247f4e6eddaa090b` from reviewed head
 > `b9e30be96af7d2276cae310ef2601cad4424a635` (merged **2026-08-07T18:15:39Z**).
 > Merge evidence:
 > [`../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md`](../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md).
-> Slices 1–23 are `Complete` (Slice 22 via PR #58 squash
-> `e69e81b07979ca03da798037fb2a935cca35f7b9` from accepted head
-> `5def971d4c9884c81796d5769b263bae84ee4dc1`; Slice 21 via PR #55 squash
-> `b1e6d669e91b55b20261e86a47d7818f069b0252` from accepted head
-> `3bd6c91330298c4374db137e3ce220e0d28a5c2f`; Slice 20 via PR #52 squash
-> `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0` from accepted head
-> `45142b96ce91c2f7498dbaa6a47cae278b7c4068`; Slice 19 via PR #50 squash
-> `95573e2468ee67f9e6e5a221de002f35d6421249` from reviewed head
-> `972c07ba61042401f71c999b959a15997e3fbe51`; Slice 18 via PR #46 squash
-> `91c7708626caeaa28b15617a1f0938f4944f7680`; Slice 17 via PR #44 squash
-> `dee2f3c219f9e60113a374ce0ec876ae20c40bc1`; Slice 16 via PR #40 squash
-> `bc3cea65cab8db1481b0b2420be580cc69932f3d`; Slice 23 via PR #65 squash
-> `180d7680779e672d1bf2326250952fc38a3a5411`). Slice 22 owner
-> listening RC PASS. Required post-Slice-23 MVP continuation (C-3/C-6 desktop
-> packaging) remains OPEN / NOT BEGUN. Overall CQS MVP is NOT COMPLETE. Post-MVP arcs
-> still require separate authorization.
+> Slices 1–23 of this plan are `Complete`. Required remaining MVP continuation
+> (C-3/C-6 desktop packaging) remains OPEN / NOT BEGUN. Overall CQS MVP is NOT
+> COMPLETE. Post-MVP arcs still require separate authorization. Delivery
+> chronology for completed slices is preserved in [`../receipts/`](../receipts/).
 
 > **Phase 2B design direction is accepted program guidance (2026-08-03).**
 > The accepted audience-display design direction is registered in
@@ -58,9 +59,10 @@ the round-based engine direction into it.
 > authority by themselves. Phase 2B is **not** a numbered MVP slice. Slice 19 is
 > now `Complete` via PR #50. Slice 20 is now `Complete` via PR #52. Slice 21 is
 > now `Complete` via PR #55. Slice 22 is now `Complete` via PR #58. Slice 23 is
-> now `Complete` via PR #65. The next required MVP frontier is post-Slice-23
-> continuation C-3/C-6 desktop executable/app packaging (OPEN / NOT BEGUN;
-> requires separate authorization). Overall CQS MVP is NOT COMPLETE.
+> now `Complete` via PR #65. This 23-slice plan is complete. Known required
+> remaining MVP continuation is C-3/C-6 desktop executable/app packaging
+> (OPEN / NOT BEGUN; requires separate owner authorization as part of a future
+> REAL MVP Program). Overall CQS MVP is NOT COMPLETE.
 
 ## Product direction (approved)
 
@@ -85,10 +87,9 @@ systems.
 
 ## Slice sequence (23-slice plan, amended)
 
-> This ordering is the plan of record. Later slices must not be started until
-> the current slice is accepted. Details for future slices are intentionally
-> high-level and will be refined when each is picked up; they must not be
-> silently rewritten.
+> This ordering is the historical 23-slice plan of record. All 23 slices are
+> `Complete`. Details below are preserved as the plan that was executed; they
+> must not be silently rewritten. Live routing lives in STATUS / CURRENT.
 >
 > **Amended 2026-07-26 by `ROADMAP-AMENDMENT-001`.** The original plan had 11
 > slices. Slices 1–6 were unchanged and `Complete`; former slices 7–11 were
@@ -123,10 +124,10 @@ systems.
 > **No product implementation is authorized by Amendment 004.** Slice 19 has
 > since been delivered via PR #50. Slice 20 has since been delivered via PR #52.
 > Slice 21 has since been delivered via PR #55. Slice 22 has since been delivered
-> via PR #58. **Current** numbered MVP slices 1–23 are `Complete`. Required
-> remaining MVP work is post-Slice-23 C-3/C-6 desktop packaging, which remains
-> unauthorized / not started and requires separate Program Orchestrator
-> authority. Overall CQS MVP is NOT COMPLETE.
+> via PR #58. Numbered slices 1–23 of this plan are `Complete`. Required
+> remaining MVP work is C-3/C-6 desktop packaging, which remains not begun and
+> requires separate owner authorization as part of a future REAL MVP Program.
+> Overall CQS MVP is NOT COMPLETE.
 
 | #   | Slice                          | Focus (summary)                                                                 | Depends on |
 | --- | ------------------------------ | ------------------------------------------------------------------------------- | ---------- |
@@ -738,10 +739,10 @@ head `d8f6308eccea5144ab1c6b5f49afdfcc2b7d5b5b` (authorized base
 `e69e81b07979ca03da798037fb2a935cca35f7b9`. **Slice 23 is `Complete`** via PR
 [#65](https://github.com/ricktron/classroom-quiz-show/pull/65) at
 `180d7680779e672d1bf2326250952fc38a3a5411`. Required remaining MVP work is
-post-Slice-23 C-3/C-6 desktop packaging (OPEN / NOT BEGUN). Overall CQS MVP is
-NOT COMPLETE. Immediate next action: return to the Program Orchestrator for
-separate C-3/C-6 desktop-packaging authority — **not** implementation from this
-surface alone.
+C-3/C-6 desktop packaging (OPEN / NOT BEGUN). Overall CQS MVP is
+NOT COMPLETE. Live routing is [`../STATUS.md`](../STATUS.md) /
+[`../handoff/CURRENT.md`](../handoff/CURRENT.md) — **not** implementation from
+this historical surface.
 
 ## Slice 8 — scope, acceptance, non-goals
 
@@ -1081,31 +1082,10 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   [`../architecture/ADR-011-media-contract.md`](../architecture/ADR-011-media-contract.md);
   post-merge evidence in
   [`../receipts/2026-07-28-slice-11-post-merge-reconciliation.md`](../receipts/2026-07-28-slice-11-post-merge-reconciliation.md).
-- **Current routing:** Slices 1–15 are `Complete` and merged. Amendment 003
-  (`CQS-PLAN-S02`) delivery is **merged** at squash
-  `2ebeb24099d5f63ccd3247ffb8e8744f89c039bc`, and its post-merge
-  reconciliation is **merged** at squash
-  `da6b4dc3080abf9a8effe142e19a4eb36aa6ad8d`. **Current** MVP count is the
-  23-slice plan per Amendment 004. Slice 16 is **`Complete`** via PR
-  [#40](https://github.com/ricktron/classroom-quiz-show/pull/40) at
-  `bc3cea65cab8db1481b0b2420be580cc69932f3d`. Slice 17 is **`Complete`** via PR
-  [#44](https://github.com/ricktron/classroom-quiz-show/pull/44) at
-  `dee2f3c219f9e60113a374ce0ec876ae20c40bc1`. Slice 18 is **`Complete`** via PR
-  [#46](https://github.com/ricktron/classroom-quiz-show/pull/46) at
-  `91c7708626caeaa28b15617a1f0938f4944f7680`. Slice 19 is **`Complete`** via PR
-  [#50](https://github.com/ricktron/classroom-quiz-show/pull/50) at
-  `95573e2468ee67f9e6e5a221de002f35d6421249`. Slice 20 is **`Complete`** via PR
-  [#52](https://github.com/ricktron/classroom-quiz-show/pull/52) at
-  `86e8f5e6d883e0ca3d02a81e19c7d657f352ccf0`. Slice 21 is **`Complete`** via PR
-  [#55](https://github.com/ricktron/classroom-quiz-show/pull/55) at
-  `b1e6d669e91b55b20261e86a47d7818f069b0252`. Slice 22 is **`Complete`** via PR
-  [#58](https://github.com/ricktron/classroom-quiz-show/pull/58) at
-  `e69e81b07979ca03da798037fb2a935cca35f7b9`. Slice 23 is **`Complete`** via PR
-  [#65](https://github.com/ricktron/classroom-quiz-show/pull/65) at
-  `180d7680779e672d1bf2326250952fc38a3a5411`. Immediate action: return to the
-  Program Orchestrator for separate C-3/C-6 desktop-packaging authority — stop
-  before unauthorized post-Slice-23 implementation. Overall CQS MVP is NOT
-  COMPLETE.
+- **Historical completeness note:** Slices 1–23 of this plan later completed.
+  Live routing is [`../STATUS.md`](../STATUS.md) /
+  [`../handoff/CURRENT.md`](../handoff/CURRENT.md). Overall CQS MVP remains
+  NOT COMPLETE.
 
 ### Slice 12 — Portable export & round-trip import
 

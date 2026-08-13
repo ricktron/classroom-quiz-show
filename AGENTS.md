@@ -5,8 +5,9 @@ Entrypoint for coding agents and human contributors working in this repository.
 This file does **not** grant authority beyond the current owner-approved task.
 Classroom Quiz Show (CQS) remains authoritative for its own product scope,
 implementation, architecture, tests, deployment, and status. Routing, review,
-recommendations, NightWatch summaries, and tool availability are **not**
-permission to mutate.
+recommendations, NightWatch summaries, planning, and tool availability are
+**not** permission to mutate. A named next frontier is not implementation
+authority.
 
 ## Source-of-truth order
 
@@ -14,10 +15,12 @@ permission to mutate.
    what is implemented.
 2. [`docs/PROJECT.md`](docs/PROJECT.md) owns product identity, permanent
    boundaries, non-goals, and approved owner decisions.
-3. [`docs/STATUS.md`](docs/STATUS.md) owns current slice status.
-4. **Accepted ADRs** and roadmap amendments own durable architecture and
-   roadmap decisions.
-5. [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md) owns the planned sequence.
+3. [`docs/STATUS.md`](docs/STATUS.md) owns current program status.
+4. **Accepted ADRs** and owner decisions own durable architecture.
+5. The **current owner-approved program/roadmap plan**, once canonically
+   adopted. [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md) is the historical
+   completed 23-slice plan of record. It does **not** automatically own the
+   sequence of a future REAL MVP Program.
 6. [`docs/handoff/CURRENT.md`](docs/handoff/CURRENT.md) routes the next
    contributor and must agree with higher-precedence truth.
 7. [`docs/receipts/`](docs/receipts/) are historical evidence snapshots, not
@@ -37,8 +40,13 @@ Before changing the repository, read:
 2. [`docs/PROJECT.md`](docs/PROJECT.md)
 3. [`docs/STATUS.md`](docs/STATUS.md)
 4. [`docs/handoff/CURRENT.md`](docs/handoff/CURRENT.md)
-5. [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md)
+5. [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md) as historical 23-slice
+   plan of record
 6. Relevant ADRs, decisions, and receipts for the authorized task
+
+For delivery, repair, review, qualification, and release work, also read
+[`docs/governance/EXECUTION-GUIDANCE.md`](docs/governance/EXECUTION-GUIDANCE.md).
+That file is the canonical detailed execution guide. Do not copy it here.
 
 ## Working discipline
 
@@ -97,3 +105,6 @@ be reported as passing.
 - Completion claims must name supporting evidence.
 - NightWatch may index or summarize CQS but cannot replace CQS implementation
   truth, and must not become a build, runtime, test, or deployment dependency.
+
+The 23-slice foundation/qualification roadmap is Complete. Overall CQS MVP is
+**not** complete. Completing that numbered plan does not complete the product.
