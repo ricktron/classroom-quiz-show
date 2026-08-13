@@ -548,10 +548,10 @@ Presentation Audio is `Complete`** via PR
 Host-only presentation cues (`active-claim` · `positive-award` · `incorrect` ·
 `timer-expired` · `game-complete`); Enable Sound / mute / volume (default
 **0.35**); five original offline WAVs; ADR-020. Owner listening RC **PASS**.
-**PR #58 requires no further product review or merge action.** Slices 1–22 are
-Complete. Slice 23 — Classroom Release Qualification is **IN QUALIFICATION /
-NOT TERMINAL** on canonical `main`
-`06f486c952bb40f03e376839b04a7b72bab6d0c3` under the **23-slice** MVP plan
+**PR #58 requires no further product review or merge action.** Slices 1–23 are
+Complete. Slice 23 — Classroom Release Qualification is **Complete** —
+**COMPLETE / QUALIFIED / MERGED / POST-MERGE VERIFIED** on canonical `main`
+`180d7680779e672d1bf2326250952fc38a3a5411` under the **23-slice** MVP plan
 ([`docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md);
 prior Amendment 003:
 [`docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](docs/decisions/ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
@@ -564,17 +564,18 @@ reset / M1), and reconciliation
 Historical PR [#60](https://github.com/ricktron/classroom-quiz-show/pull/60) is
 **CLOSED / UNMERGED / HISTORICAL / SUPERSEDED**. Broad Stages D–I are
 **executed**; owner evidence is **complete** (VoiceOver, physical
-projector/audio, Sony smoke, installed PWA/owner-live). Verdict:
-`CQS_S23_D_I_QUALIFICATION_REVIEW_READY`. Qualification evidence PR
-[#65](https://github.com/ricktron/classroom-quiz-show/pull/65) is **OPEN /
-UNMERGED** and ready for fresh independent exact-head review — Slice 23 is
-**not** terminal. See
-[`docs/receipts/2026-08-12-slice-23-broad-d-i-qualification.md`](docs/receipts/2026-08-12-slice-23-broad-d-i-qualification.md).
+projector/audio, Sony smoke, installed PWA/owner-live). Qualification evidence
+PR [#65](https://github.com/ricktron/classroom-quiz-show/pull/65) is **TERMINAL /
+MERGED / POST-MERGE VERIFIED** (squash `180d768…` from accepted head
+`5416696e…`, merged **2026-08-13T01:01:00Z**). See
+[`docs/receipts/2026-08-12-slice-23-broad-d-i-qualification.md`](docs/receipts/2026-08-12-slice-23-broad-d-i-qualification.md)
+and
+[`docs/receipts/2026-08-12-slice-23-terminal-post-merge-reconciliation.md`](docs/receipts/2026-08-12-slice-23-terminal-post-merge-reconciliation.md).
 Known LOW debt **F-UX-01** (`CQS-Q23-LOW-01`) and **LOW-02** remain open;
 `CLASS-B-01` remains Class B. Theme song remains post-MVP. The inherited Final
 mid-refresh durability race is **CLOSED** via PR #61. `CQS-OD-066` remains
-unresolved. Required post-Slice-23 MVP functionality (including C-3 desktop
-packaging) has **not** begun. **OVERALL CQS MVP is NOT COMPLETE.** See
+unresolved. Required post-Slice-23 MVP functionality (including C-3/C-6 desktop
+executable/app packaging) has **not** begun. **OVERALL CQS MVP is NOT COMPLETE.** See
 [`docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md`](docs/architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md),
 [`docs/architecture/ADR-020-minimal-presentation-audio.md`](docs/architecture/ADR-020-minimal-presentation-audio.md),
 [`docs/receipts/2026-08-10-slice-22-minimal-presentation-audio-implementation.md`](docs/receipts/2026-08-10-slice-22-minimal-presentation-audio-implementation.md),

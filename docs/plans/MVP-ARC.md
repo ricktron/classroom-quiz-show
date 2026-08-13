@@ -25,7 +25,7 @@ the round-based engine direction into it.
 > `b9e30be96af7d2276cae310ef2601cad4424a635` (merged **2026-08-07T18:15:39Z**).
 > Merge evidence:
 > [`../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md`](../receipts/2026-08-07-cqs-plan-s03-post-merge-reconciliation.md).
-> Slices 1–22 remain `Complete` (Slice 22 via PR #58 squash
+> Slices 1–23 are `Complete` (Slice 22 via PR #58 squash
 > `e69e81b07979ca03da798037fb2a935cca35f7b9` from accepted head
 > `5def971d4c9884c81796d5769b263bae84ee4dc1`; Slice 21 via PR #55 squash
 > `b1e6d669e91b55b20261e86a47d7818f069b0252` from accepted head
@@ -36,8 +36,10 @@ the round-based engine direction into it.
 > `972c07ba61042401f71c999b959a15997e3fbe51`; Slice 18 via PR #46 squash
 > `91c7708626caeaa28b15617a1f0938f4944f7680`; Slice 17 via PR #44 squash
 > `dee2f3c219f9e60113a374ce0ec876ae20c40bc1`; Slice 16 via PR #40 squash
-> `bc3cea65cab8db1481b0b2420be580cc69932f3d`); Slice 23 remains `Planned` and
-> unauthorized / not started. Slice 22 owner listening RC PASS. Post-MVP arcs
+> `bc3cea65cab8db1481b0b2420be580cc69932f3d`; Slice 23 via PR #65 squash
+> `180d7680779e672d1bf2326250952fc38a3a5411`). Slice 22 owner
+> listening RC PASS. Required post-Slice-23 MVP continuation (C-3/C-6 desktop
+> packaging) remains OPEN / NOT BEGUN. Overall CQS MVP is NOT COMPLETE. Post-MVP arcs
 > still require separate authorization.
 
 > **Phase 2B design direction is accepted program guidance (2026-08-03).**
@@ -55,10 +57,10 @@ the round-based engine direction into it.
 > 003, and Phase 3 readiness never granted Slice 18 (or Slice 19) implementation
 > authority by themselves. Phase 2B is **not** a numbered MVP slice. Slice 19 is
 > now `Complete` via PR #50. Slice 20 is now `Complete` via PR #52. Slice 21 is
-> now `Complete` via PR #55. Slice 22 is now `Complete` via PR #58. The next
-> planned frontier is Slice 23 — Classroom Release Qualification (`Planned` /
-> unauthorized / not started; requires separate Program Orchestrator
-> authority).
+> now `Complete` via PR #55. Slice 22 is now `Complete` via PR #58. Slice 23 is
+> now `Complete` via PR #65. The next required MVP frontier is post-Slice-23
+> continuation C-3/C-6 desktop executable/app packaging (OPEN / NOT BEGUN;
+> requires separate authorization). Overall CQS MVP is NOT COMPLETE.
 
 ## Product direction (approved)
 
@@ -121,9 +123,10 @@ systems.
 > **No product implementation is authorized by Amendment 004.** Slice 19 has
 > since been delivered via PR #50. Slice 20 has since been delivered via PR #52.
 > Slice 21 has since been delivered via PR #55. Slice 22 has since been delivered
-> via PR #58. **Current** unauthorized product frontier is Slice 23; the next
-> planned product frontier is Slice 23, which remains unauthorized / not started
-> and requires separate Program Orchestrator authority before implementation.
+> via PR #58. **Current** numbered MVP slices 1–23 are `Complete`. Required
+> remaining MVP work is post-Slice-23 C-3/C-6 desktop packaging, which remains
+> unauthorized / not started and requires separate Program Orchestrator
+> authority. Overall CQS MVP is NOT COMPLETE.
 
 | #   | Slice                          | Focus (summary)                                                                 | Depends on |
 | --- | ------------------------------ | ------------------------------------------------------------------------------- | ---------- |
@@ -149,7 +152,7 @@ systems.
 | 20  | **Spreadsheet Authoring Seed** | Classic Board and Board+Final workbooks → draft → teacher approval → canonical JSON → existing importer. **Complete — squash-merged via PR #52 at `86e8f5e…` from accepted head `45142b9…`; see ADR-018.** | 4, 5, 12, 14 |
 | 21  | **Sony Buzz Supported-Profile Operationalization** | One exact supported profile (macOS/Chrome/Namtai `Wbuzz` `054c:1000`/four-slot design/keyboard fallback); permanent keep-alive. **Complete — exact-head squash-merged via PR #55 (`b1e6d66…`) from accepted head `3bd6c91…`. Three-controller product RC PASS; owner disposition sufficient. See ADR-019.** | 9, 10, 13 |
 | 22  | **Minimal Presentation Audio** | Bounded application-owned non-authoritative live cues (buzz/claim, award, incorrect, timer expiry, game complete); host mute/volume; offline licensing-safe assets; visual parity. **Complete — exact-head squash-merged via PR #58 (`e69e81b…`) from accepted head `5def971…`; owner listening RC PASS; see ADR-020.** | 18 (arch); sequenced after 21 |
-| 23  | **Classroom Release Qualification** | Teacher-reliant classroom proof incl. Slice 22 audio gates and Phase 2B visual-fidelity calibration; no new architecture or features; Pi 5 observational only. | 15–22 |
+| 23  | **Classroom Release Qualification** | Teacher-reliant classroom proof incl. Slice 22 audio gates and Phase 2B visual-fidelity calibration; no new architecture or features; Pi 5 observational only. **Complete — exact-head squash-merged via PR #65 (`180d768…`) from accepted head `5416696e…`; D–I PASS; owner evidence complete.** | 15–22 |
 
 Additional round engines (image-identification, timeline-ordering, matching,
 data-interpretation, concept-map, claim-evidence-reasoning, whiteboard-challenge,
@@ -732,11 +735,13 @@ head `d8f6308eccea5144ab1c6b5f49afdfcc2b7d5b5b` (authorized base
 [#55](https://github.com/ricktron/classroom-quiz-show/pull/55) at
 `b1e6d669e91b55b20261e86a47d7818f069b0252`. **Slice 22 is `Complete`** via PR
 [#58](https://github.com/ricktron/classroom-quiz-show/pull/58) at
-`e69e81b07979ca03da798037fb2a935cca35f7b9`. Slice 23 remains `Planned` and
-unauthorized / not started under the 23-slice plan (Amendment 004; Amendment 003
-delivery merged at `2ebeb240…`; post-merge reconciliation merged at `da6b4dc…`).
-Immediate next action: return to the Program Orchestrator for separate Slice 23
-authority — **not** qualification from this surface alone.
+`e69e81b07979ca03da798037fb2a935cca35f7b9`. **Slice 23 is `Complete`** via PR
+[#65](https://github.com/ricktron/classroom-quiz-show/pull/65) at
+`180d7680779e672d1bf2326250952fc38a3a5411`. Required remaining MVP work is
+post-Slice-23 C-3/C-6 desktop packaging (OPEN / NOT BEGUN). Overall CQS MVP is
+NOT COMPLETE. Immediate next action: return to the Program Orchestrator for
+separate C-3/C-6 desktop-packaging authority — **not** implementation from this
+surface alone.
 
 ## Slice 8 — scope, acceptance, non-goals
 
@@ -1095,10 +1100,12 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   [#55](https://github.com/ricktron/classroom-quiz-show/pull/55) at
   `b1e6d669e91b55b20261e86a47d7818f069b0252`. Slice 22 is **`Complete`** via PR
   [#58](https://github.com/ricktron/classroom-quiz-show/pull/58) at
-  `e69e81b07979ca03da798037fb2a935cca35f7b9`. Slice 23 remains `Planned` and
-  unauthorized / not started. Immediate action: return to the Program
-  Orchestrator for separate Slice 23 authority — stop before unauthorized
-  qualification.
+  `e69e81b07979ca03da798037fb2a935cca35f7b9`. Slice 23 is **`Complete`** via PR
+  [#65](https://github.com/ricktron/classroom-quiz-show/pull/65) at
+  `180d7680779e672d1bf2326250952fc38a3a5411`. Immediate action: return to the
+  Program Orchestrator for separate C-3/C-6 desktop-packaging authority — stop
+  before unauthorized post-Slice-23 implementation. Overall CQS MVP is NOT
+  COMPLETE.
 
 ### Slice 12 — Portable export & round-trip import
 
@@ -1508,8 +1515,20 @@ cloud sync, analytics, AI or LMS integration. **No new runtime dependency.**
   (CI alone is insufficient).
 - **Impact:** schema no · public-wire no · storage no · UI polish · deployment
   verification **yes**.
-- **Status:** `Planned` — unstarted / unauthorized.
-- **Owner gate:** separate authorization; owner live verification required.
+- **Status:** `Complete` — qualification evidence PR #65 exact-head
+  squash-merged at `180d7680779e672d1bf2326250952fc38a3a5411` from accepted
+  head `5416696e8cbcd29ec5e7e73e3ea91c6766b172b0` (merged
+  **2026-08-13T01:01:00Z**); independent exact-head re-review **PASS**;
+  post-merge CI/Pages **SUCCESS**; Stages D–I **PASS** (Stage I qualified with
+  recorded non-blocking limitations); owner evidence complete; no new Class A.
+  Required post-Slice-23 MVP continuation (C-3/C-6 desktop packaging) remains
+  **OPEN / NOT BEGUN**. Overall CQS MVP is **NOT COMPLETE**. See
+  [`../receipts/2026-08-12-slice-23-broad-d-i-qualification.md`](../receipts/2026-08-12-slice-23-broad-d-i-qualification.md)
+  and
+  [`../receipts/2026-08-12-slice-23-terminal-post-merge-reconciliation.md`](../receipts/2026-08-12-slice-23-terminal-post-merge-reconciliation.md).
+- **Owner gate:** owner live verification satisfied (VoiceOver, projector,
+  classroom audio, Sony, installed PWA). No further Slice 23 qualification lane
+  is owed.
 
 > **Historical note.** Under the former 18-slice plan, remaining work was named
 > Slice 15 (session summary & compatible-profile reporting), Slice 16 (theme
