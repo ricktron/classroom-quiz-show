@@ -27,9 +27,10 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S03 desktop distribution and release foundation |
-| S02 | Electron selected (**ADR-021 Proposed**); production shell **not** implemented |
-| S03 | **NOT AUTHORIZED** pending separate Program authority |
+| Current Program frontier | S04 teacher-simple setup and support |
+| S02 | Electron selected (**ADR-021 Accepted**) |
+| S03 | production Electron thin shell + unsigned packaging path **implemented** |
+| S04 | **NOT AUTHORIZED** pending separate Program authority |
 | Post-MVP arcs | **INACTIVE** |
 
 [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md) is the historical completed
@@ -54,6 +55,9 @@ surface. There is no Slice 24.
 Teacher classroom path:
 [`../teacher/QUICK_START.md`](../teacher/QUICK_START.md).
 
+Desktop install/start (unsigned artifacts):
+[`../teacher/DESKTOP.md`](../teacher/DESKTOP.md).
+
 Slice 23 qualification record:
 [`../qualification/SLICE-23-QUALIFICATION-PLAN.md`](../qualification/SLICE-23-QUALIFICATION-PLAN.md).
 
@@ -72,13 +76,23 @@ Playable classroom engine on that foundation:
 - spreadsheet authoring, portable packs, local persistence, audience
   display, minimal presentation audio.
 
-Those remain **existing qualified foundations**. Do not rewrite them as
-unfinished from scratch.
+S03 adds a production Electron thin shell around that same core: custom
+origin `cqs://app`, Host/Display native windows, stable app identity,
+unsigned macOS/Windows packaging, and a release-build workflow. That is
+the C-3 / C-6 **implementation foundation**, not a signed teacher release
+and not S06 integrated qualification.
+
+Those remain **existing qualified foundations** plus the S03 desktop
+foundation. Do not rewrite them as unfinished from scratch.
 
 Slice 23 terminal evidence:
 
 - [`../receipts/2026-08-12-slice-23-broad-d-i-qualification.md`](../receipts/2026-08-12-slice-23-broad-d-i-qualification.md)
 - [`../receipts/2026-08-12-slice-23-terminal-post-merge-reconciliation.md`](../receipts/2026-08-12-slice-23-terminal-post-merge-reconciliation.md)
+
+S03 evidence:
+
+- [`../receipts/2026-08-13-cqs-real-mvp-s03-desktop-distribution-release-foundation.md`](../receipts/2026-08-13-cqs-real-mvp-s03-desktop-distribution-release-foundation.md)
 
 Historical per-slice merge chronology is preserved in
 [`../receipts/`](../receipts/). Do not treat this handoff as that ledger.
@@ -90,18 +104,18 @@ See the REAL MVP gap register in
 
 | Item | Program-adoption state |
 | --- | --- |
-| conventional macOS / Windows installation | **OPEN** |
-| simple desktop launch | **OPEN** |
-| desktop Host/Display lifecycle | **OPEN** (architecture qualified; production shell not implemented) |
-| release artifacts/version/update path | **OPEN** |
+| conventional macOS / Windows installation | **FOUNDATION IMPLEMENTED / UNSIGNED** |
+| simple desktop launch | **FOUNDATION IMPLEMENTED** |
+| desktop Host/Display lifecycle | **FOUNDATION IMPLEMENTED** |
+| release artifacts/version/update path | **FOUNDATION IMPLEMENTED** (manual replacement; no auto-update) |
 | in-app teacher team setup | **OPEN** |
 | teacher-simple progressive disclosure | **POLISH REQUIRED** |
 | controller `F-UX-01` | **POLISH REQUIRED** |
 | feedback/support path | **OPEN** |
 | flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** |
-| packaged offline/recovery and OS qualification | **OPEN** |
+| packaged offline/recovery and OS qualification | **PARTIAL** (shell proven; packaged Sony **NOT RUN**; Windows physical runtime **NOT RUN**) |
 | clean-room teacher qualification | **OPEN** |
-| **C-3** / **C-6** | **OPEN / REQUIRED** |
+| **C-3** / **C-6** | **FOUNDATION IMPLEMENTED / UNSIGNED** |
 | `CQS-Q23-CLASS-B-01` | **ACCEPTABLE FOR S03 WITH DOCUMENTED CONTROL** |
 | `CQS-Q23-LOW-02` | **OPEN LOW / MONITOR ONLY** |
 | `CQS-OD-066` | **DEFERRED / NOT REQUIRED FOR REAL MVP** |
@@ -115,19 +129,18 @@ Contract versions: see [`../STATUS.md`](../STATUS.md).
 
 Do **not**:
 
-- begin `CQS-REAL-MVP-S03-DESKTOP-DISTRIBUTION-AND-RELEASE-FOUNDATION`;
-- add production Electron/Tauri dependencies or a production desktop shell;
-- begin desktop packaging / C-3 / C-6 implementation;
-- treat the S02 Electron decision as merged production architecture before
-  this candidate is merged;
+- begin `CQS-REAL-MVP-S04-TEACHER-SIMPLE-SETUP-AND-SUPPORT`;
+- begin S05 visual-fidelity work or S06 integrated release qualification;
+- silently decide Apple/Windows signing, fee waiver, CPU/OS matrix, or
+  public teacher-release publication;
+- implement auto-update;
 - begin Raspberry Pi work;
 - begin LAN / cross-device host-display work;
 - begin controller-polish implementation without a later bounded
   authorization;
 - promote additional gameplay modes into REAL MVP;
 - activate post-MVP arcs;
-- declare the teacher-adoptable product complete because the 23-slice
-  roadmap is complete;
+- declare the teacher-adoptable product complete;
 - reopen completed Slices 1–23 product or qualification lanes;
 - reopen, rebase, or merge historical PR #60;
 - treat this handoff as product authority.
@@ -139,20 +152,20 @@ phones, no networked buzzers, no executable imported content) remain in
 
 ## Next Program-level action
 
-`CQS-REAL-MVP-S03-DESKTOP-DISTRIBUTION-AND-RELEASE-FOUNDATION` is the next
-planned Program frontier and requires separate owner/Program authorization.
+`CQS-REAL-MVP-S04-TEACHER-SIMPLE-SETUP-AND-SUPPORT` is the next planned
+Program frontier and requires separate owner/Program authorization.
 
 ```text
 routing ≠ authority
 ```
 
-Do **not** authorize or begin S03 from this handoff. ADR-021 remains
-Proposed until accepted by merge.
+Do **not** authorize or begin S04 from this handoff.
 
 ## Architecture pointers
 
 - REAL MVP Program plan: [`../plans/CQS-REAL-MVP-ARC.md`](../plans/CQS-REAL-MVP-ARC.md)
 - Desktop architecture: [`../architecture/ADR-021-real-mvp-desktop-architecture-electron.md`](../architecture/ADR-021-real-mvp-desktop-architecture-electron.md)
+- S03 foundation receipt: [`../receipts/2026-08-13-cqs-real-mvp-s03-desktop-distribution-release-foundation.md`](../receipts/2026-08-13-cqs-real-mvp-s03-desktop-distribution-release-foundation.md)
 - S02 qualification receipt: [`../receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md`](../receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md)
 - Routing: [`../architecture/ADR-001-github-pages-routing.md`](../architecture/ADR-001-github-pages-routing.md)
 - State/event/sync: [`../architecture/ADR-002-state-event-sync-core.md`](../architecture/ADR-002-state-event-sync-core.md)
@@ -170,7 +183,10 @@ further action.
 ```bash
 npm ci
 npm run verify       # lint + typecheck + unit
-npm run verify:all   # verify + production build + Playwright
+npm run verify:all   # verify + production web build + Playwright
+npm run build:desktop
+npm run test:desktop
+npm run package:desktop
 ```
 
 A bounded packet may narrow required checks. An unrun check must never be

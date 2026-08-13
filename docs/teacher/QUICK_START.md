@@ -4,6 +4,10 @@ Classroom Quiz Show is a local-first classroom game-show host. You run a private
 **Host** screen on your laptop; students watch the public **Display** on the
 projector.
 
+The conventional teacher path is the **desktop application**. See
+[`DESKTOP.md`](DESKTOP.md) for install/start, unsigned-artifact warnings, and
+manual updates. The GitHub Pages PWA remains a supported alternate.
+
 ## 1. Open the Host
 
 From the start screen, choose **Open Host**.

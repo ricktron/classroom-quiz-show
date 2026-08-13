@@ -110,9 +110,8 @@ This project separates two kinds of durable decision records:
    - [`ADR-021-real-mvp-desktop-architecture-electron.md`](../architecture/ADR-021-real-mvp-desktop-architecture-electron.md)
      — REAL MVP desktop architecture: Electron thin shell around the existing
      React/Vite core; Tauri rejected on macOS WKWebView WebHID; PWA/Web
-     retained as the alternate. **Proposed** by
-     `CQS-REAL-MVP-S02`. Production shell remains S03 and is not authorized
-     by this index entry.
+     retained as the alternate. **Accepted.** S02 selected the architecture;
+     S03 implements the production shell and unsigned packaging path.
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).

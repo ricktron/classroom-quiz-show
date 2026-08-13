@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { ROUTES } from './paths'
+import { isDesktopRuntime } from '../runtime/cqsRuntime'
+import { ROUTES, absoluteDisplayUrlWithTheme } from './paths'
 
 /**
  * Root entry: a lightweight role-selection screen. No game setup here — that is
@@ -19,9 +20,25 @@ export function RootRoute() {
         <Link className="btn" to={ROUTES.host}>
           Open Host
         </Link>
-        <Link className="btn btn--secondary" to={ROUTES.display}>
-          Open Display
-        </Link>
+        {isDesktopRuntime() ? (
+          <button
+            type="button"
+            className="btn btn--secondary"
+            onClick={() => {
+              window.open(
+                absoluteDisplayUrlWithTheme('default'),
+                'quiz-show-display',
+                'noopener',
+              )
+            }}
+          >
+            Open Display
+          </button>
+        ) : (
+          <Link className="btn btn--secondary" to={ROUTES.display}>
+            Open Display
+          </Link>
+        )}
       </nav>
     </main>
   )

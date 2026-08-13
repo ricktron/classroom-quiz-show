@@ -1,14 +1,14 @@
 # ADR-021 — REAL MVP desktop architecture (Electron thin shell)
 
-- **Status:** Proposed — `CQS-REAL-MVP-S02` architecture-qualification
-  candidate. Not production-implemented. Not canonical until this
-  documentation candidate is merged. Independent exact-head review is
-  required.
+- **Status:** Accepted
 - **Date:** 2026-08-13
 - **Slice:** `CQS-REAL-MVP-S02-DESKTOP-ARCHITECTURE-QUALIFICATION`
+  (decision); `CQS-REAL-MVP-S03-DESKTOP-DISTRIBUTION-AND-RELEASE-FOUNDATION`
+  (production shell)
 - **Program:** `CQS-REAL-MVP-1`
 - **Authorization:**
-  `AUTHORIZE-CQS-REAL-MVP-S02-DESKTOP-ARCHITECTURE-QUALIFICATION-1`
+  `AUTHORIZE-CQS-REAL-MVP-S02-DESKTOP-ARCHITECTURE-QUALIFICATION-1`;
+  `AUTHORIZE-CQS-REAL-MVP-S03-DESKTOP-DISTRIBUTION-AND-RELEASE-FOUNDATION-1`
 - **Depends on:** [ADR-001](ADR-001-github-pages-routing.md),
   [ADR-002](ADR-002-state-event-sync-core.md),
   [ADR-004](ADR-004-canonical-validation-import.md),
@@ -21,6 +21,9 @@
   existing game core, or ADR-019’s WebHID / Gamepad split.
 - **Evidence:**
   [`../receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md`](../receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md)
+  (architecture selection);
+  [`../receipts/2026-08-13-cqs-real-mvp-s03-desktop-distribution-release-foundation.md`](../receipts/2026-08-13-cqs-real-mvp-s03-desktop-distribution-release-foundation.md)
+  (production shell)
 
 ## Context
 
@@ -173,6 +176,27 @@ S03 may implement the Electron shell. It must:
 9. Produce conventional macOS and Windows artifacts. Signing/notarization
    remain owner gates. Do not implement auto-update.
 
+## S03 production implementation
+
+S03 implements the shell bound above:
+
+| Concern | Implementation |
+| --- | --- |
+| Shared core | Existing Vite React app; desktop mode `base: '/'`, PWA/SW omitted |
+| Origin | Privileged custom scheme `cqs://app` (not `file://`) |
+| Identity | `appId` `com.classroomquizshow.app`; product name `Classroom Quiz Show`; userData derived from product name, not version |
+| Host / Display | Host at `#/host`; Display only via same-origin `#/display` native window; Display hash-locked; closing Display leaves Host; closing Host quits |
+| Security | `nodeIntegration: false`, `contextIsolation: true`, `sandbox: true`, no preload; restrictive CSP on the custom scheme; unexpected navigation/`window.open` denied |
+| Sony HID | Session handlers grant WebHID only for `054c:1000`; Chromium HID blocklist left enabled |
+| Persistence | Unchanged IndexedDB v4 in the renderer |
+| Packaging | electron-builder only (macOS zip/dmg, Windows NSIS); unsigned qualification artifacts |
+| Updates | Manual versioned replacement; auto-update is not implemented |
+| Web/PWA | Unchanged `npm run build` / GitHub Pages path |
+
+Version identity is `package.json` `version` (currently `0.1.0` pre-1.0). The
+Program Orchestrator may select the first public teacher version later by
+bumping that field without changing `appId` or product name.
+
 ## `CQS-Q23-CLASS-B-01`
 
 Disposition: **ACCEPTABLE FOR S03 WITH DOCUMENTED CONTROL**.
@@ -184,26 +208,39 @@ includes SheetJS; packaged end-user runtime does not contact
 `cdn.sheetjs.com`. GitHub Actions `npm ci` on canonical `main` currently
 succeeds. Local `npm ci` on the S02 host succeeded.
 
-S03 must document that release CI and local desktop builds need network
-reachability to that host. If it becomes unreachable, repair is required
-then. S02 does **not** re-pin SheetJS.
+S03 documents that release CI and local desktop builds need network
+reachability to that host. Packaged end-user runtime does not. SheetJS was
+**not** re-pinned. If `cdn.sheetjs.com` becomes unreachable, stop for a
+bounded repair finding.
 
-`CQS-Q23-LOW-02` remains **OPEN LOW / MONITOR ONLY**. Observed production
-JS chunk **1256.80 kB**. Do not optimize bundle size merely because
-desktop packaging is being studied.
+`CQS-Q23-LOW-02` remains **OPEN LOW / MONITOR ONLY**. S03 desktop renderer
+JS chunk **1254.71 kB** (gzip **374.53 kB**). Local unsigned macOS zip was
+**114 MB**, dominated by the bundled Electron/Chromium runtime. Do not
+optimize bundle or installer size merely because Electron packaging is
+larger than the PWA.
 
 ## Contract / version impact
 
 `NO AUTHORITATIVE CONTRACT CHANGE`
 
-No production Electron dependency is added by S02. IndexedDB **4**, Sony
-supported profile **1**, public-state wire **8**, and the other current
-contract versions remain unchanged.
+IndexedDB **4**, Sony supported profile **1**, public-state wire **8**, and
+the other current contract versions remain unchanged. Electron is a
+packaging/runtime shell around the existing renderer, not a second engine.
 
-## Non-goals (S02)
+## Non-goals (S02, historical)
 
-Production Electron/Tauri dependencies; installers; release workflows;
-signing; notarization; GitHub Releases implementation; auto-update;
-teacher-simple setup; feedback UI; visual-fidelity work; Raspberry Pi;
-LAN; additional gameplay modes; physical desktop Sony certification;
-Windows packaged runtime observation on this Mac; re-pinning SheetJS.
+S02 did not add production Electron/Tauri dependencies, installers, release
+workflows, signing, notarization, GitHub Releases publication, auto-update,
+teacher-simple setup, feedback UI, visual-fidelity work, Raspberry Pi, LAN,
+additional gameplay modes, physical desktop Sony certification, Windows
+packaged runtime observation, or a SheetJS re-pin. Those S02 non-goals
+remain accurate as a description of S02. S03 implements the production
+shell and packaging path; the S03 non-goals list below is the current
+bound.
+
+## Non-goals (S03)
+
+Signing; notarization; GitHub Releases publication of a teacher-trusted
+build; auto-update; teacher-simple setup (S04); feedback UI; visual-fidelity
+work (S05); Raspberry Pi; LAN; additional gameplay modes; Windows physical
+runtime qualification; broadening Sony hardware; re-pinning SheetJS.

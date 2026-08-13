@@ -120,7 +120,11 @@ audio, or board styling.
 ## Approved product decisions (owner)
 
 - **Working name / slug:** Classroom Quiz Show / `classroom-quiz-show`.
-- **Deployment target:** GitHub Pages (static).
+- **Deployment target:** REAL MVP conventional path is the teacher-launched
+  Electron desktop application (macOS and Windows). GitHub Pages (static PWA)
+  remains the supported web alternate. See
+  [`architecture/ADR-021-real-mvp-desktop-architecture-electron.md`](architecture/ADR-021-real-mvp-desktop-architecture-electron.md)
+  and [`teacher/DESKTOP.md`](teacher/DESKTOP.md).
 - **Subject seeds:** Earth & Space Science (primary), Ecology (secondary).
 - **Default category-board point ladder:** 100, 200, 300, 400, 500. (Slice 5
   implements the board; the ladder is authored per game, and this remains the

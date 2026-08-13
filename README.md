@@ -13,7 +13,8 @@ review, qualification, and release work also follow
 
 Teachers: see [`docs/teacher/QUICK_START.md`](docs/teacher/QUICK_START.md) for the
 ordinary classroom path — open Host, load a game, set up teams/controllers, open
-the audience Display, and begin play.
+the audience Display, and begin play. Desktop install/start (unsigned artifacts)
+is in [`docs/teacher/DESKTOP.md`](docs/teacher/DESKTOP.md).
 
 > **Not a Jeopardy clone.** The category-and-point-value board is the _first_
 > round type this engine supports, not the whole product. See
@@ -27,10 +28,11 @@ the audience Display, and begin play.
   plan:
   [`docs/plans/CQS-REAL-MVP-ARC.md`](docs/plans/CQS-REAL-MVP-ARC.md).
 - Current planned Program frontier:
-  `CQS-REAL-MVP-S02-DESKTOP-ARCHITECTURE-QUALIFICATION`. S02 requires
+  `CQS-REAL-MVP-S04-TEACHER-SIMPLE-SETUP-AND-SUPPORT`. S04 requires
   **separate owner/Program authorization**.
-- Routing is not authority. This README does **not** authorize S02 or product
-  implementation.
+- S03 implements the production Electron desktop shell and unsigned
+  packaging path. Routing is not authority. This README does **not**
+  authorize S04 or a signed teacher release.
 - Post-MVP arcs remain inactive.
 
 Live status, open items, and contract versions:
@@ -70,7 +72,8 @@ Product identity and non-goals: [`docs/PROJECT.md`](docs/PROJECT.md).
 The Slice 1 foundation remains: React + TypeScript + Vite, hash routing with
 separate host and display routes, fail-closed display errors, installable PWA,
 GitHub Pages under `/classroom-quiz-show/`, and lint / typecheck / Vitest /
-Playwright.
+Playwright. REAL MVP adds a production Electron thin shell around that same
+core (`cqs://app`) for conventional macOS and Windows launch.
 
 ## Requirements
 
@@ -119,7 +122,18 @@ fail-closed behavior. The full rule is in
 ## Build
 
 ```bash
-npm run build       # tsc -b && vite build  → dist/
+npm run build            # tsc -b && vite build  → dist/  (web/PWA, GitHub Pages base)
+npm run build:desktop    # Vite desktop renderer (base /) + Electron main process
+npm run desktop          # build:desktop && launch unpackaged Electron
+npm run package:desktop  # unsigned macOS/Windows artifacts via electron-builder
+```
+
+Desktop artifacts are **unsigned** qualification/development-candidate builds.
+See [`docs/teacher/DESKTOP.md`](docs/teacher/DESKTOP.md). Auto-update is not
+implemented; replace a versioned build to update.
+
+```bash
+npm run test:desktop     # Electron Playwright shell tests (builds desktop first)
 ```
 
 ## Production preview
