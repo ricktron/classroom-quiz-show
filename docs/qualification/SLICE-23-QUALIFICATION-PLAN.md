@@ -2,23 +2,22 @@
 
 **Slice identifier:** `CQS-SLICE-23-CLASSROOM-RELEASE-QUALIFICATION`
 **Parent authorization:** `AUTHORIZE-CQS-SLICE-23-CLASSROOM-RELEASE-QUALIFICATION-1`
-**Reconciliation authorization:**
-`AUTHORIZE-CQS-SLICE-23-POST-REPAIR-EVIDENCE-RECONCILIATION-AND-RESUMPTION-PREP-1`
-**D–I resumption authorization:**
-`AUTHORIZE-CQS-SLICE-23-BROAD-STAGES-D-I-QUALIFICATION-RESUMPTION-1`
-**Owner-evidence completion authorization:**
-`AUTHORIZE-CQS-SLICE-23-PR65-OWNER-EVIDENCE-COMPLETION-AND-QUALIFICATION-REVIEW-READY-1`
+**Terminal reconciliation authorization:**
+`AUTHORIZE-CQS-SLICE-23-TERMINAL-POST-MERGE-CANONICAL-RECONCILIATION-1`
 **Evidence-state ID (current frontier):**
+`CQS-SLICE-23-TERMINAL-POST-MERGE-CANONICAL-RECONCILIATION-ES-1`
+**Prior merge-verification evidence-state:**
+`CQS-SLICE-23-PR65-CORRECTED-EXACT-HEAD-MERGE-ES-1`
+**Prior independent re-review authorization:**
+`AUTHORIZE-CQS-SLICE-23-PR65-CORRECTED-HEAD-FRESH-INDEPENDENT-RE-REVIEW-1`
+**Prior D–I / owner-evidence evidence-states:**
+`CQS-SLICE-23-BROAD-STAGES-D-I-QUALIFICATION-RESUMPTION-ES-1`;
 `CQS-SLICE-23-PR65-OWNER-EVIDENCE-COMPLETION-ES-1`
-**Prior D–I resumption evidence-state:**
-`CQS-SLICE-23-BROAD-STAGES-D-I-QUALIFICATION-RESUMPTION-ES-1`
-**Prior reconciliation evidence-state:**
-`CQS-SLICE-23-POST-REPAIR-EVIDENCE-RECONCILIATION-ES-1`
-**Canonical qualification record on repaired `main`.**
+**Canonical qualification record on `main` after PR #65 merge.**
 
-> **How to read this document.** Sections 1–12 are the **CURRENT POST-REPAIR /
-> D–I + OWNER-EVIDENCE STATE** at canonical `main`
-> `06f486c952bb40f03e376839b04a7b72bab6d0c3`. Section 13 preserves **HISTORICAL
+> **How to read this document.** Sections 1–12 are the **CURRENT TERMINAL
+> POST-MERGE STATE** at canonical `main`
+> `180d7680779e672d1bf2326250952fc38a3a5411`. Section 13 preserves **HISTORICAL
 > PRE-REPAIR EVIDENCE** from PR
 > [#60](https://github.com/ricktron/classroom-quiz-show/pull/60) head
 > `6a6d34430fc765e9a63fa9bd2eac073e6b4ef201`, originally observed against
@@ -26,16 +25,19 @@
 > conflict, **current state wins**. Historical observations remain valid as
 > history; they are **not** current product-state conclusions.
 
-> **This document establishes no Slice 23 terminal / classroom-release merge
-> PASS.** Slice 23 is **IN QUALIFICATION / NOT TERMINAL**. Broad Stages D–I are
-> **executed** with owner evidence **complete**. Current packet verdict:
-> `CQS_S23_D_I_QUALIFICATION_REVIEW_READY` — ready for fresh independent
-> exact-head review of PR
-> [#65](https://github.com/ricktron/classroom-quiz-show/pull/65). See
-> [`../receipts/2026-08-12-slice-23-broad-d-i-qualification.md`](../receipts/2026-08-12-slice-23-broad-d-i-qualification.md).
-> The overall CQS MVP is **NOT COMPLETE**. No product code, test, dependency,
-> workflow, or deployment configuration is changed by this qualification
-> evidence lane.
+> **Slice 23 is COMPLETE / QUALIFIED / MERGED / POST-MERGE VERIFIED.** Broad
+> Stages D–I are **executed** with owner evidence **complete**. Qualification
+> evidence PR [#65](https://github.com/ricktron/classroom-quiz-show/pull/65) is
+> **TERMINAL / MERGED / POST-MERGE VERIFIED**. No additional Slice 23
+> qualification, owner-evidence, repair, review, merge, or reconciliation lane
+> is owed. See
+> [`../receipts/2026-08-12-slice-23-broad-d-i-qualification.md`](../receipts/2026-08-12-slice-23-broad-d-i-qualification.md)
+> and
+> [`../receipts/2026-08-12-slice-23-terminal-post-merge-reconciliation.md`](../receipts/2026-08-12-slice-23-terminal-post-merge-reconciliation.md).
+> The overall CQS MVP is **NOT COMPLETE**. Required post-Slice-23 MVP
+> continuation (C-3/C-6 desktop packaging) is **OPEN / NOT BEGUN**. No product
+> code, test, dependency, workflow, or deployment configuration is changed by
+> this documentation reconciliation.
 
 ---
 
@@ -43,19 +45,19 @@
 
 | Item | Current value |
 | --- | --- |
-| Canonical `main` | `06f486c952bb40f03e376839b04a7b72bab6d0c3` |
-| Slices 1–22 | **COMPLETE** |
-| Slice 23 | **IN QUALIFICATION / NOT TERMINAL** |
+| Canonical `main` | `180d7680779e672d1bf2326250952fc38a3a5411` |
+| Slices 1–23 | **COMPLETE** |
+| Slice 23 | **COMPLETE / QUALIFIED / MERGED / POST-MERGE VERIFIED** |
 | Final wager durability (PR #61) | **CLOSED / MERGED / POST-MERGE VERIFIED** |
 | Teacher first-run surface (PR #62) | **CLOSED / MERGED / POST-MERGE VERIFIED** |
 | Aggregate local-data reset (PR #63) | **CLOSED / MERGED / POST-MERGE VERIFIED** |
 | Post-repair reconciliation (PR #64) | **CLOSED / MERGED / POST-MERGE VERIFIED** |
 | Historical qualification PR #60 | **CLOSED / UNMERGED / HISTORICAL / SUPERSEDED** |
-| Qualification evidence PR #65 | **OPEN / UNMERGED / READY FOR INDEPENDENT EXACT-HEAD REVIEW** |
+| Qualification evidence PR #65 | **TERMINAL / MERGED / POST-MERGE VERIFIED** |
 | OVERALL CQS MVP | **NOT COMPLETE** |
-| Required post-Slice-23 MVP continuation | still exists / **not begun** in this packet |
+| Required post-Slice-23 MVP continuation | still exists / **not begun** |
 | Post-MVP arcs | **inactive** |
-| D–I packet verdict | `CQS_S23_D_I_QUALIFICATION_REVIEW_READY` |
+| D–I packet verdict | transferred; Slice 23 terminal completion recorded |
 
 Contract versions at this base (unchanged by this docs lane; held from
 `docs/STATUS.md` / repaired product):
@@ -157,15 +159,16 @@ qualification.
 ## 4. Current Stage A–L matrix
 
 Preserve the established Stage A–L structure. Dispositions below record the
-**executed current D–I matrix** on repaired `main`, including completed owner
-evidence. They do **not** declare Slice 23 terminal. Evidence-class distinctions
+**executed current D–I matrix** and the **terminal post-merge Slice 23
+completion** on canonical `main` `180d768…`. Evidence-class distinctions
 remain: §4.1 is transferred PR #63 post-merge baseline, not new D–I evidence;
-Stages D–I themselves are executed and recorded in the 2026-08-12 receipt.
+Stages D–I themselves were executed and recorded in the 2026-08-12 receipt;
+this reconciliation does **not** re-run D–I.
 
 | Stage | Content | Current disposition |
 | --- | --- | --- |
-| **A** | Canonical / preflight | **CURRENT BASE RE-ESTABLISHED** — canonical `main` = `06f486c…` (PR #64). |
-| **B** | Clean automated baseline | **CURRENT GREEN** — local `npm run verify` + build + `CI=1 npm run test:e2e` (**367** passed / **14** skipped) on `06f486c…`; CI run `31618313458` success. |
+| **A** | Canonical / preflight | **CURRENT BASE RE-ESTABLISHED** — canonical `main` = `180d768…` (PR #65 squash). |
+| **B** | Clean automated baseline | **CURRENT GREEN** — local `npm run verify` + build + `CI=1 npm run test:e2e` (**367** passed / **14** skipped) on pre-merge `06f486c…`; post-merge CI run `31656340997` success on `180d768…`. |
 | **C** | Clean-teacher first launch | **PASS / CLEARED.** §71 cleared for resumption; clean-teacher path re-verified post-repair. |
 | **D** | Import / authoring / pack / data lifecycle | **PASS**. See 2026-08-12 D–I receipt. |
 | **E** | Gameplay / Final / undo / recovery | **PASS**. Final immediate-refresh durability re-verified. |
@@ -173,9 +176,9 @@ Stages D–I themselves are executed and recorded in the 2026-08-12 receipt.
 | **G** | Physical projector / viewing distance / audio | **PASS** — owner **Projector + Audio PASS**; Slice 22 listening remains transferred supporting evidence. |
 | **H** | Supported Sony profile | **PASS** — Slice 21 physical transfer + current owner **Sony PASS** smoke. `F-UX-01` remains **LOW**. |
 | **I** | Deployment / PWA / update / offline / reset | **PASS / QUALIFIED WITH RECORDED NON-BLOCKING LIMITATIONS** — provenance/golden path/offline/reset/installed-PWA owner path PASS; update-flow full stale→new simulation remains a recorded limitation; `CLASS-B-01` retained; `LOW-02` measured/retained. |
-| **J** | Findings / limitations / continuation | **ACTIVE** — no new Class A; Class B / LOW / OD-066 unchanged in severity; C-3 desktop packaging discovery recorded. |
+| **J** | Findings / limitations / continuation | **ACTIVE** — no new Class A; Class B / LOW / OD-066 unchanged in severity; C-3 desktop packaging discovery recorded as required post-Slice-23 MVP work. |
 | **K** | Repair loops | **FOUR TERMINAL LANES COMPLETE:** PR #61–#64. No new repair authorized from this packet. |
-| **L** | Terminal independent review | **NOT REACHED** — PR #65 ready for fresh independent exact-head review; Slice 23 not terminal. |
+| **L** | Terminal independent review | **COMPLETE** — independent exact-head re-review PASS on `5416696e…`; PR #65 squash-merged `180d768…` and post-merge verified. Slice 23 **COMPLETE**. |
 
 ### 4.1 Stage B — transferred PR #63 post-merge baseline
 
@@ -209,7 +212,7 @@ Do not treat this reconciliation as new substantive D–I qualification evidence
 | PR #63 | Aggregate reset / retention-deletion / M1 correction evidence |
 | Slice 21 | Physical Sony controller evidence, causally unaffected |
 | Slice 22 | Owner listening evidence, causally unaffected |
-| Current `verify:all` | Canonical repaired product baseline (PR #63 post-merge at `22647fdc…`; current main `06f486c…` CI also green) |
+| Current `verify:all` | Canonical repaired product baseline (PR #63 post-merge at `22647fdc…`; current main `180d768…` post-merge CI also green) |
 
 ### HISTORICAL ONLY
 
@@ -319,9 +322,11 @@ and conflicts with repaired canonical `main`. It must **NOT** be:
 - used as the current qualification record.
 
 Living frontier docs must **not** describe PR #60 as still pending closure.
-Current canonical qualification evidence lives on `main` at `06f486c…` plus the
-D–I resumption receipt
-[`../receipts/2026-08-12-slice-23-broad-d-i-qualification.md`](../receipts/2026-08-12-slice-23-broad-d-i-qualification.md).
+Current canonical qualification evidence lives on `main` at `180d768…` plus the
+D–I receipt
+[`../receipts/2026-08-12-slice-23-broad-d-i-qualification.md`](../receipts/2026-08-12-slice-23-broad-d-i-qualification.md)
+and the terminal reconciliation receipt
+[`../receipts/2026-08-12-slice-23-terminal-post-merge-reconciliation.md`](../receipts/2026-08-12-slice-23-terminal-post-merge-reconciliation.md).
 
 ---
 
@@ -353,38 +358,39 @@ From
 
 ---
 
-## 11. Resumption readiness / review-ready state
+## 11. Terminal completion state
 
-**SLICE 23 BROAD STAGES D–I:
-EXECUTED; OWNER EVIDENCE COMPLETE;
-`CQS_S23_D_I_QUALIFICATION_REVIEW_READY`.**
+**SLICE 23 CLASSROOM RELEASE QUALIFICATION:
+COMPLETE / QUALIFIED / MERGED / POST-MERGE VERIFIED.**
 
 PR [#65](https://github.com/ricktron/classroom-quiz-show/pull/65) is the
-docs-only qualification-evidence PR for **fresh independent exact-head review**.
-It is **not** merged by the evidence packets. Slice 23 remains **NOT TERMINAL**.
+docs-only qualification-evidence PR. It is **TERMINAL / MERGED / POST-MERGE
+VERIFIED**. Independent exact-head re-review **PASS**. No additional Slice 23
+qualification lane is owed.
 
 Separate authorization remains required for:
 
-- independent exact-head review / merge of PR #65;
-- declaring Slice 23 terminal;
 - additional product repair of any kind;
 - post-Slice-23 MVP implementation (including C-3/C-6 desktop packaging);
-- any otherwise unauthorized mutation.
+- any otherwise unauthorized mutation;
+- declaring the overall CQS MVP complete.
 
 ---
 
-## 12. Explicit non-claims (this evidence / correction lane)
+## 12. Explicit non-claims (this terminal reconciliation)
 
 - **No** product code, schema, contract, test, dependency, workflow, or
-  deployment configuration was changed in this evidence/correction lane.
+  deployment configuration was changed in this documentation reconciliation.
 - Broad Stages D–I are **not** being re-run here; they were already executed
-  and recorded.
+  and recorded, then transferred across the docs-only PR #65 squash.
 - **No** repair of `LOW-01` / `F-UX-01`.
 - **No** SheetJS re-pin; **no** first-load chunk optimization.
-- **No** post-Slice-23 MVP functionality begun.
-- Slice 23 is **not** terminal.
+- **No** post-Slice-23 MVP functionality begun (including C-3/C-6 desktop
+  packaging).
+- Slice 23 **is** complete as a qualification slice; this does **not** complete
+  the overall CQS MVP.
 - **OVERALL CQS MVP = NOT COMPLETE.**
-- PR #65 is **not** merged.
+- PR #65 **is** merged / terminal / post-merge verified.
 - PR #60 remains **CLOSED / UNMERGED / HISTORICAL / SUPERSEDED** and is not
   being reopened or merged.
 - This document does **not** merge itself.
@@ -393,7 +399,8 @@ Canonical routing companions:
 
 - [`../STATUS.md`](../STATUS.md)
 - [`../handoff/CURRENT.md`](../handoff/CURRENT.md)
-- [`../receipts/2026-08-11-slice-23-post-repair-evidence-reconciliation.md`](../receipts/2026-08-11-slice-23-post-repair-evidence-reconciliation.md)
+- [`../receipts/2026-08-12-slice-23-broad-d-i-qualification.md`](../receipts/2026-08-12-slice-23-broad-d-i-qualification.md)
+- [`../receipts/2026-08-12-slice-23-terminal-post-merge-reconciliation.md`](../receipts/2026-08-12-slice-23-terminal-post-merge-reconciliation.md)
 
 ---
 
