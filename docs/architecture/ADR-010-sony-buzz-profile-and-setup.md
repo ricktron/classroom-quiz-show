@@ -196,7 +196,10 @@ privacy are unchanged.
 **Costs and limits.** Browser button indices were unknown at Slice 10 design
 time and must remain capture-based. Wired Buzz was not tested in OADL2-S07.
 Wireless operation on this host required a temporary external HID output
-keep-alive; permanent product architecture for that keep-alive is unresolved.
+keep-alive. At the Slice 10 / OADL2-S07 stage, permanent product architecture
+for that keep-alive remained unresolved. Slice 21 / ADR-019 later
+resolved the supported-profile product path for the exact Namtai
+wireless Wbuzz 054c:1000 profile.
 Slice 10 remains **Complete** for the owner-accepted hardware-independent scope
 after PR #21 squash-merge (`5575be3` from reviewed head `2885933`) and
 post-merge reconciliation.
