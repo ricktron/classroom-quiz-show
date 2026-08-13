@@ -158,10 +158,9 @@ Do **not** infer Windows physical Sony qualification from this macOS host.
 - Notarization was not attempted.
 - Auto-update is not implemented. electron-builder may emit auxiliary
   `latest-mac.yml` / `app-update.yml` metadata; that is **not** an updater.
-- No public GitHub Release was published.
-- Windows installer production is assigned to GitHub-hosted `windows-latest`
-  in `.github/workflows/desktop.yml`. A Windows CI build is **not** a
-  physical Windows runtime test.
+- Prefer the pull-request head SHA over GitHub’s temporary merge-commit
+  SHA in artifact names, `desktop-build-identity.json`, and provenance
+  JSON so packaged bits prove the exact candidate source.
 
 ## Owner gates (not decided)
 

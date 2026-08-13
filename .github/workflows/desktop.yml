@@ -15,12 +15,19 @@ concurrency:
   group: desktop-${{ github.ref }}
   cancel-in-progress: true
 
+# Prefer the pull-request head SHA over the merge-commit SHA so artifacts
+# prove the exact candidate source, not GitHub's temporary merge ref.
+env:
+  CQS_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
 jobs:
   desktop-smoke:
     name: Desktop unit + Electron shell tests
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CQS_SOURCE_SHA }}
 
       - uses: actions/setup-node@v4
         with:
@@ -59,6 +66,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CQS_SOURCE_SHA }}
 
       - uses: actions/setup-node@v4
         with:
@@ -76,7 +85,7 @@ jobs:
 
       - name: Write artifact provenance
         env:
-          SOURCE_SHA: ${{ github.sha }}
+          SOURCE_SHA: ${{ env.CQS_SOURCE_SHA }}
           GIT_REF: ${{ github.ref }}
           RUN_ID: ${{ github.run_id }}
         run: |
@@ -101,7 +110,7 @@ jobs:
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: cqs-desktop-macos-${{ github.sha }}
+          name: cqs-desktop-macos-${{ env.CQS_SOURCE_SHA }}
           path: |
             release/*.zip
             release/*.dmg
@@ -115,6 +124,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CQS_SOURCE_SHA }}
 
       - uses: actions/setup-node@v4
         with:
@@ -132,7 +143,7 @@ jobs:
 
       - name: Write artifact provenance
         env:
-          SOURCE_SHA: ${{ github.sha }}
+          SOURCE_SHA: ${{ env.CQS_SOURCE_SHA }}
           GIT_REF: ${{ github.ref }}
           RUN_ID: ${{ github.run_id }}
         shell: bash
@@ -158,7 +169,7 @@ jobs:
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: cqs-desktop-windows-${{ github.sha }}
+          name: cqs-desktop-windows-${{ env.CQS_SOURCE_SHA }}
           path: |
             release/*.exe
             release/*.yml

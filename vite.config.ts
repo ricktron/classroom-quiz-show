@@ -26,6 +26,9 @@ const packageJson = JSON.parse(
 ) as { version: string }
 
 function sourceSha(): string {
+  if (process.env.CQS_SOURCE_SHA && process.env.CQS_SOURCE_SHA.length > 0) {
+    return process.env.CQS_SOURCE_SHA
+  }
   if (process.env.GITHUB_SHA && process.env.GITHUB_SHA.length > 0) {
     return process.env.GITHUB_SHA
   }
