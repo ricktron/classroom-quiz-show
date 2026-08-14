@@ -27,12 +27,16 @@ is in [`docs/teacher/DESKTOP.md`](docs/teacher/DESKTOP.md).
 - **`CQS-REAL-MVP-1` is ACTIVE / CANONICALLY REGISTERED.** Canonical Program
   plan:
   [`docs/plans/CQS-REAL-MVP-ARC.md`](docs/plans/CQS-REAL-MVP-ARC.md).
-- Current planned Program frontier:
-  `CQS-REAL-MVP-S04-TEACHER-SIMPLE-SETUP-AND-SUPPORT`. S04 requires
-  **separate owner/Program authorization**.
+- Current planned implementation frontier:
+  `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL`. S04A
+  requires **separate owner/Program authorization**. S04 product
+  implementation has **not** begun.
 - S03 implements the production Electron desktop shell and unsigned
-  packaging path. Routing is not authority. This README does **not**
-  authorize S04 or a signed teacher release.
+  packaging path. S04 canon registers remaining product direction.
+  Routing is not authority. This README does **not** authorize S04A or a
+  signed teacher release.
+- Product Contract:
+  [`docs/CQS-PRODUCT-CONTRACT.md`](docs/CQS-PRODUCT-CONTRACT.md).
 - Post-MVP arcs remain inactive.
 
 Live status, open items, and contract versions:
@@ -61,6 +65,7 @@ A teacher-hosted, local-first engine:
 Architecture:
 [`docs/architecture/GAME-ENGINE-BOUNDARIES.md`](docs/architecture/GAME-ENGINE-BOUNDARIES.md).
 Product identity and non-goals: [`docs/PROJECT.md`](docs/PROJECT.md).
+Product Contract: [`docs/CQS-PRODUCT-CONTRACT.md`](docs/CQS-PRODUCT-CONTRACT.md).
 
 > **Sony Buzz support is one exact profile, not a hardware catalog.** Slice 21
 > operationalizes Namtai wireless `Wbuzz` `054c:1000` on the owner-tested

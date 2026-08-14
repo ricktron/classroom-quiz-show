@@ -39,6 +39,14 @@ GameDefinition
 
 These are distinct concepts and must not be conflated.
 
+Subsequent REAL MVP product-direction registration established the
+teacher-facing **Game versus Session** product rule: a Game is reusable
+authored content, and a Session is one classroom run. Saved games must
+remain reusable across classes without retaining previous class team
+identities as authored content. See
+[`../CQS-PRODUCT-CONTRACT.md`](../CQS-PRODUCT-CONTRACT.md) and
+[`../plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md`](../plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md).
+
 **Status (Slice 3).** Both now exist as neutral, non-gameplay foundations — see
 [`ADR-003-game-round-model-registry.md`](ADR-003-game-round-model-registry.md).
 `GameDefinition` (`src/game/gameDefinition.ts`) is immutable authored data

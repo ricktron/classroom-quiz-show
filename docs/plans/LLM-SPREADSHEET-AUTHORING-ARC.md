@@ -5,6 +5,15 @@
 - **Status:** Explanatory planning view for `CQS-ARC-AUTHORING` —
   **authorizes no implementation**
 
+> **Subsequent REAL MVP product-direction registration (2026-08-13).**
+> S04A direction now owns a bounded REAL MVP Import Quality Report and
+> Export Generation Feedback loop for AI-generated workbooks created
+> **outside** CQS. No live AI runtime is authorized. This does **not**
+> activate the broader post-MVP authoring arc or additional gameplay-mode
+> workbooks below. See
+> [`CQS-REAL-MVP-S04-FAMILY-DIRECTION.md`](CQS-REAL-MVP-S04-FAMILY-DIRECTION.md)
+> §§8–9. This file remains a historical/post-MVP planning view.
+
 Domain view of the first post-MVP arc (`CQS-OD-080`). Canonical decisions:
 [`../decisions/EXPANDED-VISION-OWNER-DECISIONS.md`](../decisions/EXPANDED-VISION-OWNER-DECISIONS.md)
 (`CQS-OD-041`…`CQS-OD-052`, `CQS-OD-058`); architecture boundary:

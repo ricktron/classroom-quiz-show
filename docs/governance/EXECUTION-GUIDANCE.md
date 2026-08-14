@@ -76,12 +76,16 @@ Canonical order:
    what is implemented.
 2. [`../PROJECT.md`](../PROJECT.md) owns product identity, permanent
    boundaries, non-goals, and approved owner decisions.
+   [`../CQS-PRODUCT-CONTRACT.md`](../CQS-PRODUCT-CONTRACT.md) owns the
+   dedicated serious-product invariants.
 3. [`../STATUS.md`](../STATUS.md) owns current program status.
 4. **Accepted ADRs** and owner decisions own durable architecture.
 5. The **current owner-approved program/roadmap plan**, once canonically
-   adopted. [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md) is the historical
-   completed 23-slice plan of record. It does **not** automatically own the
-   sequence of a future REAL MVP Program.
+   adopted. [`../plans/CQS-REAL-MVP-ARC.md`](../plans/CQS-REAL-MVP-ARC.md)
+   is the current REAL MVP Program plan of record.
+   [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md) is the historical
+   completed 23-slice plan of record. It does **not** own the current REAL
+   MVP sequence.
 6. [`../handoff/CURRENT.md`](../handoff/CURRENT.md) routes the next
    contributor and must agree with higher-precedence truth.
 7. [`../receipts/`](../receipts/) are historical evidence snapshots, not
@@ -105,8 +109,9 @@ The original 23-slice foundation/qualification roadmap is **Complete**.
 Overall CQS MVP remains **NOT COMPLETE**. Completing a numbered plan does
 not complete the product.
 
-Any future REAL MVP Program plan requires **separate owner authority** and
-becomes current only when canonically adopted. Until then, use:
+The current REAL MVP Program plan is canonically adopted as
+[`../plans/CQS-REAL-MVP-ARC.md`](../plans/CQS-REAL-MVP-ARC.md). Naming a
+successor slice still requires **separate owner authority**. Use:
 
 ```text
 next planned frontier

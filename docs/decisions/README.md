@@ -115,16 +115,20 @@ This project separates two kinds of durable decision records:
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).
+   The dedicated serious-product invariants live in
+   [`../CQS-PRODUCT-CONTRACT.md`](../CQS-PRODUCT-CONTRACT.md).
    The **expanded-vision owner decisions** (`CQS-OD-001`…`CQS-OD-086`,
    recorded 2026-08-03 by planning slice `CQS-PLAN-S01`) live in
    [`EXPANDED-VISION-OWNER-DECISIONS.md`](EXPANDED-VISION-OWNER-DECISIONS.md),
    which is canonical for their acceptance and activation state; decision
-   66 is deliberately unresolved there.
+   66 remains **DEFERRED / NOT REAL MVP**.
 3. **Roadmap amendments** — owner-authorized changes to the slice sequence
    itself, stored here as `ROADMAP-AMENDMENT-NNN-<slug>.md`. An amendment is
-   required because the slice sequence in
-   [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md) is the plan of record and "must
-   not be silently rewritten": the amendment carries the rationale, the
+   required because a numbered plan of record "must not be silently
+   rewritten": Amendments 001–004 amend
+   [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md); Amendment 005 amends
+   [`../plans/CQS-REAL-MVP-ARC.md`](../plans/CQS-REAL-MVP-ARC.md). The
+   amendment carries the rationale, the
    dependency analysis, the superseded statements, and any open owner gates,
    while `MVP-ARC.md` carries the resulting plan.
    - [`ROADMAP-AMENDMENT-001-local-buzzers.md`](ROADMAP-AMENDMENT-001-local-buzzers.md)
@@ -169,6 +173,15 @@ This project separates two kinds of durable decision records:
      calibration gates. Theme song remains post-MVP;
      `CQS-OPP-PRESENTATION-EFFECTS` remains post-MVP. **Documentation only
      — no product implementation authorized.**
+   - [`ROADMAP-AMENDMENT-005-real-mvp-s04-family-elaboration.md`](ROADMAP-AMENDMENT-005-real-mvp-s04-family-elaboration.md)
+     — REAL MVP S04-family elaboration (2026-08-13, slice
+     `CQS-REAL-MVP-S04-CANON-REGISTRATION`): completed S01–S03 unchanged;
+     the earlier named S04 teacher-simple-setup frontier is elaborated
+     into docs-only canon registration plus S04A–S04D; S05/S06 clarified
+     as flagship visual fidelity and Windows-first integrated
+     qualification. Product Contract and detailed S04-family direction
+     are registered. **Documentation only — no product implementation
+     authorized.**
 
 ## When an ADR is required
 

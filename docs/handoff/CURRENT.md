@@ -27,10 +27,12 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S04 teacher-simple setup and support |
+| Current Program frontier | S04A teacher workflow, authoring, and session model |
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
-| S04 | **NOT AUTHORIZED** pending separate Program authority |
+| S04 canon | product direction **registered** |
+| S04A | **NOT AUTHORIZED** pending separate Program authority |
+| S04 product implementation | **NOT BEGUN** |
 | Post-MVP arcs | **INACTIVE** |
 
 [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md) is the historical completed
@@ -41,16 +43,19 @@ surface. There is no Slice 24.
 
 1. [`../../AGENTS.md`](../../AGENTS.md)
 2. [`../PROJECT.md`](../PROJECT.md)
-3. [`../STATUS.md`](../STATUS.md)
-4. This file
-5. [`../plans/CQS-REAL-MVP-ARC.md`](../plans/CQS-REAL-MVP-ARC.md) — current
+3. [`../CQS-PRODUCT-CONTRACT.md`](../CQS-PRODUCT-CONTRACT.md)
+4. [`../STATUS.md`](../STATUS.md)
+5. This file
+6. [`../plans/CQS-REAL-MVP-ARC.md`](../plans/CQS-REAL-MVP-ARC.md) — current
    REAL MVP Program plan of record. Read it **before** acting on REAL MVP
    continuation.
-6. [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md) — historical completed
+7. [`../plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md`](../plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md)
+   — approved remaining product direction
+8. [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md) — historical completed
    23-slice plan of record, not the current REAL MVP sequence
-7. [`../governance/EXECUTION-GUIDANCE.md`](../governance/EXECUTION-GUIDANCE.md)
+9. [`../governance/EXECUTION-GUIDANCE.md`](../governance/EXECUTION-GUIDANCE.md)
    for delivery / review / evidence / repair rules
-8. Task-relevant ADRs and receipts
+10. Task-relevant ADRs and receipts
 
 Teacher classroom path:
 [`../teacher/QUICK_START.md`](../teacher/QUICK_START.md).
@@ -82,8 +87,12 @@ unsigned macOS/Windows packaging, and a release-build workflow. That is
 the C-3 / C-6 **implementation foundation**, not a signed teacher release
 and not S06 integrated qualification.
 
+S04 canon registers remaining product direction, the Product Contract, and
+the S04A–S04D / S05 / S06 topology. That is **documentation only**. No
+S04A–S04D product implementation has begun.
+
 Those remain **existing qualified foundations** plus the S03 desktop
-foundation. Do not rewrite them as unfinished from scratch.
+foundation plus S04 canon. Do not rewrite them as unfinished from scratch.
 
 Slice 23 terminal evidence:
 
@@ -108,17 +117,18 @@ See the REAL MVP gap register in
 | simple desktop launch | **FOUNDATION IMPLEMENTED** |
 | desktop Host/Display lifecycle | **FOUNDATION IMPLEMENTED** |
 | release artifacts/version/update path | **FOUNDATION IMPLEMENTED** (manual replacement; no auto-update) |
-| in-app teacher team setup | **OPEN** |
-| teacher-simple progressive disclosure | **POLISH REQUIRED** |
-| controller `F-UX-01` | **POLISH REQUIRED** |
-| feedback/support path | **OPEN** |
-| flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** |
-| packaged offline/recovery and OS qualification | **PARTIAL** (shell proven; packaged Sony **NOT RUN**; Windows physical runtime **NOT RUN**) |
+| in-app teacher team setup | **OPEN** — S04A/S04B direction registered; implementation not begun |
+| teacher-simple progressive disclosure | **POLISH REQUIRED** — S04A direction registered; implementation not begun |
+| controller `F-UX-01` | **POLISH REQUIRED** — S04B direction registered; implementation not begun |
+| feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
+| flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** — S05 direction registered; implementation not begun |
+| packaged offline/recovery and OS qualification | **PARTIAL** (shell proven; packaged Sony **DEFERRED / NOT RUN / HARDWARE UNAVAILABLE**; Windows physical runtime **NOT RUN**) |
 | clean-room teacher qualification | **OPEN** |
 | **C-3** / **C-6** | **FOUNDATION IMPLEMENTED / UNSIGNED** |
-| `CQS-Q23-CLASS-B-01` | **ACCEPTABLE FOR S03 WITH DOCUMENTED CONTROL** |
-| `CQS-Q23-LOW-02` | **OPEN LOW / MONITOR ONLY** |
-| `CQS-OD-066` | **DEFERRED / NOT REQUIRED FOR REAL MVP** |
+| `CQS-Q23-CLASS-B-01` | **OPEN / CONTROLLED** |
+| `CQS-Q23-LOW-02` | **OPEN / LOW / MONITOR** |
+| `CQS-OD-066` | **DEFERRED / NOT REAL MVP** |
+| Signing / notarization | **OPEN OWNER GATE** |
 | **C-7** Raspberry Pi 5 | outside REAL MVP; not an MVP gate |
 | **C-8** LAN host/display | outside REAL MVP; not begun |
 | Theme song / identity-pack audio / additional round types | post-MVP; **INACTIVE** |
@@ -129,7 +139,9 @@ Contract versions: see [`../STATUS.md`](../STATUS.md).
 
 Do **not**:
 
-- begin `CQS-REAL-MVP-S04-TEACHER-SIMPLE-SETUP-AND-SUPPORT`;
+- begin `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL`;
+- begin S04B Sony theatrical team selection, S04C recovery UX, or S04D
+  telemetry;
 - begin S05 visual-fidelity work or S06 integrated release qualification;
 - silently decide Apple/Windows signing, fee waiver, CPU/OS matrix, or
   public teacher-release publication;
@@ -139,31 +151,39 @@ Do **not**:
 - begin controller-polish implementation without a later bounded
   authorization;
 - promote additional gameplay modes into REAL MVP;
+- add live AI, accounts, cloud sync, or marketplace work;
 - activate post-MVP arcs;
 - declare the teacher-adoptable product complete;
+- claim packaged-macOS Sony physical qualification or Windows physical
+  runtime qualification;
 - reopen completed Slices 1–23 product or qualification lanes;
 - reopen, rebase, or merge historical PR #60;
 - treat this handoff as product authority.
 
 Permanent product prohibitions (privacy, fail-closed display, no student
 phones, no networked buzzers, no executable imported content) remain in
-[`../PROJECT.md`](../PROJECT.md) and
+[`../PROJECT.md`](../PROJECT.md),
+[`../CQS-PRODUCT-CONTRACT.md`](../CQS-PRODUCT-CONTRACT.md), and
 [`../architecture/GAME-ENGINE-BOUNDARIES.md`](../architecture/GAME-ENGINE-BOUNDARIES.md).
 
 ## Next Program-level action
 
-`CQS-REAL-MVP-S04-TEACHER-SIMPLE-SETUP-AND-SUPPORT` is the next planned
-Program frontier and requires separate owner/Program authorization.
+`CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is the
+next planned implementation frontier and requires separate owner/Program
+authorization.
 
 ```text
 routing ≠ authority
 ```
 
-Do **not** authorize or begin S04 from this handoff.
+Do **not** authorize or begin S04A from this handoff.
 
 ## Architecture pointers
 
+- Product Contract: [`../CQS-PRODUCT-CONTRACT.md`](../CQS-PRODUCT-CONTRACT.md)
+- S04-family direction: [`../plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md`](../plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md)
 - REAL MVP Program plan: [`../plans/CQS-REAL-MVP-ARC.md`](../plans/CQS-REAL-MVP-ARC.md)
+- S04 canon amendment: [`../decisions/ROADMAP-AMENDMENT-005-real-mvp-s04-family-elaboration.md`](../decisions/ROADMAP-AMENDMENT-005-real-mvp-s04-family-elaboration.md)
 - Desktop architecture: [`../architecture/ADR-021-real-mvp-desktop-architecture-electron.md`](../architecture/ADR-021-real-mvp-desktop-architecture-electron.md)
 - S03 foundation receipt: [`../receipts/2026-08-13-cqs-real-mvp-s03-desktop-distribution-release-foundation.md`](../receipts/2026-08-13-cqs-real-mvp-s03-desktop-distribution-release-foundation.md)
 - S02 qualification receipt: [`../receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md`](../receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md)

@@ -244,3 +244,8 @@ Signing; notarization; GitHub Releases publication of a teacher-trusted
 build; auto-update; teacher-simple setup (S04); feedback UI; visual-fidelity
 work (S05); Raspberry Pi; LAN; additional gameplay modes; Windows physical
 runtime qualification; broadening Sony hardware; re-pinning SheetJS.
+
+Subsequent REAL MVP product-direction registration elaborated the named
+S04 teacher-simple-setup frontier into S04 canon plus S04A–S04D and
+clarified S05/S06. Those S03 non-goals remain historically accurate as a
+description of S03. S04A–S06 remain unauthorized implementation work.
