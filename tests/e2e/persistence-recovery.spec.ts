@@ -96,6 +96,7 @@ test('Discard recovery clears the active session and starts empty', async ({ con
   await expect(host.getByRole('heading', { name: /host control/i })).toBeVisible()
   await expect(host.getByTestId('persistence-recovery')).toBeVisible()
   await host.getByTestId('persistence-discard').click()
+  await host.getByTestId('persistence-discard').click()
 
   await expect(host.getByTestId('persistence-recovery')).toHaveCount(0)
   await expect(host.getByTestId('private-revision')).toHaveText('0')

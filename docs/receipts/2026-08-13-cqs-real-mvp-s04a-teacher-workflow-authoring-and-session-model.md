@@ -105,8 +105,17 @@ returned **FAIL**. Root-family repairs in this worktree:
   of silently dropped.
 - Editor quality copy does not claim a file import was accepted.
 
-Those repairs invalidate the `395c280` review. A later exact-head review
-must be obtained on the repaired candidate.
+Those repairs invalidate the `395c280` review.
+
+A later exact-head review of `eb9e7ac662a4378c0d45aeeddd178d9aa1b542ec`
+still failed H2: a bubble-phase hash guard cannot stop `HashRouter` from
+unmounting a dirty editor. This worktree switches the shell to
+`createHashRouter` (same hash URLs as ADR-001) so `useBlocker` can stop
+Back. Duplicate now allocates a new id instead of replacing `*-copy`.
+Host recovery discard is two-step.
+
+Those later repairs invalidate the `eb9e7ac` review. A later exact-head
+review must be obtained on the repaired candidate.
 
 ## Deferred with evidence
 

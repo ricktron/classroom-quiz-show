@@ -52,6 +52,7 @@ async function ensureHostCommandsEnabled(host: Page) {
   const discard = host.getByTestId('persistence-discard')
   if (await discard.isVisible()) {
     await discard.click()
+    await discard.click()
     await expect(host.getByTestId('persistence-recovery')).toHaveCount(0)
   }
   await expect(host.getByRole('button', { name: /initialize \/ reset session/i })).toBeEnabled()

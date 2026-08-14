@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { createDefaultRegistry } from '../game/defaultRegistry'
 import { createNewLibraryGame } from '../library/gameLibrary'
 import { createMemoryPersistenceAdapter } from '../persistence/memoryAdapter'
@@ -14,24 +14,25 @@ async function renderEditor() {
   const created = await createNewLibraryGame(adapter, registry)
   if (!created.ok) throw new Error(created.message)
   const gameId = created.value.definition.id
-  render(
-    <MemoryRouter initialEntries={[editPath(gameId)]}>
-      <Routes>
-        <Route
-          path="/edit/:gameId"
-          element={
-            <AuthoringRoute
-              persistenceOptions={{
-                createAdapter: () => adapter,
-                tabId: 'authoring-test',
-                broadcastChannel: null,
-              }}
-            />
-          }
-        />
-      </Routes>
-    </MemoryRouter>,
+  const router = createMemoryRouter(
+    [
+      { path: '/', element: <p>Home page</p> },
+      {
+        path: '/edit/:gameId',
+        element: (
+          <AuthoringRoute
+            persistenceOptions={{
+              createAdapter: () => adapter,
+              tabId: 'authoring-test',
+              broadcastChannel: null,
+            }}
+          />
+        ),
+      },
+    ],
+    { initialEntries: [editPath(gameId)] },
   )
+  render(<RouterProvider router={router} />)
   await waitFor(() => {
     expect(screen.getByLabelText(/game title/i)).toBeInTheDocument()
   })

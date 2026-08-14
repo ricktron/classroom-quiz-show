@@ -1,19 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useBlocker, useNavigate, useParams } from 'react-router-dom'
 import {
   applyDraftCorrection,
   canRedoAuthoring,
   canUndoAuthoring,
   completeSave,
   createGenerationWriteGate,
-  decideUnsavedHashLeave,
   emptyAuthoringUndoStack,
   initialSaveTrustState,
   markSaveClean,
   markSaveDirty,
   pushAuthoringUndo,
   redoAuthoring,
-  revertHash,
   saveStatusLabel,
   undoAuthoring,
   type AuthoringUndoStack,
@@ -50,10 +48,9 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
   const [undoStack, setUndoStack] = useState<AuthoringUndoStack>(emptyAuthoringUndoStack())
   const [cursor, setCursor] = useState<TileCursor | null>(null)
   const [preview, setPreview] = useState(false)
-  const [leaveArmed, setLeaveArmed] = useState(false)
   const [draftWarning, setDraftWarning] = useState<string | null>(null)
-  const allowLeaveRef = useRef(false)
   const writeGateRef = useRef(createGenerationWriteGate())
+  const blocker = useBlocker(saveTrust.dirty)
 
   useEffect(() => {
     if (persistence.bootPhase === 'loading') return
@@ -83,30 +80,13 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
 
   useEffect(() => {
     function onBeforeUnload(event: BeforeUnloadEvent): void {
-      if (!saveTrust.dirty || allowLeaveRef.current) return
+      if (!saveTrust.dirty) return
       event.preventDefault()
       event.returnValue = ''
     }
     window.addEventListener('beforeunload', onBeforeUnload)
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
   }, [saveTrust.dirty])
-
-  useEffect(() => {
-    const allowedHash = window.location.hash
-    function onHashChange(): void {
-      const decision = decideUnsavedHashLeave({
-        dirty: saveTrust.dirty,
-        allowLeave: allowLeaveRef.current || leaveArmed,
-        allowedHash,
-        nextHash: window.location.hash,
-      })
-      if (decision === 'allow') return
-      revertHash(decision.revertTo)
-      setLeaveArmed(true)
-    }
-    window.addEventListener('hashchange', onHashChange)
-    return () => window.removeEventListener('hashchange', onHashChange)
-  }, [saveTrust.dirty, leaveArmed, gameId])
 
   const apply = useCallback(
     (correction: DraftCorrection) => {
@@ -166,22 +146,6 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
   }
 
   function requestHome(): void {
-    if (saveTrust.dirty && !allowLeaveRef.current) {
-      setLeaveArmed(true)
-      return
-    }
-    allowLeaveRef.current = true
-    navigate(ROUTES.root)
-  }
-
-  function stayOnEditor(): void {
-    allowLeaveRef.current = false
-    setLeaveArmed(false)
-  }
-
-  function discardAndLeave(): void {
-    allowLeaveRef.current = true
-    setLeaveArmed(false)
     navigate(ROUTES.root)
   }
 
@@ -256,11 +220,6 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
             className="btn"
             disabled={!playable}
             onClick={() => {
-              if (saveTrust.dirty && !allowLeaveRef.current) {
-                setLeaveArmed(true)
-                return
-              }
-              allowLeaveRef.current = true
               navigate(playPath(draft.game.gameCanonicalId))
             }}
           >
@@ -270,14 +229,14 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
             Home
           </button>
         </div>
-        {leaveArmed && saveTrust.dirty ? (
+        {blocker.state === 'blocked' ? (
           <p className="authoring__confirm" role="alert">
             You have unsaved changes. Save first, or confirm that you want to discard them.
             <span className="authoring__toolbar">
-              <button type="button" className="btn" onClick={discardAndLeave}>
+              <button type="button" className="btn" onClick={() => blocker.proceed()}>
                 Discard unsaved changes
               </button>
-              <button type="button" className="btn btn--secondary" onClick={stayOnEditor}>
+              <button type="button" className="btn btn--secondary" onClick={() => blocker.reset()}>
                 Stay
               </button>
             </span>

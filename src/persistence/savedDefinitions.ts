@@ -251,34 +251,36 @@ export async function duplicateSavedDefinition(
 ): Promise<PersistenceResult<GameDefinition>> {
   const loaded = await loadLibraryRecord(adapter, gameId, registry)
   if (!loaded.ok) return loaded
-  const copyId = `${loaded.value.definition.id}-copy`
   const copyTitle = `Copy of ${loaded.value.definition.title}`
-  const copy = createGameDefinition({
-    id: copyId,
-    title: copyTitle,
-    rounds: loaded.value.definition.rounds,
-    teams: loaded.value.definition.teams,
-    timer: loaded.value.definition.timer,
-  })
-  const draft = loaded.value.draft
-    ? {
-        ...loaded.value.draft,
-        game: {
-          ...loaded.value.draft.game,
-          title: copyTitle,
-          gameCanonicalId: copyId,
-          gameKey: copyId,
-          boardRoundTitle: copyTitle,
-        },
-      }
-    : null
-  const saved = await saveDefinition(adapter, copy, { mode: 'save', registry, draft })
-  if (!saved.ok) return saved
-  if (saved.value === 'needs-replace') {
-    const replaced = await saveDefinition(adapter, copy, { mode: 'replace', registry, draft })
-    if (!replaced.ok) return replaced
+  for (let attempt = 1; attempt <= 8; attempt += 1) {
+    const copyId =
+      attempt === 1
+        ? `${loaded.value.definition.id}-copy`
+        : `${loaded.value.definition.id}-copy-${attempt}`
+    const copy = createGameDefinition({
+      id: copyId,
+      title: copyTitle,
+      rounds: loaded.value.definition.rounds,
+      teams: loaded.value.definition.teams,
+      timer: loaded.value.definition.timer,
+    })
+    const draft = loaded.value.draft
+      ? {
+          ...loaded.value.draft,
+          game: {
+            ...loaded.value.draft.game,
+            title: copyTitle,
+            gameCanonicalId: copyId,
+            gameKey: copyId,
+            boardRoundTitle: copyTitle,
+          },
+        }
+      : null
+    const saved = await saveDefinition(adapter, copy, { mode: 'save', registry, draft })
+    if (!saved.ok) return saved
+    if (saved.value === 'created') return persistenceOk(copy)
   }
-  return persistenceOk(copy)
+  return persistenceErr('conflict', 'Could not create another copy without replacing an existing game.')
 }
 
 export async function touchSavedDefinitionOpenedAt(

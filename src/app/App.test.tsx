@@ -12,7 +12,7 @@ import { FORBIDDEN_DISPLAY_LABELS } from '../test/leakLabels'
 
 /**
  * Mirrors the route table in App.tsx but under MemoryRouter so we can drive the
- * initial path directly. (App itself uses HashRouter for GitHub Pages.)
+ * initial path directly. (App itself uses createHashRouter for GitHub Pages.)
  */
 function renderAt(path: string) {
   return render(

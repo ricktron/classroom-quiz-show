@@ -33,6 +33,7 @@ export function PersistenceControls({
   const [actionMessage, setActionMessage] = useState<string | null>(null)
   const [confirmClearAll, setConfirmClearAll] = useState(false)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [confirmDiscard, setConfirmDiscard] = useState(false)
   const [clearAllBusy, setClearAllBusy] = useState(false)
   const readOnly = persistence.leadership === 'follower'
   const controlsReady = persistence.bootPhase === 'ready' && !readOnly
@@ -133,9 +134,16 @@ export function PersistenceControls({
               className="btn btn--secondary"
               data-testid="persistence-discard"
               disabled={readOnly}
-              onClick={() => void discard()}
+              onClick={() => {
+                if (!confirmDiscard) {
+                  setConfirmDiscard(true)
+                  return
+                }
+                setConfirmDiscard(false)
+                void discard()
+              }}
             >
-              Discard recovery
+              {confirmDiscard ? 'Confirm discard session' : 'Discard recovery'}
             </button>
           </div>
         </fieldset>
@@ -152,9 +160,16 @@ export function PersistenceControls({
             className="btn"
             data-testid="persistence-discard"
             disabled={readOnly}
-            onClick={() => void discard()}
+            onClick={() => {
+              if (!confirmDiscard) {
+                setConfirmDiscard(true)
+                return
+              }
+              setConfirmDiscard(false)
+              void discard()
+            }}
           >
-            Discard invalid recovery
+            {confirmDiscard ? 'Confirm discard session' : 'Discard invalid recovery'}
           </button>
         </div>
       )}

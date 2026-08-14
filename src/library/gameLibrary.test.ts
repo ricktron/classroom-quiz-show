@@ -45,6 +45,13 @@ describe('teacher game library', () => {
     if (!copy.ok) return
     expect(copy.value.title).toBe('Copy of Earth Science')
     expect(copy.value.id).not.toBe(created.value.definition.id)
+    const secondCopy = await duplicateSavedDefinition(adapter, created.value.definition.id, registry)
+    expect(secondCopy.ok).toBe(true)
+    if (!secondCopy.ok) return
+    expect(secondCopy.value.id).not.toBe(copy.value.id)
+    const firstCopy = await loadLibraryRecord(adapter, copy.value.id, registry)
+    expect(firstCopy.ok).toBe(true)
+    if (firstCopy.ok) expect(firstCopy.value.definition.title).toBe('Copy of Earth Science')
 
     const original = await loadLibraryRecord(adapter, created.value.definition.id, registry)
     expect(original.ok).toBe(true)

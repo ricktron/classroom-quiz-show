@@ -101,6 +101,8 @@ describe('PersistenceControls', () => {
     expect(screen.getByTestId('persistence-recovery')).toHaveTextContent(/could not be used/i)
     expect(screen.getByTestId('persistence-warning')).toHaveTextContent(/might not survive refresh/i)
     fireEvent.click(screen.getByTestId('persistence-discard'))
+    expect(discardRecovery).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByTestId('persistence-discard'))
     await waitFor(() => {
       expect(discardRecovery).toHaveBeenCalledTimes(1)
       expect(screen.getByText('Discarded.')).toBeInTheDocument()
