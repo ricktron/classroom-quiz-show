@@ -17,8 +17,9 @@
 - **Status:** **ACTIVE / CANONICALLY REGISTERED**
 - **Kind:** Program canon plus S02 architecture decision plus S03
   production desktop distribution foundation plus S04 product-direction
-  registration. S04A has a published implementation candidate that is
-  **not merged**. **S04B–S04D, S05, and S06 are not authorized.**
+  registration. S04A is **TERMINALLY COMPLETE** after PR #72 merged as
+  `29083f078521ebf432a7d7380c521c557fb578a8` and post-merge CI succeeded on
+  that exact squash/main SHA. **S04B–S04D, S05, and S06 are not authorized.**
 
 This document is the canonical **CQS REAL MVP Program** plan of record. It
 registers `CQS-REAL-MVP-1` as the current owner-approved Program without
@@ -61,8 +62,7 @@ the owner-approved remaining product direction into repository Markdown.
 This Program plan does **not**:
 
 - resolve signing, notarization, or paid-account questions;
-- merge the S04A candidate or authorize
-  later S04B/S04C/S04D/S05/S06 implementation;
+- authorize later S04B/S04C/S04D/S05/S06 implementation;
 - reopen Slices 1–23;
 - activate post-MVP arcs;
 - promote Raspberry Pi, LAN, phone controllers, live in-app AI, accounts,
@@ -73,8 +73,10 @@ This Program plan does **not**:
   runtime qualification.
 
 A named next frontier is **not** implementation authority. S04A was
-separately authorized for implementation and review. Merge remains a
-Program Orchestrator gate. S04B still requires separate authorization.
+separately authorized, implemented, independently reviewed, merged via PR
+#72, and post-merge verified on exact squash/main
+`29083f078521ebf432a7d7380c521c557fb578a8`; it is **TERMINALLY COMPLETE**.
+S04B still requires separate authorization.
 
 ---
 
@@ -200,8 +202,8 @@ This table is not an implementation backlog with slice-level authority.
 | simple desktop launch | **FOUNDATION IMPLEMENTED** |
 | desktop Host/Display lifecycle | **FOUNDATION IMPLEMENTED** |
 | release artifacts/version/update path | **FOUNDATION IMPLEMENTED** (manual versioned replacement; no auto-update) |
-| in-app teacher team setup | **PARTIAL** — S04A Game-owned default names and name-bank seam on the candidate; S04B theatrical selection not begun |
-| teacher-simple progressive disclosure | **IN REVIEW** on the S04A candidate; not merged |
+| in-app teacher team setup | **PARTIAL** — S04A Game-owned default names and name-bank seam are merged; S04B theatrical selection not begun |
+| teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal |
 | controller `F-UX-01` | **POLISH REQUIRED** — S04B product direction registered; implementation not begun |
 | feedback/support path | **OPEN** — S04D product direction registered; implementation not begun |
 | flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** — S05 direction registered; implementation not begun |
@@ -274,9 +276,13 @@ authority**.
 S01 is the registering slice. S02 selected Electron as the primary desktop
 architecture (ADR-021 Accepted). S03 implements the production thin shell
 and unsigned packaging path. S04 canon registers remaining product
-direction. S04A now has a published implementation candidate. Merge is
-reserved for Program Orchestrator exact-head adjudication. S04B is **not
-authorized** by this document.
+direction. S04A is **TERMINALLY COMPLETE** after the accepted PR #72 tree
+was squash-merged as `29083f078521ebf432a7d7380c521c557fb578a8` and
+post-merge CI succeeded on that exact main SHA. S04B is the next planned
+frontier and is **not authorized** by this document.
+
+S04A terminal evidence:
+[`../receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md`](../receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md).
 
 There is no Slice 24.
 
@@ -411,12 +417,16 @@ analytics, automatic updates, or school-wide SaaS management.
 
 ## 12. Next Program frontier
 
-`CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` has a
-published implementation candidate. The next Program action is exact-head
-merge adjudication. S04B remains unauthorized.
+`CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is
+**TERMINALLY COMPLETE**. The next planned Program frontier is
+`CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP`.
 
 ```text
 routing ≠ authority
-S04A: IN REVIEW (candidate published; not merged)
-S04B/S04C/S04D/S05/S06: NOT AUTHORIZED
+S04A: TERMINALLY COMPLETE
+S04B: PLANNED / NOT AUTHORIZED
+S04C/S04D/S05/S06: NOT AUTHORIZED
 ```
+
+S04B requires a separate Program Orchestrator authorization before any
+implementation begins.

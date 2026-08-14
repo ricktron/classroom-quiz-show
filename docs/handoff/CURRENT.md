@@ -27,11 +27,11 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S04A teacher workflow, authoring, and session model |
+| Current Program frontier | S04B Sony team selection and classroom setup — planned, **NOT AUTHORIZED** |
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
 | S04 canon | product direction **registered** |
-| S04A | **IN REVIEW** on a published candidate; merge reserved for Program Orchestrator |
+| S04A | **TERMINALLY COMPLETE** |
 | S04B–S04D / S05 / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
 
@@ -88,12 +88,17 @@ the C-3 / C-6 **implementation foundation**, not a signed teacher release
 and not S06 integrated qualification.
 
 S04 canon registers remaining product direction, the Product Contract, and
-the S04A–S04D / S05 / S06 topology. S04A now has a published teacher
-Home / authoring / session-model candidate. That candidate is **not
-merged**. S04B–S04D product implementation has not begun.
+the S04A–S04D / S05 / S06 topology. S04A adds teacher Home, in-app board
+authoring, reusable Game versus class Session separation, save trust,
+Import Quality Report, local Generation Feedback, and the Game-owned
+team-name-bank seam reserved for S04B. PR #72 merged as
+`29083f078521ebf432a7d7380c521c557fb578a8`; post-merge CI succeeded on that
+exact squash/main SHA. S04A is **TERMINALLY COMPLETE**. S04B–S04D product
+implementation has not begun.
 
 Those remain **existing qualified foundations** plus the S03 desktop
-foundation plus S04 canon. Do not rewrite them as unfinished from scratch.
+foundation, S04 canon, and terminal S04A teacher-workflow foundation. Do
+not rewrite them as unfinished from scratch.
 
 Slice 23 terminal evidence:
 
@@ -103,6 +108,11 @@ Slice 23 terminal evidence:
 S03 evidence:
 
 - [`../receipts/2026-08-13-cqs-real-mvp-s03-desktop-distribution-release-foundation.md`](../receipts/2026-08-13-cqs-real-mvp-s03-desktop-distribution-release-foundation.md)
+
+S04A evidence:
+
+- [`../receipts/2026-08-13-cqs-real-mvp-s04a-teacher-workflow-authoring-and-session-model.md`](../receipts/2026-08-13-cqs-real-mvp-s04a-teacher-workflow-authoring-and-session-model.md)
+- [`../receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md`](../receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md)
 
 Historical per-slice merge chronology is preserved in
 [`../receipts/`](../receipts/). Do not treat this handoff as that ledger.
@@ -118,8 +128,8 @@ See the REAL MVP gap register in
 | simple desktop launch | **FOUNDATION IMPLEMENTED** |
 | desktop Host/Display lifecycle | **FOUNDATION IMPLEMENTED** |
 | release artifacts/version/update path | **FOUNDATION IMPLEMENTED** (manual replacement; no auto-update) |
-| in-app teacher team setup | **PARTIAL** — S04A Game-owned default names and name-bank seam; S04B theatrical selection not begun |
-| teacher-simple progressive disclosure | **IN REVIEW** on the S04A candidate; not merged |
+| in-app teacher team setup | **PARTIAL** — S04A Game-owned default names and name-bank seam are merged; S04B theatrical selection not begun |
+| teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal |
 | controller `F-UX-01` | **POLISH REQUIRED** — S04B direction registered; implementation not begun |
 | feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
 | flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** — S05 direction registered; implementation not begun |
@@ -140,9 +150,8 @@ Contract versions: see [`../STATUS.md`](../STATUS.md).
 
 Do **not**:
 
-- merge the S04A candidate from this handoff;
 - begin S04B Sony theatrical team selection, S04C recovery UX, or S04D
-  telemetry;
+  telemetry without a later bounded authorization;
 - begin S05 visual-fidelity work or S06 integrated release qualification;
 - silently decide Apple/Windows signing, fee waiver, CPU/OS matrix, or
   public teacher-release publication;
@@ -169,20 +178,19 @@ phones, no networked buzzers, no executable imported content) remain in
 
 ## Next Program-level action
 
-`CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` has a
-published implementation candidate. The next Program action is exact-head
-merge adjudication. S04B remains unauthorized.
+`CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is
+**TERMINALLY COMPLETE**. The next planned Program frontier is
+`CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP`.
 
 ```text
 routing ≠ authority
-S04A: IN REVIEW (candidate published; not merged)
+S04A: TERMINALLY COMPLETE
+S04B: PLANNED / NOT AUTHORIZED
+S04C/S04D/S05/S06: NOT AUTHORIZED
 ```
 
-Do **not** merge S04A from this handoff. Do **not** begin S04B from this
-handoff.
-
-S04A evidence:
-[`../receipts/2026-08-13-cqs-real-mvp-s04a-teacher-workflow-authoring-and-session-model.md`](../receipts/2026-08-13-cqs-real-mvp-s04a-teacher-workflow-authoring-and-session-model.md).
+The next contributor must return to Program authority for S04B
+adjudication before implementation. Do **not** begin S04B from this handoff.
 
 ## Architecture pointers
 

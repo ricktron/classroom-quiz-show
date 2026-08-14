@@ -12,9 +12,10 @@ review, qualification, and release work also follow
 ## Teacher quick start
 
 Teachers: see [`docs/teacher/QUICK_START.md`](docs/teacher/QUICK_START.md) for the
-ordinary classroom path — open Host, load a game, set up teams/controllers, open
-the audience Display, and begin play. Desktop install/start (unsigned artifacts)
-is in [`docs/teacher/DESKTOP.md`](docs/teacher/DESKTOP.md).
+ordinary classroom path — open Home, create/import/open a Game, start or resume a
+class Session, set up teams/controllers, open the audience Display, and begin
+play. Desktop install/start (unsigned artifacts) is in
+[`docs/teacher/DESKTOP.md`](docs/teacher/DESKTOP.md).
 
 > **Not a Jeopardy clone.** The category-and-point-value board is the _first_
 > round type this engine supports, not the whole product. See
@@ -27,14 +28,17 @@ is in [`docs/teacher/DESKTOP.md`](docs/teacher/DESKTOP.md).
 - **`CQS-REAL-MVP-1` is ACTIVE / CANONICALLY REGISTERED.** Canonical Program
   plan:
   [`docs/plans/CQS-REAL-MVP-ARC.md`](docs/plans/CQS-REAL-MVP-ARC.md).
-- Current planned implementation frontier:
-  `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL`. S04A
-  requires **separate owner/Program authorization**. S04 product
-  implementation has **not** begun.
+- `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is
+  **TERMINALLY COMPLETE**. PR #72 merged as
+  `29083f078521ebf432a7d7380c521c557fb578a8`, and post-merge CI succeeded on
+  that exact squash/main SHA.
+- The next planned Program frontier is
+  `CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP`, but S04B
+  requires **separate Program authorization** and has not begun.
 - S03 implements the production Electron desktop shell and unsigned
-  packaging path. S04 canon registers remaining product direction.
-  Routing is not authority. This README does **not** authorize S04A or a
-  signed teacher release.
+  packaging path. S04 canon registers remaining product direction. Routing
+  is not authority. This README does **not** authorize S04B or a signed
+  teacher release.
 - Product Contract:
   [`docs/CQS-PRODUCT-CONTRACT.md`](docs/CQS-PRODUCT-CONTRACT.md).
 - Post-MVP arcs remain inactive.
@@ -57,7 +61,8 @@ A teacher-hosted, local-first engine:
 - two playable round types: `category-board` and `final-wager`;
 - keyboard buzz-in, generic USB Gamepad, and one exact Sony Buzz supported
   profile;
-- canonical JSON import, spreadsheet authoring, and portable packs;
+- canonical JSON import, spreadsheet plus in-app board authoring, and portable
+  packs;
 - host-local IndexedDB persistence and recovery;
 - board-first audience display;
 - optional host-only minimal presentation audio.
