@@ -1,33 +1,23 @@
 {
   "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.desktop.tsbuildinfo",
     "target": "ES2023",
     "lib": ["ES2023"],
     "module": "ESNext",
     "skipLibCheck": true,
-
-    /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true,
-
-    /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-
     "types": ["node"]
   },
-  "include": [
-    "vite.config.ts",
-    "vite.desktop-main.config.ts",
-    "vitest.config.ts",
-    "playwright.config.ts",
-    "tests/desktop/playwright.config.ts"
-  ]
+  "include": ["desktop/**/*.ts"],
+  "exclude": ["desktop/**/*.test.ts"]
 }

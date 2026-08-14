@@ -1,0 +1,37 @@
+appId: com.classroomquizshow.app
+productName: Classroom Quiz Show
+copyright: Copyright © Classroom Quiz Show
+asar: true
+directories:
+  output: release
+  buildResources: desktop/icons
+files:
+  - out/main/**/*
+  - out/renderer/**/*
+  - "!node_modules/**"
+extraMetadata:
+  main: out/main/main.cjs
+electronVersion: 43.4.0
+npmRebuild: false
+mac:
+  category: public.app-category.education
+  identity: null
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  artifactName: ${productName}-${version}-mac-${arch}-unsigned.${ext}
+  target:
+    - zip
+    - dmg
+win:
+  signAndEditExecutable: false
+  artifactName: ${productName}-${version}-win-${arch}-unsigned.${ext}
+  target:
+    - nsis
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Classroom Quiz Show
+  artifactName: ${productName}-${version}-win-${arch}-setup-unsigned.${ext}

@@ -4,13 +4,16 @@
 - **Program:** `CQS-REAL-MVP-1`
 - **Registering slice:** `CQS-REAL-MVP-S01-PROGRAM-CANON-REGISTRATION`
 - **S02 slice:** `CQS-REAL-MVP-S02-DESKTOP-ARCHITECTURE-QUALIFICATION`
+- **S03 slice:** `CQS-REAL-MVP-S03-DESKTOP-DISTRIBUTION-AND-RELEASE-FOUNDATION`
 - **Authorization:** `AUTHORIZE-CQS-REAL-MVP-S01-PROGRAM-CANON-REGISTRATION-1`
 - **S02 authorization:**
   `AUTHORIZE-CQS-REAL-MVP-S02-DESKTOP-ARCHITECTURE-QUALIFICATION-1`
+- **S03 authorization:**
+  `AUTHORIZE-CQS-REAL-MVP-S03-DESKTOP-DISTRIBUTION-AND-RELEASE-FOUNDATION-1`
 - **Date:** 2026-08-13
 - **Status:** **ACTIVE / CANONICALLY REGISTERED**
-- **Kind:** Program canon registration plus S02 architecture-qualification
-  candidate. **No production desktop implementation. No S03 authority.**
+- **Kind:** Program canon registration plus S02 architecture decision plus
+  S03 production desktop distribution foundation. **S04 is not authorized.**
 
 This document is the canonical **CQS REAL MVP Program** plan of record. It
 registers `CQS-REAL-MVP-1` as the current owner-approved Program without
@@ -37,20 +40,20 @@ naming a successor slice grants no implementation authority
 
 S01 registered Program canon only. It did **not** select a desktop wrapper.
 
-S02 records the evidence-based desktop architecture decision. It does
-**not**:
+S02 records the evidence-based desktop architecture decision. S03
+implements the production Electron thin shell and unsigned packaging path.
+This Program plan does **not**:
 
-- implement a production Electron (or other) shell;
-- add desktop dependencies or configuration to the production tree;
-- create a release workflow or installer;
 - resolve signing, notarization, or paid-account questions;
 - authorize or begin
-  `CQS-REAL-MVP-S03-DESKTOP-DISTRIBUTION-AND-RELEASE-FOUNDATION`;
+  `CQS-REAL-MVP-S04-TEACHER-SIMPLE-SETUP-AND-SUPPORT`;
 - reopen Slices 1–23;
 - activate post-MVP arcs;
-- promote Raspberry Pi, LAN, or additional gameplay modes into REAL MVP.
+- promote Raspberry Pi, LAN, or additional gameplay modes into REAL MVP;
+- publish a public teacher-trusted signed release merely because artifacts
+  can be built.
 
-A named next frontier is **not** implementation authority. S03 requires
+A named next frontier is **not** implementation authority. S04 requires
 **separate owner/Program authorization**.
 
 ---
@@ -147,28 +150,28 @@ when a change can causally affect them:
 
 ## 6. Initial gap register
 
-These are the Program-adoption states registered by S01. They are the
-starting gap register, not an implementation backlog with slice-level
-authority.
+These are the live Program-adoption states. S01 registered the starting
+gap register; later authorized slices update the states in this table.
+This table is not an implementation backlog with slice-level authority.
 
 | Gap | Program-adoption state |
 | --- | --- |
-| conventional macOS installation | **OPEN** |
-| conventional Windows installation | **OPEN** |
-| simple desktop launch | **OPEN** |
-| desktop Host/Display lifecycle | **OPEN** (architecture qualified by S02; production shell not implemented) |
-| release artifacts/version/update path | **OPEN** |
+| conventional macOS installation | **FOUNDATION IMPLEMENTED / UNSIGNED** |
+| conventional Windows installation | **FOUNDATION IMPLEMENTED / UNSIGNED** (CI artifact path; physical Windows runtime not claimed) |
+| simple desktop launch | **FOUNDATION IMPLEMENTED** |
+| desktop Host/Display lifecycle | **FOUNDATION IMPLEMENTED** |
+| release artifacts/version/update path | **FOUNDATION IMPLEMENTED** (manual versioned replacement; no auto-update) |
 | in-app teacher team setup | **OPEN** |
 | teacher-simple progressive disclosure | **POLISH REQUIRED** |
 | controller `F-UX-01` | **POLISH REQUIRED** |
 | feedback/support path | **OPEN** |
 | flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** |
-| packaged offline/recovery equivalence | **OPEN** |
-| packaged macOS qualification | **OPEN** |
-| packaged Windows qualification | **OPEN** |
+| packaged offline/recovery equivalence | **FOUNDATION IMPLEMENTED** (Electron shell + IndexedDB identity) |
+| packaged macOS qualification | **PARTIAL** (packaged Host launch observed; physical Sony not run) |
+| packaged Windows qualification | **OPEN** (CI installer path; physical Windows runtime not run) |
 | clean-room teacher qualification | **OPEN** |
-| C-3 | **OPEN / REQUIRED** |
-| C-6 | **OPEN / REQUIRED** |
+| C-3 | **FOUNDATION IMPLEMENTED / UNSIGNED** |
+| C-6 | **FOUNDATION IMPLEMENTED / UNSIGNED** |
 | `CQS-Q23-CLASS-B-01` | **ACCEPTABLE FOR S03 WITH DOCUMENTED CONTROL** |
 | `CQS-Q23-LOW-02` | **OPEN LOW / MONITOR ONLY** |
 | `CQS-OD-066` | **DEFERRED / NOT REQUIRED FOR REAL MVP** |
@@ -181,8 +184,9 @@ Retained finding identity is preserved:
   recorded installed-PWA Chrome-tab close caveat; **OPEN LOW / MONITOR ONLY**.
 - `CLASS-B-01` (`CQS-Q23-CLASS-B-01`) remains the SheetJS packaging /
   supply-chain concern; **ACCEPTABLE FOR S03 WITH DOCUMENTED CONTROL**
-  (build-time `cdn.sheetjs.com` fetch; bundled at runtime; do not re-pin
-  in S02). S03 CI/local desktop builds must be able to reach that host.
+  (build-time `cdn.sheetjs.com` fetch; bundled at runtime; not re-pinned).
+  S03 CI/local desktop builds must be able to reach that host. Packaged
+  end-user runtime must not.
 - `CQS-OD-066` remains unresolved GCS learning-target linkage and is
   **not required** to complete REAL MVP.
 
@@ -207,9 +211,10 @@ changes assumptions. Naming a successor slice grants **no implementation
 authority**.
 
 S01 is the registering slice. S02 selected Electron as the primary desktop
-architecture (ADR-021 Proposed until accepted by merge). S03 is the next
-planned Program frontier and **requires separate Program/owner
-authorization**. S03 is **not authorized** by this document.
+architecture (ADR-021 Accepted). S03 implements the production thin shell
+and unsigned packaging path. S04 is the next planned Program frontier and
+**requires separate Program/owner authorization**. S04 is **not authorized**
+by this document.
 
 There is no Slice 24.
 
@@ -218,21 +223,19 @@ There is no Slice 24.
 ## 8. Architecture state
 
 S02 selects **Electron** as the primary REAL MVP desktop architecture.
+S03 implements that architecture as a production thin shell.
 
 The decision is recorded in
-[`../architecture/ADR-021-real-mvp-desktop-architecture-electron.md`](../architecture/ADR-021-real-mvp-desktop-architecture-electron.md)
-and the qualification receipt
-[`../receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md`](../receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md).
-ADR-021 is **Proposed** until accepted by merge. No production Electron
-shell, dependency, or installer is added by S02.
+[`../architecture/ADR-021-real-mvp-desktop-architecture-electron.md`](../architecture/ADR-021-real-mvp-desktop-architecture-electron.md).
+ADR-021 is **Accepted**. The production shell, unsigned packaging path, and
+release-build workflow live in this tree.
 
 Disposition of the S01 comparison set:
 
-- **Electron** — **selected**. Thin Chromium shell around the existing
-  React/Vite core. Preserves Host/Display windows, IndexedDB origin
-  identity, keyboard, Gamepad API, Web Audio, and the ADR-019 WebHID
-  keep-alive / Gamepad gameplay split. Physical packaged Sony
-  requalification remains S03/S06 debt and is not claimed here.
+- **Electron** — **selected and production-implemented** as a thin Chromium
+  shell around the existing React/Vite core. Physical packaged Sony
+  requalification remains S06 debt where hardware was not attached during
+  S03.
 - **Tauri** — **rejected** as the primary wrapper. Official Tauri 2 macOS
   webview is WKWebView; system WKWebView has no `navigator.hid`. A native
   HID keep-alive would be a second controller architecture.
@@ -252,17 +255,18 @@ Permanent architecture that this Program must preserve:
 
 ## 9. Release direction
 
-These are **recommendations only**, not adopted release architecture:
+S03 adopts these as the REAL MVP **minimum** release-foundation facts:
 
-- GitHub Releases is the initial repository-native distribution candidate.
-- Manual versioned updates are the smallest REAL MVP update model unless
-  evidence later changes that recommendation.
-- Signing/notarization and paid-account requirements remain owner gates.
-
-S01 does not create a release workflow, installer, version scheme, or
-update implementation. S02 does not either. Electron is compatible with
-manual versioned GitHub Releases replacement if application identity is
-kept stable; that implementation belongs to S03.
+- GitHub Actions produces versioned unsigned macOS and Windows artifacts
+  with source SHA provenance. GitHub Releases may be used later for
+  distribution; this Program does **not** publish a public teacher release
+  merely because artifacts can be built.
+- Manual versioned replacement is the REAL MVP update model. Auto-update
+  is not implemented.
+- Application identity (`com.classroomquizshow.app` / Classroom Quiz Show)
+  is stable across version bumps so IndexedDB survives replacement.
+- Signing/notarization remain owner gates. Unsigned artifacts must be
+  labeled as such.
 
 ---
 
@@ -306,11 +310,10 @@ Canonical product identity:
 
 ## 12. Next Program frontier
 
-`CQS-REAL-MVP-S03-DESKTOP-DISTRIBUTION-AND-RELEASE-FOUNDATION` is the next
-planned Program frontier and requires separate owner/Program
-authorization.
+`CQS-REAL-MVP-S04-TEACHER-SIMPLE-SETUP-AND-SUPPORT` is the next planned
+Program frontier and requires separate owner/Program authorization.
 
 ```text
 routing ≠ authority
-S03: NOT AUTHORIZED pending separate Program authority
+S04: NOT AUTHORIZED pending separate Program authority
 ```

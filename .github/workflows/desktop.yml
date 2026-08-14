@@ -1,0 +1,190 @@
+name: Desktop artifacts
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Never publish GitHub Releases or auto-update from this workflow.
+# Artifacts are unsigned qualification / development-candidate builds.
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+# Prefer the pull-request head SHA over the merge-commit SHA so artifacts
+# prove the exact candidate source, not GitHub's temporary merge ref.
+env:
+  CQS_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  desktop-smoke:
+    name: Desktop unit + Electron shell tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CQS_SOURCE_SHA }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # CLASS-B-01: npm still fetches xlsx from cdn.sheetjs.com (build-time only).
+      # Packaged end-user runtime does not require that host. If this step fails
+      # because the source is unreachable, stop for a bounded repair finding;
+      # do not silently re-pin.
+      # Lifecycle scripts are ignored; only esbuild (Vite) and Electron's
+      # documented install helper are run explicitly.
+      - name: Install dependencies
+        run: |
+          npm ci --ignore-scripts
+          npm rebuild esbuild
+          node node_modules/electron/install.js
+
+      - name: Lint, typecheck, unit tests
+        run: npm run verify
+
+      - name: Desktop Electron tests
+        run: npm run test:desktop
+
+      - name: Record renderer bundle size
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          assets = Path('out/renderer/assets')
+          js = sorted(assets.glob('*.js'), key=lambda p: p.stat().st_size, reverse=True)
+          wav = list(assets.glob('*.wav'))
+          identity = json.loads(Path('out/renderer/desktop-build-identity.json').read_text())
+          print('desktop-build-identity', json.dumps(identity, indent=2))
+          print('largest_js_bytes', js[0].name if js else None, js[0].stat().st_size if js else 0)
+          print('wav_count', len(wav))
+          PY
+
+  package-macos:
+    name: Package unsigned macOS artifact
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CQS_SOURCE_SHA }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          npm ci --ignore-scripts
+          npm rebuild esbuild
+          node node_modules/electron/install.js
+
+      - name: Build desktop renderer and main
+        run: npm run build:desktop
+
+      - name: Package macOS
+        run: npm run package:desktop:mac
+
+      - name: Write artifact provenance
+        env:
+          SOURCE_SHA: ${{ env.CQS_SOURCE_SHA }}
+          GIT_REF: ${{ github.ref }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          mkdir -p release
+          python3 - <<'PY'
+          import json, os, pathlib, subprocess
+          version = subprocess.check_output(['node', '-p', "require('./package.json').version"], text=True).strip()
+          pathlib.Path('release/cqs-desktop-provenance.json').write_text(json.dumps({
+            'sourceSha': os.environ['SOURCE_SHA'],
+            'ref': os.environ['GIT_REF'],
+            'runId': os.environ['RUN_ID'],
+            'platform': 'macOS',
+            'version': version,
+            'appId': 'com.classroomquizshow.app',
+            'signing': 'unsigned',
+            'updateModel': 'manual-versioned-replacement',
+          }, indent=2) + '\n')
+          PY
+          cp out/renderer/desktop-build-identity.json release/desktop-build-identity.json
+          ls -lh release || true
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cqs-desktop-macos-${{ env.CQS_SOURCE_SHA }}
+          path: |
+            release/*.zip
+            release/*.dmg
+            release/cqs-desktop-provenance.json
+            release/desktop-build-identity.json
+          if-no-files-found: error
+          retention-days: 14
+
+  package-windows:
+    name: Package unsigned Windows artifact
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CQS_SOURCE_SHA }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          npm ci --ignore-scripts
+          npm rebuild esbuild
+          node node_modules/electron/install.js
+
+      - name: Build desktop renderer and main
+        run: npm run build:desktop
+
+      - name: Package Windows
+        run: npm run package:desktop:win
+
+      - name: Write artifact provenance
+        env:
+          SOURCE_SHA: ${{ env.CQS_SOURCE_SHA }}
+          GIT_REF: ${{ github.ref }}
+          RUN_ID: ${{ github.run_id }}
+        shell: bash
+        run: |
+          mkdir -p release
+          python - <<'PY'
+          import json, os, pathlib, subprocess
+          version = subprocess.check_output(['node', '-p', "require('./package.json').version"], text=True).strip()
+          pathlib.Path('release/cqs-desktop-provenance.json').write_text(json.dumps({
+            'sourceSha': os.environ['SOURCE_SHA'],
+            'ref': os.environ['GIT_REF'],
+            'runId': os.environ['RUN_ID'],
+            'platform': 'Windows',
+            'version': version,
+            'appId': 'com.classroomquizshow.app',
+            'signing': 'unsigned',
+            'updateModel': 'manual-versioned-replacement',
+          }, indent=2) + '\n')
+          PY
+          cp out/renderer/desktop-build-identity.json release/desktop-build-identity.json
+          ls -lh release || true
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cqs-desktop-windows-${{ env.CQS_SOURCE_SHA }}
+          path: |
+            release/*.exe
+            release/*.yml
+            release/cqs-desktop-provenance.json
+            release/desktop-build-identity.json
+          if-no-files-found: error
+          retention-days: 14

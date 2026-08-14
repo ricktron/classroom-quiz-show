@@ -6,7 +6,15 @@ import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'dev-dist', 'coverage', 'playwright-report', 'test-results'],
+    ignores: [
+      'dist',
+      'dev-dist',
+      'coverage',
+      'playwright-report',
+      'test-results',
+      'out',
+      'release',
+    ],
   },
   {
     files: ['**/*.{ts,tsx}'],
@@ -26,7 +34,7 @@ export default tseslint.config(
   },
   {
     // Node-context config and Playwright specs.
-    files: ['*.config.ts', 'tests/**/*.ts'],
+    files: ['*.config.ts', 'tests/**/*.ts', 'desktop/**/*.ts'],
     languageOptions: {
       globals: globals.node,
     },
