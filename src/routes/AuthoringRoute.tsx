@@ -126,9 +126,13 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
       if (outcome.value.ok && writeGateRef.current.latest() === generation) {
         await persistence.refreshLibrary()
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'The game could not be saved.'
-      setSaveTrust((current) => completeSave(current, generation, { ok: false, message }))
+    } catch {
+      setSaveTrust((current) =>
+        completeSave(current, generation, {
+          ok: false,
+          message: 'The game could not be saved on this device. Your edits are still here.',
+        }),
+      )
     }
   }
 

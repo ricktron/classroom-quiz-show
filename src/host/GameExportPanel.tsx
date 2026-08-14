@@ -60,6 +60,13 @@ export function GameExportPanel({
     // Capture synchronously at activation — do not read later from a changing store.
     const captured = definition
     if (captured === null) return
+    if (captured.rounds.length === 0) {
+      setStatus({
+        kind: 'download-failure',
+        message: 'This game has no playable content to export yet. Finish the questions first.',
+      })
+      return
+    }
 
     const result = exportGameDefinition(captured, { registry })
     if (result.status !== 'success') {
@@ -126,7 +133,7 @@ export function GameExportPanel({
           type="button"
           className="btn"
           data-testid="export-download"
-          disabled={!loaded}
+          disabled={!loaded || definition.rounds.length === 0}
           onClick={runExport}
         >
           Download game file

@@ -43,6 +43,7 @@ import {
 import * as packMediaPersistence from '../pack/packMediaPersistence'
 import { resourceScopeKeyFromGameText } from '../pack/resourceScope'
 import { TINY_PNG_BYTES } from '../pack/testFixtures'
+import { createNewLibraryGame } from '../library/gameLibrary'
 import { useHostPersistence, type UseHostPersistence } from './useHostPersistence'
 import { useSessionStore, type UseSessionStore } from './useSessionStore'
 
@@ -465,6 +466,31 @@ describe('useHostPersistence', () => {
       expect(result.ok).toBe(true)
     })
     await waitFor(() => expect(api().persistence.library).toHaveLength(0))
+  })
+
+  it('refuses to load an unplayable stub into a class session', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    const { api } = renderHarness(adapter)
+    await waitFor(() => expect(api().persistence.bootPhase).toBe('ready'))
+    const created = await createNewLibraryGame(adapter, api().registry)
+    expect(created.ok).toBe(true)
+    if (!created.ok) return
+    await act(async () => {
+      await api().persistence.refreshLibrary()
+    })
+    await waitFor(() => expect(api().persistence.library.some((entry) => entry.gameId === created.value.definition.id)).toBe(true))
+    await act(async () => {
+      const result = await api().persistence.loadSaved({
+        gameId: created.value.definition.id,
+        activeGame: null,
+        dispatch: api().session.dispatch,
+        getHistory: () => api().session.store.getHistory(),
+        registry: api().registry,
+      })
+      expect(result.ok).toBe(false)
+      expect(result.message).toMatch(/not ready to play/i)
+    })
+    expect(api().session.store.getState().session?.game ?? null).toBeNull()
   })
 
   it('storage failure leaves the in-memory session usable', async () => {

@@ -140,7 +140,18 @@ failed. Root-family repairs in this worktree:
 - Start new game session requires confirm when a class session is already
   open. Ordinary Host library/recovery copy uses product language.
 
-Those later repairs invalidate the `7dd785b` review. A later exact-head
+Those later repairs invalidate the `7dd785b` review.
+
+Exact-head review of `9d6d9a627cb7a3387faefaa7e780f97e054aa45e` still
+failed. Root-family repairs in this worktree:
+
+- Host library live copy uses product language (saved games / class session).
+- Spreadsheet same-id conflict no longer claims the file was stored.
+- Incomplete spreadsheet replace no longer claims “ready to play.”
+  `compiledThisSave` is distinct from “a previous playable compile remains.”
+- Host Load and Host JSON export refuse unplayable 0-round stubs.
+
+Those later repairs invalidate the `9d6d9a6` review. A later exact-head
 review must be obtained on the repaired candidate.
 
 ## Deferred with evidence

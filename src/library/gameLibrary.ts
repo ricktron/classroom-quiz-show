@@ -48,16 +48,17 @@ export async function saveAuthoringDraftToLibrary(
   PersistenceResult<{
     readonly definition: GameDefinition
     readonly playable: boolean
+    readonly compiledThisSave: boolean
     readonly draft: AuthoringDraft
   }>
 > {
   const approved = approveAndImportDraft(draft, { registry })
-  const savedDraft = approved.status === 'success' ? approved.draft : draft
-  const definition =
-    approved.status === 'success'
-      ? approved.importResult.definition
-      : await lastPlayableOrStub(adapter, draft, registry)
-  const playable = approved.status === 'success' || definition.rounds.length > 0
+  const compiledThisSave = approved.status === 'success'
+  const savedDraft = compiledThisSave ? approved.draft : draft
+  const definition = compiledThisSave
+    ? approved.importResult.definition
+    : await lastPlayableOrStub(adapter, draft, registry)
+  const playable = compiledThisSave || definition.rounds.length > 0
   const saved = await saveDefinition(adapter, definition, {
     mode,
     registry,
@@ -75,6 +76,7 @@ export async function saveAuthoringDraftToLibrary(
     value: {
       definition,
       playable,
+      compiledThisSave,
       draft: savedDraft,
     },
   }

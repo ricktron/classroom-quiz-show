@@ -337,7 +337,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       const listed = await updateLibrary()
       if (!cancelled && !listed.ok) {
         setDurabilityStatus(listed.code === 'unavailable' ? 'unavailable' : 'failed')
-        setMessage('Saved definitions could not be listed. The host remains usable in memory.')
+        setMessage('Saved games could not be listed. Classroom controls remain usable.')
       }
       const completed = await updateCompletedLedger()
       if (!cancelled && !completed.ok) {
@@ -394,7 +394,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       setActiveSessionPersistFailed(false)
       setBootPhase('ready')
       setDurabilityStatus('idle')
-      setMessage('Local persistence is ready. No unfinished active session was found.')
+      setMessage('Ready to save this class session. No unfinished class session was found.')
       return
     }
     if (read.kind === 'resumable') {
@@ -406,7 +406,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       setActiveSessionPersistFailed(false)
       setBootPhase('recovery')
       setDurabilityStatus('idle')
-      setMessage('An unfinished active session was found. Resume or discard it before continuing.')
+      setMessage('An unfinished class session was found. Resume or discard it before continuing.')
       return
     }
     setRecovery(null)
@@ -416,7 +416,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     setActiveSessionPersistFailed(false)
     setBootPhase('invalid-recovery')
     setDurabilityStatus('failed')
-    setMessage('Stored recovery data is invalid. Discard it to continue with an empty host session.')
+    setMessage('The unfinished class session could not be read. Discard only that session to continue.')
   }
 
   const persistHistory = useCallback(
@@ -777,43 +777,43 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     // unreferenced recovery scopes are removed while saved-definition refs remain.
     await gcPackMedia()
     setDurabilityStatus('idle')
-    setMessage('Recovery discarded. Started with an empty host session.')
-    return { ok: true, message: 'Recovery discarded.' }
+    setMessage('The unfinished class session was discarded. Your saved games stay.')
+    return { ok: true, message: 'The unfinished class session was discarded.' }
   }, [adapter, canUseStorage, gcPackMedia])
 
   const refreshLibrary = useCallback(async (): Promise<PersistenceActionResult> => {
-    if (!canUseStorage()) return { ok: false, message: 'Persistence is unavailable.' }
+    if (!canUseStorage()) return { ok: false, message: 'Saving on this device is unavailable.' }
     const result = await updateLibrary()
     if (!result.ok) {
       setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
-      setMessage('Saved definitions could not be refreshed.')
+      setMessage('Saved games could not be refreshed.')
       return { ok: false, message: result.message }
     }
-    setMessage('Saved definitions refreshed.')
-    return { ok: true, message: 'Saved definitions refreshed.' }
+    setMessage('Saved games refreshed.')
+    return { ok: true, message: 'Saved games refreshed.' }
   }, [canUseStorage, updateLibrary])
 
   const saveCurrentDefinition = useCallback(
     async (definition: GameDefinition | null, writeRegistry: RoundRegistry): Promise<PersistenceActionResult> => {
       if (!definition) return { ok: false, message: 'No loaded game definition to save.' }
       if (leadership === 'follower') return { ok: false, message: 'This tab is read-only while another host owns persistence.' }
-      if (!canUseStorage()) return { ok: false, message: 'Persistence is unavailable.' }
+      if (!canUseStorage()) return { ok: false, message: 'Saving on this device is unavailable.' }
       const result = await saveDefinition(adapter, definition, { mode: 'save', registry: writeRegistry })
       if (!result.ok) {
         setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
-        setMessage('Saved definition could not be written.')
+        setMessage('The game could not be saved.')
         return { ok: false, message: result.message }
       }
       if (result.value === 'needs-replace') {
-        setMessage('A saved definition with this id already exists. Confirm Replace to overwrite it.')
+        setMessage('A saved game with this id already exists. Confirm replace to overwrite it.')
         return { ok: false, message: 'Replace confirmation required.' }
       }
       await updateLibrary()
       await gcPackMedia()
       const message =
         result.value === 'noop'
-          ? 'Saved definition already matches this game; nothing changed.'
-          : 'Saved definition created.'
+          ? 'This saved game already matches. Nothing changed.'
+          : 'Game saved to My Games.'
       setMessage(message)
       return { ok: true, message }
     },
@@ -824,16 +824,16 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     async (definition: GameDefinition | null, writeRegistry: RoundRegistry): Promise<PersistenceActionResult> => {
       if (!definition) return { ok: false, message: 'No loaded game definition to replace.' }
       if (leadership === 'follower') return { ok: false, message: 'This tab is read-only while another host owns persistence.' }
-      if (!canUseStorage()) return { ok: false, message: 'Persistence is unavailable.' }
+      if (!canUseStorage()) return { ok: false, message: 'Saving on this device is unavailable.' }
       const result = await saveDefinition(adapter, definition, { mode: 'replace', registry: writeRegistry })
       if (!result.ok) {
         setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
-        setMessage('Saved definition could not be replaced.')
+        setMessage('The saved game could not be replaced.')
         return { ok: false, message: result.message }
       }
       await updateLibrary()
       await gcPackMedia()
-      const message = result.value === 'noop' ? 'Saved definition already matched this game.' : 'Saved definition replaced.'
+      const message = result.value === 'noop' ? 'This saved game already matched.' : 'Saved game replaced.'
       setMessage(message)
       return { ok: true, message }
     },
@@ -843,17 +843,17 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   const deleteSaved = useCallback(
     async (gameId: string): Promise<PersistenceActionResult> => {
       if (leadership === 'follower') return { ok: false, message: 'This tab is read-only while another host owns persistence.' }
-      if (!canUseStorage()) return { ok: false, message: 'Persistence is unavailable.' }
+      if (!canUseStorage()) return { ok: false, message: 'Saving on this device is unavailable.' }
       const result = await deleteDefinition(adapter, gameId)
       if (!result.ok) {
         setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
-        setMessage('Saved definition could not be deleted.')
+        setMessage('The saved game could not be deleted.')
         return { ok: false, message: result.message }
       }
       await gcPackMedia()
       await updateLibrary()
-      setMessage('Saved definition deleted.')
-      return { ok: true, message: 'Saved definition deleted.' }
+      setMessage('Game deleted. Your other games are unchanged.')
+      return { ok: true, message: 'Game deleted. Your other games are unchanged.' }
     },
     [adapter, canUseStorage, gcPackMedia, leadership, updateLibrary],
   )
@@ -871,16 +871,27 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         return { ok: false, message: 'This tab is read-only while another host owns persistence.' }
       }
       if (activeGame?.gameLifecycle === 'active' && !confirmedReplace) {
-        const message = 'Loading this saved definition would replace the unfinished active game. Confirm to replace it.'
+        const message = 'Loading this game would replace the unfinished class session. Confirm to replace it.'
         setMessage(message)
         return { ok: false, needsConfirmation: true, message }
       }
-      if (!canUseStorage()) return { ok: false, message: 'Persistence is unavailable.' }
+      if (!canUseStorage()) return { ok: false, message: 'Saving on this device is unavailable.' }
+      const listed = library.find((entry) => entry.gameId === gameId)
+      if (listed && !listed.playable) {
+        const message = 'This game is not ready to play yet. Open it to finish missing questions.'
+        setMessage(message)
+        return { ok: false, message }
+      }
       const loaded = await loadDefinition(adapter, gameId, loadRegistry)
       if (!loaded.ok) {
         setDurabilityStatus(loaded.code === 'unavailable' ? 'unavailable' : 'failed')
-        setMessage('Saved definition could not be loaded.')
+        setMessage('The saved game could not be loaded.')
         return { ok: false, message: loaded.message }
+      }
+      if (loaded.value.rounds.length === 0) {
+        const message = 'This game is not ready to play yet. Open it to finish missing questions.'
+        setMessage(message)
+        return { ok: false, message }
       }
       const history = getHistory()
       const hasSession = history.some((event) => event.type === 'SESSION_INITIALIZED')
@@ -902,7 +913,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         definition: loaded.value,
       })
       if (result.status !== 'accepted') {
-        const message = `The active session rejected the saved definition (${result.reason}).`
+        const message = `This class session could not load that game (${result.reason}).`
         setMessage(message)
         return { ok: false, message }
       }
@@ -911,10 +922,10 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       // Safe if the caller passed a raw store dispatch (no enqueue) or a wrapped
       // leadership dispatch (already enqueued): writeActiveSession is generation-gated.
       persistHistory(getHistory(), loadRegistry)
-      setMessage('Saved definition loaded into the active session.')
-      return { ok: true, message: 'Saved definition loaded.' }
+      setMessage('Game loaded into this class session.')
+      return { ok: true, message: 'Game loaded into this class session.' }
     },
-    [adapter, canUseStorage, clock, leadership, persistHistory],
+    [adapter, canUseStorage, clock, leadership, library, persistHistory],
   )
 
   const dispatchSessionCommand = useCallback(

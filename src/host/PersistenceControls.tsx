@@ -153,7 +153,7 @@ export function PersistenceControls({
         <div className="foundation__panel persistence__recovery" data-testid="persistence-recovery" role="alert">
           <h4>Recovery data could not be used</h4>
           <p className="host__note">
-            {persistence.invalidRecovery.message} Discard the recovery record to continue with an empty host session.
+            {persistence.invalidRecovery.message} Discard only that unfinished class session to continue. Your saved games stay.
           </p>
           <button
             type="button"
@@ -211,13 +211,17 @@ export function PersistenceControls({
                 <li key={entry.gameId} className="persistence__item">
                   <span>
                     <strong>{entry.title}</strong>
+                    <p className="host__note">
+                      {entry.playable ? 'Ready to play' : 'Needs more content'}
+                      {entry.hasDraft ? ' · In progress' : ''}
+                    </p>
                   </span>
                   <span className="persistence__item-actions">
                     <button
                       type="button"
                       className="btn btn--secondary"
                       data-testid="persistence-load"
-                      disabled={!controlsReady}
+                      disabled={!controlsReady || !entry.playable}
                       onClick={() => void load(entry.gameId)}
                     >
                       {confirmingLoad ? 'Confirm load and replace current game' : 'Load'}

@@ -208,7 +208,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
         ? saved.code === 'conflict'
           ? 'unfinished'
           : 'rejected'
-        : saved.value.playable
+        : saved.value.compiledThisSave
           ? 'accepted'
           : 'unfinished',
     })
@@ -217,34 +217,50 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
       if (saved.code === 'conflict') {
         setPendingWorkbookDraft(parsed.draft)
       }
-      setMessage(saved.message)
+      setMessage(
+        saved.code === 'conflict'
+          ? `“${parsed.draft.game.title}” is already in My Games. Confirm replace to overwrite that saved game. Nothing was saved yet.`
+          : saved.message,
+      )
       return
     }
     setPendingWorkbookDraft(null)
     await refresh(
-      saved.value.playable
+      saved.value.compiledThisSave
         ? `Imported “${saved.value.definition.title}”. It is ready to play.`
         : `Imported “${saved.value.definition.title}”. Open it to finish missing content.`,
     )
   }
 
   async function confirmWorkbookReplace(): Promise<void> {
-    if (!pendingWorkbookDraft) return
+    const draft = pendingWorkbookDraft
+    if (!draft) return
     const replaced = await saveAuthoringDraftToLibrary(
       persistence.adapter,
-      pendingWorkbookDraft,
+      draft,
       registry,
       'replace',
     )
     setPendingWorkbookDraft(null)
+    setQuality(
+      buildImportQualityReport({
+        draft,
+        title: draft.game.title,
+        acceptance: !replaced.ok
+          ? 'rejected'
+          : replaced.value.compiledThisSave
+            ? 'accepted'
+            : 'unfinished',
+      }),
+    )
     if (!replaced.ok) {
       setMessage(replaced.message)
       return
     }
     await refresh(
-      replaced.value.playable
+      replaced.value.compiledThisSave
         ? `Imported “${replaced.value.definition.title}”. It is ready to play.`
-        : `Imported “${replaced.value.definition.title}”. Open it to finish missing content.`,
+        : `Imported “${replaced.value.definition.title}”. The previous playable game was kept. Open the editor to finish this import.`,
     )
   }
 
