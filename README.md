@@ -12,9 +12,10 @@ review, qualification, and release work also follow
 ## Teacher quick start
 
 Teachers: see [`docs/teacher/QUICK_START.md`](docs/teacher/QUICK_START.md) for the
-ordinary classroom path — open Host, load a game, set up teams/controllers, open
-the audience Display, and begin play. Desktop install/start (unsigned artifacts)
-is in [`docs/teacher/DESKTOP.md`](docs/teacher/DESKTOP.md).
+ordinary classroom path — open Home, create/import/open a Game, start or resume a
+class Session, set up teams/controllers, open the audience Display, and begin
+play. Desktop install/start (unsigned artifacts) is in
+[`docs/teacher/DESKTOP.md`](docs/teacher/DESKTOP.md).
 
 > **Not a Jeopardy clone.** The category-and-point-value board is the _first_
 > round type this engine supports, not the whole product. See
@@ -60,7 +61,8 @@ A teacher-hosted, local-first engine:
 - two playable round types: `category-board` and `final-wager`;
 - keyboard buzz-in, generic USB Gamepad, and one exact Sony Buzz supported
   profile;
-- canonical JSON import, spreadsheet authoring, and portable packs;
+- canonical JSON import, spreadsheet plus in-app board authoring, and portable
+  packs;
 - host-local IndexedDB persistence and recovery;
 - board-first audience display;
 - optional host-only minimal presentation audio.
