@@ -4,6 +4,13 @@ Classroom Quiz Show’s conventional teacher path is a **desktop application**
 that wraps the same local-first Host/Display product already qualified as a
 web/PWA build.
 
+Subsequent REAL MVP product-direction registration established
+**Windows-first teacher adoption**: develop on macOS; design, package, and
+qualify for Windows as the primary teacher target, with macOS secondary
+and Web/PWA as the supported alternate. A CI-generated Windows artifact
+is build evidence only. Physical Windows classroom-machine qualification
+is required before v1.
+
 This is **not** a second game. Gameplay, scoring, persistence, import
 validation, Gamepad input, and Sony keep-alive remain in the shared React
 application. The desktop shell owns windows, the custom origin, HID

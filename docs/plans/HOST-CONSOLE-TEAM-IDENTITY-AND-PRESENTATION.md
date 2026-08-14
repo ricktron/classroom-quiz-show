@@ -5,6 +5,14 @@
 - **Status:** Explanatory planning view for `CQS-ARC-IDENTITY` and
   `CQS-ARC-OPERATOR` — **authorizes no implementation**
 
+> **Subsequent REAL MVP product-direction registration (2026-08-13).**
+> S04B direction now owns a bounded v1 Sony-only simultaneous team-name
+> selection experience for supported profile
+> `cqs.sony-buzz.namtai-wbuzz-wireless.v1`. That does **not** activate this
+> broader post-MVP identity-pack / mascot / sound / host-console arc. See
+> [`CQS-REAL-MVP-S04-FAMILY-DIRECTION.md`](CQS-REAL-MVP-S04-FAMILY-DIRECTION.md)
+> §§10–12. This file remains a historical/post-MVP planning view.
+
 Canonical decisions:
 [`../decisions/EXPANDED-VISION-OWNER-DECISIONS.md`](../decisions/EXPANDED-VISION-OWNER-DECISIONS.md)
 (`CQS-OD-012`, `CQS-OD-057`, `CQS-OD-063`…`CQS-OD-077`); architecture

@@ -15,12 +15,16 @@ authority.
    what is implemented.
 2. [`docs/PROJECT.md`](docs/PROJECT.md) owns product identity, permanent
    boundaries, non-goals, and approved owner decisions.
+   [`docs/CQS-PRODUCT-CONTRACT.md`](docs/CQS-PRODUCT-CONTRACT.md) owns the
+   dedicated serious-product invariants.
 3. [`docs/STATUS.md`](docs/STATUS.md) owns current program status.
 4. **Accepted ADRs** and owner decisions own durable architecture.
 5. The **current owner-approved program/roadmap plan**, once canonically
-   adopted. [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md) is the historical
-   completed 23-slice plan of record. It does **not** automatically own the
-   sequence of a future REAL MVP Program.
+   adopted. [`docs/plans/CQS-REAL-MVP-ARC.md`](docs/plans/CQS-REAL-MVP-ARC.md)
+   is the current REAL MVP Program plan of record.
+   [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md) is the historical
+   completed 23-slice plan of record. It does **not** own the current REAL
+   MVP sequence.
 6. [`docs/handoff/CURRENT.md`](docs/handoff/CURRENT.md) routes the next
    contributor and must agree with higher-precedence truth.
 7. [`docs/receipts/`](docs/receipts/) are historical evidence snapshots, not
@@ -38,11 +42,14 @@ Before changing the repository, read:
 
 1. This file (`AGENTS.md`)
 2. [`docs/PROJECT.md`](docs/PROJECT.md)
-3. [`docs/STATUS.md`](docs/STATUS.md)
-4. [`docs/handoff/CURRENT.md`](docs/handoff/CURRENT.md)
-5. [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md) as historical 23-slice
+3. [`docs/CQS-PRODUCT-CONTRACT.md`](docs/CQS-PRODUCT-CONTRACT.md)
+4. [`docs/STATUS.md`](docs/STATUS.md)
+5. [`docs/handoff/CURRENT.md`](docs/handoff/CURRENT.md)
+6. [`docs/plans/CQS-REAL-MVP-ARC.md`](docs/plans/CQS-REAL-MVP-ARC.md) as the
+   current REAL MVP Program plan
+7. [`docs/plans/MVP-ARC.md`](docs/plans/MVP-ARC.md) as historical 23-slice
    plan of record
-6. Relevant ADRs, decisions, and receipts for the authorized task
+8. Relevant ADRs, decisions, and receipts for the authorized task
 
 For delivery, repair, review, qualification, and release work, also read
 [`docs/governance/EXECUTION-GUIDANCE.md`](docs/governance/EXECUTION-GUIDANCE.md).
@@ -78,10 +85,15 @@ Permanent essentials (see the canonical docs for full detail):
   required cloud dependency under current MVP canon.
 - Local controller support preserves the hardware-independent input boundary.
 - The product remains usable without controllers.
+- A teacher's saved game/data is more valuable than any individual release.
+- Reusable Game content and per-class Session state are distinct.
+- Windows is the primary teacher deployment target; macOS is the primary
+  development platform.
 
 Canonical references:
 
 - [`docs/PROJECT.md`](docs/PROJECT.md)
+- [`docs/CQS-PRODUCT-CONTRACT.md`](docs/CQS-PRODUCT-CONTRACT.md)
 - [`docs/architecture/GAME-ENGINE-BOUNDARIES.md`](docs/architecture/GAME-ENGINE-BOUNDARIES.md)
 
 ## Verification

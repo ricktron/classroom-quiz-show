@@ -8,6 +8,13 @@ The product lets teachers assemble a complete classroom game from reusable,
 ordered **rounds** — the category-and-point-value board being the first round
 type, not the entire product.
 
+Subsequent REAL MVP product-direction registration established that CQS is
+being designed as a **serious potential distributable education product**
+whose first/primary owner-user is the developer/teacher. Durable product
+invariants live in [`CQS-PRODUCT-CONTRACT.md`](CQS-PRODUCT-CONTRACT.md).
+Detailed remaining direction lives in
+[`plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md`](plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md).
+
 Initial subject seeds: **Earth & Space Science** (primary) and **Ecology**
 (secondary). The engine itself is subject-agnostic.
 
@@ -121,10 +128,14 @@ audio, or board styling.
 
 - **Working name / slug:** Classroom Quiz Show / `classroom-quiz-show`.
 - **Deployment target:** REAL MVP conventional path is the teacher-launched
-  Electron desktop application (macOS and Windows). GitHub Pages (static PWA)
-  remains the supported web alternate. See
-  [`architecture/ADR-021-real-mvp-desktop-architecture-electron.md`](architecture/ADR-021-real-mvp-desktop-architecture-electron.md)
-  and [`teacher/DESKTOP.md`](teacher/DESKTOP.md).
+  Electron desktop application. Subsequent REAL MVP product-direction
+  registration established the canonical platform order: develop on macOS;
+  teacher/production target is **Windows primary**, macOS secondary, Web/PWA
+  supported alternate. GitHub Pages (static PWA) remains the supported web
+  alternate. See
+  [`architecture/ADR-021-real-mvp-desktop-architecture-electron.md`](architecture/ADR-021-real-mvp-desktop-architecture-electron.md),
+  [`CQS-PRODUCT-CONTRACT.md`](CQS-PRODUCT-CONTRACT.md), and
+  [`teacher/DESKTOP.md`](teacher/DESKTOP.md).
 - **Subject seeds:** Earth & Space Science (primary), Ecology (secondary).
 - **Default category-board point ladder:** 100, 200, 300, 400, 500. (Slice 5
   implements the board; the ladder is authored per game, and this remains the
@@ -172,6 +183,28 @@ audio, or board styling.
   target. Delivered through a hardware-independent input adapter in slices 8–10
   of the amended roadmap. See the non-goal amendment above and
   [`decisions/ROADMAP-AMENDMENT-001-local-buzzers.md`](decisions/ROADMAP-AMENDMENT-001-local-buzzers.md).
+- **Product Contract (2026-08-13, S04 canon):** durable serious-product
+  invariants, including teacher-data primacy, offline gameplay, Game versus
+  Session, Windows-first teacher deployment, optional privacy-safe telemetry,
+  and v1 compatibility obligation. See
+  [`CQS-PRODUCT-CONTRACT.md`](CQS-PRODUCT-CONTRACT.md).
+- **Game versus Session (2026-08-13, S04 canon):** a Game is reusable authored
+  content; a Session is one classroom run. Saved games must be reusable across
+  classes without retaining previous class team identities as authored content.
+- **Ordinary teacher flow (2026-08-13, S04 canon):** Home → New Game / Resume →
+  Game → Teams → Sony Buzzers (optional) → Projector → Play. Simple dashboard
+  plus optional first-run guidance; no mandatory wizard on every session.
+- **In-app board authoring (2026-08-13, S04 canon):** ordinary teachers must be
+  able to author a complete category-board + Final game inside CQS without
+  mandatory JSON or spreadsheet. The board itself is the editor / review
+  surface. Spreadsheet import remains a power / bulk path.
+- **Sony-only theatrical name selection (2026-08-13, S04 canon):** v1
+  simultaneous team-name choice is only for supported profile
+  `cqs.sony-buzz.namtai-wbuzz-wireless.v1` (`054c:1000`). Teacher manual
+  name entry is the fallback when Sony is not used.
+- **No live AI in CQS v1 (2026-08-13, S04 canon):** AI-assisted workbook
+  generation occurs outside CQS. S04A direction includes an Import Quality
+  Report and Export Generation Feedback loop.
 
 (These are targets for the engine. As of Slice 8 the `category-board` round
 implements the board, the first scoring strategy implements bounded integer
@@ -179,4 +212,7 @@ points, partial credit and unrestricted manual correction, the response phase
 implements host arming and a replay-safe timer, and the local input boundary
 implements **keyboard** buzz-in with a full ordered queue and promotion.
 Controller hardware of every kind — generic gamepads, Sony Buzz!, coloured
-buttons — and sudden-death tie-breaks remain targets for later slices.)
+buttons — and sudden-death tie-breaks remain targets for later slices.
+Subsequent REAL MVP product-direction registration established the remaining
+teacher-product direction above; it did not rewrite this Slice 8
+implementation-truth paragraph.)
