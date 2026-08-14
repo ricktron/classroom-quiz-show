@@ -27,4 +27,9 @@ export const COORDINATION_BROADCAST_CHANNEL =
 export const PACK_MEDIA_SCOPE_BROADCAST_CHANNEL =
   'classroom-quiz-show:pack-media-scope:v1'
 
-export const SAVED_DEFINITION_RECORD_VERSION = 1
+/**
+ * Saved-definition record format. Version 2 adds optional authoring-draft JSON
+ * and last-opened metadata. Version 1 records remain readable.
+ */
+export const SAVED_DEFINITION_RECORD_VERSION = 2
+export const SUPPORTED_SAVED_DEFINITION_RECORD_VERSIONS = [1, 2] as const

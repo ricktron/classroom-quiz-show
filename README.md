@@ -96,8 +96,8 @@ npm ci        # reproducible install from package-lock.json
 npm run dev   # http://localhost:5173/  (base path "/")
 ```
 
-- Root / role picker: `http://localhost:5173/#/`
-- Host: `http://localhost:5173/#/host`
+- Home: `http://localhost:5173/#/`
+- Host classroom controls: `http://localhost:5173/#/host`
 - Display: `http://localhost:5173/#/display`
 
 ## Tests
@@ -147,7 +147,8 @@ npm run test:desktop     # Electron Playwright shell tests (builds desktop first
 npm run preview     # serves dist/ at http://localhost:4173/classroom-quiz-show/
 ```
 
-- Host: `http://localhost:4173/classroom-quiz-show/#/host`
+- Home: `http://localhost:4173/classroom-quiz-show/#/`
+- Host classroom controls: `http://localhost:4173/classroom-quiz-show/#/host`
 - Display: `http://localhost:4173/classroom-quiz-show/#/display`
 
 ## Combined verification
@@ -170,7 +171,8 @@ everything after `#` is handled in the client. Full rationale and alternatives:
 
 | Screen  | Dev URL                          | Pages URL                                             |
 | ------- | -------------------------------- | ----------------------------------------------------- |
-| Root    | `localhost:5173/#/`             | `…github.io/classroom-quiz-show/#/`                  |
+| Home    | `localhost:5173/#/`             | `…github.io/classroom-quiz-show/#/`                  |
+| Edit    | `localhost:5173/#/edit/:id`     | `…github.io/classroom-quiz-show/#/edit/:id`          |
 | Host    | `localhost:5173/#/host`         | `…github.io/classroom-quiz-show/#/host`             |
 | Display | `localhost:5173/#/display`      | `…github.io/classroom-quiz-show/#/display`          |
 

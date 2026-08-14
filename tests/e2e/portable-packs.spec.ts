@@ -108,7 +108,9 @@ async function openDisplay(page: Page) {
 }
 
 async function waitForSaved(host: Page) {
-  await expect(host.getByTestId('persistence-status')).toHaveText(/saved locally|ready/i)
+  await expect(host.getByTestId('persistence-status')).toHaveText(
+    /saved on this device|ready to save|saved locally|ready/i,
+  )
 }
 
 async function initSession(host: Page) {

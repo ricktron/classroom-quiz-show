@@ -12,6 +12,28 @@ export { revalidateDraft, computeDraftStatus, validateDraftContent } from './val
 export { applyDraftCorrection, type DraftCorrection } from './correctDraft'
 export { compileApprovedDraft } from './compileDraft'
 export { approveAndImportDraft, markDraftApproved, type ApproveAndImportResult } from './approveAndImport'
+export { createBlankAuthoringDraft } from './createBlankDraft'
+export { draftFromDefinition } from './draftFromDefinition'
+export {
+  beginSave,
+  completeSave,
+  initialSaveTrustState,
+  markSaveClean,
+  markSaveDirty,
+  markSaveLoaded,
+  saveStatusLabel,
+  type SaveTrustState,
+} from './saveTrust'
+export { createGenerationWriteGate, type GenerationWriteGate } from './saveGate'
+export {
+  canRedoAuthoring,
+  canUndoAuthoring,
+  emptyAuthoringUndoStack,
+  pushAuthoringUndo,
+  redoAuthoring,
+  undoAuthoring,
+  type AuthoringUndoStack,
+} from './undoStack'
 export { generateWorkbookTemplate, downloadWorkbookTemplate } from './generateTemplate'
 export { buildModelNeutralInstructions } from './instructions'
 export { preflightWorkbookBytes, assertWorkbookFilename } from './preflight'

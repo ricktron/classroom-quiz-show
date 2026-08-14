@@ -9,5 +9,6 @@ export function draftContentFingerprint(draft: Omit<AuthoringDraft, 'contentFing
     game: draft.game,
     board: draft.board,
     final: draft.final ?? null,
+    teamNameBank: draft.game.teamNameBank ?? [],
   })
 }

@@ -15,9 +15,9 @@ delivery/review/repair/qualification/release work,
 | --- | --- |
 | What is historically complete? | Slices **1–23**. Original 23-slice foundation/qualification roadmap: **COMPLETE**. Slice 23: **TERMINALLY COMPLETE**. Guidance Polish S01: **TERMINALLY COMPLETE**. |
 | What is active? | **`CQS-REAL-MVP-1`: ACTIVE / CANONICALLY REGISTERED**. S03 implements the production Electron thin shell and unsigned desktop packaging path (ADR-021 **Accepted**). S04 canon registers remaining product direction. Post-MVP arcs remain **INACTIVE**. |
-| What remains? | REAL MVP teacher-adoptable product work remains open. S04A–S04D, flagship visual fidelity, and integrated release qualification are not complete and are **not begun**. Desktop artifacts are **unsigned** qualification/development-candidate builds, not a teacher-trusted signed release. |
+| What remains? | REAL MVP teacher-adoptable product work remains open. S04A has a published implementation candidate that is **not merged**. S04B–S04D, flagship visual fidelity, and integrated release qualification are not complete and are **not begun**. Desktop artifacts are **unsigned** qualification/development-candidate builds, not a teacher-trusted signed release. |
 | What is blocked / open? | See the [gap register](plans/CQS-REAL-MVP-ARC.md#6-initial-gap-register). C-3 / C-6 **FOUNDATION IMPLEMENTED / UNSIGNED**. `F-UX-01` **POLISH REQUIRED**. `CQS-Q23-LOW-02` **OPEN / LOW / MONITOR**. `CQS-Q23-CLASS-B-01` **OPEN / CONTROLLED**. `CQS-OD-066` **DEFERRED / NOT REAL MVP**. Packaged macOS Sony physical **DEFERRED / NOT RUN / HARDWARE UNAVAILABLE**. Windows physical runtime **NOT RUN**. Signing / notarization **OPEN OWNER GATE**. C-7 Raspberry Pi **outside REAL MVP**. C-8 LAN **outside REAL MVP**. Post-MVP arcs **INACTIVE**. |
-| Current Program frontier | `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL`. **S04A: NOT AUTHORIZED** pending separate Program authority. |
+| Current Program frontier | `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL`. **S04A: IN REVIEW** on a published candidate. Merge is reserved for Program Orchestrator exact-head adjudication. |
 
 ```text
 historical 23-slice roadmap: COMPLETE
@@ -27,8 +27,8 @@ CQS-REAL-MVP-1: ACTIVE / CANONICALLY REGISTERED
 S02: Electron selected (ADR-021 Accepted)
 S03: production Electron thin shell + unsigned packaging path implemented
 S04 canon: product direction registered
-S04A: NOT AUTHORIZED pending separate Program authority
-S04 product implementation: NOT BEGUN
+S04A: IN REVIEW (candidate published; not merged)
+S04B–S04D / S05 / S06: NOT AUTHORIZED
 post-MVP arcs: INACTIVE
 ```
 
@@ -95,8 +95,10 @@ packaging, and a GitHub Actions release-build workflow. Auto-update is not
 implemented. Signing/notarization remain owner gates.
 
 S04 canon registers remaining product direction, the Product Contract, and
-the S04A–S04D / S05 / S06 topology. It does **not** implement S04A–S04D
-product code.
+the S04A–S04D / S05 / S06 topology. S04A implements teacher Home, in-app
+board authoring, Game/Session isolation, save trust, Import Quality Report,
+and local Generation Feedback on a published candidate. That candidate is
+**not merged** and does **not** complete S04B–S04D.
 
 Teacher desktop notes:
 [`teacher/DESKTOP.md`](teacher/DESKTOP.md).
@@ -110,8 +112,8 @@ Teacher desktop notes:
 | simple desktop launch | **FOUNDATION IMPLEMENTED** |
 | desktop Host/Display lifecycle | **FOUNDATION IMPLEMENTED** |
 | release artifacts/version/update path | **FOUNDATION IMPLEMENTED** (manual replacement; no auto-update; no public teacher release) |
-| in-app teacher team setup | **OPEN** — S04A/S04B direction registered; implementation not begun |
-| teacher-simple progressive disclosure | **POLISH REQUIRED** — S04A direction registered; implementation not begun |
+| in-app teacher team setup | **PARTIAL** — S04A Game-owned default names and name-bank seam on the candidate; S04B theatrical Sony selection **not begun** |
+| teacher-simple progressive disclosure | **IN REVIEW** on the S04A candidate (Home / authoring / save trust); not merged |
 | controller `F-UX-01` (`CQS-Q23-LOW-01`) | **POLISH REQUIRED** — S04B direction registered; implementation not begun |
 | feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
 | flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** — S05 direction registered; implementation not begun |
@@ -129,11 +131,11 @@ Teacher desktop notes:
 | **C-8** cross-device LAN host/display | **Outside REAL MVP.** Not begun. |
 | Post-MVP arcs | **INACTIVE** |
 
-Do **not** begin S04A, S04B, S04C, S04D, S05, or S06 from this status. Do
-**not** declare a teacher-trusted signed release. Do **not** declare the
-teacher-adoptable product complete. Do **not** reopen completed Slices
-1–23. Do **not** claim Sony packaged physical qualification or Windows
-physical runtime qualification.
+Do **not** merge S04A from this status. Do **not** begin S04B, S04C, S04D,
+S05, or S06 from this status. Do **not** declare a teacher-trusted signed
+release. Do **not** declare the teacher-adoptable product complete. Do
+**not** reopen completed Slices 1–23. Do **not** claim Sony packaged
+physical qualification or Windows physical runtime qualification.
 
 ## Contract versions
 
@@ -150,6 +152,7 @@ Verified against canonical implementation constants:
 | Sync envelope | **2** |
 | Private active-session wire | **1** |
 | IndexedDB | **4** |
+| Saved-definition record | **2** (v1 remains readable) |
 | Sony mapping | **1** |
 | Sony supported profile | **1** |
 | Session Summary | **1** |
@@ -160,23 +163,24 @@ Sony support remains one exact profile (`cqs.sony-buzz.namtai-wbuzz-wireless.v1`
 Namtai wireless `Wbuzz` `054c:1000`), not a hardware catalog. See
 [`architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md`](architecture/ADR-019-sony-buzz-supported-profile-direct-webhid-keepalive.md).
 
-S04 canon does **not** change these contract versions. Future workbook /
-backup / persistence versioning is registered as remaining product
-direction, not as an implemented contract bump.
+S04A adds saved-definition record **2** so incomplete in-app drafts can be
+stored beside compiled games. IndexedDB remains **4**. v1 records remain
+readable. Future workbook / backup versioning remains later product
+direction.
 
 ## Next Program-level action
 
-`CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is the
-next planned implementation frontier and requires separate owner/Program
-authorization.
+`CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` has a
+published implementation candidate. Merge is reserved for Program
+Orchestrator exact-head adjudication. S04B remains unauthorized.
 
 ```text
 routing ≠ authority
-S04A: NOT AUTHORIZED pending separate Program authority
-S04 product implementation: NOT BEGUN
+S04A: IN REVIEW (candidate published; not merged)
+S04B–S04D / S05 / S06: NOT AUTHORIZED
 ```
 
-This status grants **no** S04A authority, **no** signing/notarization
+This status grants **no** merge authority, **no** signing/notarization
 decision, and **no** public teacher-release publication.
 
 ## Historical evidence (pointers)
@@ -185,6 +189,7 @@ decision, and **no** public teacher-release publication.
 - S04-family direction: [`plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md`](plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md)
 - REAL MVP Program plan: [`plans/CQS-REAL-MVP-ARC.md`](plans/CQS-REAL-MVP-ARC.md)
 - S04 canon amendment: [`decisions/ROADMAP-AMENDMENT-005-real-mvp-s04-family-elaboration.md`](decisions/ROADMAP-AMENDMENT-005-real-mvp-s04-family-elaboration.md)
+- S04A teacher-workflow receipt: [`receipts/2026-08-13-cqs-real-mvp-s04a-teacher-workflow-authoring-and-session-model.md`](receipts/2026-08-13-cqs-real-mvp-s04a-teacher-workflow-authoring-and-session-model.md)
 - S03 desktop foundation receipt: [`receipts/2026-08-13-cqs-real-mvp-s03-desktop-distribution-release-foundation.md`](receipts/2026-08-13-cqs-real-mvp-s03-desktop-distribution-release-foundation.md)
 - S02 architecture ADR: [`architecture/ADR-021-real-mvp-desktop-architecture-electron.md`](architecture/ADR-021-real-mvp-desktop-architecture-electron.md)
 - S02 qualification receipt: [`receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md`](receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md)

@@ -2,7 +2,8 @@ import { describe, expect, it, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { ROUTES } from '../routes/paths'
-import { RootRoute } from '../routes/RootRoute'
+import { HomeRoute } from '../routes/HomeRoute'
+import { AuthoringRoute } from '../routes/AuthoringRoute'
 import { HostRoute } from '../routes/HostRoute'
 import { DisplayRoute } from '../routes/DisplayRoute'
 import { NotFoundRoute } from '../routes/NotFoundRoute'
@@ -11,13 +12,15 @@ import { FORBIDDEN_DISPLAY_LABELS } from '../test/leakLabels'
 
 /**
  * Mirrors the route table in App.tsx but under MemoryRouter so we can drive the
- * initial path directly. (App itself uses HashRouter for GitHub Pages.)
+ * initial path directly. (App itself uses createHashRouter for GitHub Pages.)
  */
 function renderAt(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>
-        <Route path={ROUTES.root} element={<RootRoute />} />
+        <Route path={ROUTES.root} element={<HomeRoute />} />
+        <Route path={ROUTES.edit} element={<AuthoringRoute />} />
+        <Route path={`${ROUTES.edit}/:gameId`} element={<AuthoringRoute />} />
         <Route
           path={ROUTES.host}
           element={
@@ -41,19 +44,16 @@ function renderAt(path: string) {
 }
 
 describe('route resolution', () => {
-  it('root shows the role-selection entry with host and display links', () => {
+  it('root shows teacher Home with New Game, Import, and classroom controls', async () => {
     renderAt(ROUTES.root)
-    expect(
-      screen.getByRole('heading', { name: /choose a screen/i }),
-    ).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /open host/i })).toHaveAttribute(
+    expect(await screen.findByRole('heading', { name: /^home$/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /new game/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /import game/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /open classroom controls/i })).toHaveAttribute(
       'href',
       '/host',
     )
-    expect(screen.getByRole('link', { name: /open display/i })).toHaveAttribute(
-      'href',
-      '/display',
-    )
+    expect(screen.queryByRole('heading', { name: /choose a screen/i })).not.toBeInTheDocument()
   })
 
   it('host route warns it is private and presents a ready classroom surface', () => {

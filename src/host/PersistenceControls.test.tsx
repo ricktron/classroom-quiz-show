@@ -34,6 +34,8 @@ function persistence(overrides: Partial<UseHostPersistence> = {}): UseHostPersis
     initialHistory: [],
     storeEpoch: 0,
     canDispatchSessionCommands: true,
+    canPersistMutations: true,
+    assertCanPersist: vi.fn(() => ({ ok: true as const, message: 'This window can save.' })),
     resume: vi.fn(),
     discardRecovery: vi.fn(async () => ({ ok: true, message: 'Discarded.' })),
     retryActiveSessionPersist: vi.fn(async () => ({ ok: true, message: 'Retried.' })),
@@ -80,7 +82,7 @@ describe('PersistenceControls', () => {
       }),
     )
 
-    expect(screen.getByTestId('persistence-status')).toHaveTextContent(/resumable active session found/i)
+    expect(screen.getByTestId('persistence-status')).toHaveTextContent(/unfinished class session found/i)
     expect(screen.getByTestId('persistence-recovery')).toHaveTextContent(/unfinished session/i)
     fireEvent.click(screen.getByTestId('persistence-resume'))
     expect(resume).toHaveBeenCalledTimes(1)
@@ -101,6 +103,8 @@ describe('PersistenceControls', () => {
     expect(screen.getByTestId('persistence-recovery')).toHaveTextContent(/could not be used/i)
     expect(screen.getByTestId('persistence-warning')).toHaveTextContent(/might not survive refresh/i)
     fireEvent.click(screen.getByTestId('persistence-discard'))
+    expect(discardRecovery).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByTestId('persistence-discard'))
     await waitFor(() => {
       expect(discardRecovery).toHaveBeenCalledTimes(1)
       expect(screen.getByText('Discarded.')).toBeInTheDocument()
@@ -112,7 +116,7 @@ describe('PersistenceControls', () => {
       persistence({
         leadership: 'follower',
         canDispatchSessionCommands: false,
-        library: [{ gameId: 'sample-game', title: 'Sample Game', savedAt: 1 }],
+        library: [{ gameId: 'sample-game', title: 'Sample Game', savedAt: 1, hasDraft: false, playable: true }],
       }),
     )
 
@@ -128,7 +132,7 @@ describe('PersistenceControls', () => {
     const deleteSaved = vi.fn(async () => ({ ok: true, message: 'Deleted.' }))
     renderControls(
       persistence({
-        library: [{ gameId: 'sample-game', title: 'Sample Game', savedAt: 1 }],
+        library: [{ gameId: 'sample-game', title: 'Sample Game', savedAt: 1, hasDraft: false, playable: true }],
         saveCurrentDefinition,
         loadSaved,
         deleteSaved,
@@ -137,6 +141,8 @@ describe('PersistenceControls', () => {
 
     fireEvent.click(screen.getByTestId('persistence-save'))
     fireEvent.click(screen.getByTestId('persistence-load'))
+    fireEvent.click(screen.getByTestId('persistence-delete'))
+    expect(deleteSaved).not.toHaveBeenCalled()
     fireEvent.click(screen.getByTestId('persistence-delete'))
 
     await waitFor(() => expect(saveCurrentDefinition).toHaveBeenCalledTimes(1))
@@ -160,9 +166,9 @@ describe('PersistenceControls', () => {
   it('uses accessible labels and live regions', () => {
     renderControls(persistence({ durabilityStatus: 'saved' }))
 
-    expect(screen.getByRole('heading', { name: /persistence & recovery/i })).toBeVisible()
-    expect(screen.getByLabelText(/persistence status/i)).toBeVisible()
-    expect(screen.getByRole('button', { name: /save current definition/i })).toBeVisible()
+    expect(screen.getByRole('heading', { name: /saved games and this class session/i })).toBeVisible()
+    expect(screen.getByLabelText(/save status/i)).toBeVisible()
+    expect(screen.getByRole('button', { name: /save current game/i })).toBeVisible()
   })
 
   it('shows the clear-all control and requires confirmation before wiping', async () => {

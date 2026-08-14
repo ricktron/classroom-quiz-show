@@ -6,11 +6,12 @@ import { test, expect } from '@playwright/test'
  * base path, so relative hash navigations exercise real Pages behavior.
  */
 
-test('root route loads with role selection', async ({ page }) => {
+test('root route loads teacher Home', async ({ page }) => {
   await page.goto('./')
-  await expect(page.getByRole('heading', { name: /choose a screen/i })).toBeVisible()
-  await expect(page.getByRole('link', { name: /open host/i })).toBeVisible()
-  await expect(page.getByRole('link', { name: /open display/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /^home$/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: /new game/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: /import game/i })).toBeVisible()
+  await expect(page.getByRole('link', { name: /open classroom controls/i })).toBeVisible()
 })
 
 test('host route loads directly and warns it is private', async ({ page }) => {

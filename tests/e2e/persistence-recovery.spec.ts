@@ -34,7 +34,9 @@ async function openDisplay(page: Page) {
 }
 
 async function waitForSaved(host: Page) {
-  await expect(host.getByTestId('persistence-status')).toHaveText(/saved locally|ready/i)
+  await expect(host.getByTestId('persistence-status')).toHaveText(
+    /saved on this device|ready to save|saved locally|ready/i,
+  )
 }
 
 async function startBoard(host: Page) {
@@ -53,7 +55,7 @@ async function eventCount(host: Page): Promise<number> {
 test('host starts clean with visible persistence status and no silent recovery', async ({ page }) => {
   await openHost(page)
 
-  await expect(page.getByTestId('persistence-status')).toHaveText(/local persistence ready/i)
+  await expect(page.getByTestId('persistence-status')).toHaveText(/ready to save this class session/i)
   await expect(page.getByTestId('persistence-recovery')).toHaveCount(0)
   await expect(page.getByTestId('private-revision')).toHaveText('0')
   await expect(page.getByText('No events yet.')).toBeVisible()
@@ -96,6 +98,7 @@ test('Discard recovery clears the active session and starts empty', async ({ con
   await expect(host.getByRole('heading', { name: /host control/i })).toBeVisible()
   await expect(host.getByTestId('persistence-recovery')).toBeVisible()
   await host.getByTestId('persistence-discard').click()
+  await host.getByTestId('persistence-discard').click()
 
   await expect(host.getByTestId('persistence-recovery')).toHaveCount(0)
   await expect(host.getByTestId('private-revision')).toHaveText('0')
@@ -104,7 +107,7 @@ test('Discard recovery clears the active session and starts empty', async ({ con
   await host.reload()
   await expect(host.getByRole('heading', { name: /host control/i })).toBeVisible()
   await expect(host.getByTestId('persistence-recovery')).toHaveCount(0)
-  await expect(host.getByTestId('persistence-status')).toHaveText(/local persistence ready/i)
+  await expect(host.getByTestId('persistence-status')).toHaveText(/ready to save this class session/i)
 
   await host.close()
 })
@@ -116,7 +119,6 @@ test('saved definition appears in the library and Load confirms replacement', as
 
   await host.getByTestId('persistence-save').click()
   await expect(host.getByTestId('persistence-library')).toContainText(SAMPLE_TITLE)
-  await expect(host.getByTestId('persistence-library')).toContainText('imported-sample-board')
 
   await host.getByRole('button', { name: /^initialize sample game$/i }).click()
   await expect(host.getByTestId('game-title')).toHaveText('Foundation Sample Game')

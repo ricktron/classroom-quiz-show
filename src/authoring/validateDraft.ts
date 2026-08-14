@@ -285,7 +285,13 @@ export function validateDraftContent(draft: AuthoringDraft): AuthoringIssue[] {
         }
       }
 
-      if (clue.prompt.trim().length === 0 || clue.answer.trim().length === 0) {
+      const hasPrompt =
+        clue.prompt.trim().length > 0 ||
+        (clue.promptMedia !== undefined &&
+          (clue.promptMedia.kind === 'text'
+            ? clue.promptMedia.text.trim().length > 0
+            : clue.promptMedia.alt.trim().length > 0))
+      if (!hasPrompt || clue.answer.trim().length === 0) {
         issues.push(
           authoringIssue(
             'incomplete-clue',

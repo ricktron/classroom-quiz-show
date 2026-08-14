@@ -1,4 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { playGameIdFromSearch } from '../routes/paths'
 import { useSessionStore } from './useSessionStore'
 import { useHostSync } from './useHostSync'
 import { PUBLIC_STATUS_CODES } from '../state/status'
@@ -50,6 +52,13 @@ export interface FoundationControlsProps {
 }
 
 export function FoundationControls({ clock = systemClock }: FoundationControlsProps = {}) {
+  const [searchParams] = useSearchParams()
+  const playGameId = playGameIdFromSearch(searchParams.toString())
+  const playLoadedRef = useRef<string | null>(null)
+  const [playReplaceNeeded, setPlayReplaceNeeded] = useState(false)
+  const [playReplaceArmed, setPlayReplaceArmed] = useState(false)
+  const [resetArmed, setResetArmed] = useState(false)
+  const [startSessionArmed, setStartSessionArmed] = useState(false)
   const persistence = useHostPersistence({ clock })
   const {
     store,
@@ -109,6 +118,49 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
     )
   }, [game?.definition, persistenceAdapter, registry, persistenceStoreEpoch])
 
+  const loadPlayRef = useRef<() => void>(() => {})
+  loadPlayRef.current = () => {
+    if (!playGameId) return
+    if (persistence.bootPhase !== 'ready') return
+    if (!persistence.canDispatchSessionCommands) return
+    if (playLoadedRef.current === playGameId) return
+    if (game?.definition.id === playGameId) {
+      playLoadedRef.current = playGameId
+      setPlayReplaceNeeded(false)
+      return
+    }
+    void persistence
+      .loadSaved({
+        gameId: playGameId,
+        activeGame: game,
+        dispatch,
+        getHistory: () => store.getHistory(),
+        registry,
+        confirmedReplace: playReplaceArmed,
+      })
+      .then((result) => {
+        if (result.ok) {
+          playLoadedRef.current = playGameId
+          setPlayReplaceNeeded(false)
+          setPlayReplaceArmed(false)
+          return
+        }
+        if ('needsConfirmation' in result && result.needsConfirmation) {
+          setPlayReplaceNeeded(true)
+        }
+      })
+  }
+
+  useEffect(() => {
+    loadPlayRef.current()
+  }, [
+    playGameId,
+    persistence.bootPhase,
+    persistence.canDispatchSessionCommands,
+    game?.definition.id,
+    playReplaceArmed,
+  ])
+
   return (
     <section className="foundation" aria-labelledby="classroom-controls-title">
       <h2 id="classroom-controls-title">Classroom controls</h2>
@@ -140,24 +192,82 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
           <p className="host__note">
             Choose a supported content path below. If no session exists yet, loading starts one
             automatically. Use <strong>Start new game session</strong> when you want an explicit
-            fresh session first.
+            fresh session first. Starting a new session while one is already open replaces that
+            class run only. It does not delete the saved game.
           </p>
           <div className="foundation__actions" role="group" aria-label="Start game session">
             <button
               type="button"
               className="btn"
               data-testid="start-new-game-session"
-              onClick={() =>
+              onClick={() => {
+                if (hasSession && !startSessionArmed) {
+                  setStartSessionArmed(true)
+                  return
+                }
+                setStartSessionArmed(false)
                 dispatch({
                   type: 'INIT_SESSION',
                   issuedAt: now(),
                   sessionId: nextHostSessionId(),
                 })
-              }
+              }}
             >
-              Start new game session
+              {hasSession && startSessionArmed
+                ? 'Confirm start new class session'
+                : 'Start new game session'}
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              data-testid="reset-class-session"
+              disabled={!hasSession}
+              onClick={() => {
+                if (!resetArmed) {
+                  setResetArmed(true)
+                  return
+                }
+                setResetArmed(false)
+                const definition = game?.definition ?? null
+                const reset = dispatch({
+                  type: 'INIT_SESSION',
+                  issuedAt: now(),
+                  sessionId: nextHostSessionId(),
+                })
+                if (reset.status === 'accepted' && definition) {
+                  dispatch({
+                    type: 'INITIALIZE_GAME',
+                    issuedAt: now(),
+                    definition,
+                  })
+                }
+              }}
+            >
+              {resetArmed ? 'Confirm reset this class session' : 'Reset this class session'}
             </button>
           </div>
+          <p className="host__note">
+            Reset this class session clears scores, progress, buzzes, and wagers for this class
+            only. It does not delete the saved game.
+          </p>
+          {persistence.bootPhase === 'recovery' && playGameId && (
+            <p className="host__note" data-testid="play-after-recovery">
+              Resume or discard the unfinished class session first. Then CQS can load the game you
+              chose to play.
+            </p>
+          )}
+          {playReplaceNeeded && (
+            <p className="host__note" role="alert" data-testid="play-replace-confirm">
+              Loading this game would replace the current class session.
+              <button
+                type="button"
+                className="btn"
+                onClick={() => setPlayReplaceArmed(true)}
+              >
+                Load this game and replace the current session
+              </button>
+            </p>
+          )}
 
           <GameImportPanel
             dispatch={dispatch}
@@ -264,8 +374,7 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
         <section className="foundation__diagnostics" aria-labelledby="advanced-diagnostics-title">
           <h3 id="advanced-diagnostics-title">Advanced diagnostics</h3>
           <p className="host__note foundation__intro">
-            Optional developer and troubleshooting controls. They are not required for ordinary
-            classroom setup.
+            Optional troubleshooting controls. They are not required for ordinary classroom setup.
           </p>
 
           <div className="foundation__actions" role="group" aria-label="Foundation commands">

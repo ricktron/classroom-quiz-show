@@ -1,0 +1,41 @@
+.quality-report {
+  margin: var(--space-4) 0;
+  padding: var(--space-4);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius);
+  background: var(--surface-base);
+  text-align: left;
+}
+
+.quality-report__counts {
+  font-weight: 600;
+}
+
+.quality-report__list {
+  margin: 0 0 var(--space-4);
+  padding-left: 1.2rem;
+}
+
+.quality-report__item {
+  margin: var(--space-2) 0;
+}
+
+.quality-report__badge {
+  display: inline-block;
+  margin-right: var(--space-2);
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-panel);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.quality-report__item--error .quality-report__badge {
+  background: var(--state-host-wash);
+  border-color: var(--state-host);
+}
+
+.quality-report__item--warning .quality-report__badge,
+.quality-report__item--heuristic .quality-report__badge {
+  background: var(--surface-raised);
+}

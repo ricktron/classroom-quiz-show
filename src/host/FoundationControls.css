@@ -25,10 +25,16 @@
   background: var(--surface-disabled);
 }
 
-.foundation__diagnostics > h3 {
+.foundation__diagnostics > h3,
+.foundation__diagnostics summary h3 {
   margin-top: 0;
   color: var(--fg-muted);
   font-size: 1rem;
+}
+
+.foundation__diagnostics summary {
+  cursor: pointer;
+  list-style: disclosure-closed;
 }
 
 .foundation__tag {

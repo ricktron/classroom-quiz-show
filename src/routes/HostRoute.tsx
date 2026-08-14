@@ -69,7 +69,7 @@ function HostRouteContent(): ReactElement {
             Open display in new window
           </button>
           <Link className="btn btn--secondary" to={ROUTES.root}>
-            Back to start
+            Back to Home
           </Link>
         </div>
 

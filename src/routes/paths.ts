@@ -11,8 +11,26 @@ import { resolveThemeId, type ThemeId } from '../theme/themeRegistry'
 export const ROUTES = {
   root: '/',
   host: '/host',
+  edit: '/edit',
   display: '/display',
 } as const
+
+export function editPath(gameId?: string): string {
+  if (!gameId) return ROUTES.edit
+  return `${ROUTES.edit}/${encodeURIComponent(gameId)}`
+}
+
+export function playPath(gameId: string): string {
+  return `${ROUTES.host}?play=${encodeURIComponent(gameId)}`
+}
+
+/** Read the Home → Play game id from a hash-route search string. */
+export function playGameIdFromSearch(search: string): string | null {
+  const raw = search.startsWith('?') ? search.slice(1) : search
+  const value = new URLSearchParams(raw).get('play')
+  if (typeof value !== 'string' || value.trim().length === 0) return null
+  return value
+}
 
 export type RouteKey = keyof typeof ROUTES
 

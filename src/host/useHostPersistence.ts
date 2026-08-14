@@ -7,6 +7,12 @@ import type { SessionEvent } from '../state/events'
 import type { PrivateGameState } from '../state/privateState'
 import type { DispatchResult } from '../state/store'
 import { systemClock, type Clock } from '../time/clock'
+import { nextHostSessionId } from './ensureSession'
+import {
+  canPersistMutations,
+  rejectIfCannotPersist,
+  type PersistWriteSurface,
+} from './writeAuthority'
 import { collectReferencedPackScopeKeys } from '../pack/hydratePackMedia'
 import { gcUnreferencedPackScopes } from '../pack/packMediaPersistence'
 import {
@@ -127,6 +133,13 @@ export interface UseHostPersistence {
   readonly initialHistory: readonly SessionEvent[]
   readonly storeEpoch: number
   readonly canDispatchSessionCommands: boolean
+  /** True only while this window is the durable writer. */
+  readonly canPersistMutations: boolean
+  /**
+   * Immediate pre-write gate. Reads current leadership, not the render that
+   * started a click handler, so a mid-flight follower transition cannot write.
+   */
+  readonly assertCanPersist: (surface?: PersistWriteSurface) => PersistenceActionResult
   readonly resume: () => void
   readonly discardRecovery: () => Promise<PersistenceActionResult>
   /** Re-attempts writing the current history after an active-session save failure. */
@@ -195,6 +208,8 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   const [recovery, setRecovery] = useState<RecoveryPayload | null>(null)
   const [invalidRecovery, setInvalidRecovery] = useState<InvalidRecoveryPayload | null>(null)
   const [leadership, setLeadership] = useState<PersistenceLeadership>('unknown')
+  const leadershipRef = useRef<PersistenceLeadership>(leadership)
+  leadershipRef.current = leadership
   const [durabilityStatus, setDurabilityStatus] = useState<PersistenceDurabilityStatus>('loading')
   const [durableEventCount, setDurableEventCount] = useState(0)
   const [pendingEventCount, setPendingEventCount] = useState<number | null>(null)
@@ -206,7 +221,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   const [completedListings, setCompletedListings] =
     useState<readonly CompletedSummaryListing[]>([])
   const [library, setLibrary] = useState<readonly SavedDefinitionSummary[]>([])
-  const [message, setMessage] = useState('Opening local persistence.')
+  const [message, setMessage] = useState('Opening saved games…')
   const [initialHistory, setInitialHistory] = useState<readonly SessionEvent[]>([])
   const [storeEpoch, setStoreEpoch] = useState(0)
   const storageReadyRef = useRef(false)
@@ -258,7 +273,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   const canUseStorage = useCallback((): boolean => {
     if (!storageReadyRef.current) {
       setDurabilityStatus('unavailable')
-      setMessage('Local persistence is unavailable. Recent changes might not survive refresh.')
+      setMessage('Saving on this device is unavailable. Recent changes might not survive refresh.')
       return false
     }
     return true
@@ -307,14 +322,14 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     async function boot(): Promise<void> {
       setBootPhase('loading')
       setDurabilityStatus('loading')
-      setMessage('Opening local persistence.')
+      setMessage('Opening saved games…')
       const opened = await adapter.open()
       if (cancelled) return
       if (!opened.ok) {
         setBootPhase('ready')
         setDurabilityStatus('unavailable')
         setLeadership('unknown')
-        setMessage('Local persistence is unavailable. The host remains usable, but recent changes might not survive refresh.')
+        setMessage('Saving on this device is unavailable. Classroom controls remain usable, but recent changes might not survive refresh.')
         return
       }
 
@@ -336,7 +351,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       const listed = await updateLibrary()
       if (!cancelled && !listed.ok) {
         setDurabilityStatus(listed.code === 'unavailable' ? 'unavailable' : 'failed')
-        setMessage('Saved definitions could not be listed. The host remains usable in memory.')
+        setMessage('Saved games could not be listed. Classroom controls remain usable.')
       }
       const completed = await updateCompletedLedger()
       if (!cancelled && !completed.ok) {
@@ -393,7 +408,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       setActiveSessionPersistFailed(false)
       setBootPhase('ready')
       setDurabilityStatus('idle')
-      setMessage('Local persistence is ready. No unfinished active session was found.')
+      setMessage('Ready to save this class session. No unfinished class session was found.')
       return
     }
     if (read.kind === 'resumable') {
@@ -405,7 +420,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       setActiveSessionPersistFailed(false)
       setBootPhase('recovery')
       setDurabilityStatus('idle')
-      setMessage('An unfinished active session was found. Resume or discard it before continuing.')
+      setMessage('An unfinished class session was found. Resume or discard it before continuing.')
       return
     }
     setRecovery(null)
@@ -415,7 +430,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     setActiveSessionPersistFailed(false)
     setBootPhase('invalid-recovery')
     setDurabilityStatus('failed')
-    setMessage('Stored recovery data is invalid. Discard it to continue with an empty host session.')
+    setMessage('The unfinished class session could not be read. Discard only that session to continue.')
   }
 
   const persistHistory = useCallback(
@@ -433,16 +448,16 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         setActiveSessionPersistFailed(true)
         if (!storageReadyRef.current) {
           setDurabilityStatus('unavailable')
-          setMessage('Local persistence is unavailable. Recent changes might not survive refresh.')
+          setMessage('Saving on this device is unavailable. Recent changes might not survive refresh.')
         } else {
           setDurabilityStatus('failed')
-          setMessage('This tab cannot save the active session until it holds the persistence lease.')
+          setMessage('This window cannot save the class session until it is the one in charge of saving.')
         }
         return
       }
 
       setDurabilityStatus('saving')
-      setMessage('Saving active session.')
+      setMessage('Saving this class session.')
       void writeActiveSession(adapter, history, clock.now(), writeQueue, writeRegistry).then((result) => {
         if (latestWriteToken.current !== token) return
         if (result.ok) {
@@ -450,12 +465,12 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
           setPendingEventCount(null)
           setActiveSessionPersistFailed(false)
           setDurabilityStatus('saved')
-          setMessage('Active session saved locally.')
+          setMessage('This class session is saved on this device.')
         } else {
           setPendingEventCount(null)
           setActiveSessionPersistFailed(true)
           setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
-          setMessage('Active session could not be saved. Recent changes might not survive refresh.')
+          setMessage('This class session could not be saved. Recent changes might not survive refresh.')
         }
       })
     },
@@ -481,15 +496,15 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         setPendingEventCount(null)
         setActiveSessionPersistFailed(true)
         const message = !storageReadyRef.current
-          ? 'Local persistence is unavailable. Recent changes might not survive refresh.'
-          : 'This tab cannot save the active session until it holds the persistence lease.'
+          ? 'Saving on this device is unavailable. Recent changes might not survive refresh.'
+          : 'This window cannot save the class session until it is the one in charge of saving.'
         setDurabilityStatus(!storageReadyRef.current ? 'unavailable' : 'failed')
         setMessage(message)
         return { ok: false, message }
       }
 
       setDurabilityStatus('saving')
-      setMessage('Saving active session.')
+      setMessage('Saving this class session.')
       const result = await writeActiveSession(adapter, history, clock.now(), writeQueue, writeRegistry)
       if (latestWriteToken.current !== token) {
         return { ok: true, message: 'A newer save replaced this retry.' }
@@ -499,13 +514,13 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         setPendingEventCount(null)
         setActiveSessionPersistFailed(false)
         setDurabilityStatus('saved')
-        setMessage('Active session saved locally.')
-        return { ok: true, message: 'Active session saved locally.' }
+        setMessage('This class session is saved on this device.')
+        return { ok: true, message: 'This class session is saved on this device.' }
       }
       setPendingEventCount(null)
       setActiveSessionPersistFailed(true)
       setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
-      setMessage('Active session could not be saved. Recent changes might not survive refresh.')
+      setMessage('This class session could not be saved. Recent changes might not survive refresh.')
       return { ok: false, message: result.message }
     },
     [adapter, clock, leadership, writeQueue],
@@ -748,17 +763,33 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     setMessage('Recovered session loaded. Future accepted changes will be saved after each write completes.')
   }, [recovery])
 
+  const assertCanPersist = useCallback((surface: PersistWriteSurface = 'home'): PersistenceActionResult => {
+    const blocked = rejectIfCannotPersist(leadershipRef.current, surface)
+    if (blocked) return blocked
+    return { ok: true, message: 'This window can save.' }
+  }, [])
+
   const discardRecovery = useCallback(async (): Promise<PersistenceActionResult> => {
+    const blocked = rejectIfCannotPersist(leadershipRef.current, 'home')
+    if (blocked) {
+      setMessage(blocked.message)
+      return blocked
+    }
     if (!canUseStorage()) {
-      setInitialHistory([])
-      setDurableEventCount(0)
-      setPendingEventCount(null)
-      setActiveSessionPersistFailed(false)
-      setStoreEpoch((epoch) => epoch + 1)
-      setBootPhase('ready')
-      return { ok: false, message: 'Persistence is unavailable; starting with an empty in-memory session.' }
+      setDurabilityStatus('unavailable')
+      const message =
+        'The unfinished class session could not be discarded. It is still on this device.'
+      setMessage(message)
+      return { ok: false, message }
     }
     const result = await clearActiveSession(adapter)
+    if (!result.ok) {
+      setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
+      setMessage(
+        'The unfinished class session could not be discarded. It is still on this device.',
+      )
+      return { ok: false, message: result.message }
+    }
     setInitialHistory([])
     setDurableEventCount(0)
     setPendingEventCount(null)
@@ -767,52 +798,47 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     setRecovery(null)
     setInvalidRecovery(null)
     setBootPhase('ready')
-    if (!result.ok) {
-      setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
-      setMessage('Recovery could not be cleared. The host is usable, but the warning may return after refresh.')
-      return { ok: false, message: result.message }
-    }
     // Recovery no longer protects pack scopes. Scan with null active definition so
     // unreferenced recovery scopes are removed while saved-definition refs remain.
     await gcPackMedia()
     setDurabilityStatus('idle')
-    setMessage('Recovery discarded. Started with an empty host session.')
-    return { ok: true, message: 'Recovery discarded.' }
+    setMessage('The unfinished class session was discarded. Your saved games stay.')
+    return { ok: true, message: 'The unfinished class session was discarded.' }
   }, [adapter, canUseStorage, gcPackMedia])
 
   const refreshLibrary = useCallback(async (): Promise<PersistenceActionResult> => {
-    if (!canUseStorage()) return { ok: false, message: 'Persistence is unavailable.' }
+    if (!canUseStorage()) return { ok: false, message: 'Saving on this device is unavailable.' }
     const result = await updateLibrary()
     if (!result.ok) {
       setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
-      setMessage('Saved definitions could not be refreshed.')
+      setMessage('Saved games could not be refreshed.')
       return { ok: false, message: result.message }
     }
-    setMessage('Saved definitions refreshed.')
-    return { ok: true, message: 'Saved definitions refreshed.' }
+    setMessage('Saved games refreshed.')
+    return { ok: true, message: 'Saved games refreshed.' }
   }, [canUseStorage, updateLibrary])
 
   const saveCurrentDefinition = useCallback(
     async (definition: GameDefinition | null, writeRegistry: RoundRegistry): Promise<PersistenceActionResult> => {
       if (!definition) return { ok: false, message: 'No loaded game definition to save.' }
       if (leadership === 'follower') return { ok: false, message: 'This tab is read-only while another host owns persistence.' }
-      if (!canUseStorage()) return { ok: false, message: 'Persistence is unavailable.' }
+      if (!canUseStorage()) return { ok: false, message: 'Saving on this device is unavailable.' }
       const result = await saveDefinition(adapter, definition, { mode: 'save', registry: writeRegistry })
       if (!result.ok) {
         setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
-        setMessage('Saved definition could not be written.')
+        setMessage('The game could not be saved.')
         return { ok: false, message: result.message }
       }
       if (result.value === 'needs-replace') {
-        setMessage('A saved definition with this id already exists. Confirm Replace to overwrite it.')
+        setMessage('A saved game with this id already exists. Confirm replace to overwrite it.')
         return { ok: false, message: 'Replace confirmation required.' }
       }
       await updateLibrary()
       await gcPackMedia()
       const message =
         result.value === 'noop'
-          ? 'Saved definition already matches this game; nothing changed.'
-          : 'Saved definition created.'
+          ? 'This saved game already matches. Nothing changed.'
+          : 'Game saved to My Games.'
       setMessage(message)
       return { ok: true, message }
     },
@@ -823,16 +849,16 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     async (definition: GameDefinition | null, writeRegistry: RoundRegistry): Promise<PersistenceActionResult> => {
       if (!definition) return { ok: false, message: 'No loaded game definition to replace.' }
       if (leadership === 'follower') return { ok: false, message: 'This tab is read-only while another host owns persistence.' }
-      if (!canUseStorage()) return { ok: false, message: 'Persistence is unavailable.' }
+      if (!canUseStorage()) return { ok: false, message: 'Saving on this device is unavailable.' }
       const result = await saveDefinition(adapter, definition, { mode: 'replace', registry: writeRegistry })
       if (!result.ok) {
         setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
-        setMessage('Saved definition could not be replaced.')
+        setMessage('The saved game could not be replaced.')
         return { ok: false, message: result.message }
       }
       await updateLibrary()
       await gcPackMedia()
-      const message = result.value === 'noop' ? 'Saved definition already matched this game.' : 'Saved definition replaced.'
+      const message = result.value === 'noop' ? 'This saved game already matched.' : 'Saved game replaced.'
       setMessage(message)
       return { ok: true, message }
     },
@@ -842,17 +868,17 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   const deleteSaved = useCallback(
     async (gameId: string): Promise<PersistenceActionResult> => {
       if (leadership === 'follower') return { ok: false, message: 'This tab is read-only while another host owns persistence.' }
-      if (!canUseStorage()) return { ok: false, message: 'Persistence is unavailable.' }
+      if (!canUseStorage()) return { ok: false, message: 'Saving on this device is unavailable.' }
       const result = await deleteDefinition(adapter, gameId)
       if (!result.ok) {
         setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
-        setMessage('Saved definition could not be deleted.')
+        setMessage('The saved game could not be deleted.')
         return { ok: false, message: result.message }
       }
       await gcPackMedia()
       await updateLibrary()
-      setMessage('Saved definition deleted.')
-      return { ok: true, message: 'Saved definition deleted.' }
+      setMessage('Game deleted. Your other games are unchanged.')
+      return { ok: true, message: 'Game deleted. Your other games are unchanged.' }
     },
     [adapter, canUseStorage, gcPackMedia, leadership, updateLibrary],
   )
@@ -870,16 +896,41 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         return { ok: false, message: 'This tab is read-only while another host owns persistence.' }
       }
       if (activeGame?.gameLifecycle === 'active' && !confirmedReplace) {
-        const message = 'Loading this saved definition would replace the unfinished active game. Confirm to replace it.'
+        const message = 'Loading this game would replace the unfinished class session. Confirm to replace it.'
         setMessage(message)
         return { ok: false, needsConfirmation: true, message }
       }
-      if (!canUseStorage()) return { ok: false, message: 'Persistence is unavailable.' }
+      if (!canUseStorage()) return { ok: false, message: 'Saving on this device is unavailable.' }
+      const listed = library.find((entry) => entry.gameId === gameId)
+      if (listed && !listed.playable) {
+        const message = 'This game is not ready to play yet. Open it to finish missing questions.'
+        setMessage(message)
+        return { ok: false, message }
+      }
       const loaded = await loadDefinition(adapter, gameId, loadRegistry)
       if (!loaded.ok) {
         setDurabilityStatus(loaded.code === 'unavailable' ? 'unavailable' : 'failed')
-        setMessage('Saved definition could not be loaded.')
+        setMessage('The saved game could not be loaded.')
         return { ok: false, message: loaded.message }
+      }
+      if (loaded.value.rounds.length === 0) {
+        const message = 'This game is not ready to play yet. Open it to finish missing questions.'
+        setMessage(message)
+        return { ok: false, message }
+      }
+      const history = getHistory()
+      const hasSession = history.some((event) => event.type === 'SESSION_INITIALIZED')
+      if (!hasSession) {
+        const started = dispatch({
+          type: 'INIT_SESSION',
+          issuedAt: clock.now(),
+          sessionId: nextHostSessionId(),
+        })
+        if (started.status !== 'accepted') {
+          const message = `Could not start a class session (${started.reason}).`
+          setMessage(message)
+          return { ok: false, message }
+        }
       }
       const result = dispatch({
         type: 'INITIALIZE_GAME',
@@ -887,7 +938,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         definition: loaded.value,
       })
       if (result.status !== 'accepted') {
-        const message = `The active session rejected the saved definition (${result.reason}).`
+        const message = `This class session could not load that game (${result.reason}).`
         setMessage(message)
         return { ok: false, message }
       }
@@ -896,10 +947,10 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       // Safe if the caller passed a raw store dispatch (no enqueue) or a wrapped
       // leadership dispatch (already enqueued): writeActiveSession is generation-gated.
       persistHistory(getHistory(), loadRegistry)
-      setMessage('Saved definition loaded into the active session.')
-      return { ok: true, message: 'Saved definition loaded.' }
+      setMessage('Game loaded into this class session.')
+      return { ok: true, message: 'Game loaded into this class session.' }
     },
-    [adapter, canUseStorage, clock, leadership, persistHistory],
+    [adapter, canUseStorage, clock, leadership, library, persistHistory],
   )
 
   const dispatchSessionCommand = useCallback(
@@ -955,6 +1006,8 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     initialHistory,
     storeEpoch,
     canDispatchSessionCommands: bootPhase === 'ready' && leadership !== 'follower',
+    canPersistMutations: canPersistMutations(leadership),
+    assertCanPersist,
     resume,
     discardRecovery,
     retryActiveSessionPersist,
