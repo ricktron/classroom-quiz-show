@@ -94,7 +94,7 @@ test.describe('Electron thin shell', () => {
       expect(displayProbe.processDefined).toBe(false)
       expect(displayProbe.electronExposed).toBe(false)
 
-      expect((await app.windows()).length).toBe(2)
+      expect(await app.windows()).toHaveLength(2)
       await display.close()
       await expect.poll(async () => (await app.windows()).length).toBe(1)
       await expect(host.getByRole('heading', { name: /host control/i })).toBeVisible()

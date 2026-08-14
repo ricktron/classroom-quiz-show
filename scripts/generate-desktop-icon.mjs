@@ -19,8 +19,8 @@ const HOST = [242, 169, 0]
 
 function crc32(buf) {
   let c = ~0
-  for (let i = 0; i < buf.length; i++) {
-    c ^= buf[i]
+  for (const byte of buf) {
+    c ^= byte
     for (let k = 0; k < 8; k++) c = c & 1 ? (c >>> 1) ^ 0xedb88320 : c >>> 1
   }
   return (~c) >>> 0
@@ -48,7 +48,7 @@ function encodePng(size) {
     for (let x = 0; x < size; x++) {
       const dx = x - cx
       const dy = y - cy
-      const dist = Math.sqrt(dx * dx + dy * dy)
+      const dist = Math.hypot(dx, dy)
       let r = BG[0]
       let g = BG[1]
       let b = BG[2]

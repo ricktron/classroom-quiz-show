@@ -34,12 +34,17 @@ jobs:
           node-version: 20
           cache: npm
 
-      # CLASS-B-01: npm ci fetches xlsx from cdn.sheetjs.com (build-time only).
+      # CLASS-B-01: npm still fetches xlsx from cdn.sheetjs.com (build-time only).
       # Packaged end-user runtime does not require that host. If this step fails
       # because the source is unreachable, stop for a bounded repair finding;
       # do not silently re-pin.
+      # Lifecycle scripts are ignored; only esbuild (Vite) and Electron's
+      # documented install helper are run explicitly.
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci --ignore-scripts
+          npm rebuild esbuild
+          node node_modules/electron/install.js
 
       - name: Lint, typecheck, unit tests
         run: npm run verify
@@ -75,13 +80,16 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci --ignore-scripts
+          npm rebuild esbuild
+          node node_modules/electron/install.js
 
       - name: Build desktop renderer and main
         run: npm run build:desktop
 
       - name: Package macOS
-        run: npx electron-builder --mac --publish never
+        run: npm run package:desktop:mac
 
       - name: Write artifact provenance
         env:
@@ -133,13 +141,16 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci --ignore-scripts
+          npm rebuild esbuild
+          node node_modules/electron/install.js
 
       - name: Build desktop renderer and main
         run: npm run build:desktop
 
       - name: Package Windows
-        run: npx electron-builder --win --publish never
+        run: npm run package:desktop:win
 
       - name: Write artifact provenance
         env:

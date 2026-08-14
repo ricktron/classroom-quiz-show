@@ -132,7 +132,8 @@ if (!gotLock) {
     focusHostWindow()
   })
 
-  app.whenReady().then(() => {
+  async function startDesktopShell(): Promise<void> {
+    await app.whenReady()
     registerCustomProtocol()
     installCspHeaderFallback()
     installHidHandlers()
@@ -143,7 +144,9 @@ if (!gotLock) {
       applicationVersion: app.getVersion(),
     })
     createHostWindow()
-  })
+  }
+
+  void startDesktopShell()
 
   app.on('window-all-closed', () => {
     app.quit()

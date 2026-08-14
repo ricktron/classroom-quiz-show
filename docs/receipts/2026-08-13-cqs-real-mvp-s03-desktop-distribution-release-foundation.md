@@ -172,6 +172,28 @@ Do **not** infer Windows physical Sony qualification from this macOS host.
 - feedback/support email
 - flagship visual reference image
 
+## SonarCloud on candidate `0f03fd9`
+
+Observed on PR #70 at `0f03fd9c4d9832ecc6c9ab8ed9023da7c6e4704f`:
+
+- Check `SonarCloud Code Analysis`: **failed**
+- Required: **C Security Rating on New Code ≥ A**
+- Dashboard: https://sonarcloud.io/dashboard?id=ricktron_classroom-quiz-show&pullRequest=70
+
+Gate-driving new-code security findings (not ignored):
+
+| Finding | Disposition |
+| --- | --- |
+| `npm ci` without `--ignore-scripts` in `.github/workflows/desktop.yml` | **FIX** — `npm ci --ignore-scripts`, then `npm rebuild esbuild` and `node node_modules/electron/install.js` only |
+| `npx electron-builder` (on-demand install / unpinned CLI) | **FIX** — lockfile-local `npm run package:desktop:mac` / `package:desktop:win` |
+| `execFileSync('git')` PATH taint in `vite.config.ts` | **FIX** — read `.git/HEAD` from the filesystem; no process spawn |
+
+Remaining annotations on that head were maintainability smells (matchers, nested ternary, `Math.hypot`, `for-of`, unused assignment, promise chain). Those were repaired in the same follow-up commit. They did not own the C security rating.
+
+Electron 43.4.0 has no npm `postinstall`; the binary is installed via `install.js`. Packaged runtime still does not require `cdn.sheetjs.com`.
+
+This section does **not** claim Quality Gate pass on a later head. Re-observe Sonar on the exact candidate SHA after push.
+
 ## Explicit non-claims
 
 - Not a teacher-trusted signed/notarized release

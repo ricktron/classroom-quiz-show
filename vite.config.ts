@@ -1,4 +1,3 @@
-import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -33,10 +32,25 @@ function sourceSha(): string {
     return process.env.GITHUB_SHA
   }
   try {
-    return execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+    const gitDir = resolve(here, '.git')
+    const head = readFileSync(resolve(gitDir, 'HEAD'), 'utf8').trim()
+    if (!head.startsWith('ref: ')) return head
+    const ref = head.slice('ref: '.length).trim()
+    if (ref.includes('..') || ref.startsWith('/') || ref.includes('\\')) {
+      return 'unknown'
+    }
+    return readFileSync(resolve(gitDir, ref), 'utf8').trim()
   } catch {
     return 'unknown'
   }
+}
+
+function resolveViteBase(isDesktop: boolean, useRepoBase: boolean): string {
+  if (isDesktop) return '/'
+  if (process.env.VITE_BASE && process.env.VITE_BASE.length > 0) {
+    return process.env.VITE_BASE
+  }
+  return useRepoBase ? REPO_BASE : '/'
 }
 
 function desktopBuildIdentityPlugin(): Plugin {
@@ -73,7 +87,7 @@ export default defineConfig(({ command, isPreview, mode }) => {
   // while the built HTML references "/classroom-quiz-show/". Local dev stays
   // at "/". Desktop builds force "/" for the custom-scheme origin.
   const useRepoBase = !isDesktop && (command === 'build' || isPreview === true)
-  const base = isDesktop ? '/' : (process.env.VITE_BASE ?? (useRepoBase ? REPO_BASE : '/'))
+  const base = resolveViteBase(isDesktop, useRepoBase)
 
   return {
     base,

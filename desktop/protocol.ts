@@ -33,13 +33,11 @@ function withSecurityHeaders(body: string | null, status: number, contentType: s
 
 function rawPathContainsDotDot(requestUrl: string): boolean {
   const pathPart = requestUrl.split('#')[0]?.split('?')[0] ?? ''
-  let decoded = pathPart
   try {
-    decoded = decodeURIComponent(pathPart)
+    return decodeURIComponent(pathPart).split(/[/\\]/).includes('..')
   } catch {
     return true
   }
-  return decoded.split(/[/\\]/).includes('..')
 }
 
 /**

@@ -115,9 +115,9 @@ describe('renderer file mapping', () => {
   })
 
   it('rejects traversal and non-app origins', () => {
-    expect(resolveRendererFile('cqs://app/foo/%2e%2e/%2e%2e/etc/passwd', root)).toBe(null)
-    expect(resolveRendererFile('file:///tmp/cqs-renderer/index.html', root)).toBe(null)
-    expect(resolveRendererFile('cqs://other/index.html', root)).toBe(null)
+    expect(resolveRendererFile('cqs://app/foo/%2e%2e/%2e%2e/etc/passwd', root)).toBeNull()
+    expect(resolveRendererFile('file:///tmp/cqs-renderer/index.html', root)).toBeNull()
+    expect(resolveRendererFile('cqs://other/index.html', root)).toBeNull()
   })
 
   it('attaches CSP and rejects unknown files through the protocol helper', async () => {
