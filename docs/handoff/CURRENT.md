@@ -31,8 +31,8 @@ also read
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
 | S04 canon | product direction **registered** |
-| S04A | **NOT AUTHORIZED** pending separate Program authority |
-| S04 product implementation | **NOT BEGUN** |
+| S04A | **IN REVIEW** on a published candidate; merge reserved for Program Orchestrator |
+| S04B–S04D / S05 / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
 
 [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md) is the historical completed
@@ -88,8 +88,9 @@ the C-3 / C-6 **implementation foundation**, not a signed teacher release
 and not S06 integrated qualification.
 
 S04 canon registers remaining product direction, the Product Contract, and
-the S04A–S04D / S05 / S06 topology. That is **documentation only**. No
-S04A–S04D product implementation has begun.
+the S04A–S04D / S05 / S06 topology. S04A now has a published teacher
+Home / authoring / session-model candidate. That candidate is **not
+merged**. S04B–S04D product implementation has not begun.
 
 Those remain **existing qualified foundations** plus the S03 desktop
 foundation plus S04 canon. Do not rewrite them as unfinished from scratch.
@@ -117,8 +118,8 @@ See the REAL MVP gap register in
 | simple desktop launch | **FOUNDATION IMPLEMENTED** |
 | desktop Host/Display lifecycle | **FOUNDATION IMPLEMENTED** |
 | release artifacts/version/update path | **FOUNDATION IMPLEMENTED** (manual replacement; no auto-update) |
-| in-app teacher team setup | **OPEN** — S04A/S04B direction registered; implementation not begun |
-| teacher-simple progressive disclosure | **POLISH REQUIRED** — S04A direction registered; implementation not begun |
+| in-app teacher team setup | **PARTIAL** — S04A Game-owned default names and name-bank seam; S04B theatrical selection not begun |
+| teacher-simple progressive disclosure | **IN REVIEW** on the S04A candidate; not merged |
 | controller `F-UX-01` | **POLISH REQUIRED** — S04B direction registered; implementation not begun |
 | feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
 | flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** — S05 direction registered; implementation not begun |
@@ -139,7 +140,7 @@ Contract versions: see [`../STATUS.md`](../STATUS.md).
 
 Do **not**:
 
-- begin `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL`;
+- merge the S04A candidate from this handoff;
 - begin S04B Sony theatrical team selection, S04C recovery UX, or S04D
   telemetry;
 - begin S05 visual-fidelity work or S06 integrated release qualification;
@@ -168,15 +169,20 @@ phones, no networked buzzers, no executable imported content) remain in
 
 ## Next Program-level action
 
-`CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is the
-next planned implementation frontier and requires separate owner/Program
-authorization.
+`CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` has a
+published implementation candidate. The next Program action is exact-head
+merge adjudication. S04B remains unauthorized.
 
 ```text
 routing ≠ authority
+S04A: IN REVIEW (candidate published; not merged)
 ```
 
-Do **not** authorize or begin S04A from this handoff.
+Do **not** merge S04A from this handoff. Do **not** begin S04B from this
+handoff.
+
+S04A evidence:
+[`../receipts/2026-08-13-cqs-real-mvp-s04a-teacher-workflow-authoring-and-session-model.md`](../receipts/2026-08-13-cqs-real-mvp-s04a-teacher-workflow-authoring-and-session-model.md).
 
 ## Architecture pointers
 

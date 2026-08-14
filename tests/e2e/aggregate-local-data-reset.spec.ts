@@ -239,7 +239,7 @@ test('teacher clear-all removes every CQS local store and returns a clean first-
 
   // Leave Host so the live adapter releases IndexedDB before supplemental seeding.
   await page.goto('./')
-  await expect(page.getByRole('heading', { name: /choose a screen/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /^home$/i })).toBeVisible()
   await page.waitForTimeout(250)
   await seedSupplementalStores(page)
 

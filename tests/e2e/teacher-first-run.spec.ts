@@ -14,8 +14,8 @@ test.describe.configure({ mode: 'serial' })
 
 async function openFreshHost(page: Page) {
   await page.goto('./')
-  await expect(page.getByRole('heading', { name: /choose a screen/i })).toBeVisible()
-  await page.getByRole('link', { name: /open host/i }).click()
+  await expect(page.getByRole('heading', { name: /^home$/i })).toBeVisible()
+  await page.getByRole('link', { name: /open classroom controls/i }).click()
   await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
 }
 
@@ -65,7 +65,9 @@ test('teacher quick-start documents the supported MVP host path', async () => {
     resolve(process.cwd(), 'docs/teacher/QUICK_START.md'),
     'utf8',
   )
-  expect(quickStart).toMatch(/Open Host/i)
+  expect(quickStart).toMatch(/Home/i)
+  expect(quickStart).toMatch(/New Game/i)
+  expect(quickStart).toMatch(/Import Game/i)
   expect(quickStart).toMatch(/Load a game/i)
   expect(quickStart).toMatch(/Open display/i)
   expect(quickStart).toMatch(/resume/i)

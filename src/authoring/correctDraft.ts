@@ -4,9 +4,11 @@
  * Structural workbook failures are not corrected here — re-upload is required.
  */
 
-import type { AuthoringDraft, DraftClue, DraftCategory } from './types'
+import type { AuthoringDraft, DraftClue, DraftCategory, DraftTeam } from './types'
 import { preserveWorkbookSourceIssues, revalidateDraft } from './validateDraft'
 import { authoringIssue } from './issues'
+import { deriveCategoryId, deriveTeamId, deriveTileId } from './ids'
+import { BLANK_TILE_VALUES } from './createBlankDraft'
 
 export type DraftCorrection =
   | { readonly kind: 'game-title'; readonly title: string }
@@ -42,13 +44,23 @@ export type DraftCorrection =
       readonly field: 'prompt' | 'answer' | 'notes' | 'roundTitle' | `alternate${number}`
       readonly value: string
     }
+  | { readonly kind: 'add-category' }
+  | { readonly kind: 'remove-category'; readonly categoryOrder: number }
+  | { readonly kind: 'add-clue'; readonly categoryOrder: number }
+  | { readonly kind: 'remove-clue'; readonly categoryOrder: number; readonly clueOrder: number }
+  | { readonly kind: 'add-team' }
+  | { readonly kind: 'remove-team'; readonly order: number }
+  | { readonly kind: 'team-name-bank'; readonly names: readonly string[] }
 
 function updateClue(clue: DraftClue, field: DraftCorrection & { kind: 'clue-field' }): DraftClue {
   switch (field.field) {
     case 'value':
       return { ...clue, value: Number(field.value) }
-    case 'prompt':
-      return { ...clue, prompt: String(field.value ?? '') }
+    case 'prompt': {
+      const rest: DraftClue = { ...clue, prompt: String(field.value ?? '') }
+      delete (rest as { promptMedia?: DraftClue['promptMedia'] }).promptMedia
+      return rest
+    }
     case 'answer':
       return { ...clue, answer: String(field.value ?? '') }
     case 'notes': {
@@ -185,6 +197,142 @@ export function applyDraftCorrection(
       }
       break
     }
+    case 'add-category': {
+      const categoryOrder = draft.board.categories.length + 1
+      const categoryCanonicalId =
+        deriveCategoryId(draft.game.gameCanonicalId, categoryOrder) ??
+        `${draft.game.gameCanonicalId}-cat-${categoryOrder}`
+      const clues: DraftClue[] = BLANK_TILE_VALUES.map((value, index) => {
+        const clueOrder = index + 1
+        return {
+          categoryOrder,
+          categoryTitle: `Category ${categoryOrder}`,
+          clueOrder,
+          value,
+          prompt: '',
+          answer: '',
+          alternates: [],
+          categoryCanonicalId,
+          tileCanonicalId:
+            deriveTileId(draft.game.gameCanonicalId, categoryOrder, clueOrder) ??
+            `${draft.game.gameCanonicalId}-tile-${categoryOrder}-${clueOrder}`,
+          provenance: {
+            sheet: 'CLUES',
+            row: draft.board.categories.reduce((sum, category) => sum + category.clues.length, 0) + clueOrder + 1,
+            a1Prompt: 'C',
+          },
+        }
+      })
+      next = {
+        ...draft,
+        board: {
+          categories: [
+            ...draft.board.categories,
+            {
+              order: categoryOrder,
+              title: `Category ${categoryOrder}`,
+              canonicalId: categoryCanonicalId,
+              clues,
+            },
+          ],
+        },
+      }
+      break
+    }
+    case 'remove-category':
+      next = {
+        ...draft,
+        board: {
+          categories: draft.board.categories
+            .filter((category) => category.order !== correction.categoryOrder)
+            .map((category, index) => ({
+              ...category,
+              order: index + 1,
+              clues: category.clues.map((clue) => ({
+                ...clue,
+                categoryOrder: index + 1,
+              })),
+            })),
+        },
+      }
+      break
+    case 'add-clue': {
+      next = {
+        ...draft,
+        board: {
+          categories: draft.board.categories.map((category) => {
+            if (category.order !== correction.categoryOrder) return category
+            const clueOrder = category.clues.length + 1
+            const value = BLANK_TILE_VALUES[clueOrder - 1] ?? clueOrder * 100
+            const added: DraftClue = {
+              categoryOrder: category.order,
+              categoryTitle: category.title,
+              clueOrder,
+              value,
+              prompt: '',
+              answer: '',
+              alternates: [],
+              categoryCanonicalId: category.canonicalId,
+              tileCanonicalId:
+                deriveTileId(draft.game.gameCanonicalId, category.order, clueOrder) ??
+                `${category.canonicalId}-tile-${clueOrder}`,
+              provenance: { sheet: 'CLUES', row: clueOrder + 1, a1Prompt: 'C' },
+            }
+            return { ...category, clues: [...category.clues, added] }
+          }),
+        },
+      }
+      break
+    }
+    case 'remove-clue':
+      next = {
+        ...draft,
+        board: {
+          categories: draft.board.categories.map((category) => {
+            if (category.order !== correction.categoryOrder) return category
+            return {
+              ...category,
+              clues: category.clues
+                .filter((clue) => clue.clueOrder !== correction.clueOrder)
+                .map((clue, index) => ({ ...clue, clueOrder: index + 1 })),
+            }
+          }),
+        },
+      }
+      break
+    case 'add-team': {
+      const order = draft.game.teams.length + 1
+      const added: DraftTeam = {
+        order,
+        name: `Team ${order}`,
+        authoringKey: `Team${order}Name`,
+        canonicalId:
+          deriveTeamId(draft.game.gameCanonicalId, order) ?? `${draft.game.gameCanonicalId}-team-${order}`,
+      }
+      next = { ...draft, game: { ...draft.game, teams: [...draft.game.teams, added] } }
+      break
+    }
+    case 'remove-team':
+      next = {
+        ...draft,
+        game: {
+          ...draft.game,
+          teams: draft.game.teams
+            .filter((team) => team.order !== correction.order)
+            .map((team, index) => ({
+              ...team,
+              order: index + 1,
+              authoringKey: `Team${index + 1}Name`,
+            })),
+        },
+      }
+      break
+    case 'team-name-bank':
+      next = {
+        ...draft,
+        game: { ...draft.game, teamNameBank: [...correction.names] },
+      }
+      break
     default:
       return draft
   }

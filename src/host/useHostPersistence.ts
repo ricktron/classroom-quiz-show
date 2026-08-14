@@ -7,6 +7,7 @@ import type { SessionEvent } from '../state/events'
 import type { PrivateGameState } from '../state/privateState'
 import type { DispatchResult } from '../state/store'
 import { systemClock, type Clock } from '../time/clock'
+import { nextHostSessionId } from './ensureSession'
 import { collectReferencedPackScopeKeys } from '../pack/hydratePackMedia'
 import { gcUnreferencedPackScopes } from '../pack/packMediaPersistence'
 import {
@@ -880,6 +881,20 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         setDurabilityStatus(loaded.code === 'unavailable' ? 'unavailable' : 'failed')
         setMessage('Saved definition could not be loaded.')
         return { ok: false, message: loaded.message }
+      }
+      const history = getHistory()
+      const hasSession = history.some((event) => event.type === 'SESSION_INITIALIZED')
+      if (!hasSession) {
+        const started = dispatch({
+          type: 'INIT_SESSION',
+          issuedAt: clock.now(),
+          sessionId: nextHostSessionId(),
+        })
+        if (started.status !== 'accepted') {
+          const message = `Could not start a class session (${started.reason}).`
+          setMessage(message)
+          return { ok: false, message }
+        }
       }
       const result = dispatch({
         type: 'INITIALIZE_GAME',

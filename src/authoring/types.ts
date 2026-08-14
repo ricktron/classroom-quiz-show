@@ -1,6 +1,7 @@
 import type { AuthoringIssue } from './issues'
 import type { WorkbookProfile } from './contract'
 import { AUTHORING_DRAFT_VERSION, WORKBOOK_FORMAT_VERSION } from './contract'
+import type { PromptContent } from '../game/media/definition'
 
 export const DRAFT_STATUSES = [
   'blocked',
@@ -29,6 +30,8 @@ export interface DraftClue {
   readonly multiplier?: number
   readonly categoryCanonicalId: string
   readonly tileCanonicalId: string
+  /** Preserved imported image prompt. Text editing uses `prompt` when this is absent. */
+  readonly promptMedia?: PromptContent
   readonly provenance: {
     readonly sheet: string
     readonly row: number
@@ -62,6 +65,8 @@ export interface DraftProvenance {
   readonly workbookFormatVersion: typeof WORKBOOK_FORMAT_VERSION
   readonly profile: WorkbookProfile
   readonly detectedSheets: readonly string[]
+  /** Additive origin seam. Omitted on historical workbook drafts. */
+  readonly origin?: 'workbook' | 'in-app'
 }
 
 export interface AuthoringDraft {
@@ -77,6 +82,11 @@ export interface AuthoringDraft {
     readonly boardRoundCanonicalId: string
     readonly boardRoundTitle: string
     readonly teams: readonly DraftTeam[]
+    /**
+     * Game-owned humorous team-name bank for a future S04B selection seam.
+     * Not compiled into the canonical game file in S04A.
+     */
+    readonly teamNameBank?: readonly string[]
   }
   readonly board: {
     readonly categories: readonly DraftCategory[]

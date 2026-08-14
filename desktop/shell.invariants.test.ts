@@ -54,7 +54,7 @@ describe('custom protocol origin', () => {
     expect(DESKTOP_PROTOCOL_SCHEME).toBe('cqs')
     expect(DESKTOP_PROTOCOL_HOST).toBe('app')
     expect(DESKTOP_ORIGIN).toBe('cqs://app')
-    expect(DESKTOP_HOST_ENTRY_URL).toBe('cqs://app/index.html#/host')
+    expect(DESKTOP_HOST_ENTRY_URL).toBe('cqs://app/index.html#/')
     expect(DESKTOP_DISPLAY_ENTRY_URL).toBe('cqs://app/index.html#/display')
   })
 

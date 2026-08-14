@@ -87,10 +87,7 @@ export function PersistenceControls({
 
   return (
     <section className="persistence" aria-labelledby="persistence-title">
-      <div className="foundation__tag foundation__tag--slice13">
-        Local persistence (Slice 13) — host-only
-      </div>
-      <h3 id="persistence-title">Persistence &amp; recovery</h3>
+      <h3 id="persistence-title">Saved games and this class session</h3>
       <p
         className="host__note persistence__status"
         data-testid="persistence-status"
@@ -162,9 +159,10 @@ export function PersistenceControls({
       )}
 
       <div className="foundation__panel persistence__library" data-testid="persistence-library">
-        <h4>Saved game definitions</h4>
+        <h4>Saved games</h4>
         <p className="host__note">
-          Saved definitions are authored game files. They are separate from the active event history.
+          These are reusable games. Loading one starts or replaces this class session only. It does
+          not change the saved game unless you choose Save current game.
         </p>
         <div className="persistence__actions">
           <button
@@ -174,7 +172,7 @@ export function PersistenceControls({
             disabled={!controlsReady || activeDefinition === null}
             onClick={() => void save()}
           >
-            Save current definition
+            Save current game
           </button>
           <button
             type="button"

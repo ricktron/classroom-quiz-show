@@ -53,7 +53,7 @@ export function compileApprovedDraft(draft: AuthoringDraft): CompileDraftResult 
         const tile: Record<string, unknown> = {
           id: clue.tileCanonicalId,
           value: clue.value,
-          prompt: clue.prompt,
+          prompt: clue.promptMedia ?? clue.prompt,
           answer: clue.answer,
         }
         if (clue.alternates.length > 0) tile.alternates = [...clue.alternates]

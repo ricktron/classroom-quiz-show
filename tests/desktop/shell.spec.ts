@@ -24,10 +24,15 @@ async function launchDesktop(userDataDir: string): Promise<ElectronApplication> 
 
 async function hostWindow(app: ElectronApplication): Promise<Page> {
   const page = await app.firstWindow()
-  await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible({
+  await expect(page.getByRole('heading', { name: /^home$/i })).toBeVisible({
     timeout: 30_000,
   })
   return page
+}
+
+async function openClassroomHost(page: Page): Promise<void> {
+  await page.getByRole('link', { name: /open classroom controls/i }).click()
+  await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
 }
 
 function isolationProbe() {
@@ -55,11 +60,11 @@ test.describe('Electron thin shell', () => {
       const host = await hostWindow(app)
       const hostProbe = await host.evaluate(isolationProbe)
       expect(hostProbe.origin).toBe('cqs://app')
-      expect(hostProbe.href).toContain('#/host')
+      expect(hostProbe.href).toMatch(/#\/$|#\/\?/)
       expect(hostProbe.requireDefined).toBe(false)
       expect(hostProbe.processDefined).toBe(false)
       expect(hostProbe.electronExposed).toBe(false)
-      await expect(host.getByText(/private teacher controls/i)).toBeVisible()
+      await expect(host.getByText(/private teacher home/i)).toBeVisible()
 
       const identity = await host.evaluate(async () => {
         const res = await fetch('cqs://app/desktop-build-identity.json')
@@ -83,7 +88,7 @@ test.describe('Electron thin shell', () => {
       expect(identity.csp).not.toContain('unsafe-eval')
 
       const displayPromise = app.waitForEvent('window')
-      await host.getByRole('button', { name: /open display in new window/i }).click()
+      await host.getByRole('button', { name: /^open display$/i }).click()
       const display = await displayPromise
       await expect(display.getByTestId('display-route')).toBeVisible()
       await expect(display.getByText(/private teacher controls/i)).toHaveCount(0)
@@ -97,10 +102,10 @@ test.describe('Electron thin shell', () => {
       expect(await app.windows()).toHaveLength(2)
       await display.close()
       await expect.poll(async () => (await app.windows()).length).toBe(1)
-      await expect(host.getByRole('heading', { name: /host control/i })).toBeVisible()
+      await expect(host.getByRole('heading', { name: /^home$/i })).toBeVisible()
 
       const reopen = app.waitForEvent('window')
-      await host.getByRole('button', { name: /open display in new window/i }).click()
+      await host.getByRole('button', { name: /^open display$/i }).click()
       const display2 = await reopen
       await expect(display2.getByTestId('display-route')).toBeVisible()
 
@@ -116,6 +121,7 @@ test.describe('Electron thin shell', () => {
     const first = await launchDesktop(userData)
     try {
       const host = await hostWindow(first)
+      await openClassroomHost(host)
       await host.evaluate(async () => {
         await new Promise<void>((resolve, reject) => {
           const req = indexedDB.open('cqs-s03-probe', 1)
@@ -152,6 +158,8 @@ test.describe('Electron thin shell', () => {
     const second = await launchDesktop(userData)
     try {
       const host = await hostWindow(second)
+      await expect(host.getByTestId('home-resume')).toBeVisible()
+      await host.getByRole('link', { name: /resume session/i }).click()
       const probe = await host.evaluate(async () => {
         return new Promise<unknown>((resolve, reject) => {
           const req = indexedDB.open('cqs-s03-probe', 1)
@@ -276,7 +284,7 @@ test.describe('Electron thin shell', () => {
         })
       })
       await host.reload()
-      await expect(host.getByRole('heading', { name: /host control/i })).toBeVisible({
+      await expect(host.getByRole('heading', { name: /^home$/i })).toBeVisible({
         timeout: 30_000,
       })
       const offlineOrigin = await host.evaluate(() => window.location.origin)

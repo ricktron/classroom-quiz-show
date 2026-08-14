@@ -1,0 +1,130 @@
+import { describe, expect, it } from 'vitest'
+import { applyDraftCorrection } from '../authoring/correctDraft'
+import { createDefaultRegistry } from '../game/defaultRegistry'
+import { createSampleGame } from '../game/sampleGame'
+import { exportGameDefinition } from '../export/exportGame'
+import { createMemoryPersistenceAdapter } from '../persistence/memoryAdapter'
+import {
+  listSavedDefinitions,
+  loadLibraryRecord,
+  recentSavedDefinitions,
+  saveDefinition,
+} from '../persistence/savedDefinitions'
+import {
+  createNewLibraryGame,
+  duplicateSavedDefinition,
+  renameSavedDefinition,
+  saveAuthoringDraftToLibrary,
+} from './gameLibrary'
+
+describe('teacher game library', () => {
+  it('creates, lists, renames, and duplicates without touching a session store', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    const registry = createDefaultRegistry()
+    const created = await createNewLibraryGame(adapter, registry)
+    expect(created.ok).toBe(true)
+    if (!created.ok) return
+    expect(created.value.draft.status).toBe('blocked')
+    expect(created.value.definition.rounds).toHaveLength(0)
+
+    const listed = await listSavedDefinitions(adapter)
+    expect(listed.ok).toBe(true)
+    if (!listed.ok) return
+    expect(listed.value[0]?.playable).toBe(false)
+    expect(listed.value[0]?.hasDraft).toBe(true)
+
+    const renamed = await renameSavedDefinition(adapter, created.value.definition.id, 'Earth Science', registry)
+    expect(renamed.ok).toBe(true)
+    if (!renamed.ok) return
+    expect(renamed.value.title).toBe('Earth Science')
+
+    const copy = await duplicateSavedDefinition(adapter, created.value.definition.id, registry)
+    expect(copy.ok).toBe(true)
+    if (!copy.ok) return
+    expect(copy.value.title).toBe('Copy of Earth Science')
+    expect(copy.value.id).not.toBe(created.value.definition.id)
+
+    const original = await loadLibraryRecord(adapter, created.value.definition.id, registry)
+    expect(original.ok).toBe(true)
+    if (original.ok) expect(original.value.definition.title).toBe('Earth Science')
+  })
+
+  it('keeps v1 compiled records readable and sorts recent by opened/saved time', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    const sample = createSampleGame()
+    await adapter.withTransaction(['savedDefinitions'], async (tx) => {
+      await tx.put('savedDefinitions', sample.id, {
+        recordVersion: 1,
+        gameId: sample.id,
+        title: sample.title,
+        savedAt: 10,
+        jsonText: (() => {
+          const exported = exportGameDefinition(sample)
+          if (exported.status !== 'success') throw new Error('sample export failed')
+          return exported.jsonText
+        })(),
+      })
+    })
+    const listed = await listSavedDefinitions(adapter)
+    expect(listed.ok).toBe(true)
+    if (!listed.ok) return
+    expect(listed.value[0]?.gameId).toBe(sample.id)
+    expect(listed.value[0]?.hasDraft).toBe(false)
+    expect(listed.value[0]?.playable).toBe(true)
+
+    await saveDefinition(adapter, createSampleGame(), { mode: 'save' })
+    const recent = recentSavedDefinitions(listed.value)
+    expect(recent[0]?.savedAt).toBeGreaterThanOrEqual(recent[recent.length - 1]?.savedAt ?? 0)
+  })
+
+  it('saves an incomplete draft without claiming it is playable, then becomes playable after content is filled', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    const registry = createDefaultRegistry()
+    const created = await createNewLibraryGame(adapter, registry)
+    expect(created.ok).toBe(true)
+    if (!created.ok) return
+    let draft = created.value.draft
+    draft = applyDraftCorrection(draft, { kind: 'game-title', title: 'Weather' })
+    const incomplete = await saveAuthoringDraftToLibrary(adapter, draft, registry)
+    expect(incomplete.ok).toBe(true)
+    if (!incomplete.ok) return
+    expect(incomplete.value.playable).toBe(false)
+
+    draft = applyDraftCorrection(draft, { kind: 'remove-category', categoryOrder: 6 })
+    draft = applyDraftCorrection(draft, { kind: 'remove-category', categoryOrder: 5 })
+    draft = applyDraftCorrection(draft, { kind: 'remove-category', categoryOrder: 4 })
+    draft = applyDraftCorrection(draft, { kind: 'remove-category', categoryOrder: 3 })
+    draft = applyDraftCorrection(draft, { kind: 'remove-category', categoryOrder: 2 })
+    while ((draft.board.categories[0]?.clues.length ?? 0) > 1) {
+      draft = applyDraftCorrection(draft, {
+        kind: 'remove-clue',
+        categoryOrder: 1,
+        clueOrder: draft.board.categories[0].clues.length,
+      })
+    }
+    draft = applyDraftCorrection(draft, {
+      kind: 'clue-field',
+      categoryOrder: 1,
+      clueOrder: 1,
+      field: 'prompt',
+      value: 'What is hail?',
+    })
+    draft = applyDraftCorrection(draft, {
+      kind: 'clue-field',
+      categoryOrder: 1,
+      clueOrder: 1,
+      field: 'answer',
+      value: 'Ice pellets',
+    })
+    draft = applyDraftCorrection(draft, { kind: 'final-field', field: 'prompt', value: 'Name a high cloud.' })
+    draft = applyDraftCorrection(draft, { kind: 'final-field', field: 'answer', value: 'Cirrus' })
+    const complete = await saveAuthoringDraftToLibrary(adapter, draft, registry)
+    expect(complete.ok).toBe(true)
+    if (!complete.ok) return
+    expect(complete.value.playable).toBe(true)
+    expect(complete.value.definition.rounds.length).toBeGreaterThan(0)
+  })
+})

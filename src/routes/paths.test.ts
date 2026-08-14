@@ -5,14 +5,22 @@ import {
   absoluteDisplayUrlWithTheme,
   absoluteHashUrl,
   displayPathWithTheme,
+  editPath,
+  playGameIdFromSearch,
+  playPath,
   themeIdFromDisplaySearch,
 } from './paths'
 
 describe('route table', () => {
-  it('exposes root, host and display paths', () => {
+  it('exposes root, host, edit and display paths', () => {
     expect(ROUTES.root).toBe('/')
     expect(ROUTES.host).toBe('/host')
+    expect(ROUTES.edit).toBe('/edit')
     expect(ROUTES.display).toBe('/display')
+    expect(editPath('game-1')).toBe('/edit/game-1')
+    expect(playPath('game-1')).toBe('/host?play=game-1')
+    expect(playGameIdFromSearch('?play=game-1')).toBe('game-1')
+    expect(playGameIdFromSearch('')).toBeNull()
   })
 })
 

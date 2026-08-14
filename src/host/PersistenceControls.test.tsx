@@ -112,7 +112,7 @@ describe('PersistenceControls', () => {
       persistence({
         leadership: 'follower',
         canDispatchSessionCommands: false,
-        library: [{ gameId: 'sample-game', title: 'Sample Game', savedAt: 1 }],
+        library: [{ gameId: 'sample-game', title: 'Sample Game', savedAt: 1, hasDraft: false, playable: true }],
       }),
     )
 
@@ -128,7 +128,7 @@ describe('PersistenceControls', () => {
     const deleteSaved = vi.fn(async () => ({ ok: true, message: 'Deleted.' }))
     renderControls(
       persistence({
-        library: [{ gameId: 'sample-game', title: 'Sample Game', savedAt: 1 }],
+        library: [{ gameId: 'sample-game', title: 'Sample Game', savedAt: 1, hasDraft: false, playable: true }],
         saveCurrentDefinition,
         loadSaved,
         deleteSaved,
@@ -160,9 +160,9 @@ describe('PersistenceControls', () => {
   it('uses accessible labels and live regions', () => {
     renderControls(persistence({ durabilityStatus: 'saved' }))
 
-    expect(screen.getByRole('heading', { name: /persistence & recovery/i })).toBeVisible()
+    expect(screen.getByRole('heading', { name: /saved games and this class session/i })).toBeVisible()
     expect(screen.getByLabelText(/persistence status/i)).toBeVisible()
-    expect(screen.getByRole('button', { name: /save current definition/i })).toBeVisible()
+    expect(screen.getByRole('button', { name: /save current game/i })).toBeVisible()
   })
 
   it('shows the clear-all control and requires confirmation before wiping', async () => {

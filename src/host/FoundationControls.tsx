@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { playGameIdFromSearch } from '../routes/paths'
 import { useSessionStore } from './useSessionStore'
 import { useHostSync } from './useHostSync'
 import { PUBLIC_STATUS_CODES } from '../state/status'
@@ -50,6 +52,9 @@ export interface FoundationControlsProps {
 }
 
 export function FoundationControls({ clock = systemClock }: FoundationControlsProps = {}) {
+  const [searchParams] = useSearchParams()
+  const playGameId = playGameIdFromSearch(searchParams.toString())
+  const playAttemptedRef = useRef<string | null>(null)
   const persistence = useHostPersistence({ clock })
   const {
     store,
@@ -109,6 +114,30 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
     )
   }, [game?.definition, persistenceAdapter, registry, persistenceStoreEpoch])
 
+  const loadPlayRef = useRef<() => void>(() => {})
+  loadPlayRef.current = () => {
+    if (!playGameId) return
+    if (persistence.bootPhase !== 'ready') return
+    if (!persistence.canDispatchSessionCommands) return
+    if (playAttemptedRef.current === playGameId) return
+    if (game?.definition.id === playGameId) {
+      playAttemptedRef.current = playGameId
+      return
+    }
+    playAttemptedRef.current = playGameId
+    void persistence.loadSaved({
+      gameId: playGameId,
+      activeGame: game,
+      dispatch,
+      getHistory: () => store.getHistory(),
+      registry,
+    })
+  }
+
+  useEffect(() => {
+    loadPlayRef.current()
+  }, [playGameId, persistence.bootPhase, persistence.canDispatchSessionCommands, game?.definition.id])
+
   return (
     <section className="foundation" aria-labelledby="classroom-controls-title">
       <h2 id="classroom-controls-title">Classroom controls</h2>
@@ -157,7 +186,34 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
             >
               Start new game session
             </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              data-testid="reset-class-session"
+              disabled={!hasSession}
+              onClick={() => {
+                const definition = game?.definition ?? null
+                const reset = dispatch({
+                  type: 'INIT_SESSION',
+                  issuedAt: now(),
+                  sessionId: nextHostSessionId(),
+                })
+                if (reset.status === 'accepted' && definition) {
+                  dispatch({
+                    type: 'INITIALIZE_GAME',
+                    issuedAt: now(),
+                    definition,
+                  })
+                }
+              }}
+            >
+              Reset this class session
+            </button>
           </div>
+          <p className="host__note">
+            Reset this class session clears scores, progress, buzzes, and wagers for this class
+            only. It does not delete the saved game.
+          </p>
 
           <GameImportPanel
             dispatch={dispatch}
@@ -264,8 +320,7 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
         <section className="foundation__diagnostics" aria-labelledby="advanced-diagnostics-title">
           <h3 id="advanced-diagnostics-title">Advanced diagnostics</h3>
           <p className="host__note foundation__intro">
-            Optional developer and troubleshooting controls. They are not required for ordinary
-            classroom setup.
+            Optional troubleshooting controls. They are not required for ordinary classroom setup.
           </p>
 
           <div className="foundation__actions" role="group" aria-label="Foundation commands">

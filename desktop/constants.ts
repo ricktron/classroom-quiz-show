@@ -13,7 +13,7 @@ export const DESKTOP_PROTOCOL_HOST = 'app'
 export const DESKTOP_ORIGIN = `${DESKTOP_PROTOCOL_SCHEME}://${DESKTOP_PROTOCOL_HOST}`
 
 /** Hash routes served inside the existing React/Vite application. */
-export const DESKTOP_HOST_HASH = '#/host'
+export const DESKTOP_HOST_HASH = '#/'
 export const DESKTOP_DISPLAY_HASH = '#/display'
 
 export const DESKTOP_HOST_ENTRY_URL = `${DESKTOP_ORIGIN}/index.html${DESKTOP_HOST_HASH}`

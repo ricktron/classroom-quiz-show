@@ -17,7 +17,8 @@
 - **Status:** **ACTIVE / CANONICALLY REGISTERED**
 - **Kind:** Program canon plus S02 architecture decision plus S03
   production desktop distribution foundation plus S04 product-direction
-  registration. **S04A–S04D, S05, and S06 are not authorized.**
+  registration. S04A has a published implementation candidate that is
+  **not merged**. **S04B–S04D, S05, and S06 are not authorized.**
 
 This document is the canonical **CQS REAL MVP Program** plan of record. It
 registers `CQS-REAL-MVP-1` as the current owner-approved Program without
@@ -60,9 +61,8 @@ the owner-approved remaining product direction into repository Markdown.
 This Program plan does **not**:
 
 - resolve signing, notarization, or paid-account questions;
-- authorize or begin
-  `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL`
-  or later S04B/S04C/S04D/S05/S06 implementation;
+- merge the S04A candidate or authorize
+  later S04B/S04C/S04D/S05/S06 implementation;
 - reopen Slices 1–23;
 - activate post-MVP arcs;
 - promote Raspberry Pi, LAN, phone controllers, live in-app AI, accounts,
@@ -72,8 +72,9 @@ This Program plan does **not**:
 - claim packaged-macOS Sony physical qualification or Windows physical
   runtime qualification.
 
-A named next frontier is **not** implementation authority. S04A requires
-**separate owner/Program authorization**.
+A named next frontier is **not** implementation authority. S04A was
+separately authorized for implementation and review. Merge remains a
+Program Orchestrator gate. S04B still requires separate authorization.
 
 ---
 
@@ -199,8 +200,8 @@ This table is not an implementation backlog with slice-level authority.
 | simple desktop launch | **FOUNDATION IMPLEMENTED** |
 | desktop Host/Display lifecycle | **FOUNDATION IMPLEMENTED** |
 | release artifacts/version/update path | **FOUNDATION IMPLEMENTED** (manual versioned replacement; no auto-update) |
-| in-app teacher team setup | **OPEN** — S04A/S04B product direction registered; implementation not begun |
-| teacher-simple progressive disclosure | **POLISH REQUIRED** — S04A product direction registered; implementation not begun |
+| in-app teacher team setup | **PARTIAL** — S04A Game-owned default names and name-bank seam on the candidate; S04B theatrical selection not begun |
+| teacher-simple progressive disclosure | **IN REVIEW** on the S04A candidate; not merged |
 | controller `F-UX-01` | **POLISH REQUIRED** — S04B product direction registered; implementation not begun |
 | feedback/support path | **OPEN** — S04D product direction registered; implementation not begun |
 | flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** — S05 direction registered; implementation not begun |
@@ -273,8 +274,8 @@ authority**.
 S01 is the registering slice. S02 selected Electron as the primary desktop
 architecture (ADR-021 Accepted). S03 implements the production thin shell
 and unsigned packaging path. S04 canon registers remaining product
-direction. S04A is the next planned **implementation** frontier and
-**requires separate Program/owner authorization**. S04A is **not
+direction. S04A now has a published implementation candidate. Merge is
+reserved for Program Orchestrator exact-head adjudication. S04B is **not
 authorized** by this document.
 
 There is no Slice 24.
@@ -410,13 +411,12 @@ analytics, automatic updates, or school-wide SaaS management.
 
 ## 12. Next Program frontier
 
-`CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is the
-next planned **implementation** frontier and requires separate
-owner/Program authorization.
+`CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` has a
+published implementation candidate. The next Program action is exact-head
+merge adjudication. S04B remains unauthorized.
 
 ```text
 routing ≠ authority
-S04A: NOT AUTHORIZED pending separate Program authority
+S04A: IN REVIEW (candidate published; not merged)
 S04B/S04C/S04D/S05/S06: NOT AUTHORIZED
-S04 product implementation: NOT BEGUN
 ```

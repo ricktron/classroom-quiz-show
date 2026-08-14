@@ -1,6 +1,7 @@
 import { HashRouter, Route, Routes } from 'react-router-dom'
 import { ROUTES } from '../routes/paths'
-import { RootRoute } from '../routes/RootRoute'
+import { HomeRoute } from '../routes/HomeRoute'
+import { AuthoringRoute } from '../routes/AuthoringRoute'
 import { HostRoute } from '../routes/HostRoute'
 import { DisplayRoute } from '../routes/DisplayRoute'
 import { NotFoundRoute } from '../routes/NotFoundRoute'
@@ -26,7 +27,9 @@ export function App() {
     <HashRouter>
       <ThemeProvider>
         <Routes>
-          <Route path={ROUTES.root} element={<RootRoute />} />
+          <Route path={ROUTES.root} element={<HomeRoute />} />
+          <Route path={ROUTES.edit} element={<AuthoringRoute />} />
+          <Route path={`${ROUTES.edit}/:gameId`} element={<AuthoringRoute />} />
           <Route
             path={ROUTES.host}
             element={
