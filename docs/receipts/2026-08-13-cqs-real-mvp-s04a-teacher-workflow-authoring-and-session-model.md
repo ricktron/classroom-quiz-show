@@ -71,7 +71,7 @@ at that same head.
 | Command | Result |
 | --- | --- |
 | `git diff --check` | exit 0 |
-| `npm run verify` | lint warnings only (pre-existing ThemeProvider fast-refresh); typecheck pass; **2471** unit tests passed / **2** skipped |
+| `npm run verify` | lint warnings only (pre-existing ThemeProvider fast-refresh); typecheck pass; **2470** unit tests passed / **2** skipped |
 | `CI=1 npm run verify:all` | same unit result; production `vite` preview built in-process; Playwright **373** passed / **14** skipped. `reuseExistingServer=false` because `CI=1` |
 | `npm run test:desktop` | desktop renderer+main built; **3** passed |
 
@@ -114,7 +114,15 @@ unmounting a dirty editor. This worktree switches the shell to
 Back. Duplicate now allocates a new id instead of replacing `*-copy`.
 Host recovery discard is two-step.
 
-Those later repairs invalidate the `eb9e7ac` review. A later exact-head
+Those later repairs invalidate the `eb9e7ac` review.
+
+Exact-head review of `10d096e5ea0f5fbf5f41f93a9007826863f71853` still
+failed because Home/Host discard cleared the unfinished-session UI even
+when the durable clear failed. This worktree keeps recovery visible until
+`clearActiveSession` succeeds, surfaces invalid recovery on Home, and
+blocks Play/Home while a save is in flight.
+
+Those later repairs invalidate the `10d096e` review. A later exact-head
 review must be obtained on the repaired candidate.
 
 ## Deferred with evidence

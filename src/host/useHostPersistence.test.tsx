@@ -219,6 +219,27 @@ describe('useHostPersistence', () => {
     expect(stored).toEqual({ ok: true, value: { kind: 'none' } })
   })
 
+  it('does not claim discard succeeded when the active session cannot be cleared', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await seedActiveSession(adapter, activeHistory())
+    const { api } = renderHarness(adapter)
+    await waitFor(() => expect(api().persistence.bootPhase).toBe('recovery'))
+    const original = adapter.withTransaction.bind(adapter)
+    vi.spyOn(adapter, 'withTransaction').mockImplementation(async (stores, work) => {
+      if (stores.includes(OBJECT_STORE_ACTIVE_SESSIONS)) {
+        return { ok: false as const, code: 'transaction-failed' as const, message: 'blocked' }
+      }
+      return original(stores, work)
+    })
+    await act(async () => {
+      const result = await api().persistence.discardRecovery()
+      expect(result.ok).toBe(false)
+    })
+    expect(api().persistence.bootPhase).toBe('recovery')
+    expect(api().persistence.recovery).not.toBeNull()
+    expect(api().persistence.message).toMatch(/could not be discarded/i)
+  })
+
   it('marks Final-relevant durability pending until the active-session write lands', async () => {
     const adapter = createMemoryPersistenceAdapter()
     const { api } = renderHarness(adapter)

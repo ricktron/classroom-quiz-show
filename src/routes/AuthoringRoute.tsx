@@ -50,7 +50,7 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
   const [preview, setPreview] = useState(false)
   const [draftWarning, setDraftWarning] = useState<string | null>(null)
   const writeGateRef = useRef(createGenerationWriteGate())
-  const blocker = useBlocker(saveTrust.dirty)
+  const blocker = useBlocker(saveTrust.dirty || saveTrust.phase === 'saving')
 
   useEffect(() => {
     if (persistence.bootPhase === 'loading') return
@@ -218,14 +218,20 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
           <button
             type="button"
             className="btn"
-            disabled={!playable}
+            disabled={!playable || saveTrust.phase === 'saving'}
             onClick={() => {
               navigate(playPath(draft.game.gameCanonicalId))
             }}
           >
             Play
           </button>
-          <button type="button" className="btn btn--secondary" onClick={requestHome} data-testid="authoring-home">
+          <button
+            type="button"
+            className="btn btn--secondary"
+            onClick={requestHome}
+            data-testid="authoring-home"
+            disabled={saveTrust.phase === 'saving'}
+          >
             Home
           </button>
         </div>

@@ -760,6 +760,13 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       return { ok: false, message: 'Persistence is unavailable; starting with an empty in-memory session.' }
     }
     const result = await clearActiveSession(adapter)
+    if (!result.ok) {
+      setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
+      setMessage(
+        'The unfinished class session could not be discarded. It is still on this device.',
+      )
+      return { ok: false, message: result.message }
+    }
     setInitialHistory([])
     setDurableEventCount(0)
     setPendingEventCount(null)
@@ -768,11 +775,6 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     setRecovery(null)
     setInvalidRecovery(null)
     setBootPhase('ready')
-    if (!result.ok) {
-      setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
-      setMessage('Recovery could not be cleared. The host is usable, but the warning may return after refresh.')
-      return { ok: false, message: result.message }
-    }
     // Recovery no longer protects pack scopes. Scan with null active definition so
     // unreferenced recovery scopes are removed while saved-definition refs remain.
     await gcPackMedia()

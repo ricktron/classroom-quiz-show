@@ -51,8 +51,10 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   const spreadsheetInputRef = useRef<HTMLInputElement>(null)
   const recent = useMemo(() => recentSavedDefinitions(persistence.library).slice(0, 5), [persistence.library])
   const readOnly = persistence.leadership === 'follower'
-  const ready = persistence.bootPhase === 'ready' && !readOnly
+  const ready = persistence.bootPhase !== 'loading' && !readOnly
   const canResume = persistence.bootPhase === 'recovery' && persistence.recovery !== null
+  const hasInvalidRecovery =
+    persistence.bootPhase === 'invalid-recovery' && persistence.invalidRecovery !== null
 
   async function refresh(nextMessage: string): Promise<void> {
     await persistence.refreshLibrary()
@@ -254,6 +256,34 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
         Display screen.
       </p>
 
+      {hasInvalidRecovery && (
+        <section className="home__resume" data-testid="home-invalid-recovery" aria-labelledby="invalid-recovery-title">
+          <h2 id="invalid-recovery-title">Unfinished class session could not be read</h2>
+          <p className="host__note">
+            {persistence.invalidRecovery?.message} Discard only that session to continue. Your saved
+            games stay.
+          </p>
+          <div className="home__actions">
+            <button
+              type="button"
+              className="btn btn--secondary"
+              onClick={() => {
+                if (!discardSessionArmed) {
+                  setDiscardSessionArmed(true)
+                  return
+                }
+                setDiscardSessionArmed(false)
+                void persistence.discardRecovery().then((result) => {
+                  if (!result.ok) setMessage(result.message)
+                })
+              }}
+            >
+              {discardSessionArmed ? 'Confirm discard session' : 'Discard session'}
+            </button>
+          </div>
+        </section>
+      )}
+
       {canResume && (
         <section className="home__resume" data-testid="home-resume" aria-labelledby="resume-title">
           <h2 id="resume-title">Unfinished class session</h2>
@@ -274,7 +304,9 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
                   return
                 }
                 setDiscardSessionArmed(false)
-                void persistence.discardRecovery()
+                void persistence.discardRecovery().then((result) => {
+                  if (!result.ok) setMessage(result.message)
+                })
               }}
             >
               {discardSessionArmed ? 'Confirm discard session' : 'Discard session'}
@@ -424,9 +456,11 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
         {message ??
           (canResume
             ? 'An unfinished class session is waiting on this device.'
-            : ready
-              ? null
-              : 'Opening your games…')}
+            : hasInvalidRecovery
+              ? 'An unfinished class session could not be read.'
+              : persistence.bootPhase === 'loading'
+                ? 'Opening your games…'
+                : null)}
       </p>
     </main>
     </div>
