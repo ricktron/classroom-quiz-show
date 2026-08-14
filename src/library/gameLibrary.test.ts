@@ -13,6 +13,7 @@ import {
 import {
   createNewLibraryGame,
   duplicateSavedDefinition,
+  openLibraryGame,
   renameSavedDefinition,
   saveAuthoringDraftToLibrary,
 } from './gameLibrary'
@@ -126,5 +127,49 @@ describe('teacher game library', () => {
     if (!complete.ok) return
     expect(complete.value.playable).toBe(true)
     expect(complete.value.definition.rounds.length).toBeGreaterThan(0)
+  })
+
+  it('surfaces an unreadable authoring draft instead of silently dropping it', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    const registry = createDefaultRegistry()
+    const created = await createNewLibraryGame(adapter, registry)
+    expect(created.ok).toBe(true)
+    if (!created.ok) return
+    const gameId = created.value.definition.id
+    await adapter.withTransaction(['savedDefinitions'], async (tx) => {
+      const stored = await tx.get('savedDefinitions', gameId)
+      await tx.put('savedDefinitions', gameId, {
+        ...(stored as object),
+        authoringDraftJson: '{not-valid-draft',
+      })
+    })
+    const loaded = await loadLibraryRecord(adapter, gameId, registry)
+    expect(loaded.ok).toBe(true)
+    if (!loaded.ok) return
+    expect(loaded.value.draft).toBeNull()
+    expect(loaded.value.draftUnreadable).toBe(true)
+    const opened = await openLibraryGame(adapter, gameId, registry)
+    expect(opened.ok).toBe(true)
+    if (!opened.ok) return
+    expect(opened.value.draftUnreadable).toBe(true)
+    expect(opened.value.draft.game.gameCanonicalId).toBe(gameId)
+  })
+
+  it('does not claim a same-id save succeeded when replace confirmation is required', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    const registry = createDefaultRegistry()
+    const created = await createNewLibraryGame(adapter, registry)
+    expect(created.ok).toBe(true)
+    if (!created.ok) return
+    const changed = applyDraftCorrection(created.value.draft, {
+      kind: 'game-title',
+      title: 'Changed title',
+    })
+    const conflict = await saveAuthoringDraftToLibrary(adapter, changed, registry, 'save')
+    expect(conflict.ok).toBe(false)
+    if (conflict.ok) return
+    expect(conflict.code).toBe('conflict')
   })
 })

@@ -40,6 +40,7 @@ export interface LibraryRecord {
   readonly summary: SavedDefinitionSummary
   readonly definition: GameDefinition
   readonly draft: AuthoringDraft | null
+  readonly draftUnreadable: boolean
 }
 
 export async function listSavedDefinitions(
@@ -197,14 +198,13 @@ export async function loadLibraryRecord(
   if (imported.status !== 'success') {
     return persistenceErr('corrupt', 'The saved definition JSON failed canonical import.')
   }
-  const draft =
-    typeof record.authoringDraftJson === 'string'
-      ? parseAuthoringDraftJson(record.authoringDraftJson)
-      : null
+  const hasDraftJson = typeof record.authoringDraftJson === 'string'
+  const draft = hasDraftJson ? parseAuthoringDraftJson(record.authoringDraftJson) : null
   return persistenceOk({
     summary: toSummary(record),
     definition: imported.definition,
     draft,
+    draftUnreadable: hasDraftJson && draft === null,
   })
 }
 

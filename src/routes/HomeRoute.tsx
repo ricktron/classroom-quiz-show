@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { isDesktopRuntime } from '../runtime/cqsRuntime'
 import { ROUTES, absoluteDisplayUrlWithTheme, editPath, playPath } from './paths'
@@ -19,6 +19,7 @@ import {
 } from '../persistence/savedDefinitions'
 import { importGameFromJsonText } from '../import/importGame'
 import { draftFromDefinition } from '../authoring/draftFromDefinition'
+import type { AuthoringDraft } from '../authoring/types'
 import { parseWorkbookBytes } from '../authoring/parseWorkbook'
 import { CANONICAL_SAMPLE_CATEGORY_BOARD_FILE } from '../import/sampleGameFile'
 import { buildImportQualityReport, type ImportQualityReport } from '../import/qualityReport'
@@ -44,6 +45,10 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   const [importOpen, setImportOpen] = useState(false)
   const [importText, setImportText] = useState('')
   const [quality, setQuality] = useState<ImportQualityReport | null>(null)
+  const [pendingReplaceText, setPendingReplaceText] = useState<string | null>(null)
+  const [pendingWorkbookDraft, setPendingWorkbookDraft] = useState<AuthoringDraft | null>(null)
+  const [discardSessionArmed, setDiscardSessionArmed] = useState(false)
+  const spreadsheetInputRef = useRef<HTMLInputElement>(null)
   const recent = useMemo(() => recentSavedDefinitions(persistence.library).slice(0, 5), [persistence.library])
   const readOnly = persistence.leadership === 'follower'
   const ready = persistence.bootPhase === 'ready' && !readOnly
@@ -144,15 +149,33 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
       return
     }
     if (saved.value === 'needs-replace') {
-      const replaced = await saveDefinition(persistence.adapter, imported.definition, {
-        mode: 'replace',
-        registry,
-        draft: draftFromDefinition(imported.definition),
-      })
-      if (!replaced.ok) {
-        setMessage(replaced.message)
-        return
-      }
+      setPendingReplaceText(text)
+      setMessage(
+        `“${imported.definition.title}” is already in My Games. Confirm replace to overwrite that saved game.`,
+      )
+      return
+    }
+    setPendingReplaceText(null)
+    await refresh(`Saved “${imported.definition.title}” to My Games.`)
+  }
+
+  async function confirmJsonReplace(): Promise<void> {
+    if (!pendingReplaceText) return
+    const imported = importGameFromJsonText(pendingReplaceText, { registry })
+    if (imported.status !== 'success') {
+      setPendingReplaceText(null)
+      setMessage('Import did not accept that file. Nothing was saved.')
+      return
+    }
+    const replaced = await saveDefinition(persistence.adapter, imported.definition, {
+      mode: 'replace',
+      registry,
+      draft: draftFromDefinition(imported.definition),
+    })
+    setPendingReplaceText(null)
+    if (!replaced.ok) {
+      setMessage(replaced.message)
+      return
     }
     await refresh(`Saved “${imported.definition.title}” to My Games.`)
   }
@@ -173,15 +196,39 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
     }
     const report = buildImportQualityReport({ draft: parsed.draft, title: parsed.draft.game.title })
     setQuality(report)
-    const saved = await saveAuthoringDraftToLibrary(persistence.adapter, parsed.draft, registry)
+    const saved = await saveAuthoringDraftToLibrary(persistence.adapter, parsed.draft, registry, 'save')
     if (!saved.ok) {
+      if (saved.code === 'conflict') {
+        setPendingWorkbookDraft(parsed.draft)
+      }
       setMessage(saved.message)
       return
     }
+    setPendingWorkbookDraft(null)
     await refresh(
       saved.value.playable
         ? `Imported “${saved.value.definition.title}”. It is ready to play.`
         : `Imported “${saved.value.definition.title}”. Open it to finish missing content.`,
+    )
+  }
+
+  async function confirmWorkbookReplace(): Promise<void> {
+    if (!pendingWorkbookDraft) return
+    const replaced = await saveAuthoringDraftToLibrary(
+      persistence.adapter,
+      pendingWorkbookDraft,
+      registry,
+      'replace',
+    )
+    setPendingWorkbookDraft(null)
+    if (!replaced.ok) {
+      setMessage(replaced.message)
+      return
+    }
+    await refresh(
+      replaced.value.playable
+        ? `Imported “${replaced.value.definition.title}”. It is ready to play.`
+        : `Imported “${replaced.value.definition.title}”. Open it to finish missing content.`,
     )
   }
 
@@ -221,9 +268,16 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
             <button
               type="button"
               className="btn btn--secondary"
-              onClick={() => void persistence.discardRecovery()}
+              onClick={() => {
+                if (!discardSessionArmed) {
+                  setDiscardSessionArmed(true)
+                  return
+                }
+                setDiscardSessionArmed(false)
+                void persistence.discardRecovery()
+              }}
             >
-              Discard session
+              {discardSessionArmed ? 'Confirm discard session' : 'Discard session'}
             </button>
           </div>
         </section>
@@ -283,15 +337,30 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
             <button type="button" className="btn" disabled={!ready} onClick={() => void importJson(importText)}>
               Import file text
             </button>
-            <label className="btn btn--secondary">
+            <input
+              ref={spreadsheetInputRef}
+              type="file"
+              accept=".xlsx"
+              hidden
+              onChange={(event) => void importWorkbook(event.target.files?.[0] ?? null)}
+            />
+            <button
+              type="button"
+              className="btn btn--secondary"
+              onClick={() => spreadsheetInputRef.current?.click()}
+            >
               Import spreadsheet
-              <input
-                type="file"
-                accept=".xlsx"
-                hidden
-                onChange={(event) => void importWorkbook(event.target.files?.[0] ?? null)}
-              />
-            </label>
+            </button>
+            {pendingReplaceText ? (
+              <button type="button" className="btn" onClick={() => void confirmJsonReplace()}>
+                Replace the existing saved game
+              </button>
+            ) : null}
+            {pendingWorkbookDraft ? (
+              <button type="button" className="btn" onClick={() => void confirmWorkbookReplace()}>
+                Replace the existing saved game
+              </button>
+            ) : null}
           </div>
           {quality && <QualityReportPanel report={quality} />}
         </section>
@@ -352,7 +421,12 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
       </section>
 
       <p className="home__status" aria-live="polite" data-testid="home-status">
-        {message ?? persistence.message}
+        {message ??
+          (canResume
+            ? 'An unfinished class session is waiting on this device.'
+            : ready
+              ? null
+              : 'Opening your games…')}
       </p>
     </main>
     </div>

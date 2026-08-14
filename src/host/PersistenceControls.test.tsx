@@ -138,6 +138,8 @@ describe('PersistenceControls', () => {
     fireEvent.click(screen.getByTestId('persistence-save'))
     fireEvent.click(screen.getByTestId('persistence-load'))
     fireEvent.click(screen.getByTestId('persistence-delete'))
+    expect(deleteSaved).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByTestId('persistence-delete'))
 
     await waitFor(() => expect(saveCurrentDefinition).toHaveBeenCalledTimes(1))
     expect(loadSaved).toHaveBeenCalledTimes(1)

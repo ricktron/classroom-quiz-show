@@ -4,9 +4,10 @@ import './QualityReportPanel.css'
 
 export interface QualityReportPanelProps {
   readonly report: ImportQualityReport
+  readonly context?: 'import' | 'editor'
 }
 
-export function QualityReportPanel({ report }: QualityReportPanelProps) {
+export function QualityReportPanel({ report, context = 'import' }: QualityReportPanelProps) {
   function downloadFeedback(): void {
     const text = renderGenerationFeedbackMarkdown(report)
     const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' })
@@ -25,9 +26,11 @@ export function QualityReportPanel({ report }: QualityReportPanelProps) {
     <section className="quality-report" aria-labelledby="quality-report-title" data-testid="import-quality-report">
       <h3 id="quality-report-title">Import quality</h3>
       <p className="host__note">
-        {report.importSucceeded
-          ? 'The game file was accepted. Review the notes below before you play or edit.'
-          : 'The game file was not accepted. Nothing was saved or loaded.'}
+        {context === 'editor'
+          ? 'Review the notes below before you play or save. These are checks on this game, not a file import result.'
+          : report.importSucceeded
+            ? 'The game file was accepted. Review the notes below before you play or edit.'
+            : 'The game file was not accepted. Nothing was saved or loaded.'}
       </p>
       <p className="quality-report__counts" aria-live="polite">
         {report.errorCount} errors, {report.warningCount} warnings, {report.heuristicCount} quality

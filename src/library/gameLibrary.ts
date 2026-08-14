@@ -9,13 +9,14 @@ import type { AuthoringDraft } from '../authoring/types'
 import type { GameDefinition } from '../game/gameDefinition'
 import type { RoundRegistry } from '../game/registry'
 import type { PersistenceAdapter } from '../persistence/adapter'
-import type { PersistenceResult } from '../persistence/results'
+import { persistenceErr, type PersistenceResult } from '../persistence/results'
 import {
   createStubGameDefinition,
   duplicateSavedDefinition,
   loadLibraryRecord,
   renameSavedDefinition,
   saveDefinition,
+  touchSavedDefinitionOpenedAt,
   type LibraryRecord,
 } from '../persistence/savedDefinitions'
 import { systemClock } from '../time/clock'
@@ -45,27 +46,32 @@ export async function saveAuthoringDraftToLibrary(
   }>
 > {
   const approved = approveAndImportDraft(draft, { registry })
-  if (approved.status === 'success') {
-    const saved = await saveDefinition(adapter, approved.importResult.definition, {
-      mode,
-      registry,
-      draft: approved.draft,
-    })
-    if (!saved.ok) return saved
-    return {
-      ok: true,
-      value: {
-        definition: approved.importResult.definition,
-        playable: true,
-        draft: approved.draft,
-      },
-    }
-  }
-
-  const stub = createStubGameDefinition(draft.game.gameCanonicalId, draft.game.title)
-  const saved = await saveDefinition(adapter, stub, { mode, registry, draft })
+  const definition =
+    approved.status === 'success'
+      ? approved.importResult.definition
+      : createStubGameDefinition(draft.game.gameCanonicalId, draft.game.title)
+  const playable = approved.status === 'success'
+  const savedDraft = approved.status === 'success' ? approved.draft : draft
+  const saved = await saveDefinition(adapter, definition, {
+    mode,
+    registry,
+    draft: savedDraft,
+  })
   if (!saved.ok) return saved
-  return { ok: true, value: { definition: stub, playable: false, draft } }
+  if (saved.value === 'needs-replace') {
+    return persistenceErr(
+      'conflict',
+      'A saved game with this id already exists. Confirm replace to overwrite it.',
+    )
+  }
+  return {
+    ok: true,
+    value: {
+      definition,
+      playable,
+      draft: savedDraft,
+    },
+  }
 }
 
 export async function openLibraryGame(
@@ -75,6 +81,7 @@ export async function openLibraryGame(
 ): Promise<PersistenceResult<LibraryRecord & { readonly draft: AuthoringDraft }>> {
   const loaded = await loadLibraryRecord(adapter, gameId, registry)
   if (!loaded.ok) return loaded
+  await touchSavedDefinitionOpenedAt(adapter, gameId)
   const draft = loaded.value.draft ?? draftFromDefinition(loaded.value.definition)
   return { ok: true, value: { ...loaded.value, draft } }
 }

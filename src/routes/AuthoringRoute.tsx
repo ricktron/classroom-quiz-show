@@ -2,16 +2,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   applyDraftCorrection,
-  beginSave,
   canRedoAuthoring,
   canUndoAuthoring,
   completeSave,
+  createGenerationWriteGate,
+  decideUnsavedHashLeave,
   emptyAuthoringUndoStack,
   initialSaveTrustState,
   markSaveClean,
   markSaveDirty,
   pushAuthoringUndo,
   redoAuthoring,
+  revertHash,
   saveStatusLabel,
   undoAuthoring,
   type AuthoringUndoStack,
@@ -49,10 +51,16 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
   const [cursor, setCursor] = useState<TileCursor | null>(null)
   const [preview, setPreview] = useState(false)
   const [leaveArmed, setLeaveArmed] = useState(false)
-  const saveGenerationRef = useRef(0)
+  const [draftWarning, setDraftWarning] = useState<string | null>(null)
+  const allowLeaveRef = useRef(false)
+  const writeGateRef = useRef(createGenerationWriteGate())
 
   useEffect(() => {
-    if (!gameId || persistence.bootPhase === 'loading') return
+    if (persistence.bootPhase === 'loading') return
+    if (!gameId) {
+      setLoadError('Choose a game from Home to edit.')
+      return
+    }
     let cancelled = false
     void openLibraryGame(persistence.adapter, gameId, registry).then((loaded) => {
       if (cancelled) return
@@ -61,6 +69,11 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
         return
       }
       setDraft(loaded.value.draft)
+      setDraftWarning(
+        loaded.value.draftUnreadable
+          ? 'The saved editor draft could not be read. You are seeing the last playable game. Extra editor notes may be missing.'
+          : null,
+      )
       setSaveTrust(markSaveClean(initialSaveTrustState()))
     })
     return () => {
@@ -70,13 +83,30 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
 
   useEffect(() => {
     function onBeforeUnload(event: BeforeUnloadEvent): void {
-      if (!saveTrust.dirty) return
+      if (!saveTrust.dirty || allowLeaveRef.current) return
       event.preventDefault()
       event.returnValue = ''
     }
     window.addEventListener('beforeunload', onBeforeUnload)
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
   }, [saveTrust.dirty])
+
+  useEffect(() => {
+    const allowedHash = window.location.hash
+    function onHashChange(): void {
+      const decision = decideUnsavedHashLeave({
+        dirty: saveTrust.dirty,
+        allowLeave: allowLeaveRef.current || leaveArmed,
+        allowedHash,
+        nextHash: window.location.hash,
+      })
+      if (decision === 'allow') return
+      revertHash(decision.revertTo)
+      setLeaveArmed(true)
+    }
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [saveTrust.dirty, leaveArmed, gameId])
 
   const apply = useCallback(
     (correction: DraftCorrection) => {
@@ -92,19 +122,27 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
   )
 
   async function save(): Promise<void> {
-    if (!draft) return
-    const started = beginSave(markSaveClean(saveTrust))
-    saveGenerationRef.current = started.generation
-    setSaveTrust(started)
-    const result = await saveAuthoringDraftToLibrary(persistence.adapter, draft, registry)
+    if (!draft || saveTrust.phase === 'saving') return
+    const generation = writeGateRef.current.begin()
+    setSaveTrust({
+      phase: 'saving',
+      generation,
+      dirty: false,
+      message: 'Saving…',
+    })
+    const snapshot = draft
+    const outcome = await writeGateRef.current.enqueue(generation, () =>
+      saveAuthoringDraftToLibrary(persistence.adapter, snapshot, registry),
+    )
+    if (outcome.skipped) return
     setSaveTrust((current) =>
       completeSave(
         current,
-        started.generation,
-        result.ok ? { ok: true } : { ok: false, message: result.message },
+        generation,
+        outcome.value.ok ? { ok: true } : { ok: false, message: outcome.value.message },
       ),
     )
-    if (result.ok && saveGenerationRef.current === started.generation) {
+    if (outcome.value.ok && writeGateRef.current.latest() === generation) {
       await persistence.refreshLibrary()
     }
   }
@@ -128,10 +166,22 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
   }
 
   function requestHome(): void {
-    if (saveTrust.dirty && !leaveArmed) {
+    if (saveTrust.dirty && !allowLeaveRef.current) {
       setLeaveArmed(true)
       return
     }
+    allowLeaveRef.current = true
+    navigate(ROUTES.root)
+  }
+
+  function stayOnEditor(): void {
+    allowLeaveRef.current = false
+    setLeaveArmed(false)
+  }
+
+  function discardAndLeave(): void {
+    allowLeaveRef.current = true
+    setLeaveArmed(false)
     navigate(ROUTES.root)
   }
 
@@ -183,7 +233,13 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
             value={draft.game.title}
             onChange={(event) => apply({ kind: 'game-title', title: event.target.value })}
           />
-          <button type="button" className="btn" onClick={() => void save()} data-testid="authoring-save">
+          <button
+            type="button"
+            className="btn"
+            onClick={() => void save()}
+            data-testid="authoring-save"
+            disabled={saveTrust.phase === 'saving'}
+          >
             Save
           </button>
           <button type="button" className="btn btn--secondary" disabled={!canUndoAuthoring(undoStack)} onClick={undo}>
@@ -200,24 +256,38 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
             className="btn"
             disabled={!playable}
             onClick={() => {
-              if (saveTrust.dirty) {
+              if (saveTrust.dirty && !allowLeaveRef.current) {
                 setLeaveArmed(true)
                 return
               }
+              allowLeaveRef.current = true
               navigate(playPath(draft.game.gameCanonicalId))
             }}
           >
             Play
           </button>
           <button type="button" className="btn btn--secondary" onClick={requestHome} data-testid="authoring-home">
-            {leaveArmed && saveTrust.dirty ? 'Discard unsaved changes' : 'Home'}
+            Home
           </button>
         </div>
-        {leaveArmed && saveTrust.dirty && (
+        {leaveArmed && saveTrust.dirty ? (
           <p className="authoring__confirm" role="alert">
-            You have unsaved changes. Save first, or choose Discard unsaved changes again to leave.
+            You have unsaved changes. Save first, or confirm that you want to discard them.
+            <span className="authoring__toolbar">
+              <button type="button" className="btn" onClick={discardAndLeave}>
+                Discard unsaved changes
+              </button>
+              <button type="button" className="btn btn--secondary" onClick={stayOnEditor}>
+                Stay
+              </button>
+            </span>
           </p>
-        )}
+        ) : null}
+        {draftWarning ? (
+          <p className="host__note" role="status">
+            {draftWarning}
+          </p>
+        ) : null}
 
         <p className="host__note" data-testid="authoring-validation">
           {draft.status === 'blocked'
@@ -349,7 +419,7 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
           </section>
         )}
 
-        {report && <QualityReportPanel report={report} />}
+        {report && <QualityReportPanel report={report} context="editor" />}
       </main>
     </div>
   )

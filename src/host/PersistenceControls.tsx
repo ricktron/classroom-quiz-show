@@ -32,6 +32,7 @@ export function PersistenceControls({
   const [pendingLoadId, setPendingLoadId] = useState<string | null>(null)
   const [actionMessage, setActionMessage] = useState<string | null>(null)
   const [confirmClearAll, setConfirmClearAll] = useState(false)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [clearAllBusy, setClearAllBusy] = useState(false)
   const readOnly = persistence.leadership === 'follower'
   const controlsReady = persistence.bootPhase === 'ready' && !readOnly
@@ -212,11 +213,16 @@ export function PersistenceControls({
                       data-testid="persistence-delete"
                       disabled={!controlsReady}
                       onClick={async () => {
+                        if (confirmDeleteId !== entry.gameId) {
+                          setConfirmDeleteId(entry.gameId)
+                          return
+                        }
                         const result = await persistence.deleteSaved(entry.gameId)
+                        setConfirmDeleteId(null)
                         setActionMessage(result.message)
                       }}
                     >
-                      Delete
+                      {confirmDeleteId === entry.gameId ? 'Confirm delete game' : 'Delete'}
                     </button>
                   </span>
                 </li>

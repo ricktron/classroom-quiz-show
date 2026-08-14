@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { playGameIdFromSearch } from '../routes/paths'
 import { useSessionStore } from './useSessionStore'
@@ -54,7 +54,10 @@ export interface FoundationControlsProps {
 export function FoundationControls({ clock = systemClock }: FoundationControlsProps = {}) {
   const [searchParams] = useSearchParams()
   const playGameId = playGameIdFromSearch(searchParams.toString())
-  const playAttemptedRef = useRef<string | null>(null)
+  const playLoadedRef = useRef<string | null>(null)
+  const [playReplaceNeeded, setPlayReplaceNeeded] = useState(false)
+  const [playReplaceArmed, setPlayReplaceArmed] = useState(false)
+  const [resetArmed, setResetArmed] = useState(false)
   const persistence = useHostPersistence({ clock })
   const {
     store,
@@ -119,24 +122,43 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
     if (!playGameId) return
     if (persistence.bootPhase !== 'ready') return
     if (!persistence.canDispatchSessionCommands) return
-    if (playAttemptedRef.current === playGameId) return
+    if (playLoadedRef.current === playGameId) return
     if (game?.definition.id === playGameId) {
-      playAttemptedRef.current = playGameId
+      playLoadedRef.current = playGameId
+      setPlayReplaceNeeded(false)
       return
     }
-    playAttemptedRef.current = playGameId
-    void persistence.loadSaved({
-      gameId: playGameId,
-      activeGame: game,
-      dispatch,
-      getHistory: () => store.getHistory(),
-      registry,
-    })
+    void persistence
+      .loadSaved({
+        gameId: playGameId,
+        activeGame: game,
+        dispatch,
+        getHistory: () => store.getHistory(),
+        registry,
+        confirmedReplace: playReplaceArmed,
+      })
+      .then((result) => {
+        if (result.ok) {
+          playLoadedRef.current = playGameId
+          setPlayReplaceNeeded(false)
+          setPlayReplaceArmed(false)
+          return
+        }
+        if ('needsConfirmation' in result && result.needsConfirmation) {
+          setPlayReplaceNeeded(true)
+        }
+      })
   }
 
   useEffect(() => {
     loadPlayRef.current()
-  }, [playGameId, persistence.bootPhase, persistence.canDispatchSessionCommands, game?.definition.id])
+  }, [
+    playGameId,
+    persistence.bootPhase,
+    persistence.canDispatchSessionCommands,
+    game?.definition.id,
+    playReplaceArmed,
+  ])
 
   return (
     <section className="foundation" aria-labelledby="classroom-controls-title">
@@ -192,6 +214,11 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
               data-testid="reset-class-session"
               disabled={!hasSession}
               onClick={() => {
+                if (!resetArmed) {
+                  setResetArmed(true)
+                  return
+                }
+                setResetArmed(false)
                 const definition = game?.definition ?? null
                 const reset = dispatch({
                   type: 'INIT_SESSION',
@@ -207,13 +234,31 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
                 }
               }}
             >
-              Reset this class session
+              {resetArmed ? 'Confirm reset this class session' : 'Reset this class session'}
             </button>
           </div>
           <p className="host__note">
             Reset this class session clears scores, progress, buzzes, and wagers for this class
             only. It does not delete the saved game.
           </p>
+          {persistence.bootPhase === 'recovery' && playGameId && (
+            <p className="host__note" data-testid="play-after-recovery">
+              Resume or discard the unfinished class session first. Then CQS can load the game you
+              chose to play.
+            </p>
+          )}
+          {playReplaceNeeded && (
+            <p className="host__note" role="alert" data-testid="play-replace-confirm">
+              Loading this game would replace the current class session.
+              <button
+                type="button"
+                className="btn"
+                onClick={() => setPlayReplaceArmed(true)}
+              >
+                Load this game and replace the current session
+              </button>
+            </p>
+          )}
 
           <GameImportPanel
             dispatch={dispatch}

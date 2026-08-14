@@ -23,6 +23,8 @@ export {
   saveStatusLabel,
   type SaveTrustState,
 } from './saveTrust'
+export { createGenerationWriteGate, type GenerationWriteGate } from './saveGate'
+export { decideUnsavedHashLeave, revertHash } from './unsavedNavigationGuard'
 export {
   canRedoAuthoring,
   canUndoAuthoring,

@@ -71,6 +71,8 @@ describe('in-app board authoring', () => {
     fireEvent.change(screen.getByLabelText(/game title/i), { target: { value: 'Unsaved Title' } })
     fireEvent.click(screen.getByTestId('authoring-home'))
     expect(screen.getByRole('alert')).toHaveTextContent(/unsaved changes/i)
+    fireEvent.click(screen.getByRole('button', { name: /^stay$/i }))
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /preview board/i }))
     expect(screen.getByTestId('authoring-preview')).toHaveTextContent(/does not start a class session/i)
   })

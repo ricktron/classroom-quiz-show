@@ -71,7 +71,7 @@ at that same head.
 | Command | Result |
 | --- | --- |
 | `git diff --check` | exit 0 |
-| `npm run verify` | lint warnings only (pre-existing ThemeProvider fast-refresh); typecheck pass; **2466** unit tests passed / **2** skipped |
+| `npm run verify` | lint warnings only (pre-existing ThemeProvider fast-refresh); typecheck pass; **2471** unit tests passed / **2** skipped |
 | `CI=1 npm run verify:all` | same unit result; production `vite` preview built in-process; Playwright **373** passed / **14** skipped. `reuseExistingServer=false` because `CI=1` |
 | `npm run test:desktop` | desktop renderer+main built; **3** passed |
 
@@ -80,6 +80,33 @@ Playwright served-build provenance: `CI=1` forced
 `npm run build && npm run preview -- --port 4173 --strictPort` against
 this worktree. That e2e run is exact-worktree evidence, not a later
 candidate-head claim.
+
+## Independent review repair (same S04A authorization)
+
+Exact-head review of published candidate `395c280929d870a62064fc032f5ded0e6ae15c17`
+returned **FAIL**. Root-family repairs in this worktree:
+
+- Authoring writes are generation-gated: a stale overlapping
+  `saveDefinition` is skipped, not only ignored in the UI. Save is
+  disabled while `saving`.
+- Home Play (`#/host?play=`) no longer marks success before
+  `loadSaved` returns. Active-session replace requires an explicit
+  confirm.
+- Unsaved editor leave uses a HashRouter-safe hash guard. `useBlocker`
+  was not used because it requires a data router and would crash
+  authoring under ADR-001 `HashRouter`.
+- Same-id JSON/spreadsheet import no longer auto-replaces. Replace
+  requires an explicit confirm.
+- Discard session, Reset Session, and Host library Delete are two-step.
+- Home default status no longer dumps persistence-boot copy.
+- Spreadsheet import is a real button that opens the hidden file input.
+- `#/edit` without a game id tells the teacher to choose a game from Home.
+- Unreadable `authoringDraftJson` is reported (`draftUnreadable`) instead
+  of silently dropped.
+- Editor quality copy does not claim a file import was accepted.
+
+Those repairs invalidate the `395c280` review. A later exact-head review
+must be obtained on the repaired candidate.
 
 ## Deferred with evidence
 
