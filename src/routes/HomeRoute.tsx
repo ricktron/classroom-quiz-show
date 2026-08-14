@@ -11,7 +11,7 @@ import {
 import {
   deleteDefinition,
   duplicateSavedDefinition,
-  loadDefinition,
+  loadLibraryRecord,
   recentSavedDefinitions,
   renameSavedDefinition,
   saveDefinition,
@@ -115,12 +115,16 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   }
 
   async function onExport(gameId: string): Promise<void> {
-    const result = await loadDefinition(persistence.adapter, gameId, registry)
+    const result = await loadLibraryRecord(persistence.adapter, gameId, registry)
     if (!result.ok) {
       setMessage(result.message)
       return
     }
-    const exported = exportGameDefinition(result.value, { registry })
+    if (!result.value.summary.playable || result.value.definition.rounds.length === 0) {
+      setMessage('This game has no playable content to export yet. Finish the questions first.')
+      return
+    }
+    const exported = exportGameDefinition(result.value.definition, { registry })
     if (exported.status !== 'success') {
       setMessage('This game could not be exported.')
       return
@@ -196,9 +200,19 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
       setMessage('That spreadsheet could not be read. Nothing was saved.')
       return
     }
-    const report = buildImportQualityReport({ draft: parsed.draft, title: parsed.draft.game.title })
-    setQuality(report)
     const saved = await saveAuthoringDraftToLibrary(persistence.adapter, parsed.draft, registry, 'save')
+    const report = buildImportQualityReport({
+      draft: parsed.draft,
+      title: parsed.draft.game.title,
+      acceptance: !saved.ok
+        ? saved.code === 'conflict'
+          ? 'unfinished'
+          : 'rejected'
+        : saved.value.playable
+          ? 'accepted'
+          : 'unfinished',
+    })
+    setQuality(report)
     if (!saved.ok) {
       if (saved.code === 'conflict') {
         setPendingWorkbookDraft(parsed.draft)
@@ -374,6 +388,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
               type="file"
               accept=".xlsx"
               hidden
+              aria-label="Import spreadsheet file"
               onChange={(event) => void importWorkbook(event.target.files?.[0] ?? null)}
             />
             <button
@@ -542,7 +557,12 @@ function GameList({
               <button type="button" className="btn btn--secondary" disabled={disabled} onClick={() => onRenameStart(entry)}>
                 Rename
               </button>
-              <button type="button" className="btn btn--secondary" disabled={disabled} onClick={() => onExport(entry.gameId)}>
+              <button
+                type="button"
+                className="btn btn--secondary"
+                disabled={disabled || !entry.playable}
+                onClick={() => onExport(entry.gameId)}
+              >
                 Export
               </button>
               <button type="button" className="btn btn--secondary" disabled={disabled} onClick={() => onDelete(entry.gameId)}>

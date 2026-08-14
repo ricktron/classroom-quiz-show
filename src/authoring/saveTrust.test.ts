@@ -5,6 +5,7 @@ import {
   initialSaveTrustState,
   markSaveClean,
   markSaveDirty,
+  markSaveLoaded,
   saveStatusLabel,
 } from './saveTrust'
 
@@ -49,6 +50,13 @@ describe('authoring save trust', () => {
     const saved = completeSave(staleFailure, second.generation, { ok: true })
     expect(saved.phase).toBe('saved')
     expect(saveStatusLabel(saved)).toBe('Saved')
+  })
+
+  it('treats a successful load of a durable game as Saved, not Unsaved', () => {
+    const loaded = markSaveLoaded()
+    expect(loaded.phase).toBe('saved')
+    expect(loaded.dirty).toBe(false)
+    expect(saveStatusLabel(loaded)).toBe('Saved')
   })
 
   it('surfaces save failure and keeps work dirty', () => {

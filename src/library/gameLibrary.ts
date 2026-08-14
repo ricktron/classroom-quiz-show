@@ -6,7 +6,7 @@ import { createBlankAuthoringDraft } from '../authoring/createBlankDraft'
 import { draftFromDefinition } from '../authoring/draftFromDefinition'
 import { approveAndImportDraft } from '../authoring/approveAndImport'
 import type { AuthoringDraft } from '../authoring/types'
-import type { GameDefinition } from '../game/gameDefinition'
+import { createGameDefinition, type GameDefinition } from '../game/gameDefinition'
 import type { RoundRegistry } from '../game/registry'
 import type { PersistenceAdapter } from '../persistence/adapter'
 import { persistenceErr, type PersistenceResult } from '../persistence/results'
@@ -30,6 +30,12 @@ export async function createNewLibraryGame(
   const stub = createStubGameDefinition(draft.game.gameCanonicalId, draft.game.title)
   const saved = await saveDefinition(adapter, stub, { mode: 'save', registry, draft })
   if (!saved.ok) return saved
+  if (saved.value === 'needs-replace') {
+    return persistenceErr(
+      'conflict',
+      'A saved game with this id already exists. New Game did not replace it.',
+    )
+  }
   return { ok: true, value: { definition: stub, draft } }
 }
 
@@ -46,12 +52,12 @@ export async function saveAuthoringDraftToLibrary(
   }>
 > {
   const approved = approveAndImportDraft(draft, { registry })
+  const savedDraft = approved.status === 'success' ? approved.draft : draft
   const definition =
     approved.status === 'success'
       ? approved.importResult.definition
-      : createStubGameDefinition(draft.game.gameCanonicalId, draft.game.title)
-  const playable = approved.status === 'success'
-  const savedDraft = approved.status === 'success' ? approved.draft : draft
+      : await lastPlayableOrStub(adapter, draft, registry)
+  const playable = approved.status === 'success' || definition.rounds.length > 0
   const saved = await saveDefinition(adapter, definition, {
     mode,
     registry,
@@ -72,6 +78,24 @@ export async function saveAuthoringDraftToLibrary(
       draft: savedDraft,
     },
   }
+}
+
+async function lastPlayableOrStub(
+  adapter: PersistenceAdapter,
+  draft: AuthoringDraft,
+  registry: RoundRegistry,
+): Promise<GameDefinition> {
+  const existing = await loadLibraryRecord(adapter, draft.game.gameCanonicalId, registry)
+  if (existing.ok && existing.value.summary.playable && existing.value.definition.rounds.length > 0) {
+    return createGameDefinition({
+      id: existing.value.definition.id,
+      title: draft.game.title.trim() || existing.value.definition.title,
+      rounds: existing.value.definition.rounds,
+      teams: existing.value.definition.teams,
+      timer: existing.value.definition.timer,
+    })
+  }
+  return createStubGameDefinition(draft.game.gameCanonicalId, draft.game.title)
 }
 
 export async function openLibraryGame(

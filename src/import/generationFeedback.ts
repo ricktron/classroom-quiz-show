@@ -4,7 +4,13 @@
  * Deterministic Markdown from an Import Quality Report. No network, no live AI.
  */
 
-import type { ImportQualityReport, QualityFinding } from './qualityReport'
+import type { ImportAcceptance, ImportQualityReport, QualityFinding } from './qualityReport'
+
+function acceptanceLabel(acceptance: ImportAcceptance): string {
+  if (acceptance === 'accepted') return 'accepted'
+  if (acceptance === 'unfinished') return 'unfinished — not a completed playable import'
+  return 'rejected'
+}
 
 function section(title: string, findings: readonly QualityFinding[]): string[] {
   if (findings.length === 0) return [`## ${title}`, '', 'None.', '']
@@ -26,7 +32,7 @@ export function renderGenerationFeedbackMarkdown(report: ImportQualityReport): s
     '',
     `Game: ${report.title}`,
     report.gameId ? `Game id: ${report.gameId}` : undefined,
-    `Canonical import: ${report.importSucceeded ? 'accepted' : 'rejected'}`,
+    `Canonical import: ${acceptanceLabel(report.acceptance)}`,
     '',
     'These findings come from Classroom Quiz Show validation and deterministic quality checks.',
     'They are not AI judgments. Use them when writing the next workbook-generation prompt.',

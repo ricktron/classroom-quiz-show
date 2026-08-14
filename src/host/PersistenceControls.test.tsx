@@ -80,7 +80,7 @@ describe('PersistenceControls', () => {
       }),
     )
 
-    expect(screen.getByTestId('persistence-status')).toHaveTextContent(/resumable active session found/i)
+    expect(screen.getByTestId('persistence-status')).toHaveTextContent(/unfinished class session found/i)
     expect(screen.getByTestId('persistence-recovery')).toHaveTextContent(/unfinished session/i)
     fireEvent.click(screen.getByTestId('persistence-resume'))
     expect(resume).toHaveBeenCalledTimes(1)
@@ -165,7 +165,7 @@ describe('PersistenceControls', () => {
     renderControls(persistence({ durabilityStatus: 'saved' }))
 
     expect(screen.getByRole('heading', { name: /saved games and this class session/i })).toBeVisible()
-    expect(screen.getByLabelText(/persistence status/i)).toBeVisible()
+    expect(screen.getByLabelText(/save status/i)).toBeVisible()
     expect(screen.getByRole('button', { name: /save current game/i })).toBeVisible()
   })
 

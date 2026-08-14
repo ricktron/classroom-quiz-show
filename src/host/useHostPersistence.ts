@@ -751,13 +751,11 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
 
   const discardRecovery = useCallback(async (): Promise<PersistenceActionResult> => {
     if (!canUseStorage()) {
-      setInitialHistory([])
-      setDurableEventCount(0)
-      setPendingEventCount(null)
-      setActiveSessionPersistFailed(false)
-      setStoreEpoch((epoch) => epoch + 1)
-      setBootPhase('ready')
-      return { ok: false, message: 'Persistence is unavailable; starting with an empty in-memory session.' }
+      setDurabilityStatus('unavailable')
+      const message =
+        'The unfinished class session could not be discarded. It is still on this device.'
+      setMessage(message)
+      return { ok: false, message }
     }
     const result = await clearActiveSession(adapter)
     if (!result.ok) {

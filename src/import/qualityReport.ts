@@ -12,6 +12,8 @@ import type { ImportResult } from './result'
 
 export const QUALITY_CLASSIFICATIONS = ['ERROR', 'WARNING', 'HEURISTIC'] as const
 export type QualityClassification = (typeof QUALITY_CLASSIFICATIONS)[number]
+export const IMPORT_ACCEPTANCE = ['accepted', 'rejected', 'unfinished'] as const
+export type ImportAcceptance = (typeof IMPORT_ACCEPTANCE)[number]
 
 export interface QualityFinding {
   readonly classification: QualityClassification
@@ -24,6 +26,7 @@ export interface QualityFinding {
 export interface ImportQualityReport {
   readonly title: string
   readonly gameId?: string
+  readonly acceptance: ImportAcceptance
   readonly importSucceeded: boolean
   readonly findings: readonly QualityFinding[]
   readonly errorCount: number
@@ -134,7 +137,7 @@ function collectHeuristics(draft: AuthoringDraft): QualityFinding[] {
         findings.push(
           heuristic(
             'near-duplicate-prompt',
-            `Two clues have the same or nearly the same prompt text.`,
+            `Two clues have the same prompt text after ignoring punctuation and spacing.`,
             clue.tileCanonicalId,
           ),
         )
@@ -183,19 +186,15 @@ export function buildImportQualityReport(input: {
   readonly importResult?: ImportResult
   readonly draft?: AuthoringDraft
   readonly authoringIssues?: readonly AuthoringIssue[]
+  readonly acceptance?: ImportAcceptance
 }): ImportQualityReport {
   const findings: QualityFinding[] = []
-  let importSucceeded = true
 
-  if (input.importResult) {
-    if (input.importResult.status === 'failure') {
-      importSucceeded = false
-      findings.push(...input.importResult.issues.map(fromImportIssue))
-    }
+  if (input.importResult?.status === 'failure') {
+    findings.push(...input.importResult.issues.map(fromImportIssue))
   }
 
   if (input.authoringIssues && input.authoringIssues.length > 0) {
-    importSucceeded = false
     findings.push(...input.authoringIssues.map(fromAuthoringIssue))
   }
 
@@ -205,13 +204,32 @@ export function buildImportQualityReport(input: {
   }
 
   const sorted = sortFindings(findings)
+  const acceptance = input.acceptance ?? inferAcceptance(input, sorted)
   return {
     title: input.title ?? input.draft?.game.title ?? 'Imported game',
     gameId: input.gameId ?? input.draft?.game.gameCanonicalId,
-    importSucceeded,
+    acceptance,
+    importSucceeded: acceptance === 'accepted',
     findings: sorted,
     errorCount: sorted.filter((finding) => finding.classification === 'ERROR').length,
     warningCount: sorted.filter((finding) => finding.classification === 'WARNING').length,
     heuristicCount: sorted.filter((finding) => finding.classification === 'HEURISTIC').length,
   }
+}
+
+function inferAcceptance(
+  input: {
+    readonly importResult?: ImportResult
+    readonly draft?: AuthoringDraft
+    readonly authoringIssues?: readonly AuthoringIssue[]
+  },
+  findings: readonly QualityFinding[],
+): ImportAcceptance {
+  if (input.importResult?.status === 'success') return 'accepted'
+  if (input.importResult?.status === 'failure') return 'rejected'
+  if (input.authoringIssues && input.authoringIssues.length > 0 && !input.draft) return 'rejected'
+  if (input.draft) {
+    return findings.some((finding) => finding.classification === 'ERROR') ? 'unfinished' : 'accepted'
+  }
+  return 'rejected'
 }

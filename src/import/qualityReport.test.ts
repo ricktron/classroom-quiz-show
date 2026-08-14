@@ -10,6 +10,7 @@ describe('import quality report', () => {
     const imported = importGameFromJsonText('{')
     const report = buildImportQualityReport({ title: 'Broken', importResult: imported })
     expect(imported.status).toBe('failure')
+    expect(report.acceptance).toBe('rejected')
     expect(report.importSucceeded).toBe(false)
     expect(report.errorCount).toBeGreaterThan(0)
     expect(report.findings.every((finding) => finding.classification === 'ERROR')).toBe(true)
@@ -19,6 +20,8 @@ describe('import quality report', () => {
   it('classifies incomplete authoring as ERROR and generic names as HEURISTIC', () => {
     const draft = createBlankAuthoringDraft({ title: 'New Game', gameKey: 'new-game' })
     const report = buildImportQualityReport({ draft })
+    expect(report.acceptance).toBe('unfinished')
+    expect(report.importSucceeded).toBe(false)
     expect(report.findings.some((finding) => finding.classification === 'ERROR' && finding.code === 'incomplete-clue')).toBe(
       true,
     )
@@ -84,6 +87,8 @@ describe('import quality report', () => {
     expect(first).toBe(second)
     expect(first).toContain('# Classroom Quiz Show generation feedback')
     expect(first).toContain('They are not AI judgments')
+    expect(first).toContain('unfinished — not a completed playable import')
+    expect(first).not.toContain('Canonical import: accepted')
     expect(first).not.toMatch(/https?:\/\//)
     expect(generationFeedbackFilename(report.title)).toBe('new-game-generation-feedback.md')
   })

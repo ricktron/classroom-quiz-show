@@ -20,6 +20,7 @@ import {
   type PersistenceStoreName,
   type PersistenceTx,
 } from '../persistence'
+import * as persistenceApi from '../persistence'
 import type { SessionCommand } from '../state/commands'
 import type { SessionEvent } from '../state/events'
 import type { DispatchResult } from '../state/store'
@@ -231,6 +232,36 @@ describe('useHostPersistence', () => {
       }
       return original(stores, work)
     })
+    await act(async () => {
+      const result = await api().persistence.discardRecovery()
+      expect(result.ok).toBe(false)
+    })
+    expect(api().persistence.bootPhase).toBe('recovery')
+    expect(api().persistence.recovery).not.toBeNull()
+    expect(api().persistence.message).toMatch(/could not be discarded/i)
+  })
+
+  it('keeps unfinished-session recovery visible when storage is unavailable at discard', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await seedActiveSession(adapter, activeHistory())
+    const { api } = renderHarness(adapter)
+    await waitFor(() => expect(api().persistence.bootPhase).toBe('recovery'))
+    vi.spyOn(persistenceApi, 'clearAllLocalCqsData').mockResolvedValue({
+      ok: false,
+      code: 'unavailable',
+      message: 'closed',
+    })
+    vi.spyOn(adapter, 'open').mockResolvedValue({
+      ok: false,
+      code: 'unavailable',
+      message: 'closed',
+    })
+    await act(async () => {
+      const wipe = await api().persistence.clearAllLocalData()
+      expect(wipe.ok).toBe(false)
+    })
+    expect(api().persistence.bootPhase).toBe('recovery')
+    expect(api().persistence.recovery).not.toBeNull()
     await act(async () => {
       const result = await api().persistence.discardRecovery()
       expect(result.ok).toBe(false)

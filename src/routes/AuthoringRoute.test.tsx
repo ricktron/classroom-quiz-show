@@ -40,6 +40,11 @@ async function renderEditor() {
 }
 
 describe('in-app board authoring', () => {
+  it('shows Saved after opening a durable game with no edits', async () => {
+    await renderEditor()
+    expect(screen.getByTestId('authoring-save-status')).toHaveTextContent(/^saved$/i)
+  })
+
   it('edits title, a tile, and Final without claiming a false Saved state', async () => {
     await renderEditor()
     const title = screen.getByLabelText(/game title/i)

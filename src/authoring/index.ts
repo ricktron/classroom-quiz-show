@@ -20,6 +20,7 @@ export {
   initialSaveTrustState,
   markSaveClean,
   markSaveDirty,
+  markSaveLoaded,
   saveStatusLabel,
   type SaveTrustState,
 } from './saveTrust'

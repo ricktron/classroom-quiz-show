@@ -163,6 +163,72 @@ describe('teacher game library', () => {
     expect(opened.value.draft.game.gameCanonicalId).toBe(gameId)
   })
 
+  it('keeps the last playable compiled Game when an incomplete draft is saved', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    const registry = createDefaultRegistry()
+    const created = await createNewLibraryGame(adapter, registry)
+    expect(created.ok).toBe(true)
+    if (!created.ok) return
+    let draft = created.value.draft
+    draft = applyDraftCorrection(draft, { kind: 'remove-category', categoryOrder: 6 })
+    draft = applyDraftCorrection(draft, { kind: 'remove-category', categoryOrder: 5 })
+    draft = applyDraftCorrection(draft, { kind: 'remove-category', categoryOrder: 4 })
+    draft = applyDraftCorrection(draft, { kind: 'remove-category', categoryOrder: 3 })
+    draft = applyDraftCorrection(draft, { kind: 'remove-category', categoryOrder: 2 })
+    while ((draft.board.categories[0]?.clues.length ?? 0) > 1) {
+      draft = applyDraftCorrection(draft, {
+        kind: 'remove-clue',
+        categoryOrder: 1,
+        clueOrder: draft.board.categories[0].clues.length,
+      })
+    }
+    draft = applyDraftCorrection(draft, {
+      kind: 'clue-field',
+      categoryOrder: 1,
+      clueOrder: 1,
+      field: 'prompt',
+      value: 'What is hail?',
+    })
+    draft = applyDraftCorrection(draft, {
+      kind: 'clue-field',
+      categoryOrder: 1,
+      clueOrder: 1,
+      field: 'answer',
+      value: 'Ice pellets',
+    })
+    draft = applyDraftCorrection(draft, { kind: 'final-field', field: 'prompt', value: 'Name a high cloud.' })
+    draft = applyDraftCorrection(draft, { kind: 'final-field', field: 'answer', value: 'Cirrus' })
+    const complete = await saveAuthoringDraftToLibrary(adapter, draft, registry)
+    expect(complete.ok).toBe(true)
+    if (!complete.ok) return
+    expect(complete.value.playable).toBe(true)
+    const playableRounds = complete.value.definition.rounds.length
+    expect(playableRounds).toBeGreaterThan(0)
+
+    const wiped = applyDraftCorrection(draft, {
+      kind: 'clue-field',
+      categoryOrder: 1,
+      clueOrder: 1,
+      field: 'prompt',
+      value: '',
+    })
+    const incomplete = await saveAuthoringDraftToLibrary(adapter, wiped, registry)
+    expect(incomplete.ok).toBe(true)
+    if (!incomplete.ok) return
+    expect(incomplete.value.definition.rounds).toHaveLength(playableRounds)
+    const listed = await listSavedDefinitions(adapter)
+    expect(listed.ok).toBe(true)
+    if (!listed.ok) return
+    expect(listed.value[0]?.playable).toBe(true)
+    expect(listed.value[0]?.hasDraft).toBe(true)
+    const loaded = await loadLibraryRecord(adapter, created.value.definition.id, registry)
+    expect(loaded.ok).toBe(true)
+    if (!loaded.ok) return
+    expect(loaded.value.definition.rounds).toHaveLength(playableRounds)
+    expect(loaded.value.draft?.board.categories[0]?.clues[0]?.prompt).toBe('')
+  })
+
   it('does not claim a same-id save succeeded when replace confirmation is required', async () => {
     const adapter = createMemoryPersistenceAdapter()
     await adapter.open()

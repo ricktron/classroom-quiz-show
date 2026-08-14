@@ -93,7 +93,7 @@ export function PersistenceControls({
       <p
         className="host__note persistence__status"
         data-testid="persistence-status"
-        aria-label="Persistence status"
+        aria-label="Save status"
         aria-live="polite"
       >
         {statusText}
@@ -105,7 +105,7 @@ export function PersistenceControls({
       )}
       {readOnly && (
         <p className="host__note persistence__notice" data-testid="persistence-follower-notice">
-          Another host tab owns local persistence. This tab is read-only and session commands are disabled.
+          Another Classroom Quiz Show window is saving on this device. This window is read-only.
         </p>
       )}
 
@@ -116,8 +116,8 @@ export function PersistenceControls({
         >
           <legend>Unfinished session found</legend>
           <p className="host__note">
-            A local unfinished active session was saved with {persistence.recovery.events.length}{' '}
-            {persistence.recovery.events.length === 1 ? 'event' : 'events'}. Resume it or discard it before continuing.
+            An unfinished class session is on this device. Resume it, or discard only that session.
+            Your saved games stay.
           </p>
           <div className="persistence__actions">
             <button
@@ -143,7 +143,7 @@ export function PersistenceControls({
                 void discard()
               }}
             >
-              {confirmDiscard ? 'Confirm discard session' : 'Discard recovery'}
+              {confirmDiscard ? 'Confirm discard session' : 'Discard session'}
             </button>
           </div>
         </fieldset>
@@ -202,15 +202,15 @@ export function PersistenceControls({
         </div>
 
         {persistence.library.length === 0 ? (
-          <p className="host__note">No saved definitions yet.</p>
+          <p className="host__note">No saved games yet.</p>
         ) : (
-          <ul className="persistence__list" aria-label="Saved definitions">
+          <ul className="persistence__list" aria-label="Saved games">
             {persistence.library.map((entry) => {
               const confirmingLoad = pendingLoadId === entry.gameId
               return (
                 <li key={entry.gameId} className="persistence__item">
                   <span>
-                    <strong>{entry.title}</strong> <code>{entry.gameId}</code>
+                    <strong>{entry.title}</strong>
                   </span>
                   <span className="persistence__item-actions">
                     <button
@@ -324,19 +324,19 @@ function durabilityWarning(
     return 'Local storage is unavailable. The host remains usable, but recent changes might not survive refresh.'
   }
   if (durabilityStatus === 'failed') {
-    return 'Local persistence failed. The host remains usable, but recent changes might not survive refresh.'
+    return 'Saving on this device failed. Classroom controls remain usable, but recent changes might not survive refresh.'
   }
   return null
 }
 
 function statusLine(persistence: UseHostPersistence): string {
-  if (persistence.bootPhase === 'loading') return 'Loading local persistence.'
-  if (persistence.bootPhase === 'recovery') return 'Resumable active session found.'
-  if (persistence.bootPhase === 'invalid-recovery') return 'Invalid recovery data found.'
-  if (persistence.leadership === 'follower') return 'Follower mode: read-only in this tab.'
-  if (persistence.durabilityStatus === 'saving') return 'Saving active session.'
-  if (persistence.durabilityStatus === 'saved') return 'Active session saved locally.'
-  if (persistence.durabilityStatus === 'unavailable') return 'Persistence unavailable.'
-  if (persistence.durabilityStatus === 'failed') return 'Persistence failed.'
-  return 'Local persistence ready.'
+  if (persistence.bootPhase === 'loading') return 'Opening saved games…'
+  if (persistence.bootPhase === 'recovery') return 'Unfinished class session found.'
+  if (persistence.bootPhase === 'invalid-recovery') return 'Unfinished class session could not be read.'
+  if (persistence.leadership === 'follower') return 'Another window is saving on this device. This window is read-only.'
+  if (persistence.durabilityStatus === 'saving') return 'Saving this class session.'
+  if (persistence.durabilityStatus === 'saved') return 'This class session is saved on this device.'
+  if (persistence.durabilityStatus === 'unavailable') return 'Saving on this device is unavailable.'
+  if (persistence.durabilityStatus === 'failed') return 'Saving on this device failed.'
+  return 'Ready to save this class session.'
 }

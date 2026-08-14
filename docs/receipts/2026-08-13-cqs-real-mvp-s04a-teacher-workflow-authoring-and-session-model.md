@@ -71,7 +71,7 @@ at that same head.
 | Command | Result |
 | --- | --- |
 | `git diff --check` | exit 0 |
-| `npm run verify` | lint warnings only (pre-existing ThemeProvider fast-refresh); typecheck pass; **2470** unit tests passed / **2** skipped |
+| `npm run verify` | lint warnings only (pre-existing ThemeProvider fast-refresh); typecheck pass; **2474** unit tests passed / **2** skipped |
 | `CI=1 npm run verify:all` | same unit result; production `vite` preview built in-process; Playwright **373** passed / **14** skipped. `reuseExistingServer=false` because `CI=1` |
 | `npm run test:desktop` | desktop renderer+main built; **3** passed |
 
@@ -122,7 +122,25 @@ when the durable clear failed. This worktree keeps recovery visible until
 `clearActiveSession` succeeds, surfaces invalid recovery on Home, and
 blocks Play/Home while a save is in flight.
 
-Those later repairs invalidate the `10d096e` review. A later exact-head
+Those later repairs invalidate the `10d096e` review.
+
+Exact-head review of `7dd785b55ab67ff48da874139ce09db3a0e47264` still
+failed. Root-family repairs in this worktree:
+
+- Incomplete authoring saves persist the draft beside the last successful
+  compiled Game. They do not replace a playable compile with an empty stub.
+  Export refuses an unplayable compiled record.
+- Unavailable-storage discard no longer hides the unfinished-session surface
+  or flips `bootPhase` to `ready`.
+- Import Quality Report acceptance is `accepted` / `rejected` /
+  `unfinished`. Spreadsheet drafts with errors are not “canonical import
+  accepted.” Generation Feedback uses the same wording.
+- Opening a durable game shows Saved. In-flight Saving… blocks unload.
+  Authoring write exceptions become Save problem.
+- Start new game session requires confirm when a class session is already
+  open. Ordinary Host library/recovery copy uses product language.
+
+Those later repairs invalidate the `7dd785b` review. A later exact-head
 review must be obtained on the repaired candidate.
 
 ## Deferred with evidence

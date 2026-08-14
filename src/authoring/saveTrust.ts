@@ -70,6 +70,15 @@ export function markSaveClean(state: SaveTrustState): SaveTrustState {
   return { ...state, dirty: false }
 }
 
+export function markSaveLoaded(): SaveTrustState {
+  return {
+    phase: 'saved',
+    generation: 0,
+    dirty: false,
+    message: 'Saved on this device.',
+  }
+}
+
 export function saveStatusLabel(state: SaveTrustState): string {
   if (state.phase === 'saving') return 'Saving…'
   if (state.phase === 'failed') return 'Save problem'

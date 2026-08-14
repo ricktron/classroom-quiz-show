@@ -58,6 +58,7 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
   const [playReplaceNeeded, setPlayReplaceNeeded] = useState(false)
   const [playReplaceArmed, setPlayReplaceArmed] = useState(false)
   const [resetArmed, setResetArmed] = useState(false)
+  const [startSessionArmed, setStartSessionArmed] = useState(false)
   const persistence = useHostPersistence({ clock })
   const {
     store,
@@ -191,22 +192,30 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
           <p className="host__note">
             Choose a supported content path below. If no session exists yet, loading starts one
             automatically. Use <strong>Start new game session</strong> when you want an explicit
-            fresh session first.
+            fresh session first. Starting a new session while one is already open replaces that
+            class run only. It does not delete the saved game.
           </p>
           <div className="foundation__actions" role="group" aria-label="Start game session">
             <button
               type="button"
               className="btn"
               data-testid="start-new-game-session"
-              onClick={() =>
+              onClick={() => {
+                if (hasSession && !startSessionArmed) {
+                  setStartSessionArmed(true)
+                  return
+                }
+                setStartSessionArmed(false)
                 dispatch({
                   type: 'INIT_SESSION',
                   issuedAt: now(),
                   sessionId: nextHostSessionId(),
                 })
-              }
+              }}
             >
-              Start new game session
+              {hasSession && startSessionArmed
+                ? 'Confirm start new class session'
+                : 'Start new game session'}
             </button>
             <button
               type="button"

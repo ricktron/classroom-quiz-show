@@ -28,9 +28,11 @@ export function QualityReportPanel({ report, context = 'import' }: QualityReport
       <p className="host__note">
         {context === 'editor'
           ? 'Review the notes below before you play or save. These are checks on this game, not a file import result.'
-          : report.importSucceeded
+          : report.acceptance === 'accepted'
             ? 'The game file was accepted. Review the notes below before you play or edit.'
-            : 'The game file was not accepted. Nothing was saved or loaded.'}
+            : report.acceptance === 'unfinished'
+              ? 'This file was stored as an unfinished game. It is not a completed playable import.'
+              : 'The game file was not accepted. Nothing was saved or loaded.'}
       </p>
       <p className="quality-report__counts" aria-live="polite">
         {report.errorCount} errors, {report.warningCount} warnings, {report.heuristicCount} quality

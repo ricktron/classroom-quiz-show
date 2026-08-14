@@ -8,7 +8,7 @@ import {
   createGenerationWriteGate,
   emptyAuthoringUndoStack,
   initialSaveTrustState,
-  markSaveClean,
+  markSaveLoaded,
   markSaveDirty,
   pushAuthoringUndo,
   redoAuthoring,
@@ -71,7 +71,7 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
           ? 'The saved editor draft could not be read. You are seeing the last playable game. Extra editor notes may be missing.'
           : null,
       )
-      setSaveTrust(markSaveClean(initialSaveTrustState()))
+      setSaveTrust(markSaveLoaded())
     })
     return () => {
       cancelled = true
@@ -80,13 +80,13 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
 
   useEffect(() => {
     function onBeforeUnload(event: BeforeUnloadEvent): void {
-      if (!saveTrust.dirty) return
+      if (!saveTrust.dirty && saveTrust.phase !== 'saving') return
       event.preventDefault()
       event.returnValue = ''
     }
     window.addEventListener('beforeunload', onBeforeUnload)
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
-  }, [saveTrust.dirty])
+  }, [saveTrust.dirty, saveTrust.phase])
 
   const apply = useCallback(
     (correction: DraftCorrection) => {
@@ -111,19 +111,24 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
       message: 'Saving…',
     })
     const snapshot = draft
-    const outcome = await writeGateRef.current.enqueue(generation, () =>
-      saveAuthoringDraftToLibrary(persistence.adapter, snapshot, registry),
-    )
-    if (outcome.skipped) return
-    setSaveTrust((current) =>
-      completeSave(
-        current,
-        generation,
-        outcome.value.ok ? { ok: true } : { ok: false, message: outcome.value.message },
-      ),
-    )
-    if (outcome.value.ok && writeGateRef.current.latest() === generation) {
-      await persistence.refreshLibrary()
+    try {
+      const outcome = await writeGateRef.current.enqueue(generation, () =>
+        saveAuthoringDraftToLibrary(persistence.adapter, snapshot, registry),
+      )
+      if (outcome.skipped) return
+      setSaveTrust((current) =>
+        completeSave(
+          current,
+          generation,
+          outcome.value.ok ? { ok: true } : { ok: false, message: outcome.value.message },
+        ),
+      )
+      if (outcome.value.ok && writeGateRef.current.latest() === generation) {
+        await persistence.refreshLibrary()
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'The game could not be saved.'
+      setSaveTrust((current) => completeSave(current, generation, { ok: false, message }))
     }
   }
 
