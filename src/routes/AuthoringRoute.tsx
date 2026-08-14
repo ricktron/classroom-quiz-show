@@ -21,9 +21,11 @@ import {
 import type { AuthoringDraft, DraftClue } from '../authoring/types'
 import { createDefaultRegistry } from '../game/defaultRegistry'
 import { useHostPersistence, type UseHostPersistenceOptions } from '../host/useHostPersistence'
+import { canPersistMutations } from '../host/writeAuthority'
 import { QualityReportPanel } from '../host/QualityReportPanel'
 import { buildImportQualityReport } from '../import/qualityReport'
 import { openLibraryGame, saveAuthoringDraftToLibrary } from '../library/gameLibrary'
+import { persistenceErr } from '../persistence/results'
 import { ROUTES, playPath } from './paths'
 import './HostRoute.css'
 import './AuthoringRoute.css'
@@ -50,6 +52,8 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
   const [preview, setPreview] = useState(false)
   const [draftWarning, setDraftWarning] = useState<string | null>(null)
   const writeGateRef = useRef(createGenerationWriteGate())
+  const leadershipRef = useRef(persistence.leadership)
+  leadershipRef.current = persistence.leadership
   const blocker = useBlocker(saveTrust.dirty || saveTrust.phase === 'saving')
 
   useEffect(() => {
@@ -59,7 +63,11 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
       return
     }
     let cancelled = false
-    void openLibraryGame(persistence.adapter, gameId, registry).then((loaded) => {
+    void openLibraryGame(persistence.adapter, gameId, registry, {
+      // Read leadership at open time only. Re-opening on a later follower
+      // transition would reload the draft and wipe unsaved in-memory edits.
+      touchOpenedAt: canPersistMutations(leadershipRef.current),
+    }).then((loaded) => {
       if (cancelled) return
       if (!loaded.ok) {
         setLoadError(loaded.message)
@@ -103,6 +111,16 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
 
   async function save(): Promise<void> {
     if (!draft || saveTrust.phase === 'saving') return
+    const blocked = persistence.assertCanPersist('editor')
+    if (!blocked.ok) {
+      setSaveTrust((current) => ({
+        phase: 'failed',
+        generation: current.generation,
+        dirty: true,
+        message: blocked.message,
+      }))
+      return
+    }
     const generation = writeGateRef.current.begin()
     setSaveTrust({
       phase: 'saving',
@@ -112,9 +130,11 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
     })
     const snapshot = draft
     try {
-      const outcome = await writeGateRef.current.enqueue(generation, () =>
-        saveAuthoringDraftToLibrary(persistence.adapter, snapshot, registry),
-      )
+      const outcome = await writeGateRef.current.enqueue(generation, () => {
+        const again = persistence.assertCanPersist('editor')
+        if (!again.ok) return Promise.resolve(persistenceErr('follower', again.message))
+        return saveAuthoringDraftToLibrary(persistence.adapter, snapshot, registry)
+      })
       if (outcome.skipped) return
       setSaveTrust((current) =>
         completeSave(
@@ -197,6 +217,12 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
           {saveStatusLabel(saveTrust)}
           {saveTrust.phase === 'failed' ? ` — ${saveTrust.message}` : ''}
         </p>
+        {persistence.leadership === 'follower' ? (
+          <p className="host__note" role="status" data-testid="authoring-follower-notice">
+            Another Classroom Quiz Show window is currently responsible for saving. Your edits are
+            still here.
+          </p>
+        ) : null}
         <div className="authoring__toolbar">
           <label className="authoring__title-label" htmlFor="game-title">
             Game title
@@ -212,6 +238,7 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
             onClick={() => void save()}
             data-testid="authoring-save"
             disabled={saveTrust.phase === 'saving'}
+            aria-disabled={!persistence.canPersistMutations || saveTrust.phase === 'saving'}
           >
             Save
           </button>

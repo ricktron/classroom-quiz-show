@@ -339,6 +339,56 @@ describe('useHostPersistence', () => {
     expect(api().session.store.getHistory()).toEqual([])
   })
 
+  it('blocks a follower from discarding recovery and does not clear the session', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    const clock = createManualClock(AT)
+    await seedActiveSession(adapter, activeHistory())
+    await acquireOrRenewHostLease({
+      adapter,
+      tabId: 'tab-owner',
+      clock,
+      leaseTtlMs: 1_000,
+      broadcastChannel: null,
+    })
+
+    const { api } = renderHarness(adapter, 'tab-follower')
+    await waitFor(() => expect(api().persistence.leadership).toBe('follower'))
+    await waitFor(() => expect(api().persistence.bootPhase).toBe('recovery'))
+    const writes = { activeSessions: 0 }
+    const original = adapter.withTransaction.bind(adapter)
+    vi.spyOn(adapter, 'withTransaction').mockImplementation(async (stores, work) => {
+      return original(stores, async (tx) => {
+        const del = tx.delete.bind(tx)
+        const put = tx.put.bind(tx)
+        await work({
+          get: tx.get.bind(tx),
+          getAll: tx.getAll.bind(tx),
+          getAllKeys: tx.getAllKeys.bind(tx),
+          put: async (store, key, value) => {
+            if (store === OBJECT_STORE_ACTIVE_SESSIONS) writes.activeSessions += 1
+            return put(store, key, value)
+          },
+          delete: async (store, key) => {
+            if (store === OBJECT_STORE_ACTIVE_SESSIONS) writes.activeSessions += 1
+            return del(store, key)
+          },
+        })
+      })
+    })
+
+    await act(async () => {
+      const result = await api().persistence.discardRecovery()
+      expect(result.ok).toBe(false)
+      expect(result.message).toMatch(/another classroom quiz show window is currently responsible for saving/i)
+    })
+    expect(api().persistence.bootPhase).toBe('recovery')
+    expect(api().persistence.recovery).not.toBeNull()
+    expect(writes.activeSessions).toBe(0)
+    const stored = await readActiveSession(adapter, api().registry)
+    expect(stored.ok).toBe(true)
+    if (stored.ok) expect(stored.value.kind).toBe('resumable')
+  })
+
   it('blocks follower dispatch and leaves history unchanged', async () => {
     const adapter = createMemoryPersistenceAdapter()
     const clock = createManualClock(AT)

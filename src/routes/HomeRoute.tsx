@@ -3,6 +3,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import { isDesktopRuntime } from '../runtime/cqsRuntime'
 import { ROUTES, absoluteDisplayUrlWithTheme, editPath, playPath } from './paths'
 import { useHostPersistence, type UseHostPersistenceOptions } from '../host/useHostPersistence'
+import {
+  FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE,
+  UNREADABLE_SESSION_TEACHER_MESSAGE,
+} from '../host/writeAuthority'
 import { createDefaultRegistry } from '../game/defaultRegistry'
 import {
   createNewLibraryGame,
@@ -51,10 +55,17 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   const spreadsheetInputRef = useRef<HTMLInputElement>(null)
   const recent = useMemo(() => recentSavedDefinitions(persistence.library).slice(0, 5), [persistence.library])
   const readOnly = persistence.leadership === 'follower'
-  const ready = persistence.bootPhase !== 'loading' && !readOnly
+  const ready = persistence.bootPhase !== 'loading'
   const canResume = persistence.bootPhase === 'recovery' && persistence.recovery !== null
   const hasInvalidRecovery =
     persistence.bootPhase === 'invalid-recovery' && persistence.invalidRecovery !== null
+
+  function refuseIfFollower(): boolean {
+    const gate = persistence.assertCanPersist('home')
+    if (gate.ok) return false
+    setMessage(gate.message)
+    return true
+  }
 
   async function refresh(nextMessage: string): Promise<void> {
     await persistence.refreshLibrary()
@@ -62,7 +73,14 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   }
 
   async function onNewGame(): Promise<void> {
+    if (refuseIfFollower()) return
     setBusy(true)
+    const gate = persistence.assertCanPersist('home')
+    if (!gate.ok) {
+      setBusy(false)
+      setMessage(gate.message)
+      return
+    }
     const created = await createNewLibraryGame(persistence.adapter, registry)
     setBusy(false)
     if (!created.ok) {
@@ -82,6 +100,12 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   }
 
   async function onDuplicate(gameId: string): Promise<void> {
+    if (refuseIfFollower()) return
+    const gate = persistence.assertCanPersist('home')
+    if (!gate.ok) {
+      setMessage(gate.message)
+      return
+    }
     const result = await duplicateSavedDefinition(persistence.adapter, gameId, registry)
     if (!result.ok) {
       setMessage(result.message)
@@ -91,6 +115,12 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   }
 
   async function onRename(gameId: string): Promise<void> {
+    if (refuseIfFollower()) return
+    const gate = persistence.assertCanPersist('home')
+    if (!gate.ok) {
+      setMessage(gate.message)
+      return
+    }
     const result = await renameSavedDefinition(persistence.adapter, gameId, renameValue, registry)
     if (!result.ok) {
       setMessage(result.message)
@@ -103,6 +133,12 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   async function onDelete(gameId: string): Promise<void> {
     if (confirmDeleteId !== gameId) {
       setConfirmDeleteId(gameId)
+      return
+    }
+    const gate = persistence.assertCanPersist('home')
+    if (!gate.ok) {
+      setConfirmDeleteId(null)
+      setMessage(gate.message)
       return
     }
     const result = await deleteDefinition(persistence.adapter, gameId)
@@ -133,6 +169,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   }
 
   async function importJson(text: string): Promise<void> {
+    if (refuseIfFollower()) return
     const imported = importGameFromJsonText(text, { registry })
     const report = buildImportQualityReport({
       importResult: imported,
@@ -143,6 +180,11 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
     setQuality(report)
     if (imported.status !== 'success') {
       setMessage('Import did not accept that file. Nothing was saved.')
+      return
+    }
+    const gate = persistence.assertCanPersist('home')
+    if (!gate.ok) {
+      setMessage(gate.message)
       return
     }
     const saved = await saveDefinition(persistence.adapter, imported.definition, {
@@ -182,6 +224,11 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
       setMessage('Import did not accept that file. Nothing was saved.')
       return
     }
+    const gate = persistence.assertCanPersist('home')
+    if (!gate.ok) {
+      setMessage(gate.message)
+      return
+    }
     const replaced = await saveDefinition(persistence.adapter, imported.definition, {
       mode: 'replace',
       registry,
@@ -197,6 +244,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
 
   async function importWorkbook(file: File | null): Promise<void> {
     if (!file) return
+    if (refuseIfFollower()) return
     const bytes = new Uint8Array(await file.arrayBuffer())
     const parsed = await parseWorkbookBytes(bytes, file.name)
     if (parsed.status !== 'success') {
@@ -207,6 +255,11 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
         }),
       )
       setMessage('That spreadsheet could not be read. Nothing was saved.')
+      return
+    }
+    const gate = persistence.assertCanPersist('home')
+    if (!gate.ok) {
+      setMessage(gate.message)
       return
     }
     const saved = await saveAuthoringDraftToLibrary(persistence.adapter, parsed.draft, registry, 'save')
@@ -244,6 +297,11 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   async function confirmWorkbookReplace(): Promise<void> {
     const draft = pendingWorkbookDraft
     if (!draft) return
+    const gate = persistence.assertCanPersist('home')
+    if (!gate.ok) {
+      setMessage(gate.message)
+      return
+    }
     const replaced = await saveAuthoringDraftToLibrary(
       persistence.adapter,
       draft,
@@ -296,19 +354,26 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
         Create or open a game, then play it with this class. The projector stays on a separate
         Display screen.
       </p>
+      {readOnly ? (
+        <p className="host__note" role="status" data-testid="home-follower-notice">
+          {FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE}
+        </p>
+      ) : null}
 
       {hasInvalidRecovery && (
         <section className="home__resume" data-testid="home-invalid-recovery" aria-labelledby="invalid-recovery-title">
           <h2 id="invalid-recovery-title">Unfinished class session could not be read</h2>
           <p className="host__note">
-            {persistence.invalidRecovery?.message} Discard only that session to continue. Your saved
+            {UNREADABLE_SESSION_TEACHER_MESSAGE} Discard only that session to continue. Your saved
             games stay.
           </p>
           <div className="home__actions">
             <button
               type="button"
               className="btn btn--secondary"
+              data-testid="home-discard-session"
               onClick={() => {
+                if (refuseIfFollower()) return
                 if (!discardSessionArmed) {
                   setDiscardSessionArmed(true)
                   return
@@ -339,7 +404,9 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
             <button
               type="button"
               className="btn btn--secondary"
+              data-testid="home-discard-session"
               onClick={() => {
+                if (refuseIfFollower()) return
                 if (!discardSessionArmed) {
                   setDiscardSessionArmed(true)
                   return
@@ -388,6 +455,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
             <button
               type="button"
               className="btn btn--secondary"
+              data-testid="home-import-demo"
               onClick={() => {
                 setImportText(CANONICAL_SAMPLE_CATEGORY_BOARD_FILE)
                 void importJson(CANONICAL_SAMPLE_CATEGORY_BOARD_FILE)
@@ -407,7 +475,12 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
             rows={6}
           />
           <div className="home__actions">
-            <button type="button" className="btn" disabled={!ready} onClick={() => void importJson(importText)}>
+            <button
+              type="button"
+              className="btn"
+              data-testid="home-import-json"
+              onClick={() => void importJson(importText)}
+            >
               Import file text
             </button>
             <input
@@ -421,17 +494,31 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
             <button
               type="button"
               className="btn btn--secondary"
-              onClick={() => spreadsheetInputRef.current?.click()}
+              data-testid="home-import-spreadsheet"
+              onClick={() => {
+                if (refuseIfFollower()) return
+                spreadsheetInputRef.current?.click()
+              }}
             >
               Import spreadsheet
             </button>
             {pendingReplaceText ? (
-              <button type="button" className="btn" onClick={() => void confirmJsonReplace()}>
+              <button
+                type="button"
+                className="btn"
+                data-testid="home-replace-saved-game"
+                onClick={() => void confirmJsonReplace()}
+              >
                 Replace the existing saved game
               </button>
             ) : null}
             {pendingWorkbookDraft ? (
-              <button type="button" className="btn" onClick={() => void confirmWorkbookReplace()}>
+              <button
+                type="button"
+                className="btn"
+                data-testid="home-replace-workbook"
+                onClick={() => void confirmWorkbookReplace()}
+              >
                 Replace the existing saved game
               </button>
             ) : null}
@@ -496,13 +583,15 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
 
       <p className="home__status" aria-live="polite" data-testid="home-status">
         {message ??
-          (canResume
-            ? 'An unfinished class session is waiting on this device.'
-            : hasInvalidRecovery
-              ? 'An unfinished class session could not be read.'
-              : persistence.bootPhase === 'loading'
-                ? 'Opening your games…'
-                : null)}
+          (readOnly
+            ? FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE
+            : canResume
+              ? 'An unfinished class session is waiting on this device.'
+              : hasInvalidRecovery
+                ? UNREADABLE_SESSION_TEACHER_MESSAGE
+                : persistence.bootPhase === 'loading'
+                  ? 'Opening your games…'
+                  : null)}
       </p>
     </main>
     </div>
@@ -563,7 +652,12 @@ function GameList({
                 value={renameValue}
                 onChange={(event) => onRenameChange(event.target.value)}
               />
-              <button type="button" className="btn" onClick={() => onRenameConfirm(entry.gameId)}>
+              <button
+                type="button"
+                className="btn"
+                disabled={disabled}
+                onClick={() => onRenameConfirm(entry.gameId)}
+              >
                 Save name
               </button>
               <button type="button" className="btn btn--secondary" onClick={onRenameCancel}>

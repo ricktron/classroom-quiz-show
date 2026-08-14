@@ -104,10 +104,13 @@ export async function openLibraryGame(
   adapter: PersistenceAdapter,
   gameId: string,
   registry?: RoundRegistry,
+  options?: { readonly touchOpenedAt?: boolean },
 ): Promise<PersistenceResult<LibraryRecord & { readonly draft: AuthoringDraft }>> {
   const loaded = await loadLibraryRecord(adapter, gameId, registry)
   if (!loaded.ok) return loaded
-  await touchSavedDefinitionOpenedAt(adapter, gameId)
+  if (options?.touchOpenedAt !== false) {
+    await touchSavedDefinitionOpenedAt(adapter, gameId)
+  }
   const draft = loaded.value.draft ?? draftFromDefinition(loaded.value.definition)
   return { ok: true, value: { ...loaded.value, draft } }
 }

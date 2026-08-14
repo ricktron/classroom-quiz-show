@@ -8,6 +8,11 @@ import type { PrivateGameState } from '../state/privateState'
 import type { DispatchResult } from '../state/store'
 import { systemClock, type Clock } from '../time/clock'
 import { nextHostSessionId } from './ensureSession'
+import {
+  canPersistMutations,
+  rejectIfCannotPersist,
+  type PersistWriteSurface,
+} from './writeAuthority'
 import { collectReferencedPackScopeKeys } from '../pack/hydratePackMedia'
 import { gcUnreferencedPackScopes } from '../pack/packMediaPersistence'
 import {
@@ -128,6 +133,13 @@ export interface UseHostPersistence {
   readonly initialHistory: readonly SessionEvent[]
   readonly storeEpoch: number
   readonly canDispatchSessionCommands: boolean
+  /** True only while this window is the durable writer. */
+  readonly canPersistMutations: boolean
+  /**
+   * Immediate pre-write gate. Reads current leadership, not the render that
+   * started a click handler, so a mid-flight follower transition cannot write.
+   */
+  readonly assertCanPersist: (surface?: PersistWriteSurface) => PersistenceActionResult
   readonly resume: () => void
   readonly discardRecovery: () => Promise<PersistenceActionResult>
   /** Re-attempts writing the current history after an active-session save failure. */
@@ -196,6 +208,8 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   const [recovery, setRecovery] = useState<RecoveryPayload | null>(null)
   const [invalidRecovery, setInvalidRecovery] = useState<InvalidRecoveryPayload | null>(null)
   const [leadership, setLeadership] = useState<PersistenceLeadership>('unknown')
+  const leadershipRef = useRef<PersistenceLeadership>(leadership)
+  leadershipRef.current = leadership
   const [durabilityStatus, setDurabilityStatus] = useState<PersistenceDurabilityStatus>('loading')
   const [durableEventCount, setDurableEventCount] = useState(0)
   const [pendingEventCount, setPendingEventCount] = useState<number | null>(null)
@@ -749,7 +763,18 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     setMessage('Recovered session loaded. Future accepted changes will be saved after each write completes.')
   }, [recovery])
 
+  const assertCanPersist = useCallback((surface: PersistWriteSurface = 'home'): PersistenceActionResult => {
+    const blocked = rejectIfCannotPersist(leadershipRef.current, surface)
+    if (blocked) return blocked
+    return { ok: true, message: 'This window can save.' }
+  }, [])
+
   const discardRecovery = useCallback(async (): Promise<PersistenceActionResult> => {
+    const blocked = rejectIfCannotPersist(leadershipRef.current, 'home')
+    if (blocked) {
+      setMessage(blocked.message)
+      return blocked
+    }
     if (!canUseStorage()) {
       setDurabilityStatus('unavailable')
       const message =
@@ -981,6 +1006,8 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     initialHistory,
     storeEpoch,
     canDispatchSessionCommands: bootPhase === 'ready' && leadership !== 'follower',
+    canPersistMutations: canPersistMutations(leadership),
+    assertCanPersist,
     resume,
     discardRecovery,
     retryActiveSessionPersist,
