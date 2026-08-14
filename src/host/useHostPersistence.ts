@@ -207,7 +207,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   const [completedListings, setCompletedListings] =
     useState<readonly CompletedSummaryListing[]>([])
   const [library, setLibrary] = useState<readonly SavedDefinitionSummary[]>([])
-  const [message, setMessage] = useState('Opening local persistence.')
+  const [message, setMessage] = useState('Opening saved games…')
   const [initialHistory, setInitialHistory] = useState<readonly SessionEvent[]>([])
   const [storeEpoch, setStoreEpoch] = useState(0)
   const storageReadyRef = useRef(false)
@@ -259,7 +259,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   const canUseStorage = useCallback((): boolean => {
     if (!storageReadyRef.current) {
       setDurabilityStatus('unavailable')
-      setMessage('Local persistence is unavailable. Recent changes might not survive refresh.')
+      setMessage('Saving on this device is unavailable. Recent changes might not survive refresh.')
       return false
     }
     return true
@@ -308,14 +308,14 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     async function boot(): Promise<void> {
       setBootPhase('loading')
       setDurabilityStatus('loading')
-      setMessage('Opening local persistence.')
+      setMessage('Opening saved games…')
       const opened = await adapter.open()
       if (cancelled) return
       if (!opened.ok) {
         setBootPhase('ready')
         setDurabilityStatus('unavailable')
         setLeadership('unknown')
-        setMessage('Local persistence is unavailable. The host remains usable, but recent changes might not survive refresh.')
+        setMessage('Saving on this device is unavailable. Classroom controls remain usable, but recent changes might not survive refresh.')
         return
       }
 
@@ -434,16 +434,16 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         setActiveSessionPersistFailed(true)
         if (!storageReadyRef.current) {
           setDurabilityStatus('unavailable')
-          setMessage('Local persistence is unavailable. Recent changes might not survive refresh.')
+          setMessage('Saving on this device is unavailable. Recent changes might not survive refresh.')
         } else {
           setDurabilityStatus('failed')
-          setMessage('This tab cannot save the active session until it holds the persistence lease.')
+          setMessage('This window cannot save the class session until it is the one in charge of saving.')
         }
         return
       }
 
       setDurabilityStatus('saving')
-      setMessage('Saving active session.')
+      setMessage('Saving this class session.')
       void writeActiveSession(adapter, history, clock.now(), writeQueue, writeRegistry).then((result) => {
         if (latestWriteToken.current !== token) return
         if (result.ok) {
@@ -451,12 +451,12 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
           setPendingEventCount(null)
           setActiveSessionPersistFailed(false)
           setDurabilityStatus('saved')
-          setMessage('Active session saved locally.')
+          setMessage('This class session is saved on this device.')
         } else {
           setPendingEventCount(null)
           setActiveSessionPersistFailed(true)
           setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
-          setMessage('Active session could not be saved. Recent changes might not survive refresh.')
+          setMessage('This class session could not be saved. Recent changes might not survive refresh.')
         }
       })
     },
@@ -482,15 +482,15 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         setPendingEventCount(null)
         setActiveSessionPersistFailed(true)
         const message = !storageReadyRef.current
-          ? 'Local persistence is unavailable. Recent changes might not survive refresh.'
-          : 'This tab cannot save the active session until it holds the persistence lease.'
+          ? 'Saving on this device is unavailable. Recent changes might not survive refresh.'
+          : 'This window cannot save the class session until it is the one in charge of saving.'
         setDurabilityStatus(!storageReadyRef.current ? 'unavailable' : 'failed')
         setMessage(message)
         return { ok: false, message }
       }
 
       setDurabilityStatus('saving')
-      setMessage('Saving active session.')
+      setMessage('Saving this class session.')
       const result = await writeActiveSession(adapter, history, clock.now(), writeQueue, writeRegistry)
       if (latestWriteToken.current !== token) {
         return { ok: true, message: 'A newer save replaced this retry.' }
@@ -500,13 +500,13 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         setPendingEventCount(null)
         setActiveSessionPersistFailed(false)
         setDurabilityStatus('saved')
-        setMessage('Active session saved locally.')
-        return { ok: true, message: 'Active session saved locally.' }
+        setMessage('This class session is saved on this device.')
+        return { ok: true, message: 'This class session is saved on this device.' }
       }
       setPendingEventCount(null)
       setActiveSessionPersistFailed(true)
       setDurabilityStatus(result.code === 'unavailable' ? 'unavailable' : 'failed')
-      setMessage('Active session could not be saved. Recent changes might not survive refresh.')
+      setMessage('This class session could not be saved. Recent changes might not survive refresh.')
       return { ok: false, message: result.message }
     },
     [adapter, clock, leadership, writeQueue],

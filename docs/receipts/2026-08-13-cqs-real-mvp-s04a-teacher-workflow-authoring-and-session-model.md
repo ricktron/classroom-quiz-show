@@ -151,7 +151,17 @@ failed. Root-family repairs in this worktree:
   `compiledThisSave` is distinct from “a previous playable compile remains.”
 - Host Load and Host JSON export refuse unplayable 0-round stubs.
 
-Those later repairs invalidate the `9d6d9a6` review. A later exact-head
+Those later repairs invalidate the `9d6d9a6` review.
+
+Exact-head review of `a0beac55a9242134490af7f077bbeb9c2743241a` still
+failed. Root-family repairs in this worktree:
+
+- Ordinary Host library live copy after Play uses class-session product
+  language, not “active session” / “local persistence.”
+- Incomplete spreadsheet replace claims a previous playable game was kept
+  only when `playable` is actually true.
+
+Those later repairs invalidate the `a0beac5` review. A later exact-head
 review must be obtained on the repaired candidate.
 
 ## Deferred with evidence

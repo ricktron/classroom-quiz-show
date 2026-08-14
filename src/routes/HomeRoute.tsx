@@ -156,8 +156,17 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
     }
     if (saved.value === 'needs-replace') {
       setPendingReplaceText(text)
+      setQuality(
+        buildImportQualityReport({
+          importResult: imported,
+          title: imported.definition.title,
+          gameId: imported.definition.id,
+          draft: draftFromDefinition(imported.definition),
+          acceptance: 'unfinished',
+        }),
+      )
       setMessage(
-        `“${imported.definition.title}” is already in My Games. Confirm replace to overwrite that saved game.`,
+        `“${imported.definition.title}” is already in My Games. Confirm replace to overwrite that saved game. Nothing was saved yet.`,
       )
       return
     }
@@ -260,7 +269,9 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
     await refresh(
       replaced.value.compiledThisSave
         ? `Imported “${replaced.value.definition.title}”. It is ready to play.`
-        : `Imported “${replaced.value.definition.title}”. The previous playable game was kept. Open the editor to finish this import.`,
+        : replaced.value.playable
+          ? `Imported “${replaced.value.definition.title}”. The previous playable game was kept. Open the editor to finish this import.`
+          : `Imported “${replaced.value.definition.title}”. Open it to finish missing content.`,
     )
   }
 
