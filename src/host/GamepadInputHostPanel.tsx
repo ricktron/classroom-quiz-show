@@ -90,6 +90,10 @@ export interface GamepadInputHostPanelProps {
   readonly persistenceAdapter?: PersistenceAdapter
   /** Injectable WebHID transport (tests). */
   readonly webHidTransport?: WebHidTransport
+  /** When true, controller edges are reported for team-name selection, not scored. */
+  readonly selectionMode?: boolean
+  readonly onSelectionObservation?: (observation: SonyBuzzTestObservation & { readonly at: number }) => void
+  readonly onSonyReadyChange?: (ready: boolean) => void
 }
 
 /** What the panel is currently doing about button capture. */
@@ -130,6 +134,9 @@ export function GamepadInputHostPanel({
   scheduler,
   persistenceAdapter,
   webHidTransport,
+  selectionMode = false,
+  onSelectionObservation,
+  onSonyReadyChange,
 }: GamepadInputHostPanelProps) {
   const teams = game.definition.teams
   const gameId = game.definition.id
@@ -157,6 +164,19 @@ export function GamepadInputHostPanel({
     transport: webHidTransport,
     persistenceAdapter,
   })
+
+  useEffect(() => {
+    onSonyReadyChange?.(
+      sony.mappingStatus === 'ready' &&
+        sony.associations.length > 0 &&
+        sony.wbuzzController != null,
+    )
+  }, [
+    onSonyReadyChange,
+    sony.associations.length,
+    sony.mappingStatus,
+    sony.wbuzzController,
+  ])
 
   // The loaded game can change under the panel. Bindings for teams that no longer
   // exist are pruned rather than left pointing at nothing; a RENAMED team keeps
@@ -225,13 +245,15 @@ export function GamepadInputHostPanel({
   const onOutcome = useCallback((outcome: GamepadBuzzOutcome) => {
     setLastOutcome(outcome)
     if (outcome.kind === 'test-observation') {
-      setLastTestObservation({
+      const observation = {
         teamId: outcome.teamId,
         action: outcome.action,
         control: outcome.control,
-      })
+      }
+      setLastTestObservation(observation)
+      onSelectionObservation?.({ ...observation, at: clock.now() })
     }
-  }, [])
+  }, [clock, onSelectionObservation])
 
   // Apply supported-profile materialized mapping when associations/controller change.
   const sonyMappingKey = useMemo(() => {
@@ -249,9 +271,9 @@ export function GamepadInputHostPanel({
   }, [sonyMappingKey, sony.materializedMapping, teams])
 
   useGamepadBuzzInput({
-    enabled,
+    enabled: enabled || selectionMode,
     capturing,
-    testMode,
+    testMode: testMode || selectionMode,
     mapping,
     target,
     dispatch,

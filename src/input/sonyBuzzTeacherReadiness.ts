@@ -135,9 +135,9 @@ export function teacherSummaryLabel(summary: SonyBuzzTeacherSummary): string {
 export function receiverLayerLabel(layer: SonyBuzzReceiverLayer): string {
   switch (layer) {
     case 'unsupported':
-      return 'WebHID unavailable in this browser'
+      return 'Buzzers are not available in this browser'
     case 'needs-permission':
-      return 'Permission required — use Connect Sony Buzz'
+      return 'Permission required — use Connect classroom buzzers'
     case 'connecting':
       return 'Connecting…'
     case 'connected':

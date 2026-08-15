@@ -27,12 +27,13 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S04B Sony team selection and classroom setup — planned, **NOT AUTHORIZED** |
+| Current Program frontier | S04B Sony team selection and classroom setup — **implementation candidate published / not merged / not terminal** |
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
 | S04 canon | product direction **registered** |
 | S04A | **TERMINALLY COMPLETE** |
-| S04B–S04D / S05 / S06 | **NOT AUTHORIZED** |
+| S04B | **IMPLEMENTATION CANDIDATE PUBLISHED / NOT MERGED / NOT TERMINAL** |
+| S04C–S04D / S05 / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
 
 [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md) is the historical completed
@@ -93,8 +94,9 @@ authoring, reusable Game versus class Session separation, save trust,
 Import Quality Report, local Generation Feedback, and the Game-owned
 team-name-bank seam reserved for S04B. PR #72 merged as
 `29083f078521ebf432a7d7380c521c557fb578a8`; post-merge CI succeeded on that
-exact squash/main SHA. S04A is **TERMINALLY COMPLETE**. S04B–S04D product
-implementation has not begun.
+exact squash/main SHA. S04A is **TERMINALLY COMPLETE**. S04B has a
+published implementation candidate that is not merged and not terminal.
+S04C–S04D product implementation has not begun.
 
 Those remain **existing qualified foundations** plus the S03 desktop
 foundation, S04 canon, and terminal S04A teacher-workflow foundation. Do
@@ -128,12 +130,12 @@ See the REAL MVP gap register in
 | simple desktop launch | **FOUNDATION IMPLEMENTED** |
 | desktop Host/Display lifecycle | **FOUNDATION IMPLEMENTED** |
 | release artifacts/version/update path | **FOUNDATION IMPLEMENTED** (manual replacement; no auto-update) |
-| in-app teacher team setup | **PARTIAL** — S04A Game-owned default names and name-bank seam are merged; S04B theatrical selection not begun |
+| in-app teacher team setup | **CANDIDATE IMPLEMENTED / UNMERGED** — S04B class setup exists on the published candidate only |
 | teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal |
-| controller `F-UX-01` | **POLISH REQUIRED** — S04B direction registered; implementation not begun |
+| controller `F-UX-01` | **CANDIDATE ADDRESSED / AWAITING INDEPENDENT REVIEW** |
 | feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
 | flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** — S05 direction registered; implementation not begun |
-| packaged offline/recovery and OS qualification | **PARTIAL** (shell proven; packaged Sony **DEFERRED / NOT RUN / HARDWARE UNAVAILABLE**; Windows physical runtime **NOT RUN**) |
+| packaged offline/recovery and OS qualification | **PARTIAL** (shell proven; packaged Sony **BLOCKED / NOT EXECUTED / HARDWARE UNAVAILABLE**; Windows physical runtime **NOT RUN**) |
 | clean-room teacher qualification | **OPEN** |
 | **C-3** / **C-6** | **FOUNDATION IMPLEMENTED / UNSIGNED** |
 | `CQS-Q23-CLASS-B-01` | **OPEN / CONTROLLED** |
@@ -150,8 +152,10 @@ Contract versions: see [`../STATUS.md`](../STATUS.md).
 
 Do **not**:
 
-- begin S04B Sony theatrical team selection, S04C recovery UX, or S04D
-  telemetry without a later bounded authorization;
+- merge the S04B candidate or treat this handoff as an independent-review
+  PASS;
+- begin S04C recovery UX or S04D telemetry without a later bounded
+  authorization;
 - begin S05 visual-fidelity work or S06 integrated release qualification;
 - silently decide Apple/Windows signing, fee waiver, CPU/OS matrix, or
   public teacher-release publication;
@@ -179,18 +183,20 @@ phones, no networked buzzers, no executable imported content) remain in
 ## Next Program-level action
 
 `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is
-**TERMINALLY COMPLETE**. The next planned Program frontier is
-`CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP`.
+**TERMINALLY COMPLETE**. S04B has a published implementation candidate.
+Next authority is independent exact-head review of that candidate.
 
 ```text
 routing ≠ authority
 S04A: TERMINALLY COMPLETE
-S04B: PLANNED / NOT AUTHORIZED
+S04B: IMPLEMENTATION CANDIDATE PUBLISHED / NOT MERGED / NOT TERMINAL
 S04C/S04D/S05/S06: NOT AUTHORIZED
 ```
 
-The next contributor must return to Program authority for S04B
-adjudication before implementation. Do **not** begin S04B from this handoff.
+S04B candidate evidence:
+[`../receipts/2026-08-14-cqs-real-mvp-s04b-sony-team-selection-and-classroom-setup.md`](../receipts/2026-08-14-cqs-real-mvp-s04b-sony-team-selection-and-classroom-setup.md).
+
+Do **not** open a PR, merge, or begin S04C from this handoff.
 
 ## Architecture pointers
 

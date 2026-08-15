@@ -47,15 +47,19 @@ saved game.
 On Host, **Load a game** remains available for file, spreadsheet, and pack
 import during class.
 
-## 4. Set up teams and controllers
+## 4. Set up this class
 
-After a game is loaded:
+After **Play**, Host shows **Class setup** before the board when you started
+from Home:
 
-- Use the teams and scoring controls to prepare this class
-- Optional: pair keyboard or controller buzzers on the host
-- Optional: enable presentation sound for classroom cues
+- Teams pick names together. Buzzers are optional. Typing always works.
+- If Sony Buzz controllers are connected, Yellow / Green / Orange / Blue
+  choose a name. Red shows four more names for that team only.
+- Open the audience display and test or mute sound before you start.
+- **Mute all sounds** is always available.
 
-The product remains usable without controllers.
+The product remains usable without controllers. A buzzer failure never
+strands the class.
 
 ## 5. Open the audience display
 

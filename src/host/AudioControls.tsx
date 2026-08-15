@@ -80,6 +80,17 @@ export function AudioControls({ audio }: AudioControlsProps) {
         >
           {status.muted ? 'Unmute' : 'Mute'}
         </button>
+        <button
+          type="button"
+          className="btn btn--destructive"
+          data-testid="audio-panic-mute"
+          aria-label="Mute all sounds"
+          onClick={() => {
+            setMuted(true)
+          }}
+        >
+          Mute all sounds
+        </button>
 
         <label className="audio-controls__volume" htmlFor="audio-volume">
           Volume

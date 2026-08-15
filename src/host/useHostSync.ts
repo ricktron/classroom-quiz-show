@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import type { SessionStore } from '../state/store'
 import { createPublicStateBroadcaster } from '../sync/broadcaster'
+import { overlayPublicTeamNames } from '../session/overlayPublicTeamNames'
 import { systemClock, type Clock } from '../time/clock'
 
 /**
@@ -17,21 +18,27 @@ import { systemClock, type Clock } from '../time/clock'
  * clock passed here is used only to stamp `sentAt` on the envelope, so a display
  * can estimate the difference between the two machines' clocks.
  */
-export function useHostSync(store: SessionStore, clock: Clock = systemClock): void {
+export function useHostSync(
+  store: SessionStore,
+  clock: Clock = systemClock,
+  sessionTeamNamesByOrder: readonly string[] | null = null,
+): void {
+  const overlayKey = sessionTeamNamesByOrder?.join('\u0001') ?? ''
   useEffect(() => {
+    const snapshot = () => overlayPublicTeamNames(store.getPublicState(), sessionTeamNamesByOrder)
     const broadcaster = createPublicStateBroadcaster({
-      getSnapshot: () => store.getPublicState(),
+      getSnapshot: snapshot,
       clock,
     })
 
-    broadcaster.publish(store.getPublicState())
+    broadcaster.publish(snapshot())
     const unsubscribe = store.subscribe(() => {
-      broadcaster.publish(store.getPublicState())
+      broadcaster.publish(snapshot())
     })
 
     return () => {
       unsubscribe()
       broadcaster.close()
     }
-  }, [store, clock])
+  }, [store, clock, overlayKey, sessionTeamNamesByOrder])
 }

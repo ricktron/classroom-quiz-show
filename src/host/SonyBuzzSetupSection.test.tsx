@@ -443,8 +443,8 @@ describe('copy guardrails', () => {
     expect(screen.getByTestId('sbs-keyboard-fallback')).toHaveTextContent(
       /Keyboard buzzing remains available whether or not a Sony Buzz! candidate is present/i,
     )
-    expect(screen.getByTestId('sbs-intro')).toHaveTextContent(/lost when this page reloads/i)
-    expect(screen.getByTestId('sbs-intro')).toHaveTextContent(/candidate match is not proof/i)
+    expect(screen.getByTestId('sbs-intro')).toHaveTextContent(/keyboard buzzing remains available/i)
+    expect(screen.getByTestId('sbs-intro')).toHaveTextContent(/advanced diagnostics stay folded away/i)
   })
 
   it('never claims supported hardware', () => {
@@ -489,7 +489,7 @@ describe('copy guardrails', () => {
   it('states three-controller disposition without a four-fresh-controller claim', () => {
     const panel = renderPanel()
     panel.poll()
-    expect(screen.getByTestId('sbs-intro')).toHaveTextContent(/three available controllers/i)
+    expect(screen.getByTestId('sbs-intro')).toHaveTextContent(/optional classroom buzzers/i)
     expect(screen.getByTestId('sbs-slot-disposition')).toHaveTextContent(/four-slot profile design/i)
     expect(screen.getByTestId('sbs-slot-disposition').textContent?.toLowerCase() ?? '').not.toContain(
       'final rc owed',

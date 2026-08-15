@@ -488,7 +488,7 @@ describe('scope and privacy', () => {
     }
     // Exact VID/PID may appear in the host-private supported-profile copy.
     expect(screen.getByTestId('sbs')).toBeInTheDocument()
-    expect(screen.getByTestId('sbs-intro')).toHaveTextContent(/candidate match is not proof/i)
+    expect(screen.getByTestId('sbs-intro')).toHaveTextContent(/keyboard buzzing remains available/i)
     expect(screen.getByTestId('sbs-profile-id')).toHaveTextContent('054c:1000')
   })
 

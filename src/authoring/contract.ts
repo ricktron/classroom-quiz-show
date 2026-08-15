@@ -22,6 +22,9 @@ export const INSTRUCTIONS_SHEET = 'INSTRUCTIONS' as const
 export const GAME_SHEET = 'GAME' as const
 export const CLUES_SHEET = 'CLUES' as const
 export const FINAL_SHEET = 'FINAL' as const
+/** Optional Game-owned name deck. Format 1 compatible; never required. */
+export const TEAM_NAMES_SHEET = 'TEAM_NAMES' as const
+export const TEAM_NAME_HEADERS = ['TeamName'] as const
 
 export const CLASSIC_BOARD_SHEETS = [
   META_SHEET,

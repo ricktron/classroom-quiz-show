@@ -197,11 +197,10 @@ function SupportedProfileBlock({
 
   return (
     <div className="sbs__supported" data-testid="sbs-supported-profile">
-      <h5 className="sbs__heading">Supported profile (Namtai Wbuzz)</h5>
-      <p className="host__note" data-testid="sbs-profile-id">
-        Profile <code>{SONY_BUZZ_SUPPORTED_PROFILE_ID}</code> — exact USB{' '}
-        <code>054c:1000</code> only. Receiver keep-alive is health-only; Gamepad
-        remains the gameplay input path. Keyboard buzzing stays available.
+      <h5 className="sbs__heading">Classroom buzzers</h5>
+      <p className="host__note" data-testid="sbs-teacher-intro">
+        Plug in the Sony Buzz receiver, click Connect, then assign each controller
+        to a team. Keyboard buzzing stays available if a controller fails.
       </p>
 
       <div className="sbs__readiness" data-testid="sbs-readiness">
@@ -219,8 +218,8 @@ function SupportedProfileBlock({
           <dd data-testid="sbs-mapping-layer">{mappingLayerLabel(mappingLayer)}</dd>
         </dl>
         <p className="host__note" data-testid="sbs-readiness-note">
-          Receiver connected does not mean controllers are ready. Pair handsets
-          before expecting buzzes.
+          Receiver connected does not mean controllers are ready. Pair the
+          controllers before expecting buzzes.
         </p>
       </div>
 
@@ -246,7 +245,7 @@ function SupportedProfileBlock({
           data-testid="sbs-connect"
           onClick={() => supportedProfile.onConnect()}
         >
-          Connect Sony Buzz
+          Connect classroom buzzers
         </button>
         <button
           type="button"
@@ -254,7 +253,7 @@ function SupportedProfileBlock({
           data-testid="sbs-disable-keepalive"
           onClick={() => supportedProfile.onDisableKeepAlive()}
         >
-          Disable Sony Buzz for now
+          Skip buzzers for now
         </button>
         <button
           type="button"
@@ -436,6 +435,11 @@ function SupportedProfileBlock({
       >
         {showAdvanced ? 'Hide advanced diagnostics' : 'Advanced diagnostics'}
       </button>
+      <p className="host__note" data-testid="sbs-profile-id" hidden={!showAdvanced}>
+        Profile <code>{SONY_BUZZ_SUPPORTED_PROFILE_ID}</code> — exact USB{' '}
+        <code>054c:1000</code> only. Receiver keep-alive is health-only; Gamepad
+        remains the gameplay input path.
+      </p>
       {showAdvanced ? (
         <pre className="sbs__diag" data-testid="sbs-advanced-diag">
           {JSON.stringify(
@@ -545,13 +549,11 @@ export function SonyBuzzSetupSection({
         Sony Buzz
       </h4>
       <p className="host__note" data-testid="sbs-intro">
-        Supported Namtai Wbuzz profile (exact USB 054c:1000, four-slot design)
-        uses host-private saved team mapping. Fresh product RC covered three
-        available controllers; the fourth slot is optional when present. Manual
-        guided capture remains available below. A candidate match is not proof
-        the hardware works here. Keyboard buzzing remains available. Manual
-        capture assignments from this setup are for this browser tab only and
-        are lost when this page reloads.
+        Optional classroom buzzers. Connect the receiver, assign each controller
+        to a team, then run Buzzer Check. A candidate match is not proof the class
+        can play. Keyboard buzzing remains available if hardware is missing or
+        fails. Assignments are lost when this page reloads unless you save the
+        mapping. Advanced diagnostics stay folded away.
       </p>
 
       {supportedProfile ? (
