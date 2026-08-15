@@ -27,7 +27,13 @@ import {
   type PublicTeamsState,
 } from './publicState'
 import { PUBLIC_STATUS_COPY, PUBLIC_STATUS_PHASE } from './status'
-import { categoryBoardStateFor, finalWagerStateFor, responsePhaseFor, teamScoreFor } from './reducer'
+import {
+  categoryBoardStateFor,
+  finalWagerStateFor,
+  publicTeamDisplayName,
+  responsePhaseFor,
+  teamScoreFor,
+} from './reducer'
 import { readFinalWagerDefinition } from '../game/finalWager/definition'
 import {
   committedResponse,
@@ -239,7 +245,7 @@ function toPublicTeams(game: PrivateGameState | null): PublicTeamsState | null {
     projected.push({
       // Positional, opaque, deterministic — never the authored team id.
       key: `t${index}`,
-      name: team.name,
+      name: publicTeamDisplayName(game, team.id, team.name),
       accent: team.accent,
       score,
     })

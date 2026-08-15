@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createSampleGame } from '../../game/sampleGame'
 import { createSessionStore } from '../../state/store'
+import { importGameFromUnknown } from '../../import/importGame'
+import { teamBoardGameFile, twoTeams } from '../../test/teamFixtures'
 import {
   decodeActiveSessionRecord,
   decodeSessionHistory,
@@ -89,6 +91,31 @@ describe('session persistence wire', () => {
     const decoded = decodeSessionHistory({ ...encoded.value, events })
 
     expect(decoded).toMatchObject({ ok: false, code: 'corrupt' })
+  })
+
+  it('round-trips SESSION_TEAM_NAME_SET with a string name and with null', () => {
+    const imported = importGameFromUnknown(teamBoardGameFile(twoTeams()))
+    if (imported.status !== 'success') throw new Error('team fixture failed')
+    const store = createSessionStore()
+    store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 'session-1' })
+    store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT + 1, definition: imported.definition })
+    const teamId = imported.definition.teams[0]?.id
+    expect(teamId).toBeTruthy()
+    if (!teamId) return
+    store.dispatch({ type: 'SET_SESSION_TEAM_NAME', issuedAt: AT + 2, teamId, name: 'Comet Crew' })
+    store.dispatch({ type: 'SET_SESSION_TEAM_NAME', issuedAt: AT + 3, teamId, name: null })
+    const history = store.getHistory()
+    const encoded = encodeSessionHistory(history, AT)
+    expect(encoded.ok).toBe(true)
+    if (!encoded.ok) return
+    const decoded = decodeSessionHistory(encoded.value)
+    expect(decoded.ok).toBe(true)
+    if (!decoded.ok) return
+    expect(decoded.value).toEqual(history)
+    const nameEvents = decoded.value.filter((event) => event.type === 'SESSION_TEAM_NAME_SET')
+    expect(nameEvents).toHaveLength(2)
+    expect(nameEvents[0]).toMatchObject({ teamId, name: 'Comet Crew', reversible: true })
+    expect(nameEvents[1]).toMatchObject({ teamId, name: null, reversible: true })
   })
 
   it('encodes and decodes active-session records with resumability', () => {

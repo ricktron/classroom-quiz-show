@@ -15,11 +15,9 @@ function renderSetup(
   const onPlay = vi.fn()
   const onPanicMute = vi.fn()
   const onOpenDisplay = vi.fn()
-  const onSessionNamesChange = vi.fn()
+  const onSelectedIdentitiesChange = vi.fn()
   render(
     <ClassroomSetupPanel
-      sessionId="period-1"
-      gameId="game-1"
       teams={TEAMS}
       teamNameBank={['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf', 'Hotel']}
       leadership="leader"
@@ -33,14 +31,22 @@ function renderSetup(
       onPanicMute={onPanicMute}
       playReady={false}
       onPlay={onPlay}
-      onSessionNamesChange={onSessionNamesChange}
+      onSelectedIdentitiesChange={onSelectedIdentitiesChange}
       {...overrides}
     />,
   )
-  return { onPlay, onPanicMute, onOpenDisplay, onSessionNamesChange }
+  return { onPlay, onPanicMute, onOpenDisplay, onSelectedIdentitiesChange }
 }
 
 describe('ClassroomSetupPanel', () => {
+  it('keeps Play disabled while only authored Game names are visible', () => {
+    renderSetup()
+    expect(screen.getByTestId('setup-play')).toBeDisabled()
+    expect(screen.getByTestId('readiness-names')).toHaveTextContent(/names still needed/i)
+    expect(screen.getByTestId('setup-display-preview')).toHaveTextContent('Team 1')
+    expect(screen.getByTestId('setup-display-preview')).toHaveTextContent('Team 2')
+  })
+
   it('lets a teacher finish with typed names when Sony is disconnected', () => {
     const { onPlay } = renderSetup({ sonyReady: false })
     expect(screen.getByTestId('readiness-sony')).toHaveTextContent(/keyboard fallback/i)
@@ -51,6 +57,13 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('setup-play')).not.toBeDisabled()
     fireEvent.click(screen.getByTestId('setup-play'))
     expect(onPlay).toHaveBeenCalled()
+  })
+
+  it('does not publish selected identities from a follower window', () => {
+    const { onSelectedIdentitiesChange } = renderSetup({ leadership: 'follower' })
+    fireEvent.change(screen.getByTestId('tnsb-manual-red'), { target: { value: 'Comet Crew' } })
+    fireEvent.blur(screen.getByTestId('tnsb-manual-red'))
+    expect(onSelectedIdentitiesChange).not.toHaveBeenCalled()
   })
 
   it('keeps Sony copy free of WebHID and profile identifiers', () => {
@@ -69,8 +82,6 @@ describe('ClassroomSetupPanel', () => {
   it('applies a Sony observation without disturbing the other team list', () => {
     const { rerender } = render(
       <ClassroomSetupPanel
-        sessionId="period-1"
-        gameId="game-1"
         teams={TEAMS}
         teamNameBank={[
           'Alpha',
@@ -97,14 +108,12 @@ describe('ClassroomSetupPanel', () => {
         onPanicMute={vi.fn()}
         playReady={false}
         onPlay={vi.fn()}
-        onSessionNamesChange={vi.fn()}
+        onSelectedIdentitiesChange={vi.fn()}
       />,
     )
     const beforeBlue = screen.getByTestId('tnsb-choice-blue-0').textContent
     rerender(
       <ClassroomSetupPanel
-        sessionId="period-1"
-        gameId="game-1"
         teams={TEAMS}
         teamNameBank={[
           'Alpha',
@@ -131,7 +140,7 @@ describe('ClassroomSetupPanel', () => {
         onPanicMute={vi.fn()}
         playReady={false}
         onPlay={vi.fn()}
-        onSessionNamesChange={vi.fn()}
+        onSelectedIdentitiesChange={vi.fn()}
       />,
     )
     expect(screen.getByTestId('tnsb-choice-blue-0').textContent).toBe(beforeBlue)

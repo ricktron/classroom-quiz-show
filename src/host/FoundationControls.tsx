@@ -6,6 +6,7 @@ import { loadLibraryRecord } from '../persistence/savedDefinitions'
 import { ClassroomSetupPanel, type ClassroomSetupObservation } from './ClassroomSetupPanel'
 import { useSessionStore } from './useSessionStore'
 import { useHostSync } from './useHostSync'
+import { sessionTeamNameFor } from '../state/reducer'
 import { PUBLIC_STATUS_CODES } from '../state/status'
 import { createSampleGame, createSampleGameWithUnsupportedRound } from '../game/sampleGame'
 import { GameImportPanel } from './GameImportPanel'
@@ -63,7 +64,6 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
   const [resetArmed, setResetArmed] = useState(false)
   const [startSessionArmed, setStartSessionArmed] = useState(false)
   const [playReady, setPlayReady] = useState(() => !playGameIdFromSearch(searchParams.toString()))
-  const [sessionTeamNames, setSessionTeamNames] = useState<readonly string[] | null>(null)
   const [teamNameBank, setTeamNameBank] = useState<readonly string[]>([])
   const [selectionObservation, setSelectionObservation] = useState<ClassroomSetupObservation | null>(null)
   const [displayOpen, setDisplayOpen] = useState(false)
@@ -81,7 +81,7 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
     initialHistory: persistence.initialHistory,
     storeEpoch: persistence.storeEpoch,
   })
-  useHostSync(store, clock, sessionTeamNames)
+  useHostSync(store, clock)
   const presentationAudio = usePresentationAudio(store)
 
   const now = () => clock.now()
@@ -215,10 +215,9 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
       {game && state.session && game.definition.teams.length > 0 && (
         <ClassroomSetupPanel
           key={state.session.sessionId}
-          sessionId={state.session.sessionId}
-          gameId={game.definition.id}
           teams={game.definition.teams}
           teamNameBank={teamNameBank}
+          initialSessionNames={game.sessionTeamNames}
           leadership={persistence.leadership}
           observation={selectionObservation}
           sonyReady={sonyReady}
@@ -245,7 +244,20 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
           }}
           playReady={playReady}
           onPlay={() => setPlayReady((current) => !current)}
-          onSessionNamesChange={setSessionTeamNames}
+          onSelectedIdentitiesChange={(claimed) => {
+            const issuedAt = now()
+            for (const team of game.definition.teams) {
+              const next = claimed[team.id] ?? null
+              const current = sessionTeamNameFor(game, team.id)
+              if (next === current) continue
+              dispatch({
+                type: 'SET_SESSION_TEAM_NAME',
+                issuedAt,
+                teamId: team.id,
+                name: next,
+              })
+            }
+          }}
         />
       )}
 

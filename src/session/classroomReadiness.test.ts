@@ -24,6 +24,12 @@ describe('classroom readiness', () => {
       }),
     ).toBe(true)
     expect(canStartPlay({ ...ready, namesAssigned: false })).toBe(false)
+    // Authored/default Game names are display fallbacks only. Callers must
+    // pass namesAssigned only after an actual Session selection or manual claim.
+    expect(
+      classroomReadinessItems({ ...ready, namesAssigned: false }).find((item) => item.id === 'names')
+        ?.label,
+    ).toMatch(/still needed/i)
     expect(canStartPlay({ ...ready, namesUnique: false })).toBe(false)
     expect(canStartPlay({ ...ready, teamCount: 0 })).toBe(false)
     expect(canStartPlay({ ...ready, teamCount: 9 })).toBe(false)

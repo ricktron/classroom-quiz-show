@@ -15,9 +15,9 @@ delivery/review/repair/qualification/release work,
 | --- | --- |
 | What is historically complete? | Slices **1–23**. Original 23-slice foundation/qualification roadmap: **COMPLETE**. Slice 23: **TERMINALLY COMPLETE**. Guidance Polish S01: **TERMINALLY COMPLETE**. |
 | What is active? | **`CQS-REAL-MVP-1`: ACTIVE / CANONICALLY REGISTERED**. S03 implements the production Electron thin shell and unsigned desktop packaging path (ADR-021 **Accepted**). S04 canon registers remaining product direction. S04A is **TERMINALLY COMPLETE**. Post-MVP arcs remain **INACTIVE**. |
-| What remains? | REAL MVP teacher-adoptable product work remains open. S04A is **TERMINALLY COMPLETE**. S04B has a published implementation candidate that is **not merged** and **not terminal**. S04C–S04D, flagship visual fidelity, and integrated release qualification are not complete and are **not begun**. Desktop artifacts are **unsigned** qualification/development-candidate builds, not a teacher-trusted signed release. |
+| What remains? | REAL MVP teacher-adoptable product work remains open. S04A is **TERMINALLY COMPLETE**. S04B H1 was rejected; an R1 corrected head is **not merged** and **not terminal**. S04C–S04D, flagship visual fidelity, and integrated release qualification are not complete and are **not begun**. Desktop artifacts are **unsigned** qualification/development-candidate builds, not a teacher-trusted signed release. |
 | What is blocked / open? | See the [gap register](plans/CQS-REAL-MVP-ARC.md#6-initial-gap-register). C-3 / C-6 **FOUNDATION IMPLEMENTED / UNSIGNED**. `F-UX-01` **CANDIDATE ADDRESSED / AWAITING INDEPENDENT REVIEW**. `CQS-Q23-LOW-02` **OPEN / LOW / MONITOR**. `CQS-Q23-CLASS-B-01` **OPEN / CONTROLLED**. `CQS-OD-066` **DEFERRED / NOT REAL MVP**. Packaged macOS Sony physical **BLOCKED / NOT EXECUTED / HARDWARE UNAVAILABLE**. Windows physical runtime **NOT RUN**. Signing / notarization **OPEN OWNER GATE**. C-7 Raspberry Pi **outside REAL MVP**. C-8 LAN **outside REAL MVP**. Post-MVP arcs **INACTIVE**. |
-| Current Program frontier | `CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP` has a published implementation candidate on `feat/cqs-real-mvp-s04b-sony-team-selection`. **S04B: NOT MERGED / NOT TERMINAL.** Next authority is independent exact-head review. |
+| Current Program frontier | `CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP` H1 was rejected by independent review. An R1 corrected head is on `feat/cqs-real-mvp-s04b-sony-team-selection` for fresh independent exact-head re-review. **S04B: NOT MERGED / NOT TERMINAL.** |
 
 ```text
 historical 23-slice roadmap: COMPLETE
@@ -28,7 +28,7 @@ S02: Electron selected (ADR-021 Accepted)
 S03: production Electron thin shell + unsigned packaging path implemented
 S04 canon: product direction registered
 S04A: TERMINALLY COMPLETE
-S04B: IMPLEMENTATION CANDIDATE PUBLISHED / NOT MERGED / NOT TERMINAL
+S04B: R1 CORRECTED HEAD / AWAITING INDEPENDENT EXACT-HEAD RE-REVIEW / NOT MERGED / NOT TERMINAL
 S04C–S04D / S05 / S06: NOT AUTHORIZED
 post-MVP arcs: INACTIVE
 ```
@@ -175,15 +175,17 @@ direction.
 ## Next Program-level action
 
 `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is
-**TERMINALLY COMPLETE**. S04B has a published implementation candidate.
-It is **not merged** and **not terminal**. Next authority is independent
-exact-head review of that candidate. S04C–S04D / S05 / S06 remain
-unauthorized.
+**TERMINALLY COMPLETE**. S04B H1
+`327872cdd54d51bcc43914c0e26f3cfaad0bd41b` was rejected by independent
+review (HIGH-01, HIGH-02). R1 published a corrected head on the same
+branch. It is **not merged** and **not terminal**. Next authority is
+fresh independent exact-head re-review of H2. S04C–S04D / S05 / S06
+remain unauthorized.
 
 ```text
 routing ≠ authority
 S04A: TERMINALLY COMPLETE
-S04B: IMPLEMENTATION CANDIDATE PUBLISHED / NOT MERGED / NOT TERMINAL
+S04B: R1 CORRECTED HEAD / AWAITING INDEPENDENT EXACT-HEAD RE-REVIEW / NOT MERGED / NOT TERMINAL
 S04C–S04D / S05 / S06: NOT AUTHORIZED
 ```
 

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { TeamDefinition } from '../game/teams/definition'
 import { TeamScoreboard } from '../display/TeamScoreboard'
-import type { PersistLeadership } from './writeAuthority'
 import {
   applyTeamNameInputs,
   claimedSessionTeamNames,
@@ -9,10 +8,7 @@ import {
   sessionTeamNamesAreUnique,
   type TeamNameSelectionState,
 } from '../session/teamNameSelection'
-import {
-  namesByTeamOrder,
-  writeSessionTeamIdentities,
-} from '../session/sessionTeamIdentities'
+import { canPersistMutations, type PersistLeadership } from './writeAuthority'
 import { canStartPlay, classroomReadinessItems } from '../session/classroomReadiness'
 import {
   intentFromSonyNameAction,
@@ -30,10 +26,9 @@ export interface ClassroomSetupObservation {
 }
 
 export interface ClassroomSetupPanelProps {
-  readonly sessionId: string
-  readonly gameId: string
   readonly teams: readonly TeamDefinition[]
   readonly teamNameBank: readonly string[]
+  readonly initialSessionNames?: Readonly<Record<string, string>>
   readonly leadership: PersistLeadership
   readonly observation: ClassroomSetupObservation | null
   readonly sonyReady: boolean
@@ -45,22 +40,30 @@ export interface ClassroomSetupPanelProps {
   readonly onPanicMute: () => void
   readonly playReady: boolean
   readonly onPlay: () => void
-  readonly onSessionNamesChange: (namesByOrder: readonly string[]) => void
+  readonly onSelectedIdentitiesChange: (names: Readonly<Record<string, string>>) => void
   readonly reducedMotion?: boolean
   readonly grayscale?: boolean
 }
 
-function defaultNames(teams: readonly TeamDefinition[]): Record<string, string> {
-  const names: Record<string, string> = {}
-  for (const team of teams) names[team.id] = team.name
-  return names
+function seedSelection(
+  bank: readonly string[],
+  teamIds: readonly string[],
+  initialNames: Readonly<Record<string, string>>,
+): TeamNameSelectionState {
+  const start = createTeamNameSelectionState({ bank, teamIds })
+  const manuals = teamIds.flatMap((teamId) => {
+    const name = initialNames[teamId]
+    return typeof name === 'string' && name.length > 0
+      ? [{ kind: 'manual' as const, teamId, name }]
+      : []
+  })
+  return manuals.length === 0 ? start : applyTeamNameInputs(start, manuals).state
 }
 
 export function ClassroomSetupPanel({
-  sessionId,
-  gameId,
   teams,
   teamNameBank,
+  initialSessionNames = {},
   leadership,
   observation,
   sonyReady,
@@ -72,7 +75,7 @@ export function ClassroomSetupPanel({
   onPanicMute,
   playReady,
   onPlay,
-  onSessionNamesChange,
+  onSelectedIdentitiesChange,
   reducedMotion = false,
   grayscale = false,
 }: ClassroomSetupPanelProps) {
@@ -80,33 +83,29 @@ export function ClassroomSetupPanel({
   const highContrast = theme?.themeId === 'high-contrast'
   const teamIds = useMemo(() => teams.map((team) => team.id), [teams])
   const bankKey = teamNameBank.join('\u0000')
+  const initialNamesRef = useRef(initialSessionNames)
+  initialNamesRef.current = initialSessionNames
   const [selection, setSelection] = useState<TeamNameSelectionState>(() =>
-    createTeamNameSelectionState({ bank: teamNameBank, teamIds }),
+    seedSelection(teamNameBank, teamIds, initialSessionNames),
   )
   const lastPress = useRef<{ teamId: string; intentKey: string; at: number } | null>(null)
   const lastObservationAt = useRef<number>(0)
 
   useEffect(() => {
-    setSelection(createTeamNameSelectionState({ bank: teamNameBank, teamIds }))
+    setSelection(seedSelection(teamNameBank, teamIds, initialNamesRef.current))
     // bankKey is the content identity; array identity must not reset an in-progress class.
+    // Session names are re-applied only on this bank/team reset so a live claim
+    // does not reshuffle the other teams' visible lists.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reset only when bank contents or team ids change
   }, [bankKey, teamIds])
 
   const persistAndPublish = useCallback(
     (state: TeamNameSelectionState) => {
-      const claimed = claimedSessionTeamNames(state)
-      const merged = { ...defaultNames(teams), ...claimed }
-      writeSessionTeamIdentities({ sessionId, gameId, names: merged }, leadership)
-      onSessionNamesChange(namesByTeamOrder(teamIds, merged, teams.map((team) => team.name)))
+      if (!canPersistMutations(leadership)) return
+      onSelectedIdentitiesChange(claimedSessionTeamNames(state))
     },
-    [sessionId, gameId, leadership, teams, teamIds, onSessionNamesChange],
+    [leadership, onSelectedIdentitiesChange],
   )
-
-  useEffect(() => {
-    persistAndPublish(selection)
-    // Publish once after mount/defaults so Display can show Game defaults.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-time publish of defaults
-  }, [])
 
   useEffect(() => {
     if (!observation || observation.at === lastObservationAt.current) return
@@ -142,11 +141,11 @@ export function ClassroomSetupPanel({
   }
 
   const claimed = claimedSessionTeamNames(selection)
-  const merged = { ...defaultNames(teams), ...claimed }
-  const unique = sessionTeamNamesAreUnique(Object.values(merged))
+  const namesAssigned = teams.every((team) => typeof claimed[team.id] === 'string')
+  const unique = sessionTeamNamesAreUnique(Object.values(claimed))
   const readiness = classroomReadinessItems({
     teamCount: teams.length,
-    namesAssigned: Object.keys(merged).length === teams.length,
+    namesAssigned,
     namesUnique: unique,
     sonyReady,
     keyboardFallbackAvailable: true,
@@ -156,7 +155,7 @@ export function ClassroomSetupPanel({
   })
   const playEnabled = canStartPlay({
     teamCount: teams.length,
-    namesAssigned: Object.keys(merged).length === teams.length,
+    namesAssigned,
     namesUnique: unique,
     sonyReady,
     keyboardFallbackAvailable: true,
@@ -169,7 +168,7 @@ export function ClassroomSetupPanel({
     status: 'available' as const,
     teams: teams.map((team, index) => ({
       key: `t${index}`,
-      name: merged[team.id] ?? team.name,
+      name: claimed[team.id] ?? team.name,
       accent: team.accent,
       score: 0,
     })),

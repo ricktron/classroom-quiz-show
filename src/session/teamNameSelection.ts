@@ -278,12 +278,8 @@ function applyOne(
     return { state, item: { input, status: 'rejected-invalid-name' } }
   }
   const key = teamNameUniquenessKey(name)
-  for (const id of state.teamIds) {
-    if (id === input.teamId) continue
-    const other = state.views[id]
-    if (other?.claimedName && teamNameUniquenessKey(other.claimedName) === key) {
-      return { state, item: { input, status: 'rejected-name-taken' } }
-    }
+  if (reservedKeysForTeam(state, input.teamId).has(key)) {
+    return { state, item: { input, status: 'rejected-name-taken' } }
   }
   const choiceIndex = view.candidates.findIndex((candidate) => teamNameUniquenessKey(candidate) === key)
   return {

@@ -172,6 +172,12 @@ function encodeEvent(
         mode: event.mode,
         source: event.source,
       })
+    case 'SESSION_TEAM_NAME_SET':
+      return persistenceOk({
+        ...base,
+        teamId: event.teamId,
+        name: event.name,
+      })
     case 'RESPONSE_TIMER_STARTED':
       return persistenceOk({
         ...base,
@@ -459,6 +465,18 @@ function decodeEvent(
         delta: input.delta,
         mode: input.mode,
         source: cloneScoreSource(input.source),
+      })
+    }
+    case 'SESSION_TEAM_NAME_SET': {
+      if (!hasExactKeys(input, [...BASE_KEYS, 'teamId', 'name'])) return corruptEvent(type)
+      if (!isNonEmptyString(input.teamId)) return corruptEvent(type)
+      if (input.name !== null && !isNonEmptyString(input.name)) return corruptEvent(type)
+      return persistenceOk({
+        ...base.value,
+        type,
+        reversible: true,
+        teamId: input.teamId,
+        name: input.name,
       })
     }
     case 'RESPONSE_TIMER_STARTED': {

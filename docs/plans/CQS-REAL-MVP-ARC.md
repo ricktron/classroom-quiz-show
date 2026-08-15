@@ -78,8 +78,9 @@ A named next frontier is **not** implementation authority. S04A was
 separately authorized, implemented, independently reviewed, merged via PR
 #72, and post-merge verified on exact squash/main
 `29083f078521ebf432a7d7380c521c557fb578a8`; it is **TERMINALLY COMPLETE**.
-S04B later received a separate implementation authorization and now has a
-published candidate that is **not merged** and **not terminal**.
+S04B later received a separate implementation authorization. H1 was
+rejected by independent review; an R1 corrected head is on the same
+branch and is **not merged** and **not terminal**.
 
 ---
 
@@ -282,8 +283,9 @@ architecture (ADR-021 Accepted). S03 implements the production thin shell
 and unsigned packaging path. S04 canon registers remaining product
 direction. S04A is **TERMINALLY COMPLETE** after the accepted PR #72 tree
 was squash-merged as `29083f078521ebf432a7d7380c521c557fb578a8` and
-post-merge CI succeeded on that exact main SHA. S04B has a published
-implementation candidate that is **not merged** and **not terminal**.
+post-merge CI succeeded on that exact main SHA. S04B H1 was rejected by
+independent review; an R1 corrected head is **not merged** and **not
+terminal**.
 This document does not authorize S04C–S04D / S05 / S06.
 
 S04A terminal evidence:
@@ -423,13 +425,14 @@ analytics, automatic updates, or school-wide SaaS management.
 ## 12. Next Program frontier
 
 `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is
-**TERMINALLY COMPLETE**. S04B has a published implementation candidate.
-Next authority is independent exact-head review of that candidate.
+**TERMINALLY COMPLETE**. S04B H1 was rejected by independent review.
+R1 published a corrected head. Next authority is fresh independent
+exact-head re-review of that H2.
 
 ```text
 routing ≠ authority
 S04A: TERMINALLY COMPLETE
-S04B: IMPLEMENTATION CANDIDATE PUBLISHED / NOT MERGED / NOT TERMINAL
+S04B: R1 CORRECTED HEAD / AWAITING INDEPENDENT EXACT-HEAD RE-REVIEW / NOT MERGED / NOT TERMINAL
 S04C/S04D/S05/S06: NOT AUTHORIZED
 ```
 

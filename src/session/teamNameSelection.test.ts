@@ -89,6 +89,60 @@ describe('team-name selection engine', () => {
     expect(new Set(all).size).toBe(all.length)
   })
 
+  it('rejects a manual name that is currently visible on another team', () => {
+    const start = createTeamNameSelectionState({
+      bank: ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf', 'Hotel'],
+      teamIds: ['a', 'b'],
+    })
+    expect(candidatesOf(start, 'b')).toContain('Echo')
+    const next = applyTeamNameInputs(start, [{ kind: 'manual', teamId: 'a', name: 'Echo' }])
+    expect(next.results[0]?.status).toBe('rejected-name-taken')
+    expect(next.state.views.a?.claimedName).toBeNull()
+    expect(candidatesOf(next.state, 'b')).toContain('Echo')
+    expect(visibleCandidatesAreGloballyUnique(next.state)).toBe(true)
+  })
+
+  it('allows a manual name that is already visible on the same team', () => {
+    const start = createTeamNameSelectionState({
+      bank: ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf', 'Hotel'],
+      teamIds: ['a', 'b'],
+    })
+    const next = applyTeamNameInputs(start, [{ kind: 'manual', teamId: 'a', name: 'Alpha' }])
+    expect(next.results[0]?.status).toBe('applied')
+    expect(next.state.views.a?.claimedName).toBe('Alpha')
+    expect(candidatesOf(next.state, 'b')).not.toContain('Alpha')
+    expect(visibleCandidatesAreGloballyUnique(next.state)).toBe(true)
+  })
+
+  it('allows a custom manual name that is not reserved or claimed elsewhere', () => {
+    const start = createTeamNameSelectionState({
+      bank: ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf', 'Hotel'],
+      teamIds: ['a', 'b'],
+    })
+    const next = applyTeamNameInputs(start, [{ kind: 'manual', teamId: 'a', name: 'Comet Crew' }])
+    expect(next.state.views.a?.claimedName).toBe('Comet Crew')
+    const cycled = applyTeamNameInputs(next.state, [{ kind: 'cycle', teamId: 'b' }])
+    expect(candidatesOf(cycled.state, 'b')).not.toContain('Comet Crew')
+    expect(visibleCandidatesAreGloballyUnique(cycled.state)).toBe(true)
+  })
+
+  it('keeps uniqueness after mixed manual and Sony claims', () => {
+    const start = createTeamNameSelectionState({
+      bank: bank(16),
+      teamIds: ['a', 'b', 'c'],
+    })
+    const next = applyTeamNameInputs(start, [
+      { kind: 'manual', teamId: 'a', name: 'Ozone Owls' },
+      { kind: 'claim', teamId: 'b', choiceIndex: 0 },
+    ])
+    expect(next.state.views.a?.claimedName).toBe('Ozone Owls')
+    expect(next.state.views.b?.claimedName).toBe('Name 5')
+    expect(candidatesOf(next.state, 'c')).not.toContain('Ozone Owls')
+    expect(candidatesOf(next.state, 'c')).not.toContain('Name 5')
+    expect(sessionTeamNamesAreUnique(Object.values(claimedSessionTeamNames(next.state)))).toBe(true)
+    expect(visibleCandidatesAreGloballyUnique(next.state)).toBe(true)
+  })
+
   it('resolves the same manual name conflict deterministically by team order', () => {
     const start = createTeamNameSelectionState({
       bank: bank(16),

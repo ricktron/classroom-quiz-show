@@ -44,6 +44,7 @@ export const COMMAND_TYPES = [
   'REVEAL_CATEGORY_BOARD_ANSWER',
   'RETURN_TO_CATEGORY_BOARD',
   'ADJUST_TEAM_SCORE',
+  'SET_SESSION_TEAM_NAME',
   'ARM_RESPONSE_PHASE',
   'DISARM_RESPONSE_PHASE',
   'START_RESPONSE_TIMER',
@@ -183,6 +184,18 @@ export type ReturnToCategoryBoardCommand =
  * team is private host UI state, it awards nothing, and putting it in the event
  * log would pad history with selections and make "undo" ambiguous. See ADR-006 §7.
  */
+/**
+ * Assign or clear a Session-owned classroom team identity (S04B).
+ *
+ * `name` is the selected/manual identity. `null` clears it so the authored Game
+ * name remains a display fallback only. This never writes back into the reusable
+ * Game definition.
+ */
+export interface SetSessionTeamNameCommand extends CommandBase<'SET_SESSION_TEAM_NAME'> {
+  readonly teamId: string
+  readonly name: string | null
+}
+
 export interface AdjustTeamScoreCommand extends CommandBase<'ADJUST_TEAM_SCORE'> {
   /** The team whose score changes. Must be a team of the loaded game. */
   readonly teamId: string
@@ -543,6 +556,7 @@ export type SessionCommand =
   | RevealCategoryBoardAnswerCommand
   | ReturnToCategoryBoardCommand
   | AdjustTeamScoreCommand
+  | SetSessionTeamNameCommand
   | ArmResponsePhaseCommand
   | DisarmResponsePhaseCommand
   | StartResponseTimerCommand

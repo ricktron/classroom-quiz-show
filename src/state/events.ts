@@ -47,6 +47,7 @@ export const EVENT_TYPES = [
   'CATEGORY_BOARD_ANSWER_REVEALED',
   'CATEGORY_BOARD_RETURNED',
   'TEAM_SCORE_ADJUSTED',
+  'SESSION_TEAM_NAME_SET',
   'RESPONSE_PHASE_ARMED',
   'RESPONSE_PHASE_DISARMED',
   'RESPONSE_TIMER_STARTED',
@@ -219,6 +220,17 @@ export type CategoryBoardReturnedEvent =
  * not remove it. The two are causally related only through the teacher's
  * intention, and the log records exactly that — see ADR-006 §9.
  */
+/**
+ * Session-owned classroom team identity (S04B). Replay-derived, like scores.
+ * Never mutates the frozen Game definition. `name: null` clears the selection
+ * so the authored name is only a display fallback.
+ */
+export interface SessionTeamNameSetEvent extends EventBase<'SESSION_TEAM_NAME_SET'> {
+  readonly reversible: true
+  readonly teamId: string
+  readonly name: string | null
+}
+
 export interface TeamScoreAdjustedEvent extends EventBase<'TEAM_SCORE_ADJUSTED'> {
   readonly reversible: true
   /** The team whose score changed, by stable id. */
@@ -602,6 +614,7 @@ export type SessionEvent =
   | CategoryBoardAnswerRevealedEvent
   | CategoryBoardReturnedEvent
   | TeamScoreAdjustedEvent
+  | SessionTeamNameSetEvent
   | ResponsePhaseArmedEvent
   | ResponsePhaseDisarmedEvent
   | ResponseTimerStartedEvent

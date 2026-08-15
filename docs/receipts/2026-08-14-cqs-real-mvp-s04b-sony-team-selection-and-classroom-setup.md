@@ -161,3 +161,112 @@ Physical packaged Sony: **not executed** (hardware unavailable).
 - It does **not** bump workbook, GameDefinition, IndexedDB, session wire,
   public-state wire, pack, or Sony profile versions.
 - It does **not** authorize S04C, S04D, S05, or S06.
+
+---
+
+## R1 same-slice repair (H1 rejected → H2)
+
+This section does **not** erase the H1 candidate above. Independent
+exact-head review rejected H1. This addendum records the same-slice
+repair only.
+
+| Fact | Observed |
+| --- | --- |
+| Repair authorization | `AUTHORIZE-CQS-REAL-MVP-S04B-R1-INDEPENDENT-REVIEW-FINDINGS-REPAIR-1` |
+| Prior implementation authorization | `AUTHORIZE-CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP-1` |
+| Evidence state | `CQS-REAL-MVP-S04B-R1-REPAIR-ES-2` |
+| Rejected H1 | `327872cdd54d51bcc43914c0e26f3cfaad0bd41b` |
+| H1 tree | `a551a4cbd12cc885a736a822d2750050fa63af87` |
+| Expected / observed `origin/main` | `cf90eadb7794a3e2c2f529212432e4a4daaadc91` |
+| Repair host | `Ricks-MacBook-Air.local` / `macdaddy` |
+| Repair cwd | `/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show-s04b` |
+| Branch / worktree | `feat/cqs-real-mvp-s04b-sony-team-selection` (existing S04B lease) |
+| H2 | recorded at freeze (this commit) |
+| Independent-review PASS | **not written** |
+| Terminal S04B | **not claimed** |
+| PR / merge | **not opened / not merged** |
+
+### HIGH-01 — manual name bypassed visible reservations
+
+H1 `applyTeamNameInputs` reserved visible candidates during dealing, but
+the `manual` path only rejected collisions against another team's
+`claimedName`. Team A could be assigned a name still visibly offered by
+unclaimed Team B.
+
+R1 repair: `reservedKeysForTeam()` is the single reservation set for
+dealing and for manual assignment. A manual name fails when its
+normalized uniqueness key is claimed by another team **or** currently
+visible on another active unclaimed team. Own-list names remain allowed.
+The invariant stays in the centralized mutation, not in UI rendering.
+
+Tests: `src/session/teamNameSelection.test.ts` (other-team visible
+reject; own-list allow; custom unreserved allow; deterministic
+same-name conflict; post-manual exclusion from later deals; mixed
+manual + Sony uniqueness).
+
+### HIGH-02 — Session identity authority / parallel state
+
+H1 persisted selected names in `localStorage` key
+`cqs.session-team-identities.v1` and overlaid them onto already-sanitized
+`PublicState` in `useHostSync`. Class setup also merged authored Game
+default names into that Session map, so `namesAssigned` / Play could
+become true before any class identity was chosen.
+
+Canonical analysis: GameSession is `PrivateGameState`; runtime state is
+command/event driven and replay-derived; Host private state is
+authoritative; public Display state is projected only through the
+sanitizer. A second Session identity store and a second public-state
+derivation path were not a valid seam.
+
+R1 repair uses the existing ADR-002 event-log seam, same pattern as
+`teamScores`. No version bump:
+
+- `PRIVATE_STATE_SCHEMA_VERSION` remains **1** (derived in-memory field,
+  not a persisted PrivateState blob)
+- `PUBLIC_STATE_SCHEMA_VERSION` remains **8** (existing `PublicTeam.name`
+  value source only)
+- `PERSISTENCE_WIRE_VERSION` remains **1** (new closed-union event type)
+- `PERSISTENCE_DB_VERSION` remains **4**
+
+| Concern | H1 (rejected) | R1 |
+| --- | --- | --- |
+| Session-owned names | sidecar `localStorage` | `PrivateGameState.sessionTeamNames` via `SET_SESSION_TEAM_NAME` / `SESSION_TEAM_NAME_SET` |
+| Public names | `overlayPublicTeamNames()` after `getPublicState()` | sanitizer `publicTeamDisplayName()` |
+| Readiness | Game defaults merged into Session map | `namesAssigned` only after actual claimed/manual Session identities |
+| Game isolation | sidecar never wrote Game JSON | command/event never mutates `definition`; export unchanged |
+| Follower writes | sidecar `canPersistMutations` | panel does not publish; Host `dispatchSessionCommand` remains leader-only |
+
+Deleted sidecar/overlay modules. Session names survive refresh through
+the existing session-history wire, not a second store.
+
+This was **not** a consequential PrivateState / public-wire / IndexedDB
+migration. Owner architecture-decision stop was not required.
+
+### R1 verification
+
+| Command | Result |
+| --- | --- |
+| `git diff --check` | exit 0 |
+| `npm run verify` | lint: 0 errors, 3 pre-existing ThemeProvider `react-refresh` warnings; typecheck pass; **2540** unit tests passed / **2** skipped |
+| `CI=1 npm run verify:all` | same unit result; production preview built; Playwright **379** passed / **14** skipped |
+| `npm run test:desktop` | desktop renderer+main built; **3** passed |
+
+No failed intermediate R1 verification run. H1 earlier e2e failures
+remain historical on that head only.
+
+```text
+PHYSICAL SONY GATE: BLOCKED / NOT EXECUTED
+```
+
+Re-observed 2026-08-14 22:35:36 CDT on `Ricks-MacBook-Air.local`:
+`ioreg` / `system_profiler` had no `054c` / Wbuzz / Sony match. Exact
+attached controller count: **0**. Not faked.
+
+### R1 non-claims
+
+- No independent-review PASS is written by this repair.
+- S04B is not merged and not terminally complete.
+- No PR was opened.
+- S04C–S06 were not begun.
+- No workbook / GameDefinition / IndexedDB / session-wire / public-state
+  / pack / Sony profile version bump.
