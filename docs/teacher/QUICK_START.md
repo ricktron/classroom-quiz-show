@@ -53,13 +53,38 @@ After **Play**, Host shows **Class setup** before the board when you started
 from Home:
 
 - Teams pick names together. Buzzers are optional. Typing always works.
-- If Sony Buzz controllers are connected, Yellow / Green / Orange / Blue
-  choose a name. Red shows four more names for that team only.
+- If buzzers are connected, Yellow / Green / Orange / Blue choose a name.
+  Red shows four more names for that team only.
 - Open the audience display and test or mute sound before you start.
 - **Mute all sounds** is always available.
 
 The product remains usable without controllers. A buzzer failure never
 strands the class.
+
+### Repair buzzers (supported Sony set only)
+
+This sequence is only for the exact supported set: Namtai Wbuzz receiver
+`054c:1000`. It is set-level. Do not pair only some of the buzzers you
+intend to use. A connected receiver does not prove the handsets are
+paired.
+
+You do **not** need this for a normal class if the set already works.
+Do not re-pair every session.
+
+1. In CQS, start **Repair buzzers**. This pauses the current Sony
+   connection. It does not clear saved team assignments.
+2. Turn all participating buzzers **off**.
+3. On each buzzer, press and **keep holding POWER**. Rapid red/blue
+   flashing is normal startup — keep holding. Stop only when the **blue
+   light at the bottom stays solid**.
+4. Only after every participating buzzer shows solid blue, press/hold
+   **BIND** on the receiver. The buzzers should blink together.
+5. If they did not blink, do not bind again until every light is solid
+   blue.
+6. Connect buzzers again if CQS asks, then press **RED** once on each
+   buzzer to check it.
+
+Keyboard controls still work the whole time.
 
 ## 5. Open the audience display
 

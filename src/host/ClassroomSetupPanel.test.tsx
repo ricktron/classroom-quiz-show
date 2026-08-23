@@ -42,14 +42,15 @@ describe('ClassroomSetupPanel', () => {
   it('keeps Play disabled while only authored Game names are visible', () => {
     renderSetup()
     expect(screen.getByTestId('setup-play')).toBeDisabled()
-    expect(screen.getByTestId('readiness-names')).toHaveTextContent(/names still needed/i)
-    expect(screen.getByTestId('setup-display-preview')).toHaveTextContent('Team 1')
-    expect(screen.getByTestId('setup-display-preview')).toHaveTextContent('Team 2')
+    expect(screen.getByTestId('setup-play-blocker')).toHaveTextContent(/still need names/i)
+    expect(screen.getByTestId('readiness-names')).toHaveTextContent(/needs attention/i)
+    expect(screen.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
+    expect(screen.queryByTestId('setup-display-preview')).toBeNull()
   })
 
   it('lets a teacher finish with typed names when Sony is disconnected', () => {
     const { onPlay } = renderSetup({ sonyReady: false })
-    expect(screen.getByTestId('readiness-sony')).toHaveTextContent(/keyboard fallback/i)
+    expect(screen.getByTestId('readiness-sony')).toHaveTextContent(/optional/i)
     fireEvent.change(screen.getByTestId('tnsb-manual-red'), { target: { value: 'Comet Crew' } })
     fireEvent.blur(screen.getByTestId('tnsb-manual-red'))
     fireEvent.change(screen.getByTestId('tnsb-manual-blue'), { target: { value: 'Ozone Owls' } })
@@ -71,12 +72,13 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('setup-sony-copy').textContent).not.toMatch(/WebHID|054c|report id|cqs\.sony/i)
   })
 
-  it('exposes panic mute and does not put teacher diagnostics on the preview', () => {
+  it('exposes panic mute and does not put teacher diagnostics on the current task', () => {
     const { onPanicMute } = renderSetup()
     fireEvent.click(screen.getByTestId('setup-panic-mute'))
     expect(onPanicMute).toHaveBeenCalled()
-    const preview = screen.getByTestId('setup-display-preview')
-    expect(preview.textContent).not.toMatch(/WebHID|IndexedDB|054c|keepalive/i)
+    expect(screen.getByTestId('setup-current-task').textContent).not.toMatch(
+      /WebHID|IndexedDB|054c|keepalive/i,
+    )
   })
 
   it('applies a Sony observation without disturbing the other team list', () => {
@@ -146,5 +148,38 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('tnsb-choice-blue-0').textContent).toBe(beforeBlue)
     expect(screen.getByTestId('tnsb-choice-red-0').textContent).toMatch(/India/)
     expect(screen.getByTestId('tnsb-choice-red-0').textContent).not.toBe('1 · yellowAlpha')
+  })
+
+  it('keeps Play available without buzzers and names the required blocker', () => {
+    renderSetup({ sonyReady: false })
+    expect(screen.getByTestId('setup-play')).toBeDisabled()
+    expect(screen.getByTestId('setup-play-blocker').textContent).not.toMatch(/buzzer|sony|webhid/i)
+    fireEvent.change(screen.getByTestId('tnsb-manual-red'), { target: { value: 'Comet Crew' } })
+    fireEvent.blur(screen.getByTestId('tnsb-manual-red'))
+    expect(screen.getByTestId('setup-play-blocker')).toHaveTextContent(/Team 2 still needs a name/i)
+    fireEvent.change(screen.getByTestId('tnsb-manual-blue'), { target: { value: 'Ozone Owls' } })
+    fireEvent.blur(screen.getByTestId('tnsb-manual-blue'))
+    expect(screen.queryByTestId('setup-play-blocker')).toBeNull()
+    expect(screen.getByTestId('setup-play')).not.toBeDisabled()
+  })
+
+  it('compacts completed names and lets the teacher revisit them', () => {
+    renderSetup({
+      initialSessionNames: { red: 'Comet Crew', blue: 'Ozone Owls' },
+      displayOpen: true,
+      audioUnderstood: true,
+      sonyReady: false,
+    })
+    expect(screen.getByTestId('setup-names-summary')).toHaveTextContent(/Comet Crew/)
+    expect(screen.queryByTestId('team-name-selection-board')).toBeNull()
+    fireEvent.click(screen.getByTestId('setup-revisit-names'))
+    expect(screen.getByTestId('team-name-selection-board')).toBeVisible()
+  })
+
+  it('keeps Mute all sounds available without making it the current task', () => {
+    renderSetup()
+    expect(screen.getByTestId('setup-panic-mute')).toBeVisible()
+    expect(screen.getByTestId('setup-current-task')).not.toHaveAttribute('data-task', 'sound')
+    expect(screen.getByTestId('setup-current-task')).toHaveTextContent(/choose team names/i)
   })
 })

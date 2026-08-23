@@ -84,6 +84,9 @@ them incrementally, but they must not silently weaken them.
 17. **REAL MVP avoids unnecessary cloud/runtime dependencies.**
 18. **Product sophistication should not translate into teacher-facing
     complexity.**
+19. **Teacher-facing Host setup follows the Interaction & Information
+    Design principles in §8.1.** Functional correctness and usability
+    are separate verdicts.
 
 ---
 
@@ -225,6 +228,60 @@ feedback. Color may reinforce Sony team-name selection; it must not be
 the only cue.
 
 Display failure/recovery must not expose Host-private state.
+
+### 8.1 Interaction & information design
+
+Durable Host-setup doctrine. The synthesized CQS authority is this
+section, not any external book. In short: make the **system**
+understandable; make the **interface** understandable; make the
+**interaction** serve the teacher's classroom goal.
+
+Primary teacher goal: *My students are here. Get this game ready and
+let us play.* Ordinary actions should advance that goal rather than
+ask the teacher to service the software.
+
+1. Design from teacher goals, not feature inventory.
+2. Keep concepts, vocabulary, and relationships stable.
+3. Make the next useful action obvious.
+4. At setup/recovery, the teacher should answer: Where am I? What is
+   the state? What should I do next?
+5. Minimize non-goal work.
+6. Prefer the teacher's mental model over implementation details.
+7. Use progressive disclosure: normal operation → recovery → Advanced
+   diagnostics.
+8. Guide without trapping the teacher in a mandatory wizard.
+9. Design for repeated use, not perpetual novicehood.
+10. Remember safe existing choices where lawful persistence already
+    supports it. Do not invent schema/version machinery for convenience.
+11. Keep recovery local and preserve unrelated valid work.
+12. Classroom continuity wins over optional hardware perfection.
+13. Functional correctness and usability are separate verdicts.
+14. Use consistent teacher-facing language.
+15. Required, optional, readiness, fallback, recovery, emergency,
+    Advanced, and outcome concepts must have different hierarchy.
+16. Setup should be quiet.
+17. Recovery should be surgical.
+18. Gameplay may be rich or theatrical.
+19. Say what is ready, what is blocking, and why.
+20. Preserve safe exploration and revisiting without losing work.
+21. Accessibility is structural, not decorative.
+22. Test against realistic low-attention classroom interruptions.
+23. Judge UX partly by how much work the software removes.
+
+Setup is a guided workspace: freely navigable, with one dominant
+current task. Completed work becomes quieter and remains revisitable.
+Play is the classroom outcome. Buzzers remain optional. Emergency
+**Mute all sounds** stays immediately available without becoming the
+current task.
+
+Teacher vocabulary for the supported Sony set: **buzzers** (ordinary),
+**Controller 1–4** (a specific unit), **receiver** (the radio dongle
+when the teacher must touch it). WebHID, Gamepad, VID/PID, report IDs,
+and mapping internals stay in Advanced.
+
+Receiver ready, controllers responding, and class ready are different
+facts. A healthy receiver does not prove handsets are paired or
+transmitting.
 
 ---
 

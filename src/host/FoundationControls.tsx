@@ -260,6 +260,16 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
           }}
         />
       )}
+      {game && (
+        <GamepadInputHostPanel
+          dispatch={dispatch}
+          game={game}
+          clock={clock}
+          selectionMode={!playReady}
+          onSelectionObservation={setSelectionObservation}
+          onSonyReadyChange={setSonyReady}
+        />
+      )}
 
       <fieldset
         className="foundation__session-controls"
@@ -419,16 +429,6 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
           />
         )}
         {game && playReady && <LocalInputHostPanel dispatch={dispatch} game={game} clock={clock} />}
-        {game && (
-          <GamepadInputHostPanel
-            dispatch={dispatch}
-            game={game}
-            clock={clock}
-            selectionMode={!playReady}
-            onSelectionObservation={setSelectionObservation}
-            onSonyReadyChange={setSonyReady}
-          />
-        )}
         {game && playReady && (
           <TeamScoringPanel dispatch={dispatch} game={game} history={history} clock={clock} />
         )}

@@ -128,3 +128,16 @@
   font-size: 0.8rem;
   white-space: pre-wrap;
 }
+
+.sbs__repair-launch {
+  margin: 0 0 var(--space-3);
+}
+
+.sbs__manual-advanced {
+  margin-top: var(--space-4);
+}
+
+.sbs__manual-advanced > summary {
+  cursor: pointer;
+  font-weight: 600;
+}

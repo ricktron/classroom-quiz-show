@@ -116,3 +116,23 @@
 .gih__hint {
   margin-bottom: 0;
 }
+
+.gih[data-setup-mode='true'] {
+  margin-top: 0;
+}
+
+.gih__generic {
+  margin-top: var(--space-3);
+}
+
+.gih[data-setup-mode='false'] .gih__generic {
+  margin-top: 0;
+  border: 0;
+  padding: 0;
+}
+
+.gih__generic > summary {
+  cursor: pointer;
+  margin-bottom: var(--space-3);
+  font-weight: 600;
+}

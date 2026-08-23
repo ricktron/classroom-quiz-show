@@ -270,3 +270,69 @@ attached controller count: **0**. Not faked.
 - S04C–S06 were not begun.
 - No workbook / GameDefinition / IndexedDB / session-wire / public-state
   / pack / Sony profile version bump.
+
+---
+
+## H3 same-slice UX repair (H2 physical paused → setup repair)
+
+This section does **not** erase H1 or the H2 R1 repair. It records the
+owner-authorized Class Setup UX repair, interaction-design doctrine,
+qualification-guidance promotion, and Sony recovery guidance.
+
+| Fact | Observed |
+| --- | --- |
+| Repair authorization | `AUTHORIZE-CQS-REAL-MVP-S04B-H2-TEACHER-SETUP-UX-DESIGN-GUIDANCE-AND-H3-REPAIR-1` |
+| Parent physical-qualification authorization | `AUTHORIZE-CQS-REAL-MVP-S04B-OWNER-INTERACTIVE-PHYSICAL-QUALIFICATION-V2-AND-GUIDANCE-PROMOTION-1` |
+| Prior implementation authorization | `AUTHORIZE-CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP-1` |
+| H2 | `5cf0e0ffca2d941de191a4312cb5515a993e6fa9` |
+| H2 tree | `4359aae70fabf66114d4d00d52edec03de76deb3` |
+| Expected / observed `origin/main` | `cf90eadb7794a3e2c2f529212432e4a4daaadc91` |
+| H3 | recorded at freeze (this commit) |
+| Independent-review PASS | **not written** |
+| Physical H3 PASS | **not written** |
+| Terminal S04B | **not claimed** |
+| PR / merge | **not opened / not merged** |
+
+### F-UX-S04B-SETUP-01 — HIGH
+
+Class Setup presented too many setup, readiness, hardware, fallback,
+recovery, diagnostic, and action concepts with insufficient task
+hierarchy. That materially interfered with understanding current state,
+knowing the next action, operating four physical controllers, and
+completing required physical qualification. This was a product-surface
+finding, not merely test-helper friction.
+
+H2 physical run disposition:
+
+```text
+H2 PHYSICAL RUN: PAUSED / SUPERSEDED FOR FINAL ACCEPTANCE BY UX REPAIR
+```
+
+Discovery evidence remains at `/tmp/cqs-s04b-sony-qualification/` where
+still present. It is **not** a physical PASS and is **not** transferred
+to H3.
+
+### What H3 changed
+
+- Class Setup is a guided workspace: compact readiness summary, one
+  dominant current task, quieter completed sections, Play with an
+  explicit required-state blocker, and Mute as an emergency control.
+- Buzzers stay optional. Keyboard/manual fallback stays available
+  through Sony failure and recovery.
+- Ordinary Sony language is buzzers / Controller 1–4 / receiver.
+  Receiver ready, controllers responding, and class ready stay distinct.
+- Pairing recovery is state-driven and set-level. Full pairing is not
+  ordinary startup. Advanced retains diagnostics.
+- Durable doctrine: Product Contract §8.1; Execution Guidance §9.1;
+  teacher Sony recovery in `docs/teacher/QUICK_START.md`.
+
+### H3 non-claims
+
+- No independent-review PASS is written by this repair.
+- No H3 physical PASS is written by this repair.
+- S04B is not merged and not terminally complete.
+- No PR was opened.
+- S04C–S06 were not begun.
+- No workbook / GameDefinition / IndexedDB / session-wire / public-state
+  / pack / Sony profile version bump.
+- No undocumented HID pairing automation and no widened hardware support.

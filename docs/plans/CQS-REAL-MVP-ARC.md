@@ -79,8 +79,8 @@ separately authorized, implemented, independently reviewed, merged via PR
 #72, and post-merge verified on exact squash/main
 `29083f078521ebf432a7d7380c521c557fb578a8`; it is **TERMINALLY COMPLETE**.
 S04B later received a separate implementation authorization. H1 was
-rejected by independent review; an R1 corrected head is on the same
-branch and is **not merged** and **not terminal**.
+rejected by independent review. H3 is a later same-slice UX-repair
+candidate on the same branch and is **not merged** and **not terminal**.
 
 ---
 
@@ -208,11 +208,11 @@ This table is not an implementation backlog with slice-level authority.
 | release artifacts/version/update path | **FOUNDATION IMPLEMENTED** (manual versioned replacement; no auto-update) |
 | in-app teacher team setup | **CANDIDATE IMPLEMENTED / UNMERGED** — S04B Host class setup exists on the published candidate; not on `main` |
 | teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal |
-| controller `F-UX-01` | **CANDIDATE ADDRESSED / AWAITING INDEPENDENT REVIEW** — ordinary Sony copy no longer requires WebHID / report-ID / profile jargon |
+| controller `F-UX-01` | **CANDIDATE ADDRESSED / AWAITING PHYSICAL REQUALIFICATION** — ordinary Sony copy no longer requires WebHID / report-ID / profile jargon |
 | feedback/support path | **OPEN** — S04D product direction registered; implementation not begun |
 | flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** — S05 direction registered; implementation not begun |
 | packaged offline/recovery equivalence | **FOUNDATION IMPLEMENTED** (Electron shell + IndexedDB identity) |
-| packaged macOS qualification | **PARTIAL** (packaged Host launch observed; physical Sony **BLOCKED / NOT EXECUTED / HARDWARE UNAVAILABLE**) |
+| packaged macOS qualification | **PARTIAL** (packaged Host launch observed; H2 physical **PAUSED / SUPERSEDED BY UX REPAIR**; H3 physical **NOT RUN**) |
 | packaged Windows qualification | **OPEN** (CI installer path; physical Windows runtime **NOT RUN**) |
 | clean-room teacher qualification | **OPEN** |
 | C-3 | **FOUNDATION IMPLEMENTED / UNSIGNED** |
@@ -244,7 +244,7 @@ by this register.
 
 | Gate | Status | Close-by |
 | --- | --- | --- |
-| Packaged macOS Sony physical | **DEFERRED / NOT RUN / HARDWARE UNAVAILABLE** | no later than terminal S04B; remain represented in S06 |
+| Packaged macOS Sony physical | **H2 PAUSED / SUPERSEDED; H3 NOT RUN** | no later than terminal S04B; remain represented in S06 |
 | Windows physical runtime | **NOT RUN** | S06, before v1 teacher-ready qualification |
 | Signing / notarization | **OPEN OWNER GATE** | before any teacher-trusted release claim. Windows signing / SmartScreen has higher strategic release priority than Apple signing / notarization if prioritization is necessary |
 
@@ -284,8 +284,8 @@ and unsigned packaging path. S04 canon registers remaining product
 direction. S04A is **TERMINALLY COMPLETE** after the accepted PR #72 tree
 was squash-merged as `29083f078521ebf432a7d7380c521c557fb578a8` and
 post-merge CI succeeded on that exact main SHA. S04B H1 was rejected by
-independent review; an R1 corrected head is **not merged** and **not
-terminal**.
+independent review. H3 is a later same-slice UX-repair candidate and is
+**not merged** and **not terminal**.
 This document does not authorize S04C–S04D / S05 / S06.
 
 S04A terminal evidence:
@@ -425,14 +425,14 @@ analytics, automatic updates, or school-wide SaaS management.
 ## 12. Next Program frontier
 
 `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is
-**TERMINALLY COMPLETE**. S04B H1 was rejected by independent review.
-R1 published a corrected head. Next authority is fresh independent
-exact-head re-review of that H2.
+**TERMINALLY COMPLETE**. S04B H3 is a packaged UX-repaired candidate.
+Next authority is owner-interactive four-controller physical
+requalification of exact H3.
 
 ```text
 routing ≠ authority
 S04A: TERMINALLY COMPLETE
-S04B: R1 CORRECTED HEAD / AWAITING INDEPENDENT EXACT-HEAD RE-REVIEW / NOT MERGED / NOT TERMINAL
+S04B: H3 UX-REPAIRED CANDIDATE / AWAITING PHYSICAL REQUALIFICATION / NOT MERGED / NOT TERMINAL
 S04C/S04D/S05/S06: NOT AUTHORIZED
 ```
 

@@ -42,8 +42,8 @@ describe('teacher summary — transport healthy alone is not ready', () => {
       mapping: 'ready',
     })
     expect(summary).toBe('receiver-waiting-for-controllers')
-    expect(teacherSummaryLabel(summary)).toMatch(/waiting for controllers/i)
-    expect(teacherSummaryLabel(summary)).not.toMatch(/^Sony Buzz ready/)
+    expect(teacherSummaryLabel(summary)).toMatch(/waiting for buzzers/i)
+    expect(teacherSummaryLabel(summary)).not.toMatch(/^Buzzers ready/)
   })
 
   it('healthy + responding + mapping absent → team setup required', () => {
@@ -53,10 +53,10 @@ describe('teacher summary — transport healthy alone is not ready', () => {
       mapping: 'absent',
     })
     expect(summary).toBe('controllers-need-team-setup')
-    expect(teacherSummaryLabel(summary)).toMatch(/team setup required/i)
+    expect(teacherSummaryLabel(summary)).toMatch(/finish team setup/i)
   })
 
-  it('healthy + responding + mapping ready → Sony Buzz ready', () => {
+  it('healthy + responding + mapping ready → Buzzers ready', () => {
     expect(
       classifyTeacherSummary({
         receiver: 'connected',
@@ -67,7 +67,7 @@ describe('teacher summary — transport healthy alone is not ready', () => {
   })
 
   it('disconnected keeps keyboard-available wording', () => {
-    expect(teacherSummaryLabel('receiver-disconnected')).toMatch(/keyboard remains available/i)
+    expect(teacherSummaryLabel('receiver-disconnected')).toMatch(/keyboard still works/i)
   })
 })
 
@@ -128,25 +128,28 @@ describe('repair flow order and copy', () => {
 
   it('teaches LED state sequence, not timer-first pairing', () => {
     const off = repairStepCopy('power-off')
-    expect(off.body).toMatch(/slow blue off-state blink/i)
+    expect(off.cta).toBe("They're off")
+    expect(off.body).toMatch(/all participating buzzers off/i)
+    expect(off.body).toMatch(/slow blue blink/i)
 
     const pair = repairStepCopy('solid-blue')
-    expect(pair.cta).toBe('All controller lights are solid blue')
-    expect(pair.body).toMatch(/KEEP HOLDING POWER/i)
-    expect(pair.body).toMatch(/rapid red\/blue flashes/i)
-    expect(pair.body).toMatch(/normal power-on indication/i)
-    expect(pair.body).toMatch(/Keep holding/i)
-    expect(pair.body).toMatch(/do not release at those flashes/i)
-    expect(pair.body).toMatch(/solid blue light, not the timer/i)
-    expect(pair.body).toMatch(/Do not press BIND until every participating controller is solid blue/i)
+    expect(pair.cta).toBe('All lights are solid blue')
+    expect(pair.body).toMatch(/Hold POWER/i)
+    expect(pair.body).toMatch(/Keep holding through the rapid red\/blue flashing/i)
+    expect(pair.body).toMatch(/normal startup/i)
+    expect(pair.body).toMatch(/every blue light stays solid/i)
+    expect(pair.body).toMatch(/solid blue light, not a timer/i)
+    expect(pair.body).toMatch(/Do not press BIND until every participating buzzer is solid blue/i)
     expect(pair.body).not.toMatch(/about 4 seconds until/i)
 
     const bind = repairStepCopy('bind-blink')
     expect(bind.cta).toBe('They blinked')
-    expect(bind.body).toMatch(/When every controller has a solid blue light, hold BIND/i)
-    expect(bind.body).toMatch(/blink to acknowledge pairing/i)
+    expect(bind.secondaryCta).toBe('They did not blink')
+    expect(bind.body).toMatch(/hold BIND on the receiver/i)
+    expect(bind.body).toMatch(/blink together/i)
 
     const verify = repairStepCopy('observe-red')
     expect(verify.body).toMatch(/Press RED/i)
+    expect(verify.body).toMatch(/each buzzer/i)
   })
 })

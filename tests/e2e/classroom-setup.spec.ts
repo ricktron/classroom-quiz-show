@@ -9,6 +9,8 @@ test('Home Play reaches class setup with keyboard name completion', async ({ pag
   await expect(page.getByTestId('classroom-setup')).toBeVisible()
   await expect(page.getByTestId('setup-sony-copy')).not.toContainText(/WebHID|054c|cqs\.sony/i)
   await expect(page.getByTestId('setup-panic-mute')).toBeVisible()
+  await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
+  await expect(page.getByTestId('setup-play-blocker')).toBeVisible()
   await expect(page.getByTestId('team-name-selection-board')).toBeVisible()
   const viewport = page.viewportSize()
   const box = await page.getByTestId('classroom-setup').boundingBox()

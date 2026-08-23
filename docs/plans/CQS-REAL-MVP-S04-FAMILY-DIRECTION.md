@@ -128,6 +128,10 @@ Every ordinary screen should make the next useful action obvious.
 The Host should remain restrained, fast, obvious, and operational even
 when the Display becomes highly theatrical in S05.
 
+Teacher-facing Host setup also obeys the Interaction & Information
+Design principles in
+[`../CQS-PRODUCT-CONTRACT.md`](../CQS-PRODUCT-CONTRACT.md) §8.1.
+
 ---
 
 ## 4. Game library / file-management philosophy

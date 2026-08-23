@@ -441,10 +441,10 @@ describe('copy guardrails', () => {
     const panel = renderPanel()
     panel.poll()
     expect(screen.getByTestId('sbs-keyboard-fallback')).toHaveTextContent(
-      /Keyboard buzzing remains available whether or not a Sony Buzz! candidate is present/i,
+      /Buzzers are optional. Keyboard controls still work/i,
     )
     expect(screen.getByTestId('sbs-intro')).toHaveTextContent(/keyboard buzzing remains available/i)
-    expect(screen.getByTestId('sbs-intro')).toHaveTextContent(/advanced diagnostics stay folded away/i)
+    expect(screen.getByTestId('sbs-intro')).toHaveTextContent(/do not need to pair them every class/i)
   })
 
   it('never claims supported hardware', () => {
@@ -504,9 +504,9 @@ describe('teacher readiness layers', () => {
     panel.poll()
     expect(screen.getByTestId('sbs-teacher-summary')).toBeInTheDocument()
     expect(screen.getByTestId('sbs-readiness-note')).toHaveTextContent(
-      /Receiver connected does not mean controllers are ready/i,
+      /connected receiver does not mean the buzzers are ready/i,
     )
-    expect(screen.getByTestId('sbs-teacher-summary')).not.toHaveTextContent(/^Sony Buzz ready/)
+    expect(screen.getByTestId('sbs-teacher-summary')).not.toHaveTextContent(/^Buzzers ready/)
     expect(screen.getByTestId('sbs-transport-health')).toHaveTextContent('unsupported-api')
   })
 
@@ -518,6 +518,19 @@ describe('teacher readiness layers', () => {
 })
 
 describe('repair controller connection flow', () => {
+  it('hides transport jargon until Advanced is opened', () => {
+    const panel = renderPanel()
+    panel.poll()
+    expect(screen.getByTestId('sbs-teacher-intro').textContent).not.toMatch(
+      /WebHID|054c|report id|cqs\.sony|transport\.health/i,
+    )
+    expect(screen.getByTestId('sbs-advanced')).not.toBeVisible()
+    expect(screen.getByTestId('sbs-transport-health')).toHaveTextContent('unsupported-api')
+    fireEvent.click(screen.getByTestId('sbs-toggle-advanced'))
+    expect(screen.getByTestId('sbs-advanced')).toBeVisible()
+    expect(screen.getByTestId('sbs-advanced-diag')).toBeVisible()
+  })
+
   it('walks teacher pairing steps in order without BIND+Red shortcut', () => {
     const panel = renderPanel()
     panel.poll()
@@ -525,25 +538,39 @@ describe('repair controller connection flow', () => {
     expect(screen.getByTestId('sbs-repair-flow')).toBeInTheDocument()
     expect(screen.getByTestId('sbs-repair-keepalive-note')).toHaveTextContent(/paused for pairing/i)
     expect(screen.getByTestId('sbs-repair-step-power-off')).toHaveTextContent(
-      /slow blue off-state blink/i,
+      /slow blue blink/i,
     )
     fireEvent.click(screen.getByTestId('sbs-repair-advance'))
     const pairing = screen.getByTestId('sbs-repair-step-solid-blue')
-    expect(pairing).toHaveTextContent(/KEEP HOLDING POWER/i)
-    expect(pairing).toHaveTextContent(/rapid red\/blue flashes/i)
-    expect(pairing).toHaveTextContent(/Do not press BIND until every participating controller is solid blue/i)
+    expect(pairing).toHaveTextContent(/Hold POWER/i)
+    expect(pairing).toHaveTextContent(/Keep holding through the rapid red\/blue flashing/i)
+    expect(pairing).toHaveTextContent(/Do not press BIND until every participating buzzer is solid blue/i)
     expect(screen.getByTestId('sbs-repair-advance')).toHaveTextContent(
-      /All controller lights are solid blue/i,
+      /All lights are solid blue/i,
     )
     fireEvent.click(screen.getByTestId('sbs-repair-advance'))
     expect(screen.getByTestId('sbs-repair-step-bind-blink')).toHaveTextContent(
-      /blink to acknowledge pairing/i,
+      /blink together/i,
     )
     expect(screen.getByTestId('sbs-repair-advance')).toHaveTextContent(/They blinked/i)
     fireEvent.click(screen.getByTestId('sbs-repair-advance'))
     expect(screen.getByTestId('sbs-repair-step-observe-red')).toHaveTextContent(/Press RED/i)
     expect(screen.getByTestId('sbs-discovered-none')).toHaveTextContent(/No controllers detected yet/i)
     expect(screen.getByTestId('sbs-run-buzzer-check')).toHaveTextContent(/Run Buzzer Check/i)
+    expect(screen.getByTestId('sbs-teacher-intro').textContent).not.toMatch(/hold BIND|solid blue/i)
+  })
+
+  it('keeps BIND confirmation state-driven and does not treat a missed blink as success', () => {
+    const panel = renderPanel()
+    panel.poll()
+    fireEvent.click(screen.getByTestId('sbs-repair-connection'))
+    fireEvent.click(screen.getByTestId('sbs-repair-advance'))
+    fireEvent.click(screen.getByTestId('sbs-repair-advance'))
+    expect(screen.getByTestId('sbs-repair-bind-missed')).toHaveTextContent(/They did not blink/i)
+    fireEvent.click(screen.getByTestId('sbs-repair-bind-missed'))
+    expect(screen.getByTestId('sbs-repair-bind-missed-note')).toHaveTextContent(/solid blue/i)
+    expect(screen.getByTestId('sbs-repair-step-bind-blink')).toBeInTheDocument()
+    expect(screen.queryByTestId('sbs-repair-step-observe-red')).toBeNull()
   })
 
   it('Hardware changed opens the same repair path', () => {
@@ -552,7 +579,7 @@ describe('repair controller connection flow', () => {
     fireEvent.click(screen.getByTestId('sbs-hardware-changed'))
     expect(screen.getByTestId('sbs-repair-flow')).toHaveTextContent(/Hardware changed/i)
     expect(screen.getByTestId('sbs-buzzer-check-bridge')).toHaveTextContent(
-      /Repair controller connection → Buzzer Check → Confirm team assignments/i,
+      /Repair buzzers → Buzzer Check/i,
     )
   })
 })

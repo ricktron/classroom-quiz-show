@@ -344,11 +344,57 @@ export function GamepadInputHostPanel({
   const pendingAction = actionFromKey(pendingActionKey)
 
   return (
-    <section className="gih" aria-labelledby="gih-title">
-      <div className="foundation__tag foundation__tag--slice9">
-        Controller input (Slices 9–21) — host controls, private
-      </div>
-      <h3 id="gih-title">Controllers</h3>
+    <section
+      className="gih"
+      aria-labelledby="gih-title"
+      data-setup-mode={selectionMode ? 'true' : 'false'}
+    >
+      {!selectionMode && (
+        <div className="foundation__tag foundation__tag--slice9">
+          Controller input (Slices 9–21) — host controls, private
+        </div>
+      )}
+      <h3 id="gih-title">{selectionMode ? 'Buzzers' : 'Controllers'}</h3>
+
+      {selectionMode ? (
+        <SonyBuzzSetupSection
+          teams={teams}
+          controllers={controllers}
+          diagnosticsStatus={diagnostics.status}
+          activeMapping={mapping}
+          onApplyMapping={applyMapping}
+          capturing={capture.mode === 'sony-setup'}
+          onCapturingChange={onSonyCapturingChange}
+          testMode={testMode}
+          onTestModeChange={onSonyTestModeChange}
+          lastTestObservation={lastTestObservation}
+          pendingCapture={sonyPendingCapture}
+          onPendingCaptureConsumed={onSonyPendingCaptureConsumed}
+          compactOrdinary={selectionMode}
+          supportedProfile={{
+            transport: sony.transport,
+            associations: sony.associations,
+            mappingStatus: sony.mappingStatus,
+            wbuzzPresent: sony.wbuzzController != null,
+            onConnect: () => {
+              void sony.connect()
+            },
+            onDisableKeepAlive: () => sony.disableKeepAlive(),
+            onSetSlotTeam: sony.setSlotTeam,
+            onSaveAssociations: () => {
+              void sony.saveAssociations()
+            },
+            onClearSavedMapping: () => {
+              void sony.clearSavedMapping()
+            },
+          }}
+        />
+      ) : null}
+
+      <details className="gih__generic" data-testid="gih-advanced-generic" open={!selectionMode}>
+        <summary className={selectionMode ? undefined : 'visually-hidden'}>
+          {selectionMode ? 'Advanced controller diagnostics' : 'Controller assignments'}
+        </summary>
 
       <dl className="gih__summary" data-testid="gih-summary">
         <dt>Controller support</dt>
@@ -535,7 +581,9 @@ export function GamepadInputHostPanel({
         while the clue is armed, the first accepted team answers, and the rest
         queue up. Keyboard buzzing works whether or not a controller is attached.
       </p>
+      </details>
 
+      {selectionMode ? null : (
       <SonyBuzzSetupSection
         teams={teams}
         controllers={controllers}
@@ -567,6 +615,7 @@ export function GamepadInputHostPanel({
           },
         }}
       />
+      )}
     </section>
   )
 }

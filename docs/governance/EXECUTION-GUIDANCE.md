@@ -353,6 +353,69 @@ product or harness can do it.
 Physical hardware, projector, and audio evidence remain distinct from
 browser-observed or synthetic coverage.
 
+### 9.1 Owner-interactive physical qualification protocol
+
+Generic methodology for owner-interactive physical qualification.
+It is system-, tool-, model-, and device-agnostic at the semantic
+layer. Current adapters (macOS, AppleScript, packaged Electron, Sony
+Wbuzz, Cursor) are implementation details, not the protocol. Do not
+build unused platform adapters.
+
+Semantic concepts: prompt surface; focus/activation; static capture;
+temporal capture; physical device; structured human feedback; evidence
+store; checkpoint; test state; requirement/evidence traceability.
+
+1. Keep owner attention on the product under test.
+2. One human action per prompt.
+3. State the expected observable result before the action.
+4. Prefer structured PASS / REPEAT / FAIL over prose.
+5. Machine eyes first: capture and inspect visible evidence instead of
+   asking the owner to narrate what automation can see.
+6. Evidence by phenomenon: static state → screenshot; temporal behavior
+   → short recording or log; physical fact → human confirmation;
+   internal invariant → automated test.
+7. Function and usability are separate verdicts.
+8. Use a controlled fixture.
+9. Keep physical device identities stable.
+10. Keep test IDs stable.
+11. Start from known test states.
+12. Support interruption-safe checkpoint and resume.
+13. A legitimate interruption is not test failure.
+14. When resuming, revalidate only volatile prerequisites.
+15. Preserve failure evidence before repair.
+16. Classify failure before mutating product: hardware; helper; wrong
+    starting state; ambiguous expectation; product defect; unrelated
+    defect; unknown.
+17. After repair: exact failed test + related physical tests + bounded
+    smoke + complete automated final gates.
+18. Include unguided cold-start testing when usability matters.
+19. Include short bounded realistic abuse/chaos testing where
+    appropriate.
+20. Map requirements to evidence classes.
+21. Keep rich evidence temporary; keep the repo receipt durable and
+    concise.
+22. Do not commit piles of screenshots or video by default.
+23. No test-only product bloat.
+24. Qualification tooling stays separate from product unless
+    independently justified.
+25. The semantic protocol is system-agnostic.
+26. The current platform adapter is not the protocol.
+27. Execution is capability-based.
+28. Prefer portable JSON / CSV / Markdown evidence.
+29. Executor/model independence: Cursor today; another authorized
+    executor later.
+30. Keep the machine-observable vs human-established boundary explicit.
+31. Use minimum ceremony.
+32. **UX can block qualification.** If the product interface is
+    confusing enough that the owner cannot reliably perform the
+    intended test, record a product UX finding. Do not endlessly
+    compensate with more elaborate tester instructions.
+33. **Known-friction harvesting.** When the same real setup/recovery
+    difficulty recurs across qualifications, graduate it into
+    deterministic recovery guidance, product UX improvement, durable
+    support knowledge, or an explicit future item. Do not leave it as
+    tribal or chat memory.
+
 ---
 
 ## 10. Evidence transfer
