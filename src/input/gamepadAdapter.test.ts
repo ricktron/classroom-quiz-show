@@ -155,6 +155,22 @@ describe('connect and disconnect', () => {
     expect(perFrame[1]).toEqual([])
   })
 
+  it('optionally emits held buttons on first sight for setup/test (not full re-prime)', () => {
+    const previous = baselineOf([0, [false, false]])
+    const newlyVisibleHeld = snapshot(
+      controller(0, buttons(2)),
+      controller(1, buttons(2, 0)),
+    )
+    expect(scanGamepadEdges(previous, newlyVisibleHeld).edges).toEqual([])
+    expect(
+      scanGamepadEdges(previous, newlyVisibleHeld, { emitPressedOnFirstSight: true }).edges,
+    ).toEqual([{ controllerIndex: 1, buttonIndex: 0 }])
+    // Full re-prime remains silent even with the setup option.
+    expect(scanGamepadEdges(null, newlyVisibleHeld, { emitPressedOnFirstSight: true }).edges).toEqual(
+      [],
+    )
+  })
+
   it('produces no input when a controller disappears, and forgets its state', () => {
     const { perFrame, baseline } = replay(
       snapshot(controller(0, buttons(2, 0)), controller(1, buttons(2))),

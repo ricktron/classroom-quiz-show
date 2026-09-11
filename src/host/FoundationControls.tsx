@@ -65,7 +65,9 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
   const [startSessionArmed, setStartSessionArmed] = useState(false)
   const [playReady, setPlayReady] = useState(() => !playGameIdFromSearch(searchParams.toString()))
   const [teamNameBank, setTeamNameBank] = useState<readonly string[]>([])
-  const [selectionObservation, setSelectionObservation] = useState<ClassroomSetupObservation | null>(null)
+  const [selectionObservationBatch, setSelectionObservationBatch] = useState<
+    readonly ClassroomSetupObservation[] | null
+  >(null)
   const [displayOpen, setDisplayOpen] = useState(false)
   const [audioUnderstood, setAudioUnderstood] = useState(false)
   const [sonyReady, setSonyReady] = useState(false)
@@ -219,7 +221,8 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
           teamNameBank={teamNameBank}
           initialSessionNames={game.sessionTeamNames}
           leadership={persistence.leadership}
-          observation={selectionObservation}
+          observation={null}
+          observationBatch={selectionObservationBatch}
           sonyReady={sonyReady}
           displayOpen={displayOpen}
           onOpenDisplay={() => {
@@ -266,7 +269,7 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
           game={game}
           clock={clock}
           selectionMode={!playReady}
-          onSelectionObservation={setSelectionObservation}
+          onSelectionBatch={setSelectionObservationBatch}
           onSonyReadyChange={setSonyReady}
         />
       )}

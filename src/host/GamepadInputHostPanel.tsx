@@ -93,6 +93,9 @@ export interface GamepadInputHostPanelProps {
   /** When true, controller edges are reported for team-name selection, not scored. */
   readonly selectionMode?: boolean
   readonly onSelectionObservation?: (observation: SonyBuzzTestObservation & { readonly at: number }) => void
+  readonly onSelectionBatch?: (
+    observations: readonly (SonyBuzzTestObservation & { readonly at: number })[],
+  ) => void
   readonly onSonyReadyChange?: (ready: boolean) => void
 }
 
@@ -136,6 +139,7 @@ export function GamepadInputHostPanel({
   webHidTransport,
   selectionMode = false,
   onSelectionObservation,
+  onSelectionBatch,
   onSonyReadyChange,
 }: GamepadInputHostPanelProps) {
   const teams = game.definition.teams
@@ -152,10 +156,16 @@ export function GamepadInputHostPanel({
   )
   /** Which action the next capture assigns. Host UI state, per panel. */
   const [pendingActionKey, setPendingActionKey] = useState<string>('primary-buzz')
+  const selectionBatchRef = useRef<(SonyBuzzTestObservation & { readonly at: number })[]>([])
+  const selectionBatchScheduledRef = useRef(false)
   const [testMode, setTestMode] = useState(false)
   const [sonyPendingCapture, setSonyPendingCapture] = useState<GamepadControlRef | null>(null)
   const [lastTestObservation, setLastTestObservation] =
     useState<SonyBuzzTestObservation | null>(null)
+  /** All test observations from the latest Gamepad poll (simultaneous presses). */
+  const [recentTestObservations, setRecentTestObservations] = useState<
+    readonly SonyBuzzTestObservation[]
+  >([])
 
   const sony = useSonyBuzzSupportedProfile({
     gameId,
@@ -167,14 +177,14 @@ export function GamepadInputHostPanel({
 
   useEffect(() => {
     onSonyReadyChange?.(
-      sony.mappingStatus === 'ready' &&
-        sony.associations.length > 0 &&
-        sony.wbuzzController != null,
+      sony.associations.length > 0 &&
+        sony.wbuzzController != null &&
+        (sony.transport.health === 'healthy' || sony.transport.health === 'degraded'),
     )
   }, [
     onSonyReadyChange,
     sony.associations.length,
-    sony.mappingStatus,
+    sony.transport.health,
     sony.wbuzzController,
   ])
 
@@ -251,9 +261,26 @@ export function GamepadInputHostPanel({
         control: outcome.control,
       }
       setLastTestObservation(observation)
-      onSelectionObservation?.({ ...observation, at: clock.now() })
+      const stamped = { ...observation, at: clock.now() }
+      onSelectionObservation?.(stamped)
+      // Always coalesce one poll into a batch so Buzzer Check can show every
+      // simultaneous edge (F-S04B-H3-SONY-07 display), not only the last setState.
+      selectionBatchRef.current.push(stamped)
+      if (!selectionBatchScheduledRef.current) {
+        selectionBatchScheduledRef.current = true
+        queueMicrotask(() => {
+          selectionBatchScheduledRef.current = false
+          const batch = selectionBatchRef.current
+          selectionBatchRef.current = []
+          if (batch.length === 0) return
+          setRecentTestObservations(
+            batch.map(({ teamId, action, control }) => ({ teamId, action, control })),
+          )
+          onSelectionBatch?.(batch)
+        })
+      }
     }
-  }, [clock, onSelectionObservation])
+  }, [clock, onSelectionBatch, onSelectionObservation])
 
   // Apply supported-profile materialized mapping when associations/controller change.
   const sonyMappingKey = useMemo(() => {
@@ -368,6 +395,7 @@ export function GamepadInputHostPanel({
           testMode={testMode}
           onTestModeChange={onSonyTestModeChange}
           lastTestObservation={lastTestObservation}
+          recentTestObservations={recentTestObservations}
           pendingCapture={sonyPendingCapture}
           onPendingCaptureConsumed={onSonyPendingCaptureConsumed}
           compactOrdinary={selectionMode}
@@ -595,6 +623,7 @@ export function GamepadInputHostPanel({
         testMode={testMode}
         onTestModeChange={onSonyTestModeChange}
         lastTestObservation={lastTestObservation}
+        recentTestObservations={recentTestObservations}
         pendingCapture={sonyPendingCapture}
         onPendingCaptureConsumed={onSonyPendingCaptureConsumed}
         supportedProfile={{

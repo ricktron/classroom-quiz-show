@@ -457,6 +457,30 @@ describe('setup test mode (Slice 10)', () => {
     ])
   })
 
+  it('reports provisional Sony recipe observations before team mapping is saved', () => {
+    const probe = harness({
+      testMode: true,
+      mapping: {
+        version: GAMEPAD_MAPPING_VERSION,
+        bindings: [],
+      },
+    })
+    probe.source.set(snapshot(controller(0, buttons(20))))
+    probe.poll()
+    // Slot 1 red primary at button index 0 on the exact Sony recipe.
+    probe.source.set(snapshot(controller(0, buttons(20, 0))))
+    probe.poll()
+    expect(probe.commands).toEqual([])
+    expect(probe.outcomes).toEqual([
+      {
+        kind: 'test-observation',
+        teamId: 'sony-slot-1',
+        action: PRIMARY_BUZZ,
+        control: { controllerIndex: 0, buttonIndex: 0 },
+      },
+    ])
+  })
+
   it('re-primes when test mode starts and ends, so a held button cannot observe', () => {
     const probe = harness({ testMode: false })
     probe.source.set(snapshot(controller(0, buttons(2, 0))))

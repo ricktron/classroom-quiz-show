@@ -71,6 +71,25 @@ export function sonyBuzzSlotId(index0: number): SonyBuzzSlotId | null {
   return (index0 + 1) as SonyBuzzSlotId
 }
 
+/**
+ * Session defaults for Class Setup when no saved Sony mapping exists.
+ * Controller N → Team N (by team order). Not persisted until Save.
+ * Lets Buzzer Check resolve presses before the teacher saves assignments.
+ */
+export function defaultSonyBuzzSlotAssociations(
+  teams: readonly TeamDefinition[],
+): readonly SonyBuzzSlotTeamAssociation[] {
+  const n = Math.min(SONY_BUZZ_HANDSET_SLOT_COUNT, teams.length)
+  const out: SonyBuzzSlotTeamAssociation[] = []
+  for (let i = 0; i < n; i += 1) {
+    const slotId = sonyBuzzSlotId(i)
+    const team = teams[i]
+    if (slotId == null || !team) continue
+    out.push({ slotId, teamId: team.id })
+  }
+  return out
+}
+
 export function buttonIndexForSlotColor(slot: SonyBuzzSlotId, color: SonyBuzzColor): number {
   return SONY_BUZZ_SLOT_BASES[slot - 1]! + SONY_BUZZ_COLOR_OFFSET[color]
 }

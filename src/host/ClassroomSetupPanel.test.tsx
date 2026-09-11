@@ -150,6 +150,208 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('tnsb-choice-red-0').textContent).not.toBe('YellowAlpha')
   })
 
+  it('applies simultaneous Sony observations for two teams in one batch', () => {
+    const { rerender } = render(
+      <ClassroomSetupPanel
+        teams={TEAMS}
+        teamNameBank={[
+          'Alpha',
+          'Bravo',
+          'Charlie',
+          'Delta',
+          'Echo',
+          'Foxtrot',
+          'Golf',
+          'Hotel',
+          'India',
+          'Juliet',
+          'Kilo',
+          'Lima',
+        ]}
+        leadership="leader"
+        observation={null}
+        observationBatch={null}
+        sonyReady
+        displayOpen
+        onOpenDisplay={vi.fn()}
+        audioUnderstood
+        audioMuted={false}
+        onAudioTest={vi.fn()}
+        onPanicMute={vi.fn()}
+        playReady={false}
+        onPlay={vi.fn()}
+        onSelectedIdentitiesChange={vi.fn()}
+      />,
+    )
+    const beforeRed = screen.getByTestId('tnsb-choice-red-0').textContent
+    const beforeBlue = screen.getByTestId('tnsb-choice-blue-0').textContent
+    rerender(
+      <ClassroomSetupPanel
+        teams={TEAMS}
+        teamNameBank={[
+          'Alpha',
+          'Bravo',
+          'Charlie',
+          'Delta',
+          'Echo',
+          'Foxtrot',
+          'Golf',
+          'Hotel',
+          'India',
+          'Juliet',
+          'Kilo',
+          'Lima',
+        ]}
+        leadership="leader"
+        observation={null}
+        observationBatch={[
+          { teamId: 'red', action: PRIMARY_BUZZ, at: 2_000 },
+          { teamId: 'blue', action: PRIMARY_BUZZ, at: 2_000 },
+        ]}
+        sonyReady
+        displayOpen
+        onOpenDisplay={vi.fn()}
+        audioUnderstood
+        audioMuted={false}
+        onAudioTest={vi.fn()}
+        onPanicMute={vi.fn()}
+        playReady={false}
+        onPlay={vi.fn()}
+        onSelectedIdentitiesChange={vi.fn()}
+      />,
+    )
+    // Both teams cycle from the same-timestamp batch.
+    expect(screen.getByTestId('tnsb-choice-red-0').textContent).not.toBe(beforeRed)
+    expect(screen.getByTestId('tnsb-choice-blue-0').textContent).not.toBe(beforeBlue)
+  })
+
+  it('applies simultaneous independent color claims without collapsing either team', () => {
+    const bank = [
+      'Alpha',
+      'Bravo',
+      'Charlie',
+      'Delta',
+      'Echo',
+      'Foxtrot',
+      'Golf',
+      'Hotel',
+      'India',
+      'Juliet',
+      'Kilo',
+      'Lima',
+    ]
+    const { rerender } = render(
+      <ClassroomSetupPanel
+        teams={TEAMS}
+        teamNameBank={bank}
+        leadership="leader"
+        observation={null}
+        observationBatch={null}
+        sonyReady
+        displayOpen
+        onOpenDisplay={vi.fn()}
+        audioUnderstood
+        audioMuted={false}
+        onAudioTest={vi.fn()}
+        onPanicMute={vi.fn()}
+        playReady={false}
+        onPlay={vi.fn()}
+        onSelectedIdentitiesChange={vi.fn()}
+      />,
+    )
+    rerender(
+      <ClassroomSetupPanel
+        teams={TEAMS}
+        teamNameBank={bank}
+        leadership="leader"
+        observation={null}
+        observationBatch={[
+          { teamId: 'red', action: { kind: 'secondary', slot: 'secondary4' }, at: 3_000 },
+          { teamId: 'blue', action: { kind: 'secondary', slot: 'secondary1' }, at: 3_000 },
+        ]}
+        sonyReady
+        displayOpen
+        onOpenDisplay={vi.fn()}
+        audioUnderstood
+        audioMuted={false}
+        onAudioTest={vi.fn()}
+        onPanicMute={vi.fn()}
+        playReady={false}
+        onPlay={vi.fn()}
+        onSelectedIdentitiesChange={vi.fn()}
+      />,
+    )
+    // Both independent claims apply from the same poll; Class Setup then
+    // compacts. Each team uses its own candidate window (red[0]=Alpha,
+    // blue[3]=Hotel for this bank deal).
+    expect(screen.getByTestId('setup-names-summary')).toHaveTextContent(/Alpha/)
+    expect(screen.getByTestId('setup-names-summary')).toHaveTextContent(/Hotel/)
+    expect(screen.queryByTestId('team-name-selection-board')).toBeNull()
+  })
+
+  it('keeps one team locked while the other Red-cycles in the same batch', () => {
+    const bank = [
+      'Alpha',
+      'Bravo',
+      'Charlie',
+      'Delta',
+      'Echo',
+      'Foxtrot',
+      'Golf',
+      'Hotel',
+      'India',
+      'Juliet',
+      'Kilo',
+      'Lima',
+    ]
+    const { rerender } = render(
+      <ClassroomSetupPanel
+        teams={TEAMS}
+        teamNameBank={bank}
+        leadership="leader"
+        observation={null}
+        observationBatch={[
+          { teamId: 'red', action: { kind: 'secondary', slot: 'secondary4' }, at: 4_000 },
+        ]}
+        sonyReady
+        displayOpen
+        onOpenDisplay={vi.fn()}
+        audioUnderstood
+        audioMuted={false}
+        onAudioTest={vi.fn()}
+        onPanicMute={vi.fn()}
+        playReady={false}
+        onPlay={vi.fn()}
+        onSelectedIdentitiesChange={vi.fn()}
+      />,
+    )
+    expect(screen.getByTestId('tnsb-claimed-red')).toHaveTextContent(/Alpha/)
+    const blueBefore = screen.getByTestId('tnsb-choice-blue-0').textContent
+    rerender(
+      <ClassroomSetupPanel
+        teams={TEAMS}
+        teamNameBank={bank}
+        leadership="leader"
+        observation={null}
+        observationBatch={[
+          { teamId: 'blue', action: PRIMARY_BUZZ, at: 4_040 },
+        ]}
+        sonyReady
+        displayOpen
+        onOpenDisplay={vi.fn()}
+        audioUnderstood
+        audioMuted={false}
+        onAudioTest={vi.fn()}
+        onPanicMute={vi.fn()}
+        playReady={false}
+        onPlay={vi.fn()}
+        onSelectedIdentitiesChange={vi.fn()}
+      />,
+    )
+    expect(screen.getByTestId('tnsb-claimed-red')).toHaveTextContent(/Alpha/)
+    expect(screen.getByTestId('tnsb-choice-blue-0').textContent).not.toBe(blueBefore)
+  })
+
   it('keeps Play available without buzzers and names the required blocker', () => {
     renderSetup({ sonyReady: false })
     expect(screen.getByTestId('setup-play')).toBeDisabled()

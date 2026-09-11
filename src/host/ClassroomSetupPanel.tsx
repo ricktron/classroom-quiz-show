@@ -38,6 +38,8 @@ export interface ClassroomSetupPanelProps {
   readonly initialSessionNames?: Readonly<Record<string, string>>
   readonly leadership: PersistLeadership
   readonly observation: ClassroomSetupObservation | null
+  /** Simultaneous Sony edges from one poll — all must apply (S04B). */
+  readonly observationBatch?: readonly ClassroomSetupObservation[] | null
   readonly sonyReady: boolean
   readonly displayOpen: boolean
   readonly onOpenDisplay: () => void
@@ -77,6 +79,7 @@ export function ClassroomSetupPanel({
   initialSessionNames = {},
   leadership,
   observation,
+  observationBatch = null,
   sonyReady,
   displayOpen,
   onOpenDisplay,
@@ -102,7 +105,8 @@ export function ClassroomSetupPanel({
   const [buzzerSkipped, setBuzzerSkipped] = useState(false)
   const [focusOverride, setFocusOverride] = useState<SetupTaskId | null>(null)
   const lastPress = useRef<{ teamId: string; intentKey: string; at: number } | null>(null)
-  const lastObservationAt = useRef<number>(0)
+  const lastSingleObservationAt = useRef<number>(0)
+  const lastBatchKey = useRef<string>('')
 
   useEffect(() => {
     setSelection(seedSelection(teamNameBank, teamIds, initialNamesRef.current))
@@ -120,33 +124,56 @@ export function ClassroomSetupPanel({
     [leadership, onSelectedIdentitiesChange],
   )
 
-  useEffect(() => {
-    if (!observation || observation.at === lastObservationAt.current) return
-    lastObservationAt.current = observation.at
-    const intent = intentFromSonyNameAction(observation.action)
-    if (!intent) return
-    const intentKey = intent.kind === 'cycle' ? 'cycle' : `claim-${intent.choiceIndex}`
-    if (
-      !shouldAcceptSonyNamePress({
-        teamId: observation.teamId,
-        intentKey,
-        now: observation.at,
-        last: lastPress.current,
+  const applySonyObservations = useCallback(
+    (observations: readonly ClassroomSetupObservation[]) => {
+      if (observations.length === 0) return
+      setSelection((current) => {
+        let state = current
+        for (const observation of observations) {
+          const intent = intentFromSonyNameAction(observation.action)
+          if (!intent) continue
+          const intentKey = intent.kind === 'cycle' ? 'cycle' : `claim-${intent.choiceIndex}`
+          if (
+            !shouldAcceptSonyNamePress({
+              teamId: observation.teamId,
+              intentKey,
+              now: observation.at,
+              last: lastPress.current,
+            })
+          ) {
+            continue
+          }
+          lastPress.current = { teamId: observation.teamId, intentKey, at: observation.at }
+          const next = applyTeamNameInputs(state, [
+            intent.kind === 'cycle'
+              ? { kind: 'cycle', teamId: observation.teamId }
+              : { kind: 'claim', teamId: observation.teamId, choiceIndex: intent.choiceIndex },
+          ])
+          state = next.state
+        }
+        persistAndPublish(state)
+        return state
       })
-    ) {
-      return
-    }
-    lastPress.current = { teamId: observation.teamId, intentKey, at: observation.at }
-    setSelection((current) => {
-      const next = applyTeamNameInputs(current, [
-        intent.kind === 'cycle'
-          ? { kind: 'cycle', teamId: observation.teamId }
-          : { kind: 'claim', teamId: observation.teamId, choiceIndex: intent.choiceIndex },
-      ])
-      persistAndPublish(next.state)
-      return next.state
-    })
-  }, [observation, persistAndPublish])
+    },
+    [persistAndPublish],
+  )
+
+  useEffect(() => {
+    // Single-observation path (unit tests / sequential presses).
+    if (!observation) return
+    if (observation.at === lastSingleObservationAt.current) return
+    lastSingleObservationAt.current = observation.at
+    applySonyObservations([observation])
+  }, [observation, applySonyObservations])
+
+  useEffect(() => {
+    // Batch path: every edge from one Gamepad poll (simultaneous teams).
+    if (!observationBatch || observationBatch.length === 0) return
+    const key = observationBatch.map((o) => `${o.teamId}:${o.at}:${o.action.kind}`).join('|')
+    if (key === lastBatchKey.current) return
+    lastBatchKey.current = key
+    applySonyObservations(observationBatch)
+  }, [observationBatch, applySonyObservations])
 
   const apply = (state: TeamNameSelectionState) => {
     setSelection(state)

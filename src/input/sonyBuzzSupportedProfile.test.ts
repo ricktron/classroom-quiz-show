@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buttonIndexForSlotColor,
   isExactSupportedWbuzzIds,
+  defaultSonyBuzzSlotAssociations,
   keepalivePayload,
   materializeSupportedProfileMapping,
   matchesExpectedWbuzzGamepadTopology,
@@ -124,5 +125,27 @@ describe('sonyBuzzSupportedProfile', () => {
     expect(teamSetSignature([{ id: a }, { id: c }])).not.toBe(
       teamSetSignature([{ id: a }, { id: b }]),
     )
+  })
+})
+
+
+describe('defaultSonyBuzzSlotAssociations', () => {
+  it('maps Controller N to Team N without persisting', () => {
+    const teams = [
+      { id: 'a', name: 'A', accent: 'crimson' },
+      { id: 'b', name: 'B', accent: 'azure' },
+      { id: 'c', name: 'C', accent: 'emerald' },
+      { id: 'd', name: 'D', accent: 'amber' },
+    ]
+    expect(defaultSonyBuzzSlotAssociations(teams)).toEqual([
+      { slotId: 1, teamId: 'a' },
+      { slotId: 2, teamId: 'b' },
+      { slotId: 3, teamId: 'c' },
+      { slotId: 4, teamId: 'd' },
+    ])
+    expect(defaultSonyBuzzSlotAssociations(teams.slice(0, 2))).toEqual([
+      { slotId: 1, teamId: 'a' },
+      { slotId: 2, teamId: 'b' },
+    ])
   })
 })

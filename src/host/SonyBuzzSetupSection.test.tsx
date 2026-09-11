@@ -430,9 +430,51 @@ describe('test mode', () => {
     panel.poll()
 
     expect(screen.getByTestId('sbs-test-outcome')).toHaveTextContent(/Buzzer Check: Red Team · Buzz/i)
+    // F-S04B-H3-SONY-05: ordinary Buzzer Check must advance controllers-responding
+    // readiness, not only repair observe-red.
+    expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent(
+      /1 controller responding/i,
+    )
     expect(screen.getByTestId('gih-outcome')).toHaveTextContent(/no gameplay change/i)
     expect(queueOf(store).order).toEqual([])
     expect(store.getState().revision).toBe(revisionBefore)
+  })
+
+  it('shows multiple simultaneous Buzzer Check observations without inventing presses', async () => {
+    const store = boardStore()
+    const panel = renderPanel(store)
+    captureAllSony(panel, [0, 1, 2, 3, 4])
+    fireEvent.click(screen.getByTestId('sbs-apply'))
+    fireEvent.click(screen.getByTestId('sbs-test-mode'))
+    expect(screen.getByTestId('sbs-controller-layer').textContent).not.toMatch(/responding/i)
+    expect(screen.getByTestId('sbs-test-outcome')).toHaveTextContent(/Buzzer Check is on/i)
+
+    attachSonyCandidate(panel)
+    panel.source.set(
+      snapshot(
+        controller(0, buttons(20), {
+          reportedId: reportedId(SONY_ID),
+          reportedMapping: reportedMapping('standard'),
+        }),
+      ),
+    )
+    panel.poll()
+    panel.source.set(
+      snapshot(
+        controller(0, buttons(20, 0, 5), {
+          reportedId: reportedId(SONY_ID),
+          reportedMapping: reportedMapping('standard'),
+        }),
+      ),
+    )
+    panel.poll()
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(screen.getByTestId('sbs-test-outcome').textContent).toMatch(/Buzzer Check \(2\):/)
+    expect(screen.getByTestId('sbs-test-outcome').textContent).toMatch(/\|/)
+    expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent(/responding/i)
   })
 })
 

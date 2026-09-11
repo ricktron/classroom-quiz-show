@@ -79,6 +79,8 @@ export interface SonyBuzzSetupSectionProps {
   readonly onTestModeChange: (testMode: boolean) => void
   /** Latest test-mode observation from the parent poll owner, if any. */
   readonly lastTestObservation: SonyBuzzTestObservation | null
+  /** All observations from the latest Gamepad poll (simultaneous edges). */
+  readonly recentTestObservations?: readonly SonyBuzzTestObservation[]
   /** Deliver a captured control from the parent poll owner. */
   readonly pendingCapture: GamepadControlRef | null
   readonly onPendingCaptureConsumed: () => void
@@ -124,6 +126,7 @@ function SupportedProfileBlock({
   testMode,
   onTestModeChange,
   lastTestObservation,
+  recentTestObservations = [],
   checkDisabled,
   compactOrdinary,
 }: {
@@ -132,6 +135,7 @@ function SupportedProfileBlock({
   testMode: boolean
   onTestModeChange: (testMode: boolean) => void
   lastTestObservation: SonyBuzzTestObservation | null
+  recentTestObservations?: readonly SonyBuzzTestObservation[]
   checkDisabled: boolean
   compactOrdinary: boolean
 }) {
@@ -159,12 +163,27 @@ function SupportedProfileBlock({
   })
 
   useEffect(() => {
-    if (repairStep !== 'observe-red') return
-    if (!testMode || lastTestObservation === null) return
-    const slot = slotIdForPrimaryRedButton(lastTestObservation.control.buttonIndex)
-    if (slot === null) return
-    setRespondingSlots((current) => addRespondingSlot(current, slot))
-  }, [repairStep, testMode, lastTestObservation])
+    // Controllers-responding readiness must track ordinary Buzzer Check as well as
+    // repair observe-red. HEAD gated on observe-red only, so Class Setup stayed
+    // "Waiting for controller presses" after successful checks (F-S04B-H3-SONY-05):
+    // lastTestObservation / testOut advanced, respondingSlots did not.
+    if (!testMode) return
+    const batch =
+      recentTestObservations.length > 0
+        ? recentTestObservations
+        : lastTestObservation !== null
+          ? [lastTestObservation]
+          : []
+    if (batch.length === 0) return
+    setRespondingSlots((current) => {
+      let next = current
+      for (const observation of batch) {
+        const slot = slotIdForPrimaryRedButton(observation.control.buttonIndex)
+        if (slot !== null) next = addRespondingSlot(next, slot)
+      }
+      return next
+    })
+  }, [testMode, lastTestObservation, recentTestObservations])
 
   const beginRepair = (reason: 'repair' | 'hardware-changed') => {
     setRepairReason(reason)
@@ -207,6 +226,11 @@ function SupportedProfileBlock({
   const showTeamAssignments =
     !compactOrdinary || summary === 'controllers-need-team-setup' || showAdvanced
   const showOrdinaryRepair = summary !== 'sony-buzz-ready' && !repairActive
+  const receiverConnected =
+    receiver === 'connected' ||
+    summary === 'receiver-waiting-for-controllers' ||
+    summary === 'controllers-need-team-setup' ||
+    summary === 'sony-buzz-ready'
 
   return (
     <div className="sbs__supported" data-testid="sbs-supported-profile">
@@ -241,15 +265,17 @@ function SupportedProfileBlock({
         <div className="sbs__actions">
           <button
             type="button"
-            className="btn"
+            className={receiverConnected ? 'btn btn--secondary' : 'btn'}
             data-testid="sbs-connect"
+            disabled={receiverConnected}
+            aria-disabled={receiverConnected}
             onClick={() => supportedProfile.onConnect()}
           >
-            Connect buzzers
+            {receiverConnected ? 'Buzzers connected' : 'Connect buzzers'}
           </button>
           <button
             type="button"
-            className="btn btn--secondary"
+            className={receiverConnected ? 'btn' : 'btn btn--secondary'}
             data-testid="sbs-test-mode"
             disabled={checkDisabled}
             aria-pressed={testMode}
@@ -524,6 +550,7 @@ export function SonyBuzzSetupSection({
   testMode,
   onTestModeChange,
   lastTestObservation,
+  recentTestObservations = [],
   pendingCapture,
   onPendingCaptureConsumed,
   supportedProfile,
@@ -614,6 +641,7 @@ export function SonyBuzzSetupSection({
           testMode={testMode}
           onTestModeChange={onTestModeChange}
           lastTestObservation={lastTestObservation}
+          recentTestObservations={recentTestObservations}
           checkDisabled={diagnosticsStatus === 'unsupported'}
           compactOrdinary={compactOrdinary}
         />
@@ -798,7 +826,15 @@ export function SonyBuzzSetupSection({
 
       </details>
       <p className="host__note" data-testid="sbs-test-outcome" aria-live="polite">
-        {describeTestOutcome(lastTestObservation, testMode, nameOf)}
+        {describeTestOutcome(
+          recentTestObservations.length > 0
+            ? recentTestObservations
+            : lastTestObservation !== null
+              ? [lastTestObservation]
+              : [],
+          testMode,
+          nameOf,
+        )}
       </p>
       <p className="host__note" data-testid="sbs-keyboard-fallback">
         Buzzers are optional. Keyboard controls still work.
@@ -808,12 +844,17 @@ export function SonyBuzzSetupSection({
 }
 
 function describeTestOutcome(
-  observation: SonyBuzzTestObservation | null,
+  observations: readonly SonyBuzzTestObservation[],
   testMode: boolean,
   nameOf: (teamId: string) => string,
 ): string {
-  if (observation !== null) {
-    return `Buzzer Check: ${nameOf(observation.teamId)} · ${actionWords(observation.action)} · ${controllerLabel(observation.control.controllerIndex)} · button ${observation.control.buttonIndex + 1}`
+  if (observations.length > 0) {
+    const parts = observations.map(
+      (observation) =>
+        `${nameOf(observation.teamId)} · ${actionWords(observation.action)} · ${controllerLabel(observation.control.controllerIndex)} · button ${observation.control.buttonIndex + 1}`,
+    )
+    if (parts.length === 1) return `Buzzer Check: ${parts[0]}`
+    return `Buzzer Check (${parts.length}): ${parts.join(' | ')}`
   }
   if (testMode) {
     return 'Buzzer Check is on. Press a mapped button to see its team and action. Nothing is scored.'

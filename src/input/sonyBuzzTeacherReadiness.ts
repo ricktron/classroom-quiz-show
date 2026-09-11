@@ -141,15 +141,15 @@ export function receiverLayerLabel(layer: SonyBuzzReceiverLayer): string {
     case 'connecting':
       return 'Connecting…'
     case 'connected':
-      return 'Receiver connected'
+      return 'Connected'
     case 'disconnected':
-      return 'Receiver disconnected'
+      return 'Disconnected'
     case 'failed':
-      return 'Receiver failed to reconnect'
+      return 'Failed to reconnect'
     case 'disabled':
-      return 'Sony connection paused'
+      return 'Paused'
     case 'recovering':
-      return 'Receiver recovering…'
+      return 'Recovering…'
   }
 }
 

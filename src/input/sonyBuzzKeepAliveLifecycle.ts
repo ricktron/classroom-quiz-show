@@ -395,6 +395,21 @@ export function createSonyBuzzKeepAliveLifecycle(
         return
       }
       enabled = true
+      // Already open: soft-refresh keep-alive without re-entering connecting.
+      // Full re-acquire thrash made teacher Receiver lines jitter.
+      if (
+        device &&
+        framing &&
+        (health === 'healthy' || health === 'degraded')
+      ) {
+        generation += 1
+        const g = generation
+        health = 'healthy'
+        startTimer(g)
+        bumpReprime()
+        emit()
+        return
+      }
       await acquireAndStart('connect')
     },
     enable() {
@@ -429,6 +444,10 @@ export function createSonyBuzzKeepAliveLifecycle(
     },
     async tryRestoreGranted() {
       if (!transport.available) return false
+      // Already restored in this lifecycle instance — avoid connecting flicker.
+      if (device && framing && (health === 'healthy' || health === 'degraded')) {
+        return true
+      }
       // Probe previously granted devices without prompting. Only enable keep-alive
       // when an exact device is actually restored — initial permission remains a
       // deliberate Connect action.
@@ -449,9 +468,10 @@ export function createSonyBuzzKeepAliveLifecycle(
       if (device && framing) {
         const g = generation
         void sendOnce(g)
-        // refresh health classification
+        // Keep-alive may bump lastSuccessfulSendAt; only notify when health
+        // class actually changes — subscribers compare snapshots themselves.
         emit()
-      } else if (health === 'disconnected' || health === 'failed' || health === 'degraded') {
+      } else if (health === 'disconnected' || health === 'failed') {
         void acquireAndStart('recover')
       } else {
         emit()

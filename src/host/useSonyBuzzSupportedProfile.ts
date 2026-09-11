@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { TeamDefinition } from '../game/teams/definition'
 import {
+  defaultSonyBuzzSlotAssociations,
   materializeSupportedProfileMapping,
   matchesExpectedWbuzzGamepadTopology,
   reportedIdLooksLikeSupportedWbuzz,
@@ -127,30 +128,30 @@ export function useSonyBuzzSupportedProfile({
       const outcome = await loadSonyBuzzMappingRecord(adapterRef.current!)
       if (gen !== loadGeneration.current) return
       if (outcome.status === 'absent') {
-        setAssociations([])
+        setAssociations(defaultSonyBuzzSlotAssociations(teams))
         setMappingStatus('absent')
         return
       }
       if (outcome.status === 'unsupported-version') {
-        setAssociations([])
+        setAssociations(defaultSonyBuzzSlotAssociations(teams))
         setMappingStatus('unsupported-version')
         return
       }
       if (outcome.status === 'malformed' || outcome.status === 'unavailable') {
-        setAssociations([])
+        setAssociations(defaultSonyBuzzSlotAssociations(teams))
         setMappingStatus('malformed')
         return
       }
       const record = outcome.record
       if (!mappingMatchesContext(record, gameId, signature, knownTeamIds)) {
-        setAssociations([])
+        setAssociations(defaultSonyBuzzSlotAssociations(teams))
         setMappingStatus('stale')
         return
       }
       setAssociations(record.associations)
       setMappingStatus('ready')
     })()
-  }, [gameId, signature, knownTeamIds])
+  }, [gameId, signature, knownTeamIds, teams])
 
   const wbuzzController = useMemo(() => {
     return (
@@ -205,10 +206,10 @@ export function useSonyBuzzSupportedProfile({
   const clearSavedMapping = useCallback(async () => {
     const result = await clearSonyBuzzMappingRecord(adapterRef.current!)
     if (!result.ok) return false
-    setAssociations([])
+    setAssociations(defaultSonyBuzzSlotAssociations(teams))
     setMappingStatus('absent')
     return true
-  }, [])
+  }, [teams])
 
   return {
     transport: transportSnap,
