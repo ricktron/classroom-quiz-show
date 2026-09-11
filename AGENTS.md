@@ -71,6 +71,29 @@ That file is the canonical detailed execution guide. Do not copy it here.
 - Report warnings honestly; do not hide or invent them.
 - Stop on ambiguous architecture, scope, safety, or authority questions.
 
+## Teacher-facing UX and design routing
+
+Before changing teacher-facing interaction, information hierarchy, wording,
+setup/readiness/recovery behavior, Host or Display presentation, authoring
+workflow, accessibility, motion, or visual behavior, read
+[`docs/design/README.md`](docs/design/README.md) and the relevant entries in
+[`docs/design/CQS-UX-SURFACE-INVENTORY.md`](docs/design/CQS-UX-SURFACE-INVENTORY.md).
+
+Apply the adopted
+[`docs/design/CQS-UX-DOCTRINE.md`](docs/design/CQS-UX-DOCTRINE.md) **before**
+external literature. Use
+[`docs/research/CQS-UX-SOURCE-PRINCIPLE-MATRIX.md`](docs/research/CQS-UX-SOURCE-PRINCIPLE-MATRIX.md)
+and
+[`docs/research/CQS-UX-UI-REFERENCE-BIBLIOGRAPHY.md`](docs/research/CQS-UX-UI-REFERENCE-BIBLIOGRAPHY.md)
+when the adopted doctrine does not settle a consequential design question,
+when weighing meaningful alternatives, or when the relevant surface routes to
+specialist research.
+
+Research evidence informs CQS decisions. It does **not** override repository
+canon and does **not** authorize implementation. Settled doctrine does not
+need external sources re-read to re-prove it. Consultation levels are defined
+in [`docs/design/README.md`](docs/design/README.md) §2.
+
 ## Product invariants
 
 Permanent essentials (see the canonical docs for full detail):
