@@ -38,6 +38,10 @@ import {
   type SonyBuzzTestObservation,
 } from './SonyBuzzSetupSection'
 import { useSonyBuzzSupportedProfile } from './useSonyBuzzSupportedProfile'
+import {
+  classSetupSonyBuzzFullyReady,
+  type SonyBuzzTeacherSummary,
+} from '../input/sonyBuzzTeacherReadiness'
 import type { PersistenceAdapter } from '../persistence'
 import type { WebHidTransport } from '../input/webHidTransport'
 import { systemClock, type Clock } from '../time/clock'
@@ -96,7 +100,13 @@ export interface GamepadInputHostPanelProps {
   readonly onSelectionBatch?: (
     observations: readonly (SonyBuzzTestObservation & { readonly at: number })[],
   ) => void
+  /**
+   * True only when the Sony teacher-summary is fully ready
+   * (`sony-buzz-ready`). Never derived from receiver health alone.
+   */
   readonly onSonyReadyChange?: (ready: boolean) => void
+  /** Same classification published by the detailed Sony readiness layers. */
+  readonly onSonyTeacherSummaryChange?: (summary: SonyBuzzTeacherSummary) => void
 }
 
 /** What the panel is currently doing about button capture. */
@@ -141,6 +151,7 @@ export function GamepadInputHostPanel({
   onSelectionObservation,
   onSelectionBatch,
   onSonyReadyChange,
+  onSonyTeacherSummaryChange,
 }: GamepadInputHostPanelProps) {
   const teams = game.definition.teams
   const gameId = game.definition.id
@@ -175,18 +186,13 @@ export function GamepadInputHostPanel({
     persistenceAdapter,
   })
 
-  useEffect(() => {
-    onSonyReadyChange?.(
-      sony.associations.length > 0 &&
-        sony.wbuzzController != null &&
-        (sony.transport.health === 'healthy' || sony.transport.health === 'degraded'),
-    )
-  }, [
-    onSonyReadyChange,
-    sony.associations.length,
-    sony.transport.health,
-    sony.wbuzzController,
-  ])
+  const publishTeacherSummary = useCallback(
+    (summary: SonyBuzzTeacherSummary) => {
+      onSonyTeacherSummaryChange?.(summary)
+      onSonyReadyChange?.(classSetupSonyBuzzFullyReady(summary))
+    },
+    [onSonyReadyChange, onSonyTeacherSummaryChange],
+  )
 
   // The loaded game can change under the panel. Bindings for teams that no longer
   // exist are pruned rather than left pointing at nothing; a RENAMED team keeps
@@ -399,6 +405,7 @@ export function GamepadInputHostPanel({
           pendingCapture={sonyPendingCapture}
           onPendingCaptureConsumed={onSonyPendingCaptureConsumed}
           compactOrdinary={selectionMode}
+          onTeacherSummaryChange={publishTeacherSummary}
           supportedProfile={{
             transport: sony.transport,
             associations: sony.associations,
@@ -626,6 +633,7 @@ export function GamepadInputHostPanel({
         recentTestObservations={recentTestObservations}
         pendingCapture={sonyPendingCapture}
         onPendingCaptureConsumed={onSonyPendingCaptureConsumed}
+        onTeacherSummaryChange={publishTeacherSummary}
         supportedProfile={{
           transport: sony.transport,
           associations: sony.associations,

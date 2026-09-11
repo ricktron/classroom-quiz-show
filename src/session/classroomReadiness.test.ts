@@ -1,12 +1,19 @@
 import { describe, expect, it } from 'vitest'
 import {
   canStartPlay,
+  classSetupBuzzerTaskCopy,
+  classSetupClaimsControllersResponding,
   classroomReadinessItems,
   compactReadinessItems,
   currentTaskTitle,
   dominantSetupTask,
   playBlockerExplanation,
 } from './classroomReadiness'
+import {
+  classifyTeacherSummaryFromHardware,
+  classSetupSonyBuzzFullyReady,
+  teacherSummaryLabel,
+} from '../input/sonyBuzzTeacherReadiness'
 
 const ready = {
   teamCount: 4,
@@ -110,5 +117,153 @@ describe('classroom readiness', () => {
     expect(dominantSetupTask({ ...ready, sonyReady: false })).toBe('buzzers')
     expect(dominantSetupTask(ready)).toBe('play')
     expect(playBlockerExplanation({ ...ready, sonyReady: false })).toBeNull()
+  })
+})
+
+describe('H6 honest Class Setup Sony readiness (UX-R1)', () => {
+  const base = {
+    teamCount: 4,
+    namesAssigned: true,
+    namesUnique: true,
+    keyboardFallbackAvailable: true,
+    displayOpen: true,
+    audioUnderstood: true,
+    audioMuted: false,
+  }
+
+  it('does not classify buzzers ready or responding for receiver + defaults only', () => {
+    const summary = classifyTeacherSummaryFromHardware({
+      health: 'healthy',
+      respondingSlotCount: 0,
+      mappingStatus: 'absent',
+      associationCount: 4,
+    })
+    const input = {
+      ...base,
+      sonyReady: classSetupSonyBuzzFullyReady(summary),
+      sonyTeacherSummary: summary,
+    }
+    expect(input.sonyReady).toBe(false)
+    expect(classSetupClaimsControllersResponding(input)).toBe(false)
+    const sony = classroomReadinessItems(input).find((item) => item.id === 'sony')
+    expect(sony?.tone).toBe('optional')
+    expect(sony?.detail.toLowerCase()).not.toMatch(/buzzers ready/)
+    expect(sony?.detail.toLowerCase()).not.toMatch(/buzzers responding/)
+    expect(compactReadinessItems(input).find((item) => item.id === 'buzzers')?.status).not.toBe(
+      'complete',
+    )
+    expect(canStartPlay(input)).toBe(true)
+  })
+
+  it('may represent responding without claiming fully ready when mapping is unfinished', () => {
+    const summary = classifyTeacherSummaryFromHardware({
+      health: 'healthy',
+      respondingSlotCount: 3,
+      mappingStatus: 'absent',
+      associationCount: 4,
+    })
+    const input = {
+      ...base,
+      sonyReady: classSetupSonyBuzzFullyReady(summary),
+      sonyTeacherSummary: summary,
+    }
+    expect(input.sonyReady).toBe(false)
+    expect(classSetupClaimsControllersResponding(input)).toBe(true)
+    expect(classroomReadinessItems(input).find((item) => item.id === 'sony')?.detail).toMatch(
+      /finish team setup/i,
+    )
+    expect(compactReadinessItems(input).find((item) => item.id === 'buzzers')?.status).not.toBe(
+      'complete',
+    )
+    expect(classSetupBuzzerTaskCopy(input)).not.toMatch(/Buzzers are ready/i)
+  })
+
+  it('may report buzzers ready only for the fully verified teacher summary', () => {
+    const summary = classifyTeacherSummaryFromHardware({
+      health: 'healthy',
+      respondingSlotCount: 4,
+      mappingStatus: 'ready',
+      associationCount: 4,
+    })
+    const input = {
+      ...base,
+      sonyReady: classSetupSonyBuzzFullyReady(summary),
+      sonyTeacherSummary: summary,
+    }
+    expect(input.sonyReady).toBe(true)
+    expect(classSetupClaimsControllersResponding(input)).toBe(true)
+    expect(classroomReadinessItems(input).find((item) => item.id === 'sony')?.tone).toBe('ready')
+    expect(compactReadinessItems(input).find((item) => item.id === 'buzzers')?.status).toBe(
+      'complete',
+    )
+    expect(classSetupBuzzerTaskCopy(input)).toMatch(/Buzzers are ready/i)
+  })
+
+  it('keeps Class Setup summary consistent with detailed Sony teacher-summary labels', () => {
+    const summaries = [
+      classifyTeacherSummaryFromHardware({
+        health: 'healthy',
+        respondingSlotCount: 0,
+        mappingStatus: 'absent',
+        associationCount: 4,
+      }),
+      classifyTeacherSummaryFromHardware({
+        health: 'healthy',
+        respondingSlotCount: 2,
+        mappingStatus: 'absent',
+        associationCount: 4,
+      }),
+      classifyTeacherSummaryFromHardware({
+        health: 'healthy',
+        respondingSlotCount: 4,
+        mappingStatus: 'ready',
+        associationCount: 4,
+      }),
+    ] as const
+    for (const summary of summaries) {
+      const detail = classroomReadinessItems({
+        ...base,
+        sonyReady: classSetupSonyBuzzFullyReady(summary),
+        sonyTeacherSummary: summary,
+      }).find((item) => item.id === 'sony')?.detail
+      expect(detail).toContain(teacherSummaryLabel(summary).replace(/\.$/, ''))
+    }
+  })
+
+  it('keeps skipped/unavailable Sony from being labeled hardware-ready while Play stays valid', () => {
+    const skipped = {
+      ...base,
+      sonyReady: false,
+      sonyTeacherSummary: 'receiver-disconnected' as const,
+      buzzerSkipped: true,
+    }
+    expect(canStartPlay(skipped)).toBe(true)
+    expect(playBlockerExplanation(skipped)).toBeNull()
+    expect(compactReadinessItems(skipped).find((item) => item.id === 'buzzers')?.status).toBe(
+      'skipped',
+    )
+    expect(classroomReadinessItems(skipped).find((item) => item.id === 'sony')?.tone).not.toBe(
+      'ready',
+    )
+    expect(classSetupClaimsControllersResponding(skipped)).toBe(false)
+  })
+
+  it('never fabricates handset response from transport health alone', () => {
+    for (const health of ['healthy', 'degraded'] as const) {
+      const summary = classifyTeacherSummaryFromHardware({
+        health,
+        respondingSlotCount: 0,
+        mappingStatus: 'ready',
+        associationCount: 4,
+      })
+      expect(classSetupSonyBuzzFullyReady(summary)).toBe(false)
+      expect(
+        classSetupClaimsControllersResponding({
+          ...base,
+          sonyReady: false,
+          sonyTeacherSummary: summary,
+        }),
+      ).toBe(false)
+    }
   })
 })

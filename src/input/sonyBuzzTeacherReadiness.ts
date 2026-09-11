@@ -132,6 +132,36 @@ export function teacherSummaryLabel(summary: SonyBuzzTeacherSummary): string {
   }
 }
 
+/**
+ * Single hardware → teacher-summary path shared by Class Setup and Sony setup.
+ * Callers must not invent a coarser parallel "ready" boolean.
+ */
+export function classifyTeacherSummaryFromHardware(input: {
+  readonly health: SonyBuzzTransportHealth
+  readonly respondingSlotCount: number
+  readonly mappingStatus: string
+  readonly associationCount: number
+}): SonyBuzzTeacherSummary {
+  return classifyTeacherSummary({
+    receiver: classifyReceiverLayer(input.health),
+    controllers: classifyControllerLayer(input.respondingSlotCount),
+    mapping: classifyMappingLayer(input.mappingStatus, input.associationCount),
+  })
+}
+
+/** Fully ready for ordinary Sony use — never receiver health alone. */
+export function classSetupSonyBuzzFullyReady(summary: SonyBuzzTeacherSummary): boolean {
+  return summary === 'sony-buzz-ready'
+}
+
+/**
+ * Whether teacher-facing copy may say controllers are responding.
+ * Stronger than "receiver connected"; weaker than fully ready.
+ */
+export function classSetupSonyBuzzClaimsResponding(summary: SonyBuzzTeacherSummary): boolean {
+  return summary === 'controllers-need-team-setup' || summary === 'sony-buzz-ready'
+}
+
 export function receiverLayerLabel(layer: SonyBuzzReceiverLayer): string {
   switch (layer) {
     case 'unsupported':

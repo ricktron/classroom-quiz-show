@@ -3,7 +3,17 @@
  *
  * Compact summary statuses are orientation, not a second settings toolbar.
  * Required, optional, readiness, fallback, and outcome stay distinct.
+ *
+ * Sony buzzer readiness must use the same teacher-summary layers as the
+ * detailed Sony setup section — never a coarser parallel "ready" claim.
  */
+
+import {
+  classSetupSonyBuzzClaimsResponding,
+  classSetupSonyBuzzFullyReady,
+  teacherSummaryLabel,
+  type SonyBuzzTeacherSummary,
+} from '../input/sonyBuzzTeacherReadiness'
 
 export type ReadinessTone = 'ready' | 'optional' | 'warning'
 
@@ -30,7 +40,16 @@ export interface ClassroomReadinessInput {
   readonly teamCount: number
   readonly namesAssigned: boolean
   readonly namesUnique: boolean
+  /**
+   * True only when Sony teacher-summary is `sony-buzz-ready`.
+   * Prefer deriving via {@link classSetupSonyBuzzFullyReady}.
+   */
   readonly sonyReady: boolean
+  /**
+   * Same classification published by the detailed Sony readiness layers.
+   * When present, Class Setup copy must not claim more than this summary.
+   */
+  readonly sonyTeacherSummary?: SonyBuzzTeacherSummary | null
   readonly keyboardFallbackAvailable: boolean
   readonly displayOpen: boolean
   readonly audioUnderstood: boolean
@@ -44,14 +63,62 @@ export interface ClassroomSetupGuidanceInput extends ClassroomReadinessInput {
   readonly focusOverride?: SetupTaskId | null
 }
 
+function resolvedSonyFullyReady(input: {
+  readonly sonyReady: boolean
+  readonly sonyTeacherSummary?: SonyBuzzTeacherSummary | null
+}): boolean {
+  if (input.sonyTeacherSummary != null) {
+    return classSetupSonyBuzzFullyReady(input.sonyTeacherSummary)
+  }
+  return input.sonyReady
+}
+
+function sonyReadinessPresentation(input: ClassroomReadinessInput): {
+  readonly label: string
+  readonly detail: string
+  readonly tone: ReadinessTone
+} {
+  const fullyReady = resolvedSonyFullyReady(input)
+  const summary = input.sonyTeacherSummary ?? null
+  if (fullyReady) {
+    return {
+      label: 'Buzzers ready',
+      detail: `${teacherSummaryLabel('sony-buzz-ready')} Keyboard controls still work.`,
+      tone: 'ready',
+    }
+  }
+  if (summary != null) {
+    const detail = teacherSummaryLabel(summary)
+    const withKeyboard = /keyboard/i.test(detail)
+      ? detail
+      : `${detail} Keyboard controls still work.`
+    return {
+      label: 'Buzzers optional',
+      detail: withKeyboard,
+      tone: input.keyboardFallbackAvailable ? 'optional' : 'warning',
+    }
+  }
+  return {
+    label: 'Buzzers optional',
+    detail: 'Buzzers are optional. Keyboard controls still work.',
+    tone: input.keyboardFallbackAvailable ? 'optional' : 'warning',
+  }
+}
+
+/** Semantic probe: does this Class Setup input claim controllers are responding? */
+export function classSetupClaimsControllersResponding(input: ClassroomReadinessInput): boolean {
+  if (input.sonyTeacherSummary != null) {
+    return classSetupSonyBuzzClaimsResponding(input.sonyTeacherSummary)
+  }
+  // Without a shared summary, a true sonyReady historically over-claimed
+  // responding. H6 requires the summary path for honest responding claims.
+  return false
+}
+
 export function classroomReadinessItems(input: ClassroomReadinessInput): readonly ReadinessItem[] {
   const teamsReady = input.teamCount >= 1 && input.teamCount <= 8
   const namesReady = input.namesAssigned && input.namesUnique
-  const sonyTone: ReadinessTone = input.sonyReady
-    ? 'ready'
-    : input.keyboardFallbackAvailable
-      ? 'optional'
-      : 'warning'
+  const sony = sonyReadinessPresentation(input)
   return [
     {
       id: 'teams',
@@ -71,11 +138,9 @@ export function classroomReadinessItems(input: ClassroomReadinessInput): readonl
     },
     {
       id: 'sony',
-      label: input.sonyReady ? 'Buzzers ready' : 'Buzzers optional',
-      detail: input.sonyReady
-        ? 'Buzzers are responding. Keyboard controls still work.'
-        : 'Buzzers are optional. Keyboard controls still work.',
-      tone: sonyTone,
+      label: sony.label,
+      detail: sony.detail,
+      tone: sony.tone,
     },
     {
       id: 'display',
@@ -144,7 +209,8 @@ export function dominantSetupTask(input: ClassroomSetupGuidanceInput): SetupTask
   if (!teamsAreReady(input)) return 'teams'
   if (!namesAreReady(input)) return 'names'
   if (input.repairActive) return 'buzzers'
-  if (!input.sonyReady && !input.buzzerSkipped) return 'buzzers'
+  const sonyReady = resolvedSonyFullyReady(input)
+  if (!sonyReady && !input.buzzerSkipped) return 'buzzers'
   if (!input.displayOpen) return 'display'
   if (!soundIsReady(input)) return 'sound'
   return 'play'
@@ -184,6 +250,7 @@ export function compactReadinessItems(
   input: ClassroomSetupGuidanceInput,
 ): readonly CompactReadinessItem[] {
   const current = dominantSetupTask(input)
+  const sonyReady = resolvedSonyFullyReady(input)
   const teamsStatus: CompactReadinessStatus = teamsAreReady(input)
     ? current === 'teams'
       ? 'current'
@@ -198,7 +265,7 @@ export function compactReadinessItems(
       : current === 'names'
         ? 'current'
         : 'blocked'
-  const buzzerStatus: CompactReadinessStatus = input.sonyReady
+  const buzzerStatus: CompactReadinessStatus = sonyReady
     ? 'complete'
     : input.buzzerSkipped
       ? 'skipped'
@@ -247,4 +314,22 @@ export function currentTaskTitle(task: SetupTaskId | 'play'): string {
     case 'play':
       return 'Ready to play'
   }
+}
+
+/** Task-panel copy for the buzzers step — never stronger than the shared summary. */
+export function classSetupBuzzerTaskCopy(input: {
+  readonly sonyReady: boolean
+  readonly sonyTeacherSummary?: SonyBuzzTeacherSummary | null
+}): string {
+  if (resolvedSonyFullyReady(input)) {
+    return 'Buzzers are ready. You can check them below, or play.'
+  }
+  if (input.sonyTeacherSummary != null) {
+    const summary = teacherSummaryLabel(input.sonyTeacherSummary)
+    if (classSetupSonyBuzzClaimsResponding(input.sonyTeacherSummary)) {
+      return `${summary} Keyboard controls still work.`
+    }
+    return `${summary} Connect them below if you want them, or keep setting up with the keyboard.`
+  }
+  return 'Buzzers are optional. Connect them below if you want them, or keep setting up with the keyboard.'
 }

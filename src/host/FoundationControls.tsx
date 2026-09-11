@@ -21,6 +21,7 @@ import { ResponseTimerHostPanel } from './ResponseTimerHostPanel'
 import { FinalWagerHostPanel } from './FinalWagerHostPanel'
 import { LocalInputHostPanel } from './LocalInputHostPanel'
 import { GamepadInputHostPanel } from './GamepadInputHostPanel'
+import type { SonyBuzzTeacherSummary } from '../input/sonyBuzzTeacherReadiness'
 import { useResponseTimerExpiry } from './useResponseTimerExpiry'
 import { useFinalWagerExpiry } from './useFinalWagerExpiry'
 import { systemClock, type Clock } from '../time/clock'
@@ -71,6 +72,9 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
   const [displayOpen, setDisplayOpen] = useState(false)
   const [audioUnderstood, setAudioUnderstood] = useState(false)
   const [sonyReady, setSonyReady] = useState(false)
+  const [sonyTeacherSummary, setSonyTeacherSummary] = useState<SonyBuzzTeacherSummary | null>(
+    null,
+  )
   const displayWindowRef = useRef<Window | null>(null)
   const theme = useOptionalTheme()
   const persistence = useHostPersistence({ clock })
@@ -224,6 +228,7 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
           observation={null}
           observationBatch={selectionObservationBatch}
           sonyReady={sonyReady}
+          sonyTeacherSummary={sonyTeacherSummary}
           displayOpen={displayOpen}
           onOpenDisplay={() => {
             const opened = window.open(
@@ -271,6 +276,7 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
           selectionMode={!playReady}
           onSelectionBatch={setSelectionObservationBatch}
           onSonyReadyChange={setSonyReady}
+          onSonyTeacherSummaryChange={setSonyTeacherSummary}
         />
       )}
 

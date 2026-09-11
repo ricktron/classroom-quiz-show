@@ -11,12 +11,14 @@ import {
 import { canPersistMutations, type PersistLeadership } from './writeAuthority'
 import {
   canStartPlay,
+  classSetupBuzzerTaskCopy,
   compactReadinessItems,
   currentTaskTitle,
   dominantSetupTask,
   playBlockerExplanation,
   type SetupTaskId,
 } from '../session/classroomReadiness'
+import type { SonyBuzzTeacherSummary } from '../input/sonyBuzzTeacherReadiness'
 import {
   intentFromSonyNameAction,
   shouldAcceptSonyNamePress,
@@ -41,6 +43,8 @@ export interface ClassroomSetupPanelProps {
   /** Simultaneous Sony edges from one poll — all must apply (S04B). */
   readonly observationBatch?: readonly ClassroomSetupObservation[] | null
   readonly sonyReady: boolean
+  /** Same Sony teacher-summary as the detailed Buzzers section. */
+  readonly sonyTeacherSummary?: SonyBuzzTeacherSummary | null
   readonly displayOpen: boolean
   readonly onOpenDisplay: () => void
   readonly audioUnderstood: boolean
@@ -81,6 +85,7 @@ export function ClassroomSetupPanel({
   observation,
   observationBatch = null,
   sonyReady,
+  sonyTeacherSummary = null,
   displayOpen,
   onOpenDisplay,
   audioUnderstood,
@@ -191,6 +196,7 @@ export function ClassroomSetupPanel({
     namesAssigned,
     namesUnique: unique,
     sonyReady,
+    sonyTeacherSummary,
     keyboardFallbackAvailable: true,
     displayOpen,
     audioUnderstood,
@@ -332,10 +338,8 @@ export function ClassroomSetupPanel({
 
           {showBuzzers && (
             <div className="classroom-setup__task" data-testid="setup-buzzers-task">
-              <p className="host__note">
-                {sonyReady
-                  ? 'Buzzers are ready. You can check them below, or play.'
-                  : 'Buzzers are optional. Connect them below if you want them, or keep setting up with the keyboard.'}
+              <p className="host__note" data-testid="setup-buzzers-copy">
+                {classSetupBuzzerTaskCopy({ sonyReady, sonyTeacherSummary })}
               </p>
               {!sonyReady && (
                 <button

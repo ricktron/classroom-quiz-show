@@ -47,6 +47,7 @@ import {
   slotIdForPrimaryRedButton,
   teacherSummaryLabel,
   type SonyBuzzRepairStep,
+  type SonyBuzzTeacherSummary,
 } from '../input/sonyBuzzTeacherReadiness'
 import type { SonyBuzzTransportSnapshot } from '../input/sonyBuzzKeepAliveLifecycle'
 import type { GamepadControllerInfo } from './useGamepadBuzzInput'
@@ -88,6 +89,11 @@ export interface SonyBuzzSetupSectionProps {
   readonly supportedProfile?: SonyBuzzSupportedProfileSectionProps
   /** Class Setup: collapse capture/diagnostics. Play: keep them available. */
   readonly compactOrdinary?: boolean
+  /**
+   * Publishes the same teacher-summary classification Class Setup must use.
+   * Avoids a second, coarser "sonyReady" algorithm above this surface.
+   */
+  readonly onTeacherSummaryChange?: (summary: SonyBuzzTeacherSummary) => void
 }
 
 export interface SonyBuzzSupportedProfileSectionProps {
@@ -129,6 +135,7 @@ function SupportedProfileBlock({
   recentTestObservations = [],
   checkDisabled,
   compactOrdinary,
+  onTeacherSummaryChange,
 }: {
   teams: readonly TeamDefinition[]
   supportedProfile: SonyBuzzSupportedProfileSectionProps
@@ -138,6 +145,7 @@ function SupportedProfileBlock({
   recentTestObservations?: readonly SonyBuzzTestObservation[]
   checkDisabled: boolean
   compactOrdinary: boolean
+  onTeacherSummaryChange?: (summary: SonyBuzzTeacherSummary) => void
 }) {
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [repairStep, setRepairStep] = useState<SonyBuzzRepairStep>('idle')
@@ -161,6 +169,10 @@ function SupportedProfileBlock({
     controllers: controllersLayer,
     mapping: mappingLayer,
   })
+
+  useEffect(() => {
+    onTeacherSummaryChange?.(summary)
+  }, [onTeacherSummaryChange, summary])
 
   useEffect(() => {
     // Controllers-responding readiness must track ordinary Buzzer Check as well as
@@ -555,6 +567,7 @@ export function SonyBuzzSetupSection({
   onPendingCaptureConsumed,
   supportedProfile,
   compactOrdinary = false,
+  onTeacherSummaryChange,
 }: SonyBuzzSetupSectionProps) {
   const initialTeamId = teams[0]?.id ?? ''
   const [teamId, setTeamId] = useState<string>(initialTeamId)
@@ -644,6 +657,7 @@ export function SonyBuzzSetupSection({
           recentTestObservations={recentTestObservations}
           checkDisabled={diagnosticsStatus === 'unsupported'}
           compactOrdinary={compactOrdinary}
+          onTeacherSummaryChange={onTeacherSummaryChange}
         />
       ) : null}
 

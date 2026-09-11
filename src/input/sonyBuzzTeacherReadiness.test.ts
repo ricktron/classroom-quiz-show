@@ -6,6 +6,9 @@ import {
   classifyMappingLayer,
   classifyReceiverLayer,
   classifyTeacherSummary,
+  classifyTeacherSummaryFromHardware,
+  classSetupSonyBuzzClaimsResponding,
+  classSetupSonyBuzzFullyReady,
   discoveredControllerLine,
   nextRepairStep,
   repairStepCopy,
@@ -71,6 +74,97 @@ describe('teacher summary — transport healthy alone is not ready', () => {
   })
 })
 
+describe('H6 class-setup readiness claims share teacher-summary layers', () => {
+  const matrix: Array<{
+    readonly name: string
+    readonly health: SonyBuzzTransportHealth
+    readonly respondingSlotCount: number
+    readonly mappingStatus: string
+    readonly associationCount: number
+    readonly summary: ReturnType<typeof classifyTeacherSummary>
+    readonly fullyReady: boolean
+    readonly claimsResponding: boolean
+  }> = [
+    {
+      name: 'healthy transport + provisional associations + zero responses',
+      health: 'healthy',
+      respondingSlotCount: 0,
+      mappingStatus: 'absent',
+      associationCount: 4,
+      summary: 'receiver-waiting-for-controllers',
+      fullyReady: false,
+      claimsResponding: false,
+    },
+    {
+      name: 'degraded transport alone never fabricates response',
+      health: 'degraded',
+      respondingSlotCount: 0,
+      mappingStatus: 'absent',
+      associationCount: 4,
+      summary: 'receiver-waiting-for-controllers',
+      fullyReady: false,
+      claimsResponding: false,
+    },
+    {
+      name: 'responding + mapping absent is not fully ready',
+      health: 'healthy',
+      respondingSlotCount: 2,
+      mappingStatus: 'absent',
+      associationCount: 4,
+      summary: 'controllers-need-team-setup',
+      fullyReady: false,
+      claimsResponding: true,
+    },
+    {
+      name: 'provisional associations alone never establish final readiness',
+      health: 'healthy',
+      respondingSlotCount: 4,
+      mappingStatus: 'absent',
+      associationCount: 4,
+      summary: 'controllers-need-team-setup',
+      fullyReady: false,
+      claimsResponding: true,
+    },
+    {
+      name: 'fully verified Sony state may be ready',
+      health: 'healthy',
+      respondingSlotCount: 4,
+      mappingStatus: 'ready',
+      associationCount: 4,
+      summary: 'sony-buzz-ready',
+      fullyReady: true,
+      claimsResponding: true,
+    },
+    {
+      name: 'disconnected receiver is never ready',
+      health: 'disconnected',
+      respondingSlotCount: 0,
+      mappingStatus: 'ready',
+      associationCount: 4,
+      summary: 'receiver-disconnected',
+      fullyReady: false,
+      claimsResponding: false,
+    },
+  ]
+
+  for (const row of matrix) {
+    it(row.name, () => {
+      const summary = classifyTeacherSummaryFromHardware({
+        health: row.health,
+        respondingSlotCount: row.respondingSlotCount,
+        mappingStatus: row.mappingStatus,
+        associationCount: row.associationCount,
+      })
+      expect(summary).toBe(row.summary)
+      expect(classSetupSonyBuzzFullyReady(summary)).toBe(row.fullyReady)
+      expect(classSetupSonyBuzzClaimsResponding(summary)).toBe(row.claimsResponding)
+      if (!row.fullyReady) {
+        expect(teacherSummaryLabel(summary)).not.toMatch(/^Buzzers ready\.?$/)
+      }
+    })
+  }
+})
+
 describe('mapping layer', () => {
   it('absent when no associations', () => {
     expect(classifyMappingLayer('absent', 0)).toBe('absent')
@@ -79,6 +173,10 @@ describe('mapping layer', () => {
 
   it('ready when saved associations present', () => {
     expect(classifyMappingLayer('ready', 3)).toBe('ready')
+  })
+
+  it('keeps mapping absent while defaults exist but are unsaved', () => {
+    expect(classifyMappingLayer('absent', 4)).toBe('absent')
   })
 })
 
