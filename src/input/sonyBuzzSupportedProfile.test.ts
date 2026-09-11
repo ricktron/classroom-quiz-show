@@ -132,11 +132,11 @@ describe('sonyBuzzSupportedProfile', () => {
 describe('defaultSonyBuzzSlotAssociations', () => {
   it('maps Controller N to Team N without persisting', () => {
     const teams = [
-      { id: 'a', name: 'A', accent: 'crimson' },
-      { id: 'b', name: 'B', accent: 'azure' },
-      { id: 'c', name: 'C', accent: 'emerald' },
-      { id: 'd', name: 'D', accent: 'amber' },
-    ]
+      { id: 'a', name: 'A', accent: 'crimson', order: 0 },
+      { id: 'b', name: 'B', accent: 'azure', order: 1 },
+      { id: 'c', name: 'C', accent: 'emerald', order: 2 },
+      { id: 'd', name: 'D', accent: 'amber', order: 3 },
+    ] as const
     expect(defaultSonyBuzzSlotAssociations(teams)).toEqual([
       { slotId: 1, teamId: 'a' },
       { slotId: 2, teamId: 'b' },
