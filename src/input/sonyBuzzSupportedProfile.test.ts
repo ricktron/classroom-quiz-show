@@ -17,6 +17,7 @@ import {
 } from './sonyBuzzSupportedProfile'
 import { PRIMARY_BUZZ } from './logicalAction'
 import { teamId } from '../game/ids'
+import { createTeamDefinitions } from '../game/teams/definition'
 
 describe('sonyBuzzSupportedProfile', () => {
   it('uses the exact supported profile identity', () => {
@@ -131,12 +132,12 @@ describe('sonyBuzzSupportedProfile', () => {
 
 describe('defaultSonyBuzzSlotAssociations', () => {
   it('maps Controller N to Team N without persisting', () => {
-    const teams = [
-      { id: 'a', name: 'A', accent: 'crimson', order: 0 },
-      { id: 'b', name: 'B', accent: 'azure', order: 1 },
-      { id: 'c', name: 'C', accent: 'emerald', order: 2 },
-      { id: 'd', name: 'D', accent: 'amber', order: 3 },
-    ] as const
+    const teams = createTeamDefinitions([
+      { id: 'a', name: 'A', accent: 'crimson' },
+      { id: 'b', name: 'B', accent: 'azure' },
+      { id: 'c', name: 'C', accent: 'emerald' },
+      { id: 'd', name: 'D', accent: 'amber' },
+    ])
     expect(defaultSonyBuzzSlotAssociations(teams)).toEqual([
       { slotId: 1, teamId: 'a' },
       { slotId: 2, teamId: 'b' },
