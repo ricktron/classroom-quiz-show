@@ -35,7 +35,7 @@ Authority is unchanged by this file. Observed implementation, `PROJECT.md`,
 the Product Contract, `STATUS.md`, accepted ADRs and the current Program plan
 all outrank this matrix; research sources rank below it. Where an outside
 recommendation conflicts with a CQS invariant, **CQS wins**. See
-[`../design/README.md`](../design/README.md) §3.
+[`../design/README.md`](../design/README.md) §4.
 
 ---
 

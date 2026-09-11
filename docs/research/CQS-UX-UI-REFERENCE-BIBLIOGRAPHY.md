@@ -16,7 +16,7 @@ project.
 
 Books are research evidence. They are not CQS product authority. Where an
 outside recommendation conflicts with a CQS invariant, CQS wins. See
-[`../design/README.md`](../design/README.md) §3.
+[`../design/README.md`](../design/README.md) §4.
 
 ---
 

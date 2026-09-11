@@ -286,6 +286,37 @@ Named trust/security threats should have adversarial coverage proportionate
 to consequence. Passing regression tests alone do not prove a trust
 invariant if the boundary was never adversarially exercised.
 
+### 6.1 Teacher-facing UX/design review trigger
+
+For a **consequential teacher-facing change**, independent review must also
+inspect the relevant
+[`../design/CQS-UX-SURFACE-INVENTORY.md`](../design/CQS-UX-SURFACE-INVENTORY.md)
+entry and the applicable `CQS-UX-Pxx` principles in
+[`../design/CQS-UX-DOCTRINE.md`](../design/CQS-UX-DOCTRINE.md).
+
+```text
+functional correctness and usability are separate verdicts
+```
+
+Ask whether the implementation:
+
+- matches the teacher's mental model rather than the implementation model;
+- preserves clear, honest system status;
+- gives appropriate action hierarchy;
+- handles failure and recovery intelligibly;
+- preserves the Host-private / Display-public distinction;
+- preserves accessibility and keyboard fallback where relevant;
+- respects classroom-pressure constraints;
+- introduces a **new design convention** that should be promoted into doctrine
+  rather than left as accidental local behavior.
+
+External bibliography consultation is **not** mandatory for review. Escalate to
+[`../research/CQS-UX-SOURCE-PRINCIPLE-MATRIX.md`](../research/CQS-UX-SOURCE-PRINCIPLE-MATRIX.md)
+or the source shelf only under the conditions in
+[`../design/README.md`](../design/README.md) §2. Design guidance informs the
+verdict; it does not outrank repository canon and does not authorize
+implementation.
+
 ---
 
 ## 7. Invariant-first repair discipline

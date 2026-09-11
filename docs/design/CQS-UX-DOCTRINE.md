@@ -19,7 +19,7 @@ Authority: this doctrine sits below observed implementation,
 [`../PROJECT.md`](../PROJECT.md),
 [`../CQS-PRODUCT-CONTRACT.md`](../CQS-PRODUCT-CONTRACT.md),
 [`../STATUS.md`](../STATUS.md), accepted ADRs, and the current Program plan.
-See [`README.md`](README.md) §3.
+See [`README.md`](README.md) §4.
 
 Surface-by-surface application lives in
 [`CQS-UX-SURFACE-INVENTORY.md`](CQS-UX-SURFACE-INVENTORY.md).

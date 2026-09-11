@@ -166,3 +166,112 @@ Independent invariant-seeking review against the 12 required questions:
 - No merge or auto-merge is performed or requested.
 - `npm run verify` and `npm run verify:all` were **not run** and are **not**
   claimed as passing.
+
+---
+
+## R1 same-slice repair — discovery and consultation routing
+
+- **Repair authorization:** `AUTHORIZE-CQS-UX-GUIDANCE-S01-R1-DISCOVERY-ROUTING-REPAIR-1`
+- **Prior implementation authorization:** `AUTHORIZE-CQS-UX-GUIDANCE-S01-FOUNDATION-1`
+- **Date:** 2026-09-11 (08:29 CDT / 13:29 UTC preflight)
+
+This section is **additive historical evidence**. It does not rewrite the S01
+record above.
+
+### Defect repaired
+
+S01 created the guidance family but left **discovery** unsolved: an agent
+following normal mandatory startup reading had no routing trigger telling it
+that teacher-facing UX/UI work should enter `docs/design/`, and independent
+review had no corresponding trigger. The repair adds routing without making
+the bibliography mandatory reading for trivial UI edits.
+
+### Preflight (re-observed)
+
+| Fact | Observed |
+| --- | --- |
+| Expected candidate before repair | `14e7a6e518d790e4f7408a405ee841719bb12b17` |
+| Observed HEAD before repair | `14e7a6e518d790e4f7408a405ee841719bb12b17` — **match** |
+| `origin/main` | `cf90eadb7794a3e2c2f529212432e4a4daaadc91` — unchanged |
+| S04B published head | `325f46a4d8f21a050dee04b86454b07ce309853c` — unchanged |
+| Branch / worktree | `claude/cqs-ux-guidance-foundation-xwkmd0`, single worktree |
+| Working tree at preflight | clean |
+| PR #74 at preflight | open, not merged, `mergeable_state: clean`, 6/6 checks green, 0 review threads |
+
+### Routing added
+
+```text
+AGENTS.md  (startup / working discipline)
+  → docs/design/README.md  §2 consultation levels
+    → docs/design/CQS-UX-SURFACE-INVENTORY.md  (relevant surface entry)
+      → docs/design/CQS-UX-DOCTRINE.md  (adopted principles — usually terminal)
+        → docs/research/CQS-UX-SOURCE-PRINCIPLE-MATRIX.md  (rationale / evidence)
+          → docs/research/CQS-UX-UI-REFERENCE-BIBLIOGRAPHY.md  (escalation only)
+
+docs/governance/EXECUTION-GUIDANCE.md §6.1
+  → same hierarchy, for independent review
+```
+
+| File | Change |
+| --- | --- |
+| `AGENTS.md` | New **Teacher-facing UX and design routing** section between Working discipline and Product invariants. Names the trigger conditions, orders doctrine before literature, and restates that research neither overrides canon nor authorizes implementation. |
+| `docs/design/README.md` | New **§2 When to consult this guidance**: three consultation levels, explicit no-escalation examples, five worked routing examples, and an evidence-state caveat. Existing §2–§8 renumbered to §3–§9. |
+| `docs/governance/EXECUTION-GUIDANCE.md` | New **§6.1 Teacher-facing UX/design review trigger** under independent review. Eight review questions; bibliography consultation explicitly **not** mandatory for review. |
+| `docs/design/CQS-UX-DOCTRINE.md`, `docs/research/CQS-UX-SOURCE-PRINCIPLE-MATRIX.md`, `docs/research/CQS-UX-UI-REFERENCE-BIBLIOGRAPHY.md` | Cross-reference repointed `README.md §3` → `§4` only, following the renumbering. **One token each. No substantive content changed.** |
+
+The doctrine, surface inventory, matrix and bibliography were **not** rewritten
+to restate the repair.
+
+### Evidence-state discipline preserved
+
+The repair does not weaken the registered / metadata-verified / partially
+verified / fully ingested distinction. `README.md` §2 states explicitly that a
+source may be **registered but not yet ingested**, that routing a question to a
+source is not a claim it was read, and that escalating to a `NOT-YET-INGESTED`
+source means reading it now rather than citing it from its title. Every source
+remains `NOT-YET-INGESTED`.
+
+### R1 verification actually run
+
+| Check | Result |
+| --- | --- |
+| `git diff --check` | **exit 0** |
+| Changed-path scope | **PASS** — `AGENTS.md` + five `docs/` paths; no other path |
+| Internal Markdown links | **PASS** — all links in changed files resolve, including the new `AGENTS.md` → `docs/design/` links |
+| Section-reference integrity | **PASS** — no stale `README.md §3` authority reference remains |
+| Routing acyclicity | **PASS** — routing flows one way; the only upward reference is to the authority hierarchy, which is a citation, not a routing step |
+| App code / tests / deps / schema / config / lockfile delta | **NONE** |
+| Program-status delta | **NONE** — `STATUS.md`, `handoff/CURRENT.md`, `CQS-REAL-MVP-ARC.md`, `CQS-PRODUCT-CONTRACT.md` unmodified |
+| Implementation-authority language sweep | **PASS** |
+| Un-ingested-source claim sweep | **PASS** |
+
+`npm run verify` and `npm run verify:all` remain **NOT RUN** for the reason
+given above — `node_modules` is still absent and this repair is docs-only.
+Neither is claimed as passing.
+
+### R1 semantic review — PASS
+
+Ten questions, all yes: an agent starting only from `AGENTS.md` reaches the
+guidance; the surface inventory identifies applicable guidance; Level 1 states
+when doctrine alone is sufficient; Level 2 states when the matrix applies;
+Level 3 and the no-escalation list bound when external literature should and
+should not be consulted; `EXECUTION-GUIDANCE.md` §6.1 gives review the matching
+trigger; research remains subordinate to repository canon; overhead is bounded
+by the explicit no-escalation list; S04B was untouched.
+
+### R1 known interaction
+
+`docs/governance/EXECUTION-GUIDANCE.md` is also modified by the unmerged S04B
+candidate, which appends §9.1 near line 353. This repair inserts §6.1 near line
+289 — a different region, so no textual conflict is expected, though whichever
+lane merges second will rebase over the other's line offsets. Recorded as an
+observation; **no S04B mutation was performed**.
+
+### R1 non-claims
+
+- No product implementation occurred.
+- No Program status, gap-register entry, or finding disposition changed.
+- S04B, S04C, S04D, S05 and S06 remain **NOT AUTHORIZED**.
+- The S04B candidate was not switched into, reset, cleaned, stashed, amended,
+  rebased, merged, or otherwise mutated.
+- No merge or auto-merge is performed or requested.
