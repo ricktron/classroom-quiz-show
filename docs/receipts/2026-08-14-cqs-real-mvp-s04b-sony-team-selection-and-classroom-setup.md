@@ -424,3 +424,91 @@ requalification of the repaired interaction is still required.
 - No workbook / GameDefinition / IndexedDB / session-wire / public-state
   / pack / Sony profile version bump.
 - No change to Sony hardware support claims or architecture.
+
+---
+
+## H5 same-slice physical-defect consolidation
+
+This section does **not** erase H1–H4. It records why packaged H4 alone
+was rejected as the physical candidate, and consolidates the already-
+developed H3 physical-session defect repairs onto H4.
+
+| Fact | Observed |
+| --- | --- |
+| Repair authorization | `AUTHORIZE-CQS-REAL-MVP-S04B-H5-PHYSICAL-DEFECT-CONSOLIDATION-REPAIR-1` |
+| Packaged H4 (insufficient alone) | `0fb8d704d3b17002d75a7fd326a7b8e4f5062451` |
+| Expected / observed `origin/main` | `cf90eadb7794a3e2c2f529212432e4a4daaadc91` |
+| H5 packaged implementation | `e23ac308f0f06d3eb916f7409127e4485ae03f43` |
+| H5 tree | `1becdaf26bb20a3783cad8ed1b8c71e4226db674` |
+| Verification worktree | `/tmp/cqs-s04b-h5-verify-e23ac308f0f06d3eb916f7409127e4485ae03f43` (detached exact H5; source clean aside from `node_modules` symlink) |
+| Independent-review PASS | **not written** |
+| Physical H5 PASS | **not written / NOT RUN** |
+| Terminal S04B | **not claimed** |
+| PR / merge / push | **not opened / not merged / not pushed** |
+
+### Why H4 alone was rejected
+
+Pre-physical provenance showed packaged H4 retained H4 presentation
+order/contrast but **omitted** uncommitted H3 physical-session repairs
+already proven necessary during H3 qualification (simultaneous edges,
+Buzzer Check multi-observation, ordinary readiness advancement,
+cold-start Check). Qualifying H4 would knowingly re-test superseded
+broken states for planned simultaneous and Class Setup smoke checks.
+
+### Physical findings incorporated
+
+| Finding | Bounded consolidation |
+| --- | --- |
+| F-S04B-H3-SONY-07 | Batch selection path: Gamepad poll microtask batch → Foundation → `ClassroomSetupPanel.applySonyObservations` |
+| F-S04B-H3-SONY-07b | `recentTestObservations` multi-edge Buzzer Check line |
+| F-S04B-H3-SONY-05 | Ordinary test-mode observations advance `respondingSlots` |
+| F-S04B-H3-SONY-06 | Default slot→team associations; provisional Sony recipe observations; first-sight emit in test mode; skip gamepadconnected reprime in test mode; transport-health mapping gate |
+| Coupled setup | Soft-refresh keepalive; shorter receiver readiness labels (already in classified WIP) |
+
+**Not incorporated:** F-S04B-H3-SONY-08 Controller labeling (OPEN / optional).
+
+### H4 presentation preserved
+
+Visual order Blue → Orange → Green → Yellow via
+`TEAM_NAME_CHOICE_DISPLAY_ORDER = [3, 2, 1, 0]`; logical choiceIndex map
+unchanged; dark pastel ink; selected/subdued; wrap; grayscale /
+high-contrast / reduced-motion intact.
+
+### Evidence transfer vs invalidation
+
+- **Transfer (causally justified):** H4 presentation contracts; prior
+  sequential name-selection / Class Setup evidence that does not depend
+  on the omitted simultaneous/readiness/cold-start defects.
+- **Invalidated for acceptance:** any claim that packaged H4
+  `0fb8d70…` is the complete physical candidate; simultaneous-selection
+  and readiness PASS claims that depended on the uncommitted WIP without
+  being frozen into a packaged head.
+- Pause/checkpoint JSONL under `docs/handoff/` remain evidence-only
+  (not product commits).
+
+### H5 verification (clean worktree at packaged SHA)
+
+| Command | Result |
+| --- | --- |
+| `git diff --check` | exit 0 |
+| `npm run verify` | lint: 0 errors, 3 pre-existing ThemeProvider `react-refresh` warnings; typecheck pass; **2560** unit tests passed / **2** skipped |
+| `CI=1 npm run verify:all` | same unit result; Playwright **379** passed / **14** skipped |
+| `npm run build:desktop` | renderer + main built (exit 0) |
+| `npm run test:desktop` | **3** passed |
+| `npm run package:desktop` | exit 0; `sourceSha` **`e23ac308f0f06d3eb916f7409127e4485ae03f43`**; unsigned app/dmg/zip under verify worktree `release/` (copied to primary worktree `release/` for owner launch) |
+
+electron-builder noted missing path warnings for some dependency labels
+during packaging (`scheduler` / `react-router` via symlink `node_modules`);
+package completed and desktop shell tests passed on the same build path.
+
+### H5 non-claims
+
+- No independent-review PASS.
+- No H5 physical PASS (physical qualification **NOT RUN**).
+- S04B not merged / not terminal.
+- No PR / push.
+- S04C–S06 not begun.
+- SONY-08 not implemented.
+- No Sony hardware support claim or profile recipe change.
+- No workbook / GameDefinition / IndexedDB / session-wire / public-state /
+  pack version bump.
