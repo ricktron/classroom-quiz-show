@@ -442,7 +442,7 @@ developed H3 physical-session defect repairs onto H4.
 | H5 tree | `1becdaf26bb20a3783cad8ed1b8c71e4226db674` |
 | Verification worktree | `/tmp/cqs-s04b-h5-verify-e23ac308f0f06d3eb916f7409127e4485ae03f43` (detached exact H5; source clean aside from `node_modules` symlink) |
 | Independent-review PASS | **not written** |
-| Physical H5 PASS | **not written / NOT RUN** |
+| Physical H5 PASS | **owner-interactive physical PASS recorded 2026-09-11** (see H5 physical addendum below); **not** independent-review PASS; **not** merged / **not** terminal |
 | Terminal S04B | **not claimed** |
 | PR / merge / push | **not opened / not merged / not pushed** |
 
@@ -501,10 +501,9 @@ electron-builder noted missing path warnings for some dependency labels
 during packaging (`scheduler` / `react-router` via symlink `node_modules`);
 package completed and desktop shell tests passed on the same build path.
 
-### H5 non-claims
+### H5 non-claims (pre-physical freeze; superseded only where the addendum below explicitly records)
 
 - No independent-review PASS.
-- No H5 physical PASS (physical qualification **NOT RUN**).
 - S04B not merged / not terminal.
 - No PR / push.
 - S04C–S06 not begun.
@@ -512,3 +511,93 @@ package completed and desktop shell tests passed on the same build path.
 - No Sony hardware support claim or profile recipe change.
 - No workbook / GameDefinition / IndexedDB / session-wire / public-state /
   pack version bump.
+
+## H5 owner-interactive physical requalification (2026-09-11)
+
+| Item | Value |
+| --- | --- |
+| Authorization | `AUTHORIZE-CQS-REAL-MVP-S04B-H5-OWNER-INTERACTIVE-PHYSICAL-REQUALIFICATION-1` |
+| Packaged implementation SHA | `e23ac308f0f06d3eb916f7409127e4485ae03f43` |
+| Embedded package `sourceSha` | `e23ac308f0f06d3eb916f7409127e4485ae03f43` (exact H5 match) |
+| Docs-only tip at session (not candidate) | `cdedf894e7e539a89de43518bee41b03c82d7a40` |
+| Host | `Ricks-MacBook-Air.local` / user `macdaddy` / America/Chicago |
+| App | `release/mac-arm64/Classroom Quiz Show.app` (isolated `CQS_USER_DATA`) |
+| Receiver | Namtai Wbuzz `054c:1000` |
+| Controllers | four wireless handsets (owner physical set); Gamepad appears as one device with slot button groups |
+| Temporary evidence | `/tmp/cqs-s04b-h5-physical-qualification/` (screenshots, results.jsonl, checkpoint; temporary by default — not committed) |
+| Concise handoff report | [`../handoff/2026-09-11-s04b-h5-physical-qualification-report.md`](../handoff/2026-09-11-s04b-h5-physical-qualification-report.md) |
+| Durable interaction manifest | [`../handoff/qualification-runs/s04b-h5-2026-09-11.jsonl`](../handoff/qualification-runs/s04b-h5-2026-09-11.jsonl) |
+| Physical PASS bound to | tested macOS host + Namtai Wbuzz `054c:1000` + four owner wireless handsets; **not** Windows physical qualification |
+
+### Verdicts (Q1–Q8)
+
+| Test | Verdict | Evidence class |
+| --- | --- | --- |
+| Q1 Packaged Class Setup cold start | **PASS** | MACHINE + OWNER |
+| Q2 Team-name order/readability | **PASS** | MACHINE (order/contrast) + OWNER usability |
+| Q3 Four colored-button mappings | **PASS** | OWNER (Blue/Orange/Green/Yellow) |
+| Q4 Red cycling isolation | **PASS** | OWNER |
+| Q5 Simultaneous independent selection | **PASS** | OWNER + MACHINE unique names |
+| Q6 Multi-controller Buzzer Check | **PASS** | OWNER + prior MACHINE “4 controllers responding” |
+| Q7 Selected/subdued state | **PASS** | MACHINE + OWNER |
+| Q8 Bounded Class Setup smoke | **PASS** | OWNER |
+
+### Warnings / friction (not FAIL)
+
+- Dongle long-press RF bind was required before RED advanced; initial RED miss classified **wrong starting state**, not product defect. Repair path was not required after dongle bind.
+- Owner observed Buzzer Check observations advancing without clicking **Check buzzers** / **Connect buzzers** (UX affordance clarity friction; harvest candidate).
+- Fixture helper workbook initially failed compile (`RoundName` / INSTRUCTIONS profile); replaced with playable Desktop fixture — **helper/harness**, not product defect.
+- SONY-08 controller labeling remains OPEN / optional (not in this lane).
+
+### Evidence transfer
+
+Fresh H5 physical evidence covers families invalidated by H5 vs H3/H4 for acceptance: simultaneous selection; readiness/responding; cold-start Check; team-name order/contrast. Automated H5 verify/package evidence remains AUTOMATED / PRODUCTION-BUILD only.
+
+### H5 physical non-claims
+
+- No independent-review PASS.
+- S04B not merged / not terminal.
+- No PR / push / merge from this qualification.
+- S04C–S06 not begun.
+- Not S06 clean-room release qualification.
+- Windows physical runtime still **NOT RUN**.
+
+## H5 physical-qualification evidence freeze (2026-09-11)
+
+| Item | Value |
+| --- | --- |
+| Authorization | `AUTHORIZE-CQS-S04B-H5-PHYSICAL-QUALIFICATION-EVIDENCE-FREEZE-1` |
+| Product candidate | unchanged `e23ac308f0f06d3eb916f7409127e4485ae03f43` |
+| Product code mutated | **NO** |
+| Physical PASS invalidated | **NO** |
+
+Freeze purpose: make already-completed H5 owner-interactive physical evidence
+durably reproducible before independent exact-head review. This addendum does
+**not** rewrite H5 product history and does **not** begin review, merge, or
+S04C+.
+
+Durable artifacts:
+
+- Interaction/evidence JSONL:
+  [`../handoff/qualification-runs/s04b-h5-2026-09-11.jsonl`](../handoff/qualification-runs/s04b-h5-2026-09-11.jsonl)
+- Updated physical report (freeze sections):
+  [`../handoff/2026-09-11-s04b-h5-physical-qualification-report.md`](../handoff/2026-09-11-s04b-h5-physical-qualification-report.md)
+
+Compact freeze contents (detail in JSONL + report):
+
+- Q1–Q8 PASS sequence and key friction events (import path, non-playable
+  fixture harness issue, Desktop staging, Host-control landing after Play,
+  wrong-starting-state RED, dongle long-press bind, Check without assumed
+  Connect/Check sequence).
+- Instruction-fidelity findings recorded as process/instruction debt; they do
+  **not** invalidate the physical PASS.
+- Physical-label renumbering classified **TEST-ENVIRONMENT NORMALIZATION**;
+  before/after map **UNKNOWN** / not invented.
+- Automation-gap summary for later v1 companions (labels/step counts;
+  spreadsheet journey; Connect/Check state labels; simultaneous edges;
+  readiness; Class Setup journey; packaged instruction-fidelity).
+- PR #75 overlaps the same qualification-governance area; reconcile later;
+  not modified by this freeze.
+
+Rich `/tmp` binaries remain temporary by default; JSONL stores filenames and
+SHA-256 hashes where practical.

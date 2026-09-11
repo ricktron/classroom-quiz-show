@@ -16,8 +16,8 @@ delivery/review/repair/qualification/release work,
 | What is historically complete? | Slices **1–23**. Original 23-slice foundation/qualification roadmap: **COMPLETE**. Slice 23: **TERMINALLY COMPLETE**. Guidance Polish S01: **TERMINALLY COMPLETE**. |
 | What is active? | **`CQS-REAL-MVP-1`: ACTIVE / CANONICALLY REGISTERED**. S03 implements the production Electron thin shell and unsigned desktop packaging path (ADR-021 **Accepted**). S04 canon registers remaining product direction. S04A is **TERMINALLY COMPLETE**. Post-MVP arcs remain **INACTIVE**. |
 | What remains? | REAL MVP teacher-adoptable product work remains open. S04A is **TERMINALLY COMPLETE**. S04B H1 was rejected; an R1 corrected head is **not merged** and **not terminal**. S04C–S04D, flagship visual fidelity, and integrated release qualification are not complete and are **not begun**. Desktop artifacts are **unsigned** qualification/development-candidate builds, not a teacher-trusted signed release. |
-| What is blocked / open? | See the [gap register](plans/CQS-REAL-MVP-ARC.md#6-initial-gap-register). C-3 / C-6 **FOUNDATION IMPLEMENTED / UNSIGNED**. `F-UX-01` **CANDIDATE ADDRESSED / AWAITING PHYSICAL REQUALIFICATION**. `CQS-Q23-LOW-02` **OPEN / LOW / MONITOR**. `CQS-Q23-CLASS-B-01` **OPEN / CONTROLLED**. `CQS-OD-066` **DEFERRED / NOT REAL MVP**. Packaged macOS Sony physical **H2 PAUSED / SUPERSEDED BY UX REPAIR; H3 NOT A PASS FOR NAME-SELECTION UX; H4 NOT COMPLETE PHYSICAL CANDIDATE; H5 AWAITING PHYSICAL REQUALIFICATION**. Windows physical runtime **NOT RUN**. Signing / notarization **OPEN OWNER GATE**. C-7 Raspberry Pi **outside REAL MVP**. C-8 LAN **outside REAL MVP**. Post-MVP arcs **INACTIVE**. |
-| Current Program frontier | `CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP` H5 consolidates H4 presentation with H3 physical-session defect repairs and is packaged for owner-interactive physical requalification. **S04B: NOT MERGED / NOT TERMINAL.** |
+| What is blocked / open? | See the [gap register](plans/CQS-REAL-MVP-ARC.md#6-initial-gap-register). C-3 / C-6 **FOUNDATION IMPLEMENTED / UNSIGNED**. `F-UX-01` **CANDIDATE ADDRESSED / H5 PHYSICAL PASS RECORDED / AWAITING INDEPENDENT REVIEW**. `CQS-Q23-LOW-02` **OPEN / LOW / MONITOR**. `CQS-Q23-CLASS-B-01` **OPEN / CONTROLLED**. `CQS-OD-066` **DEFERRED / NOT REAL MVP**. Packaged macOS Sony physical **H2 PAUSED / SUPERSEDED; H3 NOT A PASS FOR NAME-SELECTION UX; H4 NOT COMPLETE PHYSICAL CANDIDATE; H5 PHYSICAL PASS RECORDED 2026-09-11 / AWAITING INDEPENDENT EXACT-HEAD REVIEW**. Windows physical runtime **NOT RUN**. Signing / notarization **OPEN OWNER GATE**. C-7 Raspberry Pi **outside REAL MVP**. C-8 LAN **outside REAL MVP**. Post-MVP arcs **INACTIVE**. |
+| Current Program frontier | `CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP` H5 packaged physical requalification **PASS** recorded; awaiting independent exact-head review. **S04B: NOT MERGED / NOT TERMINAL.** |
 
 ```text
 historical 23-slice roadmap: COMPLETE
@@ -28,7 +28,7 @@ S02: Electron selected (ADR-021 Accepted)
 S03: production Electron thin shell + unsigned packaging path implemented
 S04 canon: product direction registered
 S04A: TERMINALLY COMPLETE
-S04B: H5 PHYSICAL-DEFECT CONSOLIDATION CANDIDATE / AWAITING PHYSICAL REQUALIFICATION / NOT MERGED / NOT TERMINAL
+S04B: H5 PHYSICAL PASS RECORDED / AWAITING INDEPENDENT EXACT-HEAD REVIEW / NOT MERGED / NOT TERMINAL
 S04C–S04D / S05 / S06: NOT AUTHORIZED
 post-MVP arcs: INACTIVE
 ```
@@ -117,11 +117,11 @@ Teacher desktop notes:
 | release artifacts/version/update path | **FOUNDATION IMPLEMENTED** (manual replacement; no auto-update; no public teacher release) |
 | in-app teacher team setup | **CANDIDATE IMPLEMENTED / UNMERGED** — S04B Host class setup is a guided workspace on the published candidate; not on `main` |
 | teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is merged and terminal; S04B Class Setup extends it on the candidate only |
-| controller `F-UX-01` (`CQS-Q23-LOW-01`) | **CANDIDATE ADDRESSED / AWAITING PHYSICAL REQUALIFICATION** — ordinary Sony copy no longer requires WebHID / report-ID / profile jargon |
+| controller `F-UX-01` (`CQS-Q23-LOW-01`) | **CANDIDATE ADDRESSED / H5 PHYSICAL PASS RECORDED / AWAITING INDEPENDENT REVIEW** — ordinary Sony copy no longer requires WebHID / report-ID / profile jargon |
 | feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
 | flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** — S05 direction registered; implementation not begun |
 | packaged offline/recovery equivalence | **FOUNDATION IMPLEMENTED** (Electron shell + IndexedDB identity; packaged macOS Host smoke observed) |
-| packaged macOS qualification | **PARTIAL** (packaged Host launch observed; H2 physical **PAUSED / SUPERSEDED BY UX REPAIR**; H3 name-selection UX **NOT A PASS**; H4 **NOT COMPLETE PHYSICAL CANDIDATE**; H5 physical **NOT RUN**) |
+| packaged macOS qualification | **PARTIAL** (packaged Host launch observed; H2 physical **PAUSED / SUPERSEDED BY UX REPAIR**; H3 name-selection UX **NOT A PASS**; H4 **NOT COMPLETE PHYSICAL CANDIDATE**; H5 physical **PASS recorded 2026-09-11** / independent review **NOT DONE**) |
 | packaged Windows qualification | **OPEN** (CI can produce the installer; physical Windows runtime **NOT RUN**) |
 | clean-room teacher qualification | **OPEN** |
 | **C-3** | **FOUNDATION IMPLEMENTED / UNSIGNED** |
@@ -184,15 +184,16 @@ qualification is **not** a PASS for the name-selection interaction
 (physical order + pastel contrast). H4 repaired that presentation seam
 but omitted already-developed H3 physical-session defect repairs and is
 **not** the complete physical candidate. H5 consolidates those repairs
-onto H4 and is **not merged** and **not terminal**. Next authority is
-owner-interactive four-controller physical requalification of exact H5
-(`e23ac308f0f06d3eb916f7409127e4485ae03f43`). S04C–S04D / S05 / S06
-remain unauthorized.
+onto H4. Owner-interactive physical requalification of packaged H5
+(`e23ac308f0f06d3eb916f7409127e4485ae03f43`) recorded **PASS** on
+2026-09-11. S04B remains **not merged** and **not terminal**. Next
+authority is independent exact-head review of that H5 identity.
+S04C–S04D / S05 / S06 remain unauthorized.
 
 ```text
 routing ≠ authority
 S04A: TERMINALLY COMPLETE
-S04B: H5 PHYSICAL-DEFECT CONSOLIDATION CANDIDATE / AWAITING PHYSICAL REQUALIFICATION / NOT MERGED / NOT TERMINAL
+S04B: H5 PHYSICAL PASS RECORDED / AWAITING INDEPENDENT EXACT-HEAD REVIEW / NOT MERGED / NOT TERMINAL
 S04C–S04D / S05 / S06: NOT AUTHORIZED
 ```
 
@@ -201,6 +202,10 @@ signing/notarization decision, and **no** public teacher-release publication.
 
 S04B candidate evidence:
 [`receipts/2026-08-14-cqs-real-mvp-s04b-sony-team-selection-and-classroom-setup.md`](receipts/2026-08-14-cqs-real-mvp-s04b-sony-team-selection-and-classroom-setup.md).
+
+H5 physical report + evidence freeze:
+[`handoff/2026-09-11-s04b-h5-physical-qualification-report.md`](handoff/2026-09-11-s04b-h5-physical-qualification-report.md);
+[`handoff/qualification-runs/s04b-h5-2026-09-11.jsonl`](handoff/qualification-runs/s04b-h5-2026-09-11.jsonl).
 
 ## Historical evidence (pointers)
 
