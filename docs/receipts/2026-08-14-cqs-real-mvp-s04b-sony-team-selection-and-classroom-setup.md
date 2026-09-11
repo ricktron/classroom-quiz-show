@@ -348,9 +348,9 @@ qualification of the team-name selection interaction.
 | Fact | Observed |
 | --- | --- |
 | Repair authorization | `AUTHORIZE-CQS-REAL-MVP-S04B-H4-PHYSICAL-ORDER-AND-CONTRAST-REPAIR-1` |
-| Prior H3 head | `325f46a4d8f21a050dee04b86454b07ce309853c` |
+| H3 prior head | `325f46a4d8f21a050dee04b86454b07ce309853c` |
 | Expected / observed `origin/main` | `cf90eadb7794a3e2c2f529212432e4a4daaadc91` |
-| H4 | recorded at freeze (this commit) |
+| H4 | `0fb8d704d3b17002d75a7fd326a7b8e4f5062451` |
 | Independent-review PASS | **not written** |
 | Physical H4 PASS | **not written** |
 | Terminal S04B | **not claimed** |
@@ -412,7 +412,7 @@ requalification of the repaired interaction is still required.
 | `CI=1 npm run verify:all` | same unit result; Playwright **379** passed / **14** skipped |
 | `npm run build:desktop` | renderer + main built (exit 0) |
 | `npm run test:desktop` | **3** passed |
-| `npm run package:desktop` | *(recorded after commit/package)* |
+| `npm run package:desktop` | exit 0; unsigned `release/mac-arm64/Classroom Quiz Show.app` + dmg/zip; identity `sourceSha` `0fb8d704d3b17002d75a7fd326a7b8e4f5062451` |
 
 ### H4 non-claims
 
