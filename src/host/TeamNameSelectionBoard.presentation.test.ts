@@ -20,4 +20,15 @@ describe('team-name selection presentation contract', () => {
     expect(css).toContain("data-grayscale='true'")
     expect(css).toContain("data-reduced-motion='true'")
   })
+
+  it('uses deliberate dark ink on pastel choice buttons instead of host theme foreground', () => {
+    const choiceRule = css.match(/\.tnsb__choice\s*\{[^}]+\}/)?.[0] ?? ''
+    expect(choiceRule).toContain('color: #1a2332')
+    expect(choiceRule).not.toContain('var(--fg-primary)')
+    expect(css).toContain('.tnsb__choice--yellow')
+    expect(css).toContain('.tnsb__choice--green')
+    expect(css).toContain('.tnsb__choice--orange')
+    expect(css).toContain('.tnsb__choice--blue')
+    expect(css).toMatch(/\.tnsb__name\s*\{[^}]*color:\s*#1a2332/)
+  })
 })

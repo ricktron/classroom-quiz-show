@@ -261,8 +261,9 @@ export function ClassroomSetupPanel({
           {showNames && (
             <div className="classroom-setup__task" data-testid="setup-names-task">
               <p className="host__note" data-testid="setup-sony-copy">
-                Each team presses Yellow, Green, Orange, or Blue to choose a name. Red shows four
-                more names for that team only. You can also type a name. Keyboard always works.
+                Each team presses Blue, Orange, Green, or Yellow — top to bottom on the controller —
+                to choose a name. Red shows four more names for that team only. You can also type a
+                name. Keyboard always works.
               </p>
               <TeamNameSelectionBoard
                 views={teamIds.map((id) => selection.views[id]!).filter(Boolean)}

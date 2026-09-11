@@ -401,13 +401,18 @@ All active teams choose names **at the same time**.
 
 Each team's selection card/list presents **exactly four** active choices.
 
-| Control | Meaning |
+| Control | Logical meaning |
 | --- | --- |
-| Yellow | choice 1 |
-| Green | choice 2 |
-| Orange | choice 3 |
-| Blue | choice 4 |
+| Yellow | choice 1 (`choiceIndex` 0) |
+| Green | choice 2 (`choiceIndex` 1) |
+| Orange | choice 3 (`choiceIndex` 2) |
+| Blue | choice 4 (`choiceIndex` 3) |
 | Large Red | **four more for this team only** |
+
+The Host visual choice stack follows the physical controller order
+**top to bottom: Blue, Orange, Green, Yellow**. That is a presentation
+seam only. The established logical button-to-choice mapping above does
+**not** change.
 
 Red **must not** reroll another team's choices.
 

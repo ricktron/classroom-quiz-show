@@ -35,7 +35,8 @@
   padding: 0.65rem 0.85rem;
   border-radius: var(--radius);
   border: var(--bw-standard) solid var(--border-standard);
-  color: var(--fg-primary);
+  /* Deliberate dark ink on light/pastel controller colors (not host --fg-primary). */
+  color: #1a2332;
   text-align: left;
   cursor: pointer;
 }
@@ -45,11 +46,14 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  color: #243044;
 }
 
 .tnsb__name {
-  font-size: 1.05rem;
-  font-weight: 650;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #1a2332;
   overflow-wrap: anywhere;
 }
 

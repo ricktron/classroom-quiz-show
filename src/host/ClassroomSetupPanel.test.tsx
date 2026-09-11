@@ -147,7 +147,7 @@ describe('ClassroomSetupPanel', () => {
     )
     expect(screen.getByTestId('tnsb-choice-blue-0').textContent).toBe(beforeBlue)
     expect(screen.getByTestId('tnsb-choice-red-0').textContent).toMatch(/India/)
-    expect(screen.getByTestId('tnsb-choice-red-0').textContent).not.toBe('1 · yellowAlpha')
+    expect(screen.getByTestId('tnsb-choice-red-0').textContent).not.toBe('YellowAlpha')
   })
 
   it('keeps Play available without buzzers and names the required blocker', () => {

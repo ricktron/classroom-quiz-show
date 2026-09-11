@@ -15,6 +15,13 @@ export interface TeamNameSelectionBoardProps {
   readonly grayscale?: boolean
 }
 
+/**
+ * Visual top-to-bottom order matching the physical Sony Wireless Buzz
+ * colored buttons. Logical choiceIndex mapping is unchanged:
+ * 0 yellow, 1 green, 2 orange, 3 blue.
+ */
+export const TEAM_NAME_CHOICE_DISPLAY_ORDER = [3, 2, 1, 0] as const
+
 export function TeamNameSelectionBoard({
   views,
   teamLabels,
@@ -51,11 +58,12 @@ export function TeamNameSelectionBoard({
             )}
           </header>
           <ol className="tnsb__choices">
-            {TEAM_NAME_CHOICE_COLORS.map((color, index) => {
-              const choiceIndex = index as 0 | 1 | 2 | 3
+            {TEAM_NAME_CHOICE_DISPLAY_ORDER.map((choiceIndex) => {
+              const color = TEAM_NAME_CHOICE_COLORS[choiceIndex]
               const name = view.candidates[choiceIndex] ?? '—'
               const selected = view.selectedChoiceIndex === choiceIndex
               const subdued = view.claimedName !== null && !selected
+              const colorWord = color[0]!.toUpperCase() + color.slice(1)
               return (
                 <li key={color}>
                   <button
@@ -71,7 +79,7 @@ export function TeamNameSelectionBoard({
                     onClick={() => onClaim(view.teamId, choiceIndex)}
                   >
                     <span className="tnsb__ordinal" aria-hidden="true">
-                      {choiceIndex + 1} · {color}
+                      {colorWord}
                     </span>
                     <span className="tnsb__name">{name}</span>
                   </button>

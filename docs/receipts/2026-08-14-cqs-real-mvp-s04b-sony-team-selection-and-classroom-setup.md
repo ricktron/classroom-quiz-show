@@ -336,3 +336,91 @@ to H3.
 - No workbook / GameDefinition / IndexedDB / session-wire / public-state
   / pack / Sony profile version bump.
 - No undocumented HID pairing automation and no widened hardware support.
+
+---
+
+## H4 same-slice physical-qualification UX repair
+
+This section does **not** erase H1, H2/R1, or H3. It records an
+owner-authorized presentation repair found during H3 physical
+qualification of the team-name selection interaction.
+
+| Fact | Observed |
+| --- | --- |
+| Repair authorization | `AUTHORIZE-CQS-REAL-MVP-S04B-H4-PHYSICAL-ORDER-AND-CONTRAST-REPAIR-1` |
+| Prior H3 head | `325f46a4d8f21a050dee04b86454b07ce309853c` |
+| Expected / observed `origin/main` | `cf90eadb7794a3e2c2f529212432e4a4daaadc91` |
+| H4 | recorded at freeze (this commit) |
+| Independent-review PASS | **not written** |
+| Physical H4 PASS | **not written** |
+| Terminal S04B | **not claimed** |
+| PR / merge | **not opened / not merged** |
+
+### Physical-qualification finding
+
+During owner-interactive H3 physical qualification of the name-selection
+board:
+
+1. Pastel Yellow/Green/Orange/Blue choice buttons inherited the dark Host
+   theme foreground, so team-name text had poor contrast and was hard to
+   read.
+2. Choices rendered Yellow → Green → Orange → Blue, while the physical
+   Sony Wireless Buzz colored buttons stack **top to bottom** Blue →
+   Orange → Green → Yellow. Teachers could not visually match the Host
+   rows to the handset.
+
+H3 physical qualification is **not** a PASS for this interaction.
+
+### Root cause
+
+- Presentation iterated `TEAM_NAME_CHOICE_COLORS` in logical choice-index
+  order (Yellow=0 … Blue=3), which does not match physical button layout.
+- Choice-button CSS used `color: var(--fg-primary)`, appropriate for dark
+  Host chrome but not for light/pastel controller-color backgrounds.
+
+### Bounded repair
+
+- `TeamNameSelectionBoard` renders an explicit presentation order
+  `[3, 2, 1, 0]` (Blue, Orange, Green, Yellow) while each row remains
+  bound to its existing `choiceIndex`.
+- Pastel choice buttons use deliberate dark ink (`#1a2332` / `#243044`)
+  instead of Host `--fg-primary`. Pastel backgrounds, selected/subdued
+  states, color-word cues, grayscale / high-contrast / reduced-motion,
+  and long-name wrap are preserved.
+- Visible ordinal numbers (which would read 4→1 top-to-bottom) were
+  replaced with capitalized color-word cues; accessible names retain
+  logical `Choice N, Color` labels.
+- S04-family direction clarifies visual stack vs unchanged logical map.
+- No Sony HID/Gamepad adapter, logical-action vocabulary, supported
+  profile, button recipe, debounce, or session mutation change.
+
+### Invalidated evidence family
+
+Transfer only causally justified earlier evidence. The name-selection
+**visual order and pastel-button typography/contrast** family from H3
+(and earlier heads) is **invalidated** for acceptance of this
+interaction. Logical mapping tests and unrelated H3 Class Setup /
+buzzer evidence are not rewritten by this addendum. Fresh physical
+requalification of the repaired interaction is still required.
+
+### H4 verification (recorded at freeze)
+
+| Command | Result |
+| --- | --- |
+| `git diff --check` | exit 0 |
+| `npm run verify` | lint: 0 errors, 3 pre-existing ThemeProvider `react-refresh` warnings; typecheck pass; **2553** unit tests passed / **2** skipped |
+| `CI=1 npm run verify:all` | same unit result; Playwright **379** passed / **14** skipped |
+| `npm run build:desktop` | renderer + main built (exit 0) |
+| `npm run test:desktop` | **3** passed |
+| `npm run package:desktop` | *(recorded after commit/package)* |
+
+### H4 non-claims
+
+- No independent-review PASS is written by this repair.
+- No H4 physical PASS is written by this repair.
+- S04B is not merged and not terminally complete.
+- No PR was opened.
+- S04C–S06 were not begun.
+- No workbook / GameDefinition / IndexedDB / session-wire / public-state
+  / pack / Sony profile version bump.
+- No change to Sony hardware support claims or architecture.

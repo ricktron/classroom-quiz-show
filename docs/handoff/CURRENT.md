@@ -27,12 +27,12 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S04B Sony team selection and classroom setup — **H3 UX-repaired candidate awaiting physical requalification / not merged / not terminal** |
+| Current Program frontier | S04B Sony team selection and classroom setup — **H4 physical-order/contrast repair candidate awaiting physical requalification / not merged / not terminal** |
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
 | S04 canon | product direction **registered** |
 | S04A | **TERMINALLY COMPLETE** |
-| S04B | **H3 UX-REPAIRED CANDIDATE / AWAITING PHYSICAL REQUALIFICATION / NOT MERGED / NOT TERMINAL** |
+| S04B | **H4 PHYSICAL-ORDER/CONTRAST REPAIR CANDIDATE / AWAITING PHYSICAL REQUALIFICATION / NOT MERGED / NOT TERMINAL** |
 | S04C–S04D / S05 / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
 
@@ -98,8 +98,10 @@ exact squash/main SHA. S04A is **TERMINALLY COMPLETE**. S04B H1 was
 rejected by independent review; an R1 corrected head is on the same
 branch. H2 physical qualification was paused after a Class Setup UX
 finding and is superseded for final acceptance by the H3 UX repair.
-S04B is not merged and not terminal. S04C–S04D product implementation
-has not begun.
+H3 physical qualification is not a PASS for name-selection visual order
+and pastel-button contrast; H4 repairs that presentation seam. S04B is
+not merged and not terminal. S04C–S04D product implementation has not
+begun.
 
 Those remain **existing qualified foundations** plus the S03 desktop
 foundation, S04 canon, and terminal S04A teacher-workflow foundation. Do
@@ -138,7 +140,7 @@ See the REAL MVP gap register in
 | controller `F-UX-01` | **CANDIDATE ADDRESSED / AWAITING PHYSICAL REQUALIFICATION** |
 | feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
 | flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** — S05 direction registered; implementation not begun |
-| packaged offline/recovery and OS qualification | **PARTIAL** (shell proven; H2 physical **PAUSED / SUPERSEDED**; H3 physical **NOT RUN**; Windows physical runtime **NOT RUN**) |
+| packaged offline/recovery and OS qualification | **PARTIAL** (shell proven; H2 physical **PAUSED / SUPERSEDED**; H3 name-selection UX **NOT A PASS**; H4 physical **NOT RUN**; Windows physical runtime **NOT RUN**) |
 | clean-room teacher qualification | **OPEN** |
 | **C-3** / **C-6** | **FOUNDATION IMPLEMENTED / UNSIGNED** |
 | `CQS-Q23-CLASS-B-01` | **OPEN / CONTROLLED** |
@@ -186,14 +188,17 @@ phones, no networked buzzers, no executable imported content) remain in
 ## Next Program-level action
 
 `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is
-**TERMINALLY COMPLETE**. S04B H3 is a packaged UX-repaired candidate.
-Next authority is owner-interactive four-controller physical
-requalification of exact H3. Do **not** open a PR or merge.
+**TERMINALLY COMPLETE**. S04B H4 is a packaged physical-order/contrast
+repair candidate. Next authority is owner-interactive four-controller
+physical requalification of exact H4 (failed name-selection interaction,
+all four colored buttons, Red cycling, simultaneous selection,
+selected/subdued confirmation, bounded Class Setup smoke). Do **not**
+open a PR or merge.
 
 ```text
 routing ≠ authority
 S04A: TERMINALLY COMPLETE
-S04B: H3 UX-REPAIRED CANDIDATE / AWAITING PHYSICAL REQUALIFICATION / NOT MERGED / NOT TERMINAL
+S04B: H4 PHYSICAL-ORDER/CONTRAST REPAIR CANDIDATE / AWAITING PHYSICAL REQUALIFICATION / NOT MERGED / NOT TERMINAL
 S04C/S04D/S05/S06: NOT AUTHORIZED
 ```
 
