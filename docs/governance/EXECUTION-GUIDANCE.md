@@ -384,6 +384,41 @@ product or harness can do it.
 Physical hardware, projector, and audio evidence remain distinct from
 browser-observed or synthetic coverage.
 
+### Resumable human qualification
+
+Human-assisted qualification must be resumable without reconstructing prior
+progress from chat or memory.
+
+Before a planned pause, unplanned stop, context handoff, machine change, or
+end of a testing session, preserve a durable checkpoint whenever the
+qualification can span more than one sitting. Record, as applicable:
+
+- exact candidate branch, HEAD, and clean/dirty state;
+- actual host, environment, and hardware;
+- qualification protocol or checklist identity;
+- completed checks and their outcomes;
+- unresolved `FAIL`, `REPEAT`, or blocked checks;
+- repairs made since the prior checkpoint;
+- evidence invalidated by those repairs;
+- evidence that transfers, with its causal reason;
+- transient physical/logical mappings or setup facts required to resume;
+- the exact next untested step and remaining sequence;
+- resume prerequisites;
+- the durable location of the checkpoint and supporting evidence.
+
+A checkpoint is incomplete if it preserves only the prose result while the
+candidate changes that produced that result remain ephemeral. When the
+current authorized lane permits commit and push, make both the checkpoint and
+candidate state needed to reproduce it durable remotely before representing
+the session as safely paused. If that cannot be done, report the session as
+**not yet durably resumable**.
+
+On resume, freshly re-observe repository/worktree provenance and continue from
+the first unresolved or causally invalidated step. Do **not** restart at test 1
+merely because the chat, agent, machine, or sitting changed. Prior expensive
+physical evidence is rerun only when the candidate changed in a way that can
+causally affect that evidence, consistent with §10.
+
 ---
 
 ## 10. Evidence transfer
@@ -447,8 +482,8 @@ observation…`). Do not treat those snapshots as live routing.
 ## 13. Merge-stable documentation and reconciliation
 
 Startup-canonical docs intended to become current through a delivery PR
-should state the **final merged-tree truth** rather than narrating their
-own future merge.
+should state the **final merged-tree truth** rather than narrating their own
+future merge.
 
 Avoid candidate prose such as:
 
