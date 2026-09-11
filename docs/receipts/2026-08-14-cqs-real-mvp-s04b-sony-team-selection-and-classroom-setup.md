@@ -601,3 +601,86 @@ Compact freeze contents (detail in JSONL + report):
 
 Rich `/tmp` binaries remain temporary by default; JSONL stores filenames and
 SHA-256 hashes where practical.
+
+## H6 same-slice honest buzzer readiness repair (2026-09-11)
+
+| Item | Value |
+| --- | --- |
+| Authorization | `AUTHORIZE-CQS-REAL-MVP-S04B-H6-HONEST-BUZZER-READINESS-REPAIR-1` |
+| Prior H5 packaged product | `e23ac308f0f06d3eb916f7409127e4485ae03f43` |
+| H6 implementation / package SHA | `9df9c42626c2b0d87a076759aa531a4532f21a5c` |
+| H6 tree SHA | `7a047897dde03c76fd4361800f3c6db6ab5aa106` |
+| Embedded package `sourceSha` | `9df9c42626c2b0d87a076759aa531a4532f21a5c` |
+| asar SHA-256 (H6 verify worktree) | `1333e822780c95880ded3de8df85e08b036b78d217b44d05d63039641c07eb75` |
+| UX-doctrine review of H5 | **FAIL** on UX-R1 (P04 / P08 / P20) |
+| Physical H6 readiness requalification | **NOT YET RUN** |
+| Final UX PASS / merge / terminal | **NOT claimed** |
+
+### Defect repaired
+
+Independent UX-doctrine review finding **UX-R1**: Class Setup could mark
+Buzzers complete / claim responding / ready from receiver health + provisional
+associations while the detailed Sony section correctly required responding +
+mapping-ready. Two Host surfaces could contradict each other.
+
+### Exact repair
+
+- Shared helpers in `sonyBuzzTeacherReadiness.ts`:
+  `classifyTeacherSummaryFromHardware`, `classSetupSonyBuzzFullyReady`,
+  `classSetupSonyBuzzClaimsResponding`.
+- `SonyBuzzSetupSection` publishes the existing teacher-summary to parents.
+- `GamepadInputHostPanel` sets Class Setup ready **only** when summary is
+  `sony-buzz-ready` (no parallel coarse algorithm).
+- `classroomReadiness` / Class Setup copy derive presentation from that same
+  summary; fully-ready complete status only when verified.
+
+### Product paths changed
+
+- `src/input/sonyBuzzTeacherReadiness.ts` (+ tests)
+- `src/session/classroomReadiness.ts` (+ tests)
+- `src/host/SonyBuzzSetupSection.tsx`
+- `src/host/GamepadInputHostPanel.tsx`
+- `src/host/FoundationControls.tsx`
+- `src/host/ClassroomSetupPanel.tsx`
+
+### Explicitly not changed
+
+UX-R2 / UX-R3 / UX-R4 / UX-R5 not implemented. SONY-08 untouched. No
+Check/Connect workflow redesign. No Play→Host navigation change. No Repair /
+dongle-bind rewrite. No Sony hardware/profile change. No selection-color /
+simultaneous-input / uniqueness changes.
+
+### Verification (H6)
+
+| Command | Result |
+| --- | --- |
+| `git diff --check` | exit 0 |
+| `npm run verify` | lint: 0 errors, 3 pre-existing ThemeProvider warnings; typecheck pass; unit tests pass |
+| `CI=1 npm run verify:all` | unit pass; Playwright **379** passed / **14** skipped |
+| `npm run build:desktop` | exit 0 |
+| `npm run test:desktop` | **3** passed |
+| `npm run package:desktop` | exit 0 from clean worktree at H6 with `CQS_SOURCE_SHA`; embedded `sourceSha` matches H6 |
+
+### Evidence transfer (causal)
+
+**TRANSFER (unless later invalidated):**
+
+- H5 Blue/Orange/Green/Yellow mapping; Red cycling; simultaneous selection;
+  uniqueness; selected/subdued; physical HID/receiver identity; supported
+  Namtai profile.
+
+**INVALIDATE / REQUIRE FRESH CHECK:**
+
+- Class Setup buzzer readiness summary / complete chip;
+- receiver → responding → mapping → ready transitions in Class Setup;
+- any Q1/Q6/Q8 portion that depends on readiness status wording;
+- exact teacher-facing readiness copy changed by H6.
+
+### Non-claims
+
+- No physical H6 PASS.
+- No final UX PASS.
+- Not merged / not terminal.
+- No push / PR / merge from this repair.
+- S04C–S06 not begun.
+- Windows physical runtime still **NOT RUN**.

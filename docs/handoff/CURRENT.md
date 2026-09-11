@@ -27,12 +27,12 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S04B Sony team selection and classroom setup — **H5 physical PASS recorded / awaiting independent exact-head review / not merged / not terminal** |
+| Current Program frontier | S04B Sony team selection and classroom setup — **H6 honest-readiness repair packaged / H5 physical evidence transferred / H6 readiness requal NOT YET RUN / not merged / not terminal** |
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
 | S04 canon | product direction **registered** |
 | S04A | **TERMINALLY COMPLETE** |
-| S04B | **H5 PHYSICAL PASS RECORDED / AWAITING INDEPENDENT EXACT-HEAD REVIEW / NOT MERGED / NOT TERMINAL** |
+| S04B | **H6 HONEST-READINESS REPAIR PACKAGED / H5 PHYSICAL EVIDENCE TRANSFERRED / H6 READINESS REQUAL NOT YET RUN / NOT MERGED / NOT TERMINAL** |
 | S04C–S04D / S05 / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
 
@@ -102,8 +102,10 @@ H3 physical qualification is not a PASS for name-selection visual order
 and pastel-button contrast; H4 repairs that presentation seam but is not
 the complete physical candidate (omitted H3 physical-session defect
 repairs). H5 consolidates those repairs onto H4. Owner-interactive H5
-physical requalification recorded **PASS** on 2026-09-11. S04B is not
-merged and not terminal. S04C–S04D product implementation has not begun.
+physical requalification recorded **PASS** on 2026-09-11. H6 repairs the
+UX-R1 Class Setup buzzer-readiness honesty defect on a new packaged head.
+S04B is not merged and not terminal. S04C–S04D product implementation has
+not begun.
 
 Those remain **existing qualified foundations** plus the S03 desktop
 foundation, S04 canon, and terminal S04A teacher-workflow foundation. Do
@@ -139,10 +141,10 @@ See the REAL MVP gap register in
 | release artifacts/version/update path | **FOUNDATION IMPLEMENTED** (manual replacement; no auto-update) |
 | in-app teacher team setup | **CANDIDATE IMPLEMENTED / UNMERGED** — S04B class setup exists on the published candidate only |
 | teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal |
-| controller `F-UX-01` | **CANDIDATE ADDRESSED / H5 PHYSICAL PASS RECORDED / AWAITING INDEPENDENT REVIEW** |
+| controller `F-UX-01` | **CANDIDATE ADDRESSED / H6 HONEST-READINESS REPAIR ON BRANCH** |
 | feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
 | flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** — S05 direction registered; implementation not begun |
-| packaged offline/recovery and OS qualification | **PARTIAL** (shell proven; H2 physical **PAUSED / SUPERSEDED**; H3 name-selection UX **NOT A PASS**; H4 **NOT COMPLETE PHYSICAL CANDIDATE**; H5 physical **PASS recorded 2026-09-11**; Windows physical runtime **NOT RUN**) |
+| packaged offline/recovery and OS qualification | **PARTIAL** (H5 physical **PASS recorded 2026-09-11**; H6 readiness repair packaged; H6 readiness physical requalification **NOT YET RUN**; Windows physical runtime **NOT RUN**) |
 | clean-room teacher qualification | **OPEN** |
 | **C-3** / **C-6** | **FOUNDATION IMPLEMENTED / UNSIGNED** |
 | `CQS-Q23-CLASS-B-01` | **OPEN / CONTROLLED** |
@@ -190,17 +192,17 @@ phones, no networked buzzers, no executable imported content) remain in
 ## Next Program-level action
 
 `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is
-**TERMINALLY COMPLETE**. S04B H5 packaged physical requalification of
-`e23ac308f0f06d3eb916f7409127e4485ae03f43` recorded **PASS** on
-2026-09-11 (owner-interactive Q1–Q8). Next authority is independent
-exact-head review of that packaged H5 identity. Do **not** treat this as
-an independent-review PASS. Do **not** merge. Do **not** open a PR from
-this handoff unless a later authorization says so.
+**TERMINALLY COMPLETE**. S04B H5 physical PASS remains valid for transferred
+selection/hardware evidence. H6 (`9df9c42626c2b0d87a076759aa531a4532f21a5c`)
+repairs Class Setup buzzer-readiness honesty (UX-R1). Next authority is
+bounded H6 readiness physical requalification and exact-head UX re-review of
+that packaged identity. Do **not** claim physical H6 PASS, final UX PASS,
+merge, or terminal S04B from this handoff.
 
 ```text
 routing ≠ authority
 S04A: TERMINALLY COMPLETE
-S04B: H5 PHYSICAL PASS RECORDED / AWAITING INDEPENDENT EXACT-HEAD REVIEW / NOT MERGED / NOT TERMINAL
+S04B: H6 HONEST-READINESS REPAIR PACKAGED / H5 PHYSICAL EVIDENCE TRANSFERRED / H6 READINESS REQUAL NOT YET RUN / NOT MERGED / NOT TERMINAL
 S04C/S04D/S05/S06: NOT AUTHORIZED
 ```
 
