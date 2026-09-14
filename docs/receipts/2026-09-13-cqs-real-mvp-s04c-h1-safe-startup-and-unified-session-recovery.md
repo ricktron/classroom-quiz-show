@@ -107,8 +107,17 @@ Recovery controls do not invoke `clearAllLocalData`.
 
 ## Verification
 
-Recorded in the delivery handoff / PR after the local verify matrix completes.
-Never claim an unrun check.
+Observed locally on this H1 head before push:
+
+| Check | Result |
+| --- | --- |
+| `git diff --check` | pass |
+| `npm run verify` | pass |
+| `CI=1 npm run verify:all` | pass — 164 unit files; Playwright **394 passed / 14 skipped** |
+| Focused H1 Playwright (`persistence-recovery` Home flows) | pass across desktop-1080p / projector-720p / mobile-host |
+| Packaged macOS relaunch smoke | **not run** — browser Playwright exercises the same IndexedDB recovery semantics; not a substitute for S06 Windows qualification |
+
+Existing ThemeProvider eslint react-refresh warnings remain (0 errors).
 
 ## Transferable evidence for later S04C
 
