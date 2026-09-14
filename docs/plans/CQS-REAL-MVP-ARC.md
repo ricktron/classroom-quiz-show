@@ -19,9 +19,10 @@
   production desktop distribution foundation plus S04 product-direction
   registration. S04A is **TERMINALLY COMPLETE** after PR #72 merged as
   `29083f078521ebf432a7d7380c521c557fb578a8` and post-merge CI succeeded on
-  that exact squash/main SHA. S04B has a published implementation
-  candidate that is **not merged** and **not terminal**. **S04C–S04D, S05,
-  and S06 are not authorized.**
+  that exact squash/main SHA. S04B is **TERMINALLY COMPLETE** after PR #76
+  merged as `1b38ac765841a3db19285172b0f6ac2295d6b88f` and post-merge CI
+  succeeded on that exact squash/main SHA. **S04C–S04D, S05, and S06 are
+  not authorized.** Next planned frontier is S04C (routing ≠ authority).
 
 This document is the canonical **CQS REAL MVP Program** plan of record. It
 registers `CQS-REAL-MVP-1` as the current owner-approved Program without
@@ -78,9 +79,13 @@ A named next frontier is **not** implementation authority. S04A was
 separately authorized, implemented, independently reviewed, merged via PR
 #72, and post-merge verified on exact squash/main
 `29083f078521ebf432a7d7380c521c557fb578a8`; it is **TERMINALLY COMPLETE**.
-S04B later received a separate implementation authorization. H1 was
-rejected by independent review. H3 is a later same-slice UX-repair
-candidate on the same branch and is **not merged** and **not terminal**.
+S04B was separately authorized, implemented through H1–H6 (including
+physical H5/H6 and UX-R1 closure), independently reviewed at PR head
+`87450a738c8d95146c3a9eebaafdd944b723cf6e`, squash-merged via PR #76 as
+`1b38ac765841a3db19285172b0f6ac2295d6b88f`, and post-merge verified on that
+exact main SHA; it is **TERMINALLY COMPLETE**. Historical H3-era candidate
+wording remains history only and must not be treated as current Program
+status.
 
 ---
 
@@ -206,13 +211,13 @@ This table is not an implementation backlog with slice-level authority.
 | simple desktop launch | **FOUNDATION IMPLEMENTED** |
 | desktop Host/Display lifecycle | **FOUNDATION IMPLEMENTED** |
 | release artifacts/version/update path | **FOUNDATION IMPLEMENTED** (manual versioned replacement; no auto-update) |
-| in-app teacher team setup | **CANDIDATE IMPLEMENTED / UNMERGED** — S04B Host class setup exists on the published candidate; not on `main` |
-| teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal |
-| controller `F-UX-01` | **CANDIDATE ADDRESSED / AWAITING PHYSICAL REQUALIFICATION** — ordinary Sony copy no longer requires WebHID / report-ID / profile jargon |
+| in-app teacher team setup | **IMPLEMENTED ON MAIN** — S04B Host Class Setup is merged and terminal |
+| teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal; S04B Class Setup extends it on `main` |
+| controller `F-UX-01` | **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** — ordinary Sony Class Setup copy no longer requires WebHID / report-ID / profile jargon; evidence bound to H5/H6 identities |
 | feedback/support path | **OPEN** — S04D product direction registered; implementation not begun |
 | flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** — S05 direction registered; implementation not begun |
 | packaged offline/recovery equivalence | **FOUNDATION IMPLEMENTED** (Electron shell + IndexedDB identity) |
-| packaged macOS qualification | **PARTIAL** (packaged Host launch observed; H2 physical **PAUSED / SUPERSEDED BY UX REPAIR**; H3 physical **NOT RUN**) |
+| packaged macOS qualification | **PARTIAL** (H5 selection/hardware PASS transferred; H6 readiness PASS on Namtai `054c:1000` + four handsets for terminal S04B; Windows physical **NOT RUN**; clean-room / signed release still open) |
 | packaged Windows qualification | **OPEN** (CI installer path; physical Windows runtime **NOT RUN**) |
 | clean-room teacher qualification | **OPEN** |
 | C-3 | **FOUNDATION IMPLEMENTED / UNSIGNED** |
@@ -223,10 +228,11 @@ This table is not an implementation backlog with slice-level authority.
 
 Retained finding identity is preserved:
 
-- `LOW-01` / `F-UX-01` (`CQS-Q23-LOW-01`) remains the controller-setup
-  jargon polish item. The S04B implementation candidate addresses ordinary
-  teacher copy. Independent exact-head review must confirm. It is **not**
-  terminally closed on `main`.
+- `LOW-01` / `F-UX-01` (`CQS-Q23-LOW-01`) ordinary Sony Class Setup jargon
+  polish is **ADDRESSED ON MAIN** after terminal S04B (H6 readiness +
+  UX-R1 CLOSED). Residual Check/auto-selection and navigation
+  instruction-fidelity polish may still evolve later and are not claimed
+  closed as a signed-release gate.
 - `LOW-02` (`CQS-Q23-LOW-02`) remains measured startup/precache size and the
   recorded installed-PWA Chrome-tab close caveat; **OPEN / LOW / MONITOR**.
   Do not prematurely optimize merely to make the metric disappear.
@@ -244,7 +250,7 @@ by this register.
 
 | Gate | Status | Close-by |
 | --- | --- | --- |
-| Packaged macOS Sony physical | **H2 PAUSED / SUPERSEDED; H3 NOT RUN** | no later than terminal S04B; remain represented in S06 |
+| Packaged macOS Sony physical | **CLOSED FOR TERMINAL S04B** (H5 selection/hardware transferred; H6 readiness PASS on Namtai `054c:1000` + four handsets; H6 identity `9df9c42…`) | remain represented in S06; not Windows; not signed release |
 | Windows physical runtime | **NOT RUN** | S06, before v1 teacher-ready qualification |
 | Signing / notarization | **OPEN OWNER GATE** | before any teacher-trusted release claim. Windows signing / SmartScreen has higher strategic release priority than Apple signing / notarization if prioritization is necessary |
 
@@ -283,13 +289,19 @@ architecture (ADR-021 Accepted). S03 implements the production thin shell
 and unsigned packaging path. S04 canon registers remaining product
 direction. S04A is **TERMINALLY COMPLETE** after the accepted PR #72 tree
 was squash-merged as `29083f078521ebf432a7d7380c521c557fb578a8` and
-post-merge CI succeeded on that exact main SHA. S04B H1 was rejected by
-independent review. H3 is a later same-slice UX-repair candidate and is
-**not merged** and **not terminal**.
-This document does not authorize S04C–S04D / S05 / S06.
+post-merge CI succeeded on that exact main SHA. S04B is **TERMINALLY
+COMPLETE** after the accepted PR #76 head
+`87450a738c8d95146c3a9eebaafdd944b723cf6e` was squash-merged as
+`1b38ac765841a3db19285172b0f6ac2295d6b88f` and post-merge CI succeeded on
+that exact main SHA. Historical H1 rejection and H3-era candidate wording
+remain history only. This document does not authorize S04C–S04D / S05 /
+S06.
 
 S04A terminal evidence:
 [`../receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md`](../receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md).
+
+S04B terminal evidence:
+[`../receipts/2026-09-13-cqs-real-mvp-s04b-terminal-post-merge-reconciliation.md`](../receipts/2026-09-13-cqs-real-mvp-s04b-terminal-post-merge-reconciliation.md).
 
 There is no Slice 24.
 
@@ -312,9 +324,9 @@ release-build workflow live in this tree.
 Disposition of the S01 comparison set:
 
 - **Electron** — **selected and production-implemented** as a thin Chromium
-  shell around the existing React/Vite core. Physical packaged Sony
-  requalification remains blocked / not executed / hardware unavailable
-  and must close no later than terminal S04B, remaining represented in S06.
+  shell around the existing React/Vite core. Packaged macOS Sony physical
+  for terminal S04B closed via H5/H6 evidence identities and remains
+  represented in S06. Windows physical runtime remains **NOT RUN**.
 - **Tauri** — **rejected** as the primary wrapper. Official Tauri 2 macOS
   webview is WKWebView; system WKWebView has no `navigator.hid`. A native
   HID keep-alive would be a second controller architecture.
@@ -425,16 +437,23 @@ analytics, automatic updates, or school-wide SaaS management.
 ## 12. Next Program frontier
 
 `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is
-**TERMINALLY COMPLETE**. S04B H3 is a packaged UX-repaired candidate.
-Next authority is owner-interactive four-controller physical
-requalification of exact H3.
+**TERMINALLY COMPLETE**. `CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP`
+is **TERMINALLY COMPLETE** after PR #76 squash/main
+`1b38ac765841a3db19285172b0f6ac2295d6b88f` with post-merge CI success.
+Next planned frontier is
+`CQS-REAL-MVP-S04C-PRODUCT-SAFETY-RECOVERY-AND-COMPATIBILITY-UX`.
+**S04C IS NOT AUTHORIZED.**
 
 ```text
 routing ≠ authority
 S04A: TERMINALLY COMPLETE
-S04B: H3 UX-REPAIRED CANDIDATE / AWAITING PHYSICAL REQUALIFICATION / NOT MERGED / NOT TERMINAL
-S04C/S04D/S05/S06: NOT AUTHORIZED
+S04B: TERMINALLY COMPLETE
+S04C: next planned frontier / NOT AUTHORIZED
+S04D/S05/S06: NOT AUTHORIZED
 ```
 
-S04B candidate evidence:
+S04B terminal evidence:
+[`../receipts/2026-09-13-cqs-real-mvp-s04b-terminal-post-merge-reconciliation.md`](../receipts/2026-09-13-cqs-real-mvp-s04b-terminal-post-merge-reconciliation.md).
+
+S04B implementation evidence (historical):
 [`../receipts/2026-08-14-cqs-real-mvp-s04b-sony-team-selection-and-classroom-setup.md`](../receipts/2026-08-14-cqs-real-mvp-s04b-sony-team-selection-and-classroom-setup.md).

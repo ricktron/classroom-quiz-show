@@ -229,8 +229,8 @@ speaks only to the teacher-facing presentation of it.
 | Slice | Relationship to this guidance |
 | --- | --- |
 | S04A | **TERMINALLY COMPLETE.** Research may note future polish opportunities; this guidance does **not** reopen S04A. |
-| S04B | Active product lane at the time of writing. An unmerged candidate branch carries its own Host-setup Interaction & Information Design section. This guidance **generalizes compatible ideas** but does **not** supersede, edit, or claim that candidate. |
-| S04C | Owns broader product-safety, startup-recovery, diagnostics, and intelligible-failure UX. |
+| S04B | **TERMINALLY COMPLETE.** Adopted Host-setup doctrine remains applicable. Later research does **not** reopen S04B without separate authority. |
+| S04C | Next planned product frontier for broader product-safety, startup-recovery, diagnostics, and intelligible-failure UX. **S04C is not authorized by this guidance.** |
 | S04D | Owns intentional feedback/support flow and privacy-safe telemetry. |
 | S05 | Owns flagship Display visual fidelity, motion vocabulary, and game-show choreography. Host stays operational and restrained. |
 | S06 | Owns integrated Windows-first release qualification, including projector, scaling, accessibility, audio, hardware, and clean-room teacher use. |
@@ -299,9 +299,9 @@ See `CQS-UX-P24` in [`CQS-UX-DOCTRINE.md`](CQS-UX-DOCTRINE.md).
 
 This file and the rest of `docs/design/` do **not**:
 
-- authorize S04B, S04C, S04D, S05, or S06 implementation;
-- reopen S04A;
-- modify, supersede, or reconcile the unmerged S04B candidate;
+- authorize S04C, S04D, S05, or S06 implementation;
+- reopen S04A or S04B;
 - change product status, the Program sequence, or the gap register;
-- claim any surface is implemented, polished, or qualified;
+- claim any surface is polished or release-qualified beyond what STATUS
+  already records;
 - promote any external source above CQS canon.
