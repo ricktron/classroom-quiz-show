@@ -434,6 +434,28 @@ describe('teacher Home', () => {
     expect(screen.getAllByText('Kept After Invalid').length).toBeGreaterThan(0)
   })
 
+  it('lets a follower Resume from Home because resume is not a durable write', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await seedResumableSession(adapter)
+    const clock = createManualClock(AT)
+    await renderReadyHome({
+      createAdapter: () => adapter,
+      tabId: 'home-follower-resume',
+      clock,
+      leaseTtlMs: 1_000,
+      renewIntervalMs: 20,
+      broadcastChannel: null,
+    })
+    await waitFor(() => {
+      expect(screen.getByTestId('home-resume')).toBeInTheDocument()
+    })
+    await stealLeadership(adapter, clock)
+    fireEvent.click(screen.getByTestId('home-resume-session'))
+    await waitFor(() => {
+      expect(screen.getByText(/host page/i)).toBeInTheDocument()
+    })
+  })
+
   it('encodes Home Resume as a Host navigation resume intent', () => {
     expect(shouldResumeRecoveryFromNavigation({ cqsResumeRecovery: true })).toBe(true)
     expect(shouldResumeRecoveryFromNavigation(null)).toBe(false)

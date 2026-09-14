@@ -158,8 +158,17 @@ test.describe('Electron thin shell', () => {
     const second = await launchDesktop(userData)
     try {
       const host = await hostWindow(second)
+      // Cold relaunch must not silently auto-resume (ADR-013 / H1).
       await expect(host.getByTestId('home-resume')).toBeVisible()
-      await host.getByRole('link', { name: /resume session/i }).click()
+      await expect(host.getByTestId('home-resume-session')).toBeVisible()
+      await host.getByTestId('home-resume-session').click()
+
+      // H1: Home Resume performs Host resume once — no second recovery gate.
+      await expect(host.getByRole('heading', { name: /host control/i })).toBeVisible()
+      await expect(host.getByTestId('persistence-recovery')).toHaveCount(0)
+      await expect(host.getByTestId('persistence-resume')).toHaveCount(0)
+      await expect(host.getByTestId('game-title')).toHaveText('Earth & Space Science Board')
+
       const probe = await host.evaluate(async () => {
         return new Promise<unknown>((resolve, reject) => {
           const req = indexedDB.open('cqs-s03-probe', 1)
@@ -191,10 +200,6 @@ test.describe('Electron thin shell', () => {
         })
       })
       expect(cqsDb).toBe('opened:4')
-      await expect(host.getByTestId('persistence-recovery')).toBeVisible()
-      await expect(host.getByTestId('persistence-recovery')).toContainText(/unfinished session found/i)
-      await host.getByTestId('persistence-resume').click()
-      await expect(host.getByTestId('game-title')).toHaveText('Earth & Space Science Board')
     } finally {
       await second.close()
     }

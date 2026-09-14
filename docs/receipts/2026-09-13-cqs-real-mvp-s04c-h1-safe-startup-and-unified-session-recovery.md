@@ -102,7 +102,8 @@ Recovery controls do not invoke `clearAllLocalData`.
 - `src/host/sessionRecoveryCopy.ts` — shared teacher-facing recovery copy
 - `src/routes/HostRoute.tsx` — optional test persistence injection
 - Tests: `HomeRoute.test.tsx`, `PersistenceControls.test.tsx`,
-  `tests/e2e/persistence-recovery.spec.ts`
+  `tests/e2e/persistence-recovery.spec.ts`, `tests/desktop/shell.spec.ts`
+  (H1 relaunch expectation)
 - Minimal current-state docs + this receipt
 
 ## Verification
@@ -115,9 +116,21 @@ Observed locally on this H1 head before push:
 | `npm run verify` | pass |
 | `CI=1 npm run verify:all` | pass — 164 unit files; Playwright **394 passed / 14 skipped** |
 | Focused H1 Playwright (`persistence-recovery` Home flows) | pass across desktop-1080p / projector-720p / mobile-host |
-| Packaged macOS relaunch smoke | **not run** — browser Playwright exercises the same IndexedDB recovery semantics; not a substitute for S06 Windows qualification |
+| Electron shell quit/relaunch (`npm run test:desktop`) | pass after H1 qualification-test repair — Home Resume once → Host ready, no second gate; IndexedDB probe + CQS DB v4 survive relaunch |
+| Packaged macOS owner-observed relaunch smoke | **not run** — distinct from Electron shell tests; not a substitute for S06 Windows qualification |
 
 Existing ThemeProvider eslint react-refresh warnings remain (0 errors).
+
+### Desktop qualification-test repair note
+
+CI Desktop artifacts run `34800492097` failed because `tests/desktop/shell.spec.ts`
+still expected the **pre-H1** second Resume gate (`link` → Host recovery →
+`persistence-resume`). That was **qualification expectation drift**.
+
+Fresh Electron observation also showed Home Resume briefly refused under a
+**stale host-writer lease** after quit (false “another window is saving”).
+Resume is not a durable write; H1 removes that gate so relaunch Resume can
+navigate and Host can consume the one-shot intent once.
 
 ## Transferable evidence for later S04C
 

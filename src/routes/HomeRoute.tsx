@@ -81,10 +81,9 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   }
 
   function onResumeSession(): void {
-    if (refuseIfFollower()) return
     if (!canResume) return
-    // Host owns the session store. Carry a one-shot resume intent so Host
-    // performs the real resume without a second teacher prompt.
+    // Resume is not a durable write. A stale host-writer lease after quit/relaunch
+    // must not block restoring the unfinished Session (H1 relaunch path).
     navigate(ROUTES.host, { state: hostResumeRecoveryState() })
   }
 
