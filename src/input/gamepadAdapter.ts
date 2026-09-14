@@ -113,7 +113,9 @@ export interface GamepadEdgeScan {
 export function scanGamepadEdges(
   previous: GamepadBaseline | null,
   snapshot: GamepadSnapshot,
+  options?: { readonly emitPressedOnFirstSight?: boolean },
 ): GamepadEdgeScan {
+  const emitFirst = options?.emitPressedOnFirstSight === true
   const nextPressed = new Map<number, readonly boolean[]>()
   const edges: GamepadControlRef[] = []
 
@@ -124,9 +126,22 @@ export function scanGamepadEdges(
     const current = controller.pressed
     nextPressed.set(controller.controllerIndex, current)
 
-    if (previous === null) continue
+    if (previous === null) {
+      // Full re-prime (enable/mapping/focus/testMode toggle): baseline only.
+      // First-sight emit is reserved for a newly visible controller below.
+      continue
+    }
     const before = previous.pressedByController.get(controller.controllerIndex)
-    if (before === undefined) continue
+    if (before === undefined) {
+      // Newly visible controller: baseline-only for gameplay; setup may emit.
+      if (!emitFirst) continue
+      for (let buttonIndex = 0; buttonIndex < current.length; buttonIndex += 1) {
+        if (current[buttonIndex] === true) {
+          edges.push({ controllerIndex: controller.controllerIndex, buttonIndex })
+        }
+      }
+      continue
+    }
     if (before.length !== current.length) continue
 
     for (let buttonIndex = 0; buttonIndex < current.length; buttonIndex += 1) {

@@ -118,38 +118,68 @@ export function classifyTeacherSummary(input: {
 export function teacherSummaryLabel(summary: SonyBuzzTeacherSummary): string {
   switch (summary) {
     case 'receiver-disconnected':
-      return 'Receiver disconnected — keyboard remains available.'
+      return 'Receiver disconnected — keyboard still works.'
     case 'receiver-paused':
-      return 'Sony connection paused for pairing — keyboard remains available.'
+      return 'Receiver paused for pairing — keyboard still works.'
     case 'receiver-waiting-for-controllers':
-      return 'Receiver connected — waiting for controllers.'
+      return 'Receiver connected — waiting for buzzers.'
     case 'controllers-need-team-setup':
-      return 'Controllers responding — team setup required.'
+      return 'Buzzers responding — finish team setup.'
     case 'sony-buzz-ready':
-      return 'Sony Buzz ready.'
+      return 'Buzzers ready.'
     case 'receiver-needs-attention':
-      return 'Receiver needs attention — keyboard remains available.'
+      return 'Receiver needs attention — keyboard still works.'
   }
+}
+
+/**
+ * Single hardware → teacher-summary path shared by Class Setup and Sony setup.
+ * Callers must not invent a coarser parallel "ready" boolean.
+ */
+export function classifyTeacherSummaryFromHardware(input: {
+  readonly health: SonyBuzzTransportHealth
+  readonly respondingSlotCount: number
+  readonly mappingStatus: string
+  readonly associationCount: number
+}): SonyBuzzTeacherSummary {
+  return classifyTeacherSummary({
+    receiver: classifyReceiverLayer(input.health),
+    controllers: classifyControllerLayer(input.respondingSlotCount),
+    mapping: classifyMappingLayer(input.mappingStatus, input.associationCount),
+  })
+}
+
+/** Fully ready for ordinary Sony use — never receiver health alone. */
+export function classSetupSonyBuzzFullyReady(summary: SonyBuzzTeacherSummary): boolean {
+  return summary === 'sony-buzz-ready'
+}
+
+/**
+ * Whether teacher-facing copy may say controllers are responding.
+ * Stronger than "receiver connected"; weaker than fully ready.
+ */
+export function classSetupSonyBuzzClaimsResponding(summary: SonyBuzzTeacherSummary): boolean {
+  return summary === 'controllers-need-team-setup' || summary === 'sony-buzz-ready'
 }
 
 export function receiverLayerLabel(layer: SonyBuzzReceiverLayer): string {
   switch (layer) {
     case 'unsupported':
-      return 'WebHID unavailable in this browser'
+      return 'Buzzers are not available in this browser'
     case 'needs-permission':
-      return 'Permission required — use Connect Sony Buzz'
+      return 'Permission required — use Connect classroom buzzers'
     case 'connecting':
       return 'Connecting…'
     case 'connected':
-      return 'Receiver connected'
+      return 'Connected'
     case 'disconnected':
-      return 'Receiver disconnected'
+      return 'Disconnected'
     case 'failed':
-      return 'Receiver failed to reconnect'
+      return 'Failed to reconnect'
     case 'disabled':
-      return 'Sony connection paused'
+      return 'Paused'
     case 'recovering':
-      return 'Receiver recovering…'
+      return 'Recovering…'
   }
 }
 
@@ -234,32 +264,37 @@ export function repairStepCopy(step: Exclude<SonyBuzzRepairStep, 'idle' | 'done'
   readonly title: string
   readonly body: string
   readonly cta: string | null
+  readonly secondaryCta: string | null
 } {
   switch (step) {
     case 'power-off':
       return {
-        title: 'Step 1 — Turn controllers off',
-        body: 'Turn each Buzz controller off. The controller shows the slow blue off-state blink.',
-        cta: 'Controllers are off',
+        title: 'Step 1',
+        body: 'Turn all participating buzzers off. A slow blue blink means a buzzer is off.',
+        cta: "They're off",
+        secondaryCta: null,
       }
     case 'solid-blue':
       return {
-        title: 'Step 2 — Enter pairing mode',
+        title: 'Step 2',
         body:
-          'Press and KEEP HOLDING POWER on each controller. You will first see the normal rapid red/blue flashes — that is the normal power-on indication, not pairing-ready yet. Keep holding; do not release at those flashes. Release only when the blue light stays solid. This can take a few seconds; use the solid blue light, not the timer, as your cue. Do not press BIND until every participating controller is solid blue.',
-        cta: 'All controller lights are solid blue',
+          'Hold POWER on every participating buzzer. Keep holding through the rapid red/blue flashing — that is normal startup, not pairing-ready yet. Stop only when every blue light stays solid. Use the solid blue light, not a timer. Do not press BIND until every participating buzzer is solid blue.',
+        cta: 'All lights are solid blue',
+        secondaryCta: null,
       }
     case 'bind-blink':
       return {
-        title: 'Step 3 — Bind the set',
-        body: 'When every controller has a solid blue light, hold BIND on the receiver. The controllers should blink to acknowledge pairing.',
+        title: 'Step 3',
+        body: 'Now hold BIND on the receiver. The buzzer lights should blink together.',
         cta: 'They blinked',
+        secondaryCta: 'They did not blink',
       }
     case 'observe-red':
       return {
-        title: 'Step 4 — Verify',
-        body: 'Press RED on each controller. Newly responding controllers appear below. You do not need button numbers or browser indexes.',
+        title: 'Step 4',
+        body: 'Press RED once on each buzzer. Responding controllers appear below.',
         cta: null,
+        secondaryCta: null,
       }
   }
 }

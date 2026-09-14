@@ -73,19 +73,19 @@ preserves local teacher data (IndexedDB) in the normal user-data location.
 Do not rename the app or change that identity; that would strand local
 data.
 
-## Sony Buzz
+## Buzzers
 
-Desktop Sony support is the same exact in-app profile as the web build:
+Desktop buzzer support is the same exact in-app profile as the web build:
+Namtai wireless Wbuzz `054c:1000` only.
 
-```text
-cqs.sony-buzz.namtai-wbuzz-wireless.v1
-Namtai wireless Wbuzz 054c:1000
-WebHID = keep-alive / transport health
-Gamepad = gameplay input
-```
+On Host, use **Connect buzzers**, then press RED on each controller to
+check it. You do not need to pair a working set every class. If the
+handsets stop responding, use **Repair buzzers** — the teacher-facing
+sequence is in [`QUICK_START.md`](QUICK_START.md). Saved team assignments
+are not cleared merely to pair hardware.
 
-Connect from Host using the existing Sony setup. The shell grants WebHID
-permission only for that exact USB id. Keyboard fallback remains available.
+The desktop shell grants permission only for that exact USB id. Keyboard
+controls still work if buzzers are missing or fail.
 
 Packaged macOS physical Sony smoke is recorded per qualification receipt.
 Windows physical Sony runtime is **not** inferred from macOS.

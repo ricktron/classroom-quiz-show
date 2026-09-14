@@ -11,6 +11,8 @@ import {
   INSTRUCTIONS_SHEET,
   META_KEYS,
   META_SHEET,
+  TEAM_NAME_HEADERS,
+  TEAM_NAMES_SHEET,
   WORKBOOK_FORMAT,
   WORKBOOK_FORMAT_VERSION,
   sheetsForProfile,
@@ -158,6 +160,11 @@ export function generateWorkbookTemplate(profile: WorkbookProfile): {
     }
     XLSX.utils.book_append_sheet(wb, sheet, name)
   }
+  XLSX.utils.book_append_sheet(
+    wb,
+    aoaToSheet([[...TEAM_NAME_HEADERS], ['Comet Crew'], ['Mantle Movers']]),
+    TEAM_NAMES_SHEET,
+  )
 
   // Hide META for teacher usability (convenience, not security).
   if (!wb.Workbook) wb.Workbook = {}

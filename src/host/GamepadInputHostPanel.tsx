@@ -38,6 +38,10 @@ import {
   type SonyBuzzTestObservation,
 } from './SonyBuzzSetupSection'
 import { useSonyBuzzSupportedProfile } from './useSonyBuzzSupportedProfile'
+import {
+  classSetupSonyBuzzFullyReady,
+  type SonyBuzzTeacherSummary,
+} from '../input/sonyBuzzTeacherReadiness'
 import type { PersistenceAdapter } from '../persistence'
 import type { WebHidTransport } from '../input/webHidTransport'
 import { systemClock, type Clock } from '../time/clock'
@@ -90,6 +94,19 @@ export interface GamepadInputHostPanelProps {
   readonly persistenceAdapter?: PersistenceAdapter
   /** Injectable WebHID transport (tests). */
   readonly webHidTransport?: WebHidTransport
+  /** When true, controller edges are reported for team-name selection, not scored. */
+  readonly selectionMode?: boolean
+  readonly onSelectionObservation?: (observation: SonyBuzzTestObservation & { readonly at: number }) => void
+  readonly onSelectionBatch?: (
+    observations: readonly (SonyBuzzTestObservation & { readonly at: number })[],
+  ) => void
+  /**
+   * True only when the Sony teacher-summary is fully ready
+   * (`sony-buzz-ready`). Never derived from receiver health alone.
+   */
+  readonly onSonyReadyChange?: (ready: boolean) => void
+  /** Same classification published by the detailed Sony readiness layers. */
+  readonly onSonyTeacherSummaryChange?: (summary: SonyBuzzTeacherSummary) => void
 }
 
 /** What the panel is currently doing about button capture. */
@@ -130,6 +147,11 @@ export function GamepadInputHostPanel({
   scheduler,
   persistenceAdapter,
   webHidTransport,
+  selectionMode = false,
+  onSelectionObservation,
+  onSelectionBatch,
+  onSonyReadyChange,
+  onSonyTeacherSummaryChange,
 }: GamepadInputHostPanelProps) {
   const teams = game.definition.teams
   const gameId = game.definition.id
@@ -145,10 +167,16 @@ export function GamepadInputHostPanel({
   )
   /** Which action the next capture assigns. Host UI state, per panel. */
   const [pendingActionKey, setPendingActionKey] = useState<string>('primary-buzz')
+  const selectionBatchRef = useRef<(SonyBuzzTestObservation & { readonly at: number })[]>([])
+  const selectionBatchScheduledRef = useRef(false)
   const [testMode, setTestMode] = useState(false)
   const [sonyPendingCapture, setSonyPendingCapture] = useState<GamepadControlRef | null>(null)
   const [lastTestObservation, setLastTestObservation] =
     useState<SonyBuzzTestObservation | null>(null)
+  /** All test observations from the latest Gamepad poll (simultaneous presses). */
+  const [recentTestObservations, setRecentTestObservations] = useState<
+    readonly SonyBuzzTestObservation[]
+  >([])
 
   const sony = useSonyBuzzSupportedProfile({
     gameId,
@@ -157,6 +185,14 @@ export function GamepadInputHostPanel({
     transport: webHidTransport,
     persistenceAdapter,
   })
+
+  const publishTeacherSummary = useCallback(
+    (summary: SonyBuzzTeacherSummary) => {
+      onSonyTeacherSummaryChange?.(summary)
+      onSonyReadyChange?.(classSetupSonyBuzzFullyReady(summary))
+    },
+    [onSonyReadyChange, onSonyTeacherSummaryChange],
+  )
 
   // The loaded game can change under the panel. Bindings for teams that no longer
   // exist are pruned rather than left pointing at nothing; a RENAMED team keeps
@@ -225,13 +261,32 @@ export function GamepadInputHostPanel({
   const onOutcome = useCallback((outcome: GamepadBuzzOutcome) => {
     setLastOutcome(outcome)
     if (outcome.kind === 'test-observation') {
-      setLastTestObservation({
+      const observation = {
         teamId: outcome.teamId,
         action: outcome.action,
         control: outcome.control,
-      })
+      }
+      setLastTestObservation(observation)
+      const stamped = { ...observation, at: clock.now() }
+      onSelectionObservation?.(stamped)
+      // Always coalesce one poll into a batch so Buzzer Check can show every
+      // simultaneous edge (F-S04B-H3-SONY-07 display), not only the last setState.
+      selectionBatchRef.current.push(stamped)
+      if (!selectionBatchScheduledRef.current) {
+        selectionBatchScheduledRef.current = true
+        queueMicrotask(() => {
+          selectionBatchScheduledRef.current = false
+          const batch = selectionBatchRef.current
+          selectionBatchRef.current = []
+          if (batch.length === 0) return
+          setRecentTestObservations(
+            batch.map(({ teamId, action, control }) => ({ teamId, action, control })),
+          )
+          onSelectionBatch?.(batch)
+        })
+      }
     }
-  }, [])
+  }, [clock, onSelectionBatch, onSelectionObservation])
 
   // Apply supported-profile materialized mapping when associations/controller change.
   const sonyMappingKey = useMemo(() => {
@@ -249,9 +304,9 @@ export function GamepadInputHostPanel({
   }, [sonyMappingKey, sony.materializedMapping, teams])
 
   useGamepadBuzzInput({
-    enabled,
+    enabled: enabled || selectionMode,
     capturing,
-    testMode,
+    testMode: testMode || selectionMode,
     mapping,
     target,
     dispatch,
@@ -322,11 +377,59 @@ export function GamepadInputHostPanel({
   const pendingAction = actionFromKey(pendingActionKey)
 
   return (
-    <section className="gih" aria-labelledby="gih-title">
-      <div className="foundation__tag foundation__tag--slice9">
-        Controller input (Slices 9–21) — host controls, private
-      </div>
-      <h3 id="gih-title">Controllers</h3>
+    <section
+      className="gih"
+      aria-labelledby="gih-title"
+      data-setup-mode={selectionMode ? 'true' : 'false'}
+    >
+      {!selectionMode && (
+        <div className="foundation__tag foundation__tag--slice9">
+          Controller input (Slices 9–21) — host controls, private
+        </div>
+      )}
+      <h3 id="gih-title">{selectionMode ? 'Buzzers' : 'Controllers'}</h3>
+
+      {selectionMode ? (
+        <SonyBuzzSetupSection
+          teams={teams}
+          controllers={controllers}
+          diagnosticsStatus={diagnostics.status}
+          activeMapping={mapping}
+          onApplyMapping={applyMapping}
+          capturing={capture.mode === 'sony-setup'}
+          onCapturingChange={onSonyCapturingChange}
+          testMode={testMode}
+          onTestModeChange={onSonyTestModeChange}
+          lastTestObservation={lastTestObservation}
+          recentTestObservations={recentTestObservations}
+          pendingCapture={sonyPendingCapture}
+          onPendingCaptureConsumed={onSonyPendingCaptureConsumed}
+          compactOrdinary={selectionMode}
+          onTeacherSummaryChange={publishTeacherSummary}
+          supportedProfile={{
+            transport: sony.transport,
+            associations: sony.associations,
+            mappingStatus: sony.mappingStatus,
+            wbuzzPresent: sony.wbuzzController != null,
+            onConnect: () => {
+              void sony.connect()
+            },
+            onDisableKeepAlive: () => sony.disableKeepAlive(),
+            onSetSlotTeam: sony.setSlotTeam,
+            onSaveAssociations: () => {
+              void sony.saveAssociations()
+            },
+            onClearSavedMapping: () => {
+              void sony.clearSavedMapping()
+            },
+          }}
+        />
+      ) : null}
+
+      <details className="gih__generic" data-testid="gih-advanced-generic" open={!selectionMode}>
+        <summary className={selectionMode ? undefined : 'visually-hidden'}>
+          {selectionMode ? 'Advanced controller diagnostics' : 'Controller assignments'}
+        </summary>
 
       <dl className="gih__summary" data-testid="gih-summary">
         <dt>Controller support</dt>
@@ -513,7 +616,9 @@ export function GamepadInputHostPanel({
         while the clue is armed, the first accepted team answers, and the rest
         queue up. Keyboard buzzing works whether or not a controller is attached.
       </p>
+      </details>
 
+      {selectionMode ? null : (
       <SonyBuzzSetupSection
         teams={teams}
         controllers={controllers}
@@ -525,8 +630,10 @@ export function GamepadInputHostPanel({
         testMode={testMode}
         onTestModeChange={onSonyTestModeChange}
         lastTestObservation={lastTestObservation}
+        recentTestObservations={recentTestObservations}
         pendingCapture={sonyPendingCapture}
         onPendingCaptureConsumed={onSonyPendingCaptureConsumed}
+        onTeacherSummaryChange={publishTeacherSummary}
         supportedProfile={{
           transport: sony.transport,
           associations: sony.associations,
@@ -545,6 +652,7 @@ export function GamepadInputHostPanel({
           },
         }}
       />
+      )}
     </section>
   )
 }

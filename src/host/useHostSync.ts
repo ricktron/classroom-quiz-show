@@ -19,14 +19,15 @@ import { systemClock, type Clock } from '../time/clock'
  */
 export function useHostSync(store: SessionStore, clock: Clock = systemClock): void {
   useEffect(() => {
+    const snapshot = () => store.getPublicState()
     const broadcaster = createPublicStateBroadcaster({
-      getSnapshot: () => store.getPublicState(),
+      getSnapshot: snapshot,
       clock,
     })
 
-    broadcaster.publish(store.getPublicState())
+    broadcaster.publish(snapshot())
     const unsubscribe = store.subscribe(() => {
-      broadcaster.publish(store.getPublicState())
+      broadcaster.publish(snapshot())
     })
 
     return () => {

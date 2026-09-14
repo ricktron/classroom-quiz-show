@@ -79,6 +79,20 @@ describe('import quality report', () => {
     expect(report.findings[0]?.source).toBe('authoring-draft')
   })
 
+  it('treats a short name bank as a HEURISTIC, not an import failure', () => {
+    let draft = createBlankAuthoringDraft({ title: 'Weather', gameKey: 'weather', teamCount: 2 })
+    draft = applyDraftCorrection(draft, {
+      kind: 'team-name-bank',
+      names: Array.from({ length: 20 }, (_, index) => `Weather Name ${index + 1}`),
+    })
+    const report = buildImportQualityReport({ draft, acceptance: 'accepted' })
+    const finding = report.findings.find((item) => item.code === 'team-name-bank-short')
+    expect(finding?.classification).toBe('HEURISTIC')
+    expect(finding?.message).toMatch(/96/)
+    expect(finding?.message).toMatch(/not an import failure/)
+    expect(report.acceptance).toBe('accepted')
+  })
+
   it('renders deterministic local-only generation feedback', () => {
     const draft = createBlankAuthoringDraft({ title: 'New Game', gameKey: 'new-game' })
     const report = buildImportQualityReport({ draft })

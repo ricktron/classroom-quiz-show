@@ -367,6 +367,21 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
               />
             </label>
           ))}
+          <label htmlFor="team-name-bank">
+            Class name bank (reusable with this game; class picks happen when you play)
+            <textarea
+              id="team-name-bank"
+              data-testid="team-name-bank"
+              rows={6}
+              value={(draft.game.teamNameBank ?? []).join('\n')}
+              onChange={(event) =>
+                apply({
+                  kind: 'team-name-bank',
+                  names: event.target.value.split(/\r?\n/),
+                })
+              }
+            />
+          </label>
         </section>
 
         {draft.final && !preview && (

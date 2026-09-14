@@ -24,6 +24,7 @@ describe('workbook templates', () => {
       expect(parsedA.draft.profile).toBe(profile)
       expect(parsedB.draft.game.gameCanonicalId).toBe(parsedA.draft.game.gameCanonicalId)
       expect(parsedA.draft.board.categories.length).toBeGreaterThan(0)
+      expect(parsedA.draft.game.teamNameBank).toEqual(['Comet Crew', 'Mantle Movers'])
       expect(parsedA.draft.issues.some((i) => i.severity === 'blocker')).toBe(false)
     })
   }
@@ -38,8 +39,11 @@ describe('workbook templates', () => {
       'INSTRUCTIONS',
       'GAME',
       'CLUES',
+      'TEAM_NAMES',
     ])
     const instructions = buildModelNeutralInstructions('classic-board').join('\n')
+    expect(instructions).toContain('Recommended target: 96 unique names')
+    expect(instructions).toContain('Strong quality warning below 64')
     expect(instructions).toContain('model-neutral external-authoring instructions')
     expect(instructions).toContain('workbookFormatVersion: 1')
     expect(instructions).toContain('return the completed')

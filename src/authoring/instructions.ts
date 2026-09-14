@@ -40,6 +40,7 @@ export function buildModelNeutralInstructions(profile: WorkbookProfile): string[
     '',
     'Editable sheets/cells:',
     '- GAME: title, GameKey, optional ResponseSeconds, optional Team1Name…Team8Name',
+    '- TEAM_NAMES (optional): one TeamName per row — Game-owned class-name deck',
     '- CLUES: one clue per row (CategoryOrder, Category, ClueOrder, Value, Prompt, Answer, optional alternates/notes/multiplier)',
     profile === 'board-plus-final'
       ? '- FINAL: Prompt, Answer, optional alternates/notes/FinalRoundTitle'
@@ -75,6 +76,15 @@ export function buildModelNeutralInstructions(profile: WorkbookProfile): string[
     '6) no formulas',
     '7) no image/media columns',
     profile === 'board-plus-final' ? '8) Final present and teams named' : '8) board rows within limits',
+    '',
+    'Team-name bank (optional TEAM_NAMES sheet; workbook format stays 1):',
+    '- Generate names grounded in this game’s actual subject and clues.',
+    '- School-appropriate, unique, short enough to project, easy to say and remember.',
+    '- Varied across the game. Not generic filler (Team 1, Red). Not answer-revealing.',
+    '- Recommended target: 96 unique names. Strong quality warning below 64.',
+    '- Too few names is a quality notice, not an automatic import failure.',
+    '- Process: READ the clues → GENERATE extra candidates → CRITIQUE → SELECT about 96.',
+    '- Do not invent live-AI behavior inside Classroom Quiz Show. Generation happens outside.',
     '',
     'For an external LLM or automated authoring tool: return the completed .xlsx workbook artifact rather than explanatory prose around it.',
     'Do not include chain-of-thought or private reasoning.',

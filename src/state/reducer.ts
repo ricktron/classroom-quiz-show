@@ -20,6 +20,7 @@ import {
 } from '../game/categoryBoard/definition'
 import type { RoundDefinition } from '../game/roundDefinition'
 import { findTeamById } from '../game/teams/definition'
+import { MAX_TEAM_NAME_LENGTH } from '../game/teams/limits'
 import {
   INITIAL_TEAM_SCORE,
   checkScoreAdjustment,
@@ -126,6 +127,8 @@ export type RejectionReason =
   // Team / scoring rejections (Slice 6).
   | 'no-teams-configured'
   | 'unknown-team'
+  | 'session-team-name-taken'
+  | 'invalid-session-team-name'
   | 'tile-mismatch'
   | 'invalid-score-delta'
   | 'invalid-score-source'
@@ -239,6 +242,7 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
         // prior score can survive it — starting a new game is how a teacher
         // resets for the next class.
         teamScores: {},
+        sessionTeamNames: {},
         categoryBoards: {},
         // A new game starts with no armed clue and no running timer, for the same
         // reason it starts every board fresh: loading a game is a hard baseline.
@@ -497,6 +501,26 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
         { clearResponsePhase: true },
       )
 
+    case 'SESSION_TEAM_NAME_SET': {
+      if (!state.session || !state.session.game) return state
+      const game = state.session.game
+      if (findTeamById(game.definition.teams, event.teamId) === null) return state
+      const nextNames = { ...game.sessionTeamNames }
+      if (event.name === null) {
+        delete nextNames[event.teamId]
+      } else {
+        nextNames[event.teamId] = event.name
+      }
+      const nextGame: PrivateGameState = {
+        ...game,
+        sessionTeamNames: nextNames,
+      }
+      return withApplied(state, event.type, {
+        ...state,
+        session: { ...state.session, game: nextGame },
+      })
+    }
+
     case 'TEAM_SCORE_ADJUSTED': {
       if (!state.session || !state.session.game) return state
       const game = state.session.game
@@ -690,6 +714,24 @@ export function categoryBoardStateFor(
  * neutral "unavailable" scoreboard). Repairing here would be exactly the silent
  * repair the rest of the engine refuses to do.
  */
+export function sessionTeamNameFor(game: PrivateGameState, teamId: string): string | null {
+  if (!Object.prototype.hasOwnProperty.call(game.sessionTeamNames, teamId)) return null
+  const name = game.sessionTeamNames[teamId]
+  return typeof name === 'string' && name.length > 0 ? name : null
+}
+
+export function publicTeamDisplayName(
+  game: PrivateGameState,
+  teamId: string,
+  authoredName: string,
+): string {
+  return sessionTeamNameFor(game, teamId) ?? authoredName
+}
+
+export function sessionTeamNamesAreChosen(game: PrivateGameState): boolean {
+  return game.definition.teams.every((team) => sessionTeamNameFor(game, team.id) !== null)
+}
+
 export function teamScoreFor(game: PrivateGameState, teamId: string): number {
   if (!Object.prototype.hasOwnProperty.call(game.teamScores, teamId)) {
     return INITIAL_TEAM_SCORE
@@ -1394,6 +1436,53 @@ export function planCommand(
             occurredAt: at,
             reversible: true,
             roundId: context.round.id,
+          },
+        ],
+      }
+    }
+
+    case 'SET_SESSION_TEAM_NAME': {
+      if (!state.session) return { status: 'rejected', reason: 'session-not-initialized' }
+      const game = state.session.game
+      if (!game) return { status: 'rejected', reason: 'game-not-initialized' }
+      if (game.definition.teams.length === 0) {
+        return { status: 'rejected', reason: 'no-teams-configured' }
+      }
+      if (typeof command.teamId !== 'string' || command.teamId.length === 0) {
+        return { status: 'rejected', reason: 'malformed-command' }
+      }
+      const team = findTeamById(game.definition.teams, command.teamId)
+      if (team === null) return { status: 'rejected', reason: 'unknown-team' }
+      let nextName: string | null = null
+      if (command.name !== null) {
+        if (typeof command.name !== 'string') {
+          return { status: 'rejected', reason: 'malformed-command' }
+        }
+        const normalized = command.name.trim().replace(/\s+/g, ' ')
+        if (normalized.length === 0 || normalized.length > MAX_TEAM_NAME_LENGTH) {
+          return { status: 'rejected', reason: 'invalid-session-team-name' }
+        }
+        const key = normalized.toLowerCase()
+        for (const other of game.definition.teams) {
+          if (other.id === team.id) continue
+          const existing = sessionTeamNameFor(game, other.id)
+          if (existing && existing.toLowerCase() === key) {
+            return { status: 'rejected', reason: 'session-team-name-taken' }
+          }
+        }
+        nextName = normalized
+      }
+      return {
+        status: 'accepted',
+        events: [
+          {
+            id,
+            type: 'SESSION_TEAM_NAME_SET',
+            seq,
+            occurredAt: at,
+            reversible: true,
+            teamId: team.id,
+            name: nextName,
           },
         ],
       }

@@ -89,8 +89,9 @@ Pairing/recovery friction was a material usability finding (WebHID `healthy`
 ≠ controllers transmitting; incorrect BIND+Red recovery superseded by set-level
 solid-blue-then-BIND). No core transport/input product defect was found.
 Teacher UX must separate receiver transport, controller-input readiness, and
-team-mapping readiness, and expose a guided “Repair controller connection”
-flow using existing Disable → pair → Connect controls.
+team-mapping readiness, and expose a guided “Repair buzzers”
+flow using existing Disable → pair → Connect controls. Teacher-facing
+recovery copy lives in [`../teacher/QUICK_START.md`](../teacher/QUICK_START.md).
 
 Owner-observed handset LED cues for that guided flow (supported-profile
 operating cues; not invented meanings): slow blue blink ≈ off; rapid red/blue

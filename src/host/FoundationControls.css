@@ -17,6 +17,11 @@
   margin-bottom: var(--space-5);
 }
 
+.foundation__setup-workspace {
+  display: grid;
+  gap: var(--space-3);
+}
+
 .foundation__diagnostics {
   margin-top: var(--space-5);
   padding: var(--space-4);

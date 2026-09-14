@@ -47,6 +47,7 @@ import {
   slotIdForPrimaryRedButton,
   teacherSummaryLabel,
   type SonyBuzzRepairStep,
+  type SonyBuzzTeacherSummary,
 } from '../input/sonyBuzzTeacherReadiness'
 import type { SonyBuzzTransportSnapshot } from '../input/sonyBuzzKeepAliveLifecycle'
 import type { GamepadControllerInfo } from './useGamepadBuzzInput'
@@ -79,11 +80,20 @@ export interface SonyBuzzSetupSectionProps {
   readonly onTestModeChange: (testMode: boolean) => void
   /** Latest test-mode observation from the parent poll owner, if any. */
   readonly lastTestObservation: SonyBuzzTestObservation | null
+  /** All observations from the latest Gamepad poll (simultaneous edges). */
+  readonly recentTestObservations?: readonly SonyBuzzTestObservation[]
   /** Deliver a captured control from the parent poll owner. */
   readonly pendingCapture: GamepadControlRef | null
   readonly onPendingCaptureConsumed: () => void
   /** Slice 21 supported-profile controls. */
   readonly supportedProfile?: SonyBuzzSupportedProfileSectionProps
+  /** Class Setup: collapse capture/diagnostics. Play: keep them available. */
+  readonly compactOrdinary?: boolean
+  /**
+   * Publishes the same teacher-summary classification Class Setup must use.
+   * Avoids a second, coarser "sonyReady" algorithm above this surface.
+   */
+  readonly onTeacherSummaryChange?: (summary: SonyBuzzTeacherSummary) => void
 }
 
 export interface SonyBuzzSupportedProfileSectionProps {
@@ -122,16 +132,25 @@ function SupportedProfileBlock({
   testMode,
   onTestModeChange,
   lastTestObservation,
+  recentTestObservations = [],
+  checkDisabled,
+  compactOrdinary,
+  onTeacherSummaryChange,
 }: {
   teams: readonly TeamDefinition[]
   supportedProfile: SonyBuzzSupportedProfileSectionProps
   testMode: boolean
   onTestModeChange: (testMode: boolean) => void
   lastTestObservation: SonyBuzzTestObservation | null
+  recentTestObservations?: readonly SonyBuzzTestObservation[]
+  checkDisabled: boolean
+  compactOrdinary: boolean
+  onTeacherSummaryChange?: (summary: SonyBuzzTeacherSummary) => void
 }) {
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [repairStep, setRepairStep] = useState<SonyBuzzRepairStep>('idle')
   const [repairReason, setRepairReason] = useState<'repair' | 'hardware-changed'>('repair')
+  const [bindMissed, setBindMissed] = useState(false)
   const [respondingSlots, setRespondingSlots] = useState<readonly SonyBuzzSlotId[]>([])
   const slots = useMemo(() => {
     const map = new Map<SonyBuzzSlotId, string>()
@@ -152,16 +171,36 @@ function SupportedProfileBlock({
   })
 
   useEffect(() => {
-    if (repairStep !== 'observe-red') return
-    if (!testMode || lastTestObservation === null) return
-    const slot = slotIdForPrimaryRedButton(lastTestObservation.control.buttonIndex)
-    if (slot === null) return
-    setRespondingSlots((current) => addRespondingSlot(current, slot))
-  }, [repairStep, testMode, lastTestObservation])
+    onTeacherSummaryChange?.(summary)
+  }, [onTeacherSummaryChange, summary])
+
+  useEffect(() => {
+    // Controllers-responding readiness must track ordinary Buzzer Check as well as
+    // repair observe-red. HEAD gated on observe-red only, so Class Setup stayed
+    // "Waiting for controller presses" after successful checks (F-S04B-H3-SONY-05):
+    // lastTestObservation / testOut advanced, respondingSlots did not.
+    if (!testMode) return
+    const batch =
+      recentTestObservations.length > 0
+        ? recentTestObservations
+        : lastTestObservation !== null
+          ? [lastTestObservation]
+          : []
+    if (batch.length === 0) return
+    setRespondingSlots((current) => {
+      let next = current
+      for (const observation of batch) {
+        const slot = slotIdForPrimaryRedButton(observation.control.buttonIndex)
+        if (slot !== null) next = addRespondingSlot(next, slot)
+      }
+      return next
+    })
+  }, [testMode, lastTestObservation, recentTestObservations])
 
   const beginRepair = (reason: 'repair' | 'hardware-changed') => {
     setRepairReason(reason)
     setRespondingSlots([])
+    setBindMissed(false)
     setRepairStep('power-off')
     supportedProfile.onDisableKeepAlive()
     if (testMode) onTestModeChange(false)
@@ -169,6 +208,7 @@ function SupportedProfileBlock({
 
   const advanceRepair = () => {
     const next = nextRepairStep(repairStep)
+    setBindMissed(false)
     if (next === 'observe-red') {
       supportedProfile.onConnect()
       onTestModeChange(true)
@@ -195,13 +235,22 @@ function SupportedProfileBlock({
       ? repairStepCopy(repairStep)
       : null
 
+  const showTeamAssignments =
+    !compactOrdinary || summary === 'controllers-need-team-setup' || showAdvanced
+  const showOrdinaryRepair = summary !== 'sony-buzz-ready' && !repairActive
+  const receiverConnected =
+    receiver === 'connected' ||
+    summary === 'receiver-waiting-for-controllers' ||
+    summary === 'controllers-need-team-setup' ||
+    summary === 'sony-buzz-ready'
+
   return (
     <div className="sbs__supported" data-testid="sbs-supported-profile">
-      <h5 className="sbs__heading">Supported profile (Namtai Wbuzz)</h5>
-      <p className="host__note" data-testid="sbs-profile-id">
-        Profile <code>{SONY_BUZZ_SUPPORTED_PROFILE_ID}</code> — exact USB{' '}
-        <code>054c:1000</code> only. Receiver keep-alive is health-only; Gamepad
-        remains the gameplay input path. Keyboard buzzing stays available.
+      <h5 className="sbs__heading">Buzzers</h5>
+      <p className="host__note" data-testid="sbs-teacher-intro">
+        {summary === 'sony-buzz-ready'
+          ? 'These buzzers are already ready. Press RED on each one if you want a quick check. You do not need to pair them again for a normal class.'
+          : 'If you use buzzers, plug in the receiver and connect. Then press RED on each buzzer to check it. You do not need to pair the set every class. Keyboard controls still work.'}
       </p>
 
       <div className="sbs__readiness" data-testid="sbs-readiness">
@@ -211,93 +260,105 @@ function SupportedProfileBlock({
         <dl className="sbs__status" data-testid="sbs-readiness-layers">
           <dt>Receiver</dt>
           <dd data-testid="sbs-receiver-layer">{receiverLayerLabel(receiver)}</dd>
-          <dt>Controllers</dt>
+          <dt>Buzzers</dt>
           <dd data-testid="sbs-controller-layer">
             {controllerLayerLabel(controllersLayer, respondingSlots.length)}
           </dd>
-          <dt>Team mapping</dt>
+          <dt>Teams</dt>
           <dd data-testid="sbs-mapping-layer">{mappingLayerLabel(mappingLayer)}</dd>
         </dl>
         <p className="host__note" data-testid="sbs-readiness-note">
-          Receiver connected does not mean controllers are ready. Pair handsets
-          before expecting buzzes.
+          A connected receiver does not mean the buzzers are ready. Keyboard
+          controls still work.
         </p>
       </div>
 
-      <dl className="sbs__status" data-testid="sbs-transport-status">
-        <dt>Transport detail</dt>
-        <dd data-testid="sbs-transport-health">{supportedProfile.transport.health}</dd>
-        <dt>Message</dt>
-        <dd data-testid="sbs-transport-message">{supportedProfile.transport.teacherMessage}</dd>
-        <dt>Gamepad Wbuzz</dt>
-        <dd data-testid="sbs-wbuzz-present">
-          {supportedProfile.wbuzzPresent
-            ? 'Detected (20 buttons)'
-            : 'Not detected yet — press a handset after Connect'}
-        </dd>
-        <dt>Saved mapping</dt>
-        <dd data-testid="sbs-mapping-status">{supportedProfile.mappingStatus}</dd>
-      </dl>
+      {!repairActive && (
+        <div className="sbs__actions">
+          <button
+            type="button"
+            className={receiverConnected ? 'btn btn--secondary' : 'btn'}
+            data-testid="sbs-connect"
+            disabled={receiverConnected}
+            aria-disabled={receiverConnected}
+            onClick={() => supportedProfile.onConnect()}
+          >
+            {receiverConnected ? 'Buzzers connected' : 'Connect buzzers'}
+          </button>
+          <button
+            type="button"
+            className={receiverConnected ? 'btn' : 'btn btn--secondary'}
+            data-testid="sbs-test-mode"
+            disabled={checkDisabled}
+            aria-pressed={testMode}
+            onClick={() => onTestModeChange(!testMode)}
+          >
+            {testMode ? 'Leave Buzzer Check' : 'Check buzzers'}
+          </button>
+          <button
+            type="button"
+            className="btn btn--secondary"
+            data-testid="sbs-disable-keepalive"
+            onClick={() => supportedProfile.onDisableKeepAlive()}
+          >
+            Skip buzzers for now
+          </button>
+        </div>
+      )}
 
-      <div className="sbs__actions">
-        <button
-          type="button"
-          className="btn btn--secondary"
-          data-testid="sbs-connect"
-          onClick={() => supportedProfile.onConnect()}
-        >
-          Connect Sony Buzz
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          data-testid="sbs-disable-keepalive"
-          onClick={() => supportedProfile.onDisableKeepAlive()}
-        >
-          Disable Sony Buzz for now
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          data-testid="sbs-repair-connection"
-          onClick={() => beginRepair('repair')}
-        >
-          Repair controller connection
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          data-testid="sbs-hardware-changed"
-          onClick={() => beginRepair('hardware-changed')}
-        >
-          Hardware changed?
-        </button>
-      </div>
+      {showOrdinaryRepair && (
+        <p className="sbs__repair-launch">
+          <button
+            type="button"
+            className="btn btn--secondary"
+            data-testid="sbs-repair-connection"
+            onClick={() => beginRepair('repair')}
+          >
+            Repair buzzers
+          </button>
+        </p>
+      )}
 
       {repairActive || repairStep === 'done' ? (
         <div className="sbs__repair" data-testid="sbs-repair-flow">
           <h5 className="sbs__heading">
-            {repairReason === 'hardware-changed'
-              ? 'Hardware changed — repair connection'
-              : 'Repair controller connection'}
+            {repairReason === 'hardware-changed' ? 'Hardware changed — repair buzzers' : 'Repair buzzers'}
           </h5>
           <p className="host__note" data-testid="sbs-repair-keepalive-note">
-            Sony connection is paused for pairing (Disable). After controllers
-            blink, Connect resumes keep-alive. Mapping is not cleared.
+            Buzzers are paused for pairing. Saved team assignments are kept. You
+            can keep setting up with the keyboard.
           </p>
           {stepCopy ? (
             <div data-testid={`sbs-repair-step-${repairStep}`}>
               <p className="sbs__repair-title">{stepCopy.title}</p>
               <p className="host__note">{stepCopy.body}</p>
-              {stepCopy.cta ? (
-                <button
-                  type="button"
-                  className="btn btn--secondary"
-                  data-testid="sbs-repair-advance"
-                  onClick={advanceRepair}
-                >
-                  {stepCopy.cta}
-                </button>
+              <div className="sbs__actions">
+                {stepCopy.cta ? (
+                  <button
+                    type="button"
+                    className="btn"
+                    data-testid="sbs-repair-advance"
+                    onClick={advanceRepair}
+                  >
+                    {stepCopy.cta}
+                  </button>
+                ) : null}
+                {stepCopy.secondaryCta ? (
+                  <button
+                    type="button"
+                    className="btn btn--secondary"
+                    data-testid="sbs-repair-bind-missed"
+                    onClick={() => setBindMissed(true)}
+                  >
+                    {stepCopy.secondaryCta}
+                  </button>
+                ) : null}
+              </div>
+              {bindMissed ? (
+                <p className="host__note" data-testid="sbs-repair-bind-missed-note">
+                  Do not press BIND again until every participating buzzer shows a
+                  solid blue light. Go back to Step 2 if any light is still flashing.
+                </p>
               ) : null}
             </div>
           ) : null}
@@ -339,9 +400,8 @@ function SupportedProfileBlock({
           {repairStep === 'done' ? (
             <div data-testid="sbs-repair-done">
               <p className="host__note">
-                Continue with Buzzer Check (non-gameplay), then confirm team
-                assignments below. Same-profile hardware replacement does not
-                require resetting the whole app.
+                Press RED on each buzzer to finish the check. Team assignments stay
+                unless you change them. You can keep setting up with the keyboard.
               </p>
               <button
                 type="button"
@@ -367,66 +427,51 @@ function SupportedProfileBlock({
         </div>
       ) : null}
 
-      <h5 className="sbs__heading">Team assignments (handset slots)</h5>
-      <p className="host__note" data-testid="sbs-slot-disposition">
-        Slots are profile positions, not physical handset numbers. Four-slot
-        profile design; fresh product RC used three available controllers.
-        {` ${SONY_BUZZ_SLOT4_TEACHER_NOTE}`}
-      </p>
-      <ul className="sbs__slot-list" data-testid="sbs-slot-assignments">
-        {Array.from({ length: SONY_BUZZ_HANDSET_SLOT_COUNT }, (_, i) => {
-          const slotId = sonyBuzzSlotId(i)!
-          const value = slots.get(slotId) ?? ''
-          return (
-            <li key={slotId}>
-              <label>
-                Slot {slotId}
-                {slotId === 4 ? ' (optional fourth)' : ''}
-                <select
-                  data-testid={`sbs-slot-${slotId}`}
-                  value={value}
-                  onChange={(e) => {
-                    const next = e.target.value
-                    supportedProfile.onSetSlotTeam(slotId, next.length === 0 ? null : next)
-                  }}
-                >
-                  <option value="">Unassigned</option>
-                  {teams.map((team) => (
-                    <option key={team.id} value={team.id}>
-                      {team.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </li>
-          )
-        })}
-      </ul>
-      <div className="sbs__actions">
-        <button
-          type="button"
-          className="btn btn--secondary"
-          data-testid="sbs-save-mapping"
-          onClick={() => supportedProfile.onSaveAssociations()}
-        >
-          Save team mapping
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          data-testid="sbs-clear-mapping"
-          onClick={() => supportedProfile.onClearSavedMapping()}
-        >
-          Clear saved Sony mapping
-        </button>
+      <div className="sbs__assignments" data-testid="sbs-ordinary-assignments" hidden={!showTeamAssignments}>
+        <h5 className="sbs__heading">Which buzzer is which team</h5>
+        <p className="host__note">
+          Assign each responding buzzer to a team. You can change this later.
+        </p>
+        <ul className="sbs__slot-list" data-testid="sbs-slot-assignments">
+          {Array.from({ length: SONY_BUZZ_HANDSET_SLOT_COUNT }, (_, i) => {
+            const slotId = sonyBuzzSlotId(i)!
+            const value = slots.get(slotId) ?? ''
+            return (
+              <li key={slotId}>
+                <label>
+                    Controller {slotId}
+                    {slotId === 4 ? ' (optional fourth)' : ''}
+                  <select
+                    data-testid={`sbs-slot-${slotId}`}
+                    value={value}
+                    onChange={(e) => {
+                      const next = e.target.value
+                      supportedProfile.onSetSlotTeam(slotId, next.length === 0 ? null : next)
+                    }}
+                  >
+                    <option value="">Unassigned</option>
+                    {teams.map((team) => (
+                      <option key={team.id} value={team.id}>
+                        {team.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </li>
+            )
+          })}
+        </ul>
+        <div className="sbs__actions">
+          <button
+            type="button"
+            className="btn btn--secondary"
+            data-testid="sbs-save-mapping"
+            onClick={() => supportedProfile.onSaveAssociations()}
+          >
+            Save team mapping
+          </button>
+        </div>
       </div>
-
-      <p className="host__note" data-testid="sbs-buzzer-check-bridge">
-        Buzzer Check (below) reports colors ({SONY_BUZZ_COLORS.join(', ')}) without
-        changing the game. Secondary colors never score. After hardware changes:
-        Repair controller connection → Buzzer Check → Confirm team assignments →
-        Ready.
-      </p>
 
       <button
         type="button"
@@ -436,23 +481,72 @@ function SupportedProfileBlock({
       >
         {showAdvanced ? 'Hide advanced diagnostics' : 'Advanced diagnostics'}
       </button>
-      {showAdvanced ? (
-        <pre className="sbs__diag" data-testid="sbs-advanced-diag">
-          {JSON.stringify(
-            {
-              health: supportedProfile.transport.health,
-              sends: supportedProfile.transport.sends,
-              failures: supportedProfile.transport.failures,
-              lastError: supportedProfile.transport.lastError,
-              deviceLabel: supportedProfile.transport.deviceLabel,
-              framingOk: supportedProfile.transport.framingOk,
-              ownerDisposition: SONY_BUZZ_RC_OWED_NOTE,
-            },
-            null,
-            2,
-          )}
-        </pre>
-      ) : null}
+      <div hidden={!showAdvanced} data-testid="sbs-advanced">
+        <dl className="sbs__status" data-testid="sbs-transport-status">
+          <dt>Transport detail</dt>
+          <dd data-testid="sbs-transport-health">{supportedProfile.transport.health}</dd>
+          <dt>Message</dt>
+          <dd data-testid="sbs-transport-message">{supportedProfile.transport.teacherMessage}</dd>
+          <dt>Gamepad Wbuzz</dt>
+          <dd data-testid="sbs-wbuzz-present">
+            {supportedProfile.wbuzzPresent
+              ? 'Detected (20 buttons)'
+              : 'Not detected yet — press a handset after Connect'}
+          </dd>
+          <dt>Saved mapping</dt>
+          <dd data-testid="sbs-mapping-status">{supportedProfile.mappingStatus}</dd>
+        </dl>
+        <p className="host__note" data-testid="sbs-slot-disposition">
+          Slots are profile positions, not physical handset numbers. Four-slot
+          profile design; fresh product RC used three available controllers.
+          {` ${SONY_BUZZ_SLOT4_TEACHER_NOTE}`}
+        </p>
+        <p className="host__note" data-testid="sbs-buzzer-check-bridge">
+          Buzzer Check reports colors ({SONY_BUZZ_COLORS.join(', ')}) without
+          changing the game. After hardware changes: Repair buzzers → Buzzer Check
+          → Confirm team assignments → Ready.
+        </p>
+        <div className="sbs__actions">
+          <button
+            type="button"
+            className="btn btn--secondary"
+            data-testid="sbs-hardware-changed"
+            onClick={() => beginRepair('hardware-changed')}
+          >
+            Hardware changed?
+          </button>
+          <button
+            type="button"
+            className="btn btn--secondary"
+            data-testid="sbs-clear-mapping"
+            onClick={() => supportedProfile.onClearSavedMapping()}
+          >
+            Clear saved Sony mapping
+          </button>
+        </div>
+        <p className="host__note" data-testid="sbs-profile-id">
+          Profile <code>{SONY_BUZZ_SUPPORTED_PROFILE_ID}</code> — exact USB{' '}
+          <code>054c:1000</code> only. Receiver keep-alive is health-only; Gamepad
+          remains the gameplay input path.
+        </p>
+        {showAdvanced ? (
+          <pre className="sbs__diag" data-testid="sbs-advanced-diag">
+            {JSON.stringify(
+              {
+                health: supportedProfile.transport.health,
+                sends: supportedProfile.transport.sends,
+                failures: supportedProfile.transport.failures,
+                lastError: supportedProfile.transport.lastError,
+                deviceLabel: supportedProfile.transport.deviceLabel,
+                framingOk: supportedProfile.transport.framingOk,
+                ownerDisposition: SONY_BUZZ_RC_OWED_NOTE,
+              },
+              null,
+              2,
+            )}
+          </pre>
+        ) : null}
+      </div>
     </div>
   )
 }
@@ -468,9 +562,12 @@ export function SonyBuzzSetupSection({
   testMode,
   onTestModeChange,
   lastTestObservation,
+  recentTestObservations = [],
   pendingCapture,
   onPendingCaptureConsumed,
   supportedProfile,
+  compactOrdinary = false,
+  onTeacherSummaryChange,
 }: SonyBuzzSetupSectionProps) {
   const initialTeamId = teams[0]?.id ?? ''
   const [teamId, setTeamId] = useState<string>(initialTeamId)
@@ -542,16 +639,12 @@ export function SonyBuzzSetupSection({
   return (
     <section className="sbs" aria-labelledby="sbs-title" data-testid="sbs">
       <h4 id="sbs-title" className="sbs__heading">
-        Sony Buzz
+        Buzzers
       </h4>
-      <p className="host__note" data-testid="sbs-intro">
-        Supported Namtai Wbuzz profile (exact USB 054c:1000, four-slot design)
-        uses host-private saved team mapping. Fresh product RC covered three
-        available controllers; the fourth slot is optional when present. Manual
-        guided capture remains available below. A candidate match is not proof
-        the hardware works here. Keyboard buzzing remains available. Manual
-        capture assignments from this setup are for this browser tab only and
-        are lost when this page reloads.
+      <p className="host__note" data-testid="sbs-intro" hidden={compactOrdinary}>
+        Optional classroom buzzers. Connect, check, and play. You do not need to
+        pair them every class. Keyboard buzzing remains available if hardware is
+        missing or fails.
       </p>
 
       {supportedProfile ? (
@@ -561,9 +654,15 @@ export function SonyBuzzSetupSection({
           testMode={testMode}
           onTestModeChange={onTestModeChange}
           lastTestObservation={lastTestObservation}
+          recentTestObservations={recentTestObservations}
+          checkDisabled={diagnosticsStatus === 'unsupported'}
+          compactOrdinary={compactOrdinary}
+          onTeacherSummaryChange={onTeacherSummaryChange}
         />
       ) : null}
 
+      <details className="sbs__manual-advanced" open={!compactOrdinary}>
+      <summary className="sbs__heading">Advanced button capture</summary>
       <h5 className="sbs__heading">Manual capture (advanced)</h5>
 
       <p className="host__note" data-testid="sbs-surface-state" aria-live="polite">
@@ -725,23 +824,6 @@ export function SonyBuzzSetupSection({
         >
           Discard staged
         </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          data-testid="sbs-test-mode"
-          disabled={diagnosticsStatus === 'unsupported' || capturing}
-          aria-pressed={testMode}
-          onClick={() => {
-            onTestModeChange(!testMode)
-            setMessage(
-              testMode
-                ? 'Buzzer Check off. Controller presses can reach gameplay again when buzzing is on.'
-                : 'Buzzer Check on. Presses report team and action here and do not change scores, queues, timers, or content.',
-            )
-          }}
-        >
-          {testMode ? 'Leave Buzzer Check' : 'Run Buzzer Check'}
-        </button>
       </fieldset>
 
       {previewLines !== null && (
@@ -756,25 +838,37 @@ export function SonyBuzzSetupSection({
         {message ?? ''}
       </p>
 
+      </details>
       <p className="host__note" data-testid="sbs-test-outcome" aria-live="polite">
-        {describeTestOutcome(lastTestObservation, testMode, nameOf)}
+        {describeTestOutcome(
+          recentTestObservations.length > 0
+            ? recentTestObservations
+            : lastTestObservation !== null
+              ? [lastTestObservation]
+              : [],
+          testMode,
+          nameOf,
+        )}
       </p>
-
       <p className="host__note" data-testid="sbs-keyboard-fallback">
-        Keyboard buzzing remains available whether or not a Sony Buzz! candidate is
-        present.
+        Buzzers are optional. Keyboard controls still work.
       </p>
     </section>
   )
 }
 
 function describeTestOutcome(
-  observation: SonyBuzzTestObservation | null,
+  observations: readonly SonyBuzzTestObservation[],
   testMode: boolean,
   nameOf: (teamId: string) => string,
 ): string {
-  if (observation !== null) {
-    return `Buzzer Check: ${nameOf(observation.teamId)} · ${actionWords(observation.action)} · ${controllerLabel(observation.control.controllerIndex)} · button ${observation.control.buttonIndex + 1}`
+  if (observations.length > 0) {
+    const parts = observations.map(
+      (observation) =>
+        `${nameOf(observation.teamId)} · ${actionWords(observation.action)} · ${controllerLabel(observation.control.controllerIndex)} · button ${observation.control.buttonIndex + 1}`,
+    )
+    if (parts.length === 1) return `Buzzer Check: ${parts[0]}`
+    return `Buzzer Check (${parts.length}): ${parts.join(' | ')}`
   }
   if (testMode) {
     return 'Buzzer Check is on. Press a mapped button to see its team and action. Nothing is scored.'

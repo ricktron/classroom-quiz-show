@@ -14,6 +14,13 @@ import {
   type GamepadMapping,
 } from '../input/gamepadMapping'
 import {
+  actionForSonyBuzzColor,
+  SONY_BUZZ_COLORS,
+  SONY_BUZZ_SLOT_BASES,
+  type SonyBuzzSlotId,
+  sonyBuzzSlotId,
+} from '../input/sonyBuzzSupportedProfile'
+import {
   browserGamepadSource,
   type GamepadReadStatus,
   type GamepadReportedId,
@@ -306,13 +313,19 @@ export function useGamepadBuzzInput({
     const reprime = () => {
       baseline.current = null
     }
-    window.addEventListener('gamepadconnected', reprime)
+    // In Buzzer Check, do not reprime on gamepadconnected — the first physical
+    // press is often what enumerates the pad; clearing baseline would swallow it.
+    const onConnected = () => {
+      if (latest.current.testMode) return
+      reprime()
+    }
+    window.addEventListener('gamepadconnected', onConnected)
     window.addEventListener('gamepaddisconnected', reprime)
     window.addEventListener('focus', reprime)
     window.addEventListener('blur', reprime)
     document.addEventListener('visibilitychange', reprime)
     return () => {
-      window.removeEventListener('gamepadconnected', reprime)
+      window.removeEventListener('gamepadconnected', onConnected)
       window.removeEventListener('gamepaddisconnected', reprime)
       window.removeEventListener('focus', reprime)
       window.removeEventListener('blur', reprime)
@@ -343,7 +356,9 @@ export function useGamepadBuzzInput({
         return
       }
 
-      const scan = scanGamepadEdges(baseline.current, read.snapshot)
+      const scan = scanGamepadEdges(baseline.current, read.snapshot, {
+        emitPressedOnFirstSight: current.testMode,
+      })
       baseline.current = scan.baseline
 
       publishDiagnostics(current.onDiagnostics, lastDiagnosticsKey, {
@@ -402,6 +417,9 @@ function consumeCaptureEdge(
 /**
  * Setup/test mode: resolve mapping and report host-private observations only.
  * Never calls translateLocalInput or dispatch.
+ *
+ * Unmapped presses that match the exact Sony slot/color recipe still report a
+ * provisional observation so Buzzer Check is not dead until team mapping lands.
  */
 function reportTestModeEdges(
   edges: readonly GamepadControlRef[],
@@ -410,17 +428,44 @@ function reportTestModeEdges(
 ): void {
   for (const edge of edges) {
     const binding = resolveGamepadBinding(mapping, edge)
-    if (binding === null) {
-      onOutcome?.({ kind: 'ignored', reason: 'unmapped-button' })
+    if (binding !== null) {
+      onOutcome?.({
+        kind: 'test-observation',
+        teamId: binding.teamId,
+        action: binding.action,
+        control: edge,
+      })
       continue
     }
-    onOutcome?.({
-      kind: 'test-observation',
-      teamId: binding.teamId,
-      action: binding.action,
-      control: edge,
-    })
+    const sony = sonyProfileActionForButtonIndex(edge.buttonIndex)
+    if (sony !== null) {
+      onOutcome?.({
+        kind: 'test-observation',
+        teamId: `sony-slot-${sony.slotId}`,
+        action: sony.action,
+        control: edge,
+      })
+      continue
+    }
+    onOutcome?.({ kind: 'ignored', reason: 'unmapped-button' })
   }
+}
+
+function sonyProfileActionForButtonIndex(
+  buttonIndex: number,
+): { readonly slotId: SonyBuzzSlotId; readonly action: ReturnType<typeof actionForSonyBuzzColor> } | null {
+  if (!Number.isInteger(buttonIndex) || buttonIndex < 0) return null
+  for (let i = 0; i < SONY_BUZZ_SLOT_BASES.length; i += 1) {
+    const base = SONY_BUZZ_SLOT_BASES[i]!
+    if (buttonIndex >= base && buttonIndex < base + 5) {
+      const slotId = sonyBuzzSlotId(i)
+      if (slotId == null) return null
+      const color = SONY_BUZZ_COLORS[buttonIndex - base]
+      if (color == null) return null
+      return { slotId, action: actionForSonyBuzzColor(color) }
+    }
+  }
+  return null
 }
 
 type GameplayPollContext = {

@@ -117,6 +117,15 @@ export interface PrivateGameState {
    */
   readonly teamScores: Readonly<Record<string, number>>
   /**
+   * Session-owned classroom team identities, keyed by stable `TeamId` (S04B).
+   *
+   * A missing key means the team still uses the authored Game name as a
+   * **display fallback only**. That fallback is not a Session selection and
+   * must not satisfy “names chosen.” Like `teamScores`, this map is DERIVED BY
+   * REPLAY. Session operations never write these names back into `definition`.
+   */
+  readonly sessionTeamNames: Readonly<Record<string, string>>
+  /**
    * Per-round category-board progress, keyed by the round's stable `RoundId`.
    *
    * Keying by round id (rather than holding one "current board") means moving

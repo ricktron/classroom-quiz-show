@@ -121,7 +121,7 @@ function collectHeuristics(draft: AuthoringDraft): QualityFinding[] {
     findings.push(
       heuristic(
         'team-name-bank-short',
-        `This game’s name bank has ${bank.length} names. Fewer than 64 is a quality notice for a large class-name deck, not an import failure.`,
+        `This game’s name bank has ${bank.length} names. The recommended deck is about 96 unique names. Fewer than 64 is a quality notice, not an import failure.`,
         'teamNameBank',
       ),
     )

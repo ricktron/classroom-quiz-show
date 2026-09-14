@@ -115,6 +115,14 @@ describe('AudioControls', () => {
     controller.dispose()
   })
 
+  it('panic mute stops audio immediately even before sound is enabled', () => {
+    const controller = createAudioPlaybackController(fakeDeps())
+    render(<ControlledAudio controller={controller} />)
+    fireEvent.click(screen.getByTestId('audio-panic-mute'))
+    expect(controller.getStatus().muted).toBe(true)
+    controller.dispose()
+  })
+
   it('failure state exposes exactly one retry action', () => {
     const controller = createAudioPlaybackController(fakeDeps())
     const audio: UsePresentationAudioResult = {

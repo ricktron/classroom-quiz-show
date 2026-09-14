@@ -16,6 +16,8 @@ import {
   INSTRUCTIONS_SHEET,
   META_KEYS,
   META_SHEET,
+  TEAM_NAME_HEADERS,
+  TEAM_NAMES_SHEET,
   UNSUPPORTED_MEDIA_HEADERS,
   WORKBOOK_FORMAT,
   WORKBOOK_FORMAT_VERSION,
@@ -60,6 +62,7 @@ const KNOWN_SYSTEM_SHEETS = new Set<string>([
   GAME_SHEET,
   CLUES_SHEET,
   FINAL_SHEET,
+  TEAM_NAMES_SHEET,
 ])
 
 function hasControlChars(value: string): boolean {
@@ -1063,6 +1066,7 @@ function checkInstructionsContradiction(
 function totalAuthoredText(draft: Omit<AuthoringDraft, 'contentFingerprint' | 'status' | 'issues'>): number {
   let total = draft.game.title.length + draft.game.gameKey.length
   for (const team of draft.game.teams) total += team.name.length
+  for (const name of draft.game.teamNameBank ?? []) total += name.length
   for (const cat of draft.board.categories) {
     total += cat.title.length
     for (const clue of cat.clues) {
@@ -1079,6 +1083,25 @@ function totalAuthoredText(draft: Omit<AuthoringDraft, 'contentFingerprint' | 's
     for (const alt of draft.final.alternates) total += alt.length
   }
   return total
+}
+
+function parseTeamNameBank(sheet: RawSheet | undefined, issues: AuthoringIssue[]): string[] {
+  if (!sheet) return []
+  const map = mapHeaders(sheet, TEAM_NAME_HEADERS, issues)
+  if (!map || !requireHeaders(map, TEAM_NAME_HEADERS, TEAM_NAMES_SHEET, issues)) return []
+  const names: string[] = []
+  const seen = new Set<string>()
+  for (const row of sheet.rows.slice(1)) {
+    const name = requireLiteralString(cellAt(row, map, 'TeamName'), TEAM_NAMES_SHEET, 'TeamName', issues, false)
+    if (name === undefined) continue
+    const trimmed = name.trim()
+    if (trimmed.length === 0) continue
+    const key = trimmed.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    names.push(trimmed)
+  }
+  return names
 }
 
 export async function parseWorkbookBytes(
@@ -1107,6 +1130,8 @@ export async function parseWorkbookBytes(
   const game = parseGameSheet(gameSheet, issues, meta.profile)
   if (!game) return { status: 'failure', issues }
 
+  const teamNameBank = parseTeamNameBank(adapted.workbook.sheets.get(TEAM_NAMES_SHEET), issues)
+
   const categories = parseClues(cluesSheet, issues, game.gameCanonicalId)
   const final =
     meta.profile === 'board-plus-final'
@@ -1125,6 +1150,7 @@ export async function parseWorkbookBytes(
       boardRoundCanonicalId: game.boardRoundCanonicalId,
       boardRoundTitle: game.title,
       teams: game.teams,
+      teamNameBank,
     },
     board: { categories },
     final,

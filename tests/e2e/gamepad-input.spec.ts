@@ -356,10 +356,10 @@ test('the host may show Sony Buzz setup; the projector must not leak setup vocab
 
   // Host-private setup surface is present and honest — not a supported-hardware claim.
   await expect(host.getByTestId('sbs')).toBeVisible()
-  await expect(host.getByTestId('sbs-intro')).toContainText(/candidate match is not proof/i)
-  await expect(host.getByTestId('sbs-intro')).toContainText(/lost when this page reloads/i)
+  await expect(host.getByTestId('sbs-intro')).toContainText(/optional classroom buzzers/i)
+  await expect(host.getByTestId('sbs-intro')).toContainText(/do not need to pair them every class/i)
   await expect(host.getByTestId('sbs-keyboard-fallback')).toContainText(
-    /keyboard buzzing remains available/i,
+    /keyboard controls still work/i,
   )
 
   const hostHtml = (await host.content()).toLowerCase()
@@ -469,7 +469,7 @@ test('Controllers empty state and supported-profile host surface (Slice 21)', as
   await expect(host.getByTestId('sbs-connect')).toBeVisible()
   await expect(host.getByTestId('sbs-slot-1')).toBeVisible()
   await expect(host.getByTestId('sbs-keyboard-fallback')).toContainText(
-    /Keyboard buzzing remains available/i,
+    /keyboard controls still work/i,
   )
 
   const displayHtml = (await display.content()).toLowerCase()

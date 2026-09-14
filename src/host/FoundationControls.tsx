@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { playGameIdFromSearch } from '../routes/paths'
+import { absoluteDisplayUrlWithTheme, playGameIdFromSearch } from '../routes/paths'
+import { useOptionalTheme } from '../theme/ThemeProvider'
+import { loadLibraryRecord } from '../persistence/savedDefinitions'
+import { ClassroomSetupPanel, type ClassroomSetupObservation } from './ClassroomSetupPanel'
 import { useSessionStore } from './useSessionStore'
 import { useHostSync } from './useHostSync'
+import { sessionTeamNameFor } from '../state/reducer'
 import { PUBLIC_STATUS_CODES } from '../state/status'
 import { createSampleGame, createSampleGameWithUnsupportedRound } from '../game/sampleGame'
 import { GameImportPanel } from './GameImportPanel'
@@ -17,6 +21,7 @@ import { ResponseTimerHostPanel } from './ResponseTimerHostPanel'
 import { FinalWagerHostPanel } from './FinalWagerHostPanel'
 import { LocalInputHostPanel } from './LocalInputHostPanel'
 import { GamepadInputHostPanel } from './GamepadInputHostPanel'
+import type { SonyBuzzTeacherSummary } from '../input/sonyBuzzTeacherReadiness'
 import { useResponseTimerExpiry } from './useResponseTimerExpiry'
 import { useFinalWagerExpiry } from './useFinalWagerExpiry'
 import { systemClock, type Clock } from '../time/clock'
@@ -59,6 +64,19 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
   const [playReplaceArmed, setPlayReplaceArmed] = useState(false)
   const [resetArmed, setResetArmed] = useState(false)
   const [startSessionArmed, setStartSessionArmed] = useState(false)
+  const [playReady, setPlayReady] = useState(() => !playGameIdFromSearch(searchParams.toString()))
+  const [teamNameBank, setTeamNameBank] = useState<readonly string[]>([])
+  const [selectionObservationBatch, setSelectionObservationBatch] = useState<
+    readonly ClassroomSetupObservation[] | null
+  >(null)
+  const [displayOpen, setDisplayOpen] = useState(false)
+  const [audioUnderstood, setAudioUnderstood] = useState(false)
+  const [sonyReady, setSonyReady] = useState(false)
+  const [sonyTeacherSummary, setSonyTeacherSummary] = useState<SonyBuzzTeacherSummary | null>(
+    null,
+  )
+  const displayWindowRef = useRef<Window | null>(null)
+  const theme = useOptionalTheme()
   const persistence = useHostPersistence({ clock })
   const {
     store,
@@ -152,6 +170,26 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
   }
 
   useEffect(() => {
+    const gameId = game?.definition.id
+    if (!gameId || !persistence.adapter) {
+      setTeamNameBank([])
+      return
+    }
+    void loadLibraryRecord(persistence.adapter, gameId).then((loaded) => {
+      if (!loaded.ok) return
+      setTeamNameBank(loaded.value.draft?.game.teamNameBank ?? [])
+    })
+  }, [game?.definition.id, persistence.adapter])
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      const handle = displayWindowRef.current
+      setDisplayOpen(Boolean(handle && !handle.closed))
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
     loadPlayRef.current()
   }, [
     playGameId,
@@ -179,6 +217,68 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
       />
 
       <AudioControls audio={presentationAudio} />
+
+      {game && state.session && game.definition.teams.length > 0 && (
+        <ClassroomSetupPanel
+          key={state.session.sessionId}
+          teams={game.definition.teams}
+          teamNameBank={teamNameBank}
+          initialSessionNames={game.sessionTeamNames}
+          leadership={persistence.leadership}
+          observation={null}
+          observationBatch={selectionObservationBatch}
+          sonyReady={sonyReady}
+          sonyTeacherSummary={sonyTeacherSummary}
+          displayOpen={displayOpen}
+          onOpenDisplay={() => {
+            const opened = window.open(
+              absoluteDisplayUrlWithTheme(theme?.themeId),
+              'quiz-show-display',
+            )
+            displayWindowRef.current = opened
+            setDisplayOpen(Boolean(opened && !opened.closed))
+          }}
+          audioUnderstood={audioUnderstood || presentationAudio.status.activation === 'ready'}
+          audioMuted={presentationAudio.status.muted}
+          onAudioTest={() => {
+            setAudioUnderstood(true)
+            void presentationAudio.enableSound().then(() => {
+              presentationAudio.controller.playCue('active-claim')
+            })
+          }}
+          onPanicMute={() => {
+            presentationAudio.setMuted(true)
+            setAudioUnderstood(true)
+          }}
+          playReady={playReady}
+          onPlay={() => setPlayReady((current) => !current)}
+          onSelectedIdentitiesChange={(claimed) => {
+            const issuedAt = now()
+            for (const team of game.definition.teams) {
+              const next = claimed[team.id] ?? null
+              const current = sessionTeamNameFor(game, team.id)
+              if (next === current) continue
+              dispatch({
+                type: 'SET_SESSION_TEAM_NAME',
+                issuedAt,
+                teamId: team.id,
+                name: next,
+              })
+            }
+          }}
+        />
+      )}
+      {game && (
+        <GamepadInputHostPanel
+          dispatch={dispatch}
+          game={game}
+          clock={clock}
+          selectionMode={!playReady}
+          onSelectionBatch={setSelectionObservationBatch}
+          onSonyReadyChange={setSonyReady}
+          onSonyTeacherSummaryChange={setSonyTeacherSummary}
+        />
+      )}
 
       <fieldset
         className="foundation__session-controls"
@@ -318,9 +418,9 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
           Gameplay surfaces render only when a game is loaded. They stay above
           advanced diagnostics so teachers reach board/teams/controllers first.
         */}
-        {game && <CategoryBoardHostPanel dispatch={dispatch} game={game} clock={clock} />}
-        {game && <ResponseTimerHostPanel dispatch={dispatch} game={game} clock={clock} />}
-        {game && (
+        {game && playReady && <CategoryBoardHostPanel dispatch={dispatch} game={game} clock={clock} />}
+        {game && playReady && <ResponseTimerHostPanel dispatch={dispatch} game={game} clock={clock} />}
+        {game && playReady && (
           <FinalWagerHostPanel
             dispatch={dispatch}
             game={game}
@@ -337,12 +437,11 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
             }}
           />
         )}
-        {game && <LocalInputHostPanel dispatch={dispatch} game={game} clock={clock} />}
-        {game && <GamepadInputHostPanel dispatch={dispatch} game={game} clock={clock} />}
-        {game && (
+        {game && playReady && <LocalInputHostPanel dispatch={dispatch} game={game} clock={clock} />}
+        {game && playReady && (
           <TeamScoringPanel dispatch={dispatch} game={game} history={history} clock={clock} />
         )}
-        {game && (
+        {game && playReady && (
           <SessionSummaryPanel
             game={game}
             history={history}
