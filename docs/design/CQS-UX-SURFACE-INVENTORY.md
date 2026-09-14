@@ -491,8 +491,8 @@ hardware, recovery, and the end-to-end experience.
 - **Ownership / state:** Resume and an invalid-recovery path are observed on
   Home (**ALREADY IMPLEMENTED FOUNDATION**, `src/persistence/`, ADR-013).
   S04C-H1 repairs Home Resume so it performs Host resume semantics once
-  (delivery candidate; not terminal S04C). Broader safe-mode / diagnostics /
-  backup work remains later S04C.
+  (**TERMINALLY COMPLETE** on main after PR #78; does **not** complete
+  S04C). Broader safe-mode / diagnostics / backup work remains later S04C.
 
 ### 28. Session completion
 

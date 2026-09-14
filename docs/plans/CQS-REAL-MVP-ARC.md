@@ -21,8 +21,12 @@
   `29083f078521ebf432a7d7380c521c557fb578a8` and post-merge CI succeeded on
   that exact squash/main SHA. S04B is **TERMINALLY COMPLETE** after PR #76
   merged as `1b38ac765841a3db19285172b0f6ac2295d6b88f` and post-merge CI
-  succeeded on that exact squash/main SHA. **S04C–S04D, S05, and S06 are
-  not authorized.** Next planned frontier is S04C (routing ≠ authority).
+  succeeded on that exact squash/main SHA. S04C-H1 is **TERMINALLY
+  COMPLETE** after PR #78 merged as
+  `5a6d60b5e92d4e42c2f54ba61bdbaeaf12ca4795` and post-merge CI succeeded on
+  that exact squash/main SHA. S04C parent remains **ACTIVE / OPEN / NOT
+  TERMINAL**. **H2+, S04D, S05, and S06 are not authorized.** Recommended
+  next planning frontier is sanitized diagnostics (routing ≠ authority).
 
 This document is the canonical **CQS REAL MVP Program** plan of record. It
 registers `CQS-REAL-MVP-1` as the current owner-approved Program without
@@ -65,7 +69,7 @@ the owner-approved remaining product direction into repository Markdown.
 This Program plan does **not**:
 
 - resolve signing, notarization, or paid-account questions;
-- authorize later S04C/S04D/S05/S06 implementation;
+- authorize later H2+ / S04D/S05/S06 implementation;
 - reopen Slices 1–23;
 - activate post-MVP arcs;
 - promote Raspberry Pi, LAN, phone controllers, live in-app AI, accounts,
@@ -440,17 +444,28 @@ analytics, automatic updates, or school-wide SaaS management.
 **TERMINALLY COMPLETE**. `CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP`
 is **TERMINALLY COMPLETE** after PR #76 squash/main
 `1b38ac765841a3db19285172b0f6ac2295d6b88f` with post-merge CI success.
-Next planned frontier is
-`CQS-REAL-MVP-S04C-PRODUCT-SAFETY-RECOVERY-AND-COMPATIBILITY-UX`.
-**S04C IS NOT AUTHORIZED.**
+`CQS-REAL-MVP-S04C-H1-SAFE-STARTUP-AND-UNIFIED-SESSION-RECOVERY` is
+**TERMINALLY COMPLETE** after PR #78 squash/main
+`5a6d60b5e92d4e42c2f54ba61bdbaeaf12ca4795` with post-merge CI success.
+S04C parent remains **ACTIVE / OPEN / NOT TERMINAL**. Recommended next
+planning frontier is sanitized diagnostics (Copy Diagnostic Report).
+**H2+ IS NOT AUTHORIZED.**
 
 ```text
 routing ≠ authority
 S04A: TERMINALLY COMPLETE
 S04B: TERMINALLY COMPLETE
-S04C: next planned frontier / NOT AUTHORIZED
+S04C-H1: TERMINALLY COMPLETE
+S04C: ACTIVE / OPEN / NOT TERMINAL
+H2+: NOT AUTHORIZED
 S04D/S05/S06: NOT AUTHORIZED
 ```
+
+S04C-H1 terminal evidence:
+[`../receipts/2026-09-13-cqs-real-mvp-s04c-h1-terminal-post-merge-reconciliation.md`](../receipts/2026-09-13-cqs-real-mvp-s04c-h1-terminal-post-merge-reconciliation.md).
+
+S04C-H1 implementation evidence (historical):
+[`../receipts/2026-09-13-cqs-real-mvp-s04c-h1-safe-startup-and-unified-session-recovery.md`](../receipts/2026-09-13-cqs-real-mvp-s04c-h1-safe-startup-and-unified-session-recovery.md).
 
 S04B terminal evidence:
 [`../receipts/2026-09-13-cqs-real-mvp-s04b-terminal-post-merge-reconciliation.md`](../receipts/2026-09-13-cqs-real-mvp-s04b-terminal-post-merge-reconciliation.md).

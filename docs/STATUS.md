@@ -14,10 +14,10 @@ delivery/review/repair/qualification/release work,
 | Question | Answer |
 | --- | --- |
 | What is historically complete? | Slices **1–23**. Original 23-slice foundation/qualification roadmap: **COMPLETE**. Slice 23: **TERMINALLY COMPLETE**. Guidance Polish S01: **TERMINALLY COMPLETE**. |
-| What is active? | **`CQS-REAL-MVP-1`: ACTIVE / CANONICALLY REGISTERED**. S03 implements the production Electron thin shell and unsigned desktop packaging path (ADR-021 **Accepted**). S04 canon registers remaining product direction. S04A and S04B are **TERMINALLY COMPLETE**. S04C-H1 safe-startup / unified session recovery is an **authorized delivery candidate** (not merged; not terminal S04C). Post-MVP arcs remain **INACTIVE**. |
-| What remains? | REAL MVP teacher-adoptable product work remains open. S04A and S04B are **TERMINALLY COMPLETE**. S04C parent work remains open after H1; H2+, S04D, flagship visual fidelity, and integrated release qualification are **not begun**. Desktop artifacts are **unsigned** qualification/development-candidate builds, not a teacher-trusted signed release. |
+| What is active? | **`CQS-REAL-MVP-1`: ACTIVE / CANONICALLY REGISTERED**. S03 implements the production Electron thin shell and unsigned desktop packaging path (ADR-021 **Accepted**). S04 canon registers remaining product direction. S04A, S04B, and **S04C-H1** are **TERMINALLY COMPLETE**. S04C parent remains **ACTIVE / OPEN / NOT TERMINAL**. Post-MVP arcs remain **INACTIVE**. |
+| What remains? | REAL MVP teacher-adoptable product work remains open. S04A, S04B, and S04C-H1 are **TERMINALLY COMPLETE**. S04C parent work remains open after H1; H2+, S04D, flagship visual fidelity, and integrated release qualification are **not begun**. Desktop artifacts are **unsigned** qualification/development-candidate builds, not a teacher-trusted signed release. |
 | What is blocked / open? | See the [gap register](plans/CQS-REAL-MVP-ARC.md#6-initial-gap-register). C-3 / C-6 **FOUNDATION IMPLEMENTED / UNSIGNED**. `F-UX-01` **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** (ordinary Sony Class Setup copy; evidence bound to H5/H6 identities). `CQS-Q23-LOW-02` **OPEN / LOW / MONITOR**. `CQS-Q23-CLASS-B-01` **OPEN / CONTROLLED**. `CQS-OD-066` **DEFERRED / NOT REAL MVP**. Packaged macOS Sony physical **H5 selection/hardware PASS transferred**; **H6 readiness PASS** on Namtai `054c:1000` + four handsets. Windows physical runtime **NOT RUN** (S06). Signing / notarization **OPEN OWNER GATE**. C-7 Raspberry Pi **outside REAL MVP**. C-8 LAN **outside REAL MVP**. Post-MVP arcs **INACTIVE**. |
-| Current Program frontier | S04B is **TERMINALLY COMPLETE**. Active authorized lane: `CQS-REAL-MVP-S04C-H1-SAFE-STARTUP-AND-UNIFIED-SESSION-RECOVERY` (PR candidate; **not merged**; does **not** complete S04C). H2+ / S04D / S05 / S06 remain **NOT AUTHORIZED**. |
+| Current Program frontier | S04C-H1 is **TERMINALLY COMPLETE** on main. S04C parent remains **ACTIVE / OPEN / NOT TERMINAL**. Recommended next planning frontier is sanitized diagnostics (Copy Diagnostic Report); **H2+ is NOT AUTHORIZED**. S04D / S05 / S06 remain **NOT AUTHORIZED**. |
 
 ```text
 historical 23-slice roadmap: COMPLETE
@@ -29,8 +29,8 @@ S03: production Electron thin shell + unsigned packaging path implemented
 S04 canon: product direction registered
 S04A: TERMINALLY COMPLETE
 S04B: TERMINALLY COMPLETE
-S04C: AUTHORIZED LANE OPEN via H1 candidate (not terminal; H2+ not begun)
-S04C-H1: delivery candidate / NOT MERGED
+S04C: ACTIVE / OPEN / NOT TERMINAL (H1 complete; H2+ not begun)
+S04C-H1: TERMINALLY COMPLETE
 S04D / S05 / S06: NOT AUTHORIZED
 post-MVP arcs: INACTIVE
 ```
@@ -184,29 +184,39 @@ direction.
 
 `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is
 **TERMINALLY COMPLETE**. `CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP`
-is **TERMINALLY COMPLETE**. Historical H1–H6 repair and physical path remains
-evidence history (H1 rejected; H2–H5 selection/hardware; H6 readiness +
-UX-R1 closure). PR #76 squash-merged as
-`1b38ac765841a3db19285172b0f6ac2295d6b88f` with sole parent
-`957a8e6b7d62328557dd63c45dc7a4b87cae1562`; post-merge CI, Desktop
-artifacts, and Pages succeeded on that exact squash/main SHA. Packaged /
-physically qualified product identity remains H6
-`9df9c42626c2b0d87a076759aa531a4532f21a5c` (not rewritten to the squash
-SHA). Next planned frontier is
-`CQS-REAL-MVP-S04C-PRODUCT-SAFETY-RECOVERY-AND-COMPATIBILITY-UX`. **S04C
-IS NOT AUTHORIZED.** S04D / S05 / S06 remain unauthorized.
+is **TERMINALLY COMPLETE**. Historical S04B H1–H6 repair and physical path
+remains evidence history. Packaged / physically qualified S04B product
+identity remains H6 `9df9c42626c2b0d87a076759aa531a4532f21a5c`.
+
+`CQS-REAL-MVP-S04C-H1-SAFE-STARTUP-AND-UNIFIED-SESSION-RECOVERY` is
+**TERMINALLY COMPLETE**. PR #78 squash-merged as
+`5a6d60b5e92d4e42c2f54ba61bdbaeaf12ca4795` with sole parent
+`5e649409567adc3951c45c872b7f01f13d91083b`; post-merge CI, Desktop
+artifacts, and Pages succeeded on that exact squash/main SHA. S04C parent
+remains **ACTIVE / OPEN / NOT TERMINAL**. Recommended next planning
+frontier is sanitized diagnostics (Copy Diagnostic Report). **H2+ is NOT
+AUTHORIZED.** S04D / S05 / S06 remain unauthorized.
 
 ```text
 routing ≠ authority
 S04A: TERMINALLY COMPLETE
 S04B: TERMINALLY COMPLETE
-S04C: next planned frontier / NOT AUTHORIZED
+S04C-H1: TERMINALLY COMPLETE
+S04C: ACTIVE / OPEN / NOT TERMINAL
+H2+: NOT AUTHORIZED
 S04D / S05 / S06: NOT AUTHORIZED
 ```
 
-This status grants **no** S04C implementation authority, **no**
+This status grants **no** H2+ implementation authority, **no**
 signing/notarization decision, and **no** public teacher-release
-publication. It does **not** claim Windows physical runtime qualification.
+publication. It does **not** claim Windows physical runtime qualification
+or packaged owner-observed macOS relaunch smoke.
+
+S04C-H1 terminal post-merge reconciliation:
+[`receipts/2026-09-13-cqs-real-mvp-s04c-h1-terminal-post-merge-reconciliation.md`](receipts/2026-09-13-cqs-real-mvp-s04c-h1-terminal-post-merge-reconciliation.md).
+
+S04C-H1 implementation evidence (historical):
+[`receipts/2026-09-13-cqs-real-mvp-s04c-h1-safe-startup-and-unified-session-recovery.md`](receipts/2026-09-13-cqs-real-mvp-s04c-h1-safe-startup-and-unified-session-recovery.md).
 
 S04B terminal post-merge reconciliation:
 [`receipts/2026-09-13-cqs-real-mvp-s04b-terminal-post-merge-reconciliation.md`](receipts/2026-09-13-cqs-real-mvp-s04b-terminal-post-merge-reconciliation.md).
@@ -234,6 +244,8 @@ Packaged implementation SHA remains
 - S04A terminal post-merge reconciliation: [`receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md`](receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md)
 - S04B implementation evidence: [`receipts/2026-08-14-cqs-real-mvp-s04b-sony-team-selection-and-classroom-setup.md`](receipts/2026-08-14-cqs-real-mvp-s04b-sony-team-selection-and-classroom-setup.md)
 - S04B terminal post-merge reconciliation: [`receipts/2026-09-13-cqs-real-mvp-s04b-terminal-post-merge-reconciliation.md`](receipts/2026-09-13-cqs-real-mvp-s04b-terminal-post-merge-reconciliation.md)
+- S04C-H1 implementation receipt: [`receipts/2026-09-13-cqs-real-mvp-s04c-h1-safe-startup-and-unified-session-recovery.md`](receipts/2026-09-13-cqs-real-mvp-s04c-h1-safe-startup-and-unified-session-recovery.md)
+- S04C-H1 terminal post-merge reconciliation: [`receipts/2026-09-13-cqs-real-mvp-s04c-h1-terminal-post-merge-reconciliation.md`](receipts/2026-09-13-cqs-real-mvp-s04c-h1-terminal-post-merge-reconciliation.md)
 - S03 desktop foundation receipt: [`receipts/2026-08-13-cqs-real-mvp-s03-desktop-distribution-release-foundation.md`](receipts/2026-08-13-cqs-real-mvp-s03-desktop-distribution-release-foundation.md)
 - S02 architecture ADR: [`architecture/ADR-021-real-mvp-desktop-architecture-electron.md`](architecture/ADR-021-real-mvp-desktop-architecture-electron.md)
 - S02 qualification receipt: [`receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md`](receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md)
