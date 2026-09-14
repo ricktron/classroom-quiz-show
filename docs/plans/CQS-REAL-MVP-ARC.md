@@ -297,9 +297,10 @@ post-merge CI succeeded on that exact main SHA. S04B is **TERMINALLY
 COMPLETE** after the accepted PR #76 head
 `87450a738c8d95146c3a9eebaafdd944b723cf6e` was squash-merged as
 `1b38ac765841a3db19285172b0f6ac2295d6b88f` and post-merge CI succeeded on
-that exact main SHA. Historical H1 rejection and H3-era candidate wording
-remain history only. This document does not authorize S04C–S04D / S05 /
-S06.
+that exact main SHA. Historical S04B H1 rejection and H3-era candidate
+wording remain history only. S04C-H1 is **TERMINALLY COMPLETE** after PR
+#78 squash/main `5a6d60b5e92d4e42c2f54ba61bdbaeaf12ca4795`. This document
+does not authorize H2+ / S04D / S05 / S06.
 
 S04A terminal evidence:
 [`../receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md`](../receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md).
