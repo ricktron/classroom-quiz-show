@@ -2,11 +2,20 @@ import type { ReactElement } from 'react'
 import { Link } from 'react-router-dom'
 import { ROUTES, absoluteDisplayUrlWithTheme } from './paths'
 import { FoundationControls } from '../host/FoundationControls'
+import type { UseHostPersistenceOptions } from '../host/useHostPersistence'
 import { ThemeProvider, useOptionalTheme, useTheme } from '../theme/ThemeProvider'
 import { THEME_META, type ThemeId } from '../theme/themeRegistry'
 import './HostRoute.css'
 
-function HostRouteContent(): ReactElement {
+export interface HostRouteProps {
+  readonly persistenceOptions?: UseHostPersistenceOptions
+}
+
+function HostRouteContent({
+  persistenceOptions,
+}: {
+  readonly persistenceOptions?: UseHostPersistenceOptions
+}): ReactElement {
   const { themeId, setThemeId } = useTheme()
 
   function openDisplay() {
@@ -78,7 +87,7 @@ function HostRouteContent(): ReactElement {
           projector. They are separate screens on purpose.
         </p>
 
-        <FoundationControls />
+        <FoundationControls persistenceOptions={persistenceOptions} />
       </main>
     </div>
   )
@@ -98,12 +107,12 @@ function HostRouteContent(): ReactElement {
  * state. Otherwise a local provider covers MemoryRouter harnesses that render
  * HostRoute without the app shell.
  */
-export function HostRoute() {
+export function HostRoute({ persistenceOptions }: HostRouteProps = {}) {
   const existing = useOptionalTheme()
-  if (existing) return <HostRouteContent />
+  if (existing) return <HostRouteContent persistenceOptions={persistenceOptions} />
   return (
     <ThemeProvider>
-      <HostRouteContent />
+      <HostRouteContent persistenceOptions={persistenceOptions} />
     </ThemeProvider>
   )
 }

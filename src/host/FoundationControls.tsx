@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { absoluteDisplayUrlWithTheme, playGameIdFromSearch } from '../routes/paths'
 import { useOptionalTheme } from '../theme/ThemeProvider'
 import { loadLibraryRecord } from '../persistence/savedDefinitions'
@@ -25,7 +25,8 @@ import type { SonyBuzzTeacherSummary } from '../input/sonyBuzzTeacherReadiness'
 import { useResponseTimerExpiry } from './useResponseTimerExpiry'
 import { useFinalWagerExpiry } from './useFinalWagerExpiry'
 import { systemClock, type Clock } from '../time/clock'
-import { useHostPersistence } from './useHostPersistence'
+import { useHostPersistence, type UseHostPersistenceOptions } from './useHostPersistence'
+import { shouldResumeRecoveryFromNavigation } from './hostResumeNavigation'
 import {
   enqueueActivePackResourceScopePublish,
   hydratePackMediaForDefinition,
@@ -54,12 +55,20 @@ export interface FoundationControlsProps {
    * come from here; nothing downstream calls `Date.now()` for itself.
    */
   readonly clock?: Clock
+  /** Test injection for the same persistence adapter/options Home uses. */
+  readonly persistenceOptions?: UseHostPersistenceOptions
 }
 
-export function FoundationControls({ clock = systemClock }: FoundationControlsProps = {}) {
+export function FoundationControls({
+  clock = systemClock,
+  persistenceOptions,
+}: FoundationControlsProps = {}) {
   const [searchParams] = useSearchParams()
+  const location = useLocation()
+  const navigate = useNavigate()
   const playGameId = playGameIdFromSearch(searchParams.toString())
   const playLoadedRef = useRef<string | null>(null)
+  const homeResumeHandledRef = useRef(false)
   const [playReplaceNeeded, setPlayReplaceNeeded] = useState(false)
   const [playReplaceArmed, setPlayReplaceArmed] = useState(false)
   const [resetArmed, setResetArmed] = useState(false)
@@ -77,7 +86,10 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
   )
   const displayWindowRef = useRef<Window | null>(null)
   const theme = useOptionalTheme()
-  const persistence = useHostPersistence({ clock })
+  const persistence = useHostPersistence({
+    clock,
+    ...persistenceOptions,
+  })
   const {
     store,
     state,
@@ -97,6 +109,34 @@ export function FoundationControls({ clock = systemClock }: FoundationControlsPr
   const hasGame = game !== null
   const dispatch = (command: Parameters<typeof storeDispatch>[0]) =>
     persistence.dispatchSessionCommand(command, storeDispatch, () => store.getHistory(), registry)
+
+  // Home Resume carries a one-shot navigation intent. Apply the same Host resume
+  // path once recovery is readable, then clear the intent so refresh re-prompts.
+  useEffect(() => {
+    const wantsResume = shouldResumeRecoveryFromNavigation(location.state)
+    if (!wantsResume) {
+      homeResumeHandledRef.current = false
+      return
+    }
+    if (homeResumeHandledRef.current) return
+    if (persistence.bootPhase === 'loading') return
+    if (persistence.bootPhase === 'recovery' && persistence.recovery) {
+      homeResumeHandledRef.current = true
+      persistence.resume()
+      navigate('.', { replace: true, state: null })
+      return
+    }
+    // Stale intent (already discarded / no recovery): clear without claiming success.
+    homeResumeHandledRef.current = true
+    navigate('.', { replace: true, state: null })
+  }, [
+    location.state,
+    navigate,
+    persistence,
+    persistence.bootPhase,
+    persistence.recovery,
+    persistence.resume,
+  ])
 
   // The ONE scheduled clock read in the application. It turns a deadline into a
   // COMMAND; it never mutates state, and a stale callback is rejected by the

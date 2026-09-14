@@ -311,4 +311,39 @@ describe('PersistenceControls', () => {
       /may still contain/i,
     )
   })
+
+  it('keeps recovery visible and honest when durable discard fails', async () => {
+    const discardRecovery = vi.fn(async () => ({
+      ok: false as const,
+      message: 'The unfinished class session could not be discarded. It is still on this device.',
+    }))
+    renderControls(
+      persistence({
+        bootPhase: 'recovery',
+        recovery: { events: [], savedAt: 1 },
+        discardRecovery,
+      }),
+    )
+
+    fireEvent.click(screen.getByTestId('persistence-discard'))
+    fireEvent.click(screen.getByTestId('persistence-discard'))
+    await waitFor(() => {
+      expect(discardRecovery).toHaveBeenCalledTimes(1)
+      expect(screen.getByText(/still on this device/i)).toBeInTheDocument()
+    })
+    expect(screen.getByTestId('persistence-recovery')).toBeInTheDocument()
+    expect(screen.queryByText(/^Discarded\.$/)).not.toBeInTheDocument()
+  })
+
+  it('labels start-fresh distinctly from clear-all local data', () => {
+    renderControls(
+      persistence({
+        bootPhase: 'recovery',
+        recovery: { events: [], savedAt: 1 },
+      }),
+    )
+    expect(screen.getByTestId('persistence-discard')).toHaveTextContent(/start fresh/i)
+    expect(screen.getByTestId('persistence-clear-all-action')).toHaveTextContent(/clear all local/i)
+    expect(screen.getByTestId('persistence-recovery')).toHaveTextContent(/your saved games stay/i)
+  })
 })

@@ -6,6 +6,15 @@ import type { SessionEvent } from '../state/events'
 import type { PrivateGameState } from '../state/privateState'
 import type { DispatchResult } from '../state/store'
 import type { UseHostPersistence } from './useHostPersistence'
+import {
+  DISCARD_INVALID_CONFIRM_LABEL,
+  DISCARD_INVALID_LABEL,
+  RECOVERY_BODY,
+  RESUME_SESSION_LABEL,
+  START_FRESH_CONFIRM_LABEL,
+  START_FRESH_DETAIL,
+  START_FRESH_LABEL,
+} from './sessionRecoveryCopy'
 import './PersistenceControls.css'
 
 export interface PersistenceControlsProps {
@@ -67,6 +76,14 @@ export function PersistenceControls({
 
   async function discard(): Promise<void> {
     const result = await persistence.discardRecovery()
+    if (!result.ok) {
+      setActionMessage(
+        result.message.includes('still on this device')
+          ? result.message
+          : 'The unfinished class session could not be discarded. It is still on this device.',
+      )
+      return
+    }
     setActionMessage(result.message)
   }
 
@@ -115,10 +132,8 @@ export function PersistenceControls({
           data-testid="persistence-recovery"
         >
           <legend>Unfinished session found</legend>
-          <p className="host__note">
-            An unfinished class session is on this device. Resume it, or discard only that session.
-            Your saved games stay.
-          </p>
+          <p className="host__note">{RECOVERY_BODY}</p>
+          <p className="host__note">{START_FRESH_DETAIL}</p>
           <div className="persistence__actions">
             <button
               type="button"
@@ -127,13 +142,14 @@ export function PersistenceControls({
               disabled={readOnly}
               onClick={persistence.resume}
             >
-              Resume session
+              {RESUME_SESSION_LABEL}
             </button>
             <button
               type="button"
               className="btn btn--secondary"
               data-testid="persistence-discard"
               disabled={readOnly}
+              aria-label={confirmDiscard ? START_FRESH_CONFIRM_LABEL : START_FRESH_LABEL}
               onClick={() => {
                 if (!confirmDiscard) {
                   setConfirmDiscard(true)
@@ -143,7 +159,7 @@ export function PersistenceControls({
                 void discard()
               }}
             >
-              {confirmDiscard ? 'Confirm discard session' : 'Discard session'}
+              {confirmDiscard ? START_FRESH_CONFIRM_LABEL : START_FRESH_LABEL}
             </button>
           </div>
         </fieldset>
@@ -155,11 +171,13 @@ export function PersistenceControls({
           <p className="host__note">
             {persistence.invalidRecovery.message} Discard only that unfinished class session to continue. Your saved games stay.
           </p>
+          <p className="host__note">{START_FRESH_DETAIL}</p>
           <button
             type="button"
             className="btn"
             data-testid="persistence-discard"
             disabled={readOnly}
+            aria-label={confirmDiscard ? DISCARD_INVALID_CONFIRM_LABEL : DISCARD_INVALID_LABEL}
             onClick={() => {
               if (!confirmDiscard) {
                 setConfirmDiscard(true)
@@ -169,7 +187,7 @@ export function PersistenceControls({
               void discard()
             }}
           >
-            {confirmDiscard ? 'Confirm discard session' : 'Discard invalid recovery'}
+            {confirmDiscard ? DISCARD_INVALID_CONFIRM_LABEL : DISCARD_INVALID_LABEL}
           </button>
         </div>
       )}
