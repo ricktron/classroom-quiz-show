@@ -613,8 +613,9 @@ SHA-256 hashes where practical.
 | Embedded package `sourceSha` | `9df9c42626c2b0d87a076759aa531a4532f21a5c` |
 | asar SHA-256 (H6 verify worktree) | `1333e822780c95880ded3de8df85e08b036b78d217b44d05d63039641c07eb75` |
 | UX-doctrine review of H5 | **FAIL** on UX-R1 (P04 / P08 / P20) |
-| Physical H6 readiness requalification | **NOT YET RUN** |
-| Final UX PASS / merge / terminal | **NOT claimed** |
+| Physical H6 readiness requalification | **PASS** (2026-09-12 → 2026-09-13; Namtai `054c:1000` + four handsets) |
+| Narrow independent UX re-review of H6 | **PASS — UX-R1 CLOSED** |
+| Final merge / terminal / Windows / release | **NOT claimed** |
 
 ### Defect repaired
 
@@ -676,11 +677,72 @@ simultaneous-input / uniqueness changes.
 - any Q1/Q6/Q8 portion that depends on readiness status wording;
 - exact teacher-facing readiness copy changed by H6.
 
-### Non-claims
+### Non-claims (at H6 repair time)
 
-- No physical H6 PASS.
-- No final UX PASS.
+- No physical H6 PASS (later recorded separately).
+- No final UX PASS (later recorded separately).
 - Not merged / not terminal.
 - No push / PR / merge from this repair.
 - S04C–S06 not begun.
 - Windows physical runtime still **NOT RUN**.
+
+## H6 readiness physical PASS + UX-R1 CLOSED (additive, 2026-09-13)
+
+This section is **additive**. It does not rewrite the H6 repair narrative
+above or pretend H5 always knew H6 results.
+
+| Item | Value |
+| --- | --- |
+| Physical authorization | `AUTHORIZE-CQS-REAL-MVP-S04B-H6-OWNER-INTERACTIVE-READINESS-REQUALIFICATION-1` |
+| UX re-review authorization | `AUTHORIZE-CQS-REAL-MVP-S04B-H6-INDEPENDENT-UX-R1-REREVIEW-1` |
+| Evidence reconciliation authorization | `AUTHORIZE-CQS-REAL-MVP-S04B-H6-EVIDENCE-RECONCILIATION-AND-PR-DELIVERY-1` |
+| H6 product/package SHA (unchanged) | `9df9c42626c2b0d87a076759aa531a4532f21a5c` |
+| Hardware | Namtai Wbuzz `054c:1000` + four wireless handsets |
+| Durable ledger | [`../handoff/qualification-runs/s04b-h6-2026-09-12.jsonl`](../handoff/qualification-runs/s04b-h6-2026-09-12.jsonl) |
+| Durable report | [`../handoff/2026-09-12-s04b-h6-physical-readiness-qualification-report.md`](../handoff/2026-09-12-s04b-h6-physical-readiness-qualification-report.md) |
+| Physical readiness overall | **PASS** |
+| Narrow UX re-review | **PASS — UX-R1 CLOSED** (P04 / P08 / P20) |
+
+### Readiness sequence (freshly requalified)
+
+- **A** receiver present / readiness incomplete — no false ready claim
+- **B** four responding / mapping unsaved — “Buzzers responding — finish team setup.” / not ready
+- **C** mapping saved / current responding evidence not yet established — still not ready
+- **D** mapping saved + four responding — Sony detail ready; Class Setup Buzzers complete; semantically consistent
+
+### Owner-observed bind procedure (tested Namtai Wbuzz only)
+
+1. Long-hold controller power until solid blue LED.
+2. Hold dongle bind button until controller lights blink.
+
+### Evidence transfer (unchanged causal split)
+
+**TRANSFER without H6 rerun:** Blue/Orange/Green/Yellow mapping; Red cycling;
+simultaneous selection; uniqueness; selected/subdued; receiver/profile;
+basic HID.
+
+**FRESH in H6:** readiness summary truthfulness; responding vs mapping-ready;
+fully-ready; Class Setup/Sony-detail consistency; Sony optionality/keyboard
+continuity where exercised.
+
+### Harness findings (process, not product failures)
+
+Stale modal dialogs; modal timeout/abort; page-navigation drift; dual
+Home/Host Resume path during overnight continuation; incomplete earlier
+dongle-only instruction.
+
+### Still deferred / nonblocking
+
+- SONY-08 open/deferred
+- Check/automatic-selection polish later
+- Play/Host/Class Setup navigation instruction-fidelity polish later
+- Exact copy/layout may change later
+- Windows physical **NOT RUN**
+- S05/S06 unauthorized
+- S04B not merged / not terminal / not release-qualified
+
+### Non-claims
+
+- H5 semantic review did **not** automatically re-review every H6 line.
+- No merge / auto-merge / S04C+ from this reconciliation.
+- Packaged candidate remains H6, not any later docs/evidence tip.
