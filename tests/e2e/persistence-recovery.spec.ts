@@ -180,3 +180,154 @@ test('display remains free of persistence UI and private storage content', async
   await host.close()
   await display.close()
 })
+
+async function openHome(page: Page) {
+  await page.goto('#/')
+  await expect(page.getByRole('heading', { name: /^home$/i })).toBeVisible()
+  await expect(page.getByTestId('home-new-game')).toBeEnabled()
+}
+
+test('Home Resume performs real recovery and Host has no second Resume gate', async ({ context }) => {
+  const host = await context.newPage()
+  await openHost(host)
+  await startBoard(host)
+  await host.getByRole('button', { name: /advance sequence/i }).click()
+  await waitForSaved(host)
+  const historyBefore = await eventCount(host)
+  const revisionBefore = await host.getByTestId('private-revision').innerText()
+
+  await host.goto('#/')
+  await expect(host.getByTestId('home-resume')).toBeVisible()
+  await expect(host.getByTestId('home-resume')).toContainText(/your saved games stay/i)
+  await host.getByTestId('home-resume-session').click()
+
+  await expect(host.getByRole('heading', { name: /host control/i })).toBeVisible()
+  await expect(host.getByTestId('persistence-recovery')).toHaveCount(0)
+  await expect(host.getByTestId('game-title')).toHaveText(SAMPLE_TITLE)
+  await expect(host.getByTestId('private-revision')).toHaveText(revisionBefore)
+  expect(await eventCount(host)).toBe(historyBefore)
+
+  await host.close()
+})
+
+test('Home Start fresh discards only the unfinished session and keeps My Games', async ({
+  context,
+}) => {
+  const host = await context.newPage()
+  await openHost(host)
+  await startBoard(host)
+  await host.getByTestId('persistence-save').click()
+  await expect(host.getByTestId('persistence-library')).toContainText(SAMPLE_TITLE)
+
+  await host.goto('#/')
+  await expect(host.getByTestId('home-resume')).toBeVisible()
+  await expect(host.getByRole('heading', { name: /my games/i })).toBeVisible()
+  await expect(host.getByLabel('My Games').getByText(SAMPLE_TITLE)).toBeVisible()
+
+  await host.getByTestId('home-discard-session').click()
+  await expect(host.getByTestId('home-discard-session')).toContainText(/confirm start fresh/i)
+  await host.getByTestId('home-discard-session').click()
+
+  await expect(host.getByTestId('home-resume')).toHaveCount(0)
+  await expect(host.getByLabel('My Games').getByText(SAMPLE_TITLE)).toBeVisible()
+
+  await host.goto('#/host')
+  await expect(host.getByRole('heading', { name: /host control/i })).toBeVisible()
+  await expect(host.getByTestId('persistence-recovery')).toHaveCount(0)
+  await expect(host.getByTestId('persistence-library')).toContainText(SAMPLE_TITLE)
+  await expect(host.getByText('No events yet.')).toBeVisible()
+
+  await host.close()
+})
+
+test('Home can discard an unreadable unfinished session and continue', async ({ context }) => {
+  const host = await context.newPage()
+  await openHome(host)
+  await host.evaluate(async () => {
+    const dbName = 'classroom-quiz-show-persistence'
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open(dbName)
+      request.onerror = () => reject(request.error ?? new Error('open failed'))
+      request.onsuccess = () => {
+        const db = request.result
+        if (!db.objectStoreNames.contains('activeSessions')) {
+          db.close()
+          reject(new Error('activeSessions store missing'))
+          return
+        }
+        const stores = ['activeSessions']
+        if (db.objectStoreNames.contains('coordination')) stores.push('coordination')
+        const tx = db.transaction(stores, 'readwrite')
+        tx.objectStore('activeSessions').put({ format: 'corrupt-on-purpose' }, 'current')
+        if (db.objectStoreNames.contains('coordination')) {
+          // Drop any leftover host-writer lease from earlier serial pages so this
+          // cold Home can discard as leader.
+          tx.objectStore('coordination').delete('host-writer')
+        }
+        tx.oncomplete = () => {
+          db.close()
+          resolve()
+        }
+        tx.onerror = () => reject(tx.error ?? new Error('put failed'))
+      }
+    })
+  })
+
+  await host.reload()
+  await expect(host.getByTestId('home-invalid-recovery')).toBeVisible()
+  await expect(host.getByTestId('home-follower-notice')).toHaveCount(0)
+  await host.getByTestId('home-discard-session').click()
+  await host.getByTestId('home-discard-session').click()
+  await expect(host.getByTestId('home-invalid-recovery')).toHaveCount(0)
+  await expect(host.getByTestId('home-new-game')).toBeEnabled()
+
+  await host.close()
+})
+
+test('Home recovery controls are keyboard operable', async ({ context }) => {
+  const host = await context.newPage()
+  await openHost(host)
+  await startBoard(host)
+  await host.goto('#/')
+  await expect(host.getByTestId('home-resume')).toBeVisible()
+
+  await host.getByTestId('home-resume-session').focus()
+  await expect(host.getByTestId('home-resume-session')).toBeFocused()
+  await host.keyboard.press('Tab')
+  await expect(host.getByTestId('home-discard-session')).toBeFocused()
+  await host.keyboard.press('Enter')
+  await expect(host.getByTestId('home-discard-session')).toContainText(/confirm start fresh/i)
+  await host.keyboard.press('Enter')
+  await expect(host.getByTestId('home-resume')).toHaveCount(0)
+
+  await host.close()
+})
+
+test('Display stays free of Home recovery private copy after unfinished session exists', async ({
+  context,
+}) => {
+  const host = await context.newPage()
+  const display = await context.newPage()
+  await openHost(host)
+  await startBoard(host)
+  await openDisplay(display)
+  await host.goto('#/')
+  await expect(host.getByTestId('home-resume')).toBeVisible()
+
+  const displayText = (await display.locator('body').innerText()).toLowerCase()
+  for (const label of [
+    'resume session',
+    'start fresh',
+    'unfinished class session',
+    'discard',
+    'persistence',
+    ...FORBIDDEN_DISPLAY_LABELS,
+  ]) {
+    expect(displayText, `display must not contain "${label}"`).not.toContain(label.toLowerCase())
+  }
+  await expect(display.locator('[data-testid^="home-"]')).toHaveCount(0)
+  await expect(display.locator('[data-testid^="persistence"]')).toHaveCount(0)
+
+  await host.close()
+  await display.close()
+})

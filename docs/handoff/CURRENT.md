@@ -27,13 +27,13 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | Next planned frontier: S04C product safety / recovery / compatibility UX — **NOT AUTHORIZED**. S04B is **TERMINALLY COMPLETE**. |
+| Current Program frontier | S04B **TERMINALLY COMPLETE**. Active authorized lane: S04C-H1 safe startup / unified session recovery (delivery candidate; **not merged**; does **not** complete S04C). |
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
 | S04 canon | product direction **registered** |
 | S04A | **TERMINALLY COMPLETE** |
 | S04B | **TERMINALLY COMPLETE** |
-| S04C | next planned frontier / **NOT AUTHORIZED** |
+| S04C | parent lane open via H1 candidate only; **not terminal**; H2+ **not begun** |
 | S04D / S05 / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
 
@@ -160,8 +160,9 @@ Contract versions: see [`../STATUS.md`](../STATUS.md).
 
 Do **not**:
 
-- begin S04C recovery UX without a later bounded authorization (routing ≠
-  authority);
+- begin S04C-H2+ (diagnostics, backup/restore, import-salvage, etc.) without
+  a later bounded authorization;
+- treat an open H1 PR as merge authority or as terminal S04C completion;
 - begin S04D telemetry without a later bounded authorization;
 - begin S05 visual-fidelity work or S06 integrated release qualification;
 - silently decide Apple/Windows signing, fee waiver, CPU/OS matrix, or
@@ -195,20 +196,28 @@ phones, no networked buzzers, no executable imported content) remain in
 is **TERMINALLY COMPLETE** after PR #76 squash/main
 `1b38ac765841a3db19285172b0f6ac2295d6b88f` with post-merge CI success.
 Packaged / physically qualified product identity remains H6
-`9df9c42626c2b0d87a076759aa531a4532f21a5c`. Next planned frontier:
+`9df9c42626c2b0d87a076759aa531a4532f21a5c`.
 
-`CQS-REAL-MVP-S04C-PRODUCT-SAFETY-RECOVERY-AND-COMPATIBILITY-UX`
+Active authorized lane:
 
-**S04C IS NOT AUTHORIZED BY THIS HANDOFF.** Do **not** claim Windows
-physical qualification or a signed release from this handoff.
+`CQS-REAL-MVP-S04C-H1-SAFE-STARTUP-AND-UNIFIED-SESSION-RECOVERY`
+
+H1 is a **delivery candidate** awaiting independent exact-head review and
+owner merge authority. It does **not** complete S04C. Do **not** start H2+
+from this handoff. Do **not** claim Windows physical qualification or a
+signed release from this handoff.
 
 ```text
 routing ≠ authority
 S04A: TERMINALLY COMPLETE
 S04B: TERMINALLY COMPLETE
-S04C: next planned frontier / NOT AUTHORIZED
+S04C-H1: delivery candidate / NOT MERGED
+S04C: parent open / not terminal
 S04D/S05/S06: NOT AUTHORIZED
 ```
+
+S04C-H1 receipt:
+[`../receipts/2026-09-13-cqs-real-mvp-s04c-h1-safe-startup-and-unified-session-recovery.md`](../receipts/2026-09-13-cqs-real-mvp-s04c-h1-safe-startup-and-unified-session-recovery.md).
 
 S04B terminal post-merge reconciliation:
 [`../receipts/2026-09-13-cqs-real-mvp-s04b-terminal-post-merge-reconciliation.md`](../receipts/2026-09-13-cqs-real-mvp-s04b-terminal-post-merge-reconciliation.md).

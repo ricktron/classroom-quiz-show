@@ -3,10 +3,23 @@ import { Link, useNavigate } from 'react-router-dom'
 import { isDesktopRuntime } from '../runtime/cqsRuntime'
 import { ROUTES, absoluteDisplayUrlWithTheme, editPath, playPath } from './paths'
 import { useHostPersistence, type UseHostPersistenceOptions } from '../host/useHostPersistence'
+import { hostResumeRecoveryState } from '../host/hostResumeNavigation'
 import {
   FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE,
   UNREADABLE_SESSION_TEACHER_MESSAGE,
 } from '../host/writeAuthority'
+import {
+  DISCARD_INVALID_CONFIRM_LABEL,
+  DISCARD_INVALID_LABEL,
+  INVALID_RECOVERY_BODY_SUFFIX,
+  INVALID_RECOVERY_HEADING,
+  RECOVERY_BODY,
+  RECOVERY_HEADING,
+  RESUME_SESSION_LABEL,
+  START_FRESH_CONFIRM_LABEL,
+  START_FRESH_DETAIL,
+  START_FRESH_LABEL,
+} from '../host/sessionRecoveryCopy'
 import { createDefaultRegistry } from '../game/defaultRegistry'
 import {
   createNewLibraryGame,
@@ -51,7 +64,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   const [quality, setQuality] = useState<ImportQualityReport | null>(null)
   const [pendingReplaceText, setPendingReplaceText] = useState<string | null>(null)
   const [pendingWorkbookDraft, setPendingWorkbookDraft] = useState<AuthoringDraft | null>(null)
-  const [discardSessionArmed, setDiscardSessionArmed] = useState(false)
+  const [startFreshArmed, setStartFreshArmed] = useState(false)
   const spreadsheetInputRef = useRef<HTMLInputElement>(null)
   const recent = useMemo(() => recentSavedDefinitions(persistence.library).slice(0, 5), [persistence.library])
   const readOnly = persistence.leadership === 'follower'
@@ -65,6 +78,31 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
     if (gate.ok) return false
     setMessage(gate.message)
     return true
+  }
+
+  function onResumeSession(): void {
+    if (refuseIfFollower()) return
+    if (!canResume) return
+    // Host owns the session store. Carry a one-shot resume intent so Host
+    // performs the real resume without a second teacher prompt.
+    navigate(ROUTES.host, { state: hostResumeRecoveryState() })
+  }
+
+  async function onStartFresh(): Promise<void> {
+    if (refuseIfFollower()) return
+    if (!startFreshArmed) {
+      setStartFreshArmed(true)
+      return
+    }
+    setStartFreshArmed(false)
+    const result = await persistence.discardRecovery()
+    if (!result.ok) {
+      setMessage(
+        result.message.includes('still on this device')
+          ? result.message
+          : 'The unfinished class session could not be discarded. It is still on this device.',
+      )
+    }
   }
 
   async function refresh(nextMessage: string): Promise<void> {
@@ -362,29 +400,20 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
 
       {hasInvalidRecovery && (
         <section className="home__resume" data-testid="home-invalid-recovery" aria-labelledby="invalid-recovery-title">
-          <h2 id="invalid-recovery-title">Unfinished class session could not be read</h2>
+          <h2 id="invalid-recovery-title">{INVALID_RECOVERY_HEADING}</h2>
           <p className="host__note">
-            {UNREADABLE_SESSION_TEACHER_MESSAGE} Discard only that session to continue. Your saved
-            games stay.
+            {UNREADABLE_SESSION_TEACHER_MESSAGE} {INVALID_RECOVERY_BODY_SUFFIX}
           </p>
+          <p className="host__note">{START_FRESH_DETAIL}</p>
           <div className="home__actions">
             <button
               type="button"
               className="btn btn--secondary"
               data-testid="home-discard-session"
-              onClick={() => {
-                if (refuseIfFollower()) return
-                if (!discardSessionArmed) {
-                  setDiscardSessionArmed(true)
-                  return
-                }
-                setDiscardSessionArmed(false)
-                void persistence.discardRecovery().then((result) => {
-                  if (!result.ok) setMessage(result.message)
-                })
-              }}
+              aria-label={startFreshArmed ? DISCARD_INVALID_CONFIRM_LABEL : DISCARD_INVALID_LABEL}
+              onClick={() => void onStartFresh()}
             >
-              {discardSessionArmed ? 'Confirm discard session' : 'Discard session'}
+              {startFreshArmed ? DISCARD_INVALID_CONFIRM_LABEL : DISCARD_INVALID_LABEL}
             </button>
           </div>
         </section>
@@ -392,32 +421,26 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
 
       {canResume && (
         <section className="home__resume" data-testid="home-resume" aria-labelledby="resume-title">
-          <h2 id="resume-title">Unfinished class session</h2>
-          <p className="host__note">
-            A class session was interrupted on this device. Resume it, or discard only that session.
-            Your saved games stay.
-          </p>
+          <h2 id="resume-title">{RECOVERY_HEADING}</h2>
+          <p className="host__note">{RECOVERY_BODY}</p>
+          <p className="host__note">{START_FRESH_DETAIL}</p>
           <div className="home__actions">
-            <Link className="btn" to={ROUTES.host}>
-              Resume session
-            </Link>
+            <button
+              type="button"
+              className="btn"
+              data-testid="home-resume-session"
+              onClick={onResumeSession}
+            >
+              {RESUME_SESSION_LABEL}
+            </button>
             <button
               type="button"
               className="btn btn--secondary"
               data-testid="home-discard-session"
-              onClick={() => {
-                if (refuseIfFollower()) return
-                if (!discardSessionArmed) {
-                  setDiscardSessionArmed(true)
-                  return
-                }
-                setDiscardSessionArmed(false)
-                void persistence.discardRecovery().then((result) => {
-                  if (!result.ok) setMessage(result.message)
-                })
-              }}
+              aria-label={startFreshArmed ? START_FRESH_CONFIRM_LABEL : START_FRESH_LABEL}
+              onClick={() => void onStartFresh()}
             >
-              {discardSessionArmed ? 'Confirm discard session' : 'Discard session'}
+              {startFreshArmed ? START_FRESH_CONFIRM_LABEL : START_FRESH_LABEL}
             </button>
           </div>
         </section>

@@ -489,8 +489,10 @@ hardware, recovery, and the end-to-end experience.
 - **Principles:** `P10`, `P22`, `P11`, `P08`.
 - **Research routing:** Norman, Cooper, Endsley & Jones.
 - **Ownership / state:** Resume and an invalid-recovery path are observed on
-  Home (**ALREADY IMPLEMENTED FOUNDATION**, `src/persistence/`, ADR-013). A
-  full safe-mode / no-restore startup path is S04C — **LATER**.
+  Home (**ALREADY IMPLEMENTED FOUNDATION**, `src/persistence/`, ADR-013).
+  S04C-H1 repairs Home Resume so it performs Host resume semantics once
+  (delivery candidate; not terminal S04C). Broader safe-mode / diagnostics /
+  backup work remains later S04C.
 
 ### 28. Session completion
 
