@@ -12,7 +12,8 @@
 - **Date (America/Chicago):** 2026-09-14
 - **Repository:** `ricktron/classroom-quiz-show`
 - **Status:** **DELIVERY CANDIDATE / NOT MERGED / NOT TERMINAL**
-- **Delivery head:** `90121b3b37eca9ddb54c93c7ca1ab988fdefbadb`
+- **Delivery head (exact review HEAD):** `35a1860ab82b6753bf33db4d02d9e90c45a82359`
+- **Implementation commit:** `90121b3b37eca9ddb54c93c7ca1ab988fdefbadb`
 - **PR:** [#80](https://github.com/ricktron/classroom-quiz-show/pull/80)
 
 ## Starting provenance
