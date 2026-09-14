@@ -1072,7 +1072,7 @@ Primary scope:
 
 Primary scope:
 
-- safe startup / no-restore path
+- safe startup / no-restore path (**H1 TERMINALLY COMPLETE**)
 - sanitized diagnostics
 - corrupt-import recovery UX
 - backup / export foundations
@@ -1084,6 +1084,7 @@ Primary scope:
 - display / device / sleep recovery where bounded
 - support-oriented product hardening
 
+H1 does **not** complete S04C. H2+ remains separately authorized work.
 ### S04D — Feedback & privacy-safe telemetry
 
 Primary scope:
@@ -1121,7 +1122,7 @@ Naming S04A–S06 grants **no implementation authority**.
 
 Do **not** claim:
 
-- S04C–S06 implementation has begun;
+- S04C parent, S04D–S06, or H2+ are complete merely because H1 is terminal;
 - Windows physical runtime is complete;
 - a signed teacher release exists.
 
