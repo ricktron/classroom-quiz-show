@@ -1,0 +1,66 @@
+.diagnostic-report {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius);
+  background: var(--surface-base);
+}
+
+.diagnostic-report__summary {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: var(--fg-primary);
+}
+
+.diagnostic-report__summary-title {
+  font-weight: 600;
+}
+
+.diagnostic-report__summary-hint {
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+}
+
+.diagnostic-report__body {
+  margin-top: var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.diagnostic-report__privacy {
+  margin: 0;
+}
+
+.diagnostic-report__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+
+.diagnostic-report__text {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  padding: var(--space-3);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius);
+  background: var(--surface-disabled);
+  color: var(--fg-primary);
+  resize: vertical;
+  white-space: pre;
+}
+
+.diagnostic-report__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.diagnostic-report__status {
+  margin: 0;
+}

@@ -37,6 +37,8 @@ import { CompletedSummaryLedgerPanel } from './CompletedSummaryLedgerPanel'
 import { usePresentationAudio } from './usePresentationAudio'
 import { AudioControls } from './AudioControls'
 import { nextHostSessionId } from './ensureSession'
+import { DiagnosticReportPanel } from './DiagnosticReportPanel'
+import type { HostInputDiagnosticSignals } from './diagnostics/types'
 import './FoundationControls.css'
 
 /**
@@ -84,6 +86,8 @@ export function FoundationControls({
   const [sonyTeacherSummary, setSonyTeacherSummary] = useState<SonyBuzzTeacherSummary | null>(
     null,
   )
+  const [inputDiagnosticSignals, setInputDiagnosticSignals] =
+    useState<HostInputDiagnosticSignals | null>(null)
   const displayWindowRef = useRef<Window | null>(null)
   const theme = useOptionalTheme()
   const persistence = useHostPersistence({
@@ -317,6 +321,7 @@ export function FoundationControls({
           onSelectionBatch={setSelectionObservationBatch}
           onSonyReadyChange={setSonyReady}
           onSonyTeacherSummaryChange={setSonyTeacherSummary}
+          onInputDiagnosticSignals={setInputDiagnosticSignals}
         />
       )}
 
@@ -515,6 +520,13 @@ export function FoundationControls({
           <p className="host__note foundation__intro">
             Optional troubleshooting controls. They are not required for ordinary classroom setup.
           </p>
+
+          <DiagnosticReportPanel
+            persistence={persistence}
+            audio={presentationAudio.status}
+            displayWindow={displayOpen ? 'open' : 'closed'}
+            inputSignals={inputDiagnosticSignals}
+          />
 
           <div className="foundation__actions" role="group" aria-label="Foundation commands">
             <button
