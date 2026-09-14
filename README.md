@@ -32,13 +32,17 @@ play. Desktop install/start (unsigned artifacts) is in
   **TERMINALLY COMPLETE**. PR #72 merged as
   `29083f078521ebf432a7d7380c521c557fb578a8`, and post-merge CI succeeded on
   that exact squash/main SHA.
+- `CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP` is
+  **TERMINALLY COMPLETE**. PR #76 merged as
+  `1b38ac765841a3db19285172b0f6ac2295d6b88f`, and post-merge CI succeeded on
+  that exact squash/main SHA.
 - The next planned Program frontier is
-  `CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP`, but S04B
-  requires **separate Program authorization** and has not begun.
+  `CQS-REAL-MVP-S04C-PRODUCT-SAFETY-RECOVERY-AND-COMPATIBILITY-UX`, but
+  S04C requires **separate Program authorization** and has not begun.
+  Routing is not authority. This README does **not** authorize S04C or a
+  signed teacher release.
 - S03 implements the production Electron desktop shell and unsigned
-  packaging path. S04 canon registers remaining product direction. Routing
-  is not authority. This README does **not** authorize S04B or a signed
-  teacher release.
+  packaging path. S04 canon registers remaining product direction.
 - Product Contract:
   [`docs/CQS-PRODUCT-CONTRACT.md`](docs/CQS-PRODUCT-CONTRACT.md).
 - Post-MVP arcs remain inactive.

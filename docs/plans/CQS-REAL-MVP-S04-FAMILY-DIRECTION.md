@@ -1112,7 +1112,7 @@ Naming S04A–S06 grants **no implementation authority**.
 
 | Item | Status | Gate |
 | --- | --- | --- |
-| Packaged macOS Sony physical | **DEFERRED / NOT RUN / HARDWARE UNAVAILABLE** | Must close no later than terminal S04B and remain represented in S06 |
+| Packaged macOS Sony physical | **CLOSED FOR TERMINAL S04B** (H5 selection/hardware transferred; H6 readiness PASS; identity `9df9c42…`) | Remains represented in S06; not Windows; not signed release |
 | Windows physical runtime | **NOT RUN** | Must close in S06 before v1 teacher-ready qualification |
 | Signing / notarization | **OPEN OWNER GATE** | Do not silently declare teacher-trusted release without addressing this. Windows signing / SmartScreen has higher strategic release priority than Apple signing / notarization if prioritization is necessary |
 | `CQS-Q23-CLASS-B-01` | **OPEN / CONTROLLED** | SheetJS build-time supply-chain dependency remains explicit |
@@ -1121,8 +1121,7 @@ Naming S04A–S06 grants **no implementation authority**.
 
 Do **not** claim:
 
-- S04 implementation has begun;
-- Sony packaged physical qualification is complete;
+- S04C–S06 implementation has begun;
 - Windows physical runtime is complete;
 - a signed teacher release exists.
 

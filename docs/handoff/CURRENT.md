@@ -27,13 +27,14 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S04B Sony team selection and classroom setup — **H6 readiness physical PASS / UX-R1 CLOSED / awaiting PR-head review / not merged / not terminal** |
+| Current Program frontier | Next planned frontier: S04C product safety / recovery / compatibility UX — **NOT AUTHORIZED**. S04B is **TERMINALLY COMPLETE**. |
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
 | S04 canon | product direction **registered** |
 | S04A | **TERMINALLY COMPLETE** |
-| S04B | **H6 READINESS PHYSICAL PASS / UX-R1 CLOSED / AWAITING PR-HEAD REVIEW / NOT MERGED / NOT TERMINAL** |
-| S04C–S04D / S05 / S06 | **NOT AUTHORIZED** |
+| S04B | **TERMINALLY COMPLETE** |
+| S04C | next planned frontier / **NOT AUTHORIZED** |
+| S04D / S05 / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
 
 [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md) is the historical completed
@@ -94,21 +95,16 @@ authoring, reusable Game versus class Session separation, save trust,
 Import Quality Report, local Generation Feedback, and the Game-owned
 team-name-bank seam reserved for S04B. PR #72 merged as
 `29083f078521ebf432a7d7380c521c557fb578a8`; post-merge CI succeeded on that
-exact squash/main SHA. S04A is **TERMINALLY COMPLETE**. S04B H1 was
-rejected by independent review; an R1 corrected head is on the same
-branch. H2 physical qualification was paused after a Class Setup UX
-finding and is superseded for final acceptance by the H3 UX repair.
-H3 physical qualification is not a PASS for name-selection visual order
-and pastel-button contrast; H4 repairs that presentation seam but is not
-the complete physical candidate (omitted H3 physical-session defect
-repairs). H5 consolidates those repairs onto H4. Owner-interactive H5
-physical requalification recorded **PASS** on 2026-09-11 for transferred
-selection/hardware evidence. H6 repairs the UX-R1 Class Setup
-buzzer-readiness honesty defect on packaged head
-`9df9c42626c2b0d87a076759aa531a4532f21a5c`. H6 readiness physical
-requalification recorded **PASS**. Narrow independent UX re-review recorded
-**PASS — UX-R1 CLOSED**. S04B is not merged and not terminal. S04C–S04D
-product implementation has not begun.
+exact squash/main SHA. S04A is **TERMINALLY COMPLETE**. S04B adds Host
+Class Setup, Game-owned name banks versus Session identities, optional
+Sony four-choice selection with keyboard fallback, and honest buzzer
+readiness (H6). Historical H1–H5 repair/physical path remains evidence
+history. PR #76 merged as `1b38ac765841a3db19285172b0f6ac2295d6b88f`;
+post-merge CI succeeded on that exact squash/main SHA. Packaged /
+physically qualified product identity remains H6
+`9df9c42626c2b0d87a076759aa531a4532f21a5c`. S04B is **TERMINALLY
+COMPLETE**. S04C–S04D product implementation has not begun and is **not
+authorized** by this handoff.
 
 Those remain **existing qualified foundations** plus the S03 desktop
 foundation, S04 canon, and terminal S04A teacher-workflow foundation. Do
@@ -142,9 +138,9 @@ See the REAL MVP gap register in
 | simple desktop launch | **FOUNDATION IMPLEMENTED** |
 | desktop Host/Display lifecycle | **FOUNDATION IMPLEMENTED** |
 | release artifacts/version/update path | **FOUNDATION IMPLEMENTED** (manual replacement; no auto-update) |
-| in-app teacher team setup | **CANDIDATE IMPLEMENTED / UNMERGED** — S04B class setup exists on the published candidate only |
-| teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal |
-| controller `F-UX-01` | **CANDIDATE ADDRESSED / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED ON BRANCH** |
+| in-app teacher team setup | **IMPLEMENTED ON MAIN** — S04B Class Setup is merged and terminal |
+| teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal; S04B Class Setup extends it on `main` |
+| controller `F-UX-01` | **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** |
 | feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
 | flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** — S05 direction registered; implementation not begun |
 | packaged offline/recovery and OS qualification | **PARTIAL** (H5 selection/hardware **PASS recorded 2026-09-11** and transferred; H6 readiness **PASS** on Namtai `054c:1000` + four handsets; Windows physical runtime **NOT RUN**) |
@@ -164,10 +160,9 @@ Contract versions: see [`../STATUS.md`](../STATUS.md).
 
 Do **not**:
 
-- merge the S04B candidate or treat this handoff as an independent-review
-  PASS;
-- begin S04C recovery UX or S04D telemetry without a later bounded
-  authorization;
+- begin S04C recovery UX without a later bounded authorization (routing ≠
+  authority);
+- begin S04D telemetry without a later bounded authorization;
 - begin S05 visual-fidelity work or S06 integrated release qualification;
 - silently decide Apple/Windows signing, fee waiver, CPU/OS matrix, or
   public teacher-release publication;
@@ -180,9 +175,9 @@ Do **not**:
 - add live AI, accounts, cloud sync, or marketplace work;
 - activate post-MVP arcs;
 - declare the teacher-adoptable product complete;
-- claim Windows physical runtime qualification, S04B terminal completion,
-  or a signed public teacher release; H5/H6 macOS physical PASS claims
-  remain bound to recorded hardware and candidate identities;
+- claim Windows physical runtime qualification or a signed public teacher
+  release; H5/H6 macOS physical PASS claims remain bound to recorded
+  hardware and H6 packaged identity `9df9c42…`;
 - reopen completed Slices 1–23 product or qualification lanes;
 - reopen, rebase, or merge historical PR #60;
 - treat this handoff as product authority.
@@ -196,38 +191,44 @@ phones, no networked buzzers, no executable imported content) remain in
 ## Next Program-level action
 
 `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is
-**TERMINALLY COMPLETE**. S04B H5 physical PASS remains valid for transferred
-selection/hardware evidence. H6 (`9df9c42626c2b0d87a076759aa531a4532f21a5c`)
-repaired Class Setup buzzer-readiness honesty (UX-R1). H6 readiness physical
-requalification recorded **PASS**. Narrow independent UX re-review recorded
-**PASS — UX-R1 CLOSED**. Next authority is independent PR-head review of the
-published S04B branch. Product/package identity remains H6. Do **not** claim
-merge, terminal S04B, Windows physical qualification, or a signed release
-from this handoff.
+**TERMINALLY COMPLETE**. `CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP`
+is **TERMINALLY COMPLETE** after PR #76 squash/main
+`1b38ac765841a3db19285172b0f6ac2295d6b88f` with post-merge CI success.
+Packaged / physically qualified product identity remains H6
+`9df9c42626c2b0d87a076759aa531a4532f21a5c`. Next planned frontier:
+
+`CQS-REAL-MVP-S04C-PRODUCT-SAFETY-RECOVERY-AND-COMPATIBILITY-UX`
+
+**S04C IS NOT AUTHORIZED BY THIS HANDOFF.** Do **not** claim Windows
+physical qualification or a signed release from this handoff.
 
 ```text
 routing ≠ authority
 S04A: TERMINALLY COMPLETE
-S04B: H6 READINESS PHYSICAL PASS / UX-R1 CLOSED / AWAITING PR-HEAD REVIEW / NOT MERGED / NOT TERMINAL
-S04C/S04D/S05/S06: NOT AUTHORIZED
+S04B: TERMINALLY COMPLETE
+S04C: next planned frontier / NOT AUTHORIZED
+S04D/S05/S06: NOT AUTHORIZED
 ```
 
-S04B candidate evidence:
+S04B terminal post-merge reconciliation:
+[`../receipts/2026-09-13-cqs-real-mvp-s04b-terminal-post-merge-reconciliation.md`](../receipts/2026-09-13-cqs-real-mvp-s04b-terminal-post-merge-reconciliation.md).
+
+S04B implementation evidence (historical):
 [`../receipts/2026-08-14-cqs-real-mvp-s04b-sony-team-selection-and-classroom-setup.md`](../receipts/2026-08-14-cqs-real-mvp-s04b-sony-team-selection-and-classroom-setup.md).
 
-H5 physical report:
+H5 physical report (historical):
 [`2026-09-11-s04b-h5-physical-qualification-report.md`](2026-09-11-s04b-h5-physical-qualification-report.md).
 
-H5 durable interaction/evidence manifest:
+H5 durable interaction/evidence manifest (historical):
 [`qualification-runs/s04b-h5-2026-09-11.jsonl`](qualification-runs/s04b-h5-2026-09-11.jsonl).
 
-H6 readiness physical + UX re-review report:
+H6 readiness physical + UX re-review report (historical):
 [`2026-09-12-s04b-h6-physical-readiness-qualification-report.md`](2026-09-12-s04b-h6-physical-readiness-qualification-report.md).
 
-H6 durable interaction/evidence manifest:
+H6 durable interaction/evidence manifest (historical):
 [`qualification-runs/s04b-h6-2026-09-12.jsonl`](qualification-runs/s04b-h6-2026-09-12.jsonl).
 
-Do **not** merge or begin S04C from this handoff.
+Do **not** begin S04C from this handoff.
 
 ## Architecture pointers
 
