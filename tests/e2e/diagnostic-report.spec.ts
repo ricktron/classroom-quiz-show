@@ -75,6 +75,9 @@ test.describe('S04C-H2 sanitized diagnostic report', () => {
     await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
 
     await page.getByTestId('diagnostic-report').locator('summary').click()
+    // Force the complete copy chain to fail: Clipboard API reject AND
+    // execCommand fallback false. Stubbing only writeText lets the production
+    // fallback succeed in Chromium and incorrectly claim copy success.
     await page.evaluate(() => {
       Object.defineProperty(navigator, 'clipboard', {
         configurable: true,
@@ -84,6 +87,7 @@ test.describe('S04C-H2 sanitized diagnostic report', () => {
           },
         },
       })
+      Document.prototype.execCommand = () => false
     })
 
     await page.getByTestId('diagnostic-report-copy').click()
@@ -93,6 +97,10 @@ test.describe('S04C-H2 sanitized diagnostic report', () => {
     await expect(page.getByTestId('diagnostic-report-status')).not.toContainText(
       /copied to clipboard/i,
     )
-    await expect(page.getByTestId('diagnostic-report-text')).toBeVisible()
+    const report = page.getByTestId('diagnostic-report-text')
+    await expect(report).toBeVisible()
+    // Manual-copy recovery: textarea stays selectable after honest failure.
+    await report.click()
+    await expect(report).toBeFocused()
   })
 })

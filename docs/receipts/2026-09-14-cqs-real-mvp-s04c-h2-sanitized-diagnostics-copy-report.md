@@ -12,9 +12,13 @@
 - **Date (America/Chicago):** 2026-09-14
 - **Repository:** `ricktron/classroom-quiz-show`
 - **Status:** **DELIVERY CANDIDATE / NOT MERGED / NOT TERMINAL**
-- **Delivery head (exact review HEAD):** `35a1860ab82b6753bf33db4d02d9e90c45a82359`
+- **Exact authorized base:** `01a623153471f755c313b2b78140cc1d6c85e02b`
 - **Implementation commit:** `90121b3b37eca9ddb54c93c7ca1ab988fdefbadb`
+- **Receipt-preparation / evidence commit:** `35a1860ab82b6753bf33db4d02d9e90c45a82359`
 - **PR:** [#80](https://github.com/ricktron/classroom-quiz-show/pull/80)
+- **Exact review head:** observe from PR #80 metadata at review time (do not
+  treat an ancestor commit embedded in this receipt as the frozen review HEAD;
+  receipt edits change the PR tip)
 
 ## Starting provenance
 
