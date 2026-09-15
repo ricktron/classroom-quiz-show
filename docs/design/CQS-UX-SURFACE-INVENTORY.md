@@ -556,8 +556,10 @@ hardware, recovery, and the end-to-end experience.
   classroom content or PII appearing in a report.
 - **Principles:** `P09`, `P06`, `P08`.
 - **Research routing:** Podmajersky.
-- **Ownership / state:** S04C — **LATER** for Copy Diagnostic Report. The
-  privacy rule is a Product Contract requirement today, not a later decision.
+- **Ownership / state:** S04C-H2 — **DELIVERY CANDIDATE / NOT MERGED** for
+  Copy Diagnostic Report on the published H2 branch. Privacy rule remains a
+  Product Contract requirement. Do not treat this inventory row as merge or
+  terminal authority.
 
 ### 33. Onboarding / first run
 
