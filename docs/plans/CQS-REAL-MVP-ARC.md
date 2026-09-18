@@ -24,9 +24,12 @@
   succeeded on that exact squash/main SHA. S04C-H1 is **TERMINALLY
   COMPLETE** after PR #78 merged as
   `5a6d60b5e92d4e42c2f54ba61bdbaeaf12ca4795` and post-merge CI succeeded on
-  that exact squash/main SHA. S04C parent remains **ACTIVE / OPEN / NOT
-  TERMINAL**. **H2+, S04D, S05, and S06 are not authorized.** Recommended
-  next planning frontier is sanitized diagnostics (routing ≠ authority).
+  that exact squash/main SHA. S04C-H2 is **TERMINALLY COMPLETE** after PR
+  #80 merged as `506654f1f6b4a0735a43cdda8a0100200c3dce29` and post-merge
+  CI succeeded on that exact squash/main SHA. S04C parent remains
+  **ACTIVE / OPEN / NOT TERMINAL**. **H3+, S04D, S05, and S06 are not
+  authorized.** Recommended next owner action is a fresh reconciliation
+  for the next S04C frontier (routing ≠ authority).
 
 This document is the canonical **CQS REAL MVP Program** plan of record. It
 registers `CQS-REAL-MVP-1` as the current owner-approved Program without
@@ -69,7 +72,7 @@ the owner-approved remaining product direction into repository Markdown.
 This Program plan does **not**:
 
 - resolve signing, notarization, or paid-account questions;
-- authorize later H2+ / S04D/S05/S06 implementation;
+- authorize later H3+ / S04D/S05/S06 implementation;
 - reopen Slices 1–23;
 - activate post-MVP arcs;
 - promote Raspberry Pi, LAN, phone controllers, live in-app AI, accounts,
@@ -299,8 +302,10 @@ COMPLETE** after the accepted PR #76 head
 `1b38ac765841a3db19285172b0f6ac2295d6b88f` and post-merge CI succeeded on
 that exact main SHA. Historical S04B H1 rejection and H3-era candidate
 wording remain history only. S04C-H1 is **TERMINALLY COMPLETE** after PR
-#78 squash/main `5a6d60b5e92d4e42c2f54ba61bdbaeaf12ca4795`. This document
-does not authorize H2+ / S04D / S05 / S06.
+#78 squash/main `5a6d60b5e92d4e42c2f54ba61bdbaeaf12ca4795`. S04C-H2 is
+**TERMINALLY COMPLETE** after PR #80 squash/main
+`506654f1f6b4a0735a43cdda8a0100200c3dce29`. This document does not
+authorize H3+ / S04D / S05 / S06.
 
 S04A terminal evidence:
 [`../receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md`](../receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md).
@@ -448,19 +453,29 @@ is **TERMINALLY COMPLETE** after PR #76 squash/main
 `CQS-REAL-MVP-S04C-H1-SAFE-STARTUP-AND-UNIFIED-SESSION-RECOVERY` is
 **TERMINALLY COMPLETE** after PR #78 squash/main
 `5a6d60b5e92d4e42c2f54ba61bdbaeaf12ca4795` with post-merge CI success.
+`CQS-REAL-MVP-S04C-H2-SANITIZED-DIAGNOSTICS-COPY-REPORT` is
+**TERMINALLY COMPLETE** after PR #80 squash/main
+`506654f1f6b4a0735a43cdda8a0100200c3dce29` with post-merge CI success.
 S04C parent remains **ACTIVE / OPEN / NOT TERMINAL**. Recommended next
-planning frontier is sanitized diagnostics (Copy Diagnostic Report).
-**H2+ IS NOT AUTHORIZED.**
+owner action is a **fresh reconciliation** for the next S04C frontier.
+**H3+ IS NOT AUTHORIZED.**
 
 ```text
 routing ≠ authority
 S04A: TERMINALLY COMPLETE
 S04B: TERMINALLY COMPLETE
 S04C-H1: TERMINALLY COMPLETE
+S04C-H2: TERMINALLY COMPLETE
 S04C: ACTIVE / OPEN / NOT TERMINAL
-H2+: NOT AUTHORIZED
+H3+: NOT AUTHORIZED
 S04D/S05/S06: NOT AUTHORIZED
 ```
+
+S04C-H2 terminal evidence:
+[`../receipts/2026-09-18-cqs-real-mvp-s04c-h2-terminal-post-merge-reconciliation.md`](../receipts/2026-09-18-cqs-real-mvp-s04c-h2-terminal-post-merge-reconciliation.md).
+
+S04C-H2 implementation evidence (historical):
+[`../receipts/2026-09-14-cqs-real-mvp-s04c-h2-sanitized-diagnostics-copy-report.md`](../receipts/2026-09-14-cqs-real-mvp-s04c-h2-sanitized-diagnostics-copy-report.md).
 
 S04C-H1 terminal evidence:
 [`../receipts/2026-09-13-cqs-real-mvp-s04c-h1-terminal-post-merge-reconciliation.md`](../receipts/2026-09-13-cqs-real-mvp-s04c-h1-terminal-post-merge-reconciliation.md).

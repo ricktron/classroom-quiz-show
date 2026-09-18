@@ -27,14 +27,15 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S04C-H1 **TERMINALLY COMPLETE**. S04C parent **ACTIVE / OPEN / NOT TERMINAL**. Recommended next planning frontier: sanitized diagnostics; **H2+ NOT AUTHORIZED**. |
+| Current Program frontier | S04C-H1 and S04C-H2 **TERMINALLY COMPLETE**. S04C parent **ACTIVE / OPEN / NOT TERMINAL**. Recommended next owner action: fresh reconciliation for next S04C frontier; **H3+ NOT AUTHORIZED**. |
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
 | S04 canon | product direction **registered** |
 | S04A | **TERMINALLY COMPLETE** |
 | S04B | **TERMINALLY COMPLETE** |
 | S04C-H1 | **TERMINALLY COMPLETE** |
-| S04C | parent **ACTIVE / OPEN / NOT TERMINAL**; H2+ **not begun** |
+| S04C-H2 | **TERMINALLY COMPLETE** |
+| S04C | parent **ACTIVE / OPEN / NOT TERMINAL**; H3+ **not begun** |
 | S04D / S05 / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
 
@@ -105,8 +106,10 @@ post-merge CI succeeded on that exact squash/main SHA. Packaged /
 physically qualified product identity remains H6
 `9df9c42626c2b0d87a076759aa531a4532f21a5c`. S04B is **TERMINALLY
 COMPLETE**. S04C-H1 safe startup / unified session recovery is
-**TERMINALLY COMPLETE** on main after PR #78. S04C parent remains open;
-H2+ and S04D are **not authorized** by this handoff.
+**TERMINALLY COMPLETE** on main after PR #78. S04C-H2 sanitized diagnostics
+(Copy Diagnostic Report) is **TERMINALLY COMPLETE** on main after PR #80.
+S04C parent remains open; H3+ and S04D are **not authorized** by this
+handoff.
 
 Those remain **existing qualified foundations** plus the S03 desktop
 foundation, S04 canon, and terminal S04A teacher-workflow foundation. Do
@@ -162,9 +165,9 @@ Contract versions: see [`../STATUS.md`](../STATUS.md).
 
 Do **not**:
 
-- begin S04C-H2+ (diagnostics, backup/restore, import-salvage, etc.) without
-  a later bounded authorization;
-- treat terminal H1 as terminal S04C completion;
+- begin S04C-H3+ (backup/restore, import-salvage, broader recovery, etc.)
+  without a later bounded authorization;
+- treat terminal H1 or H2 as terminal S04C completion;
 - begin S04D telemetry without a later bounded authorization;
 - begin S05 visual-fidelity work or S06 integrated release qualification;
 - silently decide Apple/Windows signing, fee waiver, CPU/OS matrix, or
@@ -203,21 +206,32 @@ Packaged / physically qualified product identity remains H6
 `CQS-REAL-MVP-S04C-H1-SAFE-STARTUP-AND-UNIFIED-SESSION-RECOVERY` is
 **TERMINALLY COMPLETE** after PR #78 squash/main
 `5a6d60b5e92d4e42c2f54ba61bdbaeaf12ca4795` with post-merge CI success.
+`CQS-REAL-MVP-S04C-H2-SANITIZED-DIAGNOSTICS-COPY-REPORT` is
+**TERMINALLY COMPLETE** after PR #80 squash/main
+`506654f1f6b4a0735a43cdda8a0100200c3dce29` with post-merge CI success.
 S04C parent remains **ACTIVE / OPEN / NOT TERMINAL**. Recommended next
-planning frontier is sanitized diagnostics (Copy Diagnostic Report).
-**H2+ is NOT AUTHORIZED.** Do **not** start H2+ from this handoff. Do
-**not** claim Windows physical qualification, packaged owner-observed
-macOS relaunch smoke, or a signed release from this handoff.
+owner action is a **fresh reconciliation** for the next S04C frontier.
+**H3+ is NOT AUTHORIZED.** Do **not** start H3+ from this handoff. Do
+**not** claim Windows physical qualification, Sony physical
+re-qualification, local hardware qualification for H2 (none required), or
+a signed release from this handoff.
 
 ```text
 routing ≠ authority
 S04A: TERMINALLY COMPLETE
 S04B: TERMINALLY COMPLETE
 S04C-H1: TERMINALLY COMPLETE
+S04C-H2: TERMINALLY COMPLETE
 S04C: ACTIVE / OPEN / NOT TERMINAL
-H2+: NOT AUTHORIZED
+H3+: NOT AUTHORIZED
 S04D/S05/S06: NOT AUTHORIZED
 ```
+
+S04C-H2 terminal post-merge reconciliation:
+[`../receipts/2026-09-18-cqs-real-mvp-s04c-h2-terminal-post-merge-reconciliation.md`](../receipts/2026-09-18-cqs-real-mvp-s04c-h2-terminal-post-merge-reconciliation.md).
+
+S04C-H2 implementation evidence (historical):
+[`../receipts/2026-09-14-cqs-real-mvp-s04c-h2-sanitized-diagnostics-copy-report.md`](../receipts/2026-09-14-cqs-real-mvp-s04c-h2-sanitized-diagnostics-copy-report.md).
 
 S04C-H1 terminal post-merge reconciliation:
 [`../receipts/2026-09-13-cqs-real-mvp-s04c-h1-terminal-post-merge-reconciliation.md`](../receipts/2026-09-13-cqs-real-mvp-s04c-h1-terminal-post-merge-reconciliation.md).
@@ -243,7 +257,7 @@ H6 readiness physical + UX re-review report (historical):
 H6 durable interaction/evidence manifest (historical):
 [`qualification-runs/s04b-h6-2026-09-12.jsonl`](qualification-runs/s04b-h6-2026-09-12.jsonl).
 
-Do **not** begin S04C-H2+ from this handoff.
+Do **not** begin S04C-H3+ from this handoff.
 
 ## Architecture pointers
 
