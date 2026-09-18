@@ -46,24 +46,37 @@ export interface LibraryRecord {
 export async function listSavedDefinitions(
   adapter: PersistenceAdapter,
 ): Promise<PersistenceResult<readonly SavedDefinitionSummary[]>> {
-  let summaries: SavedDefinitionSummary[] = []
+  const records = await listSavedDefinitionRecords(adapter)
+  if (!records.ok) return records
+  const summaries = records.value.map(toSummary)
+  return persistenceOk(summaries)
+}
+
+/**
+ * Full library records for backup export (S04C-H3). Fail-closed on any corrupt
+ * saved-definition row — a backup must not silently omit unreadable games.
+ */
+export async function listSavedDefinitionRecords(
+  adapter: PersistenceAdapter,
+): Promise<PersistenceResult<readonly SavedDefinitionRecord[]>> {
+  let parsed: SavedDefinitionRecord[] = []
   const result = await adapter.withTransaction([OBJECT_STORE_SAVED_DEFINITIONS], async (tx) => {
     const records = await tx.getAll(OBJECT_STORE_SAVED_DEFINITIONS)
-    const parsed: SavedDefinitionSummary[] = []
+    const next: SavedDefinitionRecord[] = []
     for (const record of records) {
       const checked = readSavedDefinitionRecord(record)
       if (!checked.ok) throw new PersistenceDataError(checked.message)
-      parsed.push(toSummary(checked.value))
+      next.push(checked.value)
     }
-    parsed.sort((a, b) => a.title.localeCompare(b.title) || a.gameId.localeCompare(b.gameId))
-    summaries = parsed
+    next.sort((a, b) => a.title.localeCompare(b.title) || a.gameId.localeCompare(b.gameId))
+    parsed = next
   })
   if (!result.ok) {
     return result.code === 'transaction-failed'
       ? persistenceErr('corrupt', 'A saved definition record is corrupt.')
       : result
   }
-  return persistenceOk(summaries)
+  return persistenceOk(parsed)
 }
 
 export function recentSavedDefinitions(

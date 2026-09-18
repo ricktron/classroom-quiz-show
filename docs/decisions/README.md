@@ -112,6 +112,11 @@ This project separates two kinds of durable decision records:
      React/Vite core; Tauri rejected on macOS WKWebView WebHID; PWA/Web
      retained as the alternate. **Accepted.** S02 selected the architecture;
      S03 implements the production shell and unsigned packaging path.
+   - [`ADR-022-backup-export-import-foundations.md`](../architecture/ADR-022-backup-export-import-foundations.md)
+     — versioned `classroom-quiz-show/backup` interchange for library Games +
+     pack media; fail-closed restore; Game≠Session preserved; no cloud
+     (S04C-H3). **Accepted** as delivery-candidate architecture for the H3
+     implementation PR (not terminal S04C).
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).

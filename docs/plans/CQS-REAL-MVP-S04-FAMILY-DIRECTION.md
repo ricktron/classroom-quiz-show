@@ -1075,7 +1075,7 @@ Primary scope:
 - safe startup / no-restore path (**H1 TERMINALLY COMPLETE**)
 - sanitized diagnostics (**H2 TERMINALLY COMPLETE**)
 - corrupt-import recovery UX
-- backup / export foundations
+- backup / export foundations (**H3 DELIVERY CANDIDATE / NOT TERMINAL**)
 - schema / version compatibility contracts
 - migration safeguards
 - rollback thinking
@@ -1084,7 +1084,8 @@ Primary scope:
 - display / device / sleep recovery where bounded
 - support-oriented product hardening
 
-H1 and H2 do **not** complete S04C. H3+ remains separately authorized work.
+H1 and H2 do **not** complete S04C. H3 delivery does **not** complete S04C.
+H4+ remains separately authorized work.
 
 ### S04D — Feedback & privacy-safe telemetry
 
