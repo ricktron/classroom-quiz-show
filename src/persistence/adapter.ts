@@ -30,7 +30,15 @@ export interface PersistenceAdapter {
    * `success: false` allows reopen so the teacher can retry.
    */
   finishDestructiveReset?(success: boolean): void
-  /** Exclusive read-write transaction across named stores. */
+  /**
+   * Exclusive read-write transaction across named stores.
+   *
+   * Commit happens only after `work` fulfills and the adapter's commit
+   * completes. A fulfilled request is not a commit. If `work` throws while
+   * the transaction is still open, the adapter aborts it and persists nothing
+   * from that attempt. If the transaction has already committed, the result
+   * is success — callers must not describe that write as rolled back.
+   */
   withTransaction(
     stores: readonly PersistenceStoreName[],
     work: (tx: PersistenceTx) => Promise<void>,

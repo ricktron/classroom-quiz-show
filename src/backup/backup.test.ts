@@ -269,6 +269,8 @@ describe('S04C-H3 backup foundations', () => {
     }
   })
 
+  // Memory-adapter snapshot discard only. A throw here never reaches IndexedDB,
+  // so these tests are not evidence that a stale restore aborts a real commit.
   it('aborts apply when stillValid becomes false before write', async () => {
     const registry = createDefaultRegistry()
     const source = await openAdapter()

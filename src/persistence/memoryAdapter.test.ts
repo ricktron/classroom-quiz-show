@@ -39,6 +39,8 @@ describe('MemoryPersistenceAdapter', () => {
     ).toEqual({ ok: true, value: undefined })
   })
 
+  // In-memory snapshot only. Production IndexedDB abort is the Playwright
+  // backup-idb-atomicity spec — this test does not open IndexedDB.
   it('rolls back a transaction when work throws', async () => {
     const adapter = createMemoryPersistenceAdapter()
     await adapter.open()

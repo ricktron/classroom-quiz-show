@@ -73,8 +73,10 @@ export async function applyStagedBackup(
   const result = await adapter.withTransaction(
     [OBJECT_STORE_SAVED_DEFINITIONS, OBJECT_STORE_PACK_MEDIA_ASSETS],
     async (tx) => {
-      // Re-check immediately before mutation so a stale generation cannot
-      // begin durable writes. Throwing aborts the IndexedDB / memory txn.
+      // Re-check immediately before mutation. A throw is not itself a rollback:
+      // IndexedDbPersistenceAdapter aborts the still-open transaction. If that
+      // transaction has already committed, withTransaction returns ok and this
+      // function reports success instead of "unchanged".
       if (options.stillValid && !options.stillValid()) {
         abortedByStillValid = true
         throw new BackupApplyError('stillValid aborted before mutation')
@@ -130,8 +132,9 @@ export async function applyStagedBackup(
         )
       }
 
-      // Final pre-commit ownership check: if generation advanced during the
-      // work, abort the transaction so nothing durable is committed.
+      // Last check while the transaction is still open, after every request
+      // has been issued and before the adapter waits for commit. Throwing
+      // here must abort; it must not follow a completed commit.
       if (options.stillValid && !options.stillValid()) {
         abortedByStillValid = true
         throw new BackupApplyError('stillValid aborted before commit')

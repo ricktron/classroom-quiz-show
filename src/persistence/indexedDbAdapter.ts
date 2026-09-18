@@ -135,32 +135,28 @@ export class IndexedDbPersistenceAdapter implements PersistenceAdapter {
     const db = this.db
     if (!db) return persistenceErr('unavailable', 'IndexedDB is not open.')
 
+    let transaction: IDBTransaction
     try {
-      const transaction = db.transaction([...new Set(stores)], 'readwrite')
-      const completion = transactionCompletion(transaction)
-      const tx: PersistenceTx = {
-        get: async (store, key) => requestResult(transaction.objectStore(store).get(key)),
-        put: async (store, key, value) => {
-          await requestResult(transaction.objectStore(store).put(value, key))
-        },
-        delete: async (store, key) => {
-          await requestResult(transaction.objectStore(store).delete(key))
-        },
-        getAllKeys: async (store) =>
-          requestResult(transaction.objectStore(store).getAllKeys()).then((keys) =>
-            keys.filter((key): key is string => typeof key === 'string'),
-          ),
-        getAll: async (store) => requestResult(transaction.objectStore(store).getAll()),
-      }
+      transaction = db.transaction([...new Set(stores)], 'readwrite')
+    } catch (error) {
+      return indexedDbTransactionFailure(error)
+    }
 
-      await work(tx)
+    // A resolved IDB request is not a commit. `ok` is returned only after
+    // `oncomplete`. If `work` throws while this transaction is still open,
+    // abort it — Chromium otherwise auto-commits requests that already
+    // succeeded, and the caller would report a rollback that did not happen.
+    const completion = transactionCompletion(transaction)
+    try {
+      await work(boundPersistenceTx(transaction))
       await completion
       return persistenceOk(undefined)
     } catch (error) {
-      if (isQuotaExceededError(error)) {
-        return persistenceErr('quota-exceeded', 'Browser storage quota was exceeded.')
+      const committed = await abortUnlessAlreadyCommitted(transaction, completion)
+      if (committed) {
+        return persistenceOk(undefined)
       }
-      return persistenceErr('transaction-failed', 'The IndexedDB transaction failed.')
+      return indexedDbTransactionFailure(error)
     }
   }
 }
@@ -169,6 +165,53 @@ export function createIndexedDbPersistenceAdapter(
   options: IndexedDbPersistenceAdapterOptions = {},
 ): IndexedDbPersistenceAdapter {
   return new IndexedDbPersistenceAdapter(options)
+}
+
+function boundPersistenceTx(transaction: IDBTransaction): PersistenceTx {
+  return {
+    get: async (store, key) => requestResult(transaction.objectStore(store).get(key)),
+    put: async (store, key, value) => {
+      await requestResult(transaction.objectStore(store).put(value, key))
+    },
+    delete: async (store, key) => {
+      await requestResult(transaction.objectStore(store).delete(key))
+    },
+    getAllKeys: async (store) =>
+      requestResult(transaction.objectStore(store).getAllKeys()).then((keys) =>
+        keys.filter((key): key is string => typeof key === 'string'),
+      ),
+    getAll: async (store) => requestResult(transaction.objectStore(store).getAll()),
+  }
+}
+
+function indexedDbTransactionFailure(error: unknown): PersistenceResult<void> {
+  if (isQuotaExceededError(error)) {
+    return persistenceErr('quota-exceeded', 'Browser storage quota was exceeded.')
+  }
+  return persistenceErr('transaction-failed', 'The IndexedDB transaction failed.')
+}
+
+/**
+ * Roll back a transaction that is still open.
+ *
+ * Returns true only when commit already won (abort is no longer possible and
+ * `oncomplete` resolved). Callers must treat that as a durable success.
+ */
+async function abortUnlessAlreadyCommitted(
+  transaction: IDBTransaction,
+  completion: Promise<void>,
+): Promise<boolean> {
+  try {
+    transaction.abort()
+  } catch {
+    // InvalidStateError: the transaction already committed or aborted.
+  }
+  try {
+    await completion
+    return true
+  } catch {
+    return false
+  }
 }
 
 function openDatabase(factory: IDBFactory, dbName: string): Promise<IDBDatabase> {
