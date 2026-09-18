@@ -298,4 +298,40 @@ test.describe('Electron thin shell', () => {
       await app.close()
     }
   })
+
+  test('Copy diagnostic report opens, shows sanitized text, and copies in Electron', async () => {
+    const userData = mkdtempSync(join(tmpdir(), 'cqs-s04c-h2-diag-'))
+    const app = await launchDesktop(userData)
+    try {
+      const host = await hostWindow(app)
+      await openClassroomHost(host)
+
+      const details = host.getByTestId('diagnostic-report')
+      await expect(details).toBeVisible()
+      await details.locator('summary').click()
+      await expect(details).toHaveAttribute('open', '')
+
+      const report = host.getByTestId('diagnostic-report-text')
+      await expect(report).toBeVisible()
+      const reportText = await report.inputValue()
+      expect(reportText).toContain('Classroom Quiz Show — Diagnostic Report')
+      expect(reportText).toContain('runtime: desktop')
+      expect(reportText).not.toContain('STUDENT_SECRET_ALICE')
+      expect(reportText).not.toContain('ANSWER_SECRET_MOLTEN_ROCK')
+
+      await host.getByTestId('diagnostic-report-copy').click()
+      await expect(host.getByTestId('diagnostic-report-status')).toContainText(
+        /copied to clipboard\. nothing was sent/i,
+      )
+
+      // Electron renderer clipboard.readText is often permission-denied; verify
+      // the write via the main-process clipboard API instead.
+      const clipboard = await app.evaluate(({ clipboard: electronClipboard }) =>
+        electronClipboard.readText(),
+      )
+      expect(clipboard).toBe(reportText)
+    } finally {
+      await app.close()
+    }
+  })
 })

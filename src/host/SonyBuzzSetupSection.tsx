@@ -94,6 +94,16 @@ export interface SonyBuzzSetupSectionProps {
    * Avoids a second, coarser "sonyReady" algorithm above this surface.
    */
   readonly onTeacherSummaryChange?: (summary: SonyBuzzTeacherSummary) => void
+  /**
+   * Host-private diagnostic counts only (S04C-H2). Never device ids, labels,
+   * reports, or team names.
+   */
+  readonly onInputDiagnosticSignals?: (signals: {
+    readonly sonyReceiver: ReturnType<typeof classifyReceiverLayer>
+    readonly sonyTeacherSummary: SonyBuzzTeacherSummary
+    readonly controllersResponding: number
+    readonly controllersAssigned: number
+  }) => void
 }
 
 export interface SonyBuzzSupportedProfileSectionProps {
@@ -136,6 +146,7 @@ function SupportedProfileBlock({
   checkDisabled,
   compactOrdinary,
   onTeacherSummaryChange,
+  onInputDiagnosticSignals,
 }: {
   teams: readonly TeamDefinition[]
   supportedProfile: SonyBuzzSupportedProfileSectionProps
@@ -146,6 +157,12 @@ function SupportedProfileBlock({
   checkDisabled: boolean
   compactOrdinary: boolean
   onTeacherSummaryChange?: (summary: SonyBuzzTeacherSummary) => void
+  onInputDiagnosticSignals?: (signals: {
+    readonly sonyReceiver: ReturnType<typeof classifyReceiverLayer>
+    readonly sonyTeacherSummary: SonyBuzzTeacherSummary
+    readonly controllersResponding: number
+    readonly controllersAssigned: number
+  }) => void
 }) {
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [repairStep, setRepairStep] = useState<SonyBuzzRepairStep>('idle')
@@ -173,6 +190,26 @@ function SupportedProfileBlock({
   useEffect(() => {
     onTeacherSummaryChange?.(summary)
   }, [onTeacherSummaryChange, summary])
+
+  const assignedCount = useMemo(
+    () => supportedProfile.associations.filter((entry) => entry.teamId.length > 0).length,
+    [supportedProfile.associations],
+  )
+
+  useEffect(() => {
+    onInputDiagnosticSignals?.({
+      sonyReceiver: receiver,
+      sonyTeacherSummary: summary,
+      controllersResponding: respondingSlots.length,
+      controllersAssigned: assignedCount,
+    })
+  }, [
+    onInputDiagnosticSignals,
+    receiver,
+    summary,
+    respondingSlots.length,
+    assignedCount,
+  ])
 
   useEffect(() => {
     // Controllers-responding readiness must track ordinary Buzzer Check as well as
@@ -568,6 +605,7 @@ export function SonyBuzzSetupSection({
   supportedProfile,
   compactOrdinary = false,
   onTeacherSummaryChange,
+  onInputDiagnosticSignals,
 }: SonyBuzzSetupSectionProps) {
   const initialTeamId = teams[0]?.id ?? ''
   const [teamId, setTeamId] = useState<string>(initialTeamId)
@@ -658,6 +696,7 @@ export function SonyBuzzSetupSection({
           checkDisabled={diagnosticsStatus === 'unsupported'}
           compactOrdinary={compactOrdinary}
           onTeacherSummaryChange={onTeacherSummaryChange}
+          onInputDiagnosticSignals={onInputDiagnosticSignals}
         />
       ) : null}
 

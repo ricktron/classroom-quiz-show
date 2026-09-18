@@ -40,9 +40,11 @@ import {
 import { useSonyBuzzSupportedProfile } from './useSonyBuzzSupportedProfile'
 import {
   classSetupSonyBuzzFullyReady,
+  classifyReceiverLayer,
   type SonyBuzzTeacherSummary,
 } from '../input/sonyBuzzTeacherReadiness'
 import type { PersistenceAdapter } from '../persistence'
+import type { HostInputDiagnosticSignals } from './diagnostics/types'
 import type { WebHidTransport } from '../input/webHidTransport'
 import { systemClock, type Clock } from '../time/clock'
 import './GamepadInputHostPanel.css'
@@ -107,6 +109,11 @@ export interface GamepadInputHostPanelProps {
   readonly onSonyReadyChange?: (ready: boolean) => void
   /** Same classification published by the detailed Sony readiness layers. */
   readonly onSonyTeacherSummaryChange?: (summary: SonyBuzzTeacherSummary) => void
+  /**
+   * Safe Host diagnostic input signals (counts + semantic layers only).
+   * Never device identity or classroom content.
+   */
+  readonly onInputDiagnosticSignals?: (signals: HostInputDiagnosticSignals) => void
 }
 
 /** What the panel is currently doing about button capture. */
@@ -152,6 +159,7 @@ export function GamepadInputHostPanel({
   onSelectionBatch,
   onSonyReadyChange,
   onSonyTeacherSummaryChange,
+  onInputDiagnosticSignals,
 }: GamepadInputHostPanelProps) {
   const teams = game.definition.teams
   const gameId = game.definition.id
@@ -193,6 +201,50 @@ export function GamepadInputHostPanel({
     },
     [onSonyReadyChange, onSonyTeacherSummaryChange],
   )
+
+  const publishInputDiagnostics = useCallback(
+    (signals: {
+      readonly sonyReceiver: ReturnType<typeof classifyReceiverLayer>
+      readonly sonyTeacherSummary: SonyBuzzTeacherSummary
+      readonly controllersResponding: number
+      readonly controllersAssigned: number
+    }) => {
+      if (!onInputDiagnosticSignals) return
+      const payload: HostInputDiagnosticSignals = {
+        sonyReceiver: signals.sonyReceiver,
+        sonyTeacherSummary: signals.sonyTeacherSummary,
+        controllersResponding: signals.controllersResponding,
+        controllersAssigned: signals.controllersAssigned,
+        connectedGamepadCount: diagnostics.controllers.length,
+      }
+      onInputDiagnosticSignals(payload)
+    },
+    [diagnostics.controllers.length, onInputDiagnosticSignals],
+  )
+
+  // Outside Class Setup, SonyBuzzSetupSection is unmounted — it alone owns live
+  // responding-slot / teacher-summary observation. Publish only authoritative
+  // current Host state here; do not preserve Class Setup snapshots or invent a
+  // responding count of 0 (which under-states live controllers).
+  useEffect(() => {
+    if (selectionMode) return
+    if (!onInputDiagnosticSignals) return
+    const assigned = sony.associations.filter((entry) => entry.teamId.length > 0).length
+    const payload: HostInputDiagnosticSignals = {
+      sonyReceiver: classifyReceiverLayer(sony.transport.health),
+      sonyTeacherSummary: 'not-collected',
+      controllersResponding: 'not-collected',
+      controllersAssigned: assigned,
+      connectedGamepadCount: diagnostics.controllers.length,
+    }
+    onInputDiagnosticSignals(payload)
+  }, [
+    selectionMode,
+    onInputDiagnosticSignals,
+    sony.transport.health,
+    sony.associations,
+    diagnostics.controllers.length,
+  ])
 
   // The loaded game can change under the panel. Bindings for teams that no longer
   // exist are pruned rather than left pointing at nothing; a RENAMED team keeps
@@ -406,6 +458,7 @@ export function GamepadInputHostPanel({
           onPendingCaptureConsumed={onSonyPendingCaptureConsumed}
           compactOrdinary={selectionMode}
           onTeacherSummaryChange={publishTeacherSummary}
+          onInputDiagnosticSignals={publishInputDiagnostics}
           supportedProfile={{
             transport: sony.transport,
             associations: sony.associations,
