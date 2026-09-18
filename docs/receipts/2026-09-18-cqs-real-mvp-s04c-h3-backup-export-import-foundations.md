@@ -14,7 +14,8 @@
 - **Status:** **DELIVERY CANDIDATE / NOT MERGED / NOT TERMINAL**
 - **Exact authorized base:** `795f07b598c207d6e10c1142c2cff7c0d6f92b63`
 - **Delivery branch:** `cursor/s04c-h3-backup-export-import-foundations-d906`
-- **PR / exact review head:** observe from live PR metadata at review time
+- **PR:** [#82](https://github.com/ricktron/classroom-quiz-show/pull/82)
+- **Exact review head:** `bffc57860a0cc9bb17705507d046c640c6ee60e3`
 
 ## Starting provenance
 
