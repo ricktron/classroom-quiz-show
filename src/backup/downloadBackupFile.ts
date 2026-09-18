@@ -1,6 +1,10 @@
 /**
  * Browser download adapter for backup files (S04C-H3).
  * Mirrors downloadGameFile: pure builders never call DOM APIs.
+ *
+ * BACKUP_MIME is wired into the Blob type for download only. Import trust
+ * never uses MIME, filename, or extension — parseBackupFromJsonText remains
+ * the fail-closed authority.
  */
 
 import { BACKUP_MIME } from './constants'
@@ -16,7 +20,12 @@ export function downloadBackupFile(
   input: DownloadBackupInput,
   environment?: DownloadEnvironment,
 ): void {
-  // Reuse the injectable download boundary; MIME remains application/json.
-  void BACKUP_MIME
-  downloadGameFile(input, environment)
+  downloadGameFile(
+    {
+      filename: input.filename,
+      text: input.text,
+      mimeType: BACKUP_MIME,
+    },
+    environment,
+  )
 }

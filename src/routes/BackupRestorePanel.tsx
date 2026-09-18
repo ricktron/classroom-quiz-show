@@ -165,37 +165,43 @@ export function BackupRestorePanel({
       confirmReplaceConflicts: staged.conflictCount === 0 ? true : confirmReplace,
       stillValid: () => generation === generationRef.current,
     })
-    if (generation !== generationRef.current) return
-    setBusy(false)
+    const ownsUi = generation === generationRef.current
 
-    if (applied.status !== 'success') {
-      setIssues(applied.issues)
-      setStatus({
-        kind: 'error',
-        text: 'Restore did not finish. Your existing saved games were left unchanged.',
-      })
+    if (applied.status === 'success') {
+      // Commit already happened. Never claim "nothing changed" even if a newer
+      // generation now owns the panel — refresh library and clear staged state.
+      setStaged(null)
+      setConfirmReplace(false)
+      setIssues(null)
+      await onLibraryChanged?.()
+      if (ownsUi) {
+        setBusy(false)
+        setStatus({
+          kind: 'success',
+          text: `Restored ${applied.appliedGameCount} saved game${
+            applied.appliedGameCount === 1 ? '' : 's'
+          }${
+            applied.replacedGameCount > 0
+              ? ` (replaced ${applied.replacedGameCount})`
+              : ''
+          }${
+            applied.appliedMediaCount > 0
+              ? ` and ${applied.appliedMediaCount} media file${
+                  applied.appliedMediaCount === 1 ? '' : 's'
+                }`
+              : ''
+          }.`,
+        })
+      }
       return
     }
 
-    setStaged(null)
-    setConfirmReplace(false)
-    setIssues(null)
-    await onLibraryChanged?.()
+    if (!ownsUi) return
+    setBusy(false)
+    setIssues(applied.issues)
     setStatus({
-      kind: 'success',
-      text: `Restored ${applied.appliedGameCount} saved game${
-        applied.appliedGameCount === 1 ? '' : 's'
-      }${
-        applied.replacedGameCount > 0
-          ? ` (replaced ${applied.replacedGameCount})`
-          : ''
-      }${
-        applied.appliedMediaCount > 0
-          ? ` and ${applied.appliedMediaCount} media file${
-              applied.appliedMediaCount === 1 ? '' : 's'
-            }`
-          : ''
-      }.`,
+      kind: 'error',
+      text: 'Restore did not finish. Your existing saved games were left unchanged.',
     })
   }
 

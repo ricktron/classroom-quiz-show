@@ -492,9 +492,7 @@ hardware, recovery, and the end-to-end experience.
   Home (**ALREADY IMPLEMENTED FOUNDATION**, `src/persistence/`, ADR-013).
   S04C-H1 repairs Home Resume so it performs Host resume semantics once
   (**TERMINALLY COMPLETE** on main after PR #78; does **not** complete
-  S04C). Broader safe-mode / diagnostics work continues under remaining
-  S04C authorizations. S04C-H3 adds Home **Backup & restore** foundations
-  (delivery candidate; not terminal S04C).
+  S04C). Broader safe-mode / diagnostics / backup work remains later S04C.
 
 ### 28. Session completion
 
@@ -563,23 +561,6 @@ hardware, recovery, and the end-to-end experience.
   `506654f1f6b4a0735a43cdda8a0100200c3dce29`). Broader support/telemetry
   attachment remains S04D. The privacy rule is a Product Contract
   requirement today, not a later decision.
-
-### 32a. Backup & restore (library durability)
-
-- **User:** teacher, private.
-- **Primary job:** download a durable copy of saved games (and pack images)
-  and restore from a backup file without accounts or cloud.
-- **Important states:** collapsed; download success/failure; backup checked;
-  preview with/without conflicts; confirm replace; restore success/failure;
-  cancel/abandon.
-- **UX risks:** silent overwrite; conflating backup with unfinished Session;
-  teacher jargon; projector leakage of classroom content from Host UI.
-- **Principles:** `P22`, `P19`, `P08`, `P13`, `P06`.
-- **Research routing:** Norman, Cooper, Podmajersky.
-- **Ownership / state:** S04C-H3 — **DELIVERY CANDIDATE / NOT TERMINAL**
-  (`src/backup/*`, `BackupRestorePanel` on Home, ADR-022). Does **not**
-  complete S04C. Summaries/device-pref backup sections and salvage UX remain
-  later S04C.
 
 ### 33. Onboarding / first run
 

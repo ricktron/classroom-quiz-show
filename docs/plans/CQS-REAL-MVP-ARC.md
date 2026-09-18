@@ -27,10 +27,9 @@
   that exact squash/main SHA. S04C-H2 is **TERMINALLY COMPLETE** after PR
   #80 merged as `506654f1f6b4a0735a43cdda8a0100200c3dce29` and post-merge
   CI succeeded on that exact squash/main SHA. S04C parent remains
-  **ACTIVE / OPEN / NOT TERMINAL**. S04C-H3 is a **DELIVERY CANDIDATE /
-  NOT TERMINAL** under
-  `AUTHORIZE-CQS-REAL-MVP-S04C-H3-BACKUP-EXPORT-IMPORT-FOUNDATIONS-1`.
-  **H4+, S04D, S05, and S06 are not authorized.**
+  **ACTIVE / OPEN / NOT TERMINAL**. **H3+, S04D, S05, and S06 are not
+  authorized.** Recommended next owner action is a fresh reconciliation
+  for the next S04C frontier (routing ≠ authority).
 
 This document is the canonical **CQS REAL MVP Program** plan of record. It
 registers `CQS-REAL-MVP-1` as the current owner-approved Program without
@@ -457,10 +456,9 @@ is **TERMINALLY COMPLETE** after PR #76 squash/main
 `CQS-REAL-MVP-S04C-H2-SANITIZED-DIAGNOSTICS-COPY-REPORT` is
 **TERMINALLY COMPLETE** after PR #80 squash/main
 `506654f1f6b4a0735a43cdda8a0100200c3dce29` with post-merge CI success.
-`CQS-REAL-MVP-S04C-H3-BACKUP-EXPORT-IMPORT-FOUNDATIONS` is a **DELIVERY
-CANDIDATE / NOT MERGED / NOT TERMINAL** under
-`AUTHORIZE-CQS-REAL-MVP-S04C-H3-BACKUP-EXPORT-IMPORT-FOUNDATIONS-1`. S04C
-parent remains **ACTIVE / OPEN / NOT TERMINAL**. **H4+ IS NOT AUTHORIZED.**
+S04C parent remains **ACTIVE / OPEN / NOT TERMINAL**. Recommended next
+owner action is a **fresh reconciliation** for the next S04C frontier.
+**H3+ IS NOT AUTHORIZED.**
 
 ```text
 routing ≠ authority
@@ -468,14 +466,10 @@ S04A: TERMINALLY COMPLETE
 S04B: TERMINALLY COMPLETE
 S04C-H1: TERMINALLY COMPLETE
 S04C-H2: TERMINALLY COMPLETE
-S04C-H3: DELIVERY CANDIDATE / NOT TERMINAL
 S04C: ACTIVE / OPEN / NOT TERMINAL
-H4+: NOT AUTHORIZED
+H3+: NOT AUTHORIZED
 S04D/S05/S06: NOT AUTHORIZED
 ```
-
-S04C-H3 implementation evidence (delivery candidate):
-[`../receipts/2026-09-18-cqs-real-mvp-s04c-h3-backup-export-import-foundations.md`](../receipts/2026-09-18-cqs-real-mvp-s04c-h3-backup-export-import-foundations.md).
 
 S04C-H2 terminal evidence:
 [`../receipts/2026-09-18-cqs-real-mvp-s04c-h2-terminal-post-merge-reconciliation.md`](../receipts/2026-09-18-cqs-real-mvp-s04c-h2-terminal-post-merge-reconciliation.md).

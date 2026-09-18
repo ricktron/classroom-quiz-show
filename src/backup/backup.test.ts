@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createDefaultRegistry } from '../game/defaultRegistry'
 import { createSampleGame } from '../game/sampleGame'
 import { createGameDefinition } from '../game/gameDefinition'
@@ -7,11 +7,14 @@ import { createMemoryPersistenceAdapter } from '../persistence/memoryAdapter'
 import { saveDefinition, listSavedDefinitions, loadDefinition } from '../persistence/savedDefinitions'
 import { commitPackMediaAssets } from '../pack/packMediaPersistence'
 import { sha256Hex } from '../pack/hash'
+import type { DownloadEnvironment } from '../export/downloadGameFile'
 import {
   BACKUP_FORMAT,
+  BACKUP_MIME,
   BACKUP_SCHEMA_VERSION,
   applyStagedBackup,
   buildBackupFromAdapter,
+  downloadBackupFile,
   parseBackupFromJsonText,
 } from './index'
 
@@ -293,6 +296,113 @@ describe('S04C-H3 backup foundations', () => {
     if (listed.ok) expect(listed.value).toHaveLength(0)
   })
 
+  it('aborts before commit when stillValid flips false during the transaction', async () => {
+    const registry = createDefaultRegistry()
+    const source = await openAdapter()
+    const game = createSampleGame()
+    await saveDefinition(source, game, { mode: 'save', registry })
+    const built = await buildBackupFromAdapter({ adapter: source, registry })
+    expect(built.status).toBe('success')
+    if (built.status !== 'success') return
+    const parsed = await parseBackupFromJsonText(built.jsonText, { registry })
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+
+    const target = await openAdapter()
+    let calls = 0
+    const aborted = await applyStagedBackup({
+      adapter: target,
+      staged: parsed.staged,
+      // Calls 1–3: outer guards + pre-mutation check (allow). Call 4: pre-commit (deny).
+      stillValid: () => {
+        calls += 1
+        return calls < 4
+      },
+    })
+    expect(aborted.status).toBe('failure')
+    if (aborted.status === 'failure') {
+      expect(aborted.issues.some((i) => i.code === 'apply-aborted')).toBe(true)
+    }
+    const listed = await listSavedDefinitions(target)
+    expect(listed.ok).toBe(true)
+    if (listed.ok) expect(listed.value).toHaveLength(0)
+  })
+
+  it('keeps success after commit even if stillValid later becomes false', async () => {
+    const registry = createDefaultRegistry()
+    const source = await openAdapter()
+    const game = createSampleGame()
+    await saveDefinition(source, game, { mode: 'save', registry })
+    const built = await buildBackupFromAdapter({ adapter: source, registry })
+    expect(built.status).toBe('success')
+    if (built.status !== 'success') return
+    const parsed = await parseBackupFromJsonText(built.jsonText, { registry })
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+
+    const target = await openAdapter()
+    let allow = true
+    const applied = await applyStagedBackup({
+      adapter: target,
+      staged: parsed.staged,
+      stillValid: () => allow,
+    })
+    expect(applied.status).toBe('success')
+    allow = false
+    const listed = await listSavedDefinitions(target)
+    expect(listed.ok).toBe(true)
+    if (listed.ok) {
+      expect(listed.value.some((entry) => entry.gameId === game.id)).toBe(true)
+    }
+  })
+
+  it('wires BACKUP_MIME into the download Blob (MIME is never import trust)', async () => {
+    const blobs: Array<{ type: string; parts: BlobPart[] }> = []
+    const OriginalBlob = globalThis.Blob
+    globalThis.Blob = class CapturingBlob {
+      readonly type: string
+      readonly parts: BlobPart[]
+      constructor(parts: BlobPart[], options?: BlobPropertyBag) {
+        this.parts = parts
+        this.type = options?.type ?? ''
+        blobs.push({ type: this.type, parts: this.parts })
+      }
+    } as unknown as typeof Blob
+
+    const env: DownloadEnvironment = {
+      createObjectURL: () => 'blob:backup-test',
+      revokeObjectURL: () => undefined,
+      createAnchor: () => {
+        const anchor = document.createElement('a')
+        anchor.click = () => undefined
+        return anchor
+      },
+      appendAnchor: (anchor) => {
+        document.body.appendChild(anchor)
+      },
+      removeAnchor: (anchor) => {
+        anchor.remove()
+      },
+      scheduleCleanup: (callback) => {
+        callback()
+      },
+    }
+
+    try {
+      downloadBackupFile(
+        { filename: 'classroom-quiz-show.backup.json', text: '{"format":"x"}\n' },
+        env,
+      )
+      expect(blobs).toHaveLength(1)
+      expect(blobs[0]!.type).toBe(BACKUP_MIME)
+      // Filename/MIME alone remain insufficient for import trust.
+      const spoof = await parseBackupFromJsonText('not-a-backup')
+      expect(spoof.status).toBe('failure')
+    } finally {
+      globalThis.Blob = OriginalBlob
+    }
+  })
+
   it('filename/extension alone is not sufficient — parse still validates', async () => {
     const spoof = 'not-json-at-all'
     const parsed = await parseBackupFromJsonText(spoof)
@@ -301,4 +411,8 @@ describe('S04C-H3 backup foundations', () => {
       expect(parsed.issues.some((i) => i.code === 'invalid-json')).toBe(true)
     }
   })
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
 })

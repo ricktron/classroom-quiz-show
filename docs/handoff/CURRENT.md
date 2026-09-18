@@ -27,7 +27,7 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S04C-H1 and S04C-H2 **TERMINALLY COMPLETE**. S04C-H3 **DELIVERY CANDIDATE / NOT TERMINAL**. S04C parent **ACTIVE / OPEN / NOT TERMINAL**. **H4+ NOT AUTHORIZED**. |
+| Current Program frontier | S04C-H1 and S04C-H2 **TERMINALLY COMPLETE**. S04C parent **ACTIVE / OPEN / NOT TERMINAL**. Recommended next owner action: fresh reconciliation for next S04C frontier; **H3+ NOT AUTHORIZED**. |
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
 | S04 canon | product direction **registered** |
@@ -35,8 +35,7 @@ also read
 | S04B | **TERMINALLY COMPLETE** |
 | S04C-H1 | **TERMINALLY COMPLETE** |
 | S04C-H2 | **TERMINALLY COMPLETE** |
-| S04C-H3 | **DELIVERY CANDIDATE / NOT TERMINAL** |
-| S04C | parent **ACTIVE / OPEN / NOT TERMINAL**; H4+ **not begun** |
+| S04C | parent **ACTIVE / OPEN / NOT TERMINAL**; H3+ **not begun** |
 | S04D / S05 / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
 
@@ -109,8 +108,8 @@ physically qualified product identity remains H6
 COMPLETE**. S04C-H1 safe startup / unified session recovery is
 **TERMINALLY COMPLETE** on main after PR #78. S04C-H2 sanitized diagnostics
 (Copy Diagnostic Report) is **TERMINALLY COMPLETE** on main after PR #80.
-S04C parent remains open; S04C-H3 is a delivery candidate (not terminal);
-H4+ and S04D are **not authorized** by this handoff.
+S04C parent remains open; H3+ and S04D are **not authorized** by this
+handoff.
 
 Those remain **existing qualified foundations** plus the S03 desktop
 foundation, S04 canon, and terminal S04A teacher-workflow foundation. Do
@@ -166,10 +165,9 @@ Contract versions: see [`../STATUS.md`](../STATUS.md).
 
 Do **not**:
 
-- begin S04C-H4+ (import-salvage, broader recovery, etc.) without a later
-  bounded authorization;
-- treat terminal H1/H2 or an H3 delivery candidate as terminal S04C
-  completion;
+- begin S04C-H3+ (backup/restore, import-salvage, broader recovery, etc.)
+  without a later bounded authorization;
+- treat terminal H1 or H2 as terminal S04C completion;
 - begin S04D telemetry without a later bounded authorization;
 - begin S05 visual-fidelity work or S06 integrated release qualification;
 - silently decide Apple/Windows signing, fee waiver, CPU/OS matrix, or
@@ -211,13 +209,12 @@ Packaged / physically qualified product identity remains H6
 `CQS-REAL-MVP-S04C-H2-SANITIZED-DIAGNOSTICS-COPY-REPORT` is
 **TERMINALLY COMPLETE** after PR #80 squash/main
 `506654f1f6b4a0735a43cdda8a0100200c3dce29` with post-merge CI success.
-`CQS-REAL-MVP-S04C-H3-BACKUP-EXPORT-IMPORT-FOUNDATIONS` is a **DELIVERY
-CANDIDATE / NOT MERGED / NOT TERMINAL** under
-`AUTHORIZE-CQS-REAL-MVP-S04C-H3-BACKUP-EXPORT-IMPORT-FOUNDATIONS-1`. S04C
-parent remains **ACTIVE / OPEN / NOT TERMINAL**. **H4+ is NOT AUTHORIZED.**
-Do **not** start H4+ from this handoff. Do **not** claim Windows physical
-qualification, Sony physical re-qualification, local packaged restore smoke
-for H3 unless separately recorded, or a signed release from this handoff.
+S04C parent remains **ACTIVE / OPEN / NOT TERMINAL**. Recommended next
+owner action is a **fresh reconciliation** for the next S04C frontier.
+**H3+ is NOT AUTHORIZED.** Do **not** start H3+ from this handoff. Do
+**not** claim Windows physical qualification, Sony physical
+re-qualification, local hardware qualification for H2 (none required), or
+a signed release from this handoff.
 
 ```text
 routing ≠ authority
@@ -225,9 +222,8 @@ S04A: TERMINALLY COMPLETE
 S04B: TERMINALLY COMPLETE
 S04C-H1: TERMINALLY COMPLETE
 S04C-H2: TERMINALLY COMPLETE
-S04C-H3: DELIVERY CANDIDATE / NOT TERMINAL
 S04C: ACTIVE / OPEN / NOT TERMINAL
-H4+: NOT AUTHORIZED
+H3+: NOT AUTHORIZED
 S04D/S05/S06: NOT AUTHORIZED
 ```
 
@@ -261,7 +257,7 @@ H6 readiness physical + UX re-review report (historical):
 H6 durable interaction/evidence manifest (historical):
 [`qualification-runs/s04b-h6-2026-09-12.jsonl`](qualification-runs/s04b-h6-2026-09-12.jsonl).
 
-Do **not** begin S04C-H4+ from this handoff.
+Do **not** begin S04C-H3+ from this handoff.
 
 ## Architecture pointers
 

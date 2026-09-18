@@ -8,6 +8,8 @@
 export interface DownloadFileInput {
   readonly filename: string
   readonly text: string
+  /** Optional Blob MIME. Defaults to application/json;charset=utf-8. */
+  readonly mimeType?: string
 }
 
 export interface DownloadEnvironment {
@@ -30,7 +32,7 @@ export function downloadGameFile(
   input: DownloadFileInput,
   environment: DownloadEnvironment = defaultDownloadEnvironment(),
 ): void {
-  const blob = new Blob([input.text], { type: JSON_MIME })
+  const blob = new Blob([input.text], { type: input.mimeType ?? JSON_MIME })
   let url: string | undefined
   let anchor: HTMLAnchorElement | undefined
   let appended = false

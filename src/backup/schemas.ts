@@ -80,7 +80,8 @@ function formatZodPath(path: readonly PropertyKey[]): string {
     if (typeof segment === 'number') {
       out += `[${segment}]`
     } else {
-      out += out.length === 0 ? `/${String(segment)}` : `/${String(segment)}`
+      // Path segments are always joined with a leading slash (Zod property keys).
+      out += `/${String(segment)}`
     }
   }
   return out || '/'

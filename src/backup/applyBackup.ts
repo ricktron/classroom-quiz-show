@@ -18,7 +18,9 @@ export interface ApplyBackupOptions {
   readonly confirmReplaceConflicts?: boolean
   /**
    * Optional generation / abort token. When provided and returns false before
-   * write, apply aborts without mutation (stale async / navigation).
+   * commit, apply aborts without durable mutation (stale async / navigation).
+   * After a successful commit, callers must treat the write as authoritative
+   * even if ownership later becomes stale — do not deny a completed restore.
    */
   readonly stillValid?: () => boolean
 }
@@ -36,18 +38,9 @@ export async function applyStagedBackup(
 ): Promise<BackupApplyResult> {
   const { adapter, staged } = options
 
+  const aborted = abortedApplyResult()
   if (options.stillValid && !options.stillValid()) {
-    return {
-      status: 'failure',
-      issues: sortBackupIssues([
-        backupIssue(
-          'apply-aborted',
-          'apply',
-          '/',
-          'Restore was cancelled because the page or session changed before it finished.',
-        ),
-      ]),
-    }
+    return aborted
   }
 
   if (staged.conflictCount > 0 && options.confirmReplaceConflicts !== true) {
@@ -67,25 +60,26 @@ export async function applyStagedBackup(
   }
 
   if (options.stillValid && !options.stillValid()) {
-    return {
-      status: 'failure',
-      issues: sortBackupIssues([
-        backupIssue(
-          'apply-aborted',
-          'apply',
-          '/',
-          'Restore was cancelled because the page or session changed before it finished.',
-        ),
-      ]),
-    }
+    return aborted
   }
 
   const replacedGameCount = staged.conflictCount
   const documentById = new Map(staged.document.games.map((g) => [g.gameId, g]))
 
+  // Adapters map thrown work errors to generic transaction-failed results, so
+  // track intentional stillValid aborts separately for honest apply-aborted.
+  let abortedByStillValid = false
+
   const result = await adapter.withTransaction(
     [OBJECT_STORE_SAVED_DEFINITIONS, OBJECT_STORE_PACK_MEDIA_ASSETS],
     async (tx) => {
+      // Re-check immediately before mutation so a stale generation cannot
+      // begin durable writes. Throwing aborts the IndexedDB / memory txn.
+      if (options.stillValid && !options.stillValid()) {
+        abortedByStillValid = true
+        throw new BackupApplyError('stillValid aborted before mutation')
+      }
+
       for (const preview of staged.games) {
         const source = documentById.get(preview.gameId)
         if (!source) {
@@ -135,10 +129,20 @@ export async function applyStagedBackup(
           },
         )
       }
+
+      // Final pre-commit ownership check: if generation advanced during the
+      // work, abort the transaction so nothing durable is committed.
+      if (options.stillValid && !options.stillValid()) {
+        abortedByStillValid = true
+        throw new BackupApplyError('stillValid aborted before commit')
+      }
     },
   )
 
   if (!result.ok) {
+    if (abortedByStillValid) {
+      return aborted
+    }
     const code =
       result.code === 'quota-exceeded'
         ? 'quota-exceeded'
@@ -158,11 +162,27 @@ export async function applyStagedBackup(
     }
   }
 
+  // Commit succeeded. Do not re-interpret stillValid as failure — durable
+  // library mutation already happened and UI must not deny it.
   return {
-      status: 'success',
-      appliedGameCount: staged.games.length,
-      appliedMediaCount: staged.media.length,
-      replacedGameCount,
+    status: 'success',
+    appliedGameCount: staged.games.length,
+    appliedMediaCount: staged.media.length,
+    replacedGameCount,
+  }
+}
+
+function abortedApplyResult(): BackupApplyResult {
+  return {
+    status: 'failure',
+    issues: sortBackupIssues([
+      backupIssue(
+        'apply-aborted',
+        'apply',
+        '/',
+        'Restore was cancelled because the page or session changed before it finished.',
+      ),
+    ]),
   }
 }
 
