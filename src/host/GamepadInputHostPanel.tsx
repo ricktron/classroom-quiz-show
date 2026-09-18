@@ -41,7 +41,6 @@ import { useSonyBuzzSupportedProfile } from './useSonyBuzzSupportedProfile'
 import {
   classSetupSonyBuzzFullyReady,
   classifyReceiverLayer,
-  classifyTeacherSummaryFromHardware,
   type SonyBuzzTeacherSummary,
 } from '../input/sonyBuzzTeacherReadiness'
 import type { PersistenceAdapter } from '../persistence'
@@ -203,8 +202,6 @@ export function GamepadInputHostPanel({
     [onSonyReadyChange, onSonyTeacherSummaryChange],
   )
 
-  const lastInputDiagnosticsRef = useRef<HostInputDiagnosticSignals | null>(null)
-
   const publishInputDiagnostics = useCallback(
     (signals: {
       readonly sonyReceiver: ReturnType<typeof classifyReceiverLayer>
@@ -220,40 +217,31 @@ export function GamepadInputHostPanel({
         controllersAssigned: signals.controllersAssigned,
         connectedGamepadCount: diagnostics.controllers.length,
       }
-      lastInputDiagnosticsRef.current = payload
       onInputDiagnosticSignals(payload)
     },
     [diagnostics.controllers.length, onInputDiagnosticSignals],
   )
 
-  // Outside Class Setup, refresh receiver / assignment / gamepad counts while
-  // preserving the last observed responding count and teacher summary.
+  // Outside Class Setup, SonyBuzzSetupSection is unmounted — it alone owns live
+  // responding-slot / teacher-summary observation. Publish only authoritative
+  // current Host state here; do not preserve Class Setup snapshots or invent a
+  // responding count of 0 (which under-states live controllers).
   useEffect(() => {
     if (selectionMode) return
     if (!onInputDiagnosticSignals) return
-    const previous = lastInputDiagnosticsRef.current
     const assigned = sony.associations.filter((entry) => entry.teamId.length > 0).length
     const payload: HostInputDiagnosticSignals = {
       sonyReceiver: classifyReceiverLayer(sony.transport.health),
-      sonyTeacherSummary:
-        previous?.sonyTeacherSummary ??
-        classifyTeacherSummaryFromHardware({
-          health: sony.transport.health,
-          respondingSlotCount: 0,
-          mappingStatus: sony.mappingStatus,
-          associationCount: sony.associations.length,
-        }),
-      controllersResponding: previous?.controllersResponding ?? 0,
+      sonyTeacherSummary: 'not-collected',
+      controllersResponding: 'not-collected',
       controllersAssigned: assigned,
       connectedGamepadCount: diagnostics.controllers.length,
     }
-    lastInputDiagnosticsRef.current = payload
     onInputDiagnosticSignals(payload)
   }, [
     selectionMode,
     onInputDiagnosticSignals,
     sony.transport.health,
-    sony.mappingStatus,
     sony.associations,
     diagnostics.controllers.length,
   ])

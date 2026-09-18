@@ -15,9 +15,9 @@ delivery/review/repair/qualification/release work,
 | --- | --- |
 | What is historically complete? | Slices **1–23**. Original 23-slice foundation/qualification roadmap: **COMPLETE**. Slice 23: **TERMINALLY COMPLETE**. Guidance Polish S01: **TERMINALLY COMPLETE**. |
 | What is active? | **`CQS-REAL-MVP-1`: ACTIVE / CANONICALLY REGISTERED**. S03 implements the production Electron thin shell and unsigned desktop packaging path (ADR-021 **Accepted**). S04 canon registers remaining product direction. S04A, S04B, and **S04C-H1** are **TERMINALLY COMPLETE**. S04C parent remains **ACTIVE / OPEN / NOT TERMINAL**. Post-MVP arcs remain **INACTIVE**. |
-| What remains? | REAL MVP teacher-adoptable product work remains open. S04A, S04B, and S04C-H1 are **TERMINALLY COMPLETE**. S04C-H2 has a published **DELIVERY CANDIDATE / NOT MERGED**; S04C parent remains open. S04D, flagship visual fidelity, and integrated release qualification are **not begun**. Desktop artifacts are **unsigned** qualification/development-candidate builds, not a teacher-trusted signed release. |
+| What remains? | REAL MVP teacher-adoptable product work remains open. S04A, S04B, and S04C-H1 are **TERMINALLY COMPLETE**. S04C parent work remains open after H1; H2+, S04D, flagship visual fidelity, and integrated release qualification are **not begun**. Desktop artifacts are **unsigned** qualification/development-candidate builds, not a teacher-trusted signed release. |
 | What is blocked / open? | See the [gap register](plans/CQS-REAL-MVP-ARC.md#6-initial-gap-register). C-3 / C-6 **FOUNDATION IMPLEMENTED / UNSIGNED**. `F-UX-01` **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** (ordinary Sony Class Setup copy; evidence bound to H5/H6 identities). `CQS-Q23-LOW-02` **OPEN / LOW / MONITOR**. `CQS-Q23-CLASS-B-01` **OPEN / CONTROLLED**. `CQS-OD-066` **DEFERRED / NOT REAL MVP**. Packaged macOS Sony physical **H5 selection/hardware PASS transferred**; **H6 readiness PASS** on Namtai `054c:1000` + four handsets. Windows physical runtime **NOT RUN** (S06). Signing / notarization **OPEN OWNER GATE**. C-7 Raspberry Pi **outside REAL MVP**. C-8 LAN **outside REAL MVP**. Post-MVP arcs **INACTIVE**. |
-| Current Program frontier | S04C-H1 is **TERMINALLY COMPLETE** on main. S04C-H2 sanitized diagnostics Copy Diagnostic Report is **IN REVIEW** on a published delivery candidate (**NOT MERGED** / **NOT TERMINAL**). S04C parent remains **ACTIVE / OPEN / NOT TERMINAL**. H3+ / S04D / S05 / S06 remain **NOT AUTHORIZED**. |
+| Current Program frontier | S04C-H1 is **TERMINALLY COMPLETE** on main. S04C parent remains **ACTIVE / OPEN / NOT TERMINAL**. Recommended next planning frontier is sanitized diagnostics (Copy Diagnostic Report); **H2+ is NOT AUTHORIZED**. S04D / S05 / S06 remain **NOT AUTHORIZED**. |
 
 ```text
 historical 23-slice roadmap: COMPLETE
@@ -29,9 +29,8 @@ S03: production Electron thin shell + unsigned packaging path implemented
 S04 canon: product direction registered
 S04A: TERMINALLY COMPLETE
 S04B: TERMINALLY COMPLETE
-S04C: ACTIVE / OPEN / NOT TERMINAL (H1 complete; H2 delivery candidate in review)
+S04C: ACTIVE / OPEN / NOT TERMINAL (H1 complete; H2+ not begun)
 S04C-H1: TERMINALLY COMPLETE
-S04C-H2: DELIVERY CANDIDATE / NOT MERGED / NOT TERMINAL
 S04D / S05 / S06: NOT AUTHORIZED
 post-MVP arcs: INACTIVE
 ```
@@ -194,31 +193,24 @@ identity remains H6 `9df9c42626c2b0d87a076759aa531a4532f21a5c`.
 `5a6d60b5e92d4e42c2f54ba61bdbaeaf12ca4795` with sole parent
 `5e649409567adc3951c45c872b7f01f13d91083b`; post-merge CI, Desktop
 artifacts, and Pages succeeded on that exact squash/main SHA. S04C parent
-remains **ACTIVE / OPEN / NOT TERMINAL**.
-
-`CQS-REAL-MVP-S04C-H2-SANITIZED-DIAGNOSTICS-COPY-REPORT` has a published
-**DELIVERY CANDIDATE / NOT MERGED / NOT TERMINAL**. Merge is reserved for
-Program Orchestrator exact-head adjudication. H3+ / S04D / S05 / S06 remain
-**NOT AUTHORIZED**.
+remains **ACTIVE / OPEN / NOT TERMINAL**. Recommended next planning
+frontier is sanitized diagnostics (Copy Diagnostic Report). **H2+ is NOT
+AUTHORIZED.** S04D / S05 / S06 remain unauthorized.
 
 ```text
 routing ≠ authority
 S04A: TERMINALLY COMPLETE
 S04B: TERMINALLY COMPLETE
 S04C-H1: TERMINALLY COMPLETE
-S04C-H2: DELIVERY CANDIDATE / NOT MERGED / NOT TERMINAL
 S04C: ACTIVE / OPEN / NOT TERMINAL
-H3+: NOT AUTHORIZED
+H2+: NOT AUTHORIZED
 S04D / S05 / S06: NOT AUTHORIZED
 ```
 
-This status grants **no** merge authority for H2, **no** H3+
-implementation authority, **no** signing/notarization decision, and **no**
-public teacher-release publication. It does **not** claim Windows physical
-runtime qualification or packaged owner-observed macOS relaunch smoke.
-
-S04C-H2 implementation evidence (delivery candidate):
-[`receipts/2026-09-14-cqs-real-mvp-s04c-h2-sanitized-diagnostics-copy-report.md`](receipts/2026-09-14-cqs-real-mvp-s04c-h2-sanitized-diagnostics-copy-report.md).
+This status grants **no** H2+ implementation authority, **no**
+signing/notarization decision, and **no** public teacher-release
+publication. It does **not** claim Windows physical runtime qualification
+or packaged owner-observed macOS relaunch smoke.
 
 S04C-H1 terminal post-merge reconciliation:
 [`receipts/2026-09-13-cqs-real-mvp-s04c-h1-terminal-post-merge-reconciliation.md`](receipts/2026-09-13-cqs-real-mvp-s04c-h1-terminal-post-merge-reconciliation.md).

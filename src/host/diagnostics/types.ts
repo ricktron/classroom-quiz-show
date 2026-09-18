@@ -116,13 +116,18 @@ export interface DiagnosticSnapshotInput {
 }
 
 /**
- * Optional Host-collected Sony/gamepad signals. Absent means not-collected.
- * Counts only — never device ids, labels, reports, or serials.
+ * Optional Host-collected Sony/gamepad signals. Entirely absent (`null` at
+ * the assemble boundary) means not-collected for all input fields.
+ *
+ * Observation-dependent fields may be `'not-collected'` when the Host surface
+ * that owns live responding / Class Setup teacher-summary authority is not
+ * mounted (outside Class Setup). Counts only — never device ids, labels,
+ * reports, or serials.
  */
 export interface HostInputDiagnosticSignals {
   readonly sonyReceiver: SonyBuzzReceiverLayer
-  readonly sonyTeacherSummary: SonyBuzzTeacherSummary
-  readonly controllersResponding: number
+  readonly sonyTeacherSummary: SonyBuzzTeacherSummary | DiagnosticNotCollected
+  readonly controllersResponding: number | DiagnosticNotCollected
   readonly controllersAssigned: number
   readonly connectedGamepadCount: number
 }
