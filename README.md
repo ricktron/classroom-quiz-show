@@ -42,11 +42,14 @@ play. Desktop install/start (unsigned artifacts) is in
   that exact squash/main SHA. `CQS-REAL-MVP-S04C-H2-SANITIZED-DIAGNOSTICS-COPY-REPORT`
   is **TERMINALLY COMPLETE**. PR #80 merged as
   `506654f1f6b4a0735a43cdda8a0100200c3dce29`, and post-merge CI succeeded on
-  that exact squash/main SHA. S04C parent remains **ACTIVE / OPEN / NOT
-  TERMINAL**. Recommended next owner action is a fresh reconciliation for
-  the next S04C frontier; **H3+ requires separate authorization** and has
-  not begun. Routing is not authority. This README does **not** authorize
-  H3+ or a signed teacher release.
+  that exact squash/main SHA. `CQS-REAL-MVP-S04C-H3-BACKUP-EXPORT-IMPORT-FOUNDATIONS`
+  is **TERMINALLY COMPLETE**. PR #82 merged as
+  `8d5c22b1d6bcd14286b5c2c6e05ba9144ec7b415`, and post-merge CI succeeded on
+  that exact squash/main SHA. S04C parent remains **ACTIVE /
+  OPEN / NOT TERMINAL**. Recommended next owner action is a fresh
+  reconciliation for the next S04C frontier; **H4+ requires separate
+  authorization** and has not begun. Routing is not authority. This README
+  does **not** authorize H4+ or a signed teacher release.
 - S03 implements the production Electron desktop shell and unsigned
   packaging path. S04 canon registers remaining product direction.
 - Product Contract:

@@ -115,8 +115,9 @@ This project separates two kinds of durable decision records:
    - [`ADR-022-backup-export-import-foundations.md`](../architecture/ADR-022-backup-export-import-foundations.md)
      — versioned `classroom-quiz-show/backup` interchange for library Games +
      pack media; fail-closed restore; Game≠Session preserved; no cloud
-     (S04C-H3). **Accepted** as delivery-candidate architecture for the H3
-     implementation PR (not terminal S04C).
+     (S04C-H3). **Accepted.** Implemented on main at PR #82 squash
+     `8d5c22b1d6bcd14286b5c2c6e05ba9144ec7b415`. Not terminal S04C; H4+ not
+     authorized by this index line.
 2. **Owner decisions** — product/scope choices made by the project owner.
    Recorded under "Approved product decisions" in [`../PROJECT.md`](../PROJECT.md)
    and reflected in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md).

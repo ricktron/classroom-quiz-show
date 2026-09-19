@@ -128,7 +128,10 @@ hardware, recovery, and the end-to-end experience.
 - **Research routing:** Norman, Cooper, Krug.
 - **Ownership / state:** S04A — **ALREADY IMPLEMENTED FOUNDATION**
   (`src/routes/HomeRoute.tsx`, private-Host banner, Resume, Import, Recent
-  Games, My Games, invalid-recovery path observed).
+  Games, My Games, invalid-recovery path observed). S04C-H3 adds Host-only
+  **Backup & restore** (`BackupRestorePanel`) — **TERMINALLY COMPLETE** on
+  main after PR #82 squash `8d5c22b1d6bcd14286b5c2c6e05ba9144ec7b415`.
+  That panel is not a projector surface.
 
 ### 2. Game Library
 
@@ -492,7 +495,9 @@ hardware, recovery, and the end-to-end experience.
   Home (**ALREADY IMPLEMENTED FOUNDATION**, `src/persistence/`, ADR-013).
   S04C-H1 repairs Home Resume so it performs Host resume semantics once
   (**TERMINALLY COMPLETE** on main after PR #78; does **not** complete
-  S04C). Broader safe-mode / diagnostics / backup work remains later S04C.
+  S04C). S04C-H3 library backup/restore is **TERMINALLY COMPLETE** on main
+  after PR #82 (Host-only; unfinished Session excluded). Broader safe-mode
+  and display-resilience work remains later S04C.
 
 ### 28. Session completion
 
