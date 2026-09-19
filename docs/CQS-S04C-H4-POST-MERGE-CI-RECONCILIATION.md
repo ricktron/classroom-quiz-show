@@ -121,14 +121,16 @@ GitHub checks on the repair tip are not claimed here. Re-read them on the pull r
 
 ## G. Candidate identity
 
+The repair commit is `56d1676cabd5665cbb7dc9c5d1ff1cee544cdbb8`. This section was added after that commit was pushed, so the pull-request tip is the commit that contains this paragraph. Re-read `git rev-parse HEAD`. Do not treat `56d1676…` as the tip after that read.
+
 | Item | Value |
 | --- | --- |
 | Base | `2c484a2d0ce73fa4f52717773e93fb3ad1e917ef` |
 | Branch | `fix/cqs-s04c-h4-post-merge-ci-status-wait` |
-| Exact head | The commit that adds this file. Re-read `git rev-parse HEAD` on the pull request. |
-| Pull request | Not opened at the time this sentence was written. Do not treat a predicted number as the candidate. |
-| Checks | Not claimed. |
-| Merge | Not performed. Auto-merge was not enabled by this task. |
+| Repair commit | `56d1676cabd5665cbb7dc9c5d1ff1cee544cdbb8` |
+| Pull request | https://github.com/ricktron/classroom-quiz-show/pull/85 |
+| Checks | Not claimed in this file. Re-read GitHub on the tip. |
+| Merge | Not performed. Auto-merge was not enabled. |
 
 ## H. Preserved H4 invariants
 
