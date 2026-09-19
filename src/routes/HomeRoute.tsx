@@ -83,6 +83,8 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   const spreadsheetInputRef = useRef<HTMLInputElement>(null)
   const importHeadingRef = useRef<HTMLHeadingElement>(null)
   const importSerial = useRef(0)
+  /** True only after Keep has started a library write, until that result is applied. */
+  const salvageSaveInFlight = useRef(false)
   const recent = useMemo(() => recentSavedDefinitions(persistence.library).slice(0, 5), [persistence.library])
   const readOnly = persistence.leadership === 'follower'
   const ready = persistence.bootPhase !== 'loading'
@@ -127,6 +129,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   }
 
   async function onNewGame(): Promise<void> {
+    if (salvageSaveInFlight.current) return
     if (refuseIfFollower()) return
     setBusy(true)
     const gate = persistence.assertCanPersist('home')
@@ -223,6 +226,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   }
 
   function discardImportReview(): void {
+    if (salvageSaveInFlight.current) return
     importSerial.current += 1
     setImportReview(null)
     setSalvageReplaceArmed(false)
@@ -234,6 +238,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   }
 
   async function keepSalvage(mode: 'save' | 'replace' = 'save'): Promise<void> {
+    if (salvageSaveInFlight.current) return
     if (importReview?.kind !== 'correction' || importReview.view.persisted) return
     if (refuseIfFollower()) return
     const gate = persistence.assertCanPersist('home')
@@ -255,11 +260,24 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
       }
       draft = rewritten
     }
+    salvageSaveInFlight.current = true
     setBusy(true)
-    const saved = await saveAuthoringDraftToLibrary(persistence.adapter, draft, registry, mode)
-    setBusy(false)
+    setMessage('Saving the usable parts…')
+    let saved: Awaited<ReturnType<typeof saveAuthoringDraftToLibrary>>
+    try {
+      saved = await saveAuthoringDraftToLibrary(persistence.adapter, draft, registry, mode)
+    } catch {
+      if (serial === importSerial.current) {
+        setMessage('Saving did not finish. Check My Games before discarding this import.')
+      }
+      salvageSaveInFlight.current = false
+      setBusy(false)
+      return
+    }
     if (serial !== importSerial.current) {
       if (saved.ok) await persistence.refreshLibrary()
+      salvageSaveInFlight.current = false
+      setBusy(false)
       return
     }
     if (!saved.ok) {
@@ -268,23 +286,49 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
         setMessage(
           `“${draft.game.title || 'This game'}” is already in My Games. Confirm replace to overwrite that saved game. Nothing new was saved yet.`,
         )
-        return
+      } else {
+        setMessage(saved.message)
       }
-      setMessage(saved.message)
+      salvageSaveInFlight.current = false
+      setBusy(false)
+      return
+    }
+    setPendingReplaceText(null)
+    await persistence.refreshLibrary()
+    if (serial !== importSerial.current) {
+      salvageSaveInFlight.current = false
+      setBusy(false)
+      return
+    }
+    const title = saved.value.definition.title
+    if (saved.value.compiledThisSave) {
+      setImportReview(null)
+      setMessage(`Saved “${title}”. It is ready to play.`)
+      salvageSaveInFlight.current = false
+      setBusy(false)
+      navigate(editPath(saved.value.definition.id))
+      return
+    }
+    if (saved.value.playable) {
+      const detail = `Saved “${title}”. The previous playable game was kept. Open the editor to finish this import.`
+      setImportReview({
+        kind: 'correction',
+        view: describeUnfinishedDraft(saved.value.draft, detail),
+      })
+      setMessage(detail)
+      salvageSaveInFlight.current = false
+      setBusy(false)
       return
     }
     setImportReview(null)
-    setPendingReplaceText(null)
-    await persistence.refreshLibrary()
-    if (saved.value.compiledThisSave) {
-      setMessage(`Saved “${saved.value.definition.title}”. It is ready to play.`)
-    } else {
-      setMessage(`Saved “${saved.value.definition.title}”. It is not ready to play until you finish the missing parts.`)
-    }
+    setMessage(`Saved “${title}”. It is not ready to play until you finish the missing parts.`)
+    salvageSaveInFlight.current = false
+    setBusy(false)
     navigate(editPath(saved.value.definition.id))
   }
 
   async function importJson(text: string): Promise<void> {
+    if (salvageSaveInFlight.current) return
     if (refuseIfFollower()) return
     const serial = ++importSerial.current
     setPendingWorkbookDraft(null)
@@ -359,6 +403,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   }
 
   async function confirmJsonReplace(): Promise<void> {
+    if (salvageSaveInFlight.current) return
     if (!pendingReplaceText) return
     const imported = importGameFromJsonText(pendingReplaceText, { registry })
     if (imported.status !== 'success') {
@@ -386,6 +431,10 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
 
   async function importWorkbook(file: File | null): Promise<void> {
     if (!file) return
+    if (salvageSaveInFlight.current) {
+      if (spreadsheetInputRef.current) spreadsheetInputRef.current.value = ''
+      return
+    }
     if (refuseIfFollower()) return
     const serial = ++importSerial.current
     setPendingReplaceText(null)
@@ -460,6 +509,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   }
 
   async function confirmWorkbookReplace(): Promise<void> {
+    if (salvageSaveInFlight.current) return
     const draft = pendingWorkbookDraft
     if (!draft) return
     const gate = persistence.assertCanPersist('home')
@@ -621,9 +671,11 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
               className="btn btn--secondary"
               data-testid="home-import-demo"
               onClick={() => {
+                if (salvageSaveInFlight.current) return
                 setImportText(CANONICAL_SAMPLE_CATEGORY_BOARD_FILE)
                 void importJson(CANONICAL_SAMPLE_CATEGORY_BOARD_FILE)
               }}
+              disabled={busy}
             >
               Import demo game
             </button>
@@ -643,6 +695,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
               type="button"
               className="btn"
               data-testid="home-import-json"
+              disabled={busy}
               onClick={() => void importJson(importText)}
             >
               Import file text
@@ -659,7 +712,9 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
               type="button"
               className="btn btn--secondary"
               data-testid="home-import-spreadsheet"
+              disabled={busy}
               onClick={() => {
+                if (salvageSaveInFlight.current) return
                 if (refuseIfFollower()) return
                 spreadsheetInputRef.current?.click()
               }}
@@ -671,6 +726,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
                 type="button"
                 className="btn"
                 data-testid="home-replace-saved-game"
+                disabled={busy}
                 onClick={() => void confirmJsonReplace()}
               >
                 Replace the existing saved game
@@ -681,6 +737,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
                 type="button"
                 className="btn"
                 data-testid="home-replace-workbook"
+                disabled={busy}
                 onClick={() => void confirmWorkbookReplace()}
               >
                 Replace the existing saved game
@@ -707,6 +764,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
               onKeep={() => void keepSalvage(salvageReplaceArmed ? 'replace' : 'save')}
               onOpen={() => navigate(editPath(importReview.view.draft.game.gameCanonicalId))}
               onDiscard={() => {
+                if (salvageSaveInFlight.current) return
                 if (importReview.view.persisted) {
                   setImportReview(null)
                   importHeadingRef.current?.focus()

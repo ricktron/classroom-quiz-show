@@ -40,6 +40,11 @@ export function ImportSalvagePanel(props: ImportSalvagePanelProps) {
       </h3>
       <p>{detail}</p>
       {props.kind === 'correction' ? <CorrectionLists view={props.view} /> : null}
+      {props.kind === 'correction' && props.busy && !props.view.persisted ? (
+        <p className="host__note" data-testid="import-salvage-saving">
+          Saving the usable parts…
+        </p>
+      ) : null}
       <div className="home__actions">
         {props.kind === 'fail-closed' ? (
           <button type="button" className="btn" onClick={props.onDismiss} data-testid="import-salvage-dismiss">
@@ -59,6 +64,7 @@ export function ImportSalvagePanel(props: ImportSalvagePanelProps) {
             <button
               type="button"
               className="btn btn--secondary"
+              disabled={props.busy}
               onClick={props.onDiscard}
               data-testid="import-salvage-close"
             >
@@ -79,6 +85,7 @@ export function ImportSalvagePanel(props: ImportSalvagePanelProps) {
             <button
               type="button"
               className="btn btn--secondary"
+              disabled={props.busy}
               onClick={props.onDiscard}
               data-testid="import-salvage-discard"
             >

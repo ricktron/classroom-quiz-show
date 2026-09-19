@@ -196,7 +196,7 @@ Filled from GitHub after push. Until that observation exists, this section means
 
 ## K. Remaining concerns
 
-- A keep that completes after a newer import refreshes My Games but does not announce that older save in the newer import’s message. The library row is the durable evidence. There is no dedicated test that interleaves the two async operations.
+- A keep that completes after a newer import refreshes My Games but does not announce that older save in the newer import’s message. The library row is the durable evidence. There is no dedicated test that interleaves the two async operations. The later truthfulness repair blocks Discard and a new import while Keep is writing, so that race is no longer a teacher-reachable “nothing was saved” lie. See `docs/CQS-PR84-H4-TRUTHFULNESS-REPAIR.md`.
 - Final-only files gain one empty category column because the current draft model has no Final without a board. The column is blank and disclosed. It is structural, not academic content, but a reviewer should confirm that empty slot is acceptable.
 - Derived ids for *missing* ids use existing authoring helpers. Invalid ids are rejected. Reviewers should confirm that distinction stays obvious in the teacher copy.
 - Workbook unfinished drafts are still saved before the teacher reads the note. That is the pre-H4 spreadsheet contract, not a new silent repair.
@@ -209,3 +209,10 @@ Filled from GitHub after push. Until that observation exists, this section means
 Independent exact-head review of the H4 candidate.
 
 Do not merge from this implementation task. Do not start H5 or any later frontier.
+
+## M. Truthfulness repair
+
+Independent review of `8f976c2c996f0daceb9730c96cbb4b406e544002` required repair of two findings only. That repair is recorded in `docs/CQS-PR84-H4-TRUTHFULNESS-REPAIR.md`. This file is not a terminal H4 mark, and it does not treat the open pull request as merged program status.
+
+- While Keep is writing, Discard and a new import cannot run, and the status says saving is in progress. A failed save leaves the review in place. Discard after a failed save may say nothing was saved, because no draft committed.
+- When Keep replaces an id that already has a playable game, and the new draft is not yet playable, the teacher is told the previous playable game was kept. The library rule is unchanged.

@@ -81,4 +81,20 @@ describe('ImportSalvagePanel', () => {
     expect(screen.getByRole('button', { name: 'Back to import' })).toBeInTheDocument()
     expect(screen.getByTestId('import-salvage')).toHaveTextContent('Nothing was saved.')
   })
+
+  it('disables discard while a keep is saving', () => {
+    render(
+      <ImportSalvagePanel
+        kind="correction"
+        view={view()}
+        busy
+        onKeep={vi.fn()}
+        onOpen={vi.fn()}
+        onDiscard={vi.fn()}
+      />,
+    )
+    expect(screen.getByTestId('import-salvage-keep')).toBeDisabled()
+    expect(screen.getByTestId('import-salvage-discard')).toBeDisabled()
+    expect(screen.getByTestId('import-salvage-saving')).toHaveTextContent('Saving the usable parts')
+  })
 })
