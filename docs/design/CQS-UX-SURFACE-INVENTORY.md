@@ -131,7 +131,10 @@ hardware, recovery, and the end-to-end experience.
   Games, My Games, invalid-recovery path observed). S04C-H3 adds Host-only
   **Backup & restore** (`BackupRestorePanel`) — **TERMINALLY COMPLETE** on
   main after PR #82 squash `8d5c22b1d6bcd14286b5c2c6e05ba9144ec7b415`.
-  That panel is not a projector surface.
+  That panel is not a projector surface. S04C-H4 salvage review is also
+  Host-only and **TERMINALLY COMPLETE** on repair squash
+  `3cd5e3a0f884f234b03425fd169e5e495fa1a147`. It is not published to the
+  projector.
 
 ### 2. Game Library
 
@@ -190,8 +193,14 @@ hardware, recovery, and the end-to-end experience.
 - **Research routing:** Podmajersky, Metts & Welfle, Krug.
 - **Ownership / state:** S04A — **ALREADY IMPLEMENTED FOUNDATION**
   (`src/import/qualityReport.ts`, `src/host/QualityReportPanel.tsx`,
-  `GameImportPanel`, `GamePackImportPanel` observed). Corrupt-import
-  **recovery** UX beyond reporting is S04C — **LATER**.
+  `GameImportPanel`, `GamePackImportPanel` observed). S04C-H4 corrupt-import
+  salvage is **TERMINALLY COMPLETE** on main (implementation PR #84 squash
+  `2c484a2d0ce73fa4f52717773e93fb3ad1e917ef`; repair PR #85 squash
+  `3cd5e3a0f884f234b03425fd169e5e495fa1a147`). Host-only. Canonical import
+  remains the playable gate. An accepted **LOW** remains: after a successful
+  Keep, the collapsed **More detail about this file** note may still say
+  nothing was saved; the primary status line is the durable outcome. Pack
+  salvage is not part of H4.
 
 ### 6. Class Setup
 

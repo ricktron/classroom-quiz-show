@@ -1074,7 +1074,7 @@ Primary scope:
 
 - safe startup / no-restore path (**H1 TERMINALLY COMPLETE**)
 - sanitized diagnostics (**H2 TERMINALLY COMPLETE**)
-- corrupt-import recovery UX
+- corrupt-import recovery UX (**H4 TERMINALLY COMPLETE**)
 - backup / export foundations (**H3 TERMINALLY COMPLETE**)
 - schema / version compatibility contracts
 - migration safeguards
@@ -1084,7 +1084,7 @@ Primary scope:
 - display / device / sleep recovery where bounded
 - support-oriented product hardening
 
-H1, H2, and H3 do **not** complete S04C. H4+ remains separately authorized work.
+H1, H2, H3, and H4 do **not** complete S04C. Further S04C work requires a separate authorization. This file does not grant that authorization and does not name that successor.
 
 ### S04D — Feedback & privacy-safe telemetry
 
@@ -1119,11 +1119,12 @@ Naming S04A–S06 grants **no implementation authority**.
 | Signing / notarization | **OPEN OWNER GATE** | Do not silently declare teacher-trusted release without addressing this. Windows signing / SmartScreen has higher strategic release priority than Apple signing / notarization if prioritization is necessary |
 | `CQS-Q23-CLASS-B-01` | **OPEN / CONTROLLED** | SheetJS build-time supply-chain dependency remains explicit |
 | `CQS-Q23-LOW-02` | **OPEN / LOW / MONITOR** | Do not prematurely optimize merely to make the metric disappear |
+| H4 salvage collapsed detail | **OPEN / LOW** | After a successful Keep, the collapsed **More detail about this file** note may still say nothing was saved. The primary status line is the durable outcome. Not repaired by PR #85. Not a successor authorization. |
 | `CQS-OD-066` | **DEFERRED / NOT REAL MVP** | GCS learning-target linkage remains outside this Program |
 
 Do **not** claim:
 
-- S04C parent, S04D–S06, or H4+ are complete merely because H1/H2/H3 are terminal;
+- S04C parent or S04D–S06 are complete merely because H1–H4 are terminal;
 - Windows physical runtime is complete;
 - a signed teacher release exists.
 

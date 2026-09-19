@@ -27,7 +27,7 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S04C-H1, S04C-H2, and S04C-H3 **TERMINALLY COMPLETE**. S04C parent **ACTIVE / OPEN / NOT TERMINAL**. Recommended next owner action: fresh reconciliation for next S04C frontier; **H4+ NOT AUTHORIZED**. |
+| Current Program frontier | S04C-H1, S04C-H2, S04C-H3, and S04C-H4 **TERMINALLY COMPLETE**. S04C parent **ACTIVE / OPEN / NOT TERMINAL**. Recommended next owner action: fresh reconciliation before any further S04C implementation. **Further S04C implementation is NOT AUTHORIZED.** This handoff does not name that successor. |
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
 | S04 canon | product direction **registered** |
@@ -36,7 +36,8 @@ also read
 | S04C-H1 | **TERMINALLY COMPLETE** |
 | S04C-H2 | **TERMINALLY COMPLETE** |
 | S04C-H3 | **TERMINALLY COMPLETE** |
-| S04C | parent **ACTIVE / OPEN / NOT TERMINAL**; H4+ **not begun** |
+| S04C-H4 | **TERMINALLY COMPLETE** |
+| S04C | parent **ACTIVE / OPEN / NOT TERMINAL**; further S04C implementation **NOT AUTHORIZED** |
 | S04D / S05 / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
 
@@ -111,8 +112,11 @@ COMPLETE**. S04C-H1 safe startup / unified session recovery is
 (Copy Diagnostic Report) is **TERMINALLY COMPLETE** on main after PR #80. S04C-H3 local backup /
 restore is **TERMINALLY COMPLETE** on main after PR #82 squash
 `8d5c22b1d6bcd14286b5c2c6e05ba9144ec7b415`.
-S04C parent remains open; H4+ and S04D are **not authorized** by this
-handoff.
+S04C-H4 corrupt-import salvage is **TERMINALLY COMPLETE** on main after
+implementation PR #84 squash `2c484a2d0ce73fa4f52717773e93fb3ad1e917ef` and
+repair PR #85 squash `3cd5e3a0f884f234b03425fd169e5e495fa1a147`.
+S04C parent remains open. Further S04C implementation and S04D are **not
+authorized** by this handoff. This handoff does not name a successor.
 
 Those remain **existing qualified foundations** plus the S03 desktop
 foundation, S04 canon, and terminal S04A teacher-workflow foundation. Do
@@ -156,6 +160,7 @@ See the REAL MVP gap register in
 | **C-3** / **C-6** | **FOUNDATION IMPLEMENTED / UNSIGNED** |
 | `CQS-Q23-CLASS-B-01` | **OPEN / CONTROLLED** |
 | `CQS-Q23-LOW-02` | **OPEN / LOW / MONITOR** |
+| H4 salvage collapsed detail | **OPEN / LOW** — after a successful Keep, the collapsed **More detail about this file** note may still say nothing was saved. The primary status line is the durable outcome. Not repaired by PR #85. |
 | `CQS-OD-066` | **DEFERRED / NOT REAL MVP** |
 | Signing / notarization | **OPEN OWNER GATE** |
 | **C-7** Raspberry Pi 5 | outside REAL MVP; not an MVP gate |
@@ -168,9 +173,8 @@ Contract versions: see [`../STATUS.md`](../STATUS.md).
 
 Do **not**:
 
-- begin S04C-H4+ (import-salvage, broader recovery, etc.) without a
-  later bounded authorization;
-- treat terminal H1, H2, or H3 as terminal S04C completion;
+- begin further S04C implementation without a later bounded authorization;
+- treat terminal H1, H2, H3, or H4 as terminal S04C completion;
 - begin S04D telemetry without a later bounded authorization;
 - begin S05 visual-fidelity work or S06 integrated release qualification;
 - silently decide Apple/Windows signing, fee waiver, CPU/OS matrix, or
@@ -217,13 +221,27 @@ Packaged / physically qualified product identity remains H6
 `8d5c22b1d6bcd14286b5c2c6e05ba9144ec7b415` (accepted head
 `648edeeb04a18f99e274cc8028043b9585d59214`; squash tree matches) with
 post-merge CI success.
+
+`CQS-REAL-MVP-S04C-H4-CORRUPT-IMPORT-SALVAGE-UX` is
+**TERMINALLY COMPLETE** after implementation PR #84 squash
+`2c484a2d0ce73fa4f52717773e93fb3ad1e917ef` and repair PR #85 squash
+`3cd5e3a0f884f234b03425fd169e5e495fa1a147` (accepted repair head
+`f9db4c950699b89d5ff33b088fa74ff5cd1df1a1`; squash tree matches) with
+post-merge CI success. The first post-merge unit failure on the
+implementation squash was a **TEST_SYNCHRONIZATION_DEFECT**, repaired by
+PR #85. Product Keep behavior was not changed by that repair.
 S04C parent remains **ACTIVE / OPEN / NOT TERMINAL**. Recommended next
-owner action is a **fresh reconciliation** for the next S04C frontier.
-**H4+ is NOT AUTHORIZED.** Do **not** start H4+ from this handoff. Do
-**not** claim Windows physical qualification, Sony physical
-re-qualification, local hardware qualification for H2 (none required),
-local qualification for H3 (**NONE**), a browser quota-fill experiment,
-or a signed release from this handoff.
+owner action is a **fresh reconciliation** before any further S04C
+implementation. **Further S04C implementation is NOT AUTHORIZED.** This
+handoff does not name that successor. Do **not** start further S04C
+implementation from this handoff. Do **not** claim Windows physical
+qualification, Sony physical re-qualification, local hardware
+qualification for H2 (none required), local qualification for H3
+(**NONE**), local qualification for H4 (**NONE**), a browser quota-fill
+experiment, or a signed release from this handoff. An accepted **LOW**
+remains: after a successful Keep, the collapsed **More detail about this
+file** note may still say nothing was saved. The primary status line is
+the durable outcome.
 
 ```text
 routing ≠ authority
@@ -232,10 +250,17 @@ S04B: TERMINALLY COMPLETE
 S04C-H1: TERMINALLY COMPLETE
 S04C-H2: TERMINALLY COMPLETE
 S04C-H3: TERMINALLY COMPLETE
+S04C-H4: TERMINALLY COMPLETE
 S04C: ACTIVE / OPEN / NOT TERMINAL
-H4+: NOT AUTHORIZED
+further S04C implementation: NOT AUTHORIZED
 S04D/S05/S06: NOT AUTHORIZED
 ```
+
+S04C-H4 terminal post-merge reconciliation:
+[`../receipts/2026-09-19-cqs-real-mvp-s04c-h4-terminal-post-merge-reconciliation.md`](../receipts/2026-09-19-cqs-real-mvp-s04c-h4-terminal-post-merge-reconciliation.md).
+
+S04C-H4 implementation evidence (historical; delivery-candidate wording preserved):
+[`../CQS-S04C-H4-CORRUPT-IMPORT-SALVAGE-UX.md`](../CQS-S04C-H4-CORRUPT-IMPORT-SALVAGE-UX.md).
 
 S04C-H3 terminal post-merge reconciliation:
 [`../receipts/2026-09-18-cqs-real-mvp-s04c-h3-terminal-post-merge-reconciliation.md`](../receipts/2026-09-18-cqs-real-mvp-s04c-h3-terminal-post-merge-reconciliation.md).
@@ -273,7 +298,7 @@ H6 readiness physical + UX re-review report (historical):
 H6 durable interaction/evidence manifest (historical):
 [`qualification-runs/s04b-h6-2026-09-12.jsonl`](qualification-runs/s04b-h6-2026-09-12.jsonl).
 
-Do **not** begin S04C-H4+ from this handoff.
+Do **not** begin further S04C implementation from this handoff.
 
 ## Architecture pointers
 
