@@ -661,10 +661,25 @@ describe('teacher Home', () => {
     await showCorruptImport(adapter, broken)
     fireEvent.click(screen.getByTestId('import-salvage-keep'))
     expect(await screen.findByText(/Nothing new was saved yet/)).toBeInTheDocument()
+    const hold = holdSavedDefinitionWrites(adapter)
     fireEvent.click(screen.getByRole('button', { name: 'Replace the existing saved game' }))
-    expect(await screen.findByTestId('home-status')).toHaveTextContent(
+    await hold.started
+    await waitFor(() => {
+      expect(screen.getByTestId('home-status')).toHaveTextContent('Saving the usable parts')
+    })
+    expect(screen.getByTestId('home-status')).not.toHaveTextContent(
       'The previous playable game was kept',
     )
+    expect(screen.getByTestId('import-salvage-discard')).toBeDisabled()
+    expect(screen.getByTestId('import-salvage-keep')).toBeDisabled()
+    expect(screen.getByTestId('home-import-json')).toBeDisabled()
+    hold.release()
+    await waitFor(() => {
+      expect(screen.getByTestId('home-status')).toHaveTextContent(
+        'The previous playable game was kept',
+      )
+    })
+    expect(screen.getByTestId('home-status')).not.toHaveTextContent('Saving the usable parts')
     expect(screen.getByTestId('home-status').textContent).not.toMatch(
       /It is not ready to play until you finish the missing parts/,
     )
