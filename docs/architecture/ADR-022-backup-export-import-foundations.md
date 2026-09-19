@@ -1,6 +1,8 @@
 # ADR-022 — Backup / export / import foundations
 
-- **Status:** Accepted (S04C-H3 delivery candidate)
+- **Status:** Accepted. S04C-H3 is implemented on main at squash
+  `8d5c22b1d6bcd14286b5c2c6e05ba9144ec7b415` (PR #82). This ADR does not
+  make S04C terminal and does not authorize H4+.
 - **Date:** 2026-09-18
 - **Slice / tranche:** `CQS-REAL-MVP-S04C-H3-BACKUP-EXPORT-IMPORT-FOUNDATIONS`
 - **Authorization:**
@@ -25,7 +27,9 @@ IMPORT BACKUP
 Per-game portable JSON (ADR-012) and `.cqs-pack` (ADR-017) already move one
 Game. After S04C-H1/H2, aggregate backup/restore remained absent. Teachers still
 lacked a local, offline way to take a durable copy of their library off-device
-and restore it without accounts or cloud.
+and restore it without accounts or cloud. That absence is the decision-time
+context. The H3 implementation is now on main; current routing is the H3
+terminal receipt, not this paragraph.
 
 ## Decision
 
