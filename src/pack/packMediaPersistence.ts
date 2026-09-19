@@ -134,6 +134,40 @@ export async function listPackMediaScopeKeys(
   return [...scopes].sort((a, b) => a.localeCompare(b, 'en'))
 }
 
+/**
+ * All durable pack-media records for backup export (S04C-H3).
+ * Corrupt rows are skipped and reported via `skippedCorrupt`; callers that
+ * require a complete media set must treat any skip as failure.
+ */
+export async function listAllPackMediaAssets(
+  adapter: PersistenceAdapter,
+): Promise<{
+  readonly records: readonly PackMediaAssetRecord[]
+  readonly skippedCorrupt: number
+}> {
+  const loaded: PackMediaAssetRecord[] = []
+  let skippedCorrupt = 0
+  const result = await adapter.withTransaction([OBJECT_STORE_PACK_MEDIA_ASSETS], async (tx) => {
+    const keys = await tx.getAllKeys(OBJECT_STORE_PACK_MEDIA_ASSETS)
+    for (const key of keys) {
+      const stored = await tx.get(OBJECT_STORE_PACK_MEDIA_ASSETS, key)
+      const record = deserializeRecord(stored)
+      if (record === null) {
+        skippedCorrupt += 1
+        continue
+      }
+      loaded.push(record)
+    }
+  })
+  if (!result.ok) return { records: [], skippedCorrupt: skippedCorrupt + 1 }
+  loaded.sort((a, b) => {
+    const scope = a.resourceScopeKey.localeCompare(b.resourceScopeKey)
+    if (scope !== 0) return scope
+    return a.sourcePath.localeCompare(b.sourcePath)
+  })
+  return { records: loaded, skippedCorrupt }
+}
+
 export async function clearAllPackMediaAssets(adapter: PersistenceAdapter): Promise<void> {
   await adapter.withTransaction([OBJECT_STORE_PACK_MEDIA_ASSETS], async (tx) => {
     const keys = await tx.getAllKeys(OBJECT_STORE_PACK_MEDIA_ASSETS)

@@ -43,6 +43,7 @@ import { buildImportQualityReport, type ImportQualityReport } from '../import/qu
 import { QualityReportPanel } from '../host/QualityReportPanel'
 import { exportGameDefinition } from '../export/exportGame'
 import { downloadGameFile } from '../export/downloadGameFile'
+import { BackupRestorePanel } from './BackupRestorePanel'
 import './HostRoute.css'
 import './HomeRoute.css'
 
@@ -602,6 +603,16 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
           />
         )}
       </section>
+
+      <BackupRestorePanel
+        adapter={persistence.adapter}
+        registry={registry}
+        library={persistence.library}
+        disabled={!ready || readOnly}
+        onLibraryChanged={async () => {
+          await persistence.refreshLibrary()
+        }}
+      />
 
       <p className="home__status" aria-live="polite" data-testid="home-status">
         {message ??

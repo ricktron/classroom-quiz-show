@@ -112,6 +112,7 @@ export {
   clearAllPackMediaAssets,
   deletePackMediaScope,
   gcUnreferencedPackScopes,
+  listAllPackMediaAssets,
   listPackMediaScopeKeys,
   loadPackMediaAssets,
   packMediaStorageKey,
