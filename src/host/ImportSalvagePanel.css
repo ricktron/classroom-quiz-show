@@ -1,0 +1,28 @@
+.import-salvage {
+  margin: var(--space-4) 0;
+  padding: var(--space-4);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  text-align: left;
+}
+
+.import-salvage h3:focus {
+  outline: 2px solid var(--focus, currentColor);
+  outline-offset: 2px;
+}
+
+.import-salvage__counts {
+  font-weight: 600;
+}
+
+.import-salvage__details {
+  margin: var(--space-3) 0;
+}
+
+.import-salvage__list {
+  max-height: 12rem;
+  margin: var(--space-2) 0 0;
+  padding-left: 1.2rem;
+  overflow: auto;
+}

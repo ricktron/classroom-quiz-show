@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useParams } from 'react-router-dom'
 import { ROUTES } from './paths'
 import { HomeRoute } from './HomeRoute'
 import { HostRoute } from './HostRoute'
@@ -23,12 +23,19 @@ import { createDefaultRegistry } from '../game/defaultRegistry'
 import { importGameFromJsonText } from '../import/importGame'
 import { createSessionStore } from '../state/store'
 import { gameFileText } from '../test/gameFileFixtures'
+import { boardGameFile, boardGameFileText } from '../test/categoryBoardFixtures'
+import { loadLibraryRecord } from '../persistence/savedDefinitions'
 import {
   START_FRESH_CONFIRM_LABEL,
   START_FRESH_LABEL,
 } from '../host/sessionRecoveryCopy'
 import { ThemeProvider } from '../theme/ThemeProvider'
 import { shouldResumeRecoveryFromNavigation } from '../host/hostResumeNavigation'
+
+function EditorProbe() {
+  const params = useParams()
+  return <p>Editor page {params.gameId}</p>
+}
 
 const IMPLEMENTATION_LEAK =
   /persistence lease|host tab owns persistence|indexeddb|object store|\badapter\b|\bwire\b|transaction/i
@@ -63,12 +70,59 @@ function trackDurableWrites(adapter: PersistenceAdapter): {
   return counts
 }
 
+function holdSavedDefinitionWrites(adapter: PersistenceAdapter): {
+  started: Promise<void>
+  release: () => void
+} {
+  let release!: () => void
+  const gate = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  let markStarted!: () => void
+  const started = new Promise<void>((resolve) => {
+    markStarted = resolve
+  })
+  const original = adapter.withTransaction.bind(adapter)
+  adapter.withTransaction = (stores, work) => {
+    if (stores.includes('savedDefinitions')) {
+      markStarted()
+      return gate.then(() => original(stores, work))
+    }
+    return original(stores, work)
+  }
+  return { started, release }
+}
+
+function failSavedDefinitionWrites(adapter: PersistenceAdapter, message: string): void {
+  adapter.withTransaction = (stores, work) => {
+    void work
+    if (stores.includes('savedDefinitions')) {
+      return Promise.resolve({ ok: false, code: 'unavailable', message })
+    }
+    return Promise.resolve({ ok: true, value: undefined })
+  }
+}
+
+async function showCorruptImport(
+  adapter: PersistenceAdapter,
+  doc: Record<string, unknown>,
+): Promise<void> {
+  await renderReadyHome({ createAdapter: () => adapter })
+  await waitFor(() => expect(screen.getByTestId('home-import-game')).toBeEnabled())
+  fireEvent.click(screen.getByTestId('home-import-game'))
+  fireEvent.change(screen.getByLabelText(/game file text/i), {
+    target: { value: JSON.stringify(doc) },
+  })
+  fireEvent.click(screen.getByTestId('home-import-json'))
+  expect(await screen.findByTestId('import-salvage-keep')).toBeEnabled()
+}
+
 function renderHome(options?: UseHostPersistenceOptions) {
   return render(
     <MemoryRouter initialEntries={[ROUTES.root]}>
       <Routes>
         <Route path={ROUTES.root} element={<HomeRoute persistenceOptions={options} />} />
-        <Route path="/edit/:gameId" element={<p>Editor page</p>} />
+        <Route path="/edit/:gameId" element={<EditorProbe />} />
         <Route path="/host" element={<p>Host page</p>} />
       </Routes>
     </MemoryRouter>,
@@ -460,5 +514,168 @@ describe('teacher Home', () => {
     expect(shouldResumeRecoveryFromNavigation({ cqsResumeRecovery: true })).toBe(true)
     expect(shouldResumeRecoveryFromNavigation(null)).toBe(false)
     expect(shouldResumeRecoveryFromNavigation({})).toBe(false)
+  })
+
+  it('does not save a corrupt game file until the teacher keeps the usable parts', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await renderReadyHome({ createAdapter: () => adapter })
+    await waitFor(() => expect(screen.getByTestId('home-import-game')).toBeEnabled())
+    fireEvent.click(screen.getByTestId('home-import-game'))
+    const broken = boardGameFile({
+      categories: [
+        {
+          id: 'sky',
+          title: 'Sky',
+          tiles: [{ id: 'sky-1', value: 100, prompt: 'Why is the sky blue?', answer: 'Scattering' }, { id: 'sky-2', value: 200, prompt: 'Which gas?', answer: 4 }],
+        },
+      ],
+    })
+    const writes = trackDurableWrites(adapter)
+    fireEvent.change(screen.getByLabelText(/game file text/i), {
+      target: { value: JSON.stringify(broken) },
+    })
+    fireEvent.click(screen.getByTestId('home-import-json'))
+    expect(await screen.findByTestId('import-salvage-keep')).toBeInTheDocument()
+    expect(screen.getByTestId('import-salvage')).toHaveTextContent('Nothing has been saved yet')
+    fireEvent.click(screen.getByTestId('import-salvage-discard'))
+    expect(screen.getByTestId('home-status')).toHaveTextContent('Nothing was saved')
+    expect(writes.savedDefinitions).toBe(0)
+    expect(screen.queryByTestId('import-salvage')).not.toBeInTheDocument()
+  })
+
+  it('keeps salvage non-authoritative until canonical validation can accept it', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await renderReadyHome({ createAdapter: () => adapter })
+    await waitFor(() => expect(screen.getByTestId('home-import-game')).toBeEnabled())
+    fireEvent.click(screen.getByTestId('home-import-game'))
+    const broken = boardGameFile({
+      categories: [
+        {
+          id: 'sky',
+          title: 'Sky',
+          tiles: [{ id: 'sky-1', value: 100, prompt: 'Why is the sky blue?', answer: 'Scattering' }],
+        },
+      ],
+    })
+    ;(broken.rounds as Record<string, unknown>[]).push({
+      id: 'nope',
+      type: 'lightning',
+      title: 'Nope',
+      config: { secret: 'SECRET-QUESTION' },
+    })
+    fireEvent.change(screen.getByLabelText(/game file text/i), {
+      target: { value: JSON.stringify(broken) },
+    })
+    fireEvent.click(screen.getByTestId('home-import-json'))
+    fireEvent.click(await screen.findByTestId('import-salvage-keep'))
+    const editor = await screen.findByText(/Editor page/)
+    const gameId = editor.textContent?.replace('Editor page ', '') ?? ''
+    expect(gameId).toBe('board-game')
+    await adapter.open()
+    const loaded = await loadLibraryRecord(adapter, gameId, createDefaultRegistry())
+    expect(loaded.ok).toBe(true)
+    if (!loaded.ok) return
+    expect(loaded.value.summary.playable).toBe(true)
+    expect(loaded.value.draft?.issues).toBeDefined()
+    const blob = JSON.stringify(loaded.value)
+    expect(blob).toContain('Why is the sky blue?')
+    expect(blob).not.toContain('SECRET-QUESTION')
+    expect(blob).not.toContain('Rayleigh')
+  })
+
+  it('does not let discard claim nothing was saved while keep is still saving', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    const broken = boardGameFile()
+    ;(broken.rounds as Record<string, unknown>[]).push({
+      id: 'nope',
+      type: 'lightning',
+      title: 'Nope',
+      config: { secret: 'SECRET-QUESTION' },
+    })
+    await showCorruptImport(adapter, broken)
+    const hold = holdSavedDefinitionWrites(adapter)
+    fireEvent.click(screen.getByTestId('import-salvage-keep'))
+    await hold.started
+    await waitFor(() => {
+      expect(screen.getByTestId('import-salvage-discard')).toBeDisabled()
+    })
+    expect(screen.getByTestId('import-salvage-keep')).toBeDisabled()
+    expect(screen.getByTestId('home-import-json')).toBeDisabled()
+    expect(screen.getByTestId('home-status')).toHaveTextContent('Saving the usable parts')
+    fireEvent.click(screen.getByTestId('import-salvage-discard'))
+    fireEvent.click(screen.getByTestId('home-import-json'))
+    expect(screen.getByTestId('home-status')).toHaveTextContent('Saving the usable parts')
+    expect(screen.getByTestId('home-status')).not.toHaveTextContent('Nothing was saved')
+    hold.release()
+    expect(await screen.findByText(/Editor page board-game/)).toBeInTheDocument()
+    expect(document.body.textContent).not.toMatch(/Nothing was saved/i)
+    await adapter.open()
+    const loaded = await loadLibraryRecord(adapter, 'board-game', createDefaultRegistry())
+    expect(loaded.ok).toBe(true)
+  })
+
+  it('keeps the salvage review when saving fails and then allows a truthful discard', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    const broken = boardGameFile({
+      categories: [
+        {
+          id: 'sky',
+          title: 'Sky',
+          tiles: [{ id: 'sky-1', value: 100, prompt: 'Which gas?', answer: 4 }],
+        },
+      ],
+    })
+    await showCorruptImport(adapter, broken)
+    failSavedDefinitionWrites(adapter, 'The game could not be saved.')
+    fireEvent.click(screen.getByTestId('import-salvage-keep'))
+    expect(await screen.findByText(/The game could not be saved/)).toBeInTheDocument()
+    expect(screen.getByTestId('import-salvage')).toBeInTheDocument()
+    expect(screen.getByTestId('import-salvage-discard')).toBeEnabled()
+    expect(screen.getByTestId('import-salvage-keep')).toBeEnabled()
+    fireEvent.click(screen.getByTestId('import-salvage-discard'))
+    expect(screen.getByTestId('home-status')).toHaveTextContent('Nothing was saved')
+    await adapter.open()
+    const loaded = await loadLibraryRecord(adapter, 'board-game', createDefaultRegistry())
+    expect(loaded.ok).toBe(false)
+  })
+
+  it('says the previous playable game was kept when an unfinished salvage replaces it', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    const seeded = importGameFromJsonText(boardGameFileText())
+    if (seeded.status !== 'success') throw new Error('seed import failed')
+    const seededSave = await saveDefinition(adapter, seeded.definition, {
+      mode: 'save',
+      registry: createDefaultRegistry(),
+    })
+    if (!seededSave.ok) throw new Error(seededSave.message)
+    const broken = boardGameFile({
+      categories: [
+        {
+          id: 'sky',
+          title: 'Sky',
+          tiles: [{ id: 'sky-1', value: 100, prompt: 'Which gas?', answer: 4 }],
+        },
+      ],
+    })
+    await showCorruptImport(adapter, broken)
+    fireEvent.click(screen.getByTestId('import-salvage-keep'))
+    expect(await screen.findByText(/Nothing new was saved yet/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Replace the existing saved game' }))
+    expect(await screen.findByTestId('home-status')).toHaveTextContent(
+      'The previous playable game was kept',
+    )
+    expect(screen.getByTestId('home-status').textContent).not.toMatch(
+      /It is not ready to play until you finish the missing parts/,
+    )
+    expect(screen.getByTestId('import-salvage-open')).toBeInTheDocument()
+    expect(screen.queryByText(/Editor page/)).not.toBeInTheDocument()
+    const loaded = await loadLibraryRecord(adapter, 'board-game', createDefaultRegistry())
+    expect(loaded.ok).toBe(true)
+    if (!loaded.ok) return
+    expect(loaded.value.summary.playable).toBe(true)
+    expect(JSON.stringify(loaded.value.definition)).toContain('Alpha one hundred answer')
+    expect(JSON.stringify(loaded.value.draft)).toContain('Which gas?')
+    expect(JSON.stringify(loaded.value.draft)).not.toContain('Alpha one hundred answer')
   })
 })

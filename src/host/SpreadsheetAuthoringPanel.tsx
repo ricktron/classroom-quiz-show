@@ -243,7 +243,7 @@ export function SpreadsheetAuthoringPanel({
                 <ul>
                   {category.clues.map((clue) => (
                     <li key={clue.tileCanonicalId}>
-                      {clue.clueOrder}. ({clue.value}) {clue.prompt}
+                      {clue.clueOrder}. ({clue.valueAuthored === false ? 'value needed' : clue.value}) {clue.prompt}
                     </li>
                   ))}
                 </ul>

@@ -54,8 +54,16 @@ export type DraftCorrection =
 
 function updateClue(clue: DraftClue, field: DraftCorrection & { kind: 'clue-field' }): DraftClue {
   switch (field.field) {
-    case 'value':
-      return { ...clue, value: Number(field.value) }
+    case 'value': {
+      if (field.value === '' || field.value === undefined) {
+        return { ...clue, value: 0, valueAuthored: false }
+      }
+      const numeric = typeof field.value === 'number' ? field.value : Number(field.value)
+      if (!Number.isFinite(numeric)) {
+        return { ...clue, value: 0, valueAuthored: false }
+      }
+      return { ...clue, value: numeric, valueAuthored: true }
+    }
     case 'prompt': {
       const rest: DraftClue = { ...clue, prompt: String(field.value ?? '') }
       delete (rest as { promptMedia?: DraftClue['promptMedia'] }).promptMedia
