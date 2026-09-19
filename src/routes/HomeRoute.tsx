@@ -35,6 +35,13 @@ import {
   type SavedDefinitionSummary,
 } from '../persistence/savedDefinitions'
 import { importGameFromJsonText } from '../import/importGame'
+import {
+  analyzeCorruptGameImport,
+  applyFreshLibraryIdentity,
+  describeUnfinishedDraft,
+  type ImportCorrectionView,
+} from '../import/salvage'
+import { ImportSalvagePanel } from '../host/ImportSalvagePanel'
 import { draftFromDefinition } from '../authoring/draftFromDefinition'
 import type { AuthoringDraft } from '../authoring/types'
 import { parseWorkbookBytes } from '../authoring/parseWorkbook'
@@ -43,6 +50,7 @@ import { buildImportQualityReport, type ImportQualityReport } from '../import/qu
 import { QualityReportPanel } from '../host/QualityReportPanel'
 import { exportGameDefinition } from '../export/exportGame'
 import { downloadGameFile } from '../export/downloadGameFile'
+import { systemClock } from '../time/clock'
 import { BackupRestorePanel } from './BackupRestorePanel'
 import './HostRoute.css'
 import './HomeRoute.css'
@@ -63,10 +71,18 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   const [importOpen, setImportOpen] = useState(false)
   const [importText, setImportText] = useState('')
   const [quality, setQuality] = useState<ImportQualityReport | null>(null)
+  const [importReview, setImportReview] = useState<
+    | { readonly kind: 'fail-closed'; readonly headline: string; readonly detail: string }
+    | { readonly kind: 'correction'; readonly view: ImportCorrectionView }
+    | null
+  >(null)
+  const [salvageReplaceArmed, setSalvageReplaceArmed] = useState(false)
   const [pendingReplaceText, setPendingReplaceText] = useState<string | null>(null)
   const [pendingWorkbookDraft, setPendingWorkbookDraft] = useState<AuthoringDraft | null>(null)
   const [startFreshArmed, setStartFreshArmed] = useState(false)
   const spreadsheetInputRef = useRef<HTMLInputElement>(null)
+  const importHeadingRef = useRef<HTMLHeadingElement>(null)
+  const importSerial = useRef(0)
   const recent = useMemo(() => recentSavedDefinitions(persistence.library).slice(0, 5), [persistence.library])
   const readOnly = persistence.leadership === 'follower'
   const ready = persistence.bootPhase !== 'loading'
@@ -206,52 +222,140 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
     downloadGameFile({ filename: exported.filename, text: exported.jsonText })
   }
 
-  async function importJson(text: string): Promise<void> {
+  function discardImportReview(): void {
+    importSerial.current += 1
+    setImportReview(null)
+    setSalvageReplaceArmed(false)
+    setQuality(null)
+    setPendingReplaceText(null)
+    setPendingWorkbookDraft(null)
+    setMessage('That import was discarded. Nothing was saved.')
+    importHeadingRef.current?.focus()
+  }
+
+  async function keepSalvage(mode: 'save' | 'replace' = 'save'): Promise<void> {
+    if (importReview?.kind !== 'correction' || importReview.view.persisted) return
     if (refuseIfFollower()) return
-    const imported = importGameFromJsonText(text, { registry })
-    const report = buildImportQualityReport({
-      importResult: imported,
-      title: imported.status === 'success' ? imported.definition.title : 'Import',
-      gameId: imported.status === 'success' ? imported.definition.id : undefined,
-      draft: imported.status === 'success' ? draftFromDefinition(imported.definition) : undefined,
-    })
-    setQuality(report)
-    if (imported.status !== 'success') {
-      setMessage('Import did not accept that file. Nothing was saved.')
-      return
-    }
     const gate = persistence.assertCanPersist('home')
     if (!gate.ok) {
       setMessage(gate.message)
       return
     }
-    const saved = await saveDefinition(persistence.adapter, imported.definition, {
-      mode: 'save',
-      registry,
-      draft: draftFromDefinition(imported.definition),
-    })
+    const serial = importSerial.current
+    let draft = importReview.view.draft
+    if (!importReview.view.gameIdFromSource) {
+      const rewritten = applyFreshLibraryIdentity(
+        draft,
+        importReview.view.derived,
+        `game-${systemClock.now()}`,
+      )
+      if (!rewritten) {
+        setMessage('Those usable parts could not be saved as a new game. Nothing was saved.')
+        return
+      }
+      draft = rewritten
+    }
+    setBusy(true)
+    const saved = await saveAuthoringDraftToLibrary(persistence.adapter, draft, registry, mode)
+    setBusy(false)
+    if (serial !== importSerial.current) {
+      if (saved.ok) await persistence.refreshLibrary()
+      return
+    }
     if (!saved.ok) {
+      if (saved.code === 'conflict') {
+        setSalvageReplaceArmed(true)
+        setMessage(
+          `“${draft.game.title || 'This game'}” is already in My Games. Confirm replace to overwrite that saved game. Nothing new was saved yet.`,
+        )
+        return
+      }
       setMessage(saved.message)
       return
     }
-    if (saved.value === 'needs-replace') {
-      setPendingReplaceText(text)
-      setQuality(
-        buildImportQualityReport({
-          importResult: imported,
-          title: imported.definition.title,
-          gameId: imported.definition.id,
-          draft: draftFromDefinition(imported.definition),
-          acceptance: 'unfinished',
-        }),
-      )
-      setMessage(
-        `“${imported.definition.title}” is already in My Games. Confirm replace to overwrite that saved game. Nothing was saved yet.`,
-      )
+    setImportReview(null)
+    setPendingReplaceText(null)
+    await persistence.refreshLibrary()
+    if (saved.value.compiledThisSave) {
+      setMessage(`Saved “${saved.value.definition.title}”. It is ready to play.`)
+    } else {
+      setMessage(`Saved “${saved.value.definition.title}”. It is not ready to play until you finish the missing parts.`)
+    }
+    navigate(editPath(saved.value.definition.id))
+  }
+
+  async function importJson(text: string): Promise<void> {
+    if (refuseIfFollower()) return
+    const serial = ++importSerial.current
+    setPendingWorkbookDraft(null)
+    setSalvageReplaceArmed(false)
+    const imported = importGameFromJsonText(text, { registry })
+    if (serial !== importSerial.current) return
+    if (imported.status === 'success') {
+      setImportReview(null)
+      const report = buildImportQualityReport({
+        importResult: imported,
+        title: imported.definition.title,
+        gameId: imported.definition.id,
+        draft: draftFromDefinition(imported.definition),
+      })
+      setQuality(report)
+      const gate = persistence.assertCanPersist('home')
+      if (!gate.ok) {
+        setMessage(gate.message)
+        return
+      }
+      const saved = await saveDefinition(persistence.adapter, imported.definition, {
+        mode: 'save',
+        registry,
+        draft: draftFromDefinition(imported.definition),
+      })
+      if (serial !== importSerial.current) return
+      if (!saved.ok) {
+        setMessage(saved.message)
+        return
+      }
+      if (saved.value === 'needs-replace') {
+        setPendingReplaceText(text)
+        setQuality(
+          buildImportQualityReport({
+            importResult: imported,
+            title: imported.definition.title,
+            gameId: imported.definition.id,
+            draft: draftFromDefinition(imported.definition),
+            acceptance: 'unfinished',
+          }),
+        )
+        setMessage(
+          `“${imported.definition.title}” is already in My Games. Confirm replace to overwrite that saved game. Nothing was saved yet.`,
+        )
+        return
+      }
+      setPendingReplaceText(null)
+      await refresh(`Saved “${imported.definition.title}” to My Games.`)
       return
     }
+
+    const salvage = analyzeCorruptGameImport(text)
+    if (serial !== importSerial.current) return
     setPendingReplaceText(null)
-    await refresh(`Saved “${imported.definition.title}” to My Games.`)
+    const report = buildImportQualityReport({
+      importResult: imported,
+      title: 'Import',
+    })
+    setQuality(report)
+    if (salvage.outcome === 'correction') {
+      setImportReview({ kind: 'correction', view: salvage.view })
+      setMessage(salvage.view.detail)
+      return
+    }
+    if (salvage.outcome === 'fail-closed') {
+      setImportReview({ kind: 'fail-closed', headline: salvage.headline, detail: salvage.detail })
+      setMessage(salvage.detail)
+      return
+    }
+    setImportReview(null)
+    setMessage('Import did not accept that file. Nothing was saved.')
   }
 
   async function confirmJsonReplace(): Promise<void> {
@@ -283,8 +387,13 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   async function importWorkbook(file: File | null): Promise<void> {
     if (!file) return
     if (refuseIfFollower()) return
+    const serial = ++importSerial.current
+    setPendingReplaceText(null)
+    setImportReview(null)
     const bytes = new Uint8Array(await file.arrayBuffer())
+    if (spreadsheetInputRef.current) spreadsheetInputRef.current.value = ''
     const parsed = await parseWorkbookBytes(bytes, file.name)
+    if (serial !== importSerial.current) return
     if (parsed.status !== 'success') {
       setQuality(
         buildImportQualityReport({
@@ -292,6 +401,11 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
           authoringIssues: parsed.issues,
         }),
       )
+      setImportReview({
+        kind: 'fail-closed',
+        headline: 'That spreadsheet could not be read.',
+        detail: 'Nothing was saved. Classroom Quiz Show did not guess at the missing rows.',
+      })
       setMessage('That spreadsheet could not be read. Nothing was saved.')
       return
     }
@@ -301,6 +415,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
       return
     }
     const saved = await saveAuthoringDraftToLibrary(persistence.adapter, parsed.draft, registry, 'save')
+    if (serial !== importSerial.current) return
     const report = buildImportQualityReport({
       draft: parsed.draft,
       title: parsed.draft.game.title,
@@ -317,6 +432,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
       if (saved.code === 'conflict') {
         setPendingWorkbookDraft(parsed.draft)
       }
+      setImportReview(null)
       setMessage(
         saved.code === 'conflict'
           ? `“${parsed.draft.game.title}” is already in My Games. Confirm replace to overwrite that saved game. Nothing was saved yet.`
@@ -325,6 +441,17 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
       return
     }
     setPendingWorkbookDraft(null)
+    if (!saved.value.compiledThisSave) {
+      setImportReview({
+        kind: 'correction',
+        view: describeUnfinishedDraft(
+          saved.value.draft,
+          `Imported “${saved.value.definition.title}”. Usable parts were saved. It is not ready to play until you finish the missing parts. Nothing was invented.`,
+        ),
+      })
+    } else {
+      setImportReview(null)
+    }
     await refresh(
       saved.value.compiledThisSave
         ? `Imported “${saved.value.definition.title}”. It is ready to play.`
@@ -359,8 +486,20 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
       }),
     )
     if (!replaced.ok) {
+      setImportReview(null)
       setMessage(replaced.message)
       return
+    }
+    if (!replaced.value.compiledThisSave) {
+      const detail = replaced.value.playable
+        ? `Imported “${replaced.value.definition.title}”. The previous playable game was kept. These notes are not ready to play until you finish them. Nothing was invented.`
+        : `Imported “${replaced.value.definition.title}”. Usable parts were saved. It is not ready to play until you finish the missing parts. Nothing was invented.`
+      setImportReview({
+        kind: 'correction',
+        view: describeUnfinishedDraft(replaced.value.draft, detail),
+      })
+    } else {
+      setImportReview(null)
     }
     await refresh(
       replaced.value.compiledThisSave
@@ -469,7 +608,9 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
 
       {importOpen && (
         <section className="home__import" aria-labelledby="import-title" data-testid="home-import">
-          <h2 id="import-title">Import Game</h2>
+          <h2 id="import-title" tabIndex={-1} ref={importHeadingRef}>
+            Import Game
+          </h2>
           <p className="host__note">
             Import a game file or spreadsheet. CQS checks it and saves it to My Games. Spreadsheet
             import remains the bulk-editing path.
@@ -546,7 +687,45 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
               </button>
             ) : null}
           </div>
-          {quality && <QualityReportPanel report={quality} />}
+          {importReview?.kind === 'fail-closed' ? (
+            <ImportSalvagePanel
+              kind="fail-closed"
+              headline={importReview.headline}
+              detail={importReview.detail}
+              onDismiss={() => {
+                setImportReview(null)
+                importHeadingRef.current?.focus()
+              }}
+            />
+          ) : null}
+          {importReview?.kind === 'correction' ? (
+            <ImportSalvagePanel
+              kind="correction"
+              view={importReview.view}
+              busy={busy}
+              keepLabel={salvageReplaceArmed ? 'Replace the existing saved game' : undefined}
+              onKeep={() => void keepSalvage(salvageReplaceArmed ? 'replace' : 'save')}
+              onOpen={() => navigate(editPath(importReview.view.draft.game.gameCanonicalId))}
+              onDiscard={() => {
+                if (importReview.view.persisted) {
+                  setImportReview(null)
+                  importHeadingRef.current?.focus()
+                  return
+                }
+                discardImportReview()
+              }}
+            />
+          ) : null}
+          {quality ? (
+            importReview ? (
+              <details className="import-salvage__details">
+                <summary>More detail about this file</summary>
+                <QualityReportPanel report={quality} />
+              </details>
+            ) : (
+              <QualityReportPanel report={quality} />
+            )
+          ) : null}
         </section>
       )}
 

@@ -214,7 +214,22 @@ export function validateDraftContent(draft: AuthoringDraft): AuthoringIssue[] {
       }
       tileIds.add(clue.tileCanonicalId)
 
-      if (!Number.isInteger(clue.value) || clue.value < 0 || clue.value > MAX_TILE_VALUE) {
+      if (clue.valueAuthored === false) {
+        issues.push(
+          authoringIssue(
+            'required-value-missing',
+            'blocker',
+            'draft',
+            'This question has no point value yet. Enter one from your materials. Classroom Quiz Show will not guess it.',
+            {
+              sheet: clue.provenance.sheet,
+              row: clue.provenance.row,
+              a1: clue.provenance.a1Prompt,
+              field: 'Value',
+            },
+          ),
+        )
+      } else if (!Number.isInteger(clue.value) || clue.value < 0 || clue.value > MAX_TILE_VALUE) {
         issues.push(
           authoringIssue(
             'numeric-out-of-range',

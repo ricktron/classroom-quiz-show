@@ -16,6 +16,8 @@ export interface DraftTeam {
   readonly name: string
   readonly authoringKey: string
   readonly canonicalId: string
+  /** Present only when the source named a palette accent. Never a guessed color. */
+  readonly accent?: string
 }
 
 export interface DraftClue {
@@ -23,6 +25,12 @@ export interface DraftClue {
   readonly categoryTitle: string
   readonly clueOrder: number
   readonly value: number
+  /**
+   * False only when salvage kept the question but the file had no usable point
+   * value. Omitted means the value was authored (including a deliberate zero).
+   * Never treat the placeholder number as a teacher-authored score.
+   */
+  readonly valueAuthored?: boolean
   readonly prompt: string
   readonly answer: string
   readonly alternates: readonly string[]
