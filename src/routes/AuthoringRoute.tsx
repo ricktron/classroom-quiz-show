@@ -39,6 +39,18 @@ interface TileCursor {
   readonly clueOrder: number
 }
 
+function clueNeedsTeacher(clue: DraftClue): boolean {
+  return (
+    clue.prompt.trim().length === 0 ||
+    clue.answer.trim().length === 0 ||
+    clue.valueAuthored === false
+  )
+}
+
+function clueValueLabel(clue: DraftClue): string {
+  return clue.valueAuthored === false ? 'Value needed' : String(clue.value)
+}
+
 export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {}) {
   const { gameId } = useParams<{ gameId?: string }>()
   const navigate = useNavigate()
@@ -310,7 +322,8 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
                 }
               />
               {category.clues.map((clue) => {
-                const incomplete = clue.prompt.trim().length === 0 || clue.answer.trim().length === 0
+                const incomplete = clueNeedsTeacher(clue)
+                const valueLabel = clueValueLabel(clue)
                 const selectedTile = cursor && sameCursor(cursor, clue)
                 return (
                   <button
@@ -320,10 +333,10 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
                       selectedTile ? ' authoring-board__tile--selected' : ''
                     }`}
                     aria-pressed={Boolean(selectedTile)}
-                    aria-label={`${category.title} ${clue.value}${incomplete ? ', incomplete' : ', complete'}`}
+                    aria-label={`${category.title} ${valueLabel}${incomplete ? ', incomplete' : ', complete'}`}
                     onClick={() => setCursor({ categoryOrder: clue.categoryOrder, clueOrder: clue.clueOrder })}
                   >
-                    <span>{clue.value}</span>
+                    <span>{valueLabel}</span>
                     <span className="authoring-board__tile-state">{incomplete ? 'Needs content' : 'Ready'}</span>
                   </button>
                 )
@@ -426,7 +439,7 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
                   <p className="authoring-board__preview-title">{category.title}</p>
                   {category.clues.map((clue) => (
                     <div key={clue.tileCanonicalId} className="authoring-board__tile">
-                      {clue.value}
+                      {clueValueLabel(clue)}
                     </div>
                   ))}
                 </div>
@@ -478,7 +491,7 @@ function TileEditor({
   return (
     <section className="authoring-tile" aria-labelledby="tile-editor-title" data-testid="tile-editor">
       <h2 id="tile-editor-title">
-        {clue.categoryTitle} — {clue.value}
+        {clue.categoryTitle} — {clueValueLabel(clue)}
       </h2>
       <label htmlFor="tile-prompt">Question</label>
       <textarea
@@ -504,9 +517,16 @@ function TileEditor({
       <input
         id="tile-value"
         type="number"
-        value={clue.value}
-        onChange={(event) => onChange('value', Number(event.target.value))}
+        value={clue.valueAuthored === false ? '' : clue.value}
+        aria-invalid={clue.valueAuthored === false}
+        aria-describedby={clue.valueAuthored === false ? 'tile-value-help' : undefined}
+        onChange={(event) => onChange('value', event.target.value)}
       />
+      {clue.valueAuthored === false ? (
+        <p id="tile-value-help" className="host__note">
+          Enter the point value. Classroom Quiz Show will not guess one.
+        </p>
+      ) : null}
       <div className="authoring__toolbar">
         <button type="button" className="btn btn--secondary" disabled={!hasPrevious} onClick={onPrevious}>
           Previous

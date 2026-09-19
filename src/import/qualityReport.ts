@@ -3,6 +3,9 @@
  *
  * Classifies existing validator output plus a small set of heuristic notices.
  * Does not repair imports, does not call a network, and does not claim AI.
+ * Corrupt-file salvage, when it is possible, lives in `salvage.ts` and still
+ * ends at this report plus canonical validation. This module never invents
+ * academic content.
  */
 
 import type { AuthoringDraft, DraftClue } from '../authoring/types'

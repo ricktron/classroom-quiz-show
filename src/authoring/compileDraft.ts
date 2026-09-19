@@ -45,6 +45,24 @@ export function compileApprovedDraft(draft: AuthoringDraft): CompileDraftResult 
     }
   }
 
+  if (
+    draft.board.categories.some((category) =>
+      category.clues.some((clue) => clue.valueAuthored === false),
+    )
+  ) {
+    return {
+      status: 'failure',
+      issues: [
+        authoringIssue(
+          'required-value-missing',
+          'blocker',
+          'draft',
+          'A question is missing its point value, so it cannot become a playable game.',
+        ),
+      ],
+    }
+  }
+
   const boardConfig = {
     categories: draft.board.categories.map((category) => ({
       id: category.canonicalId,
@@ -111,10 +129,14 @@ export function compileApprovedDraft(draft: AuthoringDraft): CompileDraftResult 
   }
 
   if (draft.game.teams.length > 0) {
-    document.teams = draft.game.teams.map((team) => ({
-      id: team.canonicalId,
-      name: team.name,
-    }))
+    document.teams = draft.game.teams.map((team) => {
+      const entry: Record<string, unknown> = {
+        id: team.canonicalId,
+        name: team.name,
+      }
+      if (team.accent !== undefined) entry.accent = team.accent
+      return entry
+    })
   }
 
   if (draft.game.responseSeconds !== undefined) {
