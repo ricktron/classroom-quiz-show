@@ -230,3 +230,25 @@ describe('long content wraps rather than overflowing', () => {
     expect(screen.getByTestId('cbd-category')).toHaveClass('cbd__selection-category')
   })
 })
+
+describe('S05-F1 spatial memory and used-state cues', () => {
+  it('keeps used tiles in authored column order without dropping slots', () => {
+    const { container } = renderAt(select('alpha-100'), revealPrompt, revealAnswer, returnToBoard)
+    const columns = container.querySelectorAll('.cbd__column')
+    expect(columns).toHaveLength(2)
+    const firstColumnTiles = columns[0]!.querySelectorAll('.cbd__tile')
+    expect(firstColumnTiles).toHaveLength(3)
+    expect(firstColumnTiles[0]).toHaveClass('cbd__tile--used')
+    expect(firstColumnTiles[0]).toHaveTextContent('Used')
+    expect(firstColumnTiles[1]).not.toHaveClass('cbd__tile--used')
+    expect(firstColumnTiles[1]).toHaveTextContent('200')
+  })
+
+  it('marks open clue chrome as secondary to the prompt container', () => {
+    renderAt(select('alpha-100'), revealPrompt)
+    expect(screen.getByTestId('cbd-open')).toHaveClass('cbd--open')
+    expect(screen.getByTestId('cbd-prompt')).toBeInTheDocument()
+    expect(screen.getByTestId('cbd-category')).toBeInTheDocument()
+    expect(screen.getByTestId('cbd-value')).toBeInTheDocument()
+  })
+})
