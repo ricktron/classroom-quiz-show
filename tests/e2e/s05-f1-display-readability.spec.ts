@@ -22,6 +22,7 @@ import {
 
 const CHANNEL_NAME = 'classroom-quiz-show:sync'
 const VIEWPORT_TOLERANCE_PX = 2
+const CONTENT_FIT_TOLERANCE_PX = 2
 
 test.describe.configure({ mode: 'serial' })
 
@@ -53,25 +54,49 @@ async function injectPublicState(page: Page, payload: PublicState) {
   expect(accepted).toBe(true)
 }
 
+type RectBox = { top: number; bottom: number; left: number; right: number }
+
 type GeometryReport = {
   overflowX: number
   overflowY: number
   viewport: { width: number; height: number }
-  board: { top: number; bottom: number; left: number; right: number } | null
-  open: { top: number; bottom: number; left: number; right: number } | null
-  prompt: { top: number; bottom: number; left: number; right: number } | null
-  answer: { top: number; bottom: number; left: number; right: number } | null
-  scores: { top: number; bottom: number; left: number; right: number } | null
-  image: {
-    top: number
-    bottom: number
-    left: number
-    right: number
+  board: RectBox | null
+  open: RectBox | null
+  prompt: RectBox | null
+  answer: RectBox | null
+  scores: RectBox | null
+  image: (RectBox & {
     naturalWidth: number
     naturalHeight: number
     clientWidth: number
     clientHeight: number
-  } | null
+  }) | null
+}
+
+type AuthoredVisibilityReport = {
+  selector: string
+  textLength: number
+  clientHeight: number
+  scrollHeight: number
+  clientWidth: number
+  scrollWidth: number
+  textFirstTop: number | null
+  textLastBottom: number | null
+  textLeft: number | null
+  textRight: number | null
+  element: RectBox
+  viewport: { width: number; height: number }
+  clippingAncestors: Array<{
+    label: string
+    overflowY: string
+    overflowX: string
+    top: number
+    bottom: number
+    left: number
+    right: number
+    clientHeight: number
+    scrollHeight: number
+  }>
 }
 
 async function measureDisplayGeometry(page: Page): Promise<GeometryReport> {
@@ -108,11 +133,65 @@ async function measureDisplayGeometry(page: Page): Promise<GeometryReport> {
   })
 }
 
-function expectRectInViewport(
-  label: string,
-  rect: { top: number; bottom: number; left: number; right: number } | null,
-  viewport: { width: number; height: number },
-) {
+async function measureAuthoredVisibility(
+  page: Page,
+  selector: string,
+): Promise<AuthoredVisibilityReport | null> {
+  return page.evaluate((sel) => {
+    const el = document.querySelector(sel)
+    if (!el) return null
+    const r = el.getBoundingClientRect()
+    const range = document.createRange()
+    range.selectNodeContents(el)
+    const rects = [...range.getClientRects()]
+    const clippingAncestors: AuthoredVisibilityReport['clippingAncestors'] = []
+    let node: Element | null = el
+    while (node && node !== document.documentElement) {
+      const cs = getComputedStyle(node)
+      const oy = cs.overflowY
+      const ox = cs.overflowX
+      if (/(hidden|clip|scroll|auto)/.test(`${oy}${ox}`)) {
+        const br = node.getBoundingClientRect()
+        const label =
+          (node.getAttribute('data-testid') ??
+            (typeof node.className === 'string' ? node.className : node.tagName)
+          ).toString().slice(0, 80)
+        clippingAncestors.push({
+          label,
+          overflowY: oy,
+          overflowX: ox,
+          top: br.top,
+          bottom: br.bottom,
+          left: br.left,
+          right: br.right,
+          clientHeight: node.clientHeight,
+          scrollHeight: node.scrollHeight,
+        })
+      }
+      node = node.parentElement
+    }
+    return {
+      selector: sel,
+      textLength: (el.textContent ?? '').length,
+      clientHeight: el.clientHeight,
+      scrollHeight: el.scrollHeight,
+      clientWidth: el.clientWidth,
+      scrollWidth: el.scrollWidth,
+      textFirstTop: rects.length ? Math.min(...rects.map((box) => box.top)) : null,
+      textLastBottom: rects.length ? Math.max(...rects.map((box) => box.bottom)) : null,
+      textLeft: rects.length ? Math.min(...rects.map((box) => box.left)) : null,
+      textRight: rects.length ? Math.max(...rects.map((box) => box.right)) : null,
+      element: { top: r.top, bottom: r.bottom, left: r.left, right: r.right },
+      viewport: {
+        width: document.documentElement.clientWidth,
+        height: document.documentElement.clientHeight,
+      },
+      clippingAncestors,
+    }
+  }, selector)
+}
+
+function expectRectInViewport(label: string, rect: RectBox | null, viewport: { width: number; height: number }) {
   expect(rect, `${label} present`).not.toBeNull()
   if (!rect) return
   expect(rect.top, `${label} top`).toBeGreaterThanOrEqual(-VIEWPORT_TOLERANCE_PX)
@@ -121,6 +200,60 @@ function expectRectInViewport(
     viewport.height + VIEWPORT_TOLERANCE_PX,
   )
   expect(rect.right, `${label} right`).toBeLessThanOrEqual(viewport.width + VIEWPORT_TOLERANCE_PX)
+}
+
+function assertAuthoredTextFullyVisible(
+  report: AuthoredVisibilityReport | null,
+  options: { label: string; expectedLength: number },
+) {
+  expect(report, `${options.label} authored element present`).not.toBeNull()
+  if (!report) return
+
+  expect(report.textLength, `${options.label} full authored length`).toBe(options.expectedLength)
+  expect(report.scrollHeight, `${options.label} scrollHeight`).toBeLessThanOrEqual(
+    report.clientHeight + CONTENT_FIT_TOLERANCE_PX,
+  )
+  expect(report.scrollWidth, `${options.label} scrollWidth`).toBeLessThanOrEqual(
+    report.clientWidth + CONTENT_FIT_TOLERANCE_PX,
+  )
+
+  expect(report.textFirstTop, `${options.label} text range`).not.toBeNull()
+  expect(report.textLastBottom, `${options.label} text range`).not.toBeNull()
+  if (report.textFirstTop === null || report.textLastBottom === null) return
+
+  expect(report.textFirstTop, `${options.label} text top in element`).toBeGreaterThanOrEqual(
+    report.element.top - CONTENT_FIT_TOLERANCE_PX,
+  )
+  expect(report.textLastBottom, `${options.label} text bottom in element`).toBeLessThanOrEqual(
+    report.element.bottom + CONTENT_FIT_TOLERANCE_PX,
+  )
+  expect(report.textFirstTop, `${options.label} text top in viewport`).toBeGreaterThanOrEqual(
+    -VIEWPORT_TOLERANCE_PX,
+  )
+  expect(report.textLastBottom, `${options.label} text bottom in viewport`).toBeLessThanOrEqual(
+    report.viewport.height + VIEWPORT_TOLERANCE_PX,
+  )
+
+  for (const ancestor of report.clippingAncestors) {
+    expect(
+      report.textFirstTop,
+      `${options.label} text top inside clipping ancestor ${ancestor.label}`,
+    ).toBeGreaterThanOrEqual(ancestor.top - CONTENT_FIT_TOLERANCE_PX)
+    expect(
+      report.textLastBottom,
+      `${options.label} text bottom inside clipping ancestor ${ancestor.label}`,
+    ).toBeLessThanOrEqual(ancestor.bottom + CONTENT_FIT_TOLERANCE_PX)
+    if (report.textLeft !== null && report.textRight !== null) {
+      expect(
+        report.textLeft,
+        `${options.label} text left inside clipping ancestor ${ancestor.label}`,
+      ).toBeGreaterThanOrEqual(ancestor.left - CONTENT_FIT_TOLERANCE_PX)
+      expect(
+        report.textRight,
+        `${options.label} text right inside clipping ancestor ${ancestor.label}`,
+      ).toBeLessThanOrEqual(ancestor.right + CONTENT_FIT_TOLERANCE_PX)
+    }
+  }
 }
 
 async function assertDisplayFitsViewport(
@@ -132,6 +265,10 @@ async function assertDisplayFitsViewport(
     expectAnswer?: boolean
     expectScores?: boolean
     expectImage?: boolean
+    promptText?: string
+    answerText?: string
+    expectCaption?: boolean
+    expectAttribution?: boolean
   } = {},
 ) {
   const geometry = await measureDisplayGeometry(page)
@@ -156,6 +293,71 @@ async function assertDisplayFitsViewport(
       const ratio = geometry.image.clientWidth / geometry.image.clientHeight
       const naturalRatio = geometry.image.naturalWidth / geometry.image.naturalHeight
       expect(Math.abs(ratio - naturalRatio), 'aspect ratio preserved').toBeLessThan(0.08)
+    }
+  }
+
+  if (options.promptText !== undefined) {
+    const promptVisibility = await measureAuthoredVisibility(page, '[data-testid="mcd-text"]')
+    assertAuthoredTextFullyVisible(promptVisibility, {
+      label: 'prompt text',
+      expectedLength: options.promptText.length,
+    })
+    await expect(page.getByTestId('mcd-text')).toHaveText(options.promptText)
+  }
+
+  if (options.answerText !== undefined) {
+    const answerVisibility = await measureAuthoredVisibility(page, '.cbd__answer-text')
+    assertAuthoredTextFullyVisible(answerVisibility, {
+      label: 'answer text',
+      expectedLength: options.answerText.length,
+    })
+    await expect(page.locator('.cbd__answer-text')).toHaveText(options.answerText)
+  }
+
+  if (options.expectCaption) {
+    const captionVisibility = await measureAuthoredVisibility(page, '[data-testid="mcd-caption"]')
+    expect(captionVisibility, 'caption present').not.toBeNull()
+    if (captionVisibility) {
+      assertAuthoredTextFullyVisible(captionVisibility, {
+        label: 'caption',
+        expectedLength: captionVisibility.textLength,
+      })
+    }
+  }
+
+  if (options.expectAttribution) {
+    const attributionVisibility = await measureAuthoredVisibility(
+      page,
+      '[data-testid="mcd-attribution"]',
+    )
+    expect(attributionVisibility, 'attribution present').not.toBeNull()
+    if (attributionVisibility) {
+      assertAuthoredTextFullyVisible(attributionVisibility, {
+        label: 'attribution',
+        expectedLength: attributionVisibility.textLength,
+      })
+    }
+  }
+
+  if (options.expectOpen) {
+    const openFit = await page.evaluate(() => {
+      const open = document.querySelector('[data-testid="cbd-open"]')
+      if (!open) return null
+      return {
+        clientHeight: open.clientHeight,
+        scrollHeight: open.scrollHeight,
+        clientWidth: open.clientWidth,
+        scrollWidth: open.scrollWidth,
+      }
+    })
+    expect(openFit, 'open panel present for content fit').not.toBeNull()
+    if (openFit) {
+      expect(openFit.scrollHeight, 'open panel scrollHeight').toBeLessThanOrEqual(
+        openFit.clientHeight + CONTENT_FIT_TOLERANCE_PX,
+      )
+      expect(openFit.scrollWidth, 'open panel scrollWidth').toBeLessThanOrEqual(
+        openFit.clientWidth + CONTENT_FIT_TOLERANCE_PX,
+      )
     }
   }
 
@@ -200,10 +402,10 @@ test.describe('S05-F1 clue stress', () => {
     page,
   }, info) => {
     test.skip(info.project.name !== 'desktop-1080p', '1080p project only')
+    const prompt = visualStressLongPrompt()
     await openDisplay(page, 'default')
     await injectPublicState(page, visualStressLongPromptSnapshot(110))
     await expectVisible(page.getByTestId('cbd-open'))
-    await expect(page.getByTestId('cbd-prompt')).toContainText(visualStressLongPrompt().slice(0, 48))
     await expect(page.getByTestId('mcd-text')).toHaveAttribute('data-length', 'long')
     await expect(page.getByTestId('cbd-answer')).toHaveCount(0)
     await expect(page.getByTestId('audience-shell')).toHaveAttribute('data-score-layout', 'deck')
@@ -212,6 +414,7 @@ test.describe('S05-F1 clue stress', () => {
       expectOpen: true,
       expectPrompt: true,
       expectScores: true,
+      promptText: prompt,
     })
   })
 
@@ -219,14 +422,15 @@ test.describe('S05-F1 clue stress', () => {
     page,
   }, info) => {
     test.skip(info.project.name !== 'projector-720p', '720p project only')
+    const prompt = visualStressLongPrompt()
     await openDisplay(page, 'default')
     await injectPublicState(page, visualStressLongPromptSnapshot(112))
     await expectVisible(page.getByTestId('cbd-open'))
-    await expect(page.getByTestId('cbd-prompt')).toContainText('Interpret')
     await assertDisplayFitsViewport(page, {
       expectOpen: true,
       expectPrompt: true,
       expectScores: true,
+      promptText: prompt,
     })
   })
 
@@ -234,17 +438,19 @@ test.describe('S05-F1 clue stress', () => {
     page,
   }, info) => {
     test.skip(info.project.name !== 'desktop-1080p', '1080p project only')
+    const prompt = visualStressLongPrompt()
+    const answer = visualStressLongAnswer()
     await openDisplay(page, 'default')
     await injectPublicState(page, visualStressAnswerRevealSnapshot(120))
     await expect(page.getByTestId('cbd-open')).toHaveAttribute('data-answer-revealed', 'true')
-    await expect(page.getByTestId('cbd-prompt')).toContainText(visualStressLongPrompt().slice(0, 32))
     await expect(page.getByTestId('cbd-answer')).toContainText(/answer/i)
-    await expect(page.getByTestId('cbd-answer')).toContainText(visualStressLongAnswer().slice(0, 32))
     await assertDisplayFitsViewport(page, {
       expectOpen: true,
       expectPrompt: true,
       expectAnswer: true,
       expectScores: true,
+      promptText: prompt,
+      answerText: answer,
     })
   })
 
@@ -252,6 +458,8 @@ test.describe('S05-F1 clue stress', () => {
     page,
   }, info) => {
     test.skip(info.project.name !== 'projector-720p', '720p project only')
+    const prompt = visualStressLongPrompt()
+    const answer = visualStressLongAnswer()
     await openDisplay(page, 'high-contrast')
     await injectPublicState(page, visualStressAnswerRevealSnapshot(121))
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'high-contrast')
@@ -263,6 +471,8 @@ test.describe('S05-F1 clue stress', () => {
       expectPrompt: true,
       expectAnswer: true,
       expectScores: true,
+      promptText: prompt,
+      answerText: answer,
     })
   })
 
@@ -285,6 +495,8 @@ test.describe('S05-F1 clue stress', () => {
       expectOpen: true,
       expectScores: true,
       expectImage: true,
+      expectCaption: true,
+      expectAttribution: true,
     })
   })
 })

@@ -421,6 +421,41 @@
   }
 }
 
+/*
+ * Quiet-cognition (open clue): Nexus already carries the compact timer.
+ * Densify the duplicate ResponseTimerDisplay in the compact Signal Rail so
+ * authored prompt text keeps the primary vertical budget.
+ */
+.audience--scene-quiet-cognition .signal-rail {
+  gap: var(--space-2);
+  padding: 0.2rem 0.55rem;
+}
+
+.audience--scene-quiet-cognition .signal-rail .rtd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.2rem 0.65rem;
+  width: auto;
+  max-width: 100%;
+  padding: 0.15rem 0.55rem;
+}
+
+.audience--scene-quiet-cognition .signal-rail .rtd__armed,
+.audience--scene-quiet-cognition .signal-rail .rtd__status {
+  margin: 0;
+  font-size: clamp(0.7rem, 1.05vw, 0.9rem);
+}
+
+.audience--scene-quiet-cognition .signal-rail .rtd__clock {
+  font-size: clamp(1.15rem, 2.4vw, 1.85rem);
+}
+
+.audience--scene-quiet-cognition .signal-rail__status {
+  font-size: clamp(0.85rem, 1.3vw, 1.1rem);
+}
+
 @media (max-height: 800px) {
   .audience {
     padding: var(--space-2);
@@ -482,5 +517,19 @@
 
   .signal-rail {
     padding: 0.15rem 0.45rem;
+  }
+
+  .audience--scene-quiet-cognition .audience__brand,
+  .audience--scene-quiet-cognition .audience__game-line {
+    display: none;
+  }
+
+  .audience--scene-quiet-cognition .signal-rail .rtd {
+    padding: 0.1rem 0.4rem;
+    gap: 0.15rem 0.45rem;
+  }
+
+  .audience--scene-quiet-cognition .signal-rail .rtd__clock {
+    font-size: clamp(1rem, 2.1vw, 1.45rem);
   }
 }

@@ -1,13 +1,15 @@
 # CQS REAL MVP S05-F1 — core Display readability and visual stress
 
 Local and repository delivery evidence for the first bounded S05 tranche,
-including the PR #89 bounded acceptance repair for independent-review
-Findings 1–7.
+including PR #89 bounded acceptance repair (Findings 1–7) and the subsequent
+internal-clipping / legibility repair (Findings R1–R5).
 
 - **Authorization (implementation):**
   `AUTHORIZE-CQS-REAL-MVP-S05-F1-CORE-DISPLAY-READABILITY-AND-VISUAL-STRESS-1`
-- **Authorization (PR #89 repair):**
+- **Authorization (PR #89 Findings 1–7 repair):**
   `AUTHORIZE-CQS-REAL-MVP-S05-F1-PR89-BOUNDED-ACCEPTANCE-REPAIR-1`
+- **Authorization (PR #89 R1–R5 internal clipping / legibility repair):**
+  `AUTHORIZE-CQS-REAL-MVP-S05-F1-PR89-INTERNAL-CLIPPING-AND-LEGIBILITY-REPAIR-1`
 - **Tranche:**
   `CQS-REAL-MVP-S05-F1-CORE-DISPLAY-READABILITY-AND-VISUAL-STRESS`
 - **Parent:** `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
@@ -34,7 +36,7 @@ Findings 1–7.
 | Fact | Value |
 | --- | --- |
 | Canonical base | `c3e7da4ddfebf0da2ac9c7659c5deab08691cced` |
-| In scope | Board Display, Clue/question Display, Audience shell score-deck density at projector height, valid stress fixture + sanitizer-derived Display snapshots, tests, this doc |
+| In scope | Board Display, Clue/question Display, Audience shell score-deck / quiet-cognition signal-rail density at projector height, valid stress fixture + sanitizer-derived Display snapshots, authored-text visibility oracle, tests, this doc |
 | Out of scope | Host redesign, choreography, Final, S04D, S06, schema/PublicState/persistence, new frameworks/fonts |
 
 ---
@@ -56,14 +58,13 @@ No new CSS framework, font package, animation library, or theme package.
 
 From adopted UX doctrine / inventory (Display surfaces):
 
-- distance-first Display hierarchy (Board + Clue);
+- distance-first Display hierarchy (Board + Clue) — `CQS-UX-P14`;
 - Host/Display role separation (Host untouched);
 - personality after clarity;
 - non-color state meaning (Used label + dashed border + dormant styling);
-- long-content wrap, not clip; schema-max stems use length-aware type scale so
-  they remain inside the usable composition with the score deck
-  (`limits.ts` projector rationale for `MAX_PROMPT_LENGTH` /
-  `MAX_ANSWER_LENGTH`);
+- long-content wrap **and full authored visibility** — schema-max stems use
+  length-aware type **after** composition reclaims vertical budget; overflow
+  must not mask meaning;
 - high-contrast as first-class (Board + Clue/answer automation);
 - reduced-motion: F1 adds no motion vocabulary.
 
@@ -72,10 +73,21 @@ From adopted UX doctrine / inventory (Display surfaces):
 | Layer | Bound | Meaning |
 | --- | --- | --- |
 | Schema / import | `MAX_PROMPT_LENGTH` (600), `MAX_ANSWER_LENGTH` (300) | Valid Game acceptance |
-| F1 Display presentation | Same maxima, with length-aware type + projector-height density | Must remain inside 1280×720 / 1920×1080 without **page** scroll while coexisting with an 8-team score deck |
+| F1 Display presentation | Same maxima | Full authored prompt/answer text visible at 1280×720 / 1920×1080 **without page scroll and without internal clipping**, coexisting with an 8-team score deck and necessary timer/chrome |
 
 F1 does **not** silently lower schema limits. Length bands adjust type scale
-only.
+only after composition allocates a usable primary region.
+
+### Repair history (PR #89)
+
+1. **Findings 1–7:** Board + 8-team page fit; vertical outer geometry; fixture →
+   sanitizer → Display snapshots; HC clue automation; real 960×540 media;
+   Sonar duplication; closeout accuracy (partial).
+2. **Findings R1–R5:** Internal clipping by `.cbd--open { overflow:hidden }`
+   while page scroll stayed 0; quiet-cognition Signal Rail
+   `ResponseTimerDisplay` duplicated Nexus timer and starved clue vertical
+   budget (~14 px schema-max type); oracle false-green on outer rectangles;
+   image attribution past open clip edge; closeout overclaims.
 
 ---
 
@@ -99,6 +111,16 @@ sanitizer:
 
 `src/test/visualStressDisplaySnapshots.ts`
 
+Path:
+
+```text
+canonical valid Game fixture
+→ ordinary Game/Session state
+→ existing sanitizer (store.getPublicState)
+→ PublicState
+→ Display e2e
+```
+
 Viewport/theme/reduced-motion stress is applied by automated tests, not by
 invalid product data. Windows physical scaling remains **S06**.
 
@@ -114,7 +136,9 @@ Files: `CategoryBoardDisplay.css` / `.tsx` (+ spatial-memory tests).
 - columns keep authored order; used tiles remain in place (no slot collapse);
 - open-clue panel frames question as primary object;
 - projector-height (`max-height: 800px`) rhythm keeps Board + 8-team deck in view;
-- answer-reveal stage adds `cbd--answer` for compact coexistence styling.
+- answer-reveal stage adds `cbd--answer` for compact coexistence styling;
+- open stage uses `overflow: visible` for authored content; long stems recede
+  category/value chrome via `:has(.mcd__text[data-length='long'])`.
 
 No gameplay / PublicState / schema changes.
 
@@ -122,16 +146,21 @@ No gameplay / PublicState / schema changes.
 
 ## G. Clue/question changes
 
-Files: `CategoryBoardDisplay.css` (open stage), `MediaContentDisplay.css` / `.tsx`.
+Files: `CategoryBoardDisplay.css` (open stage), `MediaContentDisplay.css` /
+`.tsx`, `AudienceDisplayShell.css`.
 
 - Prompt type with bounded line length and wrap; length bands (`short` /
-  `medium` / `long`) scale type so schema-max stems fit;
+  `medium` / `long`) keep readable hierarchy after composition repair;
 - selection chrome (category / value) recedes relative to prompt;
-- image media contained with caption/attribution secondary;
+- quiet-cognition densifies the compact Signal Rail
+  `ResponseTimerDisplay` (Nexus already carries the compact timer) so schema-max
+  prompts reclaim the primary region;
+- image media contained with caption/attribution secondary and tertiary, both
+  kept inside the open composition;
 - high-contrast stronger borders / prompt weight / answer boundary.
 
-Audience shell (`AudienceDisplayShell.css`) densifies the 8-team deck and
-chrome only at projector height — not a scoreboard redesign.
+Audience shell densifies the 8-team deck and quiet-cognition timer chrome at
+projector height — not a scoreboard redesign and not Host redesign.
 
 ---
 
@@ -157,7 +186,9 @@ Host CSS not redesigned. No GameDefinition theme fields.
 | Long category titles needed wrap room | Retained `overflow-wrap: anywhere`; stress fixture at max length |
 | Used-state must not be hue-only | Preserved triple cue (label + dashed + dormant) |
 | 8-team Board coexistence at 720p | Repaired: projector-height Board + deck density; e2e asserts element geometry inside viewport |
-| Schema-max Clue / answer vertical fit | Repaired: length-aware type + answer compact stage; e2e asserts prompt/answer/scores in viewport at 720p/1080p |
+| Schema-max Clue / answer — page scroll | Repaired in Findings 1–7 |
+| Schema-max Clue / answer — internal clipping + distance-first type | Repaired in R1–R5: reclaim quiet-cognition rail budget; full-text visibility; ~20 px schema-max prompt at 720p with timer chrome |
+| Authored-text oracle false-green | Repaired: scroll metrics + text-range vs clipping ancestors |
 | Later choreography still absent | **Deferred** (F1 intentionally static) |
 
 ---
@@ -171,8 +202,8 @@ Recorded at delivery / repair (exact commands in PR handoff):
 - `npm run verify`;
 - `npm run verify:all` (includes 1080p/720p Playwright);
 - focused S05-F1 Playwright spec under `desktop-1080p` and `projector-720p`
-  (Board, long prompt, answer reveal, HC clue, image load/geometry,
-  reduced motion).
+  (Board, schema-max prompt/answer with full-text oracle, HC clue, image
+  caption/attribution, reduced motion).
 
 Desktop Electron packaging tests: not required for this Display CSS/docs/test
 diff (no desktop shell API changes). GitHub Desktop artifact workflows still
@@ -218,8 +249,9 @@ Explicitly deferred:
 | --- | --- |
 | Branch | `feat/cqs-real-mvp-s05-f1-core-display-readability` |
 | PR | [#89](https://github.com/ricktron/classroom-quiz-show/pull/89) |
-| Exact head | open PR #89 tip on `feat/cqs-real-mvp-s05-f1-core-display-readability` (re-observe `headRefOid` on GitHub for merge decision; independent exact-head review records bind the reviewed SHA) |
-| Rejected head before repair | `cf423206615c158cfd2c9f54a6e68f95f4619dcb` |
+| Exact head | Open PR #89 tip on the branch above. Independent exact-head reviews bind the reviewed SHA. This closeout does **not** embed its own commit SHA (avoids self-stale identity after the docs commit). |
+| Rejected head (Findings 1–7) | `cf423206615c158cfd2c9f54a6e68f95f4619dcb` |
+| Rejected head (R1–R5) | `7dc1b92b7ba139a506ab2a64f45c291ed8b24eec` |
 | Base | `c3e7da4ddfebf0da2ac9c7659c5deab08691cced` |
 | Auto-merge | off |
 
