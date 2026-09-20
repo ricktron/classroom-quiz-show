@@ -509,10 +509,14 @@ hardware, recovery, and the end-to-end experience.
 - **Ownership / state:** Resume and an invalid-recovery path are observed on
   Home (**ALREADY IMPLEMENTED FOUNDATION**, `src/persistence/`, ADR-013).
   S04C-H1 repairs Home Resume so it performs Host resume semantics once
-  (**TERMINALLY COMPLETE** on main after PR #78; does **not** complete
-  S04C). S04C-H3 library backup/restore is **TERMINALLY COMPLETE** on main
-  after PR #82 (Host-only; unfinished Session excluded). Broader safe-mode
-  and display-resilience work remains later S04C.
+  (**TERMINALLY COMPLETE** on main after PR #78; at that stage it did **not**
+  complete S04C). S04C-H3 library backup/restore is **TERMINALLY COMPLETE**
+  on main after PR #82 (Host-only; unfinished Session excluded). S04C
+  safety/recovery implementation, including bounded Display placement,
+  stranded-window rescue, and wake/resume PublicState catch-up, is now
+  **TERMINALLY COMPLETE** on main after PR #87. Physical/integrated projector,
+  sleep/wake, scaling, and related environment qualification remains S06 —
+  **LATER**.
 
 ### 28. Session completion
 
