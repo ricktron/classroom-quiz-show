@@ -188,7 +188,7 @@ Filled after push/PR:
 | --- | --- |
 | Branch | `feat/cqs-real-mvp-s05-f1-core-display-readability` |
 | PR | [#89](https://github.com/ricktron/classroom-quiz-show/pull/89) |
-| Exact head | `d635d93a7b129711ecd11b4acc5e06a205945a7a` |
+| Exact head | re-observe PR #89 `headRefOid` (docs-only identity commits may advance) |
 | Base | `c3e7da4ddfebf0da2ac9c7659c5deab08691cced` |
 | Auto-merge | off |
 
