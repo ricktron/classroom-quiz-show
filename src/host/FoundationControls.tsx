@@ -247,8 +247,8 @@ export function FoundationControls({
     <section className="foundation" aria-labelledby="classroom-controls-title">
       <h2 id="classroom-controls-title">Classroom controls</h2>
       <p className="host__note foundation__intro">
-        Load a game, set up teams and optional buzzers, then open the audience display for the
-        projector. This is the working classroom quiz-show host — not a placeholder shell.
+        Load a game, set up teams and optional buzzers, then open the audience display. The
+        projector stays on a separate audience display screen.
       </p>
 
       <PersistenceControls

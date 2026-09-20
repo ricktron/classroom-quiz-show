@@ -88,10 +88,19 @@ Keyboard controls still work the whole time.
 
 ## 5. Open the audience display
 
-Choose **Open Display** or **Open display in new window**.
+Choose **Open audience display** (or **Focus audience display** if it is
+already open).
 
-Put that window on the projector. Students only see the sanitized public
-display — never host notes, answers, or diagnostics.
+On the desktop app, when this computer has exactly one other screen, Classroom
+Quiz Show moves the audience display there. If that window is off every
+connected screen (for example after a projector disconnect), choose **Focus
+audience display** again and the desktop app brings it back onto a connected
+screen—usually the one with the Host. After this computer resumes from sleep,
+an open audience display is refreshed so it can ask the Host for current public
+display state again. If the window is still on the wrong screen, or you are
+using the browser alternate, put that window on the projector yourself.
+Students only see the sanitized public display — never host notes, answers, or
+diagnostics.
 
 ## 6. Resume after a refresh
 

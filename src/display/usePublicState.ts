@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { INITIAL_PUBLIC_STATE, type PublicState } from '../state/publicState'
+import { attachDisplayWakeCatchUp } from '../sync/displayWakeCatchUp'
 import { createPublicStateReceiver } from '../sync/receiver'
 
 /**
@@ -10,6 +11,9 @@ import { createPublicStateReceiver } from '../sync/receiver'
  * safe `INITIAL_PUBLIC_STATE` and only ever moves forward to a strictly-newer
  * valid snapshot, so at worst it shows the neutral waiting state (fail closed).
  * On unmount it tears the subscription down.
+ *
+ * After ordinary sleep/backgrounding, visibility resume asks the Host again for
+ * the current sanitized snapshot via the existing `request-state` path.
  *
  * It also carries the receiver's estimate of the host/display clock difference
  * (Slice 7), because a published deadline is an instant on the HOST's clock and
@@ -32,7 +36,13 @@ export function usePublicState(): PublicStateView {
       onClockOffset: setHostClockOffsetMs,
       initialRevision: INITIAL_PUBLIC_STATE.revision,
     })
-    return () => receiver.close()
+    const detachWake = attachDisplayWakeCatchUp({
+      requestState: () => receiver.requestState(),
+    })
+    return () => {
+      detachWake()
+      receiver.close()
+    }
   }, [])
 
   return { state, hostClockOffsetMs }

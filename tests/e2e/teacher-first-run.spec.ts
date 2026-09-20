@@ -33,7 +33,7 @@ test('clean teacher can load a sample game without hidden session initialize', a
   await expect(page.getByRole('heading', { name: /load a game/i })).toBeVisible()
   await expect(page.getByRole('heading', { name: /classroom controls/i })).toBeVisible()
   await expect(
-    page.getByRole('button', { name: /open display in new window/i }),
+    page.getByRole('button', { name: /open audience display/i }),
   ).toBeVisible()
   await expect(page.getByRole('button', { name: /start new game session/i })).toBeVisible()
   await expect(page.getByRole('heading', { name: /advanced diagnostics/i })).toBeVisible()
@@ -56,7 +56,7 @@ test('clean teacher can load a sample game without hidden session initialize', a
   await expect(page.getByTestId('game-title')).toBeVisible()
   await expect(page.getByTestId('import-active-game')).not.toHaveText('none')
   await expect(
-    page.getByRole('button', { name: /open display in new window/i }),
+    page.getByRole('button', { name: /open audience display/i }),
   ).toBeVisible()
 })
 

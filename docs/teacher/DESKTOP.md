@@ -23,7 +23,15 @@ permission prompts, and packaging only.
 - Windows: a conventional NSIS installer (`.exe`) built on GitHub-hosted
   Windows runners
 - Host opens directly
-- **Open display in new window** creates a separate projector window
+- **Open audience display** creates a separate projector window. On a computer
+  with exactly one other screen, the desktop app moves that window to the other
+  screen. If the audience display ends up off every connected screen (for
+  example after a projector disconnect), choose **Focus audience display**
+  again and the desktop app brings it back onto a connected screen—usually the
+  screen with the Host. If it is still on the wrong screen, move it yourself.
+- After this computer resumes from sleep, an open audience display is refreshed
+  so it can ask the Host for the current public display again. That does not
+  replace later physical classroom sleep/wake qualification.
 - Works offline after installation (no GitHub Pages, no localhost server)
 
 ## Unsigned development / qualification artifacts
@@ -51,7 +59,10 @@ public teacher release is claimed.
 2. Open the `.app`.
 3. If macOS blocks it, use System Settings → Privacy & Security to allow
    this specific downloaded app. Do not disable Gatekeeper globally.
-4. Host opens. Use **Open display in new window** for the projector.
+4. Host opens. Use **Open audience display** for the projector. When there is
+   exactly one other screen, the app moves the audience display there. If that
+   window is off every connected screen, **Focus audience display** brings it
+   back onto a connected screen.
 
 ### Windows
 
@@ -59,7 +70,10 @@ public teacher release is claimed.
 2. Run the installer. A per-user install is the default; administrator
    elevation is not required for that mode.
 3. Start **Classroom Quiz Show** from the Start Menu or desktop shortcut.
-4. Host opens. Use **Open display in new window** for the projector.
+4. Host opens. Use **Open audience display** for the projector. When there is
+   exactly one other screen, the app moves the audience display there. If that
+   window is off every connected screen, **Focus audience display** brings it
+   back onto a connected screen.
 
 ## Update model
 

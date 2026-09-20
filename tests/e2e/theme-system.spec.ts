@@ -49,7 +49,7 @@ test.describe('host selector and display launch', () => {
     expect(await themeId(page)).toBe('high-contrast')
 
     const popupPromise = context.waitForEvent('page')
-    await page.getByRole('button', { name: /open display in new window/i }).click()
+    await page.getByRole('button', { name: /open audience display/i }).click()
     const popup = await popupPromise
     await popup.waitForLoadState()
     expect(popup.url()).toContain('#/display?theme=high-contrast')
@@ -65,7 +65,7 @@ test.describe('host selector and display launch', () => {
     await page.goto('#/host')
     await page.getByRole('radio', { name: 'High contrast' }).check()
     const firstPopupPromise = context.waitForEvent('page')
-    await page.getByRole('button', { name: /open display in new window/i }).click()
+    await page.getByRole('button', { name: /open audience display/i }).click()
     const first = await firstPopupPromise
     await first.waitForLoadState()
     expect(first.url()).toContain('#/display?theme=high-contrast')
@@ -76,7 +76,7 @@ test.describe('host selector and display launch', () => {
     // Host opens with noopener, so each launch is a fresh browsing context that
     // must carry only the currently validated theme query.
     const secondPopupPromise = context.waitForEvent('page')
-    await page.getByRole('button', { name: /open display in new window/i }).click()
+    await page.getByRole('button', { name: /open audience display/i }).click()
     const second = await secondPopupPromise
     await second.waitForLoadState()
     expect(second.url()).toContain('#/display?theme=default')

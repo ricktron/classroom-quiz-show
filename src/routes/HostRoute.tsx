@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ROUTES, absoluteDisplayUrlWithTheme } from './paths'
 import { FoundationControls } from '../host/FoundationControls'
 import type { UseHostPersistenceOptions } from '../host/useHostPersistence'
+import { isDesktopRuntime } from '../runtime/cqsRuntime'
 import { ThemeProvider, useOptionalTheme, useTheme } from '../theme/ThemeProvider'
 import { THEME_META, type ThemeId } from '../theme/themeRegistry'
 import './HostRoute.css'
@@ -68,14 +69,14 @@ function HostRouteContent({
         <section className="host__status" aria-live="polite">
           <h2>Ready to run class</h2>
           <p>
-            Load a game below, set up teams and optional buzzers, then open the audience display
-            for the projector. See the repository teacher quick start for a short walkthrough.
+            Load a game below, set up teams and optional buzzers, then open the audience display.
+            See the repository teacher quick start for a short walkthrough.
           </p>
         </section>
 
         <div className="host__actions">
           <button type="button" className="btn" onClick={openDisplay}>
-            Open display in new window
+            Open audience display
           </button>
           <Link className="btn btn--secondary" to={ROUTES.root}>
             Back to Home
@@ -83,8 +84,9 @@ function HostRouteContent({
         </div>
 
         <p className="host__note">
-          Tip: put this host screen on your laptop and the display screen on the
-          projector. They are separate screens on purpose.
+          {isDesktopRuntime()
+            ? 'Keep this Host on your laptop. When your computer has one other screen, opening the audience display moves it there. If that window is off every connected screen, Focus audience display brings it back onto a connected screen. If it is still on the wrong screen, move it yourself.'
+            : 'Keep this Host on your laptop and put the audience display window on the projector. They are separate screens on purpose.'}
         </p>
 
         <FoundationControls persistenceOptions={persistenceOptions} />

@@ -147,7 +147,7 @@ export function classroomReadinessItems(input: ClassroomReadinessInput): readonl
       label: input.displayOpen ? 'Display ready' : 'Display not open yet',
       detail: input.displayOpen
         ? 'The audience display is open.'
-        : 'Open the audience display on the projector when you are ready.',
+        : 'Open the audience display when you are ready.',
       tone: input.displayOpen ? 'ready' : 'warning',
     },
     {

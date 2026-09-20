@@ -459,8 +459,13 @@ hardware, recovery, and the end-to-end experience.
 - **Research routing:** Norman, Cooper.
 - **Ownership / state:** **S04B — CURRENT** for projector readiness within
   S04B direction. Host/Display native windows are an **ALREADY IMPLEMENTED
-  FOUNDATION** (S03, ADR-021). Broader display resilience — reconnect,
-  resolution change, sleep/wake — is S04C/S06 — **LATER**.
+  FOUNDATION** (S03, ADR-021). S04C display-placement / wake-republish recovery
+  is an **ACTIVE CANDIDATE** (not terminal): when exactly one non-Host screen
+  exists, the desktop shell may place the audience Display there; teacher
+  Focus/Open rescues a Display stranded off every connected screen; Display
+  visibility resume and desktop system-resume remount re-request sanitized
+  PublicState. Physical projector / sleep/wake / Windows scaling qualification
+  remains S06 — **LATER**.
 
 ### 25. Display confidence / readiness
 
