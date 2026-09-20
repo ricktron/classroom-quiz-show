@@ -122,8 +122,14 @@ export function CategoryBoardDisplay({
   if (round.stage !== 'selected' && selection.prompt === null) return <Unavailable />
   if (round.stage === 'answer' && selection.answer === null) return <Unavailable />
 
+  const answerRevealed = selection.answer !== null
+
   return (
-    <div className="cbd cbd--open" data-testid="cbd-open">
+    <div
+      className={`cbd cbd--open${answerRevealed ? ' cbd--answer' : ''}`}
+      data-testid="cbd-open"
+      data-answer-revealed={answerRevealed ? 'true' : 'false'}
+    >
       <p className="cbd__selection-header">
         <span className="cbd__selection-category" data-testid="cbd-category">
           {selection.categoryTitle}
@@ -139,7 +145,7 @@ export function CategoryBoardDisplay({
         </div>
       )}
 
-      {selection.answer !== null && (
+      {answerRevealed && (
         <p className="cbd__answer" data-testid="cbd-answer">
           <span className="cbd__answer-label">Answer</span>
           <span className="cbd__answer-text">{selection.answer}</span>

@@ -5,17 +5,17 @@
 
 .audience {
   box-sizing: border-box;
-  min-height: 100%;
-  min-height: 100dvh;
+  height: 100dvh;
+  max-height: 100dvh;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: var(--space-3);
   padding: var(--space-4);
   background:
     radial-gradient(ellipse at 50% 0%, var(--surface-canvas) 0%, transparent 55%),
     var(--surface-projector);
   color: var(--fg-primary);
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .audience__header {
@@ -166,6 +166,7 @@
   gap: var(--space-3);
   min-height: 0;
   align-items: stretch;
+  overflow: hidden;
 }
 
 .audience--scores-column .audience__body {
@@ -179,13 +180,22 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  justify-content: center;
+  justify-content: stretch;
+  overflow: hidden;
 }
 
 .audience__round {
   width: 100%;
-  overflow-x: hidden;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  min-height: 0;
+  flex: 1 1 auto;
 }
 
 .audience__status-panel {
@@ -200,6 +210,8 @@
   flex-direction: column;
   gap: var(--space-2);
   min-width: 0;
+  min-height: 0;
+  flex-shrink: 0;
 }
 
 .audience__rail {
@@ -409,13 +421,115 @@
   }
 }
 
+/*
+ * Quiet-cognition (open clue): Nexus already carries the compact timer.
+ * Densify the duplicate ResponseTimerDisplay in the compact Signal Rail so
+ * authored prompt text keeps the primary vertical budget.
+ */
+.audience--scene-quiet-cognition .signal-rail {
+  gap: var(--space-2);
+  padding: 0.2rem 0.55rem;
+}
+
+.audience--scene-quiet-cognition .signal-rail .rtd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.2rem 0.65rem;
+  width: auto;
+  max-width: 100%;
+  padding: 0.15rem 0.55rem;
+}
+
+.audience--scene-quiet-cognition .signal-rail .rtd__armed,
+.audience--scene-quiet-cognition .signal-rail .rtd__status {
+  margin: 0;
+  font-size: clamp(0.7rem, 1.05vw, 0.9rem);
+}
+
+.audience--scene-quiet-cognition .signal-rail .rtd__clock {
+  font-size: clamp(1.15rem, 2.4vw, 1.85rem);
+}
+
+.audience--scene-quiet-cognition .signal-rail__status {
+  font-size: clamp(0.85rem, 1.3vw, 1.1rem);
+}
+
 @media (max-height: 800px) {
   .audience {
-    padding: var(--space-3);
-    gap: var(--space-2);
+    padding: var(--space-2);
+    gap: var(--space-1);
   }
 
   .audience--scores-column .audience__body {
     grid-template-columns: minmax(8.5rem, 13rem) 1fr;
+  }
+
+  .audience__header {
+    gap: 0.15rem;
+  }
+
+  .audience__host-line,
+  .audience__game-line {
+    font-size: clamp(0.7rem, 1vw, 0.85rem);
+  }
+
+  .nexus {
+    padding: 0.2rem 0.55rem;
+    gap: var(--space-1) var(--space-2);
+  }
+
+  .nexus__round,
+  .nexus__stage,
+  .nexus__detail {
+    font-size: clamp(0.8rem, 1.3vw, 1.05rem);
+  }
+
+  .score-layout--deck .tsb__list,
+  .tsb--deck .tsb__list {
+    gap: 0.25rem;
+  }
+
+  .score-layout--deck .tsb__team,
+  .tsb--deck .tsb__team {
+    padding: 0.2rem 0.35rem;
+    gap: 0;
+  }
+
+  .tsb__title {
+    margin-bottom: 0.2rem;
+    font-size: clamp(0.7rem, 1.1vw, 0.9rem);
+  }
+
+  .tsb__name {
+    font-size: clamp(0.68rem, 1.05vw, 0.95rem);
+    line-height: 1.08;
+  }
+
+  .tsb__score {
+    font-size: clamp(0.95rem, 2vw, 1.55rem);
+  }
+
+  .audience__footer {
+    gap: 0.25rem;
+  }
+
+  .signal-rail {
+    padding: 0.15rem 0.45rem;
+  }
+
+  .audience--scene-quiet-cognition .audience__brand,
+  .audience--scene-quiet-cognition .audience__game-line {
+    display: none;
+  }
+
+  .audience--scene-quiet-cognition .signal-rail .rtd {
+    padding: 0.1rem 0.4rem;
+    gap: 0.15rem 0.45rem;
+  }
+
+  .audience--scene-quiet-cognition .signal-rail .rtd__clock {
+    font-size: clamp(1rem, 2.1vw, 1.45rem);
   }
 }

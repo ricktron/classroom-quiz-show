@@ -1,0 +1,161 @@
+/**
+ * Sanitizer-backed Display snapshots derived from the canonical visual stress
+ * Game fixture. Playwright and unit tests share this path so authored stress
+ * content cannot silently diverge from rendered Display state.
+ */
+
+import { importGameFromUnknown } from '../import/importGame'
+import type { SessionCommand } from '../state/commands'
+import type { PublicState } from '../state/publicState'
+import { createSessionStore, type SessionStore } from '../state/store'
+import {
+  VISUAL_STRESS_IMAGE_TILE_ID,
+  VISUAL_STRESS_LONG_TILE_ID,
+  VISUAL_STRESS_ROUND_ID,
+  visualStressGameFile,
+} from './visualStressFixtures'
+
+const AT = 1_700_000_000_000
+const ROUND = VISUAL_STRESS_ROUND_ID
+
+/** Stress score profile: negative, zero-ish, typical, and large positive. */
+const STRESS_SCORE_DELTAS: ReadonlyArray<readonly [string, number]> = [
+  ['stress-t1', -999999],
+  ['stress-t2', 100],
+  ['stress-t3', 200],
+  ['stress-t4', 0],
+  ['stress-t5', 400],
+  ['stress-t6', 500],
+  ['stress-t7', 600],
+  ['stress-t8', 100007],
+]
+
+function select(tileId: string): SessionCommand {
+  return {
+    type: 'SELECT_CATEGORY_BOARD_TILE',
+    issuedAt: AT,
+    roundId: ROUND,
+    tileId,
+  }
+}
+
+const revealPrompt: SessionCommand = {
+  type: 'REVEAL_CATEGORY_BOARD_PROMPT',
+  issuedAt: AT,
+  roundId: ROUND,
+}
+
+const revealAnswer: SessionCommand = {
+  type: 'REVEAL_CATEGORY_BOARD_ANSWER',
+  issuedAt: AT,
+  roundId: ROUND,
+}
+
+const returnToBoard: SessionCommand = {
+  type: 'RETURN_TO_CATEGORY_BOARD',
+  issuedAt: AT,
+  roundId: ROUND,
+}
+
+const armResponse: SessionCommand = {
+  type: 'ARM_RESPONSE_PHASE',
+  issuedAt: AT,
+  roundId: ROUND,
+}
+
+const startTimer: SessionCommand = {
+  type: 'START_RESPONSE_TIMER',
+  issuedAt: AT,
+  roundId: ROUND,
+  durationSeconds: 20,
+}
+
+function createStressStore(): SessionStore {
+  const result = importGameFromUnknown(visualStressGameFile())
+  if (result.status !== 'success') {
+    throw new Error(`visual stress fixture failed to import: ${result.status}`)
+  }
+  const store = createSessionStore()
+  store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 's05-f1-stress' })
+  store.dispatch({
+    type: 'INITIALIZE_GAME',
+    issuedAt: AT,
+    definition: result.definition,
+  })
+  store.dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: AT })
+  for (const [teamId, delta] of STRESS_SCORE_DELTAS) {
+    if (delta === 0) continue
+    store.dispatch({
+      type: 'ADJUST_TEAM_SCORE',
+      issuedAt: AT,
+      teamId,
+      delta,
+      mode: 'manual-correction',
+      source: { kind: 'manual' },
+    })
+  }
+  return store
+}
+
+function snapshotAt(store: SessionStore, revision: number, ...commands: SessionCommand[]): PublicState {
+  for (const command of commands) {
+    store.dispatch(command)
+  }
+  const state = store.getPublicState()
+  return {
+    ...state,
+    revision,
+    phase: 'ready',
+    headline: 'Session ready',
+    detail: 'Playing',
+  }
+}
+
+/** Board stage with one used tile + eight stress teams. */
+export function visualStressBoardSnapshot(revision = 101): PublicState {
+  const store = createStressStore()
+  return snapshotAt(
+    store,
+    revision,
+    select(VISUAL_STRESS_LONG_TILE_ID),
+    revealPrompt,
+    revealAnswer,
+    returnToBoard,
+  )
+}
+
+/** Open long text prompt (schema-max) with timer chrome + eight teams. */
+export function visualStressLongPromptSnapshot(revision = 110): PublicState {
+  const store = createStressStore()
+  return snapshotAt(
+    store,
+    revision,
+    select(VISUAL_STRESS_LONG_TILE_ID),
+    revealPrompt,
+    armResponse,
+    startTimer,
+  )
+}
+
+/** Answer-revealed long prompt + long answer with eight teams. */
+export function visualStressAnswerRevealSnapshot(revision = 120): PublicState {
+  const store = createStressStore()
+  return snapshotAt(
+    store,
+    revision,
+    select(VISUAL_STRESS_LONG_TILE_ID),
+    revealPrompt,
+    revealAnswer,
+  )
+}
+
+/** Image clue prompt with eight teams (useful-size media asset). */
+export function visualStressImagePromptSnapshot(revision = 111): PublicState {
+  const store = createStressStore()
+  return snapshotAt(store, revision, select(VISUAL_STRESS_IMAGE_TILE_ID), revealPrompt)
+}
+
+/** High-contrast answer reveal (same content as answer snapshot). */
+export function visualStressHighContrastAnswerSnapshot(revision = 121): PublicState {
+  return visualStressAnswerRevealSnapshot(revision)
+}

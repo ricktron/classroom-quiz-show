@@ -1,26 +1,65 @@
 /**
- * Projector presentation for typed prompt content (Slice 11).
+ * Projector presentation for typed prompt content (Slice 11 + S05-F1).
  *
- * Text keeps the large-type look of the former `.cbd__prompt`. Image layout is
- * calm and full-width within the open-tile panel — no card chrome, no overlays.
+ * Text is the primary classroom object at open-clue stage: large type for
+ * ordinary stems, length-aware scale for schema-max stems so full authored
+ * text remains visible with the score deck (limits.ts rationale: MAX_PROMPT_LENGTH
+ * stays on one screen without page scroll or internal clipping). Image layout
+ * stays calm and secondary to reading the prompt when both appear.
  */
 
 .mcd {
   margin: 0;
+  width: 100%;
 }
 
 .mcd__text {
-  max-width: 40ch;
-  font-size: clamp(1.3rem, 3.2vw, 3rem);
-  line-height: 1.25;
+  max-width: min(56ch, 100%);
+  margin-inline: auto;
+  font-size: clamp(1.2rem, 0.45rem + 2.6vh, 3.15rem);
+  font-weight: 700;
+  line-height: 1.22;
+  letter-spacing: 0.005em;
   overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+/* Medium stems keep strong presence without exhausting vertical budget. */
+.mcd__text[data-length='medium'] {
+  font-size: clamp(1.15rem, 0.4rem + 2.35vh, 2.85rem);
+  line-height: 1.2;
+  max-width: min(60ch, 100%);
+}
+
+/*
+ * Schema-near / max stems: widen the measure and keep a classroom-legible
+ * floor. Composition (Audience shell + open chrome) supplies the vertical
+ * budget — type must not shrink below distance-first usability.
+ */
+.mcd__text[data-length='long'] {
+  font-size: clamp(1.125rem, 0.38rem + 2.2vh, 2.55rem);
+  line-height: 1.18;
+  max-width: min(72ch, 100%);
+}
+
+.cbd--answer .mcd__text {
+  font-size: clamp(1.05rem, 0.35rem + 2.1vh, 2.55rem);
+}
+
+.cbd--answer .mcd__text[data-length='medium'] {
+  font-size: clamp(1rem, 0.3rem + 1.9vh, 2.25rem);
+}
+
+.cbd--answer .mcd__text[data-length='long'] {
+  font-size: clamp(1.05rem, 0.32rem + 1.85vh, 2.15rem);
+  max-width: min(68ch, 100%);
 }
 
 .mcd--image {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: clamp(0.35rem, 1vh, 0.75rem);
   max-width: min(100%, 52rem);
   margin-inline: auto;
 }
@@ -28,26 +67,31 @@
 .mcd__img {
   display: block;
   max-width: 100%;
-  max-height: min(55vh, 28rem);
+  max-height: min(38vh, 20rem);
   width: auto;
   height: auto;
   object-fit: contain;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-surface);
+  background: var(--surface-recessed);
 }
 
 .mcd__caption {
   margin: 0;
-  max-width: 40ch;
-  font-size: clamp(1rem, 2vw, 1.35rem);
-  line-height: 1.3;
+  max-width: min(42ch, 100%);
+  font-size: clamp(0.85rem, 1.5vw + 0.15vh, 1.15rem);
+  line-height: 1.2;
+  font-weight: 600;
   text-align: center;
+  color: var(--fg-secondary);
   overflow-wrap: anywhere;
 }
 
 .mcd__attribution {
   margin: 0;
-  max-width: 40ch;
-  font-size: clamp(0.85rem, 1.5vw, 1.05rem);
-  line-height: 1.3;
+  max-width: min(42ch, 100%);
+  font-size: clamp(0.7rem, 1.1vw + 0.1vh, 0.9rem);
+  line-height: 1.2;
   text-align: center;
   color: var(--fg-muted);
   overflow-wrap: anywhere;
@@ -59,7 +103,7 @@
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  max-width: 40ch;
+  max-width: min(42ch, 100%);
   margin-inline: auto;
   text-align: center;
 }
@@ -73,7 +117,54 @@
 
 .mcd__alt-fallback {
   margin: 0;
-  font-size: clamp(1.15rem, 2.6vw, 1.85rem);
+  font-size: clamp(1.25rem, 2.8vw, 2rem);
+  font-weight: 700;
   line-height: 1.3;
   overflow-wrap: anywhere;
+}
+
+:root[data-theme='high-contrast'] .mcd__text {
+  font-weight: 800;
+}
+
+:root[data-theme='high-contrast'] .mcd__img {
+  border: var(--bw-strong) solid var(--border-strong);
+}
+
+:root[data-theme='high-contrast'] .mcd__caption {
+  font-weight: 700;
+}
+
+@media (max-height: 800px) {
+  .mcd__text {
+    font-size: clamp(1.1rem, 0.38rem + 2.25vh, 2.45rem);
+  }
+
+  .mcd__text[data-length='medium'] {
+    font-size: clamp(1.12rem, 0.36rem + 2.15vh, 2.25rem);
+  }
+
+  .mcd__text[data-length='long'] {
+    font-size: clamp(1.1rem, 0.35rem + 2.05vh, 2rem);
+  }
+
+  .cbd--answer .mcd__text[data-length='long'] {
+    font-size: clamp(1.08rem, 0.32rem + 1.85vh, 1.85rem);
+  }
+
+  .mcd__img {
+    max-height: min(28vh, 13.5rem);
+  }
+
+  .mcd--image {
+    gap: 0.25rem;
+  }
+
+  .mcd__caption {
+    font-size: clamp(0.75rem, 1.2vw, 0.95rem);
+  }
+
+  .mcd__attribution {
+    font-size: clamp(0.65rem, 1vw, 0.8rem);
+  }
 }
