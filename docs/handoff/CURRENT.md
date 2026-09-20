@@ -27,7 +27,7 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S04C-H1, S04C-H2, S04C-H3, and S04C-H4 **TERMINALLY COMPLETE**. S04C parent **ACTIVE / OPEN / NOT TERMINAL**. Recommended next owner action: fresh reconciliation before any further S04C implementation. **Further S04C implementation is NOT AUTHORIZED.** This handoff does not name that successor. |
+| Current Program frontier | S04A, S04B, and S04C **TERMINALLY COMPLETE**. Next Program frontier requires a **fresh owner decision** (routing ≠ authority). S04D / S05 / S06 remain **NOT AUTHORIZED**. REAL MVP is **not** complete. |
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
 | S04 canon | product direction **registered** |
@@ -37,7 +37,8 @@ also read
 | S04C-H2 | **TERMINALLY COMPLETE** |
 | S04C-H3 | **TERMINALLY COMPLETE** |
 | S04C-H4 | **TERMINALLY COMPLETE** |
-| S04C | parent **ACTIVE / OPEN / NOT TERMINAL**; further S04C implementation **NOT AUTHORIZED** |
+| S04C display placement / wake recovery | **TERMINALLY COMPLETE** (descriptive identity; not H5) |
+| S04C | parent **TERMINALLY COMPLETE** |
 | S04D / S05 / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
 
@@ -173,8 +174,9 @@ Contract versions: see [`../STATUS.md`](../STATUS.md).
 
 Do **not**:
 
-- begin further S04C implementation without a later bounded authorization;
-- treat terminal H1, H2, H3, or H4 as terminal S04C completion;
+- reopen S04C implementation without a separate owner authorization that
+  explicitly reopens it;
+- treat S04C terminality as REAL MVP completion or release readiness;
 - begin S04D telemetry without a later bounded authorization;
 - begin S05 visual-fidelity work or S06 integrated release qualification;
 - silently decide Apple/Windows signing, fee waiver, CPU/OS matrix, or
@@ -230,18 +232,27 @@ post-merge CI success.
 post-merge CI success. The first post-merge unit failure on the
 implementation squash was a **TEST_SYNCHRONIZATION_DEFECT**, repaired by
 PR #85. Product Keep behavior was not changed by that repair.
-S04C parent remains **ACTIVE / OPEN / NOT TERMINAL**. Recommended next
-owner action is a **fresh reconciliation** before any further S04C
-implementation. **Further S04C implementation is NOT AUTHORIZED.** This
-handoff does not name that successor. Do **not** start further S04C
-implementation from this handoff. Do **not** claim Windows physical
-qualification, Sony physical re-qualification, local hardware
-qualification for H2 (none required), local qualification for H3
-(**NONE**), local qualification for H4 (**NONE**), a browser quota-fill
-experiment, or a signed release from this handoff. An accepted **LOW**
-remains: after a successful Keep, the collapsed **More detail about this
-file** note may still say nothing was saved. The primary status line is
-the durable outcome.
+
+`CQS-REAL-MVP-S04C-DISPLAY-PLACEMENT-AND-WAKE-REPUBLISH-RECOVERY` is
+**TERMINALLY COMPLETE** after PR #87: initial head
+`2e19fe4ac1913241f5d0b3fd18f30895aa449583` (**REPAIR REQUIRED**), repaired
+accepted head `212784865034b0330e09295b2e212aff4f68fc94`
+(**ACCEPT CANDIDATE**), squash/main
+`0d1fac747c0768d6f0dd0960781f6ab8a7184ece` (tree match; post-merge CI /
+Desktop / Pages / Sonar SUCCESS). Not named H5.
+
+`CQS-REAL-MVP-S04C-PRODUCT-SAFETY-RECOVERY-AND-COMPATIBILITY-UX` is
+**TERMINALLY COMPLETE**. Do **not** start S04D / S05 / S06 from this
+handoff. Next Program frontier requires a **fresh owner decision**
+(routing ≠ authority). REAL MVP is **not** complete. Do **not** claim
+Windows physical qualification, projector/sleep physical qualification,
+Sony physical re-qualification, local hardware qualification for H2
+(none required), local qualification for H3 (**NONE**), local
+qualification for H4 (**NONE**), a browser quota-fill experiment, or a
+signed release from this handoff. An accepted **LOW** remains: after a
+successful Keep, the collapsed **More detail about this file** note may
+still say nothing was saved. The primary status line is the durable
+outcome.
 
 ```text
 routing ≠ authority
@@ -251,10 +262,13 @@ S04C-H1: TERMINALLY COMPLETE
 S04C-H2: TERMINALLY COMPLETE
 S04C-H3: TERMINALLY COMPLETE
 S04C-H4: TERMINALLY COMPLETE
-S04C: ACTIVE / OPEN / NOT TERMINAL
-further S04C implementation: NOT AUTHORIZED
+CQS-REAL-MVP-S04C-DISPLAY-PLACEMENT-AND-WAKE-REPUBLISH-RECOVERY: TERMINALLY COMPLETE
+S04C: TERMINALLY COMPLETE
 S04D/S05/S06: NOT AUTHORIZED
 ```
+
+S04C parent terminal post-merge reconciliation (candidate docs):
+[`../receipts/2026-09-20-cqs-real-mvp-s04c-terminal-post-merge-reconciliation.md`](../receipts/2026-09-20-cqs-real-mvp-s04c-terminal-post-merge-reconciliation.md).
 
 S04C-H4 terminal post-merge reconciliation:
 [`../receipts/2026-09-19-cqs-real-mvp-s04c-h4-terminal-post-merge-reconciliation.md`](../receipts/2026-09-19-cqs-real-mvp-s04c-h4-terminal-post-merge-reconciliation.md).
@@ -298,7 +312,8 @@ H6 readiness physical + UX re-review report (historical):
 H6 durable interaction/evidence manifest (historical):
 [`qualification-runs/s04b-h6-2026-09-12.jsonl`](qualification-runs/s04b-h6-2026-09-12.jsonl).
 
-Do **not** begin further S04C implementation from this handoff.
+Do **not** begin S04D / S05 / S06 from this handoff. Do **not** reopen S04C
+without separate owner authorization.
 
 ## Architecture pointers
 

@@ -34,11 +34,14 @@
   **TERMINALLY COMPLETE** after implementation PR #84 merged as
   `2c484a2d0ce73fa4f52717773e93fb3ad1e917ef` and repair PR #85 merged as
   `3cd5e3a0f884f234b03425fd169e5e495fa1a147`, with post-merge CI success on
-  that repair squash. S04C parent remains **ACTIVE / OPEN / NOT TERMINAL**.
-  Further S04C implementation, S04D, S05, and S06 are **not authorized**.
-  Recommended next owner action is a fresh reconciliation before any
-  further S04C implementation (routing ≠ authority). This plan does not
-  name that successor.
+  that repair squash. Display placement / wake recovery
+  (`CQS-REAL-MVP-S04C-DISPLAY-PLACEMENT-AND-WAKE-REPUBLISH-RECOVERY`) is
+  **TERMINALLY COMPLETE** after PR #87 squash/main
+  `0d1fac747c0768d6f0dd0960781f6ab8a7184ece` (repaired accepted head
+  `212784865034b0330e09295b2e212aff4f68fc94`; not named H5). S04C parent is
+  **TERMINALLY COMPLETE**. S04D, S05, and S06 are **not authorized**. Next
+  Program frontier requires a fresh owner decision (routing ≠ authority).
+  REAL MVP is **not** complete.
 
 This document is the canonical **CQS REAL MVP Program** plan of record. It
 registers `CQS-REAL-MVP-1` as the current owner-approved Program without
@@ -81,7 +84,7 @@ the owner-approved remaining product direction into repository Markdown.
 This Program plan does **not**:
 
 - resolve signing, notarization, or paid-account questions;
-- authorize further S04C implementation beyond terminal H4, or S04D/S05/S06 implementation;
+- authorize S04D/S05/S06 implementation;
 - reopen Slices 1–23;
 - activate post-MVP arcs;
 - promote Raspberry Pi, LAN, phone controllers, live in-app AI, accounts,
@@ -324,8 +327,10 @@ COMPLETE** after PR #82 squash/main
 `8d5c22b1d6bcd14286b5c2c6e05ba9144ec7b415`. S04C-H4 is **TERMINALLY
 COMPLETE** after implementation PR #84 squash
 `2c484a2d0ce73fa4f52717773e93fb3ad1e917ef` and repair PR #85 squash
-`3cd5e3a0f884f234b03425fd169e5e495fa1a147`. This document does not
-authorize further S04C implementation, or S04D / S05 / S06.
+`3cd5e3a0f884f234b03425fd169e5e495fa1a147`. Display placement / wake
+recovery is **TERMINALLY COMPLETE** after PR #87 squash/main
+`0d1fac747c0768d6f0dd0960781f6ab8a7184ece`. S04C parent is **TERMINALLY
+COMPLETE**. This document does not authorize S04D / S05 / S06.
 
 S04A terminal evidence:
 [`../receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md`](../receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md).
@@ -484,10 +489,14 @@ is **TERMINALLY COMPLETE** after PR #76 squash/main
 after implementation PR #84 squash
 `2c484a2d0ce73fa4f52717773e93fb3ad1e917ef` and repair PR #85 squash
 `3cd5e3a0f884f234b03425fd169e5e495fa1a147`, with post-merge CI success on
-the repair squash. S04C parent remains **ACTIVE / OPEN / NOT TERMINAL**.
-Recommended next owner action is a **fresh reconciliation** before any
-further S04C implementation. **Further S04C implementation is NOT
-AUTHORIZED.** This section does not name that successor.
+the repair squash. `CQS-REAL-MVP-S04C-DISPLAY-PLACEMENT-AND-WAKE-REPUBLISH-RECOVERY`
+is **TERMINALLY COMPLETE** after PR #87 squash/main
+`0d1fac747c0768d6f0dd0960781f6ab8a7184ece` (repaired accepted head
+`212784865034b0330e09295b2e212aff4f68fc94`; not named H5).
+`CQS-REAL-MVP-S04C-PRODUCT-SAFETY-RECOVERY-AND-COMPATIBILITY-UX` is
+**TERMINALLY COMPLETE**. Next Program frontier requires a **fresh owner
+decision** (routing ≠ authority). **S04D / S05 / S06 are NOT AUTHORIZED.**
+REAL MVP is **not** complete.
 
 ```text
 routing ≠ authority
@@ -497,10 +506,14 @@ S04C-H1: TERMINALLY COMPLETE
 S04C-H2: TERMINALLY COMPLETE
 S04C-H3: TERMINALLY COMPLETE
 S04C-H4: TERMINALLY COMPLETE
-S04C: ACTIVE / OPEN / NOT TERMINAL
-further S04C implementation: NOT AUTHORIZED
+CQS-REAL-MVP-S04C-DISPLAY-PLACEMENT-AND-WAKE-REPUBLISH-RECOVERY: TERMINALLY COMPLETE
+S04C: TERMINALLY COMPLETE
 S04D/S05/S06: NOT AUTHORIZED
 ```
+
+S04C parent terminal evidence (candidate docs; does not predict this
+terminalization PR’s eventual squash SHA):
+[`../receipts/2026-09-20-cqs-real-mvp-s04c-terminal-post-merge-reconciliation.md`](../receipts/2026-09-20-cqs-real-mvp-s04c-terminal-post-merge-reconciliation.md).
 
 S04C-H4 terminal evidence:
 [`../receipts/2026-09-19-cqs-real-mvp-s04c-h4-terminal-post-merge-reconciliation.md`](../receipts/2026-09-19-cqs-real-mvp-s04c-h4-terminal-post-merge-reconciliation.md).

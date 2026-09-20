@@ -258,8 +258,8 @@ hardware, recovery, and the end-to-end experience.
 - **Ownership / state:** **S04B — CURRENT** for setup-level recovery within
   S04B scope. `src/host/SonyBuzzSetupSection.tsx` and the Slice 21 guided
   repair flow are an **ALREADY IMPLEMENTED FOUNDATION** on `main`. Deeper
-  device/sleep recovery beyond S04B scope is S04C — **LATER**. Packaged
-  physical Sony qualification is a retained gate, **DEFERRED / NOT RUN**.
+  Sony device/sleep physical qualification remains S06 — **LATER**. Packaged
+  physical Sony qualification on Windows is **NOT RUN**.
 
 ### 10. Buzzer Check
 
@@ -433,7 +433,7 @@ hardware, recovery, and the end-to-end experience.
 - **Ownership / state:** **ALREADY IMPLEMENTED FOUNDATION**
   (`src/host/AudioControls.tsx`, `usePresentationAudio`, ADR-020). Audio
   **readiness within Class Setup** is **S04B — CURRENT**. Device-selection
-  resilience is S04C/S06 — **LATER**.
+  physical/integrated resilience remains S06 — **LATER**.
 
 ### 23. Emergency Mute
 
@@ -460,7 +460,8 @@ hardware, recovery, and the end-to-end experience.
 - **Ownership / state:** **S04B — CURRENT** for projector readiness within
   S04B direction. Host/Display native windows are an **ALREADY IMPLEMENTED
   FOUNDATION** (S03, ADR-021). S04C display-placement / wake-republish recovery
-  is an **ACTIVE CANDIDATE** (not terminal): when exactly one non-Host screen
+  is **TERMINALLY COMPLETE** on main (PR #87 squash
+  `0d1fac747c0768d6f0dd0960781f6ab8a7184ece`): when exactly one non-Host screen
   exists, the desktop shell may place the audience Display there; teacher
   Focus/Open rescues a Display stranded off every connected screen; Display
   visibility resume and desktop system-resume remount re-request sanitized
@@ -562,9 +563,10 @@ hardware, recovery, and the end-to-end experience.
   what it blocks; jitter between states (`CQS-UXF-08`).
 - **Principles:** `P05`, `P08`, `P20`, `P03`.
 - **Research routing:** Podmajersky, Metts & Welfle, Endsley & Jones.
-- **Ownership / state:** **Cross-cutting.** Intelligible failure handling as a
-  product concern is S04C — **LATER**; each active lane owns its own
-  messages.
+- **Ownership / state:** **Cross-cutting.** S04C safety/recovery foundations
+  are **TERMINALLY COMPLETE** on main. Individual later lanes still own their
+  own error/warning copy. Cross-cutting polish can occur without reopening
+  S04C.
 
 ### 32. Advanced diagnostics / support evidence
 
@@ -624,9 +626,10 @@ hardware, recovery, and the end-to-end experience.
   development.
 - **Principles:** `P25`, `P14`, `P10`, `P11`.
 - **Research routing:** Endsley & Jones.
-- **Ownership / state:** S06 — **LATER** for qualification; S04C — **LATER**
-  for recovery UX. Physical Windows runtime is **NOT RUN**; packaged macOS
-  Sony physical is **DEFERRED / NOT RUN / HARDWARE UNAVAILABLE**.
+- **Ownership / state:** S06 — **LATER** for physical/integrated
+  qualification. S04C implementation of bounded Display placement, stranded
+  window rescue, and wake/resume PublicState catch-up is **TERMINALLY
+  COMPLETE** on main. Physical Windows runtime is **NOT RUN**.
 
 ### 36. Global visual language / design system
 
