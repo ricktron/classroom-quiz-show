@@ -40,6 +40,12 @@ export const MAX_CLOCK_OFFSET_CORRECTION_MS = 5_000
  * display keeps its last safe state — it never promotes itself to authority.
  */
 export interface PublicStateReceiver {
+  /**
+   * Ask the Host to republish the current sanitized snapshot.
+   * Used on first mount and again after ordinary Display wake/resume.
+   * Content-free: only the existing `request-state` protocol message.
+   */
+  requestState(): void
   close(): void
 }
 
@@ -83,11 +89,20 @@ export function createPublicStateReceiver(
     options.onClockOffset?.(clampOffset(sentAt - clock.now()))
   })
 
+  let closed = false
+
+  function requestState(): void {
+    if (closed) return
+    channel.post(encodeEnvelope({ type: 'request-state' }))
+  }
+
   // Ask the host to republish now, so we catch up without waiting for a change.
-  channel.post(encodeEnvelope({ type: 'request-state' }))
+  requestState()
 
   return {
+    requestState,
     close() {
+      closed = true
       unsubscribe()
       channel.close()
     },

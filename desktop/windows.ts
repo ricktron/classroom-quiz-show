@@ -2,6 +2,7 @@ import {
   app,
   BrowserWindow,
   Menu,
+  screen,
   type BrowserWindowConstructorOptions,
   type HandlerDetails,
   type MenuItemConstructorOptions,
@@ -11,6 +12,13 @@ import {
   DESKTOP_HOST_ENTRY_URL,
   DESKTOP_HOST_WINDOW_TITLE,
 } from './constants'
+import {
+  decideAudienceDisplayPlacement,
+  windowAlreadyOnPlacement,
+  type AudienceDisplayPlacementDecision,
+  type DisplayRect,
+  type DisplayScreenInfo,
+} from './displayPlacement'
 import { DESKTOP_PRODUCT_NAME } from './identity'
 import { DESKTOP_WEB_PREFERENCES } from './security'
 import {
@@ -32,6 +40,66 @@ export function getHostWindow(): BrowserWindow | null {
 
 export function getDisplayWindow(): BrowserWindow | null {
   return displayWindow
+}
+
+function hostBoundsOrFallback(): DisplayRect {
+  if (hostWindow && !hostWindow.isDestroyed()) {
+    return hostWindow.getBounds()
+  }
+  return { x: 0, y: 0, width: 1280, height: 800 }
+}
+
+function readDisplayScreens(): DisplayScreenInfo[] {
+  return screen.getAllDisplays().map((d) => ({
+    id: d.id,
+    bounds: d.bounds,
+    workArea: d.workArea,
+  }))
+}
+
+/** Exported for desktop unit tests that inject topology without Electron screen. */
+export function decidePlacementForHost(
+  displays: readonly DisplayScreenInfo[],
+  hostBounds: DisplayRect,
+): AudienceDisplayPlacementDecision {
+  return decideAudienceDisplayPlacement({ displays, hostBounds })
+}
+
+function currentPlacementDecision(): AudienceDisplayPlacementDecision {
+  return decidePlacementForHost(readDisplayScreens(), hostBoundsOrFallback())
+}
+
+function placementWindowOptions(): Pick<
+  BrowserWindowConstructorOptions,
+  'x' | 'y' | 'width' | 'height'
+> {
+  const decision = currentPlacementDecision()
+  if (decision.kind !== 'place') return {}
+  return {
+    x: decision.bounds.x,
+    y: decision.bounds.y,
+    width: decision.bounds.width,
+    height: decision.bounds.height,
+  }
+}
+
+/**
+ * When exactly one non-Host display exists, move the audience Display there.
+ * Ambiguous or single-display topologies leave the window where it is.
+ * Already-correct placement is left alone (focus/show only).
+ */
+function placeAudienceDisplayIfSafe(win: BrowserWindow): void {
+  if (win.isDestroyed()) return
+  const decision = currentPlacementDecision()
+  if (decision.kind !== 'place') return
+  const current = win.getBounds()
+  if (windowAlreadyOnPlacement(current, decision)) return
+  win.setBounds({
+    x: decision.bounds.x,
+    y: decision.bounds.y,
+    width: decision.bounds.width,
+    height: decision.bounds.height,
+  })
 }
 
 function attachDisplayLock(win: BrowserWindow): void {
@@ -59,6 +127,9 @@ function attachDisplayLock(win: BrowserWindow): void {
 function focusOrCreateDisplay(url: string): void {
   if (displayWindow && !displayWindow.isDestroyed()) {
     void displayWindow.loadURL(url)
+    placeAudienceDisplayIfSafe(displayWindow)
+    if (displayWindow.isMinimized()) displayWindow.restore()
+    displayWindow.show()
     displayWindow.focus()
     return
   }
@@ -66,8 +137,10 @@ function focusOrCreateDisplay(url: string): void {
     title: DESKTOP_DISPLAY_WINDOW_TITLE,
     show: true,
     webPreferences: { ...DESKTOP_WEB_PREFERENCES },
+    ...placementWindowOptions(),
   })
   attachDisplayLock(created)
+  placeAudienceDisplayIfSafe(created)
   void created.loadURL(url)
 }
 
@@ -88,6 +161,7 @@ export function handleWindowOpen(details: HandlerDetails): {
     overrideBrowserWindowOptions: {
       title: DESKTOP_DISPLAY_WINDOW_TITLE,
       webPreferences: { ...DESKTOP_WEB_PREFERENCES },
+      ...placementWindowOptions(),
     },
   }
 }
@@ -98,6 +172,7 @@ export function registerCreatedWindow(win: BrowserWindow, url: string): void {
     return
   }
   attachDisplayLock(win)
+  placeAudienceDisplayIfSafe(win)
 }
 
 export function createHostWindow(): BrowserWindow {

@@ -33,7 +33,7 @@ test('display route loads directly with a safe waiting state', async ({ page }) 
 test('host can open the display in a new window', async ({ page, context }) => {
   await page.goto('#/host')
   const popupPromise = context.waitForEvent('page')
-  await page.getByRole('button', { name: /open display in new window/i }).click()
+  await page.getByRole('button', { name: /open audience display/i }).click()
   const popup = await popupPromise
   await popup.waitForLoadState()
   expect(popup.url()).toContain('#/display')
@@ -91,7 +91,7 @@ test('mobile / narrow host route remains usable', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /ready to run class/i })).toBeVisible()
   await expect(page.getByText(/arrive in a later slice/i)).toHaveCount(0)
   await expect(
-    page.getByRole('button', { name: /open display in new window/i }),
+    page.getByRole('button', { name: /open audience display/i }),
   ).toBeVisible()
 })
 

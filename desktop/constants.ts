@@ -29,7 +29,7 @@ export const DESKTOP_DISPLAY_ENTRY_URL = `${DESKTOP_ORIGIN}/index.html${DESKTOP_
 export const DESKTOP_SONY_VENDOR_ID = 0x054c
 export const DESKTOP_SONY_PRODUCT_ID = 0x1000
 
-/** Named window used by the existing Host "Open display in new window" action. */
+/** Named window used by the existing Host audience-display open action. */
 export const DESKTOP_DISPLAY_WINDOW_NAME = 'quiz-show-display'
 
 export const DESKTOP_HOST_WINDOW_TITLE = 'Classroom Quiz Show'

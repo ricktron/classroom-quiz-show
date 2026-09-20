@@ -64,7 +64,7 @@ describe('HostRoute theme selector', () => {
     ).not.toBeInTheDocument()
     expect(screen.queryByText(/they are diagnostics, not a game/i)).not.toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: /open display in new window/i }),
+      screen.getByRole('button', { name: /open audience display/i }),
     ).toBeInTheDocument()
   })
 
@@ -84,7 +84,7 @@ describe('HostRoute theme selector', () => {
       screen.getByRole('radio', { name: 'High contrast' }).click()
     })
     act(() => {
-      screen.getByRole('button', { name: /open display in new window/i }).click()
+      screen.getByRole('button', { name: /open audience display/i }).click()
     })
     expect(open).toHaveBeenCalled()
     const url = String(open.mock.calls[0]?.[0] ?? '')

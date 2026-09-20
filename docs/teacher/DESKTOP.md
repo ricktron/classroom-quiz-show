@@ -23,7 +23,9 @@ permission prompts, and packaging only.
 - Windows: a conventional NSIS installer (`.exe`) built on GitHub-hosted
   Windows runners
 - Host opens directly
-- **Open display in new window** creates a separate projector window
+- **Open audience display** creates a separate projector window. On a computer
+  with exactly one other screen, the desktop app moves that window to the other
+  screen. If it is still on the wrong screen, move it yourself.
 - Works offline after installation (no GitHub Pages, no localhost server)
 
 ## Unsigned development / qualification artifacts
@@ -51,7 +53,8 @@ public teacher release is claimed.
 2. Open the `.app`.
 3. If macOS blocks it, use System Settings → Privacy & Security to allow
    this specific downloaded app. Do not disable Gatekeeper globally.
-4. Host opens. Use **Open display in new window** for the projector.
+4. Host opens. Use **Open audience display** for the projector. When there is
+   exactly one other screen, the app moves the audience display there.
 
 ### Windows
 
@@ -59,7 +62,8 @@ public teacher release is claimed.
 2. Run the installer. A per-user install is the default; administrator
    elevation is not required for that mode.
 3. Start **Classroom Quiz Show** from the Start Menu or desktop shortcut.
-4. Host opens. Use **Open display in new window** for the projector.
+4. Host opens. Use **Open audience display** for the projector. When there is
+   exactly one other screen, the app moves the audience display there.
 
 ## Update model
 
