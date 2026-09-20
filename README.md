@@ -50,11 +50,13 @@ play. Desktop install/start (unsigned artifacts) is in
   `2c484a2d0ce73fa4f52717773e93fb3ad1e917ef`. That squash's unit job failed
   because a test read the in-progress salvage status. Repair PR #85 merged
   as `3cd5e3a0f884f234b03425fd169e5e495fa1a147`, and post-merge CI succeeded
-  on that exact squash/main SHA. S04C parent remains **ACTIVE /
-  OPEN / NOT TERMINAL**. Recommended next owner action is a fresh
-  reconciliation before any further S04C implementation. Routing is not
-  authority. This README does **not** name or authorize that successor, and
-  it does **not** authorize a signed teacher release.
+  on that exact squash/main SHA. Display placement / wake recovery is
+  **TERMINALLY COMPLETE** after PR #87 squash/main
+  `0d1fac747c0768d6f0dd0960781f6ab8a7184ece` (not named H5). S04C parent is
+  **TERMINALLY COMPLETE**. S04D / S05 / S06 remain **NOT AUTHORIZED**. Next
+  Program frontier requires a fresh owner decision (routing ≠ authority).
+  REAL MVP is **not** complete. This README does **not** authorize a signed
+  teacher release.
 - S03 implements the production Electron desktop shell and unsigned
   packaging path. S04 canon registers remaining product direction.
 - Product Contract:

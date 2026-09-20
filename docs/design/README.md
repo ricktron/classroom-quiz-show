@@ -230,7 +230,7 @@ speaks only to the teacher-facing presentation of it.
 | --- | --- |
 | S04A | **TERMINALLY COMPLETE.** Research may note future polish opportunities; this guidance does **not** reopen S04A. |
 | S04B | **TERMINALLY COMPLETE.** Adopted Host-setup doctrine remains applicable. Later research does **not** reopen S04B without separate authority. |
-| S04C | Parent product-safety / recovery / compatibility UX lane. S04C-H1 safe startup / unified session recovery is **TERMINALLY COMPLETE**. S04C-H2 sanitized diagnostics (Copy Diagnostic Report) is **TERMINALLY COMPLETE**. S04C-H3 local backup / restore is **TERMINALLY COMPLETE**. S04C-H4 corrupt-import salvage UX is **TERMINALLY COMPLETE**. Remaining registered S04C work requires a later bounded authorization. This guidance does **not** name or authorize that successor. |
+| S04C | Parent product-safety / recovery / compatibility UX lane. **TERMINALLY COMPLETE.** H1 safe startup / unified session recovery, H2 sanitized diagnostics, H3 local backup / restore, H4 corrupt-import salvage, and display-placement / wake-republish recovery are terminal on main. Accepted H4 LOW and trigger-deferred schema / live-follower items remain documented. Physical projector / sleep / Windows labs remain S06. S04D / S05 / S06 remain separately unauthorized. |
 | S04D | Owns intentional feedback/support flow and privacy-safe telemetry. |
 | S05 | Owns flagship Display visual fidelity, motion vocabulary, and game-show choreography. Host stays operational and restrained. |
 | S06 | Owns integrated Windows-first release qualification, including projector, scaling, accessibility, audio, hardware, and clean-room teacher use. |

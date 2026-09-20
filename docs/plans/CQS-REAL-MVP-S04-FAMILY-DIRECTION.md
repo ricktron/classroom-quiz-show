@@ -1070,21 +1070,24 @@ Primary scope:
 
 ### S04C — Product safety, recovery & compatibility UX
 
-Primary scope:
+Primary scope (implementation status on main):
 
 - safe startup / no-restore path (**H1 TERMINALLY COMPLETE**)
 - sanitized diagnostics (**H2 TERMINALLY COMPLETE**)
 - corrupt-import recovery UX (**H4 TERMINALLY COMPLETE**)
 - backup / export foundations (**H3 TERMINALLY COMPLETE**)
-- schema / version compatibility contracts
-- migration safeguards
-- rollback thinking
-- data durability
-- destructive-action safety
 - display / device / sleep recovery where bounded
-- support-oriented product hardening
+  (**DISPLAY-PLACEMENT-AND-WAKE-REPUBLISH-RECOVERY TERMINALLY COMPLETE**;
+  physical labs remain S06)
+- support-oriented product hardening appropriate to S04C
+  (**H2 TERMINALLY COMPLETE**; upload/telemetry remains S04D)
+- schema / version compatibility contracts (**DEFER_UNTIL_TRIGGER**)
+- migration safeguards / rollback thinking (**DEFER_UNTIL_TRIGGER**)
+- data durability / destructive-action safety (material paths present;
+  residual polish is LOW / not a terminal blocker)
 
-H1, H2, H3, and H4 do **not** complete S04C. Further S04C work requires a separate authorization. This file does not grant that authorization and does not name that successor.
+**S04C parent is TERMINALLY COMPLETE** for the currently authorized REAL MVP
+implementation contract. This file does **not** authorize S04D, S05, or S06.
 
 ### S04D — Feedback & privacy-safe telemetry
 
@@ -1124,7 +1127,7 @@ Naming S04A–S06 grants **no implementation authority**.
 
 Do **not** claim:
 
-- S04C parent or S04D–S06 are complete merely because H1–H4 are terminal;
+- S04D–S06 are complete merely because S04C is terminal;
 - Windows physical runtime is complete;
 - a signed teacher release exists.
 
