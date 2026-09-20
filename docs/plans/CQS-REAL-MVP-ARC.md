@@ -30,10 +30,15 @@
   COMPLETE** after PR #82 merged as
   `8d5c22b1d6bcd14286b5c2c6e05ba9144ec7b415` (accepted head
   `648edeeb04a18f99e274cc8028043b9585d59214`; squash tree matches) and
-  post-merge CI succeeded on that exact squash/main SHA. S04C
-  parent remains **ACTIVE / OPEN / NOT TERMINAL**. **H4+, S04D, S05, and
-  S06 are not authorized.** Recommended next owner action is a fresh
-  reconciliation for the next S04C frontier (routing ≠ authority).
+  post-merge CI succeeded on that exact squash/main SHA. S04C-H4 is
+  **TERMINALLY COMPLETE** after implementation PR #84 merged as
+  `2c484a2d0ce73fa4f52717773e93fb3ad1e917ef` and repair PR #85 merged as
+  `3cd5e3a0f884f234b03425fd169e5e495fa1a147`, with post-merge CI success on
+  that repair squash. S04C parent remains **ACTIVE / OPEN / NOT TERMINAL**.
+  Further S04C implementation, S04D, S05, and S06 are **not authorized**.
+  Recommended next owner action is a fresh reconciliation before any
+  further S04C implementation (routing ≠ authority). This plan does not
+  name that successor.
 
 This document is the canonical **CQS REAL MVP Program** plan of record. It
 registers `CQS-REAL-MVP-1` as the current owner-approved Program without
@@ -76,7 +81,7 @@ the owner-approved remaining product direction into repository Markdown.
 This Program plan does **not**:
 
 - resolve signing, notarization, or paid-account questions;
-- authorize later H4+ / S04D/S05/S06 implementation;
+- authorize further S04C implementation beyond terminal H4, or S04D/S05/S06 implementation;
 - reopen Slices 1–23;
 - activate post-MVP arcs;
 - promote Raspberry Pi, LAN, phone controllers, live in-app AI, accounts,
@@ -235,6 +240,7 @@ This table is not an implementation backlog with slice-level authority.
 | C-6 | **FOUNDATION IMPLEMENTED / UNSIGNED** |
 | `CQS-Q23-CLASS-B-01` | **OPEN / CONTROLLED** (build-time `cdn.sheetjs.com` fetch; bundled at runtime; not re-pinned) |
 | `CQS-Q23-LOW-02` | **OPEN / LOW / MONITOR** |
+| H4 salvage collapsed detail | **OPEN / LOW** — after a successful Keep, the collapsed **More detail about this file** note may still say nothing was saved. The primary status line is the durable outcome. Not repaired by PR #85. |
 | `CQS-OD-066` | **DEFERRED / NOT REAL MVP** |
 
 Retained finding identity is preserved:
@@ -247,6 +253,11 @@ Retained finding identity is preserved:
 - `LOW-02` (`CQS-Q23-LOW-02`) remains measured startup/precache size and the
   recorded installed-PWA Chrome-tab close caveat; **OPEN / LOW / MONITOR**.
   Do not prematurely optimize merely to make the metric disappear.
+- H4 salvage collapsed detail remains **OPEN / LOW**. After a successful
+  Keep, the collapsed **More detail about this file** note may still say
+  nothing was saved. The primary status line is the durable outcome. Not
+  repaired by PR #85. This plan does not turn that finding into a successor
+  authorization.
 - `CLASS-B-01` (`CQS-Q23-CLASS-B-01`) remains the SheetJS packaging /
   supply-chain concern; **OPEN / CONTROLLED** (build-time `cdn.sheetjs.com`
   fetch; bundled at runtime; not re-pinned). S03 CI/local desktop builds
@@ -310,8 +321,11 @@ wording remain history only. S04C-H1 is **TERMINALLY COMPLETE** after PR
 **TERMINALLY COMPLETE** after PR #80 squash/main
 `506654f1f6b4a0735a43cdda8a0100200c3dce29`. S04C-H3 is **TERMINALLY
 COMPLETE** after PR #82 squash/main
-`8d5c22b1d6bcd14286b5c2c6e05ba9144ec7b415`. This document does not
-authorize H4+ / S04D / S05 / S06.
+`8d5c22b1d6bcd14286b5c2c6e05ba9144ec7b415`. S04C-H4 is **TERMINALLY
+COMPLETE** after implementation PR #84 squash
+`2c484a2d0ce73fa4f52717773e93fb3ad1e917ef` and repair PR #85 squash
+`3cd5e3a0f884f234b03425fd169e5e495fa1a147`. This document does not
+authorize further S04C implementation, or S04D / S05 / S06.
 
 S04A terminal evidence:
 [`../receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md`](../receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md).
@@ -465,10 +479,15 @@ is **TERMINALLY COMPLETE** after PR #76 squash/main
 `CQS-REAL-MVP-S04C-H3-BACKUP-EXPORT-IMPORT-FOUNDATIONS` is
 **TERMINALLY COMPLETE** after PR #82 squash/main
 `8d5c22b1d6bcd14286b5c2c6e05ba9144ec7b415` (accepted head
-`648edeeb04a18f99e274cc8028043b9585d59214`) with post-merge CI success. S04C parent remains
-**ACTIVE / OPEN / NOT TERMINAL**. Recommended next owner action is a
-**fresh reconciliation** for the next S04C frontier. **H4+ IS NOT
-AUTHORIZED.**
+`648edeeb04a18f99e274cc8028043b9585d59214`) with post-merge CI success.
+`CQS-REAL-MVP-S04C-H4-CORRUPT-IMPORT-SALVAGE-UX` is **TERMINALLY COMPLETE**
+after implementation PR #84 squash
+`2c484a2d0ce73fa4f52717773e93fb3ad1e917ef` and repair PR #85 squash
+`3cd5e3a0f884f234b03425fd169e5e495fa1a147`, with post-merge CI success on
+the repair squash. S04C parent remains **ACTIVE / OPEN / NOT TERMINAL**.
+Recommended next owner action is a **fresh reconciliation** before any
+further S04C implementation. **Further S04C implementation is NOT
+AUTHORIZED.** This section does not name that successor.
 
 ```text
 routing ≠ authority
@@ -477,10 +496,14 @@ S04B: TERMINALLY COMPLETE
 S04C-H1: TERMINALLY COMPLETE
 S04C-H2: TERMINALLY COMPLETE
 S04C-H3: TERMINALLY COMPLETE
+S04C-H4: TERMINALLY COMPLETE
 S04C: ACTIVE / OPEN / NOT TERMINAL
-H4+: NOT AUTHORIZED
+further S04C implementation: NOT AUTHORIZED
 S04D/S05/S06: NOT AUTHORIZED
 ```
+
+S04C-H4 terminal evidence:
+[`../receipts/2026-09-19-cqs-real-mvp-s04c-h4-terminal-post-merge-reconciliation.md`](../receipts/2026-09-19-cqs-real-mvp-s04c-h4-terminal-post-merge-reconciliation.md).
 
 S04C-H3 terminal evidence:
 [`../receipts/2026-09-18-cqs-real-mvp-s04c-h3-terminal-post-merge-reconciliation.md`](../receipts/2026-09-18-cqs-real-mvp-s04c-h3-terminal-post-merge-reconciliation.md).
