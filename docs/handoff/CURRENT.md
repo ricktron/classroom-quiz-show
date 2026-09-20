@@ -116,8 +116,13 @@ restore is **TERMINALLY COMPLETE** on main after PR #82 squash
 S04C-H4 corrupt-import salvage is **TERMINALLY COMPLETE** on main after
 implementation PR #84 squash `2c484a2d0ce73fa4f52717773e93fb3ad1e917ef` and
 repair PR #85 squash `3cd5e3a0f884f234b03425fd169e5e495fa1a147`.
-S04C parent remains open. Further S04C implementation and S04D are **not
-authorized** by this handoff. This handoff does not name a successor.
+S04C display placement / wake recovery is **TERMINALLY COMPLETE** on main
+after PR #87.
+`CQS-REAL-MVP-S04C-PRODUCT-SAFETY-RECOVERY-AND-COMPATIBILITY-UX` is
+**TERMINALLY COMPLETE**. S04D / S05 / S06 remain **NOT AUTHORIZED**. Next
+Program frontier requires a **fresh owner decision** (routing ≠ authority).
+REAL MVP is **not** complete. This handoff does not name or authorize a
+successor.
 
 Those remain **existing qualified foundations** plus the S03 desktop
 foundation, S04 canon, and terminal S04A teacher-workflow foundation. Do

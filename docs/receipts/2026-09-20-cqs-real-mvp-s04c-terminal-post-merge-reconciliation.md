@@ -135,9 +135,12 @@ concluded **SUCCESS**:
 | Build production bundle / Deploy | (Pages jobs) | SUCCESS |
 | SonarCloud Code Analysis | (check) | SUCCESS |
 
-Completion reconciliation (local Project store; not merge authority):
-[`../CQS-S04C-POST-PR87-COMPLETION-RECONCILIATION.md`](../CQS-S04C-POST-PR87-COMPLETION-RECONCILIATION.md)
-concluded `YES — S04C is ready for parent terminalization preparation`.
+A local Cursor Project-store reconciliation named
+`docs/CQS-S04C-POST-PR87-COMPLETION-RECONCILIATION.md` concluded
+`YES — S04C is ready for parent terminalization preparation`. It is
+supporting workflow evidence, not repository merge authority. Canonical
+terminality above stands on repository-verifiable H1–H4 / PR #87 evidence
+independently of that local artifact.
 
 ## I. Remaining accepted / deferred items
 
