@@ -14,10 +14,10 @@ delivery/review/repair/qualification/release work,
 | Question | Answer |
 | --- | --- |
 | What is historically complete? | Slices **1–23**. Original 23-slice foundation/qualification roadmap: **COMPLETE**. Slice 23: **TERMINALLY COMPLETE**. Guidance Polish S01: **TERMINALLY COMPLETE**. |
-| What is active? | **`CQS-REAL-MVP-1`: ACTIVE / CANONICALLY REGISTERED**. S03 implements the production Electron thin shell and unsigned desktop packaging path (ADR-021 **Accepted**). S04 canon registers remaining product direction. S04A, S04B, and **S04C** (including H1–H4 and display-placement / wake recovery) are **TERMINALLY COMPLETE**. Post-MVP arcs remain **INACTIVE**. |
-| What remains? | REAL MVP teacher-adoptable product work remains open. S04A, S04B, and S04C are **TERMINALLY COMPLETE**. S04D, flagship visual fidelity (S05), and integrated release qualification (S06) are **not begun** and **NOT AUTHORIZED**. Desktop artifacts are **unsigned** qualification/development-candidate builds, not a teacher-trusted signed release. |
+| What is active? | **`CQS-REAL-MVP-1`: ACTIVE / CANONICALLY REGISTERED**. S03 implements the production Electron thin shell and unsigned desktop packaging path (ADR-021 **Accepted**). S04 canon registers remaining product direction. S04A, S04B, and **S04C** (including H1–H4 and display-placement / wake recovery) are **TERMINALLY COMPLETE**. **S05-F1** is **TERMINALLY COMPLETE**; S05 parent remains **OPEN / NOT TERMINAL**. Post-MVP arcs remain **INACTIVE**. |
+| What remains? | REAL MVP teacher-adoptable product work remains open. S04A, S04B, and S04C are **TERMINALLY COMPLETE**. **S05-F1** (static Board + Clue Display readability / visual stress) is **TERMINALLY COMPLETE**. S05 parent remains **OPEN / NOT TERMINAL**. Remaining S05 choreography / presentation work, S04D, and S06 are **NOT AUTHORIZED**. Desktop artifacts are **unsigned** qualification/development-candidate builds, not a teacher-trusted signed release. |
 | What is blocked / open? | See the [gap register](plans/CQS-REAL-MVP-ARC.md#6-initial-gap-register). C-3 / C-6 **FOUNDATION IMPLEMENTED / UNSIGNED**. `F-UX-01` **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** (ordinary Sony Class Setup copy; evidence bound to H5/H6 identities). `CQS-Q23-LOW-02` **OPEN / LOW / MONITOR**. H4 salvage collapsed detail **OPEN / LOW**. `CQS-Q23-CLASS-B-01` **OPEN / CONTROLLED**. `CQS-OD-066` **DEFERRED / NOT REAL MVP**. Packaged macOS Sony physical **H5 selection/hardware PASS transferred**; **H6 readiness PASS** on Namtai `054c:1000` + four handsets. Windows physical runtime **NOT RUN** (S06). Signing / notarization **OPEN OWNER GATE**. C-7 Raspberry Pi **outside REAL MVP**. C-8 LAN **outside REAL MVP**. Post-MVP arcs **INACTIVE**. |
-| Current Program frontier | S04A, S04B, and S04C are **TERMINALLY COMPLETE** on main. Next Program frontier requires a **fresh owner decision** (routing ≠ authority). S04D / S05 / S06 remain **NOT AUTHORIZED**. REAL MVP is **not** complete. |
+| Current Program frontier | S04A–S04C and **S05-F1** are **TERMINALLY COMPLETE** on main. S05 parent remains **OPEN / NOT TERMINAL**. Next bounded S05 tranche requires a **fresh owner decision** (routing ≠ authority). S04D / additional S05 / S06 remain **NOT AUTHORIZED**. REAL MVP is **not** complete. |
 
 ```text
 historical 23-slice roadmap: COMPLETE
@@ -35,7 +35,9 @@ S04C-H2: TERMINALLY COMPLETE
 S04C-H3: TERMINALLY COMPLETE
 S04C-H4: TERMINALLY COMPLETE
 CQS-REAL-MVP-S04C-DISPLAY-PLACEMENT-AND-WAKE-REPUBLISH-RECOVERY: TERMINALLY COMPLETE
-S04D / S05 / S06: NOT AUTHORIZED
+S05-F1: TERMINALLY COMPLETE
+S05 parent: OPEN / NOT TERMINAL
+S04D / additional S05 / S06: NOT AUTHORIZED
 post-MVP arcs: INACTIVE
 ```
 
@@ -130,7 +132,7 @@ Teacher desktop notes:
 | teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal; S04B Class Setup extends it on `main` |
 | controller `F-UX-01` (`CQS-Q23-LOW-01`) | **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** — ordinary Sony copy no longer requires WebHID / report-ID / profile jargon; Class Setup buzzer summary shares Sony teacher-summary layers; readiness honesty physically requalified on H6 identity (not re-run on squash/main) |
 | feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
-| flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** — S05 direction registered; implementation not begun |
+| flagship visual fidelity | **PARTIAL / F1 TERMINALLY COMPLETE** — S05-F1 static Board + Clue Display readability and automated visual-stress foundation merged on main; remaining S05 choreography / Host polish / presentation work open and **NOT AUTHORIZED** |
 | packaged offline/recovery equivalence | **FOUNDATION IMPLEMENTED** (Electron shell + IndexedDB identity; packaged macOS Host smoke observed) |
 | packaged macOS qualification | **PARTIAL** (H5 selection/hardware physical **PASS recorded 2026-09-11** and transferred; H6 readiness physical **PASS** on `9df9c42…` + Namtai `054c:1000` + four handsets for terminal S04B; Windows physical runtime **NOT RUN**; clean-room / signed release still open) |
 | packaged Windows qualification | **OPEN** (CI can produce the installer; physical Windows runtime **NOT RUN**) |
@@ -146,14 +148,14 @@ Teacher desktop notes:
 | **C-8** cross-device LAN host/display | **Outside REAL MVP.** Not begun. |
 | Post-MVP arcs | **INACTIVE** |
 
-Do **not** begin S04D, S05, or S06 from this status. Naming a successor is
-**not** authority. Do **not** declare a teacher-trusted signed release. Do
-**not** declare the teacher-adoptable product complete. Do **not** reopen
-completed Slices 1–23. Do **not** claim Windows physical runtime
-qualification, physical projector/sleep readiness, or a signed public
-teacher release. H5/H6 macOS physical PASS claims remain bound to the
-recorded hardware and H6 packaged identity `9df9c42…` (not rewritten to
-later squash SHAs).
+Do **not** begin S04D, additional S05 work, or S06 from this status.
+Naming a successor is **not** authority. Do **not** declare a
+teacher-trusted signed release. Do **not** declare the teacher-adoptable
+product complete. Do **not** reopen completed Slices 1–23. Do **not**
+claim Windows physical runtime qualification, physical projector/sleep
+readiness, or a signed public teacher release. H5/H6 macOS physical PASS
+claims remain bound to the recorded hardware and H6 packaged identity
+`9df9c42…` (not rewritten to later squash SHAs).
 
 ## Contract versions
 
@@ -246,8 +248,20 @@ SonarCloud succeeded on that exact squash/main SHA. The tranche is **not**
 named H5.
 
 `CQS-REAL-MVP-S04C-PRODUCT-SAFETY-RECOVERY-AND-COMPATIBILITY-UX` is
-**TERMINALLY COMPLETE**. S04D / S05 / S06 remain **NOT AUTHORIZED**. Next
-Program frontier requires a **fresh owner decision** (routing ≠ authority).
+**TERMINALLY COMPLETE**.
+
+`CQS-REAL-MVP-S05-F1-CORE-DISPLAY-READABILITY-AND-VISUAL-STRESS` is
+**TERMINALLY COMPLETE**. PR #89 squash-merged as
+`f24e9b8fe0833094949057368b468f8026767dc2` with sole parent
+`c3e7da4ddfebf0da2ac9c7659c5deab08691cced`. Accepted reviewed head was
+`1d179cffa9986ecae0274169c215d0b7a5b1da01`; accepted-head tree matches
+squash tree (**EXACT MATCH**). Post-merge CI, Playwright, Desktop
+artifacts (unsigned macOS + Windows), Pages, and SonarCloud succeeded on
+that exact squash/main SHA. S05 parent
+`CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
+remains **OPEN / NOT TERMINAL**. Remaining S05 choreography /
+presentation work, S04D, and S06 remain **NOT AUTHORIZED**. Next bounded
+S05 tranche requires a **fresh owner decision** (routing ≠ authority).
 REAL MVP is **not** complete. This status does not claim Windows physical
 qualification, projector/sleep physical qualification, signing,
 notarization, or a quota-fill experiment.
@@ -262,19 +276,29 @@ S04C-H3: TERMINALLY COMPLETE
 S04C-H4: TERMINALLY COMPLETE
 CQS-REAL-MVP-S04C-DISPLAY-PLACEMENT-AND-WAKE-REPUBLISH-RECOVERY: TERMINALLY COMPLETE
 S04C: TERMINALLY COMPLETE
-S04D / S05 / S06: NOT AUTHORIZED
+S05-F1: TERMINALLY COMPLETE
+S05 parent: OPEN / NOT TERMINAL
+S04D / additional S05 / S06: NOT AUTHORIZED
 ```
 
-This status grants **no** S04D / S05 / S06 implementation authority, **no**
-signing/notarization decision, and **no** public teacher-release
-publication. It does **not** claim Windows physical runtime qualification,
-Sony physical re-qualification, physical projector/sleep qualification,
-local hardware qualification for H2 (H2 required none), local
-qualification for H3 (**NONE**), local qualification for H4 (**NONE**), or
-physical qualification for display placement / wake recovery.
+This status grants **no** S04D / additional S05 / S06 implementation
+authority, **no** signing/notarization decision, and **no** public
+teacher-release publication. It does **not** claim Windows physical
+runtime qualification, Sony physical re-qualification, physical
+projector/sleep qualification, local hardware qualification for H2 (H2
+required none), local qualification for H3 (**NONE**), local
+qualification for H4 (**NONE**), physical qualification for display
+placement / wake recovery, or physical projector qualification for
+S05-F1.
 
-S04C parent terminal post-merge reconciliation (candidate docs; does not
+S05-F1 terminal post-merge reconciliation (candidate docs; does not
 predict this terminalization PR’s eventual squash SHA):
+[`receipts/2026-09-20-cqs-real-mvp-s05-f1-terminal-post-merge-reconciliation.md`](receipts/2026-09-20-cqs-real-mvp-s05-f1-terminal-post-merge-reconciliation.md).
+
+S05-F1 implementation closeout:
+[`CQS-S05-F1-CORE-DISPLAY-READABILITY-AND-VISUAL-STRESS.md`](CQS-S05-F1-CORE-DISPLAY-READABILITY-AND-VISUAL-STRESS.md).
+
+S04C parent terminal post-merge reconciliation:
 [`receipts/2026-09-20-cqs-real-mvp-s04c-terminal-post-merge-reconciliation.md`](receipts/2026-09-20-cqs-real-mvp-s04c-terminal-post-merge-reconciliation.md).
 
 S04C-H4 terminal post-merge reconciliation:
@@ -339,6 +363,8 @@ Packaged implementation SHA remains
 - S04C-H4 terminal post-merge reconciliation: [`receipts/2026-09-19-cqs-real-mvp-s04c-h4-terminal-post-merge-reconciliation.md`](receipts/2026-09-19-cqs-real-mvp-s04c-h4-terminal-post-merge-reconciliation.md)
 - S04C-H3 implementation receipt: [`receipts/2026-09-18-cqs-real-mvp-s04c-h3-backup-export-import-foundations.md`](receipts/2026-09-18-cqs-real-mvp-s04c-h3-backup-export-import-foundations.md)
 - S04C-H3 terminal post-merge reconciliation: [`receipts/2026-09-18-cqs-real-mvp-s04c-h3-terminal-post-merge-reconciliation.md`](receipts/2026-09-18-cqs-real-mvp-s04c-h3-terminal-post-merge-reconciliation.md)
+- S05-F1 implementation closeout: [`CQS-S05-F1-CORE-DISPLAY-READABILITY-AND-VISUAL-STRESS.md`](CQS-S05-F1-CORE-DISPLAY-READABILITY-AND-VISUAL-STRESS.md)
+- S05-F1 terminal post-merge reconciliation: [`receipts/2026-09-20-cqs-real-mvp-s05-f1-terminal-post-merge-reconciliation.md`](receipts/2026-09-20-cqs-real-mvp-s05-f1-terminal-post-merge-reconciliation.md)
 - S03 desktop foundation receipt: [`receipts/2026-08-13-cqs-real-mvp-s03-desktop-distribution-release-foundation.md`](receipts/2026-08-13-cqs-real-mvp-s03-desktop-distribution-release-foundation.md)
 - S02 architecture ADR: [`architecture/ADR-021-real-mvp-desktop-architecture-electron.md`](architecture/ADR-021-real-mvp-desktop-architecture-electron.md)
 - S02 qualification receipt: [`receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md`](receipts/2026-08-13-cqs-real-mvp-s02-desktop-architecture-qualification.md)

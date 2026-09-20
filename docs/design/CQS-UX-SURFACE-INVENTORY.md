@@ -34,7 +34,7 @@ naming a surface ≠ authorizing work on it
 | --- | --- |
 | **ALREADY IMPLEMENTED FOUNDATION** | Merged on `main` and treated as an existing qualified foundation. Not unfinished work to rebuild. Later slices may extend it only within their own scope. |
 | **CURRENT** | Inside the active S04B lane's registered scope at the time of writing. This guidance does not mutate that lane. |
-| **LATER** | Owned by a named but **unauthorized** later slice (S04C / S04D / S05 / S06). |
+| **LATER** | Owned by a named later slice that is not currently authorized for implementation (for example remaining S05 work, S04D, or S06). |
 | **DEFERRED** | Outside REAL MVP, or dependent on an unresolved owner gate. |
 | **NOT IMPLEMENTED** | No such surface is observed on `main`. Stated as absence, not as a plan. |
 
@@ -104,6 +104,12 @@ S05 is not generic "make it prettier".
 Display may become theatrical. Host remains operational and restrained.
 ```
 
+**S05-F1** (`CQS-REAL-MVP-S05-F1-CORE-DISPLAY-READABILITY-AND-VISUAL-STRESS`)
+is **TERMINALLY COMPLETE** on main for static Board + Clue Display
+readability and automated visual-stress foundation. Remaining S05 families
+(choreography, Host polish, further presentation) stay later and require
+fresh bounded authorization. The S05 parent remains **OPEN / NOT
+TERMINAL**.
 ### S06
 
 Integrated release qualification: Windows-first physical use, projector
@@ -324,8 +330,12 @@ hardware, recovery, and the end-to-end experience.
 - **Principles:** `P14`, `P13`, `P17`.
 - **Research routing:** Lupton, Hodent.
 - **Ownership / state:** **ALREADY IMPLEMENTED FOUNDATION**
-  (`src/display/CategoryBoardDisplay.tsx`). Flagship presentation is
-  S05 — **LATER**.
+  (`src/display/CategoryBoardDisplay.tsx`). **S05-F1** static Board
+  fidelity / stress foundation is **TERMINALLY COMPLETE** on main
+  (hierarchy, six×five stress layout, stable consumed slots, non-color
+  Used semantics, 8-team coexistence, 720p/1080p automation, high
+  contrast). Later Board choreography or further presentation refinement
+  remains S05 — **LATER**.
 
 ### 15. Question / clue Display
 
@@ -337,7 +347,11 @@ hardware, recovery, and the end-to-end experience.
 - **Principles:** `P14`, `P13`, `P17`.
 - **Research routing:** Lupton, Hodent.
 - **Ownership / state:** **ALREADY IMPLEMENTED FOUNDATION**
-  (`src/display/`, `MediaContentDisplay`). Presentation is S05 — **LATER**.
+  (`src/display/`, `MediaContentDisplay`). **S05-F1** static Clue/question
+  fidelity and schema-max readability are **TERMINALLY COMPLETE** on main
+  (distance-first hierarchy, full authored-text visibility, clipping
+  protection, 8-team coexistence, timer/Signal Rail semantics preserved).
+  Later Clue choreography or presentation effects remain S05 — **LATER**.
   Answer-reveal authorization is an architectural invariant, not a design
   choice.
 
@@ -479,8 +493,9 @@ hardware, recovery, and the end-to-end experience.
 - **Principles:** `P04`, `P05`, `P14`, `P25`.
 - **Research routing:** Endsley & Jones, Lupton.
 - **Ownership / state:** **S04B — CURRENT** (Host-only audience preview
-  within S04B scope). Full stress-fixture verification is S05/S06 —
-  **LATER**.
+  within S04B scope). Automated **S05-F1** 720p/1080p stress-fixture
+  verification is **TERMINALLY COMPLETE** on main. Physical projector /
+  Windows / classroom stress qualification remains S06 — **LATER**.
 
 ### 26. Display motion / transitions
 
@@ -713,7 +728,7 @@ This inventory does **not**:
 - describe implementation that was not observed on `main` at
   `cf90eadb7794a3e2c2f529212432e4a4daaadc91`;
 - reopen S04A;
-- authorize or claim S04B, S04C, S04D, S05, or S06 scope;
+- authorize or claim S04D, additional S05, or S06 scope;
 - modify the Program gap register or any Program-adoption state;
 - close `F-UX-01` / `CQS-Q23-LOW-01`;
 - describe the unmerged S04B candidate's implementation as merged.

@@ -39,9 +39,15 @@
   **TERMINALLY COMPLETE** after PR #87 squash/main
   `0d1fac747c0768d6f0dd0960781f6ab8a7184ece` (repaired accepted head
   `212784865034b0330e09295b2e212aff4f68fc94`; not named H5). S04C parent is
-  **TERMINALLY COMPLETE**. S04D, S05, and S06 are **not authorized**. Next
-  Program frontier requires a fresh owner decision (routing ≠ authority).
-  REAL MVP is **not** complete.
+  **TERMINALLY COMPLETE**. S05-F1
+  (`CQS-REAL-MVP-S05-F1-CORE-DISPLAY-READABILITY-AND-VISUAL-STRESS`) is
+  **TERMINALLY COMPLETE** after PR #89 squash/main
+  `f24e9b8fe0833094949057368b468f8026767dc2` (accepted head
+  `1d179cffa9986ecae0274169c215d0b7a5b1da01`). S05 parent
+  `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
+  remains **OPEN / NOT TERMINAL**. S04D, additional S05 work, and S06 are
+  **not authorized**. Next bounded S05 tranche requires a fresh owner
+  decision (routing ≠ authority). REAL MVP is **not** complete.
 
 This document is the canonical **CQS REAL MVP Program** plan of record. It
 registers `CQS-REAL-MVP-1` as the current owner-approved Program without
@@ -84,7 +90,7 @@ the owner-approved remaining product direction into repository Markdown.
 This Program plan does **not**:
 
 - resolve signing, notarization, or paid-account questions;
-- authorize S04D/S05/S06 implementation;
+- authorize S04D, additional S05, or S06 implementation;
 - reopen Slices 1–23;
 - activate post-MVP arcs;
 - promote Raspberry Pi, LAN, phone controllers, live in-app AI, accounts,
@@ -234,7 +240,7 @@ This table is not an implementation backlog with slice-level authority.
 | teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal; S04B Class Setup extends it on `main` |
 | controller `F-UX-01` | **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** — ordinary Sony Class Setup copy no longer requires WebHID / report-ID / profile jargon; evidence bound to H5/H6 identities |
 | feedback/support path | **OPEN** — S04D product direction registered; implementation not begun |
-| flagship visual fidelity | **POLISH / REQUALIFICATION REQUIRED** — S05 direction registered; implementation not begun |
+| flagship visual fidelity | **PARTIAL / F1 TERMINALLY COMPLETE** — S05-F1 static Board + Clue Display readability and automated visual-stress foundation merged on main; remaining S05 choreography / Host polish / presentation work open and **NOT AUTHORIZED** |
 | packaged offline/recovery equivalence | **FOUNDATION IMPLEMENTED** (Electron shell + IndexedDB identity). Library backup/restore is **IMPLEMENTED ON MAIN** (S04C-H3); packaged restore smoke **NOT RUN** |
 | packaged macOS qualification | **PARTIAL** (H5 selection/hardware PASS transferred; H6 readiness PASS on Namtai `054c:1000` + four handsets for terminal S04B; Windows physical **NOT RUN**; clean-room / signed release still open) |
 | packaged Windows qualification | **OPEN** (CI installer path; physical Windows runtime **NOT RUN**) |
@@ -330,7 +336,10 @@ COMPLETE** after implementation PR #84 squash
 `3cd5e3a0f884f234b03425fd169e5e495fa1a147`. Display placement / wake
 recovery is **TERMINALLY COMPLETE** after PR #87 squash/main
 `0d1fac747c0768d6f0dd0960781f6ab8a7184ece`. S04C parent is **TERMINALLY
-COMPLETE**. This document does not authorize S04D / S05 / S06.
+COMPLETE**. S05-F1 is **TERMINALLY COMPLETE** after PR #89 squash/main
+`f24e9b8fe0833094949057368b468f8026767dc2`. S05 parent remains **OPEN /
+NOT TERMINAL**. This document does not authorize S04D, additional S05, or
+S06.
 
 S04A terminal evidence:
 [`../receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md`](../receipts/2026-08-14-cqs-real-mvp-s04a-terminal-post-merge-reconciliation.md).
@@ -494,9 +503,13 @@ is **TERMINALLY COMPLETE** after PR #87 squash/main
 `0d1fac747c0768d6f0dd0960781f6ab8a7184ece` (repaired accepted head
 `212784865034b0330e09295b2e212aff4f68fc94`; not named H5).
 `CQS-REAL-MVP-S04C-PRODUCT-SAFETY-RECOVERY-AND-COMPATIBILITY-UX` is
-**TERMINALLY COMPLETE**. Next Program frontier requires a **fresh owner
-decision** (routing ≠ authority). **S04D / S05 / S06 are NOT AUTHORIZED.**
-REAL MVP is **not** complete.
+**TERMINALLY COMPLETE**. `CQS-REAL-MVP-S05-F1-CORE-DISPLAY-READABILITY-AND-VISUAL-STRESS`
+is **TERMINALLY COMPLETE** after PR #89 squash/main
+`f24e9b8fe0833094949057368b468f8026767dc2` (accepted head
+`1d179cffa9986ecae0274169c215d0b7a5b1da01`; trees **EXACT MATCH**). S05
+parent remains **OPEN / NOT TERMINAL**. Next bounded S05 tranche requires
+a **fresh owner decision** (routing ≠ authority). **S04D / additional S05
+/ S06 are NOT AUTHORIZED.** REAL MVP is **not** complete.
 
 ```text
 routing ≠ authority
@@ -508,11 +521,16 @@ S04C-H3: TERMINALLY COMPLETE
 S04C-H4: TERMINALLY COMPLETE
 CQS-REAL-MVP-S04C-DISPLAY-PLACEMENT-AND-WAKE-REPUBLISH-RECOVERY: TERMINALLY COMPLETE
 S04C: TERMINALLY COMPLETE
-S04D/S05/S06: NOT AUTHORIZED
+S05-F1: TERMINALLY COMPLETE
+S05 parent: OPEN / NOT TERMINAL
+S04D / additional S05 / S06: NOT AUTHORIZED
 ```
 
-S04C parent terminal evidence (candidate docs; does not predict this
+S05-F1 terminal evidence (candidate docs; does not predict this
 terminalization PR’s eventual squash SHA):
+[`../receipts/2026-09-20-cqs-real-mvp-s05-f1-terminal-post-merge-reconciliation.md`](../receipts/2026-09-20-cqs-real-mvp-s05-f1-terminal-post-merge-reconciliation.md).
+
+S04C parent terminal evidence:
 [`../receipts/2026-09-20-cqs-real-mvp-s04c-terminal-post-merge-reconciliation.md`](../receipts/2026-09-20-cqs-real-mvp-s04c-terminal-post-merge-reconciliation.md).
 
 S04C-H4 terminal evidence:

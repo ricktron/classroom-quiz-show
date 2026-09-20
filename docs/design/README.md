@@ -230,9 +230,9 @@ speaks only to the teacher-facing presentation of it.
 | --- | --- |
 | S04A | **TERMINALLY COMPLETE.** Research may note future polish opportunities; this guidance does **not** reopen S04A. |
 | S04B | **TERMINALLY COMPLETE.** Adopted Host-setup doctrine remains applicable. Later research does **not** reopen S04B without separate authority. |
-| S04C | Parent product-safety / recovery / compatibility UX lane. **TERMINALLY COMPLETE.** H1 safe startup / unified session recovery, H2 sanitized diagnostics, H3 local backup / restore, H4 corrupt-import salvage, and display-placement / wake-republish recovery are terminal on main. Accepted H4 LOW and trigger-deferred schema / live-follower items remain documented. Physical projector / sleep / Windows labs remain S06. S04D / S05 / S06 remain separately unauthorized. |
+| S04C | Parent product-safety / recovery / compatibility UX lane. **TERMINALLY COMPLETE.** H1 safe startup / unified session recovery, H2 sanitized diagnostics, H3 local backup / restore, H4 corrupt-import salvage, and display-placement / wake-republish recovery are terminal on main. Accepted H4 LOW and trigger-deferred schema / live-follower items remain documented. Physical projector / sleep / Windows labs remain S06. S04D, additional S05, and S06 remain separately unauthorized. |
 | S04D | Owns intentional feedback/support flow and privacy-safe telemetry. |
-| S05 | Owns flagship Display visual fidelity, motion vocabulary, and game-show choreography. Host stays operational and restrained. |
+| S05 | Owns flagship Display visual fidelity, motion vocabulary, and game-show choreography. Host stays operational and restrained. **S05-F1** static Board + Clue Display readability / visual-stress foundation is **TERMINALLY COMPLETE** on main. S05 parent remains **OPEN / NOT TERMINAL**; remaining choreography / presentation work requires separate authorization. |
 | S06 | Owns integrated Windows-first release qualification, including projector, scaling, accessibility, audio, hardware, and clean-room teacher use. |
 
 Assigning a surface or a principle to a slice in
@@ -299,8 +299,8 @@ See `CQS-UX-P24` in [`CQS-UX-DOCTRINE.md`](CQS-UX-DOCTRINE.md).
 
 This file and the rest of `docs/design/` do **not**:
 
-- authorize S04C, S04D, S05, or S06 implementation;
-- reopen S04A or S04B;
+- authorize S04D, additional S05, or S06 implementation;
+- reopen S04A, S04B, or S04C;
 - change product status, the Program sequence, or the gap register;
 - claim any surface is polished or release-qualified beyond what STATUS
   already records;
