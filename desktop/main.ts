@@ -18,6 +18,7 @@ import {
   focusHostWindow,
   handleWindowOpen,
   installApplicationMenu,
+  installSystemResumeDisplayRecovery,
   registerCreatedWindow,
 } from './windows'
 
@@ -139,6 +140,7 @@ if (!gotLock) {
     installHidHandlers()
     installNavigationGuards()
     installApplicationMenu()
+    installSystemResumeDisplayRecovery()
     app.setAboutPanelOptions({
       applicationName: DESKTOP_PRODUCT_NAME,
       applicationVersion: app.getVersion(),

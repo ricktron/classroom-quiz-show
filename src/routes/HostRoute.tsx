@@ -85,7 +85,7 @@ function HostRouteContent({
 
         <p className="host__note">
           {isDesktopRuntime()
-            ? 'Keep this Host on your laptop. When your computer has one other screen, opening the audience display moves it there. If it is still on the wrong screen, move it yourself.'
+            ? 'Keep this Host on your laptop. When your computer has one other screen, opening the audience display moves it there. If that window is off every connected screen, Focus audience display brings it back onto a connected screen. If it is still on the wrong screen, move it yourself.'
             : 'Keep this Host on your laptop and put the audience display window on the projector. They are separate screens on purpose.'}
         </p>
 

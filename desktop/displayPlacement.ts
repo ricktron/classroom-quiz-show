@@ -1,8 +1,13 @@
 /**
- * Pure policy: where should the audience Display window be placed?
+ * Pure policy: audience Display intentional placement and off-screen rescue.
+ *
+ * Two distinct decisions (do not conflate):
+ * - Placement: where to put Display when exactly one non-Host screen exists.
+ * - Rescue: if Display is stranded off every connected screen, bring it back
+ *   onto a teacher-visible connected screen (prefer Host's screen).
  *
  * No Electron import. Main-process code maps screen APIs into these shapes.
- * Ambiguous multi-monitor topologies refuse to guess.
+ * Ambiguous multi-monitor topologies refuse to guess a projector.
  */
 
 export interface DisplayRect {
@@ -34,6 +39,18 @@ export type AudienceDisplayPlacementDecision =
       readonly bounds: DisplayRect
     }
 
+export type AudienceDisplayRescueDecision =
+  | {
+      readonly kind: 'no-rescue'
+      readonly reason: 'already-on-connected-display' | 'no-safe-target'
+    }
+  | {
+      readonly kind: 'rescue'
+      readonly displayId: number
+      readonly workArea: DisplayRect
+      readonly bounds: DisplayRect
+    }
+
 const DEFAULT_DISPLAY_WIDTH = 1280
 const DEFAULT_DISPLAY_HEIGHT = 800
 
@@ -44,6 +61,15 @@ export function pointInRect(x: number, y: number, rect: DisplayRect): boolean {
     x < rect.x + rect.width &&
     y < rect.y + rect.height
   )
+}
+
+/** True when two axis-aligned rects share a positive-area intersection. */
+export function rectsOverlap(a: DisplayRect, b: DisplayRect): boolean {
+  const left = Math.max(a.x, b.x)
+  const right = Math.min(a.x + a.width, b.x + b.width)
+  const top = Math.max(a.y, b.y)
+  const bottom = Math.min(a.y + a.height, b.y + b.height)
+  return right > left && bottom > top
 }
 
 export function displayContainingPoint(
@@ -62,6 +88,18 @@ export function windowCenter(bounds: DisplayRect): { readonly x: number; readonl
     x: bounds.x + bounds.width / 2,
     y: bounds.y + bounds.height / 2,
   }
+}
+
+/**
+ * A window is still teacher-recoverable if any positive-area overlap remains
+ * with a connected display's full bounds (not merely center-point ownership).
+ * Uses bounds rather than workArea so chrome overlap still counts as visible.
+ */
+export function windowOnAnyConnectedDisplay(
+  windowBounds: DisplayRect,
+  displays: readonly DisplayScreenInfo[],
+): boolean {
+  return displays.some((display) => rectsOverlap(windowBounds, display.bounds))
 }
 
 /**
@@ -101,6 +139,50 @@ export function decideAudienceDisplayPlacement(input: {
     workArea: target.workArea,
     bounds: fitWindowInWorkArea(target.workArea),
   }
+}
+
+/**
+ * Rescue a Display stranded outside every currently connected screen.
+ *
+ * Prefer the Host's screen; else the sole connected screen; else refuse to
+ * guess among multiple screens when Host ownership is unknown.
+ * This is recoverability, not projector selection.
+ */
+export function decideAudienceDisplayRescue(input: {
+  readonly displays: readonly DisplayScreenInfo[]
+  readonly hostBounds: DisplayRect
+  readonly windowBounds: DisplayRect
+}): AudienceDisplayRescueDecision {
+  const { displays, hostBounds, windowBounds } = input
+  if (displays.length === 0) {
+    return { kind: 'no-rescue', reason: 'no-safe-target' }
+  }
+  if (windowOnAnyConnectedDisplay(windowBounds, displays)) {
+    return { kind: 'no-rescue', reason: 'already-on-connected-display' }
+  }
+
+  const hostCenter = windowCenter(hostBounds)
+  const hostDisplay = displayContainingPoint(displays, hostCenter.x, hostCenter.y)
+  if (hostDisplay) {
+    return {
+      kind: 'rescue',
+      displayId: hostDisplay.id,
+      workArea: hostDisplay.workArea,
+      bounds: fitWindowInWorkArea(hostDisplay.workArea),
+    }
+  }
+
+  if (displays.length === 1) {
+    const only = displays[0]
+    return {
+      kind: 'rescue',
+      displayId: only.id,
+      workArea: only.workArea,
+      bounds: fitWindowInWorkArea(only.workArea),
+    }
+  }
+
+  return { kind: 'no-rescue', reason: 'no-safe-target' }
 }
 
 /** True when the window's center already lies on the target work area. */

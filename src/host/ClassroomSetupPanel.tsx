@@ -362,7 +362,7 @@ export function ClassroomSetupPanel({
             <div className="classroom-setup__task" data-testid="setup-display-task">
               <p className="host__note">
                 {isDesktopRuntime()
-                  ? 'Open the audience display when you are ready. If this computer has one other screen, Classroom Quiz Show moves the audience display there. If it is still on the wrong screen, move it yourself. The class can still finish setup without it.'
+                  ? 'Open the audience display when you are ready. If this computer has one other screen, Classroom Quiz Show moves the audience display there. If that window is off every connected screen (for example after a projector disconnect), choose Focus audience display again and the desktop app brings it back onto a connected screen—usually the one with the Host. If it is still on the wrong screen, move it yourself. The class can still finish setup without it.'
                   : 'Open the audience display on the projector when you are ready. Put that window on the projector yourself. The class can still finish setup without it.'}
               </p>
               <button type="button" className="btn" data-testid="setup-open-display" onClick={onOpenDisplay}>

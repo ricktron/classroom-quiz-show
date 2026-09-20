@@ -2,6 +2,7 @@ import {
   app,
   BrowserWindow,
   Menu,
+  powerMonitor,
   screen,
   type BrowserWindowConstructorOptions,
   type HandlerDetails,
@@ -14,6 +15,7 @@ import {
 } from './constants'
 import {
   decideAudienceDisplayPlacement,
+  decideAudienceDisplayRescue,
   windowAlreadyOnPlacement,
   type AudienceDisplayPlacementDecision,
   type DisplayRect,
@@ -21,6 +23,7 @@ import {
 } from './displayPlacement'
 import { DESKTOP_PRODUCT_NAME } from './identity'
 import { DESKTOP_WEB_PREFERENCES } from './security'
+import { createSystemResumeHandler } from './systemResumeRecovery'
 import {
   decideWindowOpen,
   displayFallbackUrl,
@@ -33,6 +36,14 @@ let hostWindow: BrowserWindow | null = null
 let displayWindow: BrowserWindow | null = null
 let lastGoodDisplayUrl = displayFallbackUrl()
 let quitting = false
+let systemResumeRecoveryInstalled = false
+const onSystemResume = createSystemResumeHandler({
+  isQuitting: () => quitting,
+  getDisplayWindow: () => displayWindow,
+  lastGoodDisplayUrl: () => lastGoodDisplayUrl,
+  isAllowedDisplayUrl: isAllowedDisplayWindowUrl,
+})
+
 
 export function getHostWindow(): BrowserWindow | null {
   return hostWindow
@@ -84,15 +95,36 @@ function placementWindowOptions(): Pick<
 }
 
 /**
- * When exactly one non-Host display exists, move the audience Display there.
- * Ambiguous or single-display topologies leave the window where it is.
- * Already-correct placement is left alone (focus/show only).
+ * Teacher-invoked Display recovery:
+ * 1. Rescue if bounds lie outside every currently connected screen.
+ * 2. Then apply intentional one-external placement when unambiguous.
+ *
+ * Ambiguous multi-external topologies still refuse projector guessing.
+ * Already-correct / already-visible windows are left alone (focus/show only).
  */
 function placeAudienceDisplayIfSafe(win: BrowserWindow): void {
   if (win.isDestroyed()) return
-  const decision = currentPlacementDecision()
+  const displays = readDisplayScreens()
+  const hostBounds = hostBoundsOrFallback()
+  let current = win.getBounds()
+
+  const rescue = decideAudienceDisplayRescue({
+    displays,
+    hostBounds,
+    windowBounds: current,
+  })
+  if (rescue.kind === 'rescue') {
+    win.setBounds({
+      x: rescue.bounds.x,
+      y: rescue.bounds.y,
+      width: rescue.bounds.width,
+      height: rescue.bounds.height,
+    })
+    current = rescue.bounds
+  }
+
+  const decision = decidePlacementForHost(displays, hostBounds)
   if (decision.kind !== 'place') return
-  const current = win.getBounds()
   if (windowAlreadyOnPlacement(current, decision)) return
   win.setBounds({
     x: decision.bounds.x,
@@ -100,6 +132,21 @@ function placeAudienceDisplayIfSafe(win: BrowserWindow): void {
     width: decision.bounds.width,
     height: decision.bounds.height,
   })
+}
+
+/**
+ * Desktop OS resume: remount an open audience Display so it re-requests state.
+ * Does not create a Display, reload Host, or open projector content unprompted.
+ */
+export function recoverAudienceDisplayAfterSystemResume(): void {
+  onSystemResume()
+}
+
+/** Register Electron powerMonitor resume once for the desktop shell lifetime. */
+export function installSystemResumeDisplayRecovery(): void {
+  if (systemResumeRecoveryInstalled) return
+  systemResumeRecoveryInstalled = true
+  powerMonitor.on('resume', onSystemResume)
 }
 
 function attachDisplayLock(win: BrowserWindow): void {
