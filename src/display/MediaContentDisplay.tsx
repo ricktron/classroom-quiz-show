@@ -36,9 +36,16 @@ function UnavailableMedia({ reason }: { readonly reason: string }) {
   )
 }
 
+/** Presentation length bands for viewport-safe type scale (not schema truncation). */
+function promptLengthBand(text: string): 'short' | 'medium' | 'long' {
+  if (text.length > 320) return 'long'
+  if (text.length > 160) return 'medium'
+  return 'short'
+}
+
 function TextPrompt({ text }: { readonly text: string }) {
   return (
-    <p className="mcd mcd__text" data-testid="mcd-text">
+    <p className="mcd mcd__text" data-testid="mcd-text" data-length={promptLengthBand(text)}>
       {text}
     </p>
   )

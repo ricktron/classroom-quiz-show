@@ -8,6 +8,7 @@ import {
 import { MAX_TEAM_NAME_LENGTH, MAX_TEAMS } from '../game/teams/limits'
 import {
   VISUAL_STRESS_GAME_ID,
+  VISUAL_STRESS_IMAGE_PATH,
   visualStressBoardConfig,
   visualStressGameFile,
   visualStressTeams,
@@ -45,7 +46,7 @@ describe('S05-F1 visual stress fixture', () => {
     }
     expect(imagePrompt.kind).toBe('image')
     expect(imagePrompt.source.kind).toBe('same-origin-path')
-    expect(imagePrompt.source.path).toBe('media-fixtures/slice-11-clue.png')
+    expect(imagePrompt.source.path).toBe(VISUAL_STRESS_IMAGE_PATH)
   })
 
   it('provides eight max-length team names with distinct accents', () => {

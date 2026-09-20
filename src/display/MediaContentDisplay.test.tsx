@@ -79,6 +79,13 @@ describe('MediaContentDisplay', () => {
     render(<MediaContentDisplay content={content} />)
     expect(screen.getByTestId('mcd-text')).toHaveTextContent('What is the mantle?')
     expect(screen.getByTestId('mcd-text')).toHaveClass('mcd__text')
+    expect(screen.getByTestId('mcd-text')).toHaveAttribute('data-length', 'short')
+  })
+
+  it('marks schema-near prompt length for compact Display type scale', () => {
+    const content: PublicPromptContent = { kind: 'text', text: 'A'.repeat(400) }
+    render(<MediaContentDisplay content={content} />)
+    expect(screen.getByTestId('mcd-text')).toHaveAttribute('data-length', 'long')
   })
 
   it('renders an image with alt, caption, and attribution', () => {

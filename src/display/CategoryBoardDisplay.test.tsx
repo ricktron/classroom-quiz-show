@@ -244,11 +244,19 @@ describe('S05-F1 spatial memory and used-state cues', () => {
     expect(firstColumnTiles[1]).toHaveTextContent('200')
   })
 
-  it('marks open clue chrome as secondary to the prompt container', () => {
+  it('renders open-clue selection chrome alongside the prompt container', () => {
     renderAt(select('alpha-100'), revealPrompt)
     expect(screen.getByTestId('cbd-open')).toHaveClass('cbd--open')
+    expect(screen.getByTestId('cbd-open')).toHaveAttribute('data-answer-revealed', 'false')
     expect(screen.getByTestId('cbd-prompt')).toBeInTheDocument()
     expect(screen.getByTestId('cbd-category')).toBeInTheDocument()
     expect(screen.getByTestId('cbd-value')).toBeInTheDocument()
+  })
+
+  it('marks answer-reveal open stage for compact coexistence styling', () => {
+    renderAt(select('alpha-100'), revealPrompt, revealAnswer)
+    expect(screen.getByTestId('cbd-open')).toHaveClass('cbd--answer')
+    expect(screen.getByTestId('cbd-open')).toHaveAttribute('data-answer-revealed', 'true')
+    expect(screen.getByTestId('cbd-answer')).toHaveTextContent('Answer')
   })
 })
