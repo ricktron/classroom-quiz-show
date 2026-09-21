@@ -30,31 +30,44 @@ naming a surface ≠ authorizing work on it
 
 ## Reading the work-state column
 
+> **Historical observation epoch.** This inventory was originally observed
+> against `main` at `cf90eadb7794a3e2c2f529212432e4a4daaadc91` during the
+> S04B candidate era. The **CURRENT** / **LATER** classifications below are
+> inventory-era research labels, not current Program authorization or
+> status. For current Program routing, use
+> [`../STATUS.md`](../STATUS.md) and
+> [`../handoff/CURRENT.md`](../handoff/CURRENT.md). The inventory's UX
+> research and surface analysis remain useful; only the old Program-state
+> vocabulary is frozen to that epoch.
+
 | Work state | Meaning |
 | --- | --- |
 | **ALREADY IMPLEMENTED FOUNDATION** | Merged on `main` and treated as an existing qualified foundation. Not unfinished work to rebuild. Later slices may extend it only within their own scope. |
-| **CURRENT** | Inside the active S04B lane's registered scope at the time of writing. This guidance does not mutate that lane. |
+| **CURRENT** | Historical inventory label for work that sat inside the active S04B registered scope at this inventory's observation epoch. It does not express current Program status or authorization. |
 | **LATER** | Owned by a named later slice that is not currently authorized for implementation (for example remaining S05 work, S04D, or S06). |
 | **DEFERRED** | Outside REAL MVP, or dependent on an unresolved owner gate. |
 | **NOT IMPLEMENTED** | No such surface is observed on `main`. Stated as absence, not as a plan. |
 
 ### What **CURRENT** does and does not mean
 
-`CURRENT` marks a surface as sitting inside the S04B lane's **registered
-scope** — the scope recorded in
+At this inventory's observation epoch, `CURRENT` identified surfaces that
+sat inside the S04B lane's **registered scope** — the scope recorded in
 [`../plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md`](../plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md)
-§35 — and, at the time of writing, worked in an unmerged candidate branch.
+§35 — and that were then being worked in an unmerged S04B candidate branch.
 
-It does **not** restate Program status. On `main`,
-[`../STATUS.md`](../STATUS.md) records S04B as the next planned frontier and
-**NOT AUTHORIZED**, with implementation **not begun**. Nothing in this
-inventory changes that, and `CURRENT` must not be read as an authorization,
-as a claim that S04B work is merged, or as a claim that any S04B surface is
-complete.
+Those statements are historical observation facts. At that epoch,
+[`../STATUS.md`](../STATUS.md) described S04B as the next planned frontier
+and **NOT AUTHORIZED**, with implementation **not begun**. Nothing in this
+inventory was an authorization then, and the retained `CURRENT` label must
+not be read as today's Program status, as a claim that S04B remains the
+active lane, or as current authorization. Current Program routing is owned
+by [`../STATUS.md`](../STATUS.md) and
+[`../handoff/CURRENT.md`](../handoff/CURRENT.md).
 
-Observation basis: `main` at `cf90eadb7794a3e2c2f529212432e4a4daaadc91`.
-Where a surface is described as implemented, a corresponding module was
-observed in `src/`. No implementation is described that was not observed.
+Historical observation basis: `main` at
+`cf90eadb7794a3e2c2f529212432e4a4daaadc91`. Where a surface is described as
+implemented at that epoch, a corresponding module was observed in `src/`.
+No implementation is described that was not observed then.
 
 ---
 
@@ -74,14 +87,15 @@ opportunities on these surfaces; recording them does **not** reopen S04A. Any
 such polish needs a separate, later, bounded authorization and would not
 automatically belong to S04A.
 
-### S04B — current active product lane
+### S04B — active product lane at the inventory observation epoch
 
 Class Setup, Sony theatrical team-name selection, controller/team identity,
 buzzer readiness, the supported Sony setup path, setup-level hardware recovery
 necessary to complete S04B, projector/audio preflight within S04B direction,
 and `F-UX-01`.
 
-**This research slice does not mutate that candidate.**
+**At the observation epoch, this research slice did not mutate that
+unmerged S04B candidate.**
 
 ### S04C
 
@@ -731,4 +745,5 @@ This inventory does **not**:
 - authorize or claim S04D, additional S05, or S06 scope;
 - modify the Program gap register or any Program-adoption state;
 - close `F-UX-01` / `CQS-Q23-LOW-01`;
-- describe the unmerged S04B candidate's implementation as merged.
+- describe the then-unmerged S04B candidate's implementation as merged at
+  the observation epoch.
