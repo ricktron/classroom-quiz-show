@@ -81,7 +81,7 @@ function buzz(teamId: string, issuedAt = AT): SessionCommand {
 }
 
 function resolveActive(
-  resolution: 'incorrect' | 'passed',
+  resolution: 'incorrect' | 'passed' | 'correct',
   issuedAt: number,
 ): SessionCommand {
   return {
@@ -252,6 +252,59 @@ export function visualStressPromotedActiveClaimSnapshot(revision = 133): PublicS
 
 /** Exhausted response opportunity after the last queued team is resolved. */
 export function visualStressExhaustedBuzzSnapshot(revision = 134): PublicState {
+  const store = createStressStore()
+  return snapshotAt(
+    store,
+    revision,
+    select(VISUAL_STRESS_LONG_TILE_ID),
+    revealPrompt,
+    armResponse,
+    startTimer,
+    buzz('stress-t1', AT + 1),
+    resolveActive('passed', AT + 2),
+  )
+}
+
+/**
+ * S05 Path A — correct adjudication: empty buzz + resolved boardOutcome.
+ * Must not project buzz exhausted ("No one left to answer").
+ */
+export function visualStressBoardCorrectOutcomeSnapshot(revision = 140): PublicState {
+  const store = createStressStore()
+  return snapshotAt(
+    store,
+    revision,
+    select(VISUAL_STRESS_LONG_TILE_ID),
+    revealPrompt,
+    armResponse,
+    startTimer,
+    buzz('stress-t1', AT + 1),
+    buzz('stress-t2', AT + 2),
+    resolveActive('correct', AT + 3),
+  )
+}
+
+/**
+ * S05 Path A — incorrect adjudication with next team still active.
+ * boardOutcome (prior team) coexists with buzz active (next team).
+ */
+export function visualStressBoardIncorrectWithActiveSnapshot(revision = 141): PublicState {
+  const store = createStressStore()
+  return snapshotAt(
+    store,
+    revision,
+    select(VISUAL_STRESS_LONG_TILE_ID),
+    revealPrompt,
+    armResponse,
+    startTimer,
+    buzz('stress-t1', AT + 1),
+    buzz('stress-t2', AT + 2),
+    resolveActive('incorrect', AT + 3),
+  )
+}
+
+/** S05 Path A — passed adjudication after single buzz (exhausted queue + outcome). */
+export function visualStressBoardPassedOutcomeSnapshot(revision = 142): PublicState {
   const store = createStressStore()
   return snapshotAt(
     store,

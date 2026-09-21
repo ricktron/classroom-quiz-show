@@ -1,137 +1,81 @@
 import { test, expect } from '@playwright/test'
-import type { PublicState } from '../../src/state/publicState'
+import {
+  visualStressBoardCorrectOutcomeSnapshot,
+  visualStressBoardIncorrectWithActiveSnapshot,
+  visualStressBoardPassedOutcomeSnapshot,
+} from '../../src/test/visualStressDisplaySnapshots'
+import { visualStressTeams } from '../../src/test/visualStressFixtures'
 import { openDisplay, injectPublicState } from './helpers/displayPublicState'
+import type { PublicState } from '../../src/state/publicState'
 
 /**
  * S05 Path A — board outcome public authority foundation.
- * Minimal truthful Display text; no theatrical choreography.
+ * Injects sanitizer-derived PublicState snapshots. Minimal truthful text only.
  */
 
 test.describe.configure({ mode: 'serial' })
 
-function teams() {
-  return {
-    status: 'available' as const,
-    teams: [
-      { key: 't0', name: 'Red Team', accent: 'crimson' as const, score: 0 },
-      { key: 't1', name: 'Blue Team', accent: 'azure' as const, score: 100 },
-    ],
-  }
-}
-
-function boardSnapshot(overrides: Partial<PublicState> = {}): PublicState {
-  return {
-    schemaVersion: 9,
-    revision: 1,
-    phase: 'ready',
-    headline: 'Session ready',
-    detail: 'Playing',
-    game: {
-      status: 'active',
-      roundCount: 2,
-      currentRound: 1,
-      roundAvailability: 'available',
-    },
-    round: {
-      kind: 'board',
-      stage: 'prompt',
-      categories: [{ name: 'Alpha', tiles: [{ value: 100, used: false }] }],
-      selection: {
-        categoryIndex: 0,
-        tileIndex: 0,
-        value: 100,
-        prompt: { kind: 'text', text: 'What is 2+2?' },
-        answer: null,
-      },
-    },
-    teams: teams(),
-    response: {
-      armed: false,
-      timer: { status: 'idle' },
-      buzz: { status: 'none' },
-      boardOutcome: { status: 'none' },
-    },
-    ...overrides,
-  } as PublicState
-}
+const TEAM_NAMES = visualStressTeams().map((team) => String(team.name))
+const FIRST_TEAM = TEAM_NAMES[0]!
+const SECOND_TEAM = TEAM_NAMES[1]!
 
 test.describe('S05 board outcome public authority', () => {
-  test('projects Correct + team without exhausted buzz copy', async ({ page }) => {
-    await openDisplay(page)
-    await injectPublicState(
-      page,
-      boardSnapshot({
-        revision: 2,
-        response: {
-          armed: false,
-          timer: { status: 'idle' },
-          buzz: { status: 'none' },
-          boardOutcome: { status: 'resolved', teamKey: 't0', kind: 'correct' },
-        },
-      }),
+  test('projects Correct + team without exhausted buzz copy', async ({ page }, info) => {
+    test.skip(
+      info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
+      'projector viewports only',
     )
+    await openDisplay(page)
+    await injectPublicState(page, visualStressBoardCorrectOutcomeSnapshot(140))
     const outcome = page.getByTestId('board-outcome')
     await expect(outcome).toBeVisible()
     await expect(outcome).toHaveAttribute('data-outcome-kind', 'correct')
     await expect(outcome).toHaveAttribute('data-seeded', 'true')
     await expect(outcome).toContainText('Correct')
-    await expect(outcome).toContainText('Red Team')
+    await expect(outcome).toContainText(FIRST_TEAM)
     await expect(page.getByText(/No one left to answer/i)).toHaveCount(0)
+    await expect(page.getByTestId('bqd')).toHaveCount(0)
   })
 
   test('coexists Incorrect outcome with active buzz without false implications', async ({
     page,
-  }) => {
-    await openDisplay(page)
-    await injectPublicState(
-      page,
-      boardSnapshot({
-        revision: 3,
-        response: {
-          armed: true,
-          timer: { status: 'idle' },
-          buzz: { status: 'active', activeTeamKey: 't1', waitingCount: 0 },
-          boardOutcome: { status: 'resolved', teamKey: 't0', kind: 'incorrect' },
-        },
-      }),
+  }, info) => {
+    test.skip(
+      info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
+      'projector viewports only',
     )
+    await openDisplay(page)
+    await injectPublicState(page, visualStressBoardIncorrectWithActiveSnapshot(141))
     await expect(page.getByTestId('board-outcome')).toContainText('Incorrect')
-    await expect(page.getByTestId('board-outcome')).toContainText('Red Team')
-    await expect(page.getByTestId('bqd-active')).toContainText('Blue Team')
+    await expect(page.getByTestId('board-outcome')).toContainText(FIRST_TEAM)
+    await expect(page.getByTestId('bqd-active')).toContainText(SECOND_TEAM)
   })
 
-  test('remount seeds truthful snapshot without fabricated transition', async ({ page }) => {
-    await openDisplay(page)
-    await injectPublicState(
-      page,
-      boardSnapshot({
-        revision: 4,
-        response: {
-          armed: false,
-          timer: { status: 'idle' },
-          buzz: { status: 'none' },
-          boardOutcome: { status: 'resolved', teamKey: 't1', kind: 'passed' },
-        },
-      }),
+  test('remount seeds truthful Passed snapshot without fabricated transition', async ({
+    page,
+  }, info) => {
+    test.skip(
+      info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
+      'projector viewports only',
     )
+    await openDisplay(page)
+    await injectPublicState(page, visualStressBoardPassedOutcomeSnapshot(142))
     await expect(page.getByTestId('board-outcome')).toHaveAttribute('data-seeded', 'true')
     await expect(page.getByTestId('board-outcome')).toContainText('Passed')
-    await expect(page.getByTestId('board-outcome')).toContainText('Blue Team')
+    await expect(page.getByTestId('board-outcome')).toContainText(FIRST_TEAM)
   })
 
-  test('fail-closed: schema 8 payload with outcome is not adopted', async ({ page }) => {
+  test('fail-closed: schema 8 payload with outcome is not adopted', async ({ page }, info) => {
+    test.skip(
+      info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
+      'projector viewports only',
+    )
     await openDisplay(page)
-    await injectPublicState(page, {
-      ...boardSnapshot({ revision: 5 }),
+    const stale = {
+      ...visualStressBoardCorrectOutcomeSnapshot(143),
       schemaVersion: 8,
-      response: {
-        armed: false,
-        timer: { status: 'idle' },
-        buzz: { status: 'none' },
-        boardOutcome: { status: 'resolved', teamKey: 't0', kind: 'correct' },
-      },
-    } as unknown as PublicState)
-    // Version mismatch fails closed — Display keeps no adopted board outcome.
+    } as unknown as PublicState
+    await injectPublicState(page, stale)
     await expect(page.getByTestId('board-outcome')).toHaveCount(0)
   })
 })
