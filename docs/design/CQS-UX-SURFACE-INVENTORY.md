@@ -381,11 +381,10 @@ hardware, recovery, and the end-to-end experience.
 - **Research routing:** Swink, Saffer, Head.
 - **Ownership / state:** **ALREADY IMPLEMENTED FOUNDATION**
   (`src/display/BuzzQueueDisplay.tsx`, ordered queue and promotion from
-  Slice 8). Buzz / active-claim **choreography** has an authorized
-  **DELIVERY CANDIDATE** under
-  `CQS-REAL-MVP-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY` (**NOT MERGED** /
-  **NOT TERMINAL**). Cause-specific rebound copy, outcome feedback, and
-  broader S05 spectacle remain **LATER**.
+  Slice 8). Buzz / active-claim **choreography** under
+  `CQS-REAL-MVP-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY` is **TERMINALLY
+  COMPLETE** on main after PR #91. Cause-specific rebound copy, outcome
+  feedback, and broader S05 spectacle remain **LATER**.
 
 ### 17. Answer adjudication
 

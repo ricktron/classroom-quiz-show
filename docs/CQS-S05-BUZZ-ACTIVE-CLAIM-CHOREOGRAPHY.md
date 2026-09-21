@@ -10,23 +10,22 @@ at classroom distance.
   `CQS-REAL-MVP-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY`
 - **Parent:** `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
   (parent remains **OPEN / NOT TERMINAL**)
-- **Tranche status:** **DELIVERY CANDIDATE / NOT MERGED / NOT TERMINAL**
+- **Tranche status:** **TERMINALLY COMPLETE**
 - **Date (America/Chicago):** 2026-09-21
 
-This document does **not** predict its own open delivery PR number, merge SHA,
-or exact-head review verdict.
-
-### Review / repair chain (observed)
+### Review / repair / merge chain (observed)
 
 | Head | Verdict |
 | --- | --- |
 | `2ad426e73989619fb28a2a05b2ce561dc22253cd` | **REPAIR REQUIRED** (independent exact-head review: F1 Sonar duplication 3.9%; F2 waiting-count cancelled acknowledgement; F3 remount fabricated claim; F4 local accent list; F5 720p claim chrome clipping) |
-| `bdd044f5ae06ad17a34968a0d9dce8a1851a8f35` (F1–F5 code repair) → observe current PR #91 tip for review | **fresh independent exact-head review required** — not independently accepted by the repair task |
+| `bdd044f5ae06ad17a34968a0d9dce8a1851a8f35` (F1–F5 code repair) | intermediate — not independently accepted by the repair task |
+| `042d973b1a90de46bbee939d628a5eba72a86b9e` / `fc87c49d4bf46b4901e77628b497b98b0ea67d4e` | docs clarification on repaired tip |
+| `fc87c49d4bf46b4901e77628b497b98b0ea67d4e` | **ACCEPT CANDIDATE** |
+| squash / main `42bbdfff5bd09386958f40dbb6475d69c8b0ab2d` | **MERGED** (PR #91; sole parent `33e9c91…`; trees **EXACT MATCH** `9a0b852…`) |
 
-Repair authority:
+Repair authority (historical):
 `AUTHORIZE-CQS-REAL-MVP-S05-PR91-BUZZ-ACTIVE-CLAIM-F1-F5-REPAIR-1`.
-Repair does **not** mark this tranche independently accepted and does **not**
-authorize merge.
+Repair alone did **not** mark this tranche independently accepted.
 
 ---
 
@@ -184,7 +183,31 @@ Parent S05 remains **OPEN / NOT TERMINAL**.
 
 ---
 
-## J. Next owner decision
+## J. Post-merge identity
 
-**Fresh independent exact-head review** of this S05 buzz / active-claim
-choreography delivery candidate. Merge is **not** authorized by this document.
+| Fact | Value |
+| --- | --- |
+| PR | [#91](https://github.com/ricktron/classroom-quiz-show/pull/91) **MERGED** |
+| Rejected head | `2ad426e73989619fb28a2a05b2ce561dc22253cd` → **REPAIR REQUIRED** (F1–F5) |
+| Repair tip | `bdd044f5ae06ad17a34968a0d9dce8a1851a8f35` (intermediate) |
+| Accepted implementation head | `fc87c49d4bf46b4901e77628b497b98b0ea67d4e` → **ACCEPT CANDIDATE** |
+| Squash / main | `42bbdfff5bd09386958f40dbb6475d69c8b0ab2d` |
+| Sole parent | `33e9c910f7abe5fbc048704ff9fef5962d213919` |
+| Accepted / main tree | **EXACT MATCH** `9a0b8527d670dfdf6aaec58fbb70f3577fab443b` |
+| Post-merge workflows | CI, Playwright, Desktop artifacts (unsigned macOS + Windows), Pages, SonarCloud — all **SUCCESS** |
+| Tranche status | **TERMINALLY COMPLETE** |
+| Parent status | **OPEN / NOT TERMINAL** |
+
+Terminal post-merge reconciliation:
+[`receipts/2026-09-21-cqs-real-mvp-s05-buzz-active-claim-terminal-post-merge-reconciliation.md`](receipts/2026-09-21-cqs-real-mvp-s05-buzz-active-claim-terminal-post-merge-reconciliation.md).
+
+---
+
+## K. Next owner decision
+
+**Independent exact-head review of the docs-only S05 buzz / active-claim
+terminalization candidate** that carries the terminal receipt and
+current-routing reconciliation.
+
+Does not authorize merge of that docs PR, additional S05 work, S04D, S06,
+or S05 parent terminalization. No `S05-F2` identity is registered.
