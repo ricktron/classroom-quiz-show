@@ -35,6 +35,7 @@ import { clampOffset, MAX_CLOCK_OFFSET_CORRECTION_MS } from '../sync/receiver'
 
 /** The "nobody has buzzed" member, used by every timer-only case below. */
 const NO_BUZZ: PublicBuzzState = { status: 'none' }
+const NO_OUTCOME = { status: 'none' as const }
 
 const AT = 1_000_000
 const ROUND = 'board-round'
@@ -79,7 +80,7 @@ describe('what the projector receives', () => {
       armed: true,
       timer: { status: 'idle' },
       // Slice 8: arming alone publishes an empty queue, never a team.
-      buzz: { status: 'none' },
+      buzz: { status: 'none' }, boardOutcome: { status: 'none' },
     })
   })
 
@@ -88,7 +89,7 @@ describe('what the projector receives', () => {
     expect(store.getPublicState().response).toEqual({
       armed: false,
       timer: { status: 'running', durationMs: 30_000, deadline: AT + 30_000 },
-      buzz: { status: 'none' },
+      buzz: { status: 'none' }, boardOutcome: { status: 'none' },
     })
   })
 
@@ -113,7 +114,7 @@ describe('what the projector receives', () => {
     expect(response).toEqual({
       armed: false,
       timer: { status: 'expired', durationMs: 30_000 },
-      buzz: { status: 'none' },
+      buzz: { status: 'none' }, boardOutcome: { status: 'none' },
     })
   })
 
@@ -255,15 +256,28 @@ describe('the public response guard', () => {
 
   it('accepts every well-formed status', () => {
     expect(isPublicResponseState(null)).toBe(true)
-    expect(isPublicResponseState({ armed: false, timer: { status: 'idle' }, buzz: NO_BUZZ })).toBe(
-      true,
-    )
-    expect(isPublicResponseState({ armed: true, timer: running, buzz: NO_BUZZ })).toBe(true)
+    expect(
+      isPublicResponseState({
+        armed: false,
+        timer: { status: 'idle' },
+        buzz: NO_BUZZ,
+        boardOutcome: { status: 'none' },
+      }),
+    ).toBe(true)
+    expect(
+      isPublicResponseState({
+        armed: true,
+        timer: running,
+        buzz: NO_BUZZ,
+        boardOutcome: { status: 'none' },
+      }),
+    ).toBe(true)
     expect(
       isPublicResponseState({
         armed: false,
         timer: { status: 'paused', durationMs: 1_000, remainingMs: 500 },
         buzz: NO_BUZZ,
+        boardOutcome: { status: 'none' },
       }),
     ).toBe(true)
     expect(
@@ -271,26 +285,46 @@ describe('the public response guard', () => {
         armed: false,
         timer: { status: 'expired', durationMs: 1_000 },
         buzz: NO_BUZZ,
+        boardOutcome: {
+          status: 'resolved',
+          teamKey: 't0',
+          kind: 'correct',
+        },
       }),
     ).toBe(true)
+  })
+
+  it('rejects a response missing boardOutcome (schema 9 required field)', () => {
+    expect(
+      isPublicResponseState({ armed: false, timer: { status: 'idle' }, buzz: NO_BUZZ }),
+    ).toBe(false)
   })
 
   it('rejects a status/payload pairing that cannot exist', () => {
     // A running timer with a leftover remaining value, or a paused one with a
     // deadline, means the sender is confused — it is rejected, not rendered.
     expect(
-      isPublicResponseState({ armed: false, timer: { ...running, remainingMs: 1_000 } }),
+      isPublicResponseState({
+        armed: false,
+        timer: { ...running, remainingMs: 1_000 },
+        buzz: NO_BUZZ,
+        boardOutcome: { status: 'none' },
+      }),
     ).toBe(false)
     expect(
       isPublicResponseState({
         armed: false,
         timer: { status: 'paused', durationMs: 1_000, remainingMs: 1, deadline: 2 },
+        buzz: NO_BUZZ,
+        boardOutcome: { status: 'none' },
       }),
     ).toBe(false)
     expect(
       isPublicResponseState({
         armed: false,
         timer: { status: 'expired', durationMs: 1_000, deadline: 2 },
+        buzz: NO_BUZZ,
+        boardOutcome: { status: 'none' },
       }),
     ).toBe(false)
   })
@@ -351,7 +385,7 @@ describe('the derived countdown', () => {
 
 describe('the wire protocol', () => {
   it('is at public-state version 8 and envelope version 2', () => {
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(8)
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(9)
     expect(SYNC_SCHEMA_VERSION).toBe(2)
   })
 

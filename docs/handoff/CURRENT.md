@@ -27,7 +27,7 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S04A–S04C, **S05-F1**, and **S05 buzz / active-claim choreography** **TERMINALLY COMPLETE**. S05 parent **OPEN / NOT TERMINAL**. Next Program action is an **owner decision / read-only remaining-S05 reconciliation** (routing ≠ authority). S04D / additional S05 / S06 remain **NOT AUTHORIZED**. REAL MVP is **not** complete. |
+| Current Program frontier | S04A–S04C, **S05-F1**, and **S05 buzz / active-claim choreography** **TERMINALLY COMPLETE**. **S05 board-outcome public authority** **AUTHORIZED DELIVERY CANDIDATE** (not terminal). S05 parent **OPEN / NOT TERMINAL**. Next Program action is **fresh independent exact-head review** of the board-outcome delivery candidate (routing ≠ authority). S04D / additional S05 / S06 remain **NOT AUTHORIZED**. REAL MVP is **not** complete. |
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
 | S04 canon | product direction **registered** |
@@ -41,6 +41,7 @@ also read
 | S04C | parent **TERMINALLY COMPLETE** |
 | S05-F1 | **TERMINALLY COMPLETE** |
 | S05 buzz / active-claim choreography | **TERMINALLY COMPLETE** |
+| S05 board-outcome public authority | **AUTHORIZED DELIVERY CANDIDATE** (not terminal) |
 | S05 parent | **OPEN / NOT TERMINAL** |
 | S04D / additional S05 / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
@@ -280,20 +281,23 @@ squash/main `42bbdfff5bd09386958f40dbb6475d69c8b0ab2d` (sole parent
 `33e9c910f7abe5fbc048704ff9fef5962d213919`; accepted/main trees **EXACT
 MATCH** `9a0b8527d670dfdf6aaec58fbb70f3577fab443b`; post-merge CI /
 Playwright / Desktop / Pages / Sonar SUCCESS). S05 parent remains **OPEN /
-NOT TERMINAL**. Do **not** start S04D, additional S05 work, or S06 from
-this handoff. Next Program action is an **owner decision / read-only
-remaining-S05 reconciliation** (routing ≠ authority). REAL MVP is **not**
-complete. Do **not** claim Windows physical qualification,
+NOT TERMINAL**.
+
+`CQS-REAL-MVP-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY` is an **AUTHORIZED
+DELIVERY CANDIDATE** only (Path A foundation). It is **not** terminal. Do
+**not** start S04D, additional S05 presentation children, or S06 from this
+handoff. Next Program action is **fresh independent exact-head review** of
+the board-outcome delivery candidate (routing ≠ authority). REAL MVP is
+**not** complete. Do **not** claim Windows physical qualification,
 projector/sleep physical qualification, Sony physical re-qualification,
 local hardware qualification for H2 (none required), local qualification
 for H3 (**NONE**), local qualification for H4 (**NONE**), a browser
-quota-fill experiment, physical projector qualification for F1 or buzz,
-or a signed release from this handoff. This handoff does **not** claim
-that this docs-only terminalization candidate is itself merged, and does
-**not** predict its eventual squash SHA. An accepted **LOW** remains: after a
-successful Keep, the collapsed **More detail about this file** note may
-still say nothing was saved. The primary status line is the durable
-outcome.
+quota-fill experiment, physical projector qualification for F1 / buzz /
+board-outcome, or a signed release from this handoff. This handoff does
+**not** predict this candidate's eventual squash SHA. An accepted **LOW**
+remains: after a successful Keep, the collapsed **More detail about this
+file** note may still say nothing was saved. The primary status line is
+the durable outcome.
 
 ```text
 routing ≠ authority
@@ -307,9 +311,13 @@ CQS-REAL-MVP-S04C-DISPLAY-PLACEMENT-AND-WAKE-REPUBLISH-RECOVERY: TERMINALLY COMP
 S04C: TERMINALLY COMPLETE
 S05-F1: TERMINALLY COMPLETE
 S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY: TERMINALLY COMPLETE
+S05-BOARD-OUTCOME-PUBLIC-AUTHORITY: AUTHORIZED DELIVERY CANDIDATE
 S05 parent: OPEN / NOT TERMINAL
 S04D / additional S05 / S06: NOT AUTHORIZED
 ```
+
+S05 board-outcome public authority delivery candidate:
+[`../CQS-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY.md`](../CQS-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY.md).
 
 S05 buzz / active-claim terminal post-merge reconciliation (candidate docs):
 [`../receipts/2026-09-21-cqs-real-mvp-s05-buzz-active-claim-terminal-post-merge-reconciliation.md`](../receipts/2026-09-21-cqs-real-mvp-s05-buzz-active-claim-terminal-post-merge-reconciliation.md).

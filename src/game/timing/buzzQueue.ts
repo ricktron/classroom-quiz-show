@@ -171,26 +171,33 @@ export function isBuzzQueueState(value: unknown): value is BuzzQueueState {
 }
 
 /**
- * How an active response ended — the typed reason a promotion happened.
+ * How an active response ended — the typed adjudication for one turn.
  *
- * One bounded union rather than two commands, for the reason ADR-006 §7 gives for
- * `ScoreAdjustmentMode`: both outcomes perform the identical state transition
- * (the pointer advances) and differ only in what the teacher MEANT, so the
- * meaning belongs in a typed field on one fact rather than in two near-identical
- * events. Months later the log still answers "was that team wrong, or did the
- * teacher move on?".
+ * One bounded union rather than parallel commands, for the reason ADR-006 §7
+ * gives for `ScoreAdjustmentMode`: the meaning belongs in a typed field on one
+ * fact. Months later the log still answers what the teacher meant.
  *
- * Neither member scores. **`incorrect` records a judgement, not a deduction** —
+ * **No member scores.** `incorrect` records a judgement, not a deduction —
  * inventing an automatic penalty would break ADR-006's reveal/score independence
- * and would take a decision out of the teacher's hands.
+ * and would take a decision out of the teacher's hands. `correct` likewise awards
+ * nothing: scoring stays on the separate Host scoring panel.
  *
- * There is deliberately **no `correct` member.** A correct answer ends the
- * response opportunity rather than promoting anyone, and the host already has the
- * durable action for that: revealing the answer, which closes the window and
- * clears the queue (ADR-007 §8). Adding `correct` here would create a second,
- * competing way to end a clue.
+ * | Kind | Queue transition | Scores? |
+ * | --- | --- | --- |
+ * | `incorrect` | promote next (OG-3) | No |
+ * | `passed` | promote next (OG-3) | No |
+ * | `correct` | end opportunity — empty the queue (not exhausted) | No |
+ *
+ * `correct` does **not** auto-reveal answer text, auto-return to the board, or
+ * auto-award points. Public projection of the judgement is a separate allow-list
+ * field (`PublicBoardResponseOutcome`); buzz `exhausted` must never stand in for
+ * a correct adjudication (that would falsely show "No one left to answer").
+ *
+ * Historical note: Slice 8 deliberately omitted `correct` because reveal already
+ * closed the window. REAL MVP S05 Path A adds `correct` as an explicit
+ * opportunity-ending adjudication that still scores nothing (ADR-008 amendment).
  */
-export const ACTIVE_RESPONSE_RESOLUTION_KINDS = ['incorrect', 'passed'] as const
+export const ACTIVE_RESPONSE_RESOLUTION_KINDS = ['incorrect', 'passed', 'correct'] as const
 
 export type ActiveResponseResolutionKind = (typeof ACTIVE_RESPONSE_RESOLUTION_KINDS)[number]
 
@@ -211,6 +218,15 @@ export type ActiveResponseResolution =
        */
       readonly kind: 'passed'
     }
+  | {
+      /**
+       * The teacher judged the active team correct. Scores nothing, reveals
+       * nothing, and does not return to the board. Ends the live response
+       * opportunity for this clue by clearing the queue to empty (not exhausted)
+       * and recording the adjudication on the phase outcome field.
+       */
+      readonly kind: 'correct'
+    }
 
 const RESOLUTION_KIND_SET: ReadonlySet<string> = new Set(ACTIVE_RESPONSE_RESOLUTION_KINDS)
 
@@ -227,4 +243,30 @@ export const ACTIVE_RESPONSE_RESOLUTION_LABEL: Readonly<
 > = {
   incorrect: 'marked incorrect',
   passed: 'passed by the host',
+  correct: 'marked correct',
+}
+
+/**
+ * Most recent board-response adjudication for the live response opportunity.
+ *
+ * Replacement, not history: each accepted resolution overwrites the prior one.
+ * Cleared with the response-opportunity lifecycle (reset, tile change, reveal,
+ * return to board, round change, game end). Carries only team id + kind — no
+ * timestamps, event ids, seq, score, or animation state.
+ */
+export type BoardResponseOutcome = {
+  readonly teamId: string
+  readonly kind: ActiveResponseResolutionKind
+}
+
+/** Structural guard for a private board-response outcome. */
+export function isBoardResponseOutcome(value: unknown): value is BoardResponseOutcome {
+  if (typeof value !== 'object' || value === null) return false
+  const v = value as Record<string, unknown>
+  return (
+    typeof v.teamId === 'string' &&
+    v.teamId.length > 0 &&
+    typeof v.kind === 'string' &&
+    RESOLUTION_KIND_SET.has(v.kind)
+  )
 }

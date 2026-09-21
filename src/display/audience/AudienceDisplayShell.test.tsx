@@ -225,7 +225,7 @@ describe('AudienceDisplayShell', () => {
           response: {
             armed: true,
             timer: { status: 'running', durationMs: 15_000, deadline: Date.now() + 15_000 },
-            buzz: { status: 'none' },
+            buzz: { status: 'none' }, boardOutcome: { status: 'none' },
           },
         })}
       />,

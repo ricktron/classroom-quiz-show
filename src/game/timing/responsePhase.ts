@@ -42,7 +42,12 @@
  */
 
 import { clampDuration, remainingSeconds } from '../../time/duration'
-import { EMPTY_BUZZ_QUEUE, isEmptyBuzzQueue, type BuzzQueueState } from './buzzQueue'
+import {
+  EMPTY_BUZZ_QUEUE,
+  isEmptyBuzzQueue,
+  type BoardResponseOutcome,
+  type BuzzQueueState,
+} from './buzzQueue'
 
 /**
  * WHY a timed response window stopped early — the typed interruption seam
@@ -196,6 +201,14 @@ export interface ResponsePhaseState {
    * the clue it belongs to.
    */
   readonly queue: BuzzQueueState
+  /**
+   * Most recent board-response adjudication for this opportunity (S05 Path A).
+   *
+   * `null` until the host resolves an active respondent. Replacement, not
+   * history. Cleared with the same opportunity lifecycle as the queue. Never
+   * carries score, reveal, or animation state — adjudication ≠ scoring.
+   */
+  readonly outcome: BoardResponseOutcome | null
 }
 
 /** A clue that has not been armed and has no timer. */
@@ -205,6 +218,7 @@ export const INITIAL_RESPONSE_PHASE_STATE: ResponsePhaseState = Object.freeze({
   armed: false,
   timer: IDLE_RESPONSE_TIMER,
   queue: EMPTY_BUZZ_QUEUE,
+  outcome: null,
 })
 
 /**
@@ -213,10 +227,17 @@ export const INITIAL_RESPONSE_PHASE_STATE: ResponsePhaseState = Object.freeze({
  *
  * A phase holding a queue is NOT initial even if it was since disarmed and its
  * clock never ran — somebody buzzed, and that is a fact worth showing and worth
- * being able to reset.
+ * being able to reset. A phase holding an adjudication outcome is likewise NOT
+ * initial — `correct` clears the queue to empty without returning to the
+ * untouched initial state, so outcome must be checked explicitly.
  */
 export function isInitialResponsePhase(phase: ResponsePhaseState): boolean {
-  return !phase.armed && phase.timer.status === 'idle' && isEmptyBuzzQueue(phase.queue)
+  return (
+    !phase.armed &&
+    phase.timer.status === 'idle' &&
+    isEmptyBuzzQueue(phase.queue) &&
+    phase.outcome === null
+  )
 }
 
 /** Does this timer state still describe a live countdown (running or paused)? */

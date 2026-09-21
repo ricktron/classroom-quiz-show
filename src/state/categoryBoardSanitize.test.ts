@@ -355,7 +355,7 @@ describe('wire version', () => {
     // Slice 7 4 → 5 for `response`, Slice 8 5 → 6 for `buzz`, Slice 11 6 → 7
     // for typed prompt media, and Slice 14 7 → 8 for the Final round DTO. An
     // older version is never re-read as a newer one.
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(8)
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(9)
   })
 
   it('rejects an older wire shape instead of reinterpreting it', () => {

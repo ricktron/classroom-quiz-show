@@ -1,8 +1,11 @@
 # ADR-008 — The local input boundary, the buzz queue, and keyboard buzz-in
 
-- **Status:** Accepted (Slice 8)
+- **Status:** Accepted (Slice 8); amended REAL MVP S05 Path A
+  (`AUTHORIZE-CQS-REAL-MVP-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY-1`) — §11 adds
+  opportunity-ending `correct` without reopening ADR-006
 - **Date:** 2026-07-27
 - **Slice:** 8 — Local input contract & keyboard buzz-in
+- **Amended:** 2026-09-21 — board `correct` adjudication + public board outcome
 - **Depends on:** [ADR-002](ADR-002-state-event-sync-core.md) (command/event core,
   allow-list sanitizer, versioned sync, undo as an append-only marker),
   [ADR-003](ADR-003-game-round-model-registry.md) (application-only registration,
@@ -283,13 +286,14 @@ behaves as §13 describes.
 The host remains authoritative throughout — the display never buzzes, never
 expires and never authors anything.
 
-### 11. Promotion, and what "host pass" means
+### 11. Promotion, adjudication, and what "host pass" / "correct" mean
 
 One command, `RESOLVE_ACTIVE_RESPONSE`, carries a typed
-`{ kind: 'incorrect' | 'passed' }`. One command rather than two, for ADR-006 §7's
-reason: both perform the identical transition and differ only in what the teacher
-meant, so the meaning belongs in a typed field on one fact. One click is one
-command is one event is one promotion — no fragile multi-step state manipulation.
+`{ kind: 'incorrect' | 'passed' | 'correct' }`. One command rather than parallel
+families, for ADR-006 §7's reason: meaning belongs in a typed field on one fact.
+One click is one command is one event.
+
+**`incorrect` / `passed` (OG-3 promotion):**
 
 - the active team leaves the active slot;
 - the next queued team is promoted;
@@ -300,18 +304,35 @@ command is one event is one promotion — no fragile multi-step state manipulati
   automatic penalty would break ADR-006 §9 and take a decision out of the
   teacher's hands.
 
-**There is deliberately no `correct` member.** A correct answer *ends* the response
-opportunity rather than promoting anyone, and the host already has that action:
-revealing the answer, which closes the window and clears the queue. Adding
-`correct` here would create a second, competing way to end a clue.
+**`correct` (S05 Path A opportunity-ending adjudication):**
+
+- ends the live response opportunity for that clue;
+- clears the queue to **empty** (not exhausted — exhausted would falsely project
+  "No one left to answer");
+- disarms so no further buzz is accepted;
+- records the most recent adjudication on a private phase `outcome` field
+  (`teamId` + `kind` only — no timestamps, event ids, seq, score, or animation);
+- **scores nothing**, does **not** auto-reveal answer text, does **not**
+  auto-return to the board, and does **not** auto-award points;
+- reversible via undo (replay restores queue and outcome exactly).
+
+Public projection of the judgement is a category-board-only allow-list field
+(`PublicBoardResponseOutcome` on PublicState schema 9) — never derived from
+scores, reveals, buzz diffs, or Host audio. Final keeps its own settlement DTO.
+
+**Historical note (Slice 8):** this ADR originally rejected a `correct` member
+because reveal already closed the window. REAL MVP S05 Path A amends that: an
+explicit correctness adjudication that still scores nothing is required so the
+projector can show truthful board outcome without fusing adjudication to scoring
+or reveal (`CQS-RA2-SCORE-REVEAL-01`).
 
 **"Host pass" is defined precisely**: advancing from the active respondent to the
 next queued team *without asserting correctness and without changing any score*.
 It is distinct from a team declining to answer (which the teacher records the same
 way, because the log records what the host did), from skipping the clue (return to
-the board), from closing the response opportunity (reveal the answer, or reset),
-and from clearing the queue (reset). The UI labels are "Mark incorrect and
-advance" and "Pass and advance".
+the board), from closing the response opportunity (reveal the answer, reset, or
+`correct`), and from clearing the queue (reset). The UI labels are "Mark correct",
+"Mark incorrect and advance", and "Pass and advance".
 
 ### 12. Queue lifecycle, and the response-opportunity identity (OG-5)
 
@@ -473,8 +494,11 @@ registration, no dynamic import, explicit known/unknown — with nothing to main
 transition and differ only in intent, which ADR-006 §7 already established belongs
 in a typed field rather than in duplicated commands.
 
-**A `correct` resolution member.** Rejected: it would be a second way to end a clue,
-competing with the answer reveal that already does it.
+**A `correct` resolution member (Slice 8).** Originally rejected: it would be a
+second way to end a clue, competing with the answer reveal that already does it.
+**Amended (S05 Path A):** `correct` is accepted as an opportunity-ending
+adjudication that still scores nothing and does not auto-reveal — see §11. The
+historical rejection is preserved here so the amendment is reviewable.
 
 **Automatic score deduction on `incorrect`.** Rejected: it breaks ADR-006's
 reveal/score independence and takes a judgement out of the teacher's hands.

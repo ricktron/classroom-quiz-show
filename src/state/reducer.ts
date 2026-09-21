@@ -41,6 +41,7 @@ import {
 import {
   activeRespondent,
   appendBuzz,
+  EMPTY_BUZZ_QUEUE,
   hasTeamBuzzed,
   isActiveResponseResolution,
   promoteNext,
@@ -635,7 +636,7 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
         // accepted either — disarming IS the intake gate. It moves no points.
         // The queue is KEPT: who buzzed before the clock ran out is still a fact,
         // and the host may still resolve the active team's turn.
-        return { armed: false, timer, queue: phase.queue }
+        return { armed: false, timer, queue: phase.queue, outcome: phase.outcome }
       })
 
     case 'RESPONSE_PHASE_RESET':
@@ -663,12 +664,26 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
         // and advancing the pointer anyway would promote the wrong team.
         if (activeRespondent(phase.queue) !== event.teamId) return null
         if (!isActiveResponseResolution(event.resolution)) return null
+        const outcome = { teamId: event.teamId, kind: event.resolution.kind }
+        if (event.resolution.kind === 'correct') {
+          // Opportunity-ending adjudication: empty the queue (not exhausted —
+          // exhausted would falsely project "No one left to answer"), disarm so
+          // no further buzz is accepted, leave the timer untouched, and record
+          // the outcome. Scores nothing; reveals nothing; does not return to the
+          // board.
+          return {
+            ...phase,
+            armed: false,
+            queue: EMPTY_BUZZ_QUEUE,
+            outcome,
+          }
+        }
         const queue = promoteNext(phase.queue)
         if (queue === null) return null
         // Promotion moves the pointer and NOTHING else: arming is untouched (so a
         // still-armed clue keeps taking buzzes), the timer is untouched, and no
-        // score moves.
-        return { ...phase, queue }
+        // score moves. Outcome is replaced with the most recent adjudication.
+        return { ...phase, queue, outcome }
       })
 
     // Undo markers change nothing directly; `replay` neutralizes their targets.

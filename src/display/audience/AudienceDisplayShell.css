@@ -480,6 +480,17 @@
   font-size: clamp(0.7rem, 1.1vw, 0.95rem);
 }
 
+/* Board-outcome foundation text densify — coexist with F1 clue + buzz geometry. */
+.audience--scene-quiet-cognition .signal-rail .bod {
+  font-size: clamp(0.85rem, 1.35vw + 0.4rem, 1.15rem);
+  padding-top: 0.1em;
+}
+
+.audience--scene-quiet-cognition .signal-rail .bod__kind,
+.audience--scene-quiet-cognition .signal-rail .bod__team {
+  font-weight: 650;
+}
+
 @media (max-height: 800px) {
   .audience {
     padding: var(--space-2);

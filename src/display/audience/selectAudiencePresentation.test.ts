@@ -69,10 +69,13 @@ const OPEN_BOARD: PublicCategoryBoardState = {
   ],
 }
 
+const NO_OUTCOME = { status: 'none' as const }
+
 const IDLE_RESPONSE: PublicResponseState = {
   armed: false,
   timer: { status: 'idle' },
   buzz: { status: 'none' },
+  boardOutcome: NO_OUTCOME,
 }
 
 describe('selectScoreLayoutMode', () => {
@@ -118,8 +121,8 @@ describe('selectUniqueLeader', () => {
 
 describe('selectAudiencePresentation', () => {
   it('keeps public wire version 8 as the only schema in fixtures', () => {
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(8)
-    expect(baseState().schemaVersion).toBe(8)
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(9)
+    expect(baseState().schemaVersion).toBe(9)
   })
 
   it('maps top-level waiting, ready, unavailable, and complete scenes', () => {
@@ -312,7 +315,7 @@ describe('selectAudiencePresentation', () => {
         response: {
           armed: true,
           timer: { status: 'running', durationMs: 15_000, deadline: Date.now() + 15_000 },
-          buzz: { status: 'active', activeTeamKey: 't1', waitingCount: 2 },
+          buzz: { status: 'active', activeTeamKey: 't1', waitingCount: 2 }, boardOutcome: { status: 'none' },
         },
       }),
     )
@@ -381,7 +384,7 @@ describe('selectAudiencePresentation', () => {
       response: {
         armed: true,
         timer: { status: 'paused', durationMs: 10_000, remainingMs: 4_000 },
-        buzz: { status: 'none' },
+        buzz: { status: 'none' }, boardOutcome: { status: 'none' },
       },
     })
     expect(selectPublicTimer(withResponse)?.status).toBe('paused')

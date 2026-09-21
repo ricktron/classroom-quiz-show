@@ -246,7 +246,12 @@ describe('the public buzz guard', () => {
       { status: 'active', activeTeamKey: 't7', waitingCount: PUBLIC_MAX_WAITING_COUNT },
     ]) {
       expect(
-        isPublicResponseState({ armed: true, timer: running, buzz: buzzState }),
+        isPublicResponseState({
+          armed: true,
+          timer: running,
+          buzz: buzzState,
+          boardOutcome: { status: 'none' },
+        }),
         JSON.stringify(buzzState),
       ).toBe(true)
     }
@@ -264,7 +269,12 @@ describe('the public buzz guard', () => {
       'active',
     ]) {
       expect(
-        isPublicResponseState({ armed: true, timer: running, buzz: buzzState }),
+        isPublicResponseState({
+          armed: true,
+          timer: running,
+          buzz: buzzState,
+          boardOutcome: { status: 'none' },
+        }),
         JSON.stringify(buzzState),
       ).toBe(false)
     }
@@ -277,6 +287,7 @@ describe('the public buzz guard', () => {
           armed: true,
           timer: running,
           buzz: { status: 'active', activeTeamKey: key, waitingCount: 0 },
+          boardOutcome: { status: 'none' },
         }),
         key,
       ).toBe(false)
@@ -290,6 +301,7 @@ describe('the public buzz guard', () => {
           armed: true,
           timer: running,
           buzz: { status: 'active', activeTeamKey: 't0', waitingCount },
+          boardOutcome: { status: 'none' },
         }),
         JSON.stringify(waitingCount),
       ).toBe(false)
@@ -297,7 +309,23 @@ describe('the public buzz guard', () => {
   })
 
   it('rejects a response DTO with no buzz field — the field is required, not optional', () => {
-    expect(isPublicResponseState({ armed: true, timer: running })).toBe(false)
+    expect(
+      isPublicResponseState({
+        armed: true,
+        timer: running,
+        boardOutcome: { status: 'none' },
+      }),
+    ).toBe(false)
+  })
+
+  it('rejects a response DTO with no boardOutcome field — required on schema 9', () => {
+    expect(
+      isPublicResponseState({
+        armed: true,
+        timer: running,
+        buzz: { status: 'none' },
+      }),
+    ).toBe(false)
   })
 
   it('bounds the waiting count by the same team limit the engine enforces', () => {
@@ -306,8 +334,8 @@ describe('the public buzz guard', () => {
 })
 
 describe('the wire protocol', () => {
-  it('is at public-state version 8 and envelope version 2', () => {
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(8)
+  it('is at public-state version 9 and envelope version 2', () => {
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(9)
     // The envelope did NOT change: `sentAt` is unchanged and no new transport
     // metadata was needed, so version 2 stands.
     expect(SYNC_SCHEMA_VERSION).toBe(2)

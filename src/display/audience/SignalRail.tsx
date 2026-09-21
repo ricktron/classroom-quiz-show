@@ -14,6 +14,7 @@
  */
 
 import { BuzzQueueDisplay } from '../BuzzQueueDisplay'
+import { BoardOutcomeDisplay } from '../BoardOutcomeDisplay'
 import { ResponseTimerDisplay } from '../ResponseTimerDisplay'
 import { FinalCountdown } from '../FinalWagerDisplay'
 import type {
@@ -143,6 +144,7 @@ export function SignalRail({
           observed identity transition rather than a remount catch-up seed.
         */}
         <BuzzQueueDisplay buzz={response.buzz} teams={teams} />
+        <BoardOutcomeDisplay boardOutcome={response.boardOutcome} teams={teams} />
       </aside>
     )
   }

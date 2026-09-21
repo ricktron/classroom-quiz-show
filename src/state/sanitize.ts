@@ -12,6 +12,7 @@ import {
   type PublicCategoryBoardCategory,
   type PublicCategoryBoardTile,
   type PublicBuzzState,
+  type PublicBoardResponseOutcome,
   type PublicFinalOutcome,
   type PublicFinalResponse,
   type PublicFinalReveal,
@@ -49,7 +50,11 @@ import {
   isInitialResponsePhase,
   type ResponseTimerState,
 } from '../game/timing/responsePhase'
-import { buzzQueueStatus, type BuzzQueueState } from '../game/timing/buzzQueue'
+import {
+  buzzQueueStatus,
+  type BoardResponseOutcome,
+  type BuzzQueueState,
+} from '../game/timing/buzzQueue'
 import { isTeamAccent } from '../game/teams/accents'
 import { teamIndexById } from '../game/teams/definition'
 import { isTeamScore } from '../game/teams/scoring'
@@ -294,6 +299,7 @@ function toPublicResponse(game: PrivateGameState | null): PublicResponseState | 
     armed: phase.armed,
     timer: toPublicTimer(phase.timer),
     buzz: toPublicBuzz(game, phase.queue),
+    boardOutcome: toPublicBoardOutcome(game, phase.outcome),
   }
 }
 
@@ -364,6 +370,28 @@ function toPublicBuzz(game: PrivateGameState, queue: BuzzQueueState): PublicBuzz
     // the key `toPublicTeams` assigns, so the two cannot disagree.
     activeTeamKey: `t${index}`,
     waitingCount: status.waitingTeamIds.length,
+  }
+}
+
+/**
+ * Project the private board-response outcome to the allow-listed public DTO
+ * (S05 Path A).
+ *
+ * ALLOW-LIST only: positional team key + kind. Fail closed when the team id is
+ * unmappable. Never reads score, reveal, event id, seq, or animation state.
+ * Adjudication ≠ scoring — a score change alone never produces this field.
+ */
+function toPublicBoardOutcome(
+  game: PrivateGameState,
+  outcome: BoardResponseOutcome | null,
+): PublicBoardResponseOutcome {
+  if (outcome === null) return { status: 'none' }
+  const index = teamIndexById(game.definition.teams, outcome.teamId)
+  if (index < 0) return { status: 'none' }
+  return {
+    status: 'resolved',
+    teamKey: `t${index}`,
+    kind: outcome.kind,
   }
 }
 

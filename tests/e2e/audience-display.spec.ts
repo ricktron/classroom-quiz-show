@@ -19,7 +19,7 @@ function team(key: string, name: string, accent: string, score: number) {
 
 function baseSnapshot(overrides: PublicSnapshot = {}): PublicSnapshot {
   return {
-    schemaVersion: 8,
+    schemaVersion: 9,
     revision: 1,
     phase: 'ready',
     headline: 'Session ready',

@@ -1,0 +1,39 @@
+/**
+ * Board-outcome foundation presentation — restrained text only.
+ * Theatrical choreography is deferred to a later authorized presentation child.
+ */
+
+.bod {
+  margin: 0;
+  padding: 0.15em 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35em 0.55em;
+  font-family: var(--font-display, inherit);
+  font-size: clamp(0.95rem, 1.6vw + 0.55rem, 1.35rem);
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: var(--cqs-ink, inherit);
+}
+
+.bod__kind {
+  font-weight: 700;
+}
+
+.bod__team {
+  font-weight: 600;
+  opacity: 0.95;
+}
+
+.bod--correct .bod__kind {
+  color: var(--cqs-positive, inherit);
+}
+
+.bod--incorrect .bod__kind {
+  color: var(--cqs-negative, inherit);
+}
+
+.bod--passed .bod__kind {
+  color: var(--cqs-muted-ink, inherit);
+}

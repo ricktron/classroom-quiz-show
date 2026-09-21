@@ -14,10 +14,10 @@ delivery/review/repair/qualification/release work,
 | Question | Answer |
 | --- | --- |
 | What is historically complete? | Slices **1–23**. Original 23-slice foundation/qualification roadmap: **COMPLETE**. Slice 23: **TERMINALLY COMPLETE**. Guidance Polish S01: **TERMINALLY COMPLETE**. |
-| What is active? | **`CQS-REAL-MVP-1`: ACTIVE / CANONICALLY REGISTERED**. S03 implements the production Electron thin shell and unsigned desktop packaging path (ADR-021 **Accepted**). S04 canon registers remaining product direction. S04A, S04B, and **S04C** (including H1–H4 and display-placement / wake recovery) are **TERMINALLY COMPLETE**. **S05-F1** and **S05 buzz / active-claim choreography** are **TERMINALLY COMPLETE**; S05 parent remains **OPEN / NOT TERMINAL**. Post-MVP arcs remain **INACTIVE**. |
-| What remains? | REAL MVP teacher-adoptable product work remains open. S04A, S04B, and S04C are **TERMINALLY COMPLETE**. **S05-F1** (static Board + Clue Display readability / visual stress) and **S05 buzz / active-claim choreography** are **TERMINALLY COMPLETE**. S05 parent remains **OPEN / NOT TERMINAL**. Remaining S05 choreography / presentation work, S04D, and S06 are **NOT AUTHORIZED**. Desktop artifacts are **unsigned** qualification/development-candidate builds, not a teacher-trusted signed release. |
+| What is active? | **`CQS-REAL-MVP-1`: ACTIVE / CANONICALLY REGISTERED**. S03 implements the production Electron thin shell and unsigned desktop packaging path (ADR-021 **Accepted**). S04 canon registers remaining product direction. S04A, S04B, and **S04C** (including H1–H4 and display-placement / wake recovery) are **TERMINALLY COMPLETE**. **S05-F1** and **S05 buzz / active-claim choreography** are **TERMINALLY COMPLETE**; **S05 board-outcome public authority** is an **AUTHORIZED DELIVERY CANDIDATE** (not terminal). S05 parent remains **OPEN / NOT TERMINAL**. Post-MVP arcs remain **INACTIVE**. |
+| What remains? | REAL MVP teacher-adoptable product work remains open. S04A, S04B, and S04C are **TERMINALLY COMPLETE**. **S05-F1** (static Board + Clue Display readability / visual stress) and **S05 buzz / active-claim choreography** are **TERMINALLY COMPLETE**. **S05 board-outcome public authority** is an **AUTHORIZED DELIVERY CANDIDATE** only — not terminalized. S05 parent remains **OPEN / NOT TERMINAL**. Remaining S05 choreography / presentation work, S04D, and S06 are **NOT AUTHORIZED**. Desktop artifacts are **unsigned** qualification/development-candidate builds, not a teacher-trusted signed release. |
 | What is blocked / open? | See the [gap register](plans/CQS-REAL-MVP-ARC.md#6-initial-gap-register). C-3 / C-6 **FOUNDATION IMPLEMENTED / UNSIGNED**. `F-UX-01` **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** (ordinary Sony Class Setup copy; evidence bound to H5/H6 identities). `CQS-Q23-LOW-02` **OPEN / LOW / MONITOR**. H4 salvage collapsed detail **OPEN / LOW**. `CQS-Q23-CLASS-B-01` **OPEN / CONTROLLED**. `CQS-OD-066` **DEFERRED / NOT REAL MVP**. Packaged macOS Sony physical **H5 selection/hardware PASS transferred**; **H6 readiness PASS** on Namtai `054c:1000` + four handsets. Windows physical runtime **NOT RUN** (S06). Signing / notarization **OPEN OWNER GATE**. C-7 Raspberry Pi **outside REAL MVP**. C-8 LAN **outside REAL MVP**. Post-MVP arcs **INACTIVE**. |
-| Current Program frontier | S04A–S04C, **S05-F1**, and **S05 buzz / active-claim choreography** are **TERMINALLY COMPLETE** on main. S05 parent remains **OPEN / NOT TERMINAL**. Next Program action is an **owner decision / read-only remaining-S05 reconciliation** (routing ≠ authority). S04D / additional S05 / S06 remain **NOT AUTHORIZED**. REAL MVP is **not** complete. |
+| Current Program frontier | S04A–S04C, **S05-F1**, and **S05 buzz / active-claim choreography** are **TERMINALLY COMPLETE** on main. **S05 board-outcome public authority** is an **AUTHORIZED DELIVERY CANDIDATE** (Path A foundation; not terminal). S05 parent remains **OPEN / NOT TERMINAL**. Next Program action is **fresh independent exact-head review** of the board-outcome delivery candidate (routing ≠ authority). S04D / additional S05 / S06 remain **NOT AUTHORIZED**. REAL MVP is **not** complete. |
 
 ```text
 historical 23-slice roadmap: COMPLETE
@@ -37,6 +37,7 @@ S04C-H4: TERMINALLY COMPLETE
 CQS-REAL-MVP-S04C-DISPLAY-PLACEMENT-AND-WAKE-REPUBLISH-RECOVERY: TERMINALLY COMPLETE
 S05-F1: TERMINALLY COMPLETE
 S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY: TERMINALLY COMPLETE
+S05-BOARD-OUTCOME-PUBLIC-AUTHORITY: AUTHORIZED DELIVERY CANDIDATE
 S05 parent: OPEN / NOT TERMINAL
 S04D / additional S05 / S06: NOT AUTHORIZED
 post-MVP arcs: INACTIVE
@@ -133,7 +134,7 @@ Teacher desktop notes:
 | teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal; S04B Class Setup extends it on `main` |
 | controller `F-UX-01` (`CQS-Q23-LOW-01`) | **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** — ordinary Sony copy no longer requires WebHID / report-ID / profile jargon; Class Setup buzzer summary shares Sony teacher-summary layers; readiness honesty physically requalified on H6 identity (not re-run on squash/main) |
 | feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
-| flagship visual fidelity | **PARTIAL / F1 + buzz TERMINALLY COMPLETE** — S05-F1 static Board + Clue Display readability and S05 buzz / active-claim choreography are **TERMINALLY COMPLETE** on main; remaining S05 choreography / Host polish / presentation work open and **NOT AUTHORIZED** |
+| flagship visual fidelity | **PARTIAL / F1 + buzz TERMINALLY COMPLETE; board-outcome AUTHORIZED DELIVERY CANDIDATE** — S05-F1 and S05 buzz / active-claim are **TERMINALLY COMPLETE** on main; board-outcome public authority is an **AUTHORIZED DELIVERY CANDIDATE** only (not terminal); remaining S05 choreography / Host polish / presentation work open and **NOT AUTHORIZED** |
 | packaged offline/recovery equivalence | **FOUNDATION IMPLEMENTED** (Electron shell + IndexedDB identity; packaged macOS Host smoke observed) |
 | packaged macOS qualification | **PARTIAL** (H5 selection/hardware physical **PASS recorded 2026-09-11** and transferred; H6 readiness physical **PASS** on `9df9c42…` + Namtai `054c:1000` + four handsets for terminal S04B; Windows physical runtime **NOT RUN**; clean-room / signed release still open) |
 | packaged Windows qualification | **OPEN** (CI can produce the installer; physical Windows runtime **NOT RUN**) |
@@ -169,7 +170,7 @@ Verified against canonical implementation constants:
 | Pack format | **1** |
 | Canonical game schema | **1** |
 | GameDefinition | **1** |
-| Public-state wire | **8** |
+| Public-state wire | **9** |
 | Sync envelope | **2** |
 | Private active-session wire | **1** |
 | IndexedDB | **4** |
@@ -271,14 +272,19 @@ squash tree (**EXACT MATCH** `9a0b8527d670dfdf6aaec58fbb70f3577fab443b`).
 Post-merge CI, Playwright, Desktop artifacts (unsigned macOS + Windows),
 Pages, and SonarCloud succeeded on that exact squash/main SHA. S05 parent
 `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
-remains **OPEN / NOT TERMINAL**. Remaining S05 choreography / presentation
-work, S04D, and S06 remain **NOT AUTHORIZED**. Next Program action is an
-**owner decision / read-only remaining-S05 reconciliation** (routing ≠
-authority). REAL MVP is **not** complete. This status does not claim
-Windows physical qualification, projector/sleep physical qualification,
-signing, notarization, or a quota-fill experiment. This status does **not**
-claim that this docs-only terminalization candidate is itself merged, and
-does **not** predict its eventual squash SHA.
+remains **OPEN / NOT TERMINAL**.
+
+`CQS-REAL-MVP-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY` is an **AUTHORIZED
+DELIVERY CANDIDATE** only (Path A foundation: private `correct` adjudication
++ PublicState schema **9** `boardOutcome` allow-list + minimal Display text).
+It is **not** terminal. ADR-006 score presentation is **unchanged**. Remaining
+S05 choreography / presentation work, S04D, and S06 remain **NOT AUTHORIZED**.
+Next Program action is **fresh independent exact-head review** of the
+board-outcome delivery candidate (routing ≠ authority). REAL MVP is **not**
+complete. This status does not claim Windows physical qualification,
+projector/sleep physical qualification, signing, notarization, or a quota-fill
+experiment. This status does **not** predict this candidate's eventual merge
+SHA and does **not** terminalize the S05 parent.
 
 ```text
 routing ≠ authority
@@ -292,6 +298,7 @@ CQS-REAL-MVP-S04C-DISPLAY-PLACEMENT-AND-WAKE-REPUBLISH-RECOVERY: TERMINALLY COMP
 S04C: TERMINALLY COMPLETE
 S05-F1: TERMINALLY COMPLETE
 S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY: TERMINALLY COMPLETE
+S05-BOARD-OUTCOME-PUBLIC-AUTHORITY: AUTHORIZED DELIVERY CANDIDATE
 S05 parent: OPEN / NOT TERMINAL
 S04D / additional S05 / S06: NOT AUTHORIZED
 ```
@@ -304,7 +311,10 @@ projector/sleep qualification, local hardware qualification for H2 (H2
 required none), local qualification for H3 (**NONE**), local
 qualification for H4 (**NONE**), physical qualification for display
 placement / wake recovery, or physical projector qualification for
-S05-F1.
+S05-F1 / buzz / board-outcome.
+
+Board-outcome delivery candidate closeout:
+[`CQS-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY.md`](CQS-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY.md).
 
 S05-F1 terminal post-merge reconciliation (candidate docs; does not
 predict this terminalization PR’s eventual squash SHA):

@@ -19,7 +19,7 @@ const TEAMS: PublicTeamsState = {
 const ACTIVE: PublicResponseState = {
   armed: true,
   timer: { status: 'running', durationMs: 15_000, deadline: Date.now() + 15_000 },
-  buzz: { status: 'active', activeTeamKey: 't0', waitingCount: 2 },
+  buzz: { status: 'active', activeTeamKey: 't0', waitingCount: 2 }, boardOutcome: { status: 'none' },
 }
 
 const PROMPT = { kind: 'text' as const, text: 'Final question?' }
@@ -32,7 +32,7 @@ describe('SignalRail', () => {
         response={{
           armed: true,
           timer: { status: 'idle' },
-          buzz: { status: 'none' },
+          buzz: { status: 'none' }, boardOutcome: { status: 'none' },
         }}
         teams={TEAMS}
         round={{ kind: PUBLIC_BOARD_KIND, stage: 'board', categories: [] }}
@@ -69,7 +69,7 @@ describe('SignalRail', () => {
         response={{
           armed: true,
           timer: { status: 'idle' },
-          buzz: { status: 'none' },
+          buzz: { status: 'none' }, boardOutcome: { status: 'none' },
         }}
         teams={TEAMS}
         round={{ kind: PUBLIC_BOARD_KIND, stage: 'board', categories: [] }}
@@ -87,7 +87,7 @@ describe('SignalRail', () => {
         response={{
           armed: true,
           timer: { status: 'idle' },
-          buzz: { status: 'none' },
+          buzz: { status: 'none' }, boardOutcome: { status: 'none' },
         }}
         teams={TEAMS}
         round={{ kind: PUBLIC_BOARD_KIND, stage: 'board', categories: [] }}

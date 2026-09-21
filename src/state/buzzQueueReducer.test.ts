@@ -86,7 +86,7 @@ const buzz = (teamId: string, at = AT, tileId = TILE, roundId = ROUND): SessionC
 })
 
 const resolve = (
-  kind: 'incorrect' | 'passed',
+  kind: 'incorrect' | 'passed' | 'correct',
   at = AT,
   tileId = TILE,
   roundId = ROUND,
@@ -512,7 +512,64 @@ describe('promotion after an incorrect response or a host pass (OG-3)', () => {
     const scoreEvents = store.getHistory().filter((event) => event.type === 'TEAM_SCORE_ADJUSTED')
     expect(scoreEvents).toHaveLength(0)
   })
+})
 
+describe('opportunity-ending correct adjudication (S05 Path A)', () => {
+  it('ends the opportunity with an empty queue, not exhausted', () => {
+    const store = armedStore()
+    accept(store, buzz('red'))
+    accept(store, buzz('blue'))
+    accept(store, resolve('correct', AT + 1))
+    expect(phaseOf(store).queue).toEqual(EMPTY_BUZZ_QUEUE)
+    expect(buzzQueueStatus(phaseOf(store).queue)).toEqual({ status: 'empty' })
+    expect(phaseOf(store).armed).toBe(false)
+    expect(phaseOf(store).outcome).toEqual({ teamId: 'red', kind: 'correct' })
+  })
+
+  it('scores nothing, reveals nothing, and does not return to the board', () => {
+    const store = armedStore()
+    accept(store, buzz('red'))
+    accept(store, resolve('correct', AT + 1))
+    expect(store.getState().session?.game?.teamScores).toEqual({})
+    const scoreEvents = store.getHistory().filter((event) => event.type === 'TEAM_SCORE_ADJUSTED')
+    expect(scoreEvents).toHaveLength(0)
+    const board = store.getState().session?.game?.categoryBoards[ROUND]
+    expect(board?.progress.stage).toBe('prompt')
+  })
+
+  it('records outcome as the most recent adjudication (replacement, not history)', () => {
+    const store = armedStore()
+    accept(store, buzz('red'))
+    accept(store, buzz('blue'))
+    accept(store, resolve('incorrect', AT + 1))
+    expect(phaseOf(store).outcome).toEqual({ teamId: 'red', kind: 'incorrect' })
+    accept(store, resolve('passed', AT + 2))
+    expect(phaseOf(store).outcome).toEqual({ teamId: 'blue', kind: 'passed' })
+  })
+
+  it('undo restores queue and outcome exactly via replay', () => {
+    const store = armedStore()
+    accept(store, buzz('red'))
+    accept(store, buzz('blue'))
+    accept(store, resolve('correct', AT + 1))
+    expect(phaseOf(store).outcome?.kind).toBe('correct')
+    accept(store, undo)
+    expect(activeRespondent(phaseOf(store).queue)).toBe('red')
+    expect(waitingRespondents(phaseOf(store).queue)).toEqual(['blue'])
+    expect(phaseOf(store).outcome).toBeNull()
+  })
+
+  it('clears outcome with response-opportunity reset', () => {
+    const store = armedStore()
+    accept(store, buzz('red'))
+    accept(store, resolve('correct', AT + 1))
+    expect(phaseOf(store).outcome).not.toBeNull()
+    store.dispatch({ type: 'RESET_RESPONSE_PHASE', issuedAt: AT + 2, roundId: ROUND })
+    expect(phaseOf(store)).toEqual(INITIAL_RESPONSE_PHASE_STATE)
+  })
+})
+
+describe('promotion arming and exhaust (OG-3 continued)', () => {
   /**
    * Promotion moves the queue pointer and NOTHING else. It does not re-arm a
    * disarmed clue (which would silently reopen intake the host had closed) and it
@@ -574,7 +631,8 @@ describe('promotion after an incorrect response or a host pass (OG-3)', () => {
       issuedAt: AT + 1,
       roundId: ROUND,
       tileId: TILE,
-      resolution: { kind: 'correct' } as never,
+      // `accepted` is not a board adjudication kind (and must not become one).
+      resolution: { kind: 'accepted' } as never,
     })
     expect(result.status === 'rejected' && result.reason).toBe('malformed-command')
   })
@@ -788,7 +846,7 @@ describe('a corrupt log degrades safely rather than throwing', () => {
       roundId: ROUND,
       tileId: TILE,
       teamId: 'red',
-      resolution: { kind: 'correct' } as never,
+      resolution: { kind: 'accepted' } as never,
     })
     expect(activeRespondent(phase.queue)).toBe('red')
   })

@@ -372,6 +372,24 @@ export function LocalInputHostPanel({
         <button
           type="button"
           className="btn"
+          data-testid="lih-correct"
+          disabled={!canResolve}
+          onClick={() =>
+            tileId !== null &&
+            send({
+              type: 'RESOLVE_ACTIVE_RESPONSE',
+              issuedAt: clock.now(),
+              roundId: round.id,
+              tileId,
+              resolution: { kind: 'correct' },
+            })
+          }
+        >
+          Mark correct
+        </button>
+        <button
+          type="button"
+          className="btn"
           data-testid="lih-incorrect"
           disabled={!canResolve}
           onClick={() =>
@@ -412,8 +430,9 @@ export function LocalInputHostPanel({
       </p>
 
       <p className="host__note lih__hint">
-        Marking a response incorrect moves no points and passing moves no points —
-        awarding and deducting stay in the scoring panel, for every team. Close the
+        Marking a response correct, incorrect, or passed moves no points —
+        awarding and deducting stay in the scoring panel, for every team. Correct
+        ends this response opportunity without revealing the answer. Close the
         queue by resetting the window, returning to the board, or revealing the
         answer.
       </p>
