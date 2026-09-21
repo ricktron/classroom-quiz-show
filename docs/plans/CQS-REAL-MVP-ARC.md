@@ -43,11 +43,16 @@
   (`CQS-REAL-MVP-S05-F1-CORE-DISPLAY-READABILITY-AND-VISUAL-STRESS`) is
   **TERMINALLY COMPLETE** after PR #89 squash/main
   `f24e9b8fe0833094949057368b468f8026767dc2` (accepted head
-  `1d179cffa9986ecae0274169c215d0b7a5b1da01`). S05 parent
+  `1d179cffa9986ecae0274169c215d0b7a5b1da01`).
+  `CQS-REAL-MVP-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY` is **TERMINALLY
+  COMPLETE** after PR #91 squash/main
+  `42bbdfff5bd09386958f40dbb6475d69c8b0ab2d` (accepted head
+  `fc87c49d4bf46b4901e77628b497b98b0ea67d4e`). S05 parent
   `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
   remains **OPEN / NOT TERMINAL**. S04D, additional S05 work, and S06 are
-  **not authorized**. Next bounded S05 tranche requires a fresh owner
-  decision (routing ≠ authority). REAL MVP is **not** complete.
+  **not authorized**. Next Program action is an owner decision /
+  read-only remaining-S05 reconciliation (routing ≠ authority). REAL MVP
+  is **not** complete.
 
 This document is the canonical **CQS REAL MVP Program** plan of record. It
 registers `CQS-REAL-MVP-1` as the current owner-approved Program without
@@ -240,7 +245,7 @@ This table is not an implementation backlog with slice-level authority.
 | teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal; S04B Class Setup extends it on `main` |
 | controller `F-UX-01` | **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** — ordinary Sony Class Setup copy no longer requires WebHID / report-ID / profile jargon; evidence bound to H5/H6 identities |
 | feedback/support path | **OPEN** — S04D product direction registered; implementation not begun |
-| flagship visual fidelity | **PARTIAL / F1 TERMINALLY COMPLETE** — S05-F1 static Board + Clue Display readability and automated visual-stress foundation merged on main; S05 buzz / active-claim choreography is a published **DELIVERY CANDIDATE / NOT MERGED**; remaining S05 choreography / Host polish / presentation work open and **NOT AUTHORIZED** beyond that candidate |
+| flagship visual fidelity | **PARTIAL / F1 + buzz TERMINALLY COMPLETE** — S05-F1 static Board + Clue Display readability and S05 buzz / active-claim choreography are **TERMINALLY COMPLETE** on main; remaining S05 choreography / Host polish / presentation work open and **NOT AUTHORIZED** |
 | packaged offline/recovery equivalence | **FOUNDATION IMPLEMENTED** (Electron shell + IndexedDB identity). Library backup/restore is **IMPLEMENTED ON MAIN** (S04C-H3); packaged restore smoke **NOT RUN** |
 | packaged macOS qualification | **PARTIAL** (H5 selection/hardware PASS transferred; H6 readiness PASS on Namtai `054c:1000` + four handsets for terminal S04B; Windows physical **NOT RUN**; clean-room / signed release still open) |
 | packaged Windows qualification | **OPEN** (CI installer path; physical Windows runtime **NOT RUN**) |
@@ -508,13 +513,20 @@ is **TERMINALLY COMPLETE** after PR #89 squash/main
 `f24e9b8fe0833094949057368b468f8026767dc2` (accepted head
 `1d179cffa9986ecae0274169c215d0b7a5b1da01`; trees **EXACT MATCH**). S05
 parent remains **OPEN / NOT TERMINAL**.
-`CQS-REAL-MVP-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY` has a published
-**DELIVERY CANDIDATE / NOT MERGED / NOT TERMINAL** (authorization
-`AUTHORIZE-CQS-REAL-MVP-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY-1`; evidence
-[`../CQS-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY.md`](../CQS-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY.md)).
-Next step for that candidate is **fresh independent exact-head review**.
-**S04D / additional S05 beyond that candidate / S06 are NOT AUTHORIZED.**
-REAL MVP is **not** complete.
+`CQS-REAL-MVP-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY` is **TERMINALLY
+COMPLETE** after PR #91 squash/main
+`42bbdfff5bd09386958f40dbb6475d69c8b0ab2d` (accepted head
+`fc87c49d4bf46b4901e77628b497b98b0ea67d4e`; sole parent
+`33e9c910f7abe5fbc048704ff9fef5962d213919`; trees **EXACT MATCH**
+`9a0b8527d670dfdf6aaec58fbb70f3577fab443b`; post-merge CI / Playwright /
+Desktop / Pages / Sonar SUCCESS). Evidence:
+[`../CQS-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY.md`](../CQS-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY.md).
+S05 parent remains **OPEN / NOT TERMINAL**. **S04D / additional S05 / S06
+are NOT AUTHORIZED.** Next Program action is an **owner decision /
+read-only remaining-S05 reconciliation** (routing ≠ authority). REAL MVP
+is **not** complete. This plan does **not** claim that this docs-only
+terminalization candidate is itself merged, and does **not** predict its
+eventual squash SHA.
 
 ```text
 routing ≠ authority
@@ -527,13 +539,16 @@ S04C-H4: TERMINALLY COMPLETE
 CQS-REAL-MVP-S04C-DISPLAY-PLACEMENT-AND-WAKE-REPUBLISH-RECOVERY: TERMINALLY COMPLETE
 S04C: TERMINALLY COMPLETE
 S05-F1: TERMINALLY COMPLETE
-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY: DELIVERY CANDIDATE / NOT MERGED / NOT TERMINAL
+S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05 parent: OPEN / NOT TERMINAL
 S04D / additional S05 / S06: NOT AUTHORIZED
 ```
 
-S05-F1 terminal evidence (candidate docs; does not predict this
-terminalization PR’s eventual squash SHA):
+S05 buzz / active-claim terminal evidence (candidate docs; does not
+predict this terminalization PR’s eventual squash SHA):
+[`../receipts/2026-09-21-cqs-real-mvp-s05-buzz-active-claim-terminal-post-merge-reconciliation.md`](../receipts/2026-09-21-cqs-real-mvp-s05-buzz-active-claim-terminal-post-merge-reconciliation.md).
+
+S05-F1 terminal evidence:
 [`../receipts/2026-09-20-cqs-real-mvp-s05-f1-terminal-post-merge-reconciliation.md`](../receipts/2026-09-20-cqs-real-mvp-s05-f1-terminal-post-merge-reconciliation.md).
 
 S04C parent terminal evidence:
