@@ -210,12 +210,12 @@ ADR-006 score-change: FUTURE OWNER DECISION STILL REQUIRED
 
 ---
 
-## R. PR identity (fill on open)
+## R. PR identity
 
 | Fact | Value |
 | --- | --- |
-| PR | _pending — filled after PR open_ |
-| Head SHA | _pending_ |
+| PR | [#93](https://github.com/ricktron/classroom-quiz-show/pull/93) |
+| Head SHA | `b2cb784443cd3a3b95ab4249f3bf11d5d8ed2198` |
 | Base | `ba032bb1326027d5ca0bc0c84c2248b511c8b15d` |
 | Draft | **no** (non-draft) |
 | Auto-merge | **off** |
@@ -231,6 +231,12 @@ ADR-006 score-change: FUTURE OWNER DECISION STILL REQUIRED
   forces it, that is a fresh owner decision.
 - `outcomeKey` was omitted; if presentation collision later forces public event
   identity, **STOP OWNER DECISION**.
+- Local VM note: `usePublicState` BroadcastChannel MessageEvent failure
+  reproduces against main tip on this environment (jsdom + Node BroadcastChannel);
+  not introduced by this change. Re-observe on PR CI. Focused Path A unit tests
+  and projector-720p / desktop-1080p board-outcome e2e **passed** locally after
+  Playwright browser install. Full `npm run verify:all` e2e matrix is owned by
+  PR CI (local vitest projects exit code is unreliable when one file fails).
 
 ---
 
