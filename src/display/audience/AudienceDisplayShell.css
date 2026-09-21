@@ -456,6 +456,30 @@
   font-size: clamp(0.85rem, 1.3vw, 1.1rem);
 }
 
+.signal-rail__status--armed {
+  color: var(--state-active);
+}
+
+/*
+ * Quiet-cognition active claim: densify BuzzQueueDisplay inside the Signal Rail
+ * so schema-max prompt + 8-team deck coexistence from S05-F1 is preserved.
+ */
+.audience--scene-quiet-cognition .signal-rail .bqd {
+  padding: 0.15rem 0.45rem;
+}
+
+.audience--scene-quiet-cognition .signal-rail .bqd__label {
+  font-size: clamp(0.65rem, 1vw, 0.85rem);
+}
+
+.audience--scene-quiet-cognition .signal-rail .bqd__active {
+  font-size: clamp(1.05rem, 2.2vw, 1.75rem);
+}
+
+.audience--scene-quiet-cognition .signal-rail .bqd__waiting {
+  font-size: clamp(0.7rem, 1.1vw, 0.95rem);
+}
+
 @media (max-height: 800px) {
   .audience {
     padding: var(--space-2);

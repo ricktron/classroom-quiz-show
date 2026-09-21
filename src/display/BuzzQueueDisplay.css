@@ -1,6 +1,6 @@
 /*
- * Projector buzz queue (Slice 8). Read from across a classroom at 1280×720 and
- * 1920×1080.
+ * Projector buzz queue (Slice 8 + S05 buzz/active-claim choreography).
+ * Read from across a classroom at 1280×720 and 1920×1080.
  *
  * Layout rules that matter:
  *  - the answering team's NAME is the largest element on the panel, because it is
@@ -10,13 +10,9 @@
  *    removing every colour from this panel loses no information at all;
  *  - it never pushes the page sideways: long team names wrap and the panel is
  *    `overflow-x: hidden`, matching the timer panel beside it;
- *  - there is NO animation and no transition on the name. A team taking the floor
- *    is information, and information does not flash — that is both an
- *    accessibility rule (no rapid flashing) and a legibility one (a name caught
- *    mid-fade is unreadable from the back of a room).
- *
- * There is deliberately no reduced-motion block, because there is no motion to
- * suppress.
+ *  - the active name is never delayed for motion. Claim-change acknowledgement
+ *    emphasizes already-visible truth; reduced motion keeps a static outline so
+ *    the floor change remains perceptible without animation.
  */
 .bqd {
   width: 100%;
@@ -33,6 +29,25 @@
   border-color: var(--border-active);
   border-style: solid;
   box-shadow: var(--glow-active);
+}
+
+/* Public team accent is supplemental; text still carries identity. */
+.bqd--active[data-accent] {
+  border-color: var(--team-accent, var(--border-active));
+}
+
+.bqd--exhausted {
+  border-color: var(--border-strong, var(--border-panel));
+  border-style: solid;
+  background: var(--surface-raised, var(--surface-base));
+}
+
+.bqd--exhausted .bqd__label {
+  color: var(--fg-muted);
+}
+
+.bqd--exhausted .bqd__active {
+  color: var(--fg-strong, var(--fg-primary));
 }
 
 .bqd__label {
@@ -61,4 +76,52 @@
   margin: 0.1rem 0 0;
   font-size: clamp(0.85rem, 1.4vw, 1.25rem);
   color: var(--state-waiting);
+}
+
+/*
+ * Claim-change acknowledgement: outline is the reduced-motion-safe carrier.
+ * Full-motion mode adds a brief pulse around already-visible text.
+ */
+.bqd--claim-changed {
+  outline: var(--bw-emphasized, 2px) solid var(--state-active);
+  outline-offset: 3px;
+}
+
+.bqd--claim-changed .bqd__active {
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+  text-decoration-thickness: 0.08em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bqd--claim-changed {
+    animation: bqd-claim-ack var(--dur-emphasized) var(--ease-emphasized) 1;
+  }
+
+  .bqd--claim-changed .bqd__active {
+    text-decoration: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bqd--claim-changed {
+    animation: none;
+  }
+}
+
+@keyframes bqd-claim-ack {
+  from {
+    transform: scale(1);
+    box-shadow: var(--glow-active);
+  }
+  45% {
+    transform: scale(1.015);
+    box-shadow:
+      0 0 0 2px var(--state-active),
+      var(--glow-active);
+  }
+  to {
+    transform: scale(1);
+    box-shadow: var(--glow-active);
+  }
 }

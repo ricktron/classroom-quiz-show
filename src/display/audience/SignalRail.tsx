@@ -140,8 +140,17 @@ export function SignalRail({
           {response.buzz.status !== 'none' ? (
             <BuzzQueueDisplay buzz={response.buzz} teams={teams} />
           ) : (
-            <p className="signal-rail__status" data-testid="signal-rail-status">
-              {response.armed ? 'Response armed' : 'Response ready'}
+            <p
+              className={`signal-rail__status${response.armed ? ' signal-rail__status--armed' : ''}`}
+              data-testid="signal-rail-status"
+              data-buzz-ready={response.armed ? 'armed' : 'ready'}
+            >
+              {/*
+                Ready/armed before any claim: class must see that the response
+                opportunity is live without an active team. Keep this compact so
+                it does not compete with the readable clue or timer.
+              */}
+              {response.armed ? 'Waiting for a buzz' : 'Response ready'}
             </p>
           )}
         </>
