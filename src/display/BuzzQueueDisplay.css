@@ -1,6 +1,6 @@
 /*
- * Projector buzz queue (Slice 8). Read from across a classroom at 1280×720 and
- * 1920×1080.
+ * Projector buzz queue (Slice 8 + S05 buzz/active-claim choreography).
+ * Read from across a classroom at 1280×720 and 1920×1080.
  *
  * Layout rules that matter:
  *  - the answering team's NAME is the largest element on the panel, because it is
@@ -10,13 +10,9 @@
  *    removing every colour from this panel loses no information at all;
  *  - it never pushes the page sideways: long team names wrap and the panel is
  *    `overflow-x: hidden`, matching the timer panel beside it;
- *  - there is NO animation and no transition on the name. A team taking the floor
- *    is information, and information does not flash — that is both an
- *    accessibility rule (no rapid flashing) and a legibility one (a name caught
- *    mid-fade is unreadable from the back of a room).
- *
- * There is deliberately no reduced-motion block, because there is no motion to
- * suppress.
+ *  - the active name is never delayed for motion. Claim-change acknowledgement
+ *    uses inset / surface emphasis so chrome stays inside clipped F1 geometry
+ *    (audience shell overflow:hidden); reduced motion keeps a static inset ring.
  */
 .bqd {
   width: 100%;
@@ -33,6 +29,25 @@
   border-color: var(--border-active);
   border-style: solid;
   box-shadow: var(--glow-active);
+}
+
+/* Public team accent is supplemental; text still carries identity. */
+.bqd--active[data-accent] {
+  border-color: var(--team-accent, var(--border-active));
+}
+
+.bqd--exhausted {
+  border-color: var(--border-strong, var(--border-panel));
+  border-style: solid;
+  background: var(--surface-raised, var(--surface-base));
+}
+
+.bqd--exhausted .bqd__label {
+  color: var(--fg-muted);
+}
+
+.bqd--exhausted .bqd__active {
+  color: var(--fg-strong, var(--fg-primary));
 }
 
 .bqd__label {
@@ -61,4 +76,59 @@
   margin: 0.1rem 0 0;
   font-size: clamp(0.85rem, 1.4vw, 1.25rem);
   color: var(--state-waiting);
+}
+
+/*
+ * Claim-change acknowledgement: inset ring stays fully visible inside clipped
+ * ancestors (no outward outline-offset / scale beyond the panel box).
+ * Full-motion mode briefly brightens the inset ring around already-visible text.
+ */
+.bqd--claim-changed {
+  box-shadow:
+    inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active),
+    var(--glow-active);
+  background: color-mix(in srgb, var(--state-active) 12%, var(--surface-base));
+}
+
+.bqd--claim-changed .bqd__active {
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+  text-decoration-thickness: 0.08em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bqd--claim-changed {
+    animation: bqd-claim-ack var(--dur-emphasized) var(--ease-emphasized) 1;
+  }
+
+  .bqd--claim-changed .bqd__active {
+    text-decoration: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bqd--claim-changed {
+    animation: none;
+  }
+}
+
+@keyframes bqd-claim-ack {
+  from {
+    box-shadow:
+      inset 0 0 0 0 transparent,
+      var(--glow-active);
+    background: var(--surface-base);
+  }
+  45% {
+    box-shadow:
+      inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active),
+      var(--glow-active);
+    background: color-mix(in srgb, var(--state-active) 16%, var(--surface-base));
+  }
+  to {
+    box-shadow:
+      inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active),
+      var(--glow-active);
+    background: color-mix(in srgb, var(--state-active) 12%, var(--surface-base));
+  }
 }

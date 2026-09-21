@@ -40,7 +40,7 @@ describe('SignalRail', () => {
       />,
     )
     expect(screen.getByTestId('signal-rail')).toHaveAttribute('data-mode', 'compact')
-    expect(screen.getByTestId('signal-rail-status')).toHaveTextContent(/armed/i)
+    expect(screen.getByTestId('signal-rail-status')).toHaveTextContent(/waiting for a buzz/i)
     expect(screen.queryByText('Alpha')).toBeNull()
     expect(screen.queryByText('Bravo')).toBeNull()
     expect(screen.queryByText(/next/i)).toBeNull()
@@ -60,6 +60,53 @@ describe('SignalRail', () => {
     expect(screen.getByTestId('bqd-active')).toHaveTextContent('Alpha')
     expect(screen.getByTestId('bqd-waiting')).toHaveTextContent('2 teams waiting')
     expect(screen.queryByText('Bravo')).toBeNull()
+  })
+
+  it('Compact rail marks waiting-for-buzz when armed with no active claim', () => {
+    render(
+      <SignalRail
+        mode="compact"
+        response={{
+          armed: true,
+          timer: { status: 'idle' },
+          buzz: { status: 'none' },
+        }}
+        teams={TEAMS}
+        round={{ kind: PUBLIC_BOARD_KIND, stage: 'board', categories: [] }}
+        revealedTeamName={null}
+      />,
+    )
+    expect(screen.getByTestId('signal-rail-status')).toHaveAttribute('data-buzz-ready', 'armed')
+    expect(screen.getByTestId('signal-rail-status')).toHaveTextContent('Waiting for a buzz')
+  })
+
+  it('keeps BuzzQueueDisplay mounted across none → active so acknowledgement can observe it', () => {
+    const { rerender } = render(
+      <SignalRail
+        mode="compact"
+        response={{
+          armed: true,
+          timer: { status: 'idle' },
+          buzz: { status: 'none' },
+        }}
+        teams={TEAMS}
+        round={{ kind: PUBLIC_BOARD_KIND, stage: 'board', categories: [] }}
+        revealedTeamName={null}
+      />,
+    )
+    expect(screen.queryByTestId('bqd')).toBeNull()
+
+    rerender(
+      <SignalRail
+        mode="expanded"
+        response={ACTIVE}
+        teams={TEAMS}
+        round={null}
+        revealedTeamName={null}
+      />,
+    )
+    expect(screen.getByTestId('bqd-active')).toHaveTextContent('Alpha')
+    expect(screen.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
   })
 
   it('Final rail shows wager-entry countdown and no private Final fields', () => {

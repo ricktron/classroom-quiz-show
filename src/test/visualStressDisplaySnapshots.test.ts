@@ -12,9 +12,14 @@ import {
 } from './visualStressFixtures'
 import {
   visualStressAnswerRevealSnapshot,
+  visualStressArmedWaitingBuzzSnapshot,
+  visualStressActiveClaimMaxWaitingSnapshot,
   visualStressBoardSnapshot,
+  visualStressExhaustedBuzzSnapshot,
+  visualStressFirstActiveClaimSnapshot,
   visualStressImagePromptSnapshot,
   visualStressLongPromptSnapshot,
+  visualStressPromotedActiveClaimSnapshot,
 } from './visualStressDisplaySnapshots'
 
 describe('S05-F1 visual stress Display snapshots', () => {
@@ -77,5 +82,53 @@ describe('S05-F1 visual stress Display snapshots', () => {
       caption: 'Stress media caption that must remain secondary to the clue',
       attribution: 'CQS test asset',
     })
+  })
+})
+
+describe('S05 buzz/active-claim Display snapshots', () => {
+  it('projects armed waiting-for-buzz with no public active claim', () => {
+    const state = visualStressArmedWaitingBuzzSnapshot(130)
+    expect(state.response?.armed).toBe(true)
+    expect(state.response?.buzz).toEqual({ status: 'none' })
+  })
+
+  it('projects first active claim by positional key without waiting identities', () => {
+    const state = visualStressFirstActiveClaimSnapshot(131)
+    expect(state.response?.buzz).toEqual({
+      status: 'active',
+      activeTeamKey: 't0',
+      waitingCount: 0,
+    })
+    const serialized = JSON.stringify(state.response?.buzz)
+    expect(serialized).not.toMatch(/stress-t2|waitingTeams|queue/)
+  })
+
+  it('projects max waiting count without ordered waiting identities', () => {
+    const state = visualStressActiveClaimMaxWaitingSnapshot(132)
+    expect(state.response?.buzz).toEqual({
+      status: 'active',
+      activeTeamKey: 't0',
+      waitingCount: 7,
+    })
+    expect(JSON.stringify(state)).not.toMatch(/"waitingTeams"/)
+    expect(Object.keys(state.response?.buzz ?? {})).toEqual([
+      'status',
+      'activeTeamKey',
+      'waitingCount',
+    ])
+  })
+
+  it('projects promotion to the next active team through the sanitizer', () => {
+    const state = visualStressPromotedActiveClaimSnapshot(133)
+    expect(state.response?.buzz).toEqual({
+      status: 'active',
+      activeTeamKey: 't1',
+      waitingCount: 0,
+    })
+  })
+
+  it('projects exhausted distinctly from none', () => {
+    const state = visualStressExhaustedBuzzSnapshot(134)
+    expect(state.response?.buzz).toEqual({ status: 'exhausted' })
   })
 })

@@ -70,6 +70,29 @@ const startTimer: SessionCommand = {
   durationSeconds: 20,
 }
 
+function buzz(teamId: string, issuedAt = AT): SessionCommand {
+  return {
+    type: 'RECORD_TEAM_BUZZ',
+    issuedAt,
+    roundId: ROUND,
+    tileId: VISUAL_STRESS_LONG_TILE_ID,
+    teamId,
+  }
+}
+
+function resolveActive(
+  resolution: 'incorrect' | 'passed',
+  issuedAt: number,
+): SessionCommand {
+  return {
+    type: 'RESOLVE_ACTIVE_RESPONSE',
+    issuedAt,
+    roundId: ROUND,
+    tileId: VISUAL_STRESS_LONG_TILE_ID,
+    resolution: { kind: resolution },
+  }
+}
+
 function createStressStore(): SessionStore {
   const result = importGameFromUnknown(visualStressGameFile())
   if (result.status !== 'success') {
@@ -158,4 +181,86 @@ export function visualStressImagePromptSnapshot(revision = 111): PublicState {
 /** High-contrast answer reveal (same content as answer snapshot). */
 export function visualStressHighContrastAnswerSnapshot(revision = 121): PublicState {
   return visualStressAnswerRevealSnapshot(revision)
+}
+
+/** Armed response opportunity with no active claim yet. */
+export function visualStressArmedWaitingBuzzSnapshot(revision = 130): PublicState {
+  const store = createStressStore()
+  return snapshotAt(
+    store,
+    revision,
+    select(VISUAL_STRESS_LONG_TILE_ID),
+    revealPrompt,
+    armResponse,
+    startTimer,
+  )
+}
+
+/** First active claim on schema-max clue with zero waiting. */
+export function visualStressFirstActiveClaimSnapshot(revision = 131): PublicState {
+  const store = createStressStore()
+  return snapshotAt(
+    store,
+    revision,
+    select(VISUAL_STRESS_LONG_TILE_ID),
+    revealPrompt,
+    armResponse,
+    startTimer,
+    buzz('stress-t1', AT + 1),
+  )
+}
+
+/**
+ * Active claim with maximum useful waiting count (7 waiting behind 1 active
+ * among 8 stress teams).
+ */
+export function visualStressActiveClaimMaxWaitingSnapshot(revision = 132): PublicState {
+  const store = createStressStore()
+  return snapshotAt(
+    store,
+    revision,
+    select(VISUAL_STRESS_LONG_TILE_ID),
+    revealPrompt,
+    armResponse,
+    startTimer,
+    buzz('stress-t1', AT + 1),
+    buzz('stress-t2', AT + 2),
+    buzz('stress-t3', AT + 3),
+    buzz('stress-t4', AT + 4),
+    buzz('stress-t5', AT + 5),
+    buzz('stress-t6', AT + 6),
+    buzz('stress-t7', AT + 7),
+    buzz('stress-t8', AT + 8),
+  )
+}
+
+/** After promotion: second team holds the floor; previous waiting cleared. */
+export function visualStressPromotedActiveClaimSnapshot(revision = 133): PublicState {
+  const store = createStressStore()
+  return snapshotAt(
+    store,
+    revision,
+    select(VISUAL_STRESS_LONG_TILE_ID),
+    revealPrompt,
+    armResponse,
+    startTimer,
+    buzz('stress-t1', AT + 1),
+    buzz('stress-t2', AT + 2),
+    resolveActive('incorrect', AT + 3),
+  )
+}
+
+/** Exhausted response opportunity after the last queued team is resolved. */
+export function visualStressExhaustedBuzzSnapshot(revision = 134): PublicState {
+  const store = createStressStore()
+  return snapshotAt(
+    store,
+    revision,
+    select(VISUAL_STRESS_LONG_TILE_ID),
+    revealPrompt,
+    armResponse,
+    startTimer,
+    buzz('stress-t1', AT + 1),
+    resolveActive('passed', AT + 2),
+  )
 }

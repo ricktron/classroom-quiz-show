@@ -118,6 +118,7 @@ test('the full buzz-in flow: configure, arm, buzz, promote — mirrored on the p
 
   await host.getByTestId('rth-arm').click()
   await expect(host.getByTestId('lih-armed')).toContainText('Armed')
+  await expect(display.getByTestId('signal-rail-status')).toHaveText('Waiting for a buzz')
 
   // ── 3. A timer is started, so the first buzz has a clock to interrupt ──────
   await host.getByTestId('rth-duration').selectOption('120')
@@ -129,6 +130,7 @@ test('the full buzz-in flow: configure, arm, buzz, promote — mirrored on the p
   await expect(host.getByTestId('lih-active')).toHaveText(TEAM_ONE)
   await expect(display.getByTestId('bqd-active')).toHaveText(TEAM_ONE)
   await expect(display.getByTestId('bqd')).toHaveAttribute('data-status', 'active')
+  await expect(display.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
 
   // ── 5. The timer was interrupted through the Slice 7 seam ─────────────────
   await expect(display.getByTestId('rtd')).toHaveAttribute('data-status', 'interrupted')
@@ -155,6 +157,9 @@ test('the full buzz-in flow: configure, arm, buzz, promote — mirrored on the p
   await expect(host.getByTestId('lih-active')).toHaveText(TEAM_TWO)
   await expect(host.getByTestId('lih-waiting')).toHaveText('Empty')
   await expect(display.getByTestId('bqd-active')).toHaveText(TEAM_TWO)
+  await expect(display.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
+  await expect(display.getByTestId('bqd')).toHaveClass(/bqd--claim-changed/)
+  await expect(display.getByTestId('bqd')).not.toContainText(TEAM_ONE)
   await expect(display.getByTestId('bqd-waiting')).toHaveText('No teams waiting')
   // Marking incorrect moved no points.
   await expect(display.getByTestId('display-scores')).toContainText('0')

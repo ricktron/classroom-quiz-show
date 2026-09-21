@@ -6,6 +6,11 @@
  *
  * Final stages that carry a public timer render the shared FinalCountdown
  * as the primary countdown (Slice 18 R1).
+ *
+ * When a response opportunity exists, Compact and Expanded share one tree so
+ * {@link BuzzQueueDisplay} stays mounted across `none → active` (it may render
+ * null while status is `none`). That lets acknowledgement ownership observe a
+ * real identity transition instead of remounting into an already-active claim.
  */
 
 import { BuzzQueueDisplay } from '../BuzzQueueDisplay'
@@ -105,19 +110,38 @@ export function SignalRail({
     )
   }
 
-  if (mode === 'expanded' && response) {
+  if (response && (mode === 'compact' || mode === 'expanded')) {
+    const buzzNone = response.buzz.status === 'none'
     return (
       <aside
-        className="signal-rail signal-rail--expanded"
+        className={`signal-rail signal-rail--${mode}`}
         data-testid="signal-rail"
-        data-mode="expanded"
-        aria-label="Response status"
+        data-mode={mode}
+        aria-label={mode === 'expanded' ? 'Response status' : 'Display status'}
       >
         <ResponseTimerDisplay
           response={response}
           hostClockOffsetMs={hostClockOffsetMs}
           clock={clock}
         />
+        {buzzNone ? (
+          <p
+            className={`signal-rail__status${response.armed ? ' signal-rail__status--armed' : ''}`}
+            data-testid="signal-rail-status"
+            data-buzz-ready={response.armed ? 'armed' : 'ready'}
+          >
+            {/*
+              Ready/armed before any claim: class must see that the response
+              opportunity is live without an active team. Keep this compact so
+              it does not compete with the readable clue or timer.
+            */}
+            {response.armed ? 'Waiting for a buzz' : 'Response ready'}
+          </p>
+        ) : null}
+        {/*
+          Stay mounted while buzz is `none` (renders null) so none→active is an
+          observed identity transition rather than a remount catch-up seed.
+        */}
         <BuzzQueueDisplay buzz={response.buzz} teams={teams} />
       </aside>
     )
@@ -130,26 +154,9 @@ export function SignalRail({
       data-mode="compact"
       aria-label="Display status"
     >
-      {response ? (
-        <>
-          <ResponseTimerDisplay
-            response={response}
-            hostClockOffsetMs={hostClockOffsetMs}
-            clock={clock}
-          />
-          {response.buzz.status !== 'none' ? (
-            <BuzzQueueDisplay buzz={response.buzz} teams={teams} />
-          ) : (
-            <p className="signal-rail__status" data-testid="signal-rail-status">
-              {response.armed ? 'Response armed' : 'Response ready'}
-            </p>
-          )}
-        </>
-      ) : (
-        <p className="signal-rail__status" data-testid="signal-rail-status">
-          Ready
-        </p>
-      )}
+      <p className="signal-rail__status" data-testid="signal-rail-status">
+        Ready
+      </p>
     </aside>
   )
 }

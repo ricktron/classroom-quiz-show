@@ -240,7 +240,7 @@ This table is not an implementation backlog with slice-level authority.
 | teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal; S04B Class Setup extends it on `main` |
 | controller `F-UX-01` | **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** — ordinary Sony Class Setup copy no longer requires WebHID / report-ID / profile jargon; evidence bound to H5/H6 identities |
 | feedback/support path | **OPEN** — S04D product direction registered; implementation not begun |
-| flagship visual fidelity | **PARTIAL / F1 TERMINALLY COMPLETE** — S05-F1 static Board + Clue Display readability and automated visual-stress foundation merged on main; remaining S05 choreography / Host polish / presentation work open and **NOT AUTHORIZED** |
+| flagship visual fidelity | **PARTIAL / F1 TERMINALLY COMPLETE** — S05-F1 static Board + Clue Display readability and automated visual-stress foundation merged on main; S05 buzz / active-claim choreography is a published **DELIVERY CANDIDATE / NOT MERGED**; remaining S05 choreography / Host polish / presentation work open and **NOT AUTHORIZED** beyond that candidate |
 | packaged offline/recovery equivalence | **FOUNDATION IMPLEMENTED** (Electron shell + IndexedDB identity). Library backup/restore is **IMPLEMENTED ON MAIN** (S04C-H3); packaged restore smoke **NOT RUN** |
 | packaged macOS qualification | **PARTIAL** (H5 selection/hardware PASS transferred; H6 readiness PASS on Namtai `054c:1000` + four handsets for terminal S04B; Windows physical **NOT RUN**; clean-room / signed release still open) |
 | packaged Windows qualification | **OPEN** (CI installer path; physical Windows runtime **NOT RUN**) |
@@ -507,9 +507,14 @@ is **TERMINALLY COMPLETE** after PR #87 squash/main
 is **TERMINALLY COMPLETE** after PR #89 squash/main
 `f24e9b8fe0833094949057368b468f8026767dc2` (accepted head
 `1d179cffa9986ecae0274169c215d0b7a5b1da01`; trees **EXACT MATCH**). S05
-parent remains **OPEN / NOT TERMINAL**. Next bounded S05 tranche requires
-a **fresh owner decision** (routing ≠ authority). **S04D / additional S05
-/ S06 are NOT AUTHORIZED.** REAL MVP is **not** complete.
+parent remains **OPEN / NOT TERMINAL**.
+`CQS-REAL-MVP-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY` has a published
+**DELIVERY CANDIDATE / NOT MERGED / NOT TERMINAL** (authorization
+`AUTHORIZE-CQS-REAL-MVP-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY-1`; evidence
+[`../CQS-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY.md`](../CQS-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY.md)).
+Next step for that candidate is **fresh independent exact-head review**.
+**S04D / additional S05 beyond that candidate / S06 are NOT AUTHORIZED.**
+REAL MVP is **not** complete.
 
 ```text
 routing ≠ authority
@@ -522,6 +527,7 @@ S04C-H4: TERMINALLY COMPLETE
 CQS-REAL-MVP-S04C-DISPLAY-PLACEMENT-AND-WAKE-REPUBLISH-RECOVERY: TERMINALLY COMPLETE
 S04C: TERMINALLY COMPLETE
 S05-F1: TERMINALLY COMPLETE
+S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY: DELIVERY CANDIDATE / NOT MERGED / NOT TERMINAL
 S05 parent: OPEN / NOT TERMINAL
 S04D / additional S05 / S06: NOT AUTHORIZED
 ```

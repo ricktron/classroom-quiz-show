@@ -1,5 +1,4 @@
 import { test, expect, type Page, type Locator } from '@playwright/test'
-import type { PublicState } from '../../src/state/publicState'
 import {
   visualStressAnswerRevealSnapshot,
   visualStressBoardSnapshot,
@@ -11,6 +10,7 @@ import {
   visualStressLongAnswer,
   visualStressLongPrompt,
 } from '../../src/test/visualStressFixtures'
+import { injectPublicState, openDisplay } from './helpers/displayPublicState'
 
 /**
  * S05-F1 — core Display readability + visual stress (Board / Clue).
@@ -20,39 +20,10 @@ import {
  * qualification (S06).
  */
 
-const CHANNEL_NAME = 'classroom-quiz-show:sync'
 const VIEWPORT_TOLERANCE_PX = 2
 const CONTENT_FIT_TOLERANCE_PX = 2
 
 test.describe.configure({ mode: 'serial' })
-
-async function openDisplay(page: Page, theme?: 'default' | 'high-contrast') {
-  const q = theme ? `?theme=${theme}` : ''
-  await page.goto(`#/display${q}`)
-  await expect(page.getByRole('heading', { name: /game display ready/i })).toBeVisible()
-}
-
-async function injectPublicState(page: Page, payload: PublicState) {
-  const accepted = await page.evaluate(
-    ({ name, payload: p }) => {
-      const ch = new BroadcastChannel(name)
-      ch.postMessage({
-        protocol: 'classroom-quiz-show/sync',
-        schemaVersion: 2,
-        message: {
-          type: 'public-state',
-          revision: p.revision,
-          sentAt: Date.now(),
-          payload: p,
-        },
-      })
-      ch.close()
-      return true
-    },
-    { name: CHANNEL_NAME, payload },
-  )
-  expect(accepted).toBe(true)
-}
 
 type RectBox = { top: number; bottom: number; left: number; right: number }
 
