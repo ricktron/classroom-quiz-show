@@ -16,6 +16,18 @@ at classroom distance.
 This document does **not** predict its own open delivery PR number, merge SHA,
 or exact-head review verdict.
 
+### Review / repair chain (observed)
+
+| Head | Verdict |
+| --- | --- |
+| `2ad426e73989619fb28a2a05b2ce561dc22253cd` | **REPAIR REQUIRED** (independent exact-head review: F1 Sonar duplication 3.9%; F2 waiting-count cancelled acknowledgement; F3 remount fabricated claim; F4 local accent list; F5 720p claim chrome clipping) |
+| *(repaired tip — record after push)* | **fresh independent exact-head review required** — not independently accepted by the repair task |
+
+Repair authority:
+`AUTHORIZE-CQS-REAL-MVP-S05-PR91-BUZZ-ACTIVE-CLAIM-F1-F5-REPAIR-1`.
+Repair does **not** mark this tranche independently accepted and does **not**
+authorize merge.
+
 ---
 
 ## A. Base and scope
@@ -85,14 +97,24 @@ DOM for active + waiting states.
 
 ## D. State family
 
+Acknowledgement ownership is the semantic `activeKey` (`active` team key, else
+`null`). First observation **seeds** prior state (catch-up / remount → no
+fabricated claim). Observed `none → active` and `active A → active B`
+acknowledge. Waiting-count-only updates refresh the count and must neither
+start nor cancel an in-flight acknowledgement. Signal Rail keeps
+`BuzzQueueDisplay` mounted while buzz is `none` (renders null) so `none →
+active` is observed across compact→expanded without remount catch-up.
+
 | State | Presentation |
 | --- | --- |
 | Ready / armed, no claim | Compact Signal Rail: `Waiting for a buzz` (does not compete with clue) |
-| First active claim | Immediate active name + `Answering` + waiting count; claim-change marker on first floor hold |
+| Catch-up remount into already-active | Immediate active name; `data-claim-changed=false` (seed, no fabricated claim) |
+| Observed none → active | Immediate active name + claim-change acknowledgement |
 | Active + waiting 0 | `No teams waiting` |
 | Active + waiting 1 | `1 team waiting` (no identity) |
 | Active + waiting many | accurate plural count (stress exercises 7 waiting / 8 teams) |
-| Active-team change | New name immediate; prior emphasis cleared; `bqd--claim-changed` acknowledgement; no cause-specific copy |
+| Waiting-count during acknowledgement | Count updates immediately; claim marker continues |
+| Active-team change | New name immediate; `bqd--claim-changed` acknowledgement; no cause-specific copy |
 | Exhausted | `Response closed` + `No one left to answer` (terminal, not an app failure) |
 
 ---
@@ -102,14 +124,16 @@ DOM for active + waiting states.
 - **Active-team hierarchy:** largest text is the answering name; label
   `Answering` is secondary; waiting count tertiary.
 - **Waiting-count hierarchy:** anonymous count only.
-- **State-change acknowledgement:** brief outline + optional
-  `--dur-emphasized` pulse around already-visible text. Never delays name
-  render. No cause-specific rebound wording.
+- **State-change acknowledgement:** inset ring + surface tint (+ optional
+  `--dur-emphasized` pulse) around already-visible text — no outward
+  `outline-offset` / scale beyond clipped F1 geometry. Hold marker is 420ms
+  (outlasts `--dur-emphasized` 320ms without reading CSS variables at runtime).
+  Never delays name render. No cause-specific rebound wording.
 - **Exhausted treatment:** distinct panel + explicit closed copy.
-- **Reduced-motion:** outline + underline emphasis without animation; meaning
-  preserved when motion is removed.
+- **Reduced-motion:** static inset ring + underline emphasis without animation;
+  meaning preserved when motion is removed.
 - **High-contrast / grayscale:** text carriers remain; public accent border is
-  supplemental only (`accent--*` / `data-accent`).
+  supplemental only via canonical `TEAM_ACCENTS` / `teamAccentClass`.
 - **F1 coexistence:** quiet-cognition densify for `.bqd` inside Signal Rail so
   schema-max clue + 8-team deck budget is preserved.
 

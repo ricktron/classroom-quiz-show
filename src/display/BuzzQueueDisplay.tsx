@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PublicBuzzState, PublicTeamsState } from '../state/publicState'
+import { isTeamAccent, teamAccentClass, type TeamAccent } from '../game/teams/accents'
 import './BuzzQueueDisplay.css'
 
 /**
@@ -31,11 +32,16 @@ import './BuzzQueueDisplay.css'
  * ## Immediate acknowledgement
  *
  * The active team name renders with the authoritative public state — never after
- * an entrance delay. When the public active-team key changes during the same
- * response opportunity, a short claim-change acknowledgement makes the floor
- * change unmistakable. Motion is enhancement around already-visible text; it
- * never invents a promotion cause (incorrect / pass / first buzz) that public
- * state does not expose.
+ * an entrance delay. Acknowledgement is owned by **semantic active-team identity
+ * transitions** (`activeKey`), not by every buzz-object update. Waiting-count-only
+ * updates refresh the count immediately and must neither start nor cancel an
+ * in-flight acknowledgement. The first observation seeds prior semantic state
+ * (catch-up / remount) without manufacturing a claim transition; observed
+ * `none → active` and `active A → active B` acknowledge.
+ *
+ * Motion is enhancement around already-visible text; it never invents a
+ * promotion cause (incorrect / pass / first buzz) that public state does not
+ * expose.
  *
  * Public team accent tokens may tint the active border as a supplemental cue.
  * Text labels remain the carrier; high contrast / grayscale must still read.
@@ -47,19 +53,17 @@ export interface BuzzQueueDisplayProps {
   readonly teams: PublicTeamsState | null
 }
 
-const KNOWN_ACCENTS = [
-  'crimson',
-  'azure',
-  'emerald',
-  'amber',
-  'violet',
-  'teal',
-  'rose',
-  'slate',
-] as const
-
-/** How long the claim-change marker stays on for reduced-motion / CSS hooks. */
+/**
+ * Hold the claim-change marker slightly longer than `--dur-emphasized` (320ms)
+ * so the class remains for the full CSS pulse. Kept as a numeric constant on
+ * purpose — no runtime CSS-variable read just to avoid a ~100ms delta.
+ */
 const CLAIM_CHANGE_HOLD_MS = 420
+
+/** Semantic floor identity: active team key, or `null` when none/exhausted. */
+function semanticActiveKey(buzz: PublicBuzzState): string | null {
+  return buzz.status === 'active' ? buzz.activeTeamKey : null
+}
 
 /** Resolve a positional key to its public name, or `null`. */
 function nameForKey(teams: PublicTeamsState | null, key: string): string | null {
@@ -67,44 +71,60 @@ function nameForKey(teams: PublicTeamsState | null, key: string): string | null 
   return teams.teams.find((team) => team.key === key)?.name ?? null
 }
 
-/** Resolve a positional key to its public accent token, or `null`. */
-function accentForKey(teams: PublicTeamsState | null, key: string): string | null {
+/** Resolve a positional key to its canonical public accent token, or `null`. */
+function accentForKey(teams: PublicTeamsState | null, key: string): TeamAccent | null {
   if (!teams || teams.status !== 'available') return null
   const accent = teams.teams.find((team) => team.key === key)?.accent
-  if (!accent || !(KNOWN_ACCENTS as readonly string[]).includes(accent)) return null
-  return accent
+  return isTeamAccent(accent) ? accent : null
 }
 
-function accentClass(accent: string | null): string {
-  return accent ? ` accent--${accent}` : ''
+function accentClass(accent: TeamAccent | null): string {
+  return accent ? ` ${teamAccentClass(accent)}` : ''
 }
 
 export function BuzzQueueDisplay({ buzz, teams }: BuzzQueueDisplayProps) {
-  const previousActiveKeyRef = useRef<string | null>(null)
+  // `undefined` = unseeded. First observation seeds without acknowledging.
+  const previousActiveKeyRef = useRef<string | null | undefined>(undefined)
   const [claimChanged, setClaimChanged] = useState(false)
+  /** Bumps when a new identity transition should restart the hold timer. */
+  const [claimEpoch, setClaimEpoch] = useState(0)
+
+  const activeKey = semanticActiveKey(buzz)
 
   useEffect(() => {
-    if (buzz.status !== 'active') {
-      previousActiveKeyRef.current = null
-      setClaimChanged(false)
-      return
-    }
-
     const previous = previousActiveKeyRef.current
-    const floorChanged = previous === null || previous !== buzz.activeTeamKey
-    previousActiveKeyRef.current = buzz.activeTeamKey
 
-    if (!floorChanged) {
-      setClaimChanged(false)
+    // Catch-up / remount: seed prior semantic state; do not fabricate a claim.
+    if (previous === undefined) {
+      previousActiveKeyRef.current = activeKey
       return
     }
 
-    // First claim (mount into active) and later promotions share the same
-    // acknowledgement. Name text is already rendered; this only marks change.
-    setClaimChanged(true)
+    // Waiting-count-only (or identical identity): keep acknowledgement as-is.
+    if (previous === activeKey) {
+      return
+    }
+
+    previousActiveKeyRef.current = activeKey
+
+    // none → active, or active A → active B: acknowledge already-visible name.
+    if (activeKey !== null) {
+      setClaimChanged(true)
+      setClaimEpoch((epoch) => epoch + 1)
+      return
+    }
+
+    // active → none/exhausted: clear marker; no manufactured claim.
+    setClaimChanged(false)
+  }, [activeKey])
+
+  // Hold timer owns duration separately from identity observation so waiting-count
+  // updates never cancel, and rapid promotions restart from the new epoch.
+  useEffect(() => {
+    if (!claimChanged) return
     const clearId = window.setTimeout(() => setClaimChanged(false), CLAIM_CHANGE_HOLD_MS)
     return () => window.clearTimeout(clearId)
-  }, [buzz])
+  }, [claimChanged, claimEpoch])
 
   if (buzz.status === 'none') return null
 

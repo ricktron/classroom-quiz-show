@@ -4,7 +4,7 @@ import { BuzzQueueDisplay } from './BuzzQueueDisplay'
 import type { PublicBuzzState, PublicTeamsState } from '../state/publicState'
 import { FORBIDDEN_DISPLAY_LABELS } from '../test/leakLabels'
 import { MAX_TEAM_NAME_LENGTH, MAX_TEAMS } from '../game/teams/limits'
-import { TEAM_ACCENTS } from '../game/teams/accents'
+import { TEAM_ACCENTS, teamAccentClass } from '../game/teams/accents'
 
 /**
  * The projector buzz panel (Slice 8 + S05 buzz/active-claim choreography).
@@ -15,7 +15,8 @@ import { TEAM_ACCENTS } from '../game/teams/accents'
  *  - "nobody has buzzed" renders nothing at all, so the projector is not sharing
  *    the clue with an empty panel;
  *  - "everyone has had a turn" is visibly different from "nobody has buzzed";
- *  - active-team key changes are acknowledged immediately without delaying text;
+ *  - acknowledgement is owned by semantic activeKey transitions (not every buzz
+ *    object update); catch-up remount seeds without fabricating a claim;
  *  - nothing host-only, and nothing about a key or a device, can appear.
  */
 
@@ -97,24 +98,65 @@ describe('what the class can read', () => {
     expect(screen.getByTestId('bqd-waiting')).toHaveTextContent('7 teams waiting')
   })
 
-  it('applies the public team accent class as a supplemental cue', () => {
+  it('applies the canonical public team accent class as a supplemental cue', () => {
     renderBuzz({ status: 'active', activeTeamKey: 't0', waitingCount: 0 })
     const panel = screen.getByTestId('bqd')
-    expect(panel).toHaveClass('accent--crimson')
+    expect(panel).toHaveClass(teamAccentClass('crimson'))
     expect(panel).toHaveAttribute('data-accent', 'crimson')
   })
 })
 
 describe('active-claim transitions', () => {
+  it('seeds remount into already-active without fabricating a claim', () => {
+    renderBuzz({ status: 'active', activeTeamKey: 't0', waitingCount: 1 })
+    expect(screen.getByTestId('bqd-active')).toHaveTextContent('Red Team')
+    expect(screen.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'false')
+    expect(screen.getByTestId('bqd')).not.toHaveClass('bqd--claim-changed')
+  })
+
+  it('acknowledges observed none → active without delaying the name', () => {
+    vi.useFakeTimers()
+    const { rerender, container } = renderBuzz({ status: 'none' })
+    expect(container).toBeEmptyDOMElement()
+
+    rerender(
+      <BuzzQueueDisplay
+        buzz={{ status: 'active', activeTeamKey: 't0', waitingCount: 1 }}
+        teams={TEAMS}
+      />,
+    )
+    expect(screen.getByTestId('bqd-active')).toHaveTextContent('Red Team')
+    expect(screen.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
+    expect(screen.getByTestId('bqd')).toHaveClass('bqd--claim-changed')
+  })
+
+  it('does not cancel acknowledgement when only waitingCount changes', () => {
+    vi.useFakeTimers()
+    const { rerender } = renderBuzz({ status: 'none' })
+    rerender(
+      <BuzzQueueDisplay
+        buzz={{ status: 'active', activeTeamKey: 't0', waitingCount: 1 }}
+        teams={TEAMS}
+      />,
+    )
+    expect(screen.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
+
+    rerender(
+      <BuzzQueueDisplay
+        buzz={{ status: 'active', activeTeamKey: 't0', waitingCount: 3 }}
+        teams={TEAMS}
+      />,
+    )
+    expect(screen.getByTestId('bqd-active')).toHaveTextContent('Red Team')
+    expect(screen.getByTestId('bqd-waiting')).toHaveTextContent('3 teams waiting')
+    expect(screen.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
+    expect(screen.getByTestId('bqd')).toHaveClass('bqd--claim-changed')
+  })
+
   it('acknowledges an active-team key change without delaying the new name', () => {
     vi.useFakeTimers()
     const { rerender } = renderBuzz({ status: 'active', activeTeamKey: 't0', waitingCount: 1 })
     expect(screen.getByTestId('bqd-active')).toHaveTextContent('Red Team')
-    expect(screen.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
-
-    act(() => {
-      vi.advanceTimersByTime(500)
-    })
     expect(screen.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'false')
 
     rerender(
@@ -132,6 +174,37 @@ describe('active-claim transitions', () => {
 
     act(() => {
       vi.advanceTimersByTime(500)
+    })
+    expect(screen.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'false')
+  })
+
+  it('restarts acknowledgement ownership on rapid promotion before hold ends', () => {
+    vi.useFakeTimers()
+    const { rerender } = renderBuzz({ status: 'none' })
+    rerender(
+      <BuzzQueueDisplay
+        buzz={{ status: 'active', activeTeamKey: 't0', waitingCount: 1 }}
+        teams={TEAMS}
+      />,
+    )
+    expect(screen.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
+
+    act(() => {
+      vi.advanceTimersByTime(200)
+    })
+    expect(screen.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
+
+    rerender(
+      <BuzzQueueDisplay
+        buzz={{ status: 'active', activeTeamKey: 't1', waitingCount: 0 }}
+        teams={TEAMS}
+      />,
+    )
+    expect(screen.getByTestId('bqd-active')).toHaveTextContent('Blue Team')
+    expect(screen.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
+
+    act(() => {
+      vi.advanceTimersByTime(420)
     })
     expect(screen.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'false')
   })
@@ -171,6 +244,31 @@ describe('active-claim transitions', () => {
     expect(screen.getByTestId('bqd-active')).toHaveTextContent('No one left to answer')
     expect(screen.queryByTestId('bqd-waiting')).toBeNull()
   })
+
+  it('documents claim hold (420ms) outlasting --dur-emphasized (320ms) without CSS var reads', () => {
+    // CLAIM_CHANGE_HOLD_MS is a numeric constant chosen to outlast the CSS
+    // animation token --dur-emphasized (320ms). This test locks the ownership
+    // duration; it does not read getComputedStyle/--dur-* at runtime.
+    vi.useFakeTimers()
+    const { rerender } = renderBuzz({ status: 'none' })
+    rerender(
+      <BuzzQueueDisplay
+        buzz={{ status: 'active', activeTeamKey: 't0', waitingCount: 0 }}
+        teams={TEAMS}
+      />,
+    )
+    expect(screen.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
+
+    act(() => {
+      vi.advanceTimersByTime(320)
+    })
+    expect(screen.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
+
+    act(() => {
+      vi.advanceTimersByTime(100)
+    })
+    expect(screen.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'false')
+  })
 })
 
 describe('accessibility', () => {
@@ -196,6 +294,12 @@ describe('accessibility', () => {
   it('is read-only — the projector authors nothing', () => {
     const { container } = renderBuzz({ status: 'active', activeTeamKey: 't0', waitingCount: 1 })
     expect(container.querySelectorAll('button, input, select, textarea, a')).toHaveLength(0)
+  })
+
+  it('exposes polite live region on the active name', () => {
+    renderBuzz({ status: 'active', activeTeamKey: 't0', waitingCount: 0 })
+    expect(screen.getByTestId('bqd-active')).toHaveAttribute('aria-live', 'polite')
+    expect(screen.getByTestId('bqd')).toHaveAttribute('aria-label', 'Buzz status')
   })
 })
 

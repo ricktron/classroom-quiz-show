@@ -11,8 +11,8 @@
  *  - it never pushes the page sideways: long team names wrap and the panel is
  *    `overflow-x: hidden`, matching the timer panel beside it;
  *  - the active name is never delayed for motion. Claim-change acknowledgement
- *    emphasizes already-visible truth; reduced motion keeps a static outline so
- *    the floor change remains perceptible without animation.
+ *    uses inset / surface emphasis so chrome stays inside clipped F1 geometry
+ *    (audience shell overflow:hidden); reduced motion keeps a static inset ring.
  */
 .bqd {
   width: 100%;
@@ -79,12 +79,15 @@
 }
 
 /*
- * Claim-change acknowledgement: outline is the reduced-motion-safe carrier.
- * Full-motion mode adds a brief pulse around already-visible text.
+ * Claim-change acknowledgement: inset ring stays fully visible inside clipped
+ * ancestors (no outward outline-offset / scale beyond the panel box).
+ * Full-motion mode briefly brightens the inset ring around already-visible text.
  */
 .bqd--claim-changed {
-  outline: var(--bw-emphasized, 2px) solid var(--state-active);
-  outline-offset: 3px;
+  box-shadow:
+    inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active),
+    var(--glow-active);
+  background: color-mix(in srgb, var(--state-active) 12%, var(--surface-base));
 }
 
 .bqd--claim-changed .bqd__active {
@@ -111,17 +114,21 @@
 
 @keyframes bqd-claim-ack {
   from {
-    transform: scale(1);
-    box-shadow: var(--glow-active);
+    box-shadow:
+      inset 0 0 0 0 transparent,
+      var(--glow-active);
+    background: var(--surface-base);
   }
   45% {
-    transform: scale(1.015);
     box-shadow:
-      0 0 0 2px var(--state-active),
+      inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active),
       var(--glow-active);
+    background: color-mix(in srgb, var(--state-active) 16%, var(--surface-base));
   }
   to {
-    transform: scale(1);
-    box-shadow: var(--glow-active);
+    box-shadow:
+      inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active),
+      var(--glow-active);
+    background: color-mix(in srgb, var(--state-active) 12%, var(--surface-base));
   }
 }
