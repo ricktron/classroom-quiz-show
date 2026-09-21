@@ -30,31 +30,44 @@ naming a surface ≠ authorizing work on it
 
 ## Reading the work-state column
 
+> **Historical observation epoch.** This inventory was originally observed
+> against `main` at `cf90eadb7794a3e2c2f529212432e4a4daaadc91` during the
+> S04B candidate era. The **CURRENT** / **LATER** classifications below are
+> inventory-era research labels, not current Program authorization or
+> status. For current Program routing, use
+> [`../STATUS.md`](../STATUS.md) and
+> [`../handoff/CURRENT.md`](../handoff/CURRENT.md). The inventory's UX
+> research and surface analysis remain useful; only the old Program-state
+> vocabulary is frozen to that epoch.
+
 | Work state | Meaning |
 | --- | --- |
 | **ALREADY IMPLEMENTED FOUNDATION** | Merged on `main` and treated as an existing qualified foundation. Not unfinished work to rebuild. Later slices may extend it only within their own scope. |
-| **CURRENT** | Inside the active S04B lane's registered scope at the time of writing. This guidance does not mutate that lane. |
-| **LATER** | Owned by a named but **unauthorized** later slice (S04C / S04D / S05 / S06). |
+| **CURRENT** | Historical inventory label for work that sat inside the active S04B registered scope at this inventory's observation epoch. It does not express current Program status or authorization. |
+| **LATER** | Owned by a named later slice that is not currently authorized for implementation (for example remaining S05 work, S04D, or S06). |
 | **DEFERRED** | Outside REAL MVP, or dependent on an unresolved owner gate. |
 | **NOT IMPLEMENTED** | No such surface is observed on `main`. Stated as absence, not as a plan. |
 
 ### What **CURRENT** does and does not mean
 
-`CURRENT` marks a surface as sitting inside the S04B lane's **registered
-scope** — the scope recorded in
+At this inventory's observation epoch, `CURRENT` identified surfaces that
+sat inside the S04B lane's **registered scope** — the scope recorded in
 [`../plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md`](../plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md)
-§35 — and, at the time of writing, worked in an unmerged candidate branch.
+§35 — and that were then being worked in an unmerged S04B candidate branch.
 
-It does **not** restate Program status. On `main`,
-[`../STATUS.md`](../STATUS.md) records S04B as the next planned frontier and
-**NOT AUTHORIZED**, with implementation **not begun**. Nothing in this
-inventory changes that, and `CURRENT` must not be read as an authorization,
-as a claim that S04B work is merged, or as a claim that any S04B surface is
-complete.
+Those statements are historical observation facts. At that epoch,
+[`../STATUS.md`](../STATUS.md) described S04B as the next planned frontier
+and **NOT AUTHORIZED**, with implementation **not begun**. Nothing in this
+inventory was an authorization then, and the retained `CURRENT` label must
+not be read as today's Program status, as a claim that S04B remains the
+active lane, or as current authorization. Current Program routing is owned
+by [`../STATUS.md`](../STATUS.md) and
+[`../handoff/CURRENT.md`](../handoff/CURRENT.md).
 
-Observation basis: `main` at `cf90eadb7794a3e2c2f529212432e4a4daaadc91`.
-Where a surface is described as implemented, a corresponding module was
-observed in `src/`. No implementation is described that was not observed.
+Historical observation basis: `main` at
+`cf90eadb7794a3e2c2f529212432e4a4daaadc91`. Where a surface is described as
+implemented at that epoch, a corresponding module was observed in `src/`.
+No implementation is described that was not observed then.
 
 ---
 
@@ -74,14 +87,15 @@ opportunities on these surfaces; recording them does **not** reopen S04A. Any
 such polish needs a separate, later, bounded authorization and would not
 automatically belong to S04A.
 
-### S04B — current active product lane
+### S04B — active product lane at the inventory observation epoch
 
 Class Setup, Sony theatrical team-name selection, controller/team identity,
 buzzer readiness, the supported Sony setup path, setup-level hardware recovery
 necessary to complete S04B, projector/audio preflight within S04B direction,
 and `F-UX-01`.
 
-**This research slice does not mutate that candidate.**
+**At the observation epoch, this research slice did not mutate that
+unmerged S04B candidate.**
 
 ### S04C
 
@@ -104,6 +118,12 @@ S05 is not generic "make it prettier".
 Display may become theatrical. Host remains operational and restrained.
 ```
 
+**S05-F1** (`CQS-REAL-MVP-S05-F1-CORE-DISPLAY-READABILITY-AND-VISUAL-STRESS`)
+is **TERMINALLY COMPLETE** on main for static Board + Clue Display
+readability and automated visual-stress foundation. Remaining S05 families
+(choreography, Host polish, further presentation) stay later and require
+fresh bounded authorization. The S05 parent remains **OPEN / NOT
+TERMINAL**.
 ### S06
 
 Integrated release qualification: Windows-first physical use, projector
@@ -324,8 +344,12 @@ hardware, recovery, and the end-to-end experience.
 - **Principles:** `P14`, `P13`, `P17`.
 - **Research routing:** Lupton, Hodent.
 - **Ownership / state:** **ALREADY IMPLEMENTED FOUNDATION**
-  (`src/display/CategoryBoardDisplay.tsx`). Flagship presentation is
-  S05 — **LATER**.
+  (`src/display/CategoryBoardDisplay.tsx`). **S05-F1** static Board
+  fidelity / stress foundation is **TERMINALLY COMPLETE** on main
+  (hierarchy, six×five stress layout, stable consumed slots, non-color
+  Used semantics, 8-team coexistence, 720p/1080p automation, high
+  contrast). Later Board choreography or further presentation refinement
+  remains S05 — **LATER**.
 
 ### 15. Question / clue Display
 
@@ -337,7 +361,11 @@ hardware, recovery, and the end-to-end experience.
 - **Principles:** `P14`, `P13`, `P17`.
 - **Research routing:** Lupton, Hodent.
 - **Ownership / state:** **ALREADY IMPLEMENTED FOUNDATION**
-  (`src/display/`, `MediaContentDisplay`). Presentation is S05 — **LATER**.
+  (`src/display/`, `MediaContentDisplay`). **S05-F1** static Clue/question
+  fidelity and schema-max readability are **TERMINALLY COMPLETE** on main
+  (distance-first hierarchy, full authored-text visibility, clipping
+  protection, 8-team coexistence, timer/Signal Rail semantics preserved).
+  Later Clue choreography or presentation effects remain S05 — **LATER**.
   Answer-reveal authorization is an architectural invariant, not a design
   choice.
 
@@ -479,8 +507,9 @@ hardware, recovery, and the end-to-end experience.
 - **Principles:** `P04`, `P05`, `P14`, `P25`.
 - **Research routing:** Endsley & Jones, Lupton.
 - **Ownership / state:** **S04B — CURRENT** (Host-only audience preview
-  within S04B scope). Full stress-fixture verification is S05/S06 —
-  **LATER**.
+  within S04B scope). Automated **S05-F1** 720p/1080p stress-fixture
+  verification is **TERMINALLY COMPLETE** on main. Physical projector /
+  Windows / classroom stress qualification remains S06 — **LATER**.
 
 ### 26. Display motion / transitions
 
@@ -713,7 +742,8 @@ This inventory does **not**:
 - describe implementation that was not observed on `main` at
   `cf90eadb7794a3e2c2f529212432e4a4daaadc91`;
 - reopen S04A;
-- authorize or claim S04B, S04C, S04D, S05, or S06 scope;
+- authorize or claim S04D, additional S05, or S06 scope;
 - modify the Program gap register or any Program-adoption state;
 - close `F-UX-01` / `CQS-Q23-LOW-01`;
-- describe the unmerged S04B candidate's implementation as merged.
+- describe the then-unmerged S04B candidate's implementation as merged at
+  the observation epoch.

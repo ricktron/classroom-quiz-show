@@ -53,10 +53,13 @@ play. Desktop install/start (unsigned artifacts) is in
   on that exact squash/main SHA. Display placement / wake recovery is
   **TERMINALLY COMPLETE** after PR #87 squash/main
   `0d1fac747c0768d6f0dd0960781f6ab8a7184ece` (not named H5). S04C parent is
-  **TERMINALLY COMPLETE**. S04D / S05 / S06 remain **NOT AUTHORIZED**. Next
-  Program frontier requires a fresh owner decision (routing ≠ authority).
-  REAL MVP is **not** complete. This README does **not** authorize a signed
-  teacher release.
+  **TERMINALLY COMPLETE**. `CQS-REAL-MVP-S05-F1-CORE-DISPLAY-READABILITY-AND-VISUAL-STRESS`
+  is **TERMINALLY COMPLETE** after PR #89 squash/main
+  `f24e9b8fe0833094949057368b468f8026767dc2`. S05 parent remains **OPEN /
+  NOT TERMINAL**. Additional S05 work, S04D, and S06 remain **NOT
+  AUTHORIZED**. Next bounded S05 tranche requires a fresh owner decision
+  (routing ≠ authority). REAL MVP is **not** complete. This README does
+  **not** authorize a signed teacher release.
 - S03 implements the production Electron desktop shell and unsigned
   packaging path. S04 canon registers remaining product direction.
 - Product Contract:

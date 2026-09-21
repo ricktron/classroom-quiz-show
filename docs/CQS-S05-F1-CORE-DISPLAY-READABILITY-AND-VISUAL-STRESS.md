@@ -13,7 +13,8 @@ internal-clipping / legibility repair (Findings R1–R5).
 - **Tranche:**
   `CQS-REAL-MVP-S05-F1-CORE-DISPLAY-READABILITY-AND-VISUAL-STRESS`
 - **Parent:** `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
-  (parent remains **not** terminal)
+  (parent remains **OPEN / NOT TERMINAL**)
+- **Tranche status:** **TERMINALLY COMPLETE**
 - **Date (America/Chicago):** 2026-09-20
 
 ---
@@ -243,22 +244,31 @@ Explicitly deferred:
 
 ---
 
-## M. Candidate identity
+## M. Post-merge identity
 
 | Fact | Value |
 | --- | --- |
-| Branch | `feat/cqs-real-mvp-s05-f1-core-display-readability` |
-| PR | [#89](https://github.com/ricktron/classroom-quiz-show/pull/89) |
-| Exact head | Open PR #89 tip on the branch above. Independent exact-head reviews bind the reviewed SHA. This closeout does **not** embed its own commit SHA (avoids self-stale identity after the docs commit). |
-| Rejected head (Findings 1–7) | `cf423206615c158cfd2c9f54a6e68f95f4619dcb` |
-| Rejected head (R1–R5) | `7dc1b92b7ba139a506ab2a64f45c291ed8b24eec` |
-| Base | `c3e7da4ddfebf0da2ac9c7659c5deab08691cced` |
-| Auto-merge | off |
+| PR | [#89](https://github.com/ricktron/classroom-quiz-show/pull/89) **MERGED** |
+| Rejected head (Findings 1–7) | `cf423206615c158cfd2c9f54a6e68f95f4619dcb` → **REPAIR REQUIRED** |
+| Rejected head (R1–R5) | `7dc1b92b7ba139a506ab2a64f45c291ed8b24eec` → **REPAIR REQUIRED** |
+| Accepted implementation head | `1d179cffa9986ecae0274169c215d0b7a5b1da01` → **ACCEPT CANDIDATE** |
+| Squash / main | `f24e9b8fe0833094949057368b468f8026767dc2` |
+| Sole parent | `c3e7da4ddfebf0da2ac9c7659c5deab08691cced` |
+| Accepted / main tree | **EXACT MATCH** |
+| Post-merge workflows | CI, Playwright, Desktop artifacts (unsigned macOS + Windows), Pages, SonarCloud — all **SUCCESS** |
+| Tranche status | **TERMINALLY COMPLETE** |
+| Parent status | **OPEN / NOT TERMINAL** |
+
+Terminal post-merge reconciliation:
+[`receipts/2026-09-20-cqs-real-mvp-s05-f1-terminal-post-merge-reconciliation.md`](receipts/2026-09-20-cqs-real-mvp-s05-f1-terminal-post-merge-reconciliation.md).
 
 ---
 
 ## N. Next owner decision
 
-**Fresh independent exact-head review of repaired PR #89.**
+**Independent exact-head review of the docs-only S05-F1 terminalization
+candidate** that carries the terminal receipt and current-routing
+reconciliation.
 
-Does not authorize merge, F2, S04D, S06, or S05 parent terminalization.
+Does not authorize merge of that docs PR, additional S05 work, S04D, S06,
+or S05 parent terminalization.
