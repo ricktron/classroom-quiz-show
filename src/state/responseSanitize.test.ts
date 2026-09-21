@@ -35,7 +35,6 @@ import { clampOffset, MAX_CLOCK_OFFSET_CORRECTION_MS } from '../sync/receiver'
 
 /** The "nobody has buzzed" member, used by every timer-only case below. */
 const NO_BUZZ: PublicBuzzState = { status: 'none' }
-const NO_OUTCOME = { status: 'none' as const }
 
 const AT = 1_000_000
 const ROUND = 'board-round'
