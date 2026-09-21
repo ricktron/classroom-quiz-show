@@ -21,7 +21,7 @@ or exact-head review verdict.
 | Head | Verdict |
 | --- | --- |
 | `2ad426e73989619fb28a2a05b2ce561dc22253cd` | **REPAIR REQUIRED** (independent exact-head review: F1 Sonar duplication 3.9%; F2 waiting-count cancelled acknowledgement; F3 remount fabricated claim; F4 local accent list; F5 720p claim chrome clipping) |
-| `bdd044f5ae06ad17a34968a0d9dce8a1851a8f35` | **fresh independent exact-head review required** — not independently accepted by the repair task |
+| `bdd044f5ae06ad17a34968a0d9dce8a1851a8f35` (F1–F5 code repair) → observe current PR #91 tip for review | **fresh independent exact-head review required** — not independently accepted by the repair task |
 
 Repair authority:
 `AUTHORIZE-CQS-REAL-MVP-S05-PR91-BUZZ-ACTIVE-CLAIM-F1-F5-REPAIR-1`.
