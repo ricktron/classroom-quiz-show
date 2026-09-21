@@ -215,7 +215,7 @@ ADR-006 score-change: FUTURE OWNER DECISION STILL REQUIRED
 | Fact | Value |
 | --- | --- |
 | PR | [#93](https://github.com/ricktron/classroom-quiz-show/pull/93) |
-| Head SHA | `b2cb784443cd3a3b95ab4249f3bf11d5d8ed2198` |
+| Head SHA | `3d9eabd4f2b7189b92fe1576947ae39bfaab53da` |
 | Base | `ba032bb1326027d5ca0bc0c84c2248b511c8b15d` |
 | Draft | **no** (non-draft) |
 | Auto-merge | **off** |
