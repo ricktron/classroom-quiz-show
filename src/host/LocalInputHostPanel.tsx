@@ -356,7 +356,9 @@ export function LocalInputHostPanel({
             {activeTeamId === null
               ? status.status === 'exhausted'
                 ? 'Nobody — every team that buzzed has had a turn'
-                : 'Nobody has buzzed yet'
+                : phase?.outcome?.kind === 'correct'
+                  ? `Closed — ${nameOf(phase.outcome.teamId)} marked correct`
+                  : 'Nobody has buzzed yet'
               : nameOf(activeTeamId)}
           </dd>
           <dt>Waiting queue</dt>
@@ -364,6 +366,18 @@ export function LocalInputHostPanel({
             {waitingIds.length === 0
               ? 'Empty'
               : waitingIds.map((id, index) => `${index + 1}. ${nameOf(id)}`).join(' · ')}
+          </dd>
+          <dt>Last board adjudication</dt>
+          <dd data-testid="lih-board-outcome">
+            {phase?.outcome === null || phase?.outcome === undefined
+              ? 'None yet'
+              : `${nameOf(phase.outcome.teamId)} — ${
+                  phase.outcome.kind === 'correct'
+                    ? 'Correct'
+                    : phase.outcome.kind === 'incorrect'
+                      ? 'Incorrect'
+                      : 'Passed'
+                }`}
           </dd>
         </dl>
       </div>

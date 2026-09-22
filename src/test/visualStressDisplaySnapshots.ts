@@ -287,33 +287,13 @@ export function visualStressBoardCorrectOutcomeSnapshot(revision = 140): PublicS
 /**
  * S05 Path A — incorrect adjudication with next team still active.
  * boardOutcome (prior team) coexists with buzz active (next team).
+ * Same command sequence as {@link visualStressPromotedActiveClaimSnapshot}.
  */
 export function visualStressBoardIncorrectWithActiveSnapshot(revision = 141): PublicState {
-  const store = createStressStore()
-  return snapshotAt(
-    store,
-    revision,
-    select(VISUAL_STRESS_LONG_TILE_ID),
-    revealPrompt,
-    armResponse,
-    startTimer,
-    buzz('stress-t1', AT + 1),
-    buzz('stress-t2', AT + 2),
-    resolveActive('incorrect', AT + 3),
-  )
+  return visualStressPromotedActiveClaimSnapshot(revision)
 }
 
 /** S05 Path A — passed adjudication after single buzz (exhausted queue + outcome). */
 export function visualStressBoardPassedOutcomeSnapshot(revision = 142): PublicState {
-  const store = createStressStore()
-  return snapshotAt(
-    store,
-    revision,
-    select(VISUAL_STRESS_LONG_TILE_ID),
-    revealPrompt,
-    armResponse,
-    startTimer,
-    buzz('stress-t1', AT + 1),
-    resolveActive('passed', AT + 2),
-  )
+  return visualStressExhaustedBuzzSnapshot(revision)
 }

@@ -240,6 +240,18 @@ export function isInitialResponsePhase(phase: ResponsePhaseState): boolean {
   )
 }
 
+/**
+ * Has `correct` structurally closed this response opportunity?
+ *
+ * Disarm alone is not enough: while a durable `correct` outcome remains, arming,
+ * starting a timer, buzzing, and resolving must fail closed until an explicit
+ * opportunity clear (reset / tile / reveal / round) drops the outcome. A leftover
+ * interrupted or expired timer must not reopen intake.
+ */
+export function isCorrectClosedOpportunity(phase: ResponsePhaseState): boolean {
+  return phase.outcome?.kind === 'correct'
+}
+
 /** Does this timer state still describe a live countdown (running or paused)? */
 export function isLiveTimer(timer: ResponseTimerState): boolean {
   return timer.status === 'running' || timer.status === 'paused'

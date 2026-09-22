@@ -17,6 +17,7 @@ import {
 } from './limits'
 import {
   INITIAL_RESPONSE_PHASE_STATE,
+  isCorrectClosedOpportunity,
   isInitialResponsePhase,
   isLiveTimer,
   remainingMsAt,
@@ -217,6 +218,26 @@ describe('the response-phase model', () => {
         outcome: { teamId: 't-red', kind: 'correct' },
       }),
     ).toBe(false)
+  })
+
+  it('treats durable correct outcome as a structurally closed opportunity', () => {
+    expect(
+      isCorrectClosedOpportunity({
+        armed: false,
+        timer: { status: 'idle' },
+        queue: EMPTY_BUZZ_QUEUE,
+        outcome: { teamId: 't-red', kind: 'correct' },
+      }),
+    ).toBe(true)
+    expect(
+      isCorrectClosedOpportunity({
+        armed: false,
+        timer: { status: 'idle' },
+        queue: EMPTY_BUZZ_QUEUE,
+        outcome: { teamId: 't-red', kind: 'incorrect' },
+      }),
+    ).toBe(false)
+    expect(isCorrectClosedOpportunity(INITIAL_RESPONSE_PHASE_STATE)).toBe(false)
   })
 
   it('knows which states are still live', () => {

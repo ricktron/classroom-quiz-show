@@ -567,6 +567,79 @@ describe('opportunity-ending correct adjudication (S05 Path A)', () => {
     store.dispatch({ type: 'RESET_RESPONSE_PHASE', issuedAt: AT + 2, roundId: ROUND })
     expect(phaseOf(store)).toEqual(INITIAL_RESPONSE_PHASE_STATE)
   })
+
+  it('rejects ARM / timer / buzz / resolve while correct owns the opportunity', () => {
+    const store = armedStore()
+    accept(store, buzz('red'))
+    accept(store, buzz('blue'))
+    accept(store, resolve('correct', AT + 1))
+    expect(phaseOf(store).outcome).toEqual({ teamId: 'red', kind: 'correct' })
+    expect(phaseOf(store).armed).toBe(false)
+
+    // Direct re-arm must fail closed — disarm ≠ structural end.
+    expectRejected(
+      store,
+      { type: 'ARM_RESPONSE_PHASE', issuedAt: AT + 2, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    // Idle-timer reopen after correct (no countdown was started) must also fail.
+    expectRejected(
+      store,
+      { type: 'START_RESPONSE_TIMER', issuedAt: AT + 3, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    expectRejected(store, buzz('green', AT + 4), 'invalid-response-phase')
+    expectRejected(store, resolve('correct', AT + 5), 'invalid-response-phase')
+    // Outcome and empty queue must remain — no public Correct + active coexistence.
+    expect(phaseOf(store).outcome).toEqual({ teamId: 'red', kind: 'correct' })
+    expect(phaseOf(store).queue).toEqual(EMPTY_BUZZ_QUEUE)
+    expect(phaseOf(store).armed).toBe(false)
+  })
+
+  it('allows ARM only after explicit RESET clears the correct outcome', () => {
+    const store = armedStore()
+    accept(store, buzz('red'))
+    accept(store, resolve('correct', AT + 1))
+    expectRejected(
+      store,
+      { type: 'ARM_RESPONSE_PHASE', issuedAt: AT + 2, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    accept(store, { type: 'RESET_RESPONSE_PHASE', issuedAt: AT + 3, roundId: ROUND })
+    expect(phaseOf(store)).toEqual(INITIAL_RESPONSE_PHASE_STATE)
+    accept(store, { type: 'ARM_RESPONSE_PHASE', issuedAt: AT + 4, roundId: ROUND })
+    expect(phaseOf(store).armed).toBe(true)
+    expect(phaseOf(store).outcome).toBeNull()
+  })
+
+  it('rejects START_RESPONSE_TIMER after correct even when a prior countdown left the timer non-idle', () => {
+    const store = armedStore()
+    accept(store, {
+      type: 'START_RESPONSE_TIMER',
+      issuedAt: AT,
+      roundId: ROUND,
+      durationSeconds: 15,
+    })
+    accept(store, buzz('red', AT + 1))
+    // Buzz interrupted the running timer; leftover interrupted state must not
+    // reopen the opportunity after correct (START already fails on non-idle,
+    // and ARM / buzz stay rejected while Correct owns the phase).
+    expect(phaseOf(store).timer.status).toBe('interrupted')
+    accept(store, resolve('correct', AT + 2))
+    expectRejected(
+      store,
+      { type: 'ARM_RESPONSE_PHASE', issuedAt: AT + 3, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    expectRejected(
+      store,
+      { type: 'START_RESPONSE_TIMER', issuedAt: AT + 4, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    expectRejected(store, buzz('blue', AT + 5), 'invalid-response-phase')
+    expect(phaseOf(store).outcome?.kind).toBe('correct')
+    expect(phaseOf(store).armed).toBe(false)
+  })
 })
 
 describe('promotion arming and exhaust (OG-3 continued)', () => {

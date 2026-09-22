@@ -250,4 +250,63 @@ describe('SignalRail', () => {
     expect(screen.getByTestId('signal-rail-revealed')).toHaveTextContent('Bravo')
     expect(screen.queryByTestId('signal-rail-timer')).toBeNull()
   })
+
+  it('suppresses Response ready / waiting-for-buzz when board outcome is resolved correct', () => {
+    render(
+      <SignalRail
+        mode="compact"
+        response={{
+          armed: false,
+          timer: { status: 'idle' },
+          buzz: { status: 'none' },
+          boardOutcome: { status: 'resolved', teamKey: 't0', kind: 'correct' },
+        }}
+        teams={TEAMS}
+        round={{ kind: PUBLIC_BOARD_KIND, stage: 'board', categories: [] }}
+        revealedTeamName={null}
+      />,
+    )
+    expect(screen.queryByTestId('signal-rail-status')).toBeNull()
+    expect(screen.queryByText(/Response ready/i)).toBeNull()
+    expect(screen.queryByText(/Waiting for a buzz/i)).toBeNull()
+    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-kind', 'correct')
+  })
+
+  it('preserves incorrect+active and exhausted compositions without ready copy', () => {
+    const { rerender } = render(
+      <SignalRail
+        mode="expanded"
+        response={{
+          armed: true,
+          timer: { status: 'idle' },
+          buzz: { status: 'active', activeTeamKey: 't1', waitingCount: 0 },
+          boardOutcome: { status: 'resolved', teamKey: 't0', kind: 'incorrect' },
+        }}
+        teams={TEAMS}
+        round={null}
+        revealedTeamName={null}
+      />,
+    )
+    expect(screen.queryByText(/Response ready/i)).toBeNull()
+    expect(screen.getByTestId('bqd-active')).toHaveTextContent('Bravo')
+    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-kind', 'incorrect')
+
+    rerender(
+      <SignalRail
+        mode="expanded"
+        response={{
+          armed: false,
+          timer: { status: 'idle' },
+          buzz: { status: 'exhausted' },
+          boardOutcome: { status: 'resolved', teamKey: 't0', kind: 'passed' },
+        }}
+        teams={TEAMS}
+        round={null}
+        revealedTeamName={null}
+      />,
+    )
+    expect(screen.queryByText(/Response ready/i)).toBeNull()
+    expect(screen.getByTestId('bqd')).toHaveAttribute('data-status', 'exhausted')
+    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-kind', 'passed')
+  })
 })

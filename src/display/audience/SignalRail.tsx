@@ -113,6 +113,12 @@ export function SignalRail({
 
   if (response && (mode === 'compact' || mode === 'expanded')) {
     const buzzNone = response.buzz.status === 'none'
+    // Opportunity-ending correct closes intake: do not imply the window is still
+    // open for buzzes. Incorrect+promote / pass+exhaust keep their buzz status
+    // compositions (active / exhausted) and are not gated here.
+    const correctClosed =
+      response.boardOutcome.status === 'resolved' && response.boardOutcome.kind === 'correct'
+    const showIntakeReady = buzzNone && !correctClosed
     return (
       <aside
         className={`signal-rail signal-rail--${mode}`}
@@ -125,7 +131,7 @@ export function SignalRail({
           hostClockOffsetMs={hostClockOffsetMs}
           clock={clock}
         />
-        {buzzNone ? (
+        {showIntakeReady ? (
           <p
             className={`signal-rail__status${response.armed ? ' signal-rail__status--armed' : ''}`}
             data-testid="signal-rail-status"

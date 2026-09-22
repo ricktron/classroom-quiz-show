@@ -34,6 +34,8 @@ test.describe('S05 board outcome public authority', () => {
     await expect(outcome).toContainText('Correct')
     await expect(outcome).toContainText(FIRST_TEAM)
     await expect(page.getByText(/No one left to answer/i)).toHaveCount(0)
+    await expect(page.getByText(/Response ready/i)).toHaveCount(0)
+    await expect(page.getByText(/Waiting for a buzz/i)).toHaveCount(0)
     await expect(page.getByTestId('bqd')).toHaveCount(0)
   })
 

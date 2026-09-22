@@ -33,6 +33,7 @@ import {
 import {
   INITIAL_RESPONSE_PHASE_STATE,
   TEAM_BUZZ_INTERRUPTION,
+  isCorrectClosedOpportunity,
   isInitialResponsePhase,
   isResponseInterruptionSource,
   type ResponsePhaseState,
@@ -544,10 +545,13 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
     }
 
     case 'RESPONSE_PHASE_ARMED':
-      return withResponsePhase(state, event.type, event.roundId, (phase) =>
+      return withResponsePhase(state, event.type, event.roundId, (phase) => {
         // Fail safe on a log that arms an already-armed clue: not applicable.
-        phase.armed ? null : { ...phase, armed: true },
-      )
+        // Also fail closed while a durable correct outcome still owns the
+        // opportunity — disarm ≠ structural end; re-arm must not reopen.
+        if (phase.armed || isCorrectClosedOpportunity(phase)) return null
+        return { ...phase, armed: true }
+      })
 
     case 'RESPONSE_PHASE_DISARMED':
       return withResponsePhase(state, event.type, event.roundId, (phase) =>
@@ -557,6 +561,9 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
     case 'RESPONSE_TIMER_STARTED':
       return withResponsePhase(state, event.type, event.roundId, (phase) => {
         if (phase.timer.status !== 'idle') return null
+        // A leftover interrupted/expired/idle clock must not reopen intake after
+        // opportunity-ending correct.
+        if (isCorrectClosedOpportunity(phase)) return null
         const timer: ResponseTimerState = {
           status: 'running',
           timerId: event.timerId,
@@ -648,8 +655,10 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
       return withResponsePhase(state, event.type, event.roundId, (phase) => {
         // Arming is re-checked on APPLICATION as well as on planning, so a stored
         // log that buzzes a disarmed clue degrades to "not applicable" rather
-        // than fabricating a respondent nobody let in.
-        if (!phase.armed) return null
+        // than fabricating a respondent nobody let in. Correct-closed is the
+        // structural end of the opportunity — even a corrupt armed+correct log
+        // must not accept another buzz.
+        if (!phase.armed || isCorrectClosedOpportunity(phase)) return null
         const queue = appendBuzz(phase.queue, event.teamId)
         // `null` means the team is already in the queue: the duplicate rule is
         // structural in `appendBuzz`, so it holds on replay of any log at all.
@@ -1602,6 +1611,12 @@ export function planCommand(
       // Arming an armed clue is not a fact worth recording, and recording it would
       // make "undo" ambiguous between two identical states.
       if (context.phase.armed) return { status: 'rejected', reason: 'invalid-response-phase' }
+      // Opportunity-ending correct owns the phase until an explicit clear
+      // (RESET / tile / reveal / round). Silent re-arm would reopen intake while
+      // Display still shows Correct — disarm ≠ structural end.
+      if (isCorrectClosedOpportunity(context.phase)) {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
       return {
         status: 'accepted',
         events: [
@@ -1642,6 +1657,10 @@ export function planCommand(
       // One countdown per clue at a time. A second start must follow an explicit
       // reset, so a stray click cannot silently restart the clock mid-question.
       if (context.phase.timer.status !== 'idle') {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
+      // Stale leftover timer state beside Correct must not reopen the opportunity.
+      if (isCorrectClosedOpportunity(context.phase)) {
         return { status: 'rejected', reason: 'invalid-response-phase' }
       }
       if (!isInstant(at)) return { status: 'rejected', reason: 'malformed-command' }
@@ -1839,6 +1858,11 @@ export function planCommand(
       if (!namesLiveOpportunity(command.tileId, context.tileId)) {
         return { status: 'rejected', reason: 'tile-mismatch' }
       }
+      // Opportunity-ending correct closes intake structurally — ahead of the
+      // ordinary arming gate, so a corrupt armed+correct state still rejects.
+      if (isCorrectClosedOpportunity(context.phase)) {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
       // Arming is the intake gate (OG-1 + OG-2): while the clue is armed the
       // queue keeps taking new teams, and disarming stops acceptance immediately.
       if (!context.phase.armed) {
@@ -1914,6 +1938,13 @@ export function planCommand(
       }
       if (!isActiveResponseResolution(command.resolution)) {
         return { status: 'rejected', reason: 'malformed-command' }
+      }
+      // After opportunity-ending correct the queue is empty, so resolve already
+      // fails via no-active-respondent. Keep the correct-closed gate explicit so
+      // a second resolve cannot reopen adjudication while Correct still owns the
+      // phase.
+      if (isCorrectClosedOpportunity(context.phase)) {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
       }
       // Nothing to promote from: an empty queue and an exhausted one both land
       // here, and both are honest "there is no active respondent" rejections

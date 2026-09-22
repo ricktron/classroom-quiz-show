@@ -6,11 +6,13 @@ outcome authority without reopening ADR-006 score presentation.
 
 - **Authorization:**
   `AUTHORIZE-CQS-REAL-MVP-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY-1`
+- **Repair authorization:**
+  `AUTHORIZE-CQS-REAL-MVP-S05-PR93-BOARD-OUTCOME-F1-F5-REPAIR-1`
 - **Tranche:**
   `CQS-REAL-MVP-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY`
 - **Parent:** `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
   (parent remains **OPEN / NOT TERMINAL**)
-- **Tranche status:** **AUTHORIZED DELIVERY CANDIDATE** (not terminal)
+- **Tranche status:** **AUTHORIZED DELIVERY CANDIDATE** (not terminal; not accepted)
 - **Date (UTC):** 2026-09-22
 
 ```text
@@ -21,6 +23,15 @@ snapshot rendering ≠ event replay
 Stop for Rick
 ```
 
+### Review / repair chain (observed)
+
+| Head | Verdict |
+| --- | --- |
+| `b0b69f2169c05506cd6394a49a40b867c267a200` | **REPAIR REQUIRED** — independent exact-head review: F1 correct not structurally terminal / re-arm reopen; F2 Host post-correct false empty copy; F3 Signal Rail “Response ready” beside Correct; F4 Sonar new-code duplication 5.4%; F5 GAME-ENGINE-BOUNDARIES schema **7** stale + closeout overclaim |
+| Repaired tip (this lineage) | **AUTHORIZED DELIVERY CANDIDATE** only — not accepted / not terminal; requires fresh independent exact-head re-review |
+
+Repair alone does **not** mark this tranche independently accepted.
+
 ---
 
 ## A. Identity
@@ -29,8 +40,9 @@ Stop for Rick
 | --- | --- |
 | Canonical base | `ba032bb1326027d5ca0bc0c84c2248b511c8b15d` |
 | Branch | `feat/cqs-real-mvp-s05-board-outcome-public-authority` |
-| Exact head | `f6da305f9891b3af9e68115e1d52b04eb2aa065f` |
+| Exact head | `b0b69f2169c05506cd6394a49a40b867c267a200` (pin parent of repair tip; re-observe PR tip) |
 | PR | [#93](https://github.com/ricktron/classroom-quiz-show/pull/93) (non-draft; auto-merge off) |
+| Rejected exact head | `b0b69f2169c05506cd6394a49a40b867c267a200` — **REPAIR REQUIRED** (F1–F5) |
 
 Intervening `origin/main` delta after expected base at start of work: **none**.
 
@@ -70,14 +82,23 @@ Proved (primarily `src/state/buzzQueueReducer.test.ts`):
 
 | Requirement | Result |
 | --- | --- |
-| Ends response opportunity | Queue cleared to **empty**; phase disarmed; further buzzes rejected |
+| Ends response opportunity | Queue cleared to **empty**; phase disarmed; durable `outcome.kind === 'correct'` **structurally** owns the opportunity |
+| Fail-closed while Correct owns phase | Planner + applicator reject `ARM_RESPONSE_PHASE`, `START_RESPONSE_TIMER`, `RECORD_TEAM_BUZZ`, and `RESOLVE_ACTIVE_RESPONSE` until opportunity clear (`RESET` / tile / reveal / round) |
+| Reopen path | `correct` → `RESET_RESPONSE_PHASE` → `ARM_RESPONSE_PHASE` accepted; direct `correct` → `ARM` rejected |
+| Stale timer | Leftover interrupted/idle timer beside Correct cannot reopen intake |
 | No promotion | Waiting teams are **not** promoted |
 | No score | No `TEAM_SCORE_ADJUSTED` from `RESOLVE_ACTIVE_RESPONSE` `correct` |
 | No answer reveal | No reveal / return-to-board side effects |
 | Reversible | Ordinary undo / replay restores prior queue + armed/timer and clears outcome |
 
-`correct` uses **empty queue + separate outcome**, not buzz `exhausted`
-(exhausted would falsely project “No one left to answer”).
+Disarm alone is **not** structural end. `correct` uses **empty queue + separate
+outcome**, not buzz `exhausted` (exhausted would falsely project “No one left to
+answer”).
+
+Host (`LocalInputHostPanel`) reads durable `phase.outcome` so post-correct empty
+queue never shows “Nobody has buzzed yet”. Signal Rail suppresses
+“Response ready” / “Waiting for a buzz” when `boardOutcome` is resolved correct;
+incorrect+promote and pass+exhaust compositions are preserved.
 
 ---
 
@@ -210,8 +231,9 @@ ADR-020:
 | ADR-008 | **Amended** — prior “no `correct` member” retained as history; dated S05 Path A amendment for opportunity-ending correct + projector-visible board outcome |
 | ADR-006 | **Unchanged in substance** — no score animation / deltas / flash / resort |
 | ADR-020 | **Note only** — board correct silent; positive-award stays score/Final driven |
-| GAME-ENGINE-BOUNDARIES / STATUS / CURRENT | Light routing as **AUTHORIZED DELIVERY CANDIDATE** only |
-| This doc | Delivery candidate closeout (not terminal) |
+| GAME-ENGINE-BOUNDARIES | Light update: historical Slice 11 PublicState schema **7** distinguished from current schema **9** (`boardOutcome`); sync envelope stays **2** |
+| STATUS / CURRENT | Light routing as **AUTHORIZED DELIVERY CANDIDATE** only |
+| This doc | Delivery candidate closeout (not terminal); records rejected `b0b69f…` **REPAIR REQUIRED** + F1–F5 repair summary |
 
 ---
 
@@ -313,7 +335,7 @@ Also:
 
 ## T. Next owner decision
 
-**fresh independent exact-head review of the board-outcome public-authority candidate.**
+**fresh independent exact-head re-review of the repaired board-outcome tip.**
 
 Does not authorize merge, auto-merge, S05 parent terminalization, score
 choreography / ADR-006 reopen, theatrical presentation child, S04D, S06, or
@@ -321,7 +343,8 @@ REAL MVP complete.
 
 ```text
 Stop for Rick.
-AUTHORIZED DELIVERY CANDIDATE — not terminal
+AUTHORIZED DELIVERY CANDIDATE — not terminal / not accepted
+rejected exact head b0b69f… REPAIR REQUIRED (F1–F5)
 S05 parent OPEN / NOT TERMINAL
 ```
 
@@ -332,9 +355,12 @@ S05 parent OPEN / NOT TERMINAL
 | Fact | Value |
 | --- | --- |
 | PR | https://github.com/ricktron/classroom-quiz-show/pull/93 |
-| Head SHA | `f6da305f9891b3af9e68115e1d52b04eb2aa065f` |
+| Head SHA | `b0b69f2169c05506cd6394a49a40b867c267a200` (pin parent of repair tip) |
+| Rejected exact head | `b0b69f2169c05506cd6394a49a40b867c267a200` — **REPAIR REQUIRED** (F1–F5) |
 | Draft | **no** |
 | Auto-merge | **off** |
 | Merge | **do not merge** — Stop for Rick |
 
-Note: embedding a commit SHA inside that same commit is impossible; Identity / Appendix Head SHA record the pin parent. Re-observe the PR tip on GitHub for exact-head review.
+Note: embedding a commit SHA inside that same commit is impossible; Identity /
+Appendix Head SHA record the pin parent. Re-observe the PR tip on GitHub for
+exact-head re-review.
