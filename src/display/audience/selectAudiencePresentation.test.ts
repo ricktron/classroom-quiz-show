@@ -406,6 +406,55 @@ describe('selectAudiencePresentation', () => {
     expect(selectPublicTimer(finalLocked)).toBeNull()
   })
 
+  it('suppresses Nexus timer while Correct owns the opportunity (F8)', () => {
+    // F7 may still project idle on the wire; selector must not feed Ready to Nexus.
+    const correctIdle = baseState({
+      round: OPEN_BOARD,
+      response: {
+        armed: false,
+        timer: { status: 'idle' },
+        buzz: { status: 'none' },
+        boardOutcome: { status: 'resolved', teamKey: 't0', kind: 'correct' },
+      },
+    })
+    expect(selectPublicTimer(correctIdle)).toBeNull()
+
+    // kind === correct required — merely resolved is not enough.
+    const incorrectIdle = baseState({
+      round: OPEN_BOARD,
+      response: {
+        armed: false,
+        timer: { status: 'idle' },
+        buzz: { status: 'none' },
+        boardOutcome: { status: 'resolved', teamKey: 't0', kind: 'incorrect' },
+      },
+    })
+    expect(selectPublicTimer(incorrectIdle)?.status).toBe('idle')
+
+    const passedRunning = baseState({
+      round: OPEN_BOARD,
+      response: {
+        armed: false,
+        timer: { status: 'running', durationMs: 15_000, deadline: Date.now() + 15_000 },
+        buzz: { status: 'exhausted' },
+        boardOutcome: { status: 'resolved', teamKey: 't0', kind: 'passed' },
+      },
+    })
+    expect(selectPublicTimer(passedRunning)?.status).toBe('running')
+
+    // Ordinary idle Ready when boardOutcome is none.
+    const idleReady = baseState({
+      round: OPEN_BOARD,
+      response: {
+        armed: true,
+        timer: { status: 'idle' },
+        buzz: { status: 'none' },
+        boardOutcome: { status: 'none' },
+      },
+    })
+    expect(selectPublicTimer(idleReady)?.status).toBe('idle')
+  })
+
   it('produces public-safe Nexus labels without private titles or types', () => {
     const presentation = selectAudiencePresentation(baseState({ round: OPEN_BOARD }))
     expect(presentation.nexus.brand).toBe('Classroom Quiz Show')

@@ -8,6 +8,7 @@ import { PUBLIC_STATE_SCHEMA_VERSION, isPublicState } from './publicState'
 import { SYNC_SCHEMA_VERSION } from '../sync/protocol'
 import { PERSISTENCE_WIRE_VERSION } from '../persistence/constants'
 import { teamScoreFor } from './reducer'
+import { selectPublicTimer } from '../display/audience/selectAudiencePresentation'
 
 /**
  * S05 Path A — public board-response outcome projection.
@@ -221,5 +222,47 @@ describe('PublicBoardResponseOutcome sanitizer (S05 Path A)', () => {
       durationMs: 30_000,
       deadline: AT + 2 + 30_000,
     })
+  })
+
+  it('suppresses selectPublicTimer after sanitizer idle projection beside Correct (F8)', () => {
+    const store = armedStore()
+    buzz(store, 'red', AT + 1)
+    store.dispatch({
+      type: 'START_RESPONSE_TIMER',
+      issuedAt: AT + 2,
+      roundId: ROUND,
+      durationSeconds: 30,
+    })
+    resolve(store, 'correct', AT + 3)
+
+    const publicState = store.getPublicState()
+    // F7 idle DTO retained on the wire…
+    expect(publicState.response?.timer).toEqual({ status: 'idle' })
+    expect(publicState.response?.boardOutcome).toEqual({
+      status: 'resolved',
+      teamKey: 't0',
+      kind: 'correct',
+    })
+    // …but F8 selector must not feed Nexus Ready.
+    expect(selectPublicTimer(publicState)).toBeNull()
+
+    store.dispatch({ type: 'UNDO', issuedAt: AT + 4 })
+    const afterUndo = store.getPublicState()
+    expect(afterUndo.response?.boardOutcome).toEqual({ status: 'none' })
+    expect(selectPublicTimer(afterUndo)?.status).toBe('running')
+
+    // Re-resolve correct, then Reset clears outcome and restores idle Ready path.
+    resolve(store, 'correct', AT + 5)
+    expect(selectPublicTimer(store.getPublicState())).toBeNull()
+    store.dispatch({ type: 'RESET_RESPONSE_PHASE', issuedAt: AT + 6, roundId: ROUND })
+    expect(store.getPublicState().response).toBeNull()
+    expect(selectPublicTimer(store.getPublicState())).toBeNull()
+
+    // Re-arm after reset → ordinary idle Ready (boardOutcome none).
+    store.dispatch({ type: 'ARM_RESPONSE_PHASE', issuedAt: AT + 7, roundId: ROUND })
+    const rearmed = store.getPublicState()
+    expect(rearmed.response?.boardOutcome).toEqual({ status: 'none' })
+    expect(rearmed.response?.timer).toEqual({ status: 'idle' })
+    expect(selectPublicTimer(rearmed)?.status).toBe('idle')
   })
 })
