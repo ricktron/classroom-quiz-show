@@ -5,10 +5,14 @@ import { createSessionStore, type SessionStore } from '../state/store'
 import type { SessionCommand } from '../state/commands'
 import { importGameFromUnknown } from '../import/importGame'
 import { boardGameFile, richBoardConfig } from '../test/categoryBoardFixtures'
-import { teamBoardGameFile } from '../test/teamFixtures'
 import { createManualClock } from '../time/clock'
 import { DEFAULT_RESPONSE_SECONDS } from '../game/timing/limits'
 import { responsePhaseFor } from '../state/reducer'
+import {
+  dispatchLeftoverRunningResolve,
+  leftoverTeamBoardStore,
+  LEFTOVER_TILE,
+} from '../test/leftoverRunningBoardFixtures'
 
 /**
  * Host response-timer controls — component behaviour (Slice 7).
@@ -386,53 +390,16 @@ describe('accessibility and scope', () => {
   })
 })
 
-const TEAMS = [
-  { id: 'red', name: 'Red Team', accent: 'crimson' },
-  { id: 'blue', name: 'Blue Team', accent: 'azure' },
-]
-
 function teamBoardStore(): SessionStore {
-  const result = importGameFromUnknown(teamBoardGameFile(TEAMS, richBoardConfig()))
-  if (result.status !== 'success') throw new Error('fixture failed to import')
-  const store = createSessionStore()
-  store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 's' })
-  store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT, definition: result.definition })
-  store.dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: AT })
-  return store
+  return leftoverTeamBoardStore()
 }
 
-const TILE = 'alpha-100'
-
-/** Leftover-running Correct path: buzz while idle → START → correct. */
-function leftoverRunningCorrect(store: SessionStore, at: number): void {
-  openClue(store)
-  store.dispatch({ type: 'ARM_RESPONSE_PHASE', issuedAt: at, roundId: ROUND })
-  store.dispatch({
-    type: 'RECORD_TEAM_BUZZ',
-    issuedAt: at + 1,
-    roundId: ROUND,
-    tileId: TILE,
-    teamId: 'red',
-  })
-  store.dispatch({
-    type: 'START_RESPONSE_TIMER',
-    issuedAt: at + 2,
-    roundId: ROUND,
-    durationSeconds: 30,
-  })
-  store.dispatch({
-    type: 'RESOLVE_ACTIVE_RESPONSE',
-    issuedAt: at + 3,
-    roundId: ROUND,
-    tileId: TILE,
-    resolution: { kind: 'correct' },
-  })
-}
+const TILE = LEFTOVER_TILE
 
 describe('correct-closed Host timer presentation (F7)', () => {
   it('disables Arm/Start/Pause/Stop and enables Reset while Correct owns leftover running', () => {
     const store = teamBoardStore()
-    leftoverRunningCorrect(store, AT)
+    dispatchLeftoverRunningResolve(store, 'correct', AT)
     expect(responsePhaseFor(store.getState().session!.game!, ROUND).timer.status).toBe('running')
     renderPanel(store)
 
@@ -475,7 +442,7 @@ describe('correct-closed Host timer presentation (F7)', () => {
 
   it('restores normal controls after Correct → Reset', () => {
     const store = teamBoardStore()
-    leftoverRunningCorrect(store, AT)
+    dispatchLeftoverRunningResolve(store, 'correct', AT)
     renderPanel(store)
     fireEvent.click(button(/reset window/i))
     expect(button(/^arm clue$/i)).toBeEnabled()
@@ -486,28 +453,7 @@ describe('correct-closed Host timer presentation (F7)', () => {
 
   it('does not disable live timer controls after incorrect with leftover running', () => {
     const store = teamBoardStore()
-    openClue(store)
-    store.dispatch({ type: 'ARM_RESPONSE_PHASE', issuedAt: AT, roundId: ROUND })
-    store.dispatch({
-      type: 'RECORD_TEAM_BUZZ',
-      issuedAt: AT + 1,
-      roundId: ROUND,
-      tileId: TILE,
-      teamId: 'red',
-    })
-    store.dispatch({
-      type: 'START_RESPONSE_TIMER',
-      issuedAt: AT + 2,
-      roundId: ROUND,
-      durationSeconds: 30,
-    })
-    store.dispatch({
-      type: 'RESOLVE_ACTIVE_RESPONSE',
-      issuedAt: AT + 3,
-      roundId: ROUND,
-      tileId: TILE,
-      resolution: { kind: 'incorrect' },
-    })
+    dispatchLeftoverRunningResolve(store, 'incorrect', AT)
     renderPanel(store)
     expect(screen.getByTestId('rth-status')).toHaveTextContent('Running')
     expect(button(/^pause$/i)).toBeEnabled()

@@ -14,6 +14,8 @@ outcome authority without reopening ADR-006 score presentation.
   `AUTHORIZE-CQS-REAL-MVP-S05-PR93-BOARD-OUTCOME-F7-CORRECT-CLOSED-PRESENTATION-REPAIR-1`
 - **Repair authorization (F8):**
   `AUTHORIZE-CQS-REAL-MVP-S05-PR93-BOARD-OUTCOME-F8-NEXUS-CORRECT-CLOSED-TIMER-SUPPRESSION-1`
+- **Repair authorization (Sonar-only deduplication):**
+  `AUTHORIZE-CQS-REAL-MVP-S05-PR93-SONAR-ONLY-DEDUPLICATION-REPAIR-1`
 - **Tranche:**
   `CQS-REAL-MVP-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY`
 - **Parent:** `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
@@ -37,9 +39,10 @@ Stop for Rick
 | `99b001369a2786ee8afefa624d920b2dc69311e9` | **REPAIR REQUIRED — F6** — fresh re-review after F1–F5 repair: F1–F5 **CLOSED**; residual post-correct timer-event mutation (PAUSE/RESUME/INTERRUPT/EXPIRE planner + applicator) |
 | `72e53e3091300c9cd4de032373cceee0eadf1f0b` | **REPAIR REQUIRED** — fresh re-review after F6: F1–F6 **CLOSED**; residual **F7** passive leftover-running timer public presentation + Host control contradiction |
 | `0b0accbf7329fb942edc2c9fb70d5e4fcc554d32` | **REPAIR REQUIRED — F8** — fresh re-review after F7: F1–F7 **CLOSED**; residual Nexus Core `"Ready"` beside Correct on AudienceDisplayShell |
-| F8-repaired tip (this lineage) | **AUTHORIZED DELIVERY CANDIDATE** only — not accepted / not terminal; requires fresh independent exact-head re-review |
+| `c68bdccf074e0e6f0e4141e8136e34dafc404335` | **F8 SEMANTICALLY CLOSED — SONAR-ONLY REPAIR REQUIRED** — F1–F8 semantic findings **CLOSED**; Sonar new-code duplication **4.2%** (>3%) |
+| Sonar-repaired tip (this lineage) | **AUTHORIZED DELIVERY CANDIDATE** only — not accepted / not terminal; requires fresh independent exact-head re-review |
 
-Repair alone does **not** mark this tranche independently accepted. Do not reopen closed F1–F7 as still-broken intake/Host/Signal/Sonar/docs/timer-event-mutation/presentation.
+Repair alone does **not** mark this tranche independently accepted. Do not reopen closed F1–F8 as still-broken intake/Host/Signal/docs/timer-event-mutation/presentation/Nexus Ready. Sonar ≤3% must be re-observed on the repaired tip.
 
 ---
 
@@ -49,12 +52,13 @@ Repair alone does **not** mark this tranche independently accepted. Do not reope
 | --- | --- |
 | Canonical base | `ba032bb1326027d5ca0bc0c84c2248b511c8b15d` |
 | Branch | `feat/cqs-real-mvp-s05-board-outcome-public-authority` |
-| Exact head | `0b0accbf7329fb942edc2c9fb70d5e4fcc554d32` (rejected F8 review head / pin parent of tip; re-observe PR tip) |
+| Exact head | `c68bdccf074e0e6f0e4141e8136e34dafc404335` (rejected Sonar-only review head / pin parent of tip; re-observe PR tip) |
 | PR | [#93](https://github.com/ricktron/classroom-quiz-show/pull/93) (non-draft; auto-merge off) |
 | Rejected exact head (F1–F5) | `b0b69f2169c05506cd6394a49a40b867c267a200` — **REPAIR REQUIRED** (F1–F5) |
 | Rejected exact head (F6) | `99b001369a2786ee8afefa624d920b2dc69311e9` — **REPAIR REQUIRED — F6** |
 | Rejected exact head (F7) | `72e53e3091300c9cd4de032373cceee0eadf1f0b` — **REPAIR REQUIRED** (F7 presentation) |
 | Rejected exact head (F8) | `0b0accbf7329fb942edc2c9fb70d5e4fcc554d32` — **REPAIR REQUIRED — F8** (Nexus Ready beside Correct) |
+| Rejected exact head (Sonar-only) | `c68bdccf074e0e6f0e4141e8136e34dafc404335` — **F8 SEMANTICALLY CLOSED — SONAR-ONLY REPAIR REQUIRED** |
 
 Intervening `origin/main` delta after expected base at start of work: **none**.
 
@@ -343,9 +347,10 @@ sanitizer (correct-closed non-live timer projection; no schema bump), Host Mark
 correct + durable outcome presentation, Host ResponseTimer correct-closed
 controls/status, minimal Display + SignalRail intake-ready suppression +
 correct-closed response-timer panel suppression, `selectPublicTimer` Nexus feed
-suppression beside Correct (F8), visual-stress snapshot dedupe,
-ADR-008/020 notes, GAME-ENGINE-BOUNDARIES schema 7-vs-9 note, STATUS/CURRENT
-candidate routing, focused tests + e2e, this closeout.
+suppression beside Correct (F8), test-only leftover-running / prompt-board
+fixture helpers (Sonar-only dedupe; no product mutation), visual-stress snapshot
+dedupe, ADR-008/020 notes, GAME-ENGINE-BOUNDARIES schema 7-vs-9 note,
+STATUS/CURRENT candidate routing, focused tests + e2e, this closeout.
 
 **Confirmed absent / unauthorized:**
 
@@ -392,6 +397,7 @@ rejected exact head b0b69f… REPAIR REQUIRED (F1–F5)
 rejected exact head 99b001… REPAIR REQUIRED — F6
 rejected exact head 72e53e3… REPAIR REQUIRED (F7 presentation)
 rejected exact head 0b0accb… REPAIR REQUIRED — F8 (Nexus Ready beside Correct)
+rejected exact head c68bdcc… F8 SEMANTICALLY CLOSED — SONAR-ONLY REPAIR REQUIRED
 S05 parent OPEN / NOT TERMINAL
 ```
 
@@ -402,11 +408,12 @@ S05 parent OPEN / NOT TERMINAL
 | Fact | Value |
 | --- | --- |
 | PR | https://github.com/ricktron/classroom-quiz-show/pull/93 |
-| Head SHA | `0b0accbf7329fb942edc2c9fb70d5e4fcc554d32` (rejected F8 review head / pin parent of tip) |
+| Head SHA | `c68bdccf074e0e6f0e4141e8136e34dafc404335` (rejected Sonar-only review head / pin parent of tip) |
 | Rejected exact head (F1–F5) | `b0b69f2169c05506cd6394a49a40b867c267a200` — **REPAIR REQUIRED** (F1–F5) |
 | Rejected exact head (F6) | `99b001369a2786ee8afefa624d920b2dc69311e9` — **REPAIR REQUIRED — F6** |
 | Rejected exact head (F7) | `72e53e3091300c9cd4de032373cceee0eadf1f0b` — **REPAIR REQUIRED** (F7 presentation) |
 | Rejected exact head (F8) | `0b0accbf7329fb942edc2c9fb70d5e4fcc554d32` — **REPAIR REQUIRED — F8** |
+| Rejected exact head (Sonar-only) | `c68bdccf074e0e6f0e4141e8136e34dafc404335` — **F8 SEMANTICALLY CLOSED — SONAR-ONLY** |
 | Draft | **no** |
 | Auto-merge | **off** |
 | Merge | **do not merge** — Stop for Rick |
