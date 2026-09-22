@@ -29,7 +29,7 @@ Stop for Rick
 | --- | --- |
 | Canonical base | `ba032bb1326027d5ca0bc0c84c2248b511c8b15d` |
 | Branch | `feat/cqs-real-mvp-s05-board-outcome-public-authority` |
-| Exact head | `f4d629b25fa9f0118ef979278ae8517e2527a94a` |
+| Exact head | `6e0806023edfa8ed0b3bee319980a0ef29f2fe12` |
 | PR | [#93](https://github.com/ricktron/classroom-quiz-show/pull/93) (non-draft; auto-merge off) |
 
 Intervening `origin/main` delta after expected base at start of work: **none**.
@@ -332,7 +332,7 @@ S05 parent OPEN / NOT TERMINAL
 | Fact | Value |
 | --- | --- |
 | PR | https://github.com/ricktron/classroom-quiz-show/pull/93 |
-| Head SHA | `f4d629b25fa9f0118ef979278ae8517e2527a94a` |
+| Head SHA | `6e0806023edfa8ed0b3bee319980a0ef29f2fe12` |
 | Draft | **no** |
 | Auto-merge | **off** |
 | Merge | **do not merge** — Stop for Rick |
