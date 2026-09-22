@@ -397,8 +397,13 @@ hardware, recovery, and the end-to-end experience.
 - **Principles:** `P02`, `P16`, `P19`, `P07`.
 - **Research routing:** Cooper, Endsley & Jones.
 - **Ownership / state:** **ALREADY IMPLEMENTED FOUNDATION**
-  (`src/host/TeamScoringPanel.tsx` and the response-opportunity path).
-  Correct/incorrect **feedback presentation** is S05 — **LATER**.
+  (`src/host/TeamScoringPanel.tsx` and the response-opportunity path). Path A
+  board-outcome **public authority** under
+  `CQS-REAL-MVP-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY` is **TERMINALLY
+  COMPLETE** on main after PR #93 (private `correct` adjudication +
+  PublicState schema **9** `boardOutcome` + minimal Display text; ADR-006
+  score presentation unchanged). Theatrical correct/incorrect **feedback
+  presentation** / score choreography remain S05 — **LATER**.
 
 ### 18. Scoreboard
 

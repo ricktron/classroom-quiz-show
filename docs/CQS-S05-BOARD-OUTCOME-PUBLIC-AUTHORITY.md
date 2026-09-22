@@ -16,11 +16,13 @@ outcome authority without reopening ADR-006 score presentation.
   `AUTHORIZE-CQS-REAL-MVP-S05-PR93-BOARD-OUTCOME-F8-NEXUS-CORRECT-CLOSED-TIMER-SUPPRESSION-1`
 - **Repair authorization (Sonar-only deduplication):**
   `AUTHORIZE-CQS-REAL-MVP-S05-PR93-SONAR-ONLY-DEDUPLICATION-REPAIR-1`
+- **Terminalization authorization (this packet):**
+  `AUTHORIZE-CQS-REAL-MVP-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY-TERMINALIZATION-CANDIDATE-1`
 - **Tranche:**
   `CQS-REAL-MVP-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY`
 - **Parent:** `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
   (parent remains **OPEN / NOT TERMINAL**)
-- **Tranche status:** **AUTHORIZED DELIVERY CANDIDATE** (not terminal; not accepted)
+- **Tranche status:** **TERMINALLY COMPLETE**
 - **Date (UTC):** 2026-09-22
 
 ```text
@@ -28,10 +30,11 @@ PATH A — NARROW BOARD-OUTCOME AUTHORITY
 adjudication ≠ scoring
 do not reopen ADR-006
 snapshot rendering ≠ event replay
+child terminal ≠ parent terminal
 Stop for Rick
 ```
 
-### Review / repair chain (observed)
+### Review / repair / merge chain (observed)
 
 | Head | Verdict |
 | --- | --- |
@@ -40,9 +43,13 @@ Stop for Rick
 | `72e53e3091300c9cd4de032373cceee0eadf1f0b` | **REPAIR REQUIRED** — fresh re-review after F6: F1–F6 **CLOSED**; residual **F7** passive leftover-running timer public presentation + Host control contradiction |
 | `0b0accbf7329fb942edc2c9fb70d5e4fcc554d32` | **REPAIR REQUIRED — F8** — fresh re-review after F7: F1–F7 **CLOSED**; residual Nexus Core `"Ready"` beside Correct on AudienceDisplayShell |
 | `c68bdccf074e0e6f0e4141e8136e34dafc404335` | **F8 SEMANTICALLY CLOSED — SONAR-ONLY REPAIR REQUIRED** — F1–F8 semantic findings **CLOSED**; Sonar new-code duplication **4.2%** (>3%) |
-| Sonar-repaired tip (this lineage) | **AUTHORIZED DELIVERY CANDIDATE** only — not accepted / not terminal; requires fresh independent exact-head re-review |
+| `fce42ee66ba9047c8ede1beb602cf2479cc677af` | **ACCEPT CANDIDATE** |
+| squash / main `80b287664bccb16c2516802bc64080a82e08faeb` | **MERGED** (PR #93; sole parent `ba032bb…`; trees **EXACT MATCH** `05179325…`) |
 
-Repair alone does **not** mark this tranche independently accepted. Do not reopen closed F1–F8 as still-broken intake/Host/Signal/docs/timer-event-mutation/presentation/Nexus Ready. Sonar ≤3% must be re-observed on the repaired tip.
+Repair alone did **not** mark this tranche independently accepted. Do not
+flatten F1–F8 + Sonar-only repair lineage to first-pass success. Do not
+reopen closed F1–F8 as still-broken intake/Host/Signal/docs/timer-event-
+mutation/presentation/Nexus Ready.
 
 ---
 
@@ -50,17 +57,20 @@ Repair alone does **not** mark this tranche independently accepted. Do not reope
 
 | Fact | Value |
 | --- | --- |
-| Canonical base | `ba032bb1326027d5ca0bc0c84c2248b511c8b15d` |
-| Branch | `feat/cqs-real-mvp-s05-board-outcome-public-authority` |
-| Exact head | `c68bdccf074e0e6f0e4141e8136e34dafc404335` (rejected Sonar-only review head / pin parent of tip; re-observe PR tip) |
-| PR | [#93](https://github.com/ricktron/classroom-quiz-show/pull/93) (non-draft; auto-merge off) |
+| Canonical implementation base | `ba032bb1326027d5ca0bc0c84c2248b511c8b15d` |
+| Implementation branch | `feat/cqs-real-mvp-s05-board-outcome-public-authority` |
+| Accepted implementation head | `fce42ee66ba9047c8ede1beb602cf2479cc677af` |
+| Squash / main | `80b287664bccb16c2516802bc64080a82e08faeb` |
+| PR | [#93](https://github.com/ricktron/classroom-quiz-show/pull/93) **MERGED** |
 | Rejected exact head (F1–F5) | `b0b69f2169c05506cd6394a49a40b867c267a200` — **REPAIR REQUIRED** (F1–F5) |
 | Rejected exact head (F6) | `99b001369a2786ee8afefa624d920b2dc69311e9` — **REPAIR REQUIRED — F6** |
 | Rejected exact head (F7) | `72e53e3091300c9cd4de032373cceee0eadf1f0b` — **REPAIR REQUIRED** (F7 presentation) |
 | Rejected exact head (F8) | `0b0accbf7329fb942edc2c9fb70d5e4fcc554d32` — **REPAIR REQUIRED — F8** (Nexus Ready beside Correct) |
 | Rejected exact head (Sonar-only) | `c68bdccf074e0e6f0e4141e8136e34dafc404335` — **F8 SEMANTICALLY CLOSED — SONAR-ONLY REPAIR REQUIRED** |
 
-Intervening `origin/main` delta after expected base at start of work: **none**.
+Intervening `origin/main` delta after expected implementation squash at start
+of this terminalization packet: **none** (canonical main remains
+`80b2876…`).
 
 ---
 
@@ -275,8 +285,8 @@ ADR-020:
 | ADR-006 | **Unchanged in substance** — no score animation / deltas / flash / resort |
 | ADR-020 | **Note only** — board correct silent; positive-award stays score/Final driven |
 | GAME-ENGINE-BOUNDARIES | Light update: historical Slice 11 PublicState schema **7** distinguished from current schema **9** (`boardOutcome`); sync envelope stays **2** |
-| STATUS / CURRENT | Light routing as **AUTHORIZED DELIVERY CANDIDATE** only |
-| This doc | Delivery candidate closeout (not terminal); records rejected `b0b69f…` **REPAIR REQUIRED** (F1–F5), rejected `99b001…` **REPAIR REQUIRED — F6**, rejected `72e53e3…` **REPAIR REQUIRED** (F7), rejected `0b0accb…` **REPAIR REQUIRED — F8**; tip remains **AUTHORIZED DELIVERY CANDIDATE** |
+| STATUS / CURRENT | Living routing reconciled to child **TERMINALLY COMPLETE**; parent OPEN |
+| This doc | Implementation closeout + terminal identity; preserves rejected F1–F8 + Sonar-only heads; does **not** claim this docs-only terminalization PR is merged |
 
 ---
 
@@ -359,7 +369,8 @@ STATUS/CURRENT candidate routing, focused tests + e2e, this closeout.
 - no Sony / controller mapping / Final choreography / winner celebration
 - no board/round-transition choreography; no theatrical correct/incorrect
 - no S04D; no S06; no release; no REAL MVP complete claim
-- no S05 parent or child terminalization
+- no S05 parent terminalization; theatrical board-outcome / score choreography
+  remain unauthorized; no `outcomeKey`; ADR-006 closed / unchanged
 
 ---
 
@@ -382,42 +393,58 @@ Also:
 
 ---
 
-## T. Next owner decision
+## T. Post-merge identity
 
-**fresh independent exact-head re-review of the repaired board-outcome tip.**
+| Fact | Value |
+| --- | --- |
+| PR | [#93](https://github.com/ricktron/classroom-quiz-show/pull/93) **MERGED** |
+| Rejected heads (F1–F8 + Sonar-only) | `b0b69f…` / `99b001…` / `72e53e3…` / `0b0accb…` / `c68bdcc…` — each **REPAIR REQUIRED** (or Sonar-only) as historically recorded |
+| Accepted implementation head | `fce42ee66ba9047c8ede1beb602cf2479cc677af` → **ACCEPT CANDIDATE** |
+| Squash / main | `80b287664bccb16c2516802bc64080a82e08faeb` |
+| Sole parent | `ba032bb1326027d5ca0bc0c84c2248b511c8b15d` |
+| Accepted / main tree | **EXACT MATCH** `051793253785f4e7dc9f7bd01966ced847462176` |
+| Post-merge workflows | CI, Playwright, Desktop artifacts (unsigned macOS + Windows), Pages, SonarCloud — all **SUCCESS** |
+| Tranche status | **TERMINALLY COMPLETE** |
+| Parent status | **OPEN / NOT TERMINAL** |
 
-Does not authorize merge, auto-merge, S05 parent terminalization, score
-choreography / ADR-006 reopen, theatrical presentation child, S04D, S06, or
-REAL MVP complete.
+Terminal post-merge reconciliation:
+[`receipts/2026-09-22-cqs-real-mvp-s05-board-outcome-public-authority-terminal-post-merge-reconciliation.md`](receipts/2026-09-22-cqs-real-mvp-s05-board-outcome-public-authority-terminal-post-merge-reconciliation.md).
+
+---
+
+## U. Next owner decision
+
+**Independent exact-head review of the docs-only S05 board-outcome public
+authority terminalization candidate** that carries the terminal receipt and
+current-routing reconciliation.
+
+Does not authorize merge of that docs PR, additional S05 theatrical work,
+S04D, S06, S05 parent terminalization, score choreography / ADR-006 reopen,
+or REAL MVP complete.
 
 ```text
 Stop for Rick.
-AUTHORIZED DELIVERY CANDIDATE — not terminal / not accepted
-rejected exact head b0b69f… REPAIR REQUIRED (F1–F5)
-rejected exact head 99b001… REPAIR REQUIRED — F6
-rejected exact head 72e53e3… REPAIR REQUIRED (F7 presentation)
-rejected exact head 0b0accb… REPAIR REQUIRED — F8 (Nexus Ready beside Correct)
-rejected exact head c68bdcc… F8 SEMANTICALLY CLOSED — SONAR-ONLY REPAIR REQUIRED
-S05 parent OPEN / NOT TERMINAL
+TERMINALLY COMPLETE (Path A child) — S05 parent OPEN / NOT TERMINAL
+accepted fce42ee… → squash 80b2876… tree EXACT MATCH 05179325…
+rejected lineage preserved: b0b69f… / 99b001… / 72e53e3… / 0b0accb… / c68bdcc…
+FUTURE OWNER DECISION STILL REQUIRED FOR S05 SCORE-CHANGE REQUIREMENT
+no theatrical choreography / no outcomeKey / ADR-006 closed
 ```
 
 ---
 
-## Appendix — PR pin (updated with tip)
+## Appendix — Implementation merge pin
 
 | Fact | Value |
 | --- | --- |
 | PR | https://github.com/ricktron/classroom-quiz-show/pull/93 |
-| Head SHA | `c68bdccf074e0e6f0e4141e8136e34dafc404335` (rejected Sonar-only review head / pin parent of tip) |
+| Accepted head | `fce42ee66ba9047c8ede1beb602cf2479cc677af` |
+| Squash / main | `80b287664bccb16c2516802bc64080a82e08faeb` |
+| Trees | **EXACT MATCH** `051793253785f4e7dc9f7bd01966ced847462176` |
 | Rejected exact head (F1–F5) | `b0b69f2169c05506cd6394a49a40b867c267a200` — **REPAIR REQUIRED** (F1–F5) |
 | Rejected exact head (F6) | `99b001369a2786ee8afefa624d920b2dc69311e9` — **REPAIR REQUIRED — F6** |
 | Rejected exact head (F7) | `72e53e3091300c9cd4de032373cceee0eadf1f0b` — **REPAIR REQUIRED** (F7 presentation) |
 | Rejected exact head (F8) | `0b0accbf7329fb942edc2c9fb70d5e4fcc554d32` — **REPAIR REQUIRED — F8** |
 | Rejected exact head (Sonar-only) | `c68bdccf074e0e6f0e4141e8136e34dafc404335` — **F8 SEMANTICALLY CLOSED — SONAR-ONLY** |
-| Draft | **no** |
-| Auto-merge | **off** |
-| Merge | **do not merge** — Stop for Rick |
-
-Note: embedding a commit SHA inside that same commit is impossible; Identity /
-Appendix Head SHA record the pin parent. Re-observe the PR tip on GitHub for
-exact-head re-review.
+| Implementation merge | **MERGED** (squash) |
+| Docs terminalization PR | separate candidate; auto-merge **off**; do **not** merge without exact-head review |
