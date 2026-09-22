@@ -47,6 +47,7 @@ import {
   type FinalWagerRoundState,
 } from '../game/finalWager/finalState'
 import {
+  isCorrectClosedOpportunity,
   isInitialResponsePhase,
   type ResponseTimerState,
 } from '../game/timing/responsePhase'
@@ -295,9 +296,17 @@ function toPublicResponse(game: PrivateGameState | null): PublicResponseState | 
   const phase = responsePhaseFor(game, current.id)
   if (isInitialResponsePhase(phase)) return null
 
+  // Opportunity-ending Correct owns the public window: leftover private timer
+  // facts (including a still-running countdown kept for undo) must not project
+  // as a live response timer. Prefer the existing idle DTO — no schema bump.
+  // Incorrect / pass still project the private timer unchanged.
+  const timer = isCorrectClosedOpportunity(phase)
+    ? ({ status: 'idle' } as const)
+    : toPublicTimer(phase.timer)
+
   return {
     armed: phase.armed,
-    timer: toPublicTimer(phase.timer),
+    timer,
     buzz: toPublicBuzz(game, phase.queue),
     boardOutcome: toPublicBoardOutcome(game, phase.outcome),
   }

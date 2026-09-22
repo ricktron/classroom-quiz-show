@@ -126,11 +126,19 @@ export function SignalRail({
         data-mode={mode}
         aria-label={mode === 'expanded' ? 'Response status' : 'Display status'}
       >
-        <ResponseTimerDisplay
-          response={response}
-          hostClockOffsetMs={hostClockOffsetMs}
-          clock={clock}
-        />
+        {/*
+          Correct-closed is not a live response window: suppress the entire
+          response-timer panel (no Time remaining / role=timer / Ready). Final
+          mode uses FinalCountdown above and is unaffected. Incorrect / pass
+          still mount ResponseTimerDisplay normally.
+        */}
+        {!correctClosed ? (
+          <ResponseTimerDisplay
+            response={response}
+            hostClockOffsetMs={hostClockOffsetMs}
+            clock={clock}
+          />
+        ) : null}
         {showIntakeReady ? (
           <p
             className={`signal-rail__status${response.armed ? ' signal-rail__status--armed' : ''}`}

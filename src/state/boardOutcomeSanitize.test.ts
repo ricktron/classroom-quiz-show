@@ -146,4 +146,80 @@ describe('PublicBoardResponseOutcome sanitizer (S05 Path A)', () => {
     store.dispatch({ type: 'RESET_RESPONSE_PHASE', issuedAt: AT + 3, roundId: ROUND })
     expect(store.getPublicState().response).toBeNull()
   })
+
+  it('projects non-live idle timer while Correct owns leftover private running (F7)', () => {
+    const store = armedStore()
+    // Buzz while idle (no interrupt), then START beside active respondent, then correct.
+    buzz(store, 'red', AT + 1)
+    store.dispatch({
+      type: 'START_RESPONSE_TIMER',
+      issuedAt: AT + 2,
+      roundId: ROUND,
+      durationSeconds: 30,
+    })
+    const privateBefore = store.getState().session!.game!.responsePhases[ROUND]
+    expect(privateBefore.timer.status).toBe('running')
+    resolve(store, 'correct', AT + 3)
+
+    const privateAfter = store.getState().session!.game!.responsePhases[ROUND]
+    // Private leftover running retained for undo — must not be mutated on correct.
+    expect(privateAfter.outcome?.kind).toBe('correct')
+    expect(privateAfter.timer.status).toBe('running')
+    if (privateAfter.timer.status !== 'running') throw new Error('expected running')
+    expect(privateAfter.timer.deadline).toBe(
+      privateBefore.timer.status === 'running' ? privateBefore.timer.deadline : -1,
+    )
+
+    const publicResponse = store.getPublicState().response
+    expect(publicResponse?.boardOutcome).toEqual({
+      status: 'resolved',
+      teamKey: 't0',
+      kind: 'correct',
+    })
+    // Public presentation: non-live idle DTO (schema 9; no bump).
+    expect(publicResponse?.timer).toEqual({ status: 'idle' })
+  })
+
+  it('still projects a live timer beside incorrect / pass (F7 non-regression)', () => {
+    const store = armedStore()
+    buzz(store, 'red', AT + 1)
+    store.dispatch({
+      type: 'START_RESPONSE_TIMER',
+      issuedAt: AT + 2,
+      roundId: ROUND,
+      durationSeconds: 30,
+    })
+    resolve(store, 'incorrect', AT + 3)
+    expect(store.getPublicState().response?.boardOutcome).toEqual({
+      status: 'resolved',
+      teamKey: 't0',
+      kind: 'incorrect',
+    })
+    expect(store.getPublicState().response?.timer).toEqual({
+      status: 'running',
+      durationMs: 30_000,
+      deadline: AT + 2 + 30_000,
+    })
+  })
+
+  it('restores public running countdown when correct is undone (F7)', () => {
+    const store = armedStore()
+    buzz(store, 'red', AT + 1)
+    store.dispatch({
+      type: 'START_RESPONSE_TIMER',
+      issuedAt: AT + 2,
+      roundId: ROUND,
+      durationSeconds: 30,
+    })
+    resolve(store, 'correct', AT + 3)
+    expect(store.getPublicState().response?.timer).toEqual({ status: 'idle' })
+    store.dispatch({ type: 'UNDO', issuedAt: AT + 4 })
+    expect(store.getState().session!.game!.responsePhases[ROUND].timer.status).toBe('running')
+    expect(store.getPublicState().response?.boardOutcome).toEqual({ status: 'none' })
+    expect(store.getPublicState().response?.timer).toEqual({
+      status: 'running',
+      durationMs: 30_000,
+      deadline: AT + 2 + 30_000,
+    })
+  })
 })

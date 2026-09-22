@@ -10,6 +10,8 @@ outcome authority without reopening ADR-006 score presentation.
   `AUTHORIZE-CQS-REAL-MVP-S05-PR93-BOARD-OUTCOME-F1-F5-REPAIR-1`
 - **Repair authorization (F6):**
   `AUTHORIZE-CQS-REAL-MVP-S05-PR93-BOARD-OUTCOME-F6-CORRECT-CLOSED-TIMER-REPAIR-1`
+- **Repair authorization (F7):**
+  `AUTHORIZE-CQS-REAL-MVP-S05-PR93-BOARD-OUTCOME-F7-CORRECT-CLOSED-PRESENTATION-REPAIR-1`
 - **Tranche:**
   `CQS-REAL-MVP-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY`
 - **Parent:** `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
@@ -31,9 +33,10 @@ Stop for Rick
 | --- | --- |
 | `b0b69f2169c05506cd6394a49a40b867c267a200` | **REPAIR REQUIRED** — independent exact-head review: F1–F5 (correct not structurally terminal; Host false empty copy; Signal Rail ready beside Correct; Sonar 5.4%; docs schema/closeout) |
 | `99b001369a2786ee8afefa624d920b2dc69311e9` | **REPAIR REQUIRED — F6** — fresh re-review after F1–F5 repair: F1–F5 **CLOSED**; residual post-correct timer-event mutation (PAUSE/RESUME/INTERRUPT/EXPIRE planner + applicator) |
-| F6-repaired tip (this lineage) | **AUTHORIZED DELIVERY CANDIDATE** only — not accepted / not terminal; requires fresh independent exact-head re-review |
+| `72e53e3091300c9cd4de032373cceee0eadf1f0b` | **REPAIR REQUIRED** — fresh re-review after F6: F1–F6 **CLOSED**; residual **F7** passive leftover-running timer public presentation + Host control contradiction |
+| F7-repaired tip (this lineage) | **AUTHORIZED DELIVERY CANDIDATE** only — not accepted / not terminal; requires fresh independent exact-head re-review |
 
-Repair alone does **not** mark this tranche independently accepted. Do not reopen closed F1–F5 as still-broken intake/Host/Signal/Sonar/docs.
+Repair alone does **not** mark this tranche independently accepted. Do not reopen closed F1–F6 as still-broken intake/Host/Signal/Sonar/docs/timer-event-mutation.
 
 ---
 
@@ -43,10 +46,11 @@ Repair alone does **not** mark this tranche independently accepted. Do not reope
 | --- | --- |
 | Canonical base | `ba032bb1326027d5ca0bc0c84c2248b511c8b15d` |
 | Branch | `feat/cqs-real-mvp-s05-board-outcome-public-authority` |
-| Exact head | `99b001369a2786ee8afefa624d920b2dc69311e9` (rejected F6 review head / pin parent of tip; re-observe PR tip) |
+| Exact head | `72e53e3091300c9cd4de032373cceee0eadf1f0b` (rejected F7 review head / pin parent of tip; re-observe PR tip) |
 | PR | [#93](https://github.com/ricktron/classroom-quiz-show/pull/93) (non-draft; auto-merge off) |
 | Rejected exact head (F1–F5) | `b0b69f2169c05506cd6394a49a40b867c267a200` — **REPAIR REQUIRED** (F1–F5) |
 | Rejected exact head (F6) | `99b001369a2786ee8afefa624d920b2dc69311e9` — **REPAIR REQUIRED — F6** |
+| Rejected exact head (F7) | `72e53e3091300c9cd4de032373cceee0eadf1f0b` — **REPAIR REQUIRED** (F7 presentation) |
 
 Intervening `origin/main` delta after expected base at start of work: **none**.
 
@@ -105,6 +109,16 @@ Host (`LocalInputHostPanel`) reads durable `phase.outcome` so post-correct empty
 queue never shows “Nobody has buzzed yet”. Signal Rail suppresses
 “Response ready” / “Waiting for a buzz” when `boardOutcome` is resolved correct;
 incorrect+promote and pass+exhaust compositions are preserved.
+
+**F7 public presentation (projection + Display + Host timer panel):** while
+Correct owns the opportunity, the sanitizer projects a non-live public timer
+(`{ status: 'idle' }` — existing DTO; **no** PublicState schema bump) even when
+private leftover running remains for undo. Signal Rail suppresses the response
+timer panel entirely beside Correct (no “Time remaining” / `role="timer"`).
+`ResponseTimerHostPanel` derives `correctClosed`, disables Arm/Start/Pause/
+Resume/Stop, keeps Reset enabled via `!isInitialResponsePhase` (covers idle-timer
+correct), and does not present Running/Paused/Time up as actionable Host status.
+Incorrect/pass timer projection and Host live controls remain unchanged.
 
 ---
 
@@ -247,7 +261,7 @@ ADR-020:
 | ADR-020 | **Note only** — board correct silent; positive-award stays score/Final driven |
 | GAME-ENGINE-BOUNDARIES | Light update: historical Slice 11 PublicState schema **7** distinguished from current schema **9** (`boardOutcome`); sync envelope stays **2** |
 | STATUS / CURRENT | Light routing as **AUTHORIZED DELIVERY CANDIDATE** only |
-| This doc | Delivery candidate closeout (not terminal); records rejected `b0b69f…` **REPAIR REQUIRED** (F1–F5) and rejected `99b001…` **REPAIR REQUIRED — F6**; tip remains **AUTHORIZED DELIVERY CANDIDATE** |
+| This doc | Delivery candidate closeout (not terminal); records rejected `b0b69f…` **REPAIR REQUIRED** (F1–F5), rejected `99b001…` **REPAIR REQUIRED — F6**, rejected `72e53e3…` **REPAIR REQUIRED** (F7); tip remains **AUTHORIZED DELIVERY CANDIDATE** |
 
 ---
 
@@ -300,7 +314,7 @@ Observed locally on this branch (re-observe on PR CI):
 | Check | Result |
 | --- | --- |
 | `git diff --check` | clean |
-| Focused F1–F6 unit set (`buzzQueueReducer`, `timing`, `LocalInputHostPanel`, `SignalRail`, `boardOutcomeSanitize`) | **160 passed** (includes F6 leftover-running timer matrix) |
+| Focused F1–F7 unit set (`buzzQueueReducer`, `timing`, `LocalInputHostPanel`, `SignalRail`, `boardOutcomeSanitize`, `ResponseTimerHostPanel`) | **193 passed** (includes F6 leftover-running timer matrix + F7 projection/presentation/Host controls) |
 | Lint / typecheck | clean (pre-existing ThemeProvider react-refresh warnings only) |
 | `npm run verify` | local `usePublicState` BroadcastChannel MessageEvent failure reproduces on this VM (jsdom + Node BroadcastChannel); **not** introduced by Path A / this repair — re-observe on PR CI |
 | E2E `s05-board-outcome-public-authority` at 720p/1080p | owned by PR CI (asserts no “Response ready” / waiting-for-buzz beside Correct) |
@@ -314,10 +328,12 @@ Physical qualification remains **S06** and is **not** claimed.
 
 **Allowed surfaces touched:** buzz resolution domain, response-phase outcome,
 reducer resolve / arm / timer / buzz fail-closed gates, publicState v9 +
-sanitizer, Host Mark correct + durable outcome presentation, minimal Display +
-SignalRail intake-ready suppression, visual-stress snapshot dedupe, ADR-008/020
-notes, GAME-ENGINE-BOUNDARIES schema 7-vs-9 note, STATUS/CURRENT candidate
-routing, focused tests + e2e, this closeout.
+sanitizer (correct-closed non-live timer projection; no schema bump), Host Mark
+correct + durable outcome presentation, Host ResponseTimer correct-closed
+controls/status, minimal Display + SignalRail intake-ready suppression +
+correct-closed response-timer panel suppression, visual-stress snapshot dedupe,
+ADR-008/020 notes, GAME-ENGINE-BOUNDARIES schema 7-vs-9 note, STATUS/CURRENT
+candidate routing, focused tests + e2e, this closeout.
 
 **Confirmed absent / unauthorized:**
 
@@ -362,6 +378,7 @@ Stop for Rick.
 AUTHORIZED DELIVERY CANDIDATE — not terminal / not accepted
 rejected exact head b0b69f… REPAIR REQUIRED (F1–F5)
 rejected exact head 99b001… REPAIR REQUIRED — F6
+rejected exact head 72e53e3… REPAIR REQUIRED (F7 presentation)
 S05 parent OPEN / NOT TERMINAL
 ```
 
@@ -372,9 +389,10 @@ S05 parent OPEN / NOT TERMINAL
 | Fact | Value |
 | --- | --- |
 | PR | https://github.com/ricktron/classroom-quiz-show/pull/93 |
-| Head SHA | `99b001369a2786ee8afefa624d920b2dc69311e9` (rejected F6 review head / pin parent of tip) |
+| Head SHA | `72e53e3091300c9cd4de032373cceee0eadf1f0b` (rejected F7 review head / pin parent of tip) |
 | Rejected exact head (F1–F5) | `b0b69f2169c05506cd6394a49a40b867c267a200` — **REPAIR REQUIRED** (F1–F5) |
 | Rejected exact head (F6) | `99b001369a2786ee8afefa624d920b2dc69311e9` — **REPAIR REQUIRED — F6** |
+| Rejected exact head (F7) | `72e53e3091300c9cd4de032373cceee0eadf1f0b` — **REPAIR REQUIRED** (F7 presentation) |
 | Draft | **no** |
 | Auto-merge | **off** |
 | Merge | **do not merge** — Stop for Rick |

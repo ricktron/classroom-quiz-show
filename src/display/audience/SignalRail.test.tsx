@@ -272,6 +272,29 @@ describe('SignalRail', () => {
     expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-kind', 'correct')
   })
 
+  it('suppresses the response timer panel entirely beside resolved Correct (F7)', () => {
+    render(
+      <SignalRail
+        mode="expanded"
+        response={{
+          armed: false,
+          // Even a stale running DTO must not present Time remaining / role=timer.
+          timer: { status: 'running', durationMs: 30_000, deadline: Date.now() + 25_000 },
+          buzz: { status: 'none' },
+          boardOutcome: { status: 'resolved', teamKey: 't0', kind: 'correct' },
+        }}
+        teams={TEAMS}
+        round={null}
+        revealedTeamName={null}
+      />,
+    )
+    expect(screen.queryByTestId('rtd')).toBeNull()
+    expect(screen.queryByText(/Time remaining/i)).toBeNull()
+    expect(screen.queryByRole('timer')).toBeNull()
+    expect(screen.queryByText(/Response ready/i)).toBeNull()
+    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-kind', 'correct')
+  })
+
   it('preserves incorrect+active and exhausted compositions without ready copy', () => {
     const { rerender } = render(
       <SignalRail
