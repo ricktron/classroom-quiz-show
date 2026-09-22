@@ -640,6 +640,197 @@ describe('opportunity-ending correct adjudication (S05 Path A)', () => {
     expect(phaseOf(store).outcome?.kind).toBe('correct')
     expect(phaseOf(store).armed).toBe(false)
   })
+
+  /**
+   * F6 residual path: buzz while timer is still idle (no interrupt pair), then
+   * START, then correct — leaves a leftover *running* countdown beside Correct.
+   * Pause / resume / interrupt / expire must fail closed; Correct must not clear
+   * or rewrite that leftover timer.
+   */
+  function leftoverRunningAfterCorrect(): {
+    store: SessionStore
+    timerId: string
+    deadline: number
+    before: ResponsePhaseState
+  } {
+    const store = armedStore()
+    accept(store, buzz('red', AT))
+    accept(store, {
+      type: 'START_RESPONSE_TIMER',
+      issuedAt: AT + 1,
+      roundId: ROUND,
+      durationSeconds: 30,
+    })
+    const running = phaseOf(store).timer
+    expect(running.status).toBe('running')
+    if (running.status !== 'running') throw new Error('expected running timer')
+    accept(store, resolve('correct', AT + 2))
+    const before = phaseOf(store)
+    expect(before.outcome).toEqual({ teamId: 'red', kind: 'correct' })
+    expect(before.timer.status).toBe('running')
+    expect(before.armed).toBe(false)
+    return { store, timerId: running.timerId, deadline: running.deadline, before }
+  }
+
+  it('rejects PAUSE / RESUME / INTERRUPT / EXPIRE while leftover running timer sits beside Correct', () => {
+    const { store, timerId, deadline, before } = leftoverRunningAfterCorrect()
+
+    expectRejected(
+      store,
+      { type: 'PAUSE_RESPONSE_TIMER', issuedAt: AT + 3, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    expectRejected(
+      store,
+      { type: 'RESUME_RESPONSE_TIMER', issuedAt: AT + 4, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    expectRejected(
+      store,
+      {
+        type: 'INTERRUPT_RESPONSE_TIMER',
+        issuedAt: AT + 5,
+        roundId: ROUND,
+        source: HOST_INTERRUPTION,
+      },
+      'invalid-response-phase',
+    )
+    // Matching id/deadline would otherwise expire; Correct-closed prefers
+    // invalid-response-phase over stale-timer-expiration.
+    expectRejected(
+      store,
+      {
+        type: 'EXPIRE_RESPONSE_TIMER',
+        issuedAt: deadline,
+        roundId: ROUND,
+        timerId,
+        deadline,
+      },
+      'invalid-response-phase',
+    )
+
+    // F1 intake gates remain closed; Correct does not clear/reset the leftover.
+    expectRejected(
+      store,
+      { type: 'ARM_RESPONSE_PHASE', issuedAt: AT + 6, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    expectRejected(
+      store,
+      { type: 'START_RESPONSE_TIMER', issuedAt: AT + 7, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    expectRejected(store, buzz('blue', AT + 8), 'invalid-response-phase')
+    expectRejected(store, resolve('correct', AT + 9), 'invalid-response-phase')
+    expect(phaseOf(store)).toEqual(before)
+  })
+
+  it('leaves forged PAUSED / RESUMED / INTERRUPTED / EXPIRED inert beside Correct', () => {
+    const { store, timerId, deadline, before } = leftoverRunningAfterCorrect()
+    const history = store.getHistory()
+    const baseSeq = history[history.length - 1]?.seq ?? 0
+
+    const forgedPaused: SessionEvent = {
+      id: 'evt-f6-paused',
+      type: 'RESPONSE_TIMER_PAUSED',
+      seq: baseSeq + 1,
+      occurredAt: AT + 10,
+      reversible: true,
+      roundId: ROUND,
+      timerId,
+      remainingMs: 12_000,
+    }
+    const forgedResumed: SessionEvent = {
+      id: 'evt-f6-resumed',
+      type: 'RESPONSE_TIMER_RESUMED',
+      seq: baseSeq + 2,
+      occurredAt: AT + 11,
+      reversible: true,
+      roundId: ROUND,
+      timerId,
+      resumedAt: AT + 11,
+      deadline: AT + 11 + 12_000,
+    }
+    const forgedInterrupted: SessionEvent = {
+      id: 'evt-f6-interrupted',
+      type: 'RESPONSE_TIMER_INTERRUPTED',
+      seq: baseSeq + 3,
+      occurredAt: AT + 12,
+      reversible: true,
+      roundId: ROUND,
+      timerId,
+      source: HOST_INTERRUPTION,
+      remainingMs: 10_000,
+    }
+    const forgedExpired: SessionEvent = {
+      id: 'evt-f6-expired',
+      type: 'RESPONSE_TIMER_EXPIRED',
+      seq: baseSeq + 4,
+      occurredAt: deadline,
+      reversible: true,
+      roundId: ROUND,
+      timerId,
+      deadline,
+    }
+
+    for (const forged of [forgedPaused, forgedResumed, forgedInterrupted, forgedExpired]) {
+      const game = replay([...history, forged]).session?.game
+      if (!game) throw new Error('no game')
+      expect(responsePhaseFor(game, ROUND)).toEqual(before)
+    }
+  })
+
+  it('allows correct → RESET → ARM and restores undo of correct with leftover running timer', () => {
+    const { store, before } = leftoverRunningAfterCorrect()
+    accept(store, undo)
+    expect(activeRespondent(phaseOf(store).queue)).toBe('red')
+    expect(phaseOf(store).outcome).toBeNull()
+    expect(phaseOf(store).timer.status).toBe('running')
+    expect(phaseOf(store).armed).toBe(true)
+
+    // Re-close, then explicit RESET is the reopen boundary.
+    accept(store, resolve('correct', AT + 20))
+    expect(phaseOf(store).outcome?.kind).toBe('correct')
+    accept(store, { type: 'RESET_RESPONSE_PHASE', issuedAt: AT + 21, roundId: ROUND })
+    expect(phaseOf(store)).toEqual(INITIAL_RESPONSE_PHASE_STATE)
+    accept(store, { type: 'ARM_RESPONSE_PHASE', issuedAt: AT + 22, roundId: ROUND })
+    expect(phaseOf(store).armed).toBe(true)
+    expect(phaseOf(store).outcome).toBeNull()
+    // Sanity: pre-undo snapshot was correct-closed with leftover running.
+    expect(before.timer.status).toBe('running')
+    expect(before.outcome?.kind).toBe('correct')
+  })
+
+  it('does not make incorrect or pass terminal for timer mutation', () => {
+    const store = armedStore()
+    accept(store, buzz('red', AT))
+    accept(store, buzz('blue', AT + 1))
+    accept(store, {
+      type: 'START_RESPONSE_TIMER',
+      issuedAt: AT + 2,
+      roundId: ROUND,
+      durationSeconds: 20,
+    })
+    accept(store, resolve('incorrect', AT + 3))
+    expect(phaseOf(store).outcome?.kind).toBe('incorrect')
+    expect(phaseOf(store).timer.status).toBe('running')
+    accept(store, { type: 'PAUSE_RESPONSE_TIMER', issuedAt: AT + 4, roundId: ROUND })
+    expect(phaseOf(store).timer.status).toBe('paused')
+    accept(store, { type: 'RESUME_RESPONSE_TIMER', issuedAt: AT + 5, roundId: ROUND })
+    expect(phaseOf(store).timer.status).toBe('running')
+
+    accept(store, resolve('passed', AT + 6))
+    expect(phaseOf(store).outcome?.kind).toBe('passed')
+    expect(phaseOf(store).timer.status).toBe('running')
+    accept(store, {
+      type: 'INTERRUPT_RESPONSE_TIMER',
+      issuedAt: AT + 7,
+      roundId: ROUND,
+      source: HOST_INTERRUPTION,
+    })
+    expect(phaseOf(store).timer.status).toBe('interrupted')
+    expect(phaseOf(store).outcome?.kind).toBe('passed')
+  })
 })
 
 describe('promotion arming and exhaust (OG-3 continued)', () => {

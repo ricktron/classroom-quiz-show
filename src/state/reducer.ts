@@ -576,6 +576,9 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
 
     case 'RESPONSE_TIMER_PAUSED':
       return withResponsePhase(state, event.type, event.roundId, (phase) => {
+        // Opportunity-ending correct owns the phase: a forged PAUSED beside
+        // Correct must leave state unchanged (no throw, no cleared outcome).
+        if (isCorrectClosedOpportunity(phase)) return null
         const current = phase.timer
         // Identity is re-checked on APPLICATION as well as on planning, so a
         // stored log that pauses a timer other than the live one degrades to "not
@@ -592,6 +595,7 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
 
     case 'RESPONSE_TIMER_RESUMED':
       return withResponsePhase(state, event.type, event.roundId, (phase) => {
+        if (isCorrectClosedOpportunity(phase)) return null
         const current = phase.timer
         if (current.status !== 'paused' || current.timerId !== event.timerId) return null
         const timer: ResponseTimerState = {
@@ -606,6 +610,7 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
 
     case 'RESPONSE_TIMER_INTERRUPTED':
       return withResponsePhase(state, event.type, event.roundId, (phase) => {
+        if (isCorrectClosedOpportunity(phase)) return null
         const current = phase.timer
         if (current.status !== 'running' && current.status !== 'paused') return null
         if (current.timerId !== event.timerId) return null
@@ -625,6 +630,9 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
 
     case 'RESPONSE_TIMER_EXPIRED':
       return withResponsePhase(state, event.type, event.roundId, (phase) => {
+        // Correct-closed: even a three-way-matching EXPIRED must not mutate the
+        // leftover running countdown beside durable Correct.
+        if (isCorrectClosedOpportunity(phase)) return null
         const current = phase.timer
         // The three-way match — running, same timer, same deadline — is what makes
         // "exactly one effective expiry per countdown" structural rather than a
@@ -1698,6 +1706,11 @@ export function planCommand(
     case 'PAUSE_RESPONSE_TIMER': {
       const context = resolveResponsePhase(state, command.roundId)
       if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      // After opportunity-ending correct, leftover running countdown must not keep
+      // accepting pause — Correct owns the phase until explicit clear.
+      if (isCorrectClosedOpportunity(context.phase)) {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
       const timer = context.phase.timer
       if (timer.status !== 'running') {
         return { status: 'rejected', reason: 'invalid-response-phase' }
@@ -1726,6 +1739,9 @@ export function planCommand(
     case 'RESUME_RESPONSE_TIMER': {
       const context = resolveResponsePhase(state, command.roundId)
       if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      if (isCorrectClosedOpportunity(context.phase)) {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
       const timer = context.phase.timer
       if (timer.status !== 'paused') {
         return { status: 'rejected', reason: 'invalid-response-phase' }
@@ -1755,6 +1771,9 @@ export function planCommand(
     case 'INTERRUPT_RESPONSE_TIMER': {
       const context = resolveResponsePhase(state, command.roundId)
       if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      if (isCorrectClosedOpportunity(context.phase)) {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
       const timer = context.phase.timer
       if (timer.status !== 'running' && timer.status !== 'paused') {
         return { status: 'rejected', reason: 'invalid-response-phase' }
@@ -1791,6 +1810,11 @@ export function planCommand(
     case 'EXPIRE_RESPONSE_TIMER': {
       const context = resolveResponsePhase(state, command.roundId)
       if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      // Prefer invalid-response-phase while Correct owns the opportunity so the
+      // rejection names structural closure, not merely a stale callback.
+      if (isCorrectClosedOpportunity(context.phase)) {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
       const timer = context.phase.timer
       // Everything below is what makes a stale timeout callback harmless. A
       // callback left over from a timer that was reset, restarted, paused, undone,
