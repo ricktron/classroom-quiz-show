@@ -171,6 +171,14 @@ beside incorrect / pass. Dispatches only
 `ADJUST_TEAM_SCORE`. Hint copy: marking correct / incorrect / passed moves no
 points.
 
+Durable `phase.outcome` drives Host truthfulness (F2 repair):
+
+- Post-correct empty queue shows `Closed — {team} marked correct`, never
+  “Nobody has buzzed yet”.
+- `data-testid="lih-board-outcome"` presents the last durable adjudication
+  (Correct / Incorrect / Passed + team) for the current opportunity.
+- Keyboard-input `lih-outcome` remains separate (press explainers only).
+
 ---
 
 ## I. Minimal Display
@@ -286,11 +294,11 @@ Observed locally on this branch (re-observe on PR CI):
 | Check | Result |
 | --- | --- |
 | `git diff --check` | clean |
-| Focused Path A unit set (`boardOutcomeSanitize`, `buzzQueueReducer`, `BoardOutcomeDisplay`, `derivePresentationCue`, `buzzQueue`) | **116 passed** |
-| E2E `s05-board-outcome-public-authority` at 720p/1080p | **passed** after Playwright browser install |
-| `npm run verify` / `npm run verify:all` | required; full e2e matrix owned by PR CI — local vitest projects exit code is unreliable when an unrelated file fails |
-| Local anomaly | `usePublicState` BroadcastChannel MessageEvent failure reproduces against main tip on this VM (jsdom + Node BroadcastChannel); **not** introduced by Path A — re-observe on PR CI |
-| PR CI matrix | Lint/typecheck/unit, Playwright, Desktop, macOS/Windows package, SonarCloud — re-observe on [#93](https://github.com/ricktron/classroom-quiz-show/pull/93); do not claim unrun checks passed |
+| Focused F1–F5 unit set (`buzzQueueReducer`, `timing`, `LocalInputHostPanel`, `SignalRail`, `BoardOutcomeDisplay`, `boardOutcomeSanitize`) | **160 passed** |
+| Lint / typecheck | clean (pre-existing ThemeProvider react-refresh warnings only) |
+| `npm run verify` | local `usePublicState` BroadcastChannel MessageEvent failure reproduces on this VM (jsdom + Node BroadcastChannel); **not** introduced by Path A / this repair — re-observe on PR CI |
+| E2E `s05-board-outcome-public-authority` at 720p/1080p | owned by PR CI (asserts no “Response ready” / waiting-for-buzz beside Correct) |
+| PR CI matrix | Lint/typecheck/unit, Playwright, Desktop, macOS/Windows package, SonarCloud ≤3% — re-observe on [#93](https://github.com/ricktron/classroom-quiz-show/pull/93); do not claim unrun checks passed |
 
 Physical qualification remains **S06** and is **not** claimed.
 
@@ -299,9 +307,11 @@ Physical qualification remains **S06** and is **not** claimed.
 ## R. Scope audit
 
 **Allowed surfaces touched:** buzz resolution domain, response-phase outcome,
-reducer resolve path, publicState v9 + sanitizer, Host Mark correct, minimal
-Display + SignalRail, ADR-008/020 notes, STATUS/CURRENT candidate routing,
-focused tests + e2e, this closeout.
+reducer resolve / arm / timer / buzz fail-closed gates, publicState v9 +
+sanitizer, Host Mark correct + durable outcome presentation, minimal Display +
+SignalRail intake-ready suppression, visual-stress snapshot dedupe, ADR-008/020
+notes, GAME-ENGINE-BOUNDARIES schema 7-vs-9 note, STATUS/CURRENT candidate
+routing, focused tests + e2e, this closeout.
 
 **Confirmed absent / unauthorized:**
 
