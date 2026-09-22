@@ -234,8 +234,11 @@ export function visualStressActiveClaimMaxWaitingSnapshot(revision = 132): Publi
   )
 }
 
-/** After promotion: second team holds the floor; previous waiting cleared. */
-export function visualStressPromotedActiveClaimSnapshot(revision = 133): PublicState {
+/** Shared Path A / buzz choreography: arm, timer, two buzzes, then resolve. */
+function visualStressTwoBuzzResolveSnapshot(
+  kind: 'incorrect' | 'correct',
+  revision: number,
+): PublicState {
   const store = createStressStore()
   return snapshotAt(
     store,
@@ -246,12 +249,15 @@ export function visualStressPromotedActiveClaimSnapshot(revision = 133): PublicS
     startTimer,
     buzz('stress-t1', AT + 1),
     buzz('stress-t2', AT + 2),
-    resolveActive('incorrect', AT + 3),
+    resolveActive(kind, AT + 3),
   )
 }
 
-/** Exhausted response opportunity after the last queued team is resolved. */
-export function visualStressExhaustedBuzzSnapshot(revision = 134): PublicState {
+/** Shared: arm, timer, single buzz, then resolve (exhausted after pass). */
+function visualStressSingleBuzzResolveSnapshot(
+  kind: 'passed' | 'incorrect' | 'correct',
+  revision: number,
+): PublicState {
   const store = createStressStore()
   return snapshotAt(
     store,
@@ -261,8 +267,18 @@ export function visualStressExhaustedBuzzSnapshot(revision = 134): PublicState {
     armResponse,
     startTimer,
     buzz('stress-t1', AT + 1),
-    resolveActive('passed', AT + 2),
+    resolveActive(kind, AT + 2),
   )
+}
+
+/** After promotion: second team holds the floor; previous waiting cleared. */
+export function visualStressPromotedActiveClaimSnapshot(revision = 133): PublicState {
+  return visualStressTwoBuzzResolveSnapshot('incorrect', revision)
+}
+
+/** Exhausted response opportunity after the last queued team is resolved. */
+export function visualStressExhaustedBuzzSnapshot(revision = 134): PublicState {
+  return visualStressSingleBuzzResolveSnapshot('passed', revision)
 }
 
 /**
@@ -270,18 +286,7 @@ export function visualStressExhaustedBuzzSnapshot(revision = 134): PublicState {
  * Must not project buzz exhausted ("No one left to answer").
  */
 export function visualStressBoardCorrectOutcomeSnapshot(revision = 140): PublicState {
-  const store = createStressStore()
-  return snapshotAt(
-    store,
-    revision,
-    select(VISUAL_STRESS_LONG_TILE_ID),
-    revealPrompt,
-    armResponse,
-    startTimer,
-    buzz('stress-t1', AT + 1),
-    buzz('stress-t2', AT + 2),
-    resolveActive('correct', AT + 3),
-  )
+  return visualStressTwoBuzzResolveSnapshot('correct', revision)
 }
 
 /**

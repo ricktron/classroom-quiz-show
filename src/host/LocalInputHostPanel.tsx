@@ -226,6 +226,27 @@ export function LocalInputHostPanel({
   const send = (command: SessionCommand) => dispatch(command)
   const canResolve = open && tileId !== null && activeTeamId !== null
 
+  let activeTeamCopy: string
+  if (activeTeamId !== null) {
+    activeTeamCopy = nameOf(activeTeamId)
+  } else if (status.status === 'exhausted') {
+    activeTeamCopy = 'Nobody — every team that buzzed has had a turn'
+  } else if (phase?.outcome?.kind === 'correct') {
+    activeTeamCopy = `Closed — ${nameOf(phase.outcome.teamId)} marked correct`
+  } else {
+    activeTeamCopy = 'Nobody has buzzed yet'
+  }
+
+  let boardOutcomeCopy = 'None yet'
+  if (phase?.outcome != null) {
+    const KIND_LABEL = {
+      correct: 'Correct',
+      incorrect: 'Incorrect',
+      passed: 'Passed',
+    } as const
+    boardOutcomeCopy = `${nameOf(phase.outcome.teamId)} — ${KIND_LABEL[phase.outcome.kind]}`
+  }
+
   return (
     <section className="lih" aria-labelledby="lih-title">
       <div className="foundation__tag foundation__tag--slice8">
@@ -352,15 +373,7 @@ export function LocalInputHostPanel({
       <div aria-live="polite">
         <dl className="lih__summary">
           <dt>Active team</dt>
-          <dd data-testid="lih-active">
-            {activeTeamId === null
-              ? status.status === 'exhausted'
-                ? 'Nobody — every team that buzzed has had a turn'
-                : phase?.outcome?.kind === 'correct'
-                  ? `Closed — ${nameOf(phase.outcome.teamId)} marked correct`
-                  : 'Nobody has buzzed yet'
-              : nameOf(activeTeamId)}
-          </dd>
+          <dd data-testid="lih-active">{activeTeamCopy}</dd>
           <dt>Waiting queue</dt>
           <dd data-testid="lih-waiting">
             {waitingIds.length === 0
@@ -368,17 +381,7 @@ export function LocalInputHostPanel({
               : waitingIds.map((id, index) => `${index + 1}. ${nameOf(id)}`).join(' · ')}
           </dd>
           <dt>Last board adjudication</dt>
-          <dd data-testid="lih-board-outcome">
-            {phase?.outcome === null || phase?.outcome === undefined
-              ? 'None yet'
-              : `${nameOf(phase.outcome.teamId)} — ${
-                  phase.outcome.kind === 'correct'
-                    ? 'Correct'
-                    : phase.outcome.kind === 'incorrect'
-                      ? 'Incorrect'
-                      : 'Passed'
-                }`}
-          </dd>
+          <dd data-testid="lih-board-outcome">{boardOutcomeCopy}</dd>
         </dl>
       </div>
 
