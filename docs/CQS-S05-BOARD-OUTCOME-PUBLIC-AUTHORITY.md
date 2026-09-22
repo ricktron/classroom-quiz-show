@@ -40,7 +40,7 @@ Repair alone does **not** mark this tranche independently accepted.
 | --- | --- |
 | Canonical base | `ba032bb1326027d5ca0bc0c84c2248b511c8b15d` |
 | Branch | `feat/cqs-real-mvp-s05-board-outcome-public-authority` |
-| Exact head | `b0b69f2169c05506cd6394a49a40b867c267a200` (pin parent of repair tip; re-observe PR tip) |
+| Exact head | `abb3160647831f03e7c383794c84e650e29c7f56` (pin parent of tip; re-observe PR tip) |
 | PR | [#93](https://github.com/ricktron/classroom-quiz-show/pull/93) (non-draft; auto-merge off) |
 | Rejected exact head | `b0b69f2169c05506cd6394a49a40b867c267a200` — **REPAIR REQUIRED** (F1–F5) |
 
@@ -365,7 +365,7 @@ S05 parent OPEN / NOT TERMINAL
 | Fact | Value |
 | --- | --- |
 | PR | https://github.com/ricktron/classroom-quiz-show/pull/93 |
-| Head SHA | `b0b69f2169c05506cd6394a49a40b867c267a200` (pin parent of repair tip) |
+| Head SHA | `abb3160647831f03e7c383794c84e650e29c7f56` (pin parent of tip) |
 | Rejected exact head | `b0b69f2169c05506cd6394a49a40b867c267a200` — **REPAIR REQUIRED** (F1–F5) |
 | Draft | **no** |
 | Auto-merge | **off** |
