@@ -7,6 +7,8 @@ import { readCategoryBoardDefinition } from '../game/categoryBoard/definition'
 import {
   HOST_INTERRUPTION,
   RESPONSE_INTERRUPTION_LABEL,
+  isCorrectClosedOpportunity,
+  isInitialResponsePhase,
   remainingMsAt,
   type ResponsePhaseState,
 } from '../game/timing/responsePhase'
@@ -86,6 +88,13 @@ export function ResponseTimerHostPanel({
   const phase = responsePhaseFor(game, round.id)
   const open = stage === 'prompt'
   const timer = phase.timer
+  // Correct owns the opportunity: private leftover running may remain for undo,
+  // but Host must not present Arm/Start/Pause/Resume/Stop as actionable, and
+  // must not label the panel Running/Paused/Time up. Reset stays the reopen path
+  // — including idle-timer correct, where `!isInitialResponsePhase` is true
+  // solely because outcome is set.
+  const correctClosed = isCorrectClosedOpportunity(phase)
+  const liveControlsOpen = open && !correctClosed
   const now = () => clock.now()
 
   const send = (command: SessionCommand) => dispatch(command)
@@ -97,7 +106,12 @@ export function ResponseTimerHostPanel({
       </div>
       <h3 id="rth-title">Response window</h3>
 
-      <PhaseSummary phase={phase} open={open} clockNow={clock.now()} />
+      <PhaseSummary
+        phase={phase}
+        open={open}
+        correctClosed={correctClosed}
+        clockNow={clock.now()}
+      />
 
       {!open && (
         <p className="host__note" data-testid="rth-unavailable">
@@ -110,7 +124,7 @@ export function ResponseTimerHostPanel({
           type="button"
           className="btn"
           data-testid="rth-arm"
-          disabled={!open || phase.armed}
+          disabled={!liveControlsOpen || phase.armed}
           onClick={() => send({ type: 'ARM_RESPONSE_PHASE', issuedAt: now(), roundId: round.id })}
         >
           Arm clue
@@ -119,7 +133,7 @@ export function ResponseTimerHostPanel({
           type="button"
           className="btn btn--secondary"
           data-testid="rth-disarm"
-          disabled={!open || !phase.armed}
+          disabled={!liveControlsOpen || !phase.armed}
           onClick={() =>
             send({ type: 'DISARM_RESPONSE_PHASE', issuedAt: now(), roundId: round.id })
           }
@@ -134,7 +148,7 @@ export function ResponseTimerHostPanel({
           id="rth-duration"
           data-testid="rth-duration"
           value={durationSeconds}
-          disabled={!open || timer.status !== 'idle'}
+          disabled={!liveControlsOpen || timer.status !== 'idle'}
           onChange={(event) => setDurationSeconds(Number(event.target.value))}
         >
           {durationOptions(authoredSeconds).map((seconds) => (
@@ -150,7 +164,7 @@ export function ResponseTimerHostPanel({
           type="button"
           className="btn"
           data-testid="rth-start"
-          disabled={!open || timer.status !== 'idle'}
+          disabled={!liveControlsOpen || timer.status !== 'idle'}
           onClick={() =>
             send({
               type: 'START_RESPONSE_TIMER',
@@ -166,7 +180,7 @@ export function ResponseTimerHostPanel({
           type="button"
           className="btn btn--secondary"
           data-testid="rth-pause"
-          disabled={!open || timer.status !== 'running'}
+          disabled={!liveControlsOpen || timer.status !== 'running'}
           onClick={() =>
             send({ type: 'PAUSE_RESPONSE_TIMER', issuedAt: now(), roundId: round.id })
           }
@@ -177,7 +191,7 @@ export function ResponseTimerHostPanel({
           type="button"
           className="btn btn--secondary"
           data-testid="rth-resume"
-          disabled={!open || timer.status !== 'paused'}
+          disabled={!liveControlsOpen || timer.status !== 'paused'}
           onClick={() =>
             send({ type: 'RESUME_RESPONSE_TIMER', issuedAt: now(), roundId: round.id })
           }
@@ -188,7 +202,9 @@ export function ResponseTimerHostPanel({
           type="button"
           className="btn btn--secondary"
           data-testid="rth-interrupt"
-          disabled={!open || (timer.status !== 'running' && timer.status !== 'paused')}
+          disabled={
+            !liveControlsOpen || (timer.status !== 'running' && timer.status !== 'paused')
+          }
           onClick={() =>
             send({
               type: 'INTERRUPT_RESPONSE_TIMER',
@@ -207,7 +223,7 @@ export function ResponseTimerHostPanel({
           type="button"
           className="btn btn--secondary"
           data-testid="rth-reset"
-          disabled={!open || (!phase.armed && timer.status === 'idle')}
+          disabled={!open || isInitialResponsePhase(phase)}
           onClick={() =>
             send({ type: 'RESET_RESPONSE_PHASE', issuedAt: now(), roundId: round.id })
           }
@@ -237,14 +253,35 @@ export function ResponseTimerHostPanel({
 function PhaseSummary({
   phase,
   open,
+  correctClosed,
   clockNow,
 }: {
   readonly phase: ResponsePhaseState
   readonly open: boolean
+  readonly correctClosed: boolean
   readonly clockNow: number
 }) {
   const timer = phase.timer
   const remainingMs = remainingMsAt(timer, clockNow)
+  // After Correct, leftover private running/paused/expired facts are not a live
+  // Host response window — do not present Running / Paused / Time up as status.
+  if (correctClosed) {
+    return (
+      <dl className="rth__summary" data-testid="rth-summary">
+        <dt>Clue</dt>
+        <dd data-testid="rth-open">{open ? 'Open — prompt is public' : 'Not open'}</dd>
+        <dt>Arming</dt>
+        <dd data-testid="rth-armed">Not armed</dd>
+        <dt>Timer</dt>
+        <dd data-testid="rth-status">Closed — not a live response timer</dd>
+        <dt>Remaining</dt>
+        <dd data-testid="rth-remaining" aria-label="Remaining: none">
+          —
+        </dd>
+      </dl>
+    )
+  }
+
   const detail =
     timer.status === 'interrupted'
       ? ` — ${RESPONSE_INTERRUPTION_LABEL[timer.source.kind]}, ${formatRemaining(remainingMs)} left`

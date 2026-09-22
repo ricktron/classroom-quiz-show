@@ -221,7 +221,7 @@ describe('arming', () => {
   it('is independent of the timer — a clue can be armed with no clock at all', () => {
     const store = openStore()
     accept(store, arm())
-    expect(phaseOf(store)).toEqual({ armed: true, timer: { status: 'idle' }, queue: NO_QUEUE })
+    expect(phaseOf(store)).toEqual({ armed: true, timer: { status: 'idle' }, queue: NO_QUEUE, outcome: null })
   })
 
   it('never arms itself: revealing a prompt leaves the clue disarmed', () => {
@@ -475,6 +475,7 @@ describe('expiration — exactly one effective fact per countdown', () => {
         deadline: timer.deadline,
       },
       queue: NO_QUEUE,
+    outcome: null,
     })
   })
 
@@ -798,7 +799,7 @@ describe('replay and undo', () => {
     accept(store, expire(timer.deadline, timer.timerId, timer.deadline))
     store.dispatch(undo)
     // Arming is restored too, because the expiry event carried both effects.
-    expect(phaseOf(store)).toEqual({ armed: true, timer, queue: NO_QUEUE })
+    expect(phaseOf(store)).toEqual({ armed: true, timer, queue: NO_QUEUE, outcome: null })
     accept(store, expire(timer.deadline + 5_000, timer.timerId, timer.deadline))
   })
 
@@ -808,7 +809,7 @@ describe('replay and undo', () => {
     const timer = startedTimer(store, AT, 30)
     accept(store, reset())
     store.dispatch(undo)
-    expect(phaseOf(store)).toEqual({ armed: true, timer, queue: NO_QUEUE })
+    expect(phaseOf(store)).toEqual({ armed: true, timer, queue: NO_QUEUE, outcome: null })
   })
 
   it('undoes an answer reveal back to the window it closed', () => {
@@ -818,7 +819,7 @@ describe('replay and undo', () => {
     store.dispatch({ type: 'REVEAL_CATEGORY_BOARD_ANSWER', issuedAt: AT + 1, roundId: ROUND })
     expect(phaseOf(store)).toEqual(INITIAL_RESPONSE_PHASE_STATE)
     store.dispatch(undo)
-    expect(phaseOf(store)).toEqual({ armed: true, timer, queue: NO_QUEUE })
+    expect(phaseOf(store)).toEqual({ armed: true, timer, queue: NO_QUEUE, outcome: null })
   })
 
   it('keeps undo latest-only — an older window is not reachable directly', () => {
@@ -827,7 +828,7 @@ describe('replay and undo', () => {
     startedTimer(store, AT, 30)
     // One undo reaches the START, not the ARM. That limit is documented, not new.
     store.dispatch(undo)
-    expect(phaseOf(store)).toEqual({ armed: true, timer: { status: 'idle' }, queue: NO_QUEUE })
+    expect(phaseOf(store)).toEqual({ armed: true, timer: { status: 'idle' }, queue: NO_QUEUE, outcome: null })
   })
 })
 

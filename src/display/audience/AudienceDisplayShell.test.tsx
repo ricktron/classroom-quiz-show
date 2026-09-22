@@ -5,9 +5,16 @@ import {
   INITIAL_PUBLIC_STATE,
   PUBLIC_BOARD_KIND,
   PUBLIC_FINAL_KIND,
+  type PublicResponseState,
   type PublicState,
   type PublicTeam,
 } from '../../state/publicState'
+import {
+  LEFTOVER_AT,
+  LEFTOVER_ROUND,
+  LEFTOVER_TILE,
+  leftoverRunningCorrectStore,
+} from '../../test/leftoverRunningBoardFixtures'
 
 const LONG = 'ABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJ'
 
@@ -30,6 +37,24 @@ function state(overrides: Partial<PublicState>): PublicState {
     },
     ...overrides,
   }
+}
+
+/** Shared Science/Q?/Alpha prompt scaffold for Nexus + F8 response cases. */
+function promptBoardState(response: PublicResponseState | null): PublicState {
+  return state({
+    round: {
+      kind: PUBLIC_BOARD_KIND,
+      stage: 'prompt',
+      selection: {
+        categoryTitle: 'Science',
+        value: 200,
+        prompt: { kind: 'text', text: 'Q?' },
+        answer: null,
+      },
+    },
+    teams: { status: 'available', teams: [team('t0', 'Alpha', 'crimson', 0)] },
+    response,
+  })
 }
 
 describe('AudienceDisplayShell', () => {
@@ -210,23 +235,11 @@ describe('AudienceDisplayShell', () => {
   it('shows a Nexus timer for a public response timer and none without one', () => {
     const { rerender } = render(
       <AudienceDisplayShell
-        publicState={state({
-          round: {
-            kind: PUBLIC_BOARD_KIND,
-            stage: 'prompt',
-            selection: {
-              categoryTitle: 'Science',
-              value: 200,
-              prompt: { kind: 'text', text: 'Q?' },
-              answer: null,
-            },
-          },
-          teams: { status: 'available', teams: [team('t0', 'Alpha', 'crimson', 0)] },
-          response: {
-            armed: true,
-            timer: { status: 'running', durationMs: 15_000, deadline: Date.now() + 15_000 },
-            buzz: { status: 'none' },
-          },
+        publicState={promptBoardState({
+          armed: true,
+          timer: { status: 'running', durationMs: 15_000, deadline: Date.now() + 15_000 },
+          buzz: { status: 'none' },
+          boardOutcome: { status: 'none' },
         })}
       />,
     )
@@ -250,6 +263,92 @@ describe('AudienceDisplayShell', () => {
 
     rerender(<AudienceDisplayShell publicState={INITIAL_PUBLIC_STATE} />)
     expect(screen.queryByTestId('nexus-timer')).toBeNull()
+  })
+
+  it('does not mount Nexus Ready beside durable Correct (F8)', () => {
+    // Mirrors F7 sanitizer idle projection beside resolved correct.
+    const { rerender } = render(
+      <AudienceDisplayShell
+        publicState={promptBoardState({
+          armed: false,
+          timer: { status: 'idle' },
+          buzz: { status: 'none' },
+          boardOutcome: { status: 'resolved', teamKey: 't0', kind: 'correct' },
+        })}
+      />,
+    )
+    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-kind', 'correct')
+    expect(screen.getByTestId('board-outcome')).toHaveTextContent('Correct')
+    expect(screen.queryByTestId('nexus-timer')).toBeNull()
+    expect(screen.queryByText(/^Ready$/i)).toBeNull()
+    expect(screen.queryByTestId('rtd')).toBeNull()
+
+    // Ordinary idle Ready when outcome is none (non-regression).
+    rerender(
+      <AudienceDisplayShell
+        publicState={promptBoardState({
+          armed: true,
+          timer: { status: 'idle' },
+          buzz: { status: 'none' },
+          boardOutcome: { status: 'none' },
+        })}
+      />,
+    )
+    expect(screen.getByTestId('nexus-timer')).toHaveAttribute('data-status', 'idle')
+    expect(screen.getByTestId('nexus-timer-status')).toHaveTextContent(/ready/i)
+
+    // Incorrect leftover-running still shows Nexus Time remaining.
+    rerender(
+      <AudienceDisplayShell
+        publicState={promptBoardState({
+          armed: false,
+          timer: { status: 'running', durationMs: 15_000, deadline: Date.now() + 15_000 },
+          buzz: { status: 'active', activeTeamKey: 't1', waitingCount: 0 },
+          boardOutcome: { status: 'resolved', teamKey: 't0', kind: 'incorrect' },
+        })}
+      />,
+    )
+    expect(screen.getByTestId('nexus-timer')).toHaveAttribute('data-status', 'running')
+    expect(screen.getByTestId('nexus-timer-status')).toHaveTextContent(/time remaining/i)
+  })
+
+  it('suppresses Nexus Ready from sanitizer-derived public state after Correct (F8)', () => {
+    const store = leftoverRunningCorrectStore()
+
+    const { rerender } = render(
+      <AudienceDisplayShell publicState={store.getPublicState()} />,
+    )
+    expect(store.getPublicState().response?.timer).toEqual({ status: 'idle' })
+    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-kind', 'correct')
+    expect(screen.queryByTestId('nexus-timer')).toBeNull()
+    expect(screen.queryByText(/^Ready$/i)).toBeNull()
+
+    store.dispatch({ type: 'UNDO', issuedAt: LEFTOVER_AT + 4 })
+    rerender(<AudienceDisplayShell publicState={store.getPublicState()} />)
+    expect(screen.queryByTestId('board-outcome')).toBeNull()
+    expect(screen.getByTestId('nexus-timer')).toHaveAttribute('data-status', 'running')
+
+    store.dispatch({
+      type: 'RESOLVE_ACTIVE_RESPONSE',
+      issuedAt: LEFTOVER_AT + 5,
+      roundId: LEFTOVER_ROUND,
+      tileId: LEFTOVER_TILE,
+      resolution: { kind: 'correct' },
+    })
+    store.dispatch({
+      type: 'RESET_RESPONSE_PHASE',
+      issuedAt: LEFTOVER_AT + 6,
+      roundId: LEFTOVER_ROUND,
+    })
+    store.dispatch({
+      type: 'ARM_RESPONSE_PHASE',
+      issuedAt: LEFTOVER_AT + 7,
+      roundId: LEFTOVER_ROUND,
+    })
+    rerender(<AudienceDisplayShell publicState={store.getPublicState()} />)
+    expect(screen.queryByTestId('board-outcome')).toBeNull()
+    expect(screen.getByTestId('nexus-timer')).toHaveAttribute('data-status', 'idle')
+    expect(screen.getByTestId('nexus-timer-status')).toHaveTextContent(/ready/i)
   })
 
   it('uses Score Deck row-major order for eight teams', () => {

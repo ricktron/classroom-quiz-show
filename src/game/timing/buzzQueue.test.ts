@@ -161,13 +161,13 @@ describe('the structural guard', () => {
 })
 
 describe('the resolution vocabulary', () => {
-  it('has exactly two members, and neither one is "correct"', () => {
-    expect(ACTIVE_RESPONSE_RESOLUTION_KINDS).toEqual(['incorrect', 'passed'])
+  it('has three members including opportunity-ending correct', () => {
+    expect(ACTIVE_RESPONSE_RESOLUTION_KINDS).toEqual(['incorrect', 'passed', 'correct'])
     expect(isActiveResponseResolution({ kind: 'incorrect' })).toBe(true)
     expect(isActiveResponseResolution({ kind: 'passed' })).toBe(true)
-    // A correct answer ENDS the opportunity (reveal the answer); it does not
-    // promote anyone, so there is deliberately no member for it.
-    expect(isActiveResponseResolution({ kind: 'correct' })).toBe(false)
+    // S05 Path A: correct ends the opportunity (empty queue + outcome), scores
+    // nothing, and does not promote — distinct from incorrect/passed.
+    expect(isActiveResponseResolution({ kind: 'correct' })).toBe(true)
   })
 
   it('fails closed on anything else', () => {

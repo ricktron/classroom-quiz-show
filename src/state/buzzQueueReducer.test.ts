@@ -86,7 +86,7 @@ const buzz = (teamId: string, at = AT, tileId = TILE, roundId = ROUND): SessionC
 })
 
 const resolve = (
-  kind: 'incorrect' | 'passed',
+  kind: 'incorrect' | 'passed' | 'correct',
   at = AT,
   tileId = TILE,
   roundId = ROUND,
@@ -512,7 +512,328 @@ describe('promotion after an incorrect response or a host pass (OG-3)', () => {
     const scoreEvents = store.getHistory().filter((event) => event.type === 'TEAM_SCORE_ADJUSTED')
     expect(scoreEvents).toHaveLength(0)
   })
+})
 
+describe('opportunity-ending correct adjudication (S05 Path A)', () => {
+  it('ends the opportunity with an empty queue, not exhausted', () => {
+    const store = armedStore()
+    accept(store, buzz('red'))
+    accept(store, buzz('blue'))
+    accept(store, resolve('correct', AT + 1))
+    expect(phaseOf(store).queue).toEqual(EMPTY_BUZZ_QUEUE)
+    expect(buzzQueueStatus(phaseOf(store).queue)).toEqual({ status: 'empty' })
+    expect(phaseOf(store).armed).toBe(false)
+    expect(phaseOf(store).outcome).toEqual({ teamId: 'red', kind: 'correct' })
+  })
+
+  it('scores nothing, reveals nothing, and does not return to the board', () => {
+    const store = armedStore()
+    accept(store, buzz('red'))
+    accept(store, resolve('correct', AT + 1))
+    expect(store.getState().session?.game?.teamScores).toEqual({})
+    const scoreEvents = store.getHistory().filter((event) => event.type === 'TEAM_SCORE_ADJUSTED')
+    expect(scoreEvents).toHaveLength(0)
+    const board = store.getState().session?.game?.categoryBoards[ROUND]
+    expect(board?.progress.stage).toBe('prompt')
+  })
+
+  it('records outcome as the most recent adjudication (replacement, not history)', () => {
+    const store = armedStore()
+    accept(store, buzz('red'))
+    accept(store, buzz('blue'))
+    accept(store, resolve('incorrect', AT + 1))
+    expect(phaseOf(store).outcome).toEqual({ teamId: 'red', kind: 'incorrect' })
+    accept(store, resolve('passed', AT + 2))
+    expect(phaseOf(store).outcome).toEqual({ teamId: 'blue', kind: 'passed' })
+  })
+
+  it('undo restores queue and outcome exactly via replay', () => {
+    const store = armedStore()
+    accept(store, buzz('red'))
+    accept(store, buzz('blue'))
+    accept(store, resolve('correct', AT + 1))
+    expect(phaseOf(store).outcome?.kind).toBe('correct')
+    accept(store, undo)
+    expect(activeRespondent(phaseOf(store).queue)).toBe('red')
+    expect(waitingRespondents(phaseOf(store).queue)).toEqual(['blue'])
+    expect(phaseOf(store).outcome).toBeNull()
+  })
+
+  it('clears outcome with response-opportunity reset', () => {
+    const store = armedStore()
+    accept(store, buzz('red'))
+    accept(store, resolve('correct', AT + 1))
+    expect(phaseOf(store).outcome).not.toBeNull()
+    store.dispatch({ type: 'RESET_RESPONSE_PHASE', issuedAt: AT + 2, roundId: ROUND })
+    expect(phaseOf(store)).toEqual(INITIAL_RESPONSE_PHASE_STATE)
+  })
+
+  it('rejects ARM / timer / buzz / resolve while correct owns the opportunity', () => {
+    const store = armedStore()
+    accept(store, buzz('red'))
+    accept(store, buzz('blue'))
+    accept(store, resolve('correct', AT + 1))
+    expect(phaseOf(store).outcome).toEqual({ teamId: 'red', kind: 'correct' })
+    expect(phaseOf(store).armed).toBe(false)
+
+    // Direct re-arm must fail closed — disarm ≠ structural end.
+    expectRejected(
+      store,
+      { type: 'ARM_RESPONSE_PHASE', issuedAt: AT + 2, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    // Idle-timer reopen after correct (no countdown was started) must also fail.
+    expectRejected(
+      store,
+      { type: 'START_RESPONSE_TIMER', issuedAt: AT + 3, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    expectRejected(store, buzz('green', AT + 4), 'invalid-response-phase')
+    expectRejected(store, resolve('correct', AT + 5), 'invalid-response-phase')
+    // Outcome and empty queue must remain — no public Correct + active coexistence.
+    expect(phaseOf(store).outcome).toEqual({ teamId: 'red', kind: 'correct' })
+    expect(phaseOf(store).queue).toEqual(EMPTY_BUZZ_QUEUE)
+    expect(phaseOf(store).armed).toBe(false)
+  })
+
+  it('allows ARM only after explicit RESET clears the correct outcome', () => {
+    const store = armedStore()
+    accept(store, buzz('red'))
+    accept(store, resolve('correct', AT + 1))
+    expectRejected(
+      store,
+      { type: 'ARM_RESPONSE_PHASE', issuedAt: AT + 2, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    accept(store, { type: 'RESET_RESPONSE_PHASE', issuedAt: AT + 3, roundId: ROUND })
+    expect(phaseOf(store)).toEqual(INITIAL_RESPONSE_PHASE_STATE)
+    accept(store, { type: 'ARM_RESPONSE_PHASE', issuedAt: AT + 4, roundId: ROUND })
+    expect(phaseOf(store).armed).toBe(true)
+    expect(phaseOf(store).outcome).toBeNull()
+  })
+
+  it('rejects START_RESPONSE_TIMER after correct even when a prior countdown left the timer non-idle', () => {
+    const store = armedStore()
+    accept(store, {
+      type: 'START_RESPONSE_TIMER',
+      issuedAt: AT,
+      roundId: ROUND,
+      durationSeconds: 15,
+    })
+    accept(store, buzz('red', AT + 1))
+    // Buzz interrupted the running timer; leftover interrupted state must not
+    // reopen the opportunity after correct (START already fails on non-idle,
+    // and ARM / buzz stay rejected while Correct owns the phase).
+    expect(phaseOf(store).timer.status).toBe('interrupted')
+    accept(store, resolve('correct', AT + 2))
+    expectRejected(
+      store,
+      { type: 'ARM_RESPONSE_PHASE', issuedAt: AT + 3, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    expectRejected(
+      store,
+      { type: 'START_RESPONSE_TIMER', issuedAt: AT + 4, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    expectRejected(store, buzz('blue', AT + 5), 'invalid-response-phase')
+    expect(phaseOf(store).outcome?.kind).toBe('correct')
+    expect(phaseOf(store).armed).toBe(false)
+  })
+
+  /**
+   * F6 residual path: buzz while timer is still idle (no interrupt pair), then
+   * START, then correct — leaves a leftover *running* countdown beside Correct.
+   * Pause / resume / interrupt / expire must fail closed; Correct must not clear
+   * or rewrite that leftover timer.
+   */
+  function leftoverRunningAfterCorrect(): {
+    store: SessionStore
+    timerId: string
+    deadline: number
+    before: ResponsePhaseState
+  } {
+    const store = armedStore()
+    accept(store, buzz('red', AT))
+    accept(store, {
+      type: 'START_RESPONSE_TIMER',
+      issuedAt: AT + 1,
+      roundId: ROUND,
+      durationSeconds: 30,
+    })
+    const running = phaseOf(store).timer
+    expect(running.status).toBe('running')
+    if (running.status !== 'running') throw new Error('expected running timer')
+    accept(store, resolve('correct', AT + 2))
+    const before = phaseOf(store)
+    expect(before.outcome).toEqual({ teamId: 'red', kind: 'correct' })
+    expect(before.timer.status).toBe('running')
+    expect(before.armed).toBe(false)
+    return { store, timerId: running.timerId, deadline: running.deadline, before }
+  }
+
+  it('rejects PAUSE / RESUME / INTERRUPT / EXPIRE while leftover running timer sits beside Correct', () => {
+    const { store, timerId, deadline, before } = leftoverRunningAfterCorrect()
+
+    expectRejected(
+      store,
+      { type: 'PAUSE_RESPONSE_TIMER', issuedAt: AT + 3, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    expectRejected(
+      store,
+      { type: 'RESUME_RESPONSE_TIMER', issuedAt: AT + 4, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    expectRejected(
+      store,
+      {
+        type: 'INTERRUPT_RESPONSE_TIMER',
+        issuedAt: AT + 5,
+        roundId: ROUND,
+        source: HOST_INTERRUPTION,
+      },
+      'invalid-response-phase',
+    )
+    // Matching id/deadline would otherwise expire; Correct-closed prefers
+    // invalid-response-phase over stale-timer-expiration.
+    expectRejected(
+      store,
+      {
+        type: 'EXPIRE_RESPONSE_TIMER',
+        issuedAt: deadline,
+        roundId: ROUND,
+        timerId,
+        deadline,
+      },
+      'invalid-response-phase',
+    )
+
+    // F1 intake gates remain closed; Correct does not clear/reset the leftover.
+    expectRejected(
+      store,
+      { type: 'ARM_RESPONSE_PHASE', issuedAt: AT + 6, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    expectRejected(
+      store,
+      { type: 'START_RESPONSE_TIMER', issuedAt: AT + 7, roundId: ROUND },
+      'invalid-response-phase',
+    )
+    expectRejected(store, buzz('blue', AT + 8), 'invalid-response-phase')
+    expectRejected(store, resolve('correct', AT + 9), 'invalid-response-phase')
+    expect(phaseOf(store)).toEqual(before)
+  })
+
+  it('leaves forged PAUSED / RESUMED / INTERRUPTED / EXPIRED inert beside Correct', () => {
+    const { store, timerId, deadline, before } = leftoverRunningAfterCorrect()
+    const history = store.getHistory()
+    const baseSeq = history[history.length - 1]?.seq ?? 0
+
+    const forgedPaused: SessionEvent = {
+      id: 'evt-f6-paused',
+      type: 'RESPONSE_TIMER_PAUSED',
+      seq: baseSeq + 1,
+      occurredAt: AT + 10,
+      reversible: true,
+      roundId: ROUND,
+      timerId,
+      remainingMs: 12_000,
+    }
+    const forgedResumed: SessionEvent = {
+      id: 'evt-f6-resumed',
+      type: 'RESPONSE_TIMER_RESUMED',
+      seq: baseSeq + 2,
+      occurredAt: AT + 11,
+      reversible: true,
+      roundId: ROUND,
+      timerId,
+      resumedAt: AT + 11,
+      deadline: AT + 11 + 12_000,
+    }
+    const forgedInterrupted: SessionEvent = {
+      id: 'evt-f6-interrupted',
+      type: 'RESPONSE_TIMER_INTERRUPTED',
+      seq: baseSeq + 3,
+      occurredAt: AT + 12,
+      reversible: true,
+      roundId: ROUND,
+      timerId,
+      source: HOST_INTERRUPTION,
+      remainingMs: 10_000,
+    }
+    const forgedExpired: SessionEvent = {
+      id: 'evt-f6-expired',
+      type: 'RESPONSE_TIMER_EXPIRED',
+      seq: baseSeq + 4,
+      occurredAt: deadline,
+      reversible: true,
+      roundId: ROUND,
+      timerId,
+      deadline,
+    }
+
+    for (const forged of [forgedPaused, forgedResumed, forgedInterrupted, forgedExpired]) {
+      const game = replay([...history, forged]).session?.game
+      if (!game) throw new Error('no game')
+      expect(responsePhaseFor(game, ROUND)).toEqual(before)
+    }
+  })
+
+  it('allows correct → RESET → ARM and restores undo of correct with leftover running timer', () => {
+    const { store, before } = leftoverRunningAfterCorrect()
+    accept(store, undo)
+    expect(activeRespondent(phaseOf(store).queue)).toBe('red')
+    expect(phaseOf(store).outcome).toBeNull()
+    expect(phaseOf(store).timer.status).toBe('running')
+    expect(phaseOf(store).armed).toBe(true)
+
+    // Re-close, then explicit RESET is the reopen boundary.
+    accept(store, resolve('correct', AT + 20))
+    expect(phaseOf(store).outcome?.kind).toBe('correct')
+    accept(store, { type: 'RESET_RESPONSE_PHASE', issuedAt: AT + 21, roundId: ROUND })
+    expect(phaseOf(store)).toEqual(INITIAL_RESPONSE_PHASE_STATE)
+    accept(store, { type: 'ARM_RESPONSE_PHASE', issuedAt: AT + 22, roundId: ROUND })
+    expect(phaseOf(store).armed).toBe(true)
+    expect(phaseOf(store).outcome).toBeNull()
+    // Sanity: pre-undo snapshot was correct-closed with leftover running.
+    expect(before.timer.status).toBe('running')
+    expect(before.outcome?.kind).toBe('correct')
+  })
+
+  it('does not make incorrect or pass terminal for timer mutation', () => {
+    const store = armedStore()
+    accept(store, buzz('red', AT))
+    accept(store, buzz('blue', AT + 1))
+    accept(store, {
+      type: 'START_RESPONSE_TIMER',
+      issuedAt: AT + 2,
+      roundId: ROUND,
+      durationSeconds: 20,
+    })
+    accept(store, resolve('incorrect', AT + 3))
+    expect(phaseOf(store).outcome?.kind).toBe('incorrect')
+    expect(phaseOf(store).timer.status).toBe('running')
+    accept(store, { type: 'PAUSE_RESPONSE_TIMER', issuedAt: AT + 4, roundId: ROUND })
+    expect(phaseOf(store).timer.status).toBe('paused')
+    accept(store, { type: 'RESUME_RESPONSE_TIMER', issuedAt: AT + 5, roundId: ROUND })
+    expect(phaseOf(store).timer.status).toBe('running')
+
+    accept(store, resolve('passed', AT + 6))
+    expect(phaseOf(store).outcome?.kind).toBe('passed')
+    expect(phaseOf(store).timer.status).toBe('running')
+    accept(store, {
+      type: 'INTERRUPT_RESPONSE_TIMER',
+      issuedAt: AT + 7,
+      roundId: ROUND,
+      source: HOST_INTERRUPTION,
+    })
+    expect(phaseOf(store).timer.status).toBe('interrupted')
+    expect(phaseOf(store).outcome?.kind).toBe('passed')
+  })
+})
+
+describe('promotion arming and exhaust (OG-3 continued)', () => {
   /**
    * Promotion moves the queue pointer and NOTHING else. It does not re-arm a
    * disarmed clue (which would silently reopen intake the host had closed) and it
@@ -574,7 +895,8 @@ describe('promotion after an incorrect response or a host pass (OG-3)', () => {
       issuedAt: AT + 1,
       roundId: ROUND,
       tileId: TILE,
-      resolution: { kind: 'correct' } as never,
+      // `accepted` is not a board adjudication kind (and must not become one).
+      resolution: { kind: 'accepted' } as never,
     })
     expect(result.status === 'rejected' && result.reason).toBe('malformed-command')
   })
@@ -788,7 +1110,7 @@ describe('a corrupt log degrades safely rather than throwing', () => {
       roundId: ROUND,
       tileId: TILE,
       teamId: 'red',
-      resolution: { kind: 'correct' } as never,
+      resolution: { kind: 'accepted' } as never,
     })
     expect(activeRespondent(phase.queue)).toBe('red')
   })

@@ -28,7 +28,7 @@ describe('Slice 17 isolation invariants', () => {
 
   it('preserves schema, wire, sync, persistence, and summary contract versions', () => {
     expect(SUPPORTED_SCHEMA_VERSION).toBe(1)
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(8)
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(9)
     expect(SYNC_SCHEMA_VERSION).toBe(2)
     expect(PRIVATE_STATE_SCHEMA_VERSION).toBe(1)
     expect(PERSISTENCE_WIRE_VERSION).toBe(1)

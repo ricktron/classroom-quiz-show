@@ -135,9 +135,20 @@ export function selectScoreLayoutMode(teamCount: number): ScoreLayoutMode {
 /**
  * Public timer for Nexus / rail indication: response timer when present,
  * otherwise Final wager-entry / response-entry timer. Never fabricates a timer.
+ *
+ * Correct-closed (resolved + kind correct) suppresses the Nexus companion even
+ * when the response DTO still carries a non-live idle timer (F7 projection).
+ * Idle beside `boardOutcome: none` remains Ready. Incorrect / pass / Final
+ * paths are unchanged.
  */
 export function selectPublicTimer(state: PublicState): PublicResponseTimer | null {
-  if (state.response !== null) return state.response.timer
+  if (state.response !== null) {
+    const { boardOutcome, timer } = state.response
+    if (boardOutcome.status === 'resolved' && boardOutcome.kind === 'correct') {
+      return null
+    }
+    return timer
+  }
   const round = state.round
   if (round?.kind === PUBLIC_FINAL_KIND) {
     if (round.stage === 'wager-entry' || round.stage === 'response-entry') {

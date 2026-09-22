@@ -17,6 +17,7 @@ import {
 } from './limits'
 import {
   INITIAL_RESPONSE_PHASE_STATE,
+  isCorrectClosedOpportunity,
   isInitialResponsePhase,
   isLiveTimer,
   remainingMsAt,
@@ -179,13 +180,25 @@ describe('the response-phase model', () => {
       timer: { status: 'idle' },
       // Slice 8: a fresh phase also has an empty queue.
       queue: { order: [], resolvedCount: 0 },
+      // S05 Path A: no adjudication yet.
+      outcome: null,
     })
     expect(isInitialResponsePhase(INITIAL_RESPONSE_PHASE_STATE)).toBe(true)
     expect(
-      isInitialResponsePhase({ armed: true, timer: { status: 'idle' }, queue: EMPTY_BUZZ_QUEUE }),
+      isInitialResponsePhase({
+        armed: true,
+        timer: { status: 'idle' },
+        queue: EMPTY_BUZZ_QUEUE,
+        outcome: null,
+      }),
     ).toBe(false)
     expect(
-      isInitialResponsePhase({ armed: false, timer: running, queue: EMPTY_BUZZ_QUEUE }),
+      isInitialResponsePhase({
+        armed: false,
+        timer: running,
+        queue: EMPTY_BUZZ_QUEUE,
+        outcome: null,
+      }),
     ).toBe(false)
     // A phase holding a queue is not initial even when disarmed and un-timed.
     expect(
@@ -193,8 +206,38 @@ describe('the response-phase model', () => {
         armed: false,
         timer: { status: 'idle' },
         queue: { order: ['t-red'], resolvedCount: 0 },
+        outcome: null,
       }),
     ).toBe(false)
+    // A phase holding only an adjudication (e.g. after correct) is not initial.
+    expect(
+      isInitialResponsePhase({
+        armed: false,
+        timer: { status: 'idle' },
+        queue: EMPTY_BUZZ_QUEUE,
+        outcome: { teamId: 't-red', kind: 'correct' },
+      }),
+    ).toBe(false)
+  })
+
+  it('treats durable correct outcome as a structurally closed opportunity', () => {
+    expect(
+      isCorrectClosedOpportunity({
+        armed: false,
+        timer: { status: 'idle' },
+        queue: EMPTY_BUZZ_QUEUE,
+        outcome: { teamId: 't-red', kind: 'correct' },
+      }),
+    ).toBe(true)
+    expect(
+      isCorrectClosedOpportunity({
+        armed: false,
+        timer: { status: 'idle' },
+        queue: EMPTY_BUZZ_QUEUE,
+        outcome: { teamId: 't-red', kind: 'incorrect' },
+      }),
+    ).toBe(false)
+    expect(isCorrectClosedOpportunity(INITIAL_RESPONSE_PHASE_STATE)).toBe(false)
   })
 
   it('knows which states are still live', () => {

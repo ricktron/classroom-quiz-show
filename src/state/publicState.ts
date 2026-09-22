@@ -28,10 +28,10 @@ import { isValidSameOriginPath } from '../game/media/limits'
  * added the required `buzz` field INSIDE `response` (5 → 6); Slice 11 changes
  * `PublicCategoryBoardSelection.prompt` from a bare string to
  * `PublicPromptContent` (6 → 7); Slice 14 adds a second member to
- * `PublicRoundState` — the Final Wager DTO (7 → 8). A display expecting an older
+ * `PublicRoundState` — the Final Wager DTO (7 → 8); S05 Path A adds the required
+ * `boardOutcome` field INSIDE `response` (8 → 9). A display expecting an older
  * shape fails closed on the version mismatch — an old wire shape is never
- * reinterpreted, guessed at, or upgraded, and version 7 is never re-read as
- * though it were version 8.
+ * reinterpreted, guessed at, or upgraded.
  *
  * The Slice 11 bump is deliberate: a version-6 display that received an image
  * object in `prompt` would coerce it to `"[object Object]"` or crash, and a
@@ -44,8 +44,13 @@ import { isValidSameOriginPath } from '../game/media/limits'
  * snapshot — a class would watch a stale board through the whole Final round with
  * no indication anything was wrong. Failing closed on the VERSION instead makes
  * the mismatch visible and unambiguous.
+ *
+ * The S05 Path A bump is deliberate for the same class of reason: a version-8
+ * display validates `response` without `boardOutcome`, so a v9 payload would
+ * either drop the judgement or fail the guard inconsistently. Failing closed on
+ * the version mismatch keeps projector safety fail-closed.
  */
-export const PUBLIC_STATE_SCHEMA_VERSION = 8 as const
+export const PUBLIC_STATE_SCHEMA_VERSION = 9 as const
 
 /**
  * Coarse, public-safe lifecycle phase. This is intentionally NOT the private
@@ -538,6 +543,54 @@ export type PublicResponseTimer =
       readonly remainingMs: number
     }
 
+/**
+ * The projector-visible board-response outcome (S05 Path A).
+ *
+ * Category-board only — Final keeps its own settlement DTO. Never derived from
+ * scores, reveals, buzz diffs, or Host audio. Carries positional team key +
+ * adjudication kind only; no event identity, score delta, or animation state.
+ *
+ * `outcomeKey` is deliberately omitted on this foundation tranche: remount
+ * seeds the truthful snapshot without fabricating a transition. If a later
+ * presentation child needs durable public event identity and collides without
+ * it, that is an owner decision — not invented here.
+ */
+export type PublicBoardResponseOutcome =
+  | { readonly status: 'none' }
+  | {
+      readonly status: 'resolved'
+      /** Positional key of the adjudicated team — matches {@link PublicTeam.key}. */
+      readonly teamKey: string
+      readonly kind: 'correct' | 'incorrect' | 'passed'
+    }
+
+const PUBLIC_BOARD_OUTCOME_KINDS: ReadonlySet<string> = new Set([
+  'correct',
+  'incorrect',
+  'passed',
+])
+
+function isPublicBoardResponseOutcome(value: unknown): value is PublicBoardResponseOutcome {
+  if (typeof value !== 'object' || value === null) return false
+  const v = value as Record<string, unknown>
+  switch (v.status) {
+    case 'none':
+      return v.teamKey === undefined && v.kind === undefined && v.outcomeKey === undefined
+    case 'resolved':
+      return (
+        typeof v.teamKey === 'string' &&
+        PUBLIC_TEAM_KEY_PATTERN.test(v.teamKey) &&
+        typeof v.kind === 'string' &&
+        PUBLIC_BOARD_OUTCOME_KINDS.has(v.kind) &&
+        // Foundation omits outcomeKey; reject unknown extras that would leak
+        // private identity onto the wire.
+        v.outcomeKey === undefined
+      )
+    default:
+      return false
+  }
+}
+
 /** The projector-visible response phase: the armed light, the timer and the queue. */
 export interface PublicResponseState {
   /** Whether the clue is armed. Rendered as words, never as colour alone. */
@@ -548,6 +601,11 @@ export interface PublicResponseState {
    * {@link PUBLIC_STATE_SCHEMA_VERSION}.
    */
   readonly buzz: PublicBuzzState
+  /**
+   * Most recent board-response adjudication for the live opportunity (S05 Path A).
+   * Required on schema 9. Impossible during Final (response is null then).
+   */
+  readonly boardOutcome: PublicBoardResponseOutcome
 }
 
 /**
@@ -605,6 +663,7 @@ export function isPublicResponseState(value: unknown): value is PublicResponseSt
   if (typeof v.armed !== 'boolean') return false
   if (!isPublicResponseTimer(v.timer)) return false
   if (!isPublicBuzzState(v.buzz)) return false
+  if (!isPublicBoardResponseOutcome(v.boardOutcome)) return false
   const timer = v.timer as Record<string, unknown>
   // Pairing checks: no field may be present that the status does not define.
   if (timer.status === 'running' && timer.remainingMs !== undefined) return false

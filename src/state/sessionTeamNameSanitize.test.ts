@@ -53,9 +53,9 @@ describe('session team names project through the sanitizer', () => {
   })
 
   it('does not bump the public-state wire version for a value-only name change', () => {
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(8)
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(9)
     const store = teamStore()
     store.dispatch({ type: 'SET_SESSION_TEAM_NAME', issuedAt: AT, teamId: 'blue', name: 'Mantle Movers' })
-    expect(store.getPublicState().schemaVersion).toBe(8)
+    expect(store.getPublicState().schemaVersion).toBe(9)
   })
 })

@@ -81,7 +81,7 @@ function buzz(teamId: string, issuedAt = AT): SessionCommand {
 }
 
 function resolveActive(
-  resolution: 'incorrect' | 'passed',
+  resolution: 'incorrect' | 'passed' | 'correct',
   issuedAt: number,
 ): SessionCommand {
   return {
@@ -234,8 +234,11 @@ export function visualStressActiveClaimMaxWaitingSnapshot(revision = 132): Publi
   )
 }
 
-/** After promotion: second team holds the floor; previous waiting cleared. */
-export function visualStressPromotedActiveClaimSnapshot(revision = 133): PublicState {
+/** Shared Path A / buzz choreography: arm, timer, two buzzes, then resolve. */
+function visualStressTwoBuzzResolveSnapshot(
+  kind: 'incorrect' | 'correct',
+  revision: number,
+): PublicState {
   const store = createStressStore()
   return snapshotAt(
     store,
@@ -246,12 +249,15 @@ export function visualStressPromotedActiveClaimSnapshot(revision = 133): PublicS
     startTimer,
     buzz('stress-t1', AT + 1),
     buzz('stress-t2', AT + 2),
-    resolveActive('incorrect', AT + 3),
+    resolveActive(kind, AT + 3),
   )
 }
 
-/** Exhausted response opportunity after the last queued team is resolved. */
-export function visualStressExhaustedBuzzSnapshot(revision = 134): PublicState {
+/** Shared: arm, timer, single buzz, then resolve (exhausted after pass). */
+function visualStressSingleBuzzResolveSnapshot(
+  kind: 'passed' | 'incorrect' | 'correct',
+  revision: number,
+): PublicState {
   const store = createStressStore()
   return snapshotAt(
     store,
@@ -261,6 +267,38 @@ export function visualStressExhaustedBuzzSnapshot(revision = 134): PublicState {
     armResponse,
     startTimer,
     buzz('stress-t1', AT + 1),
-    resolveActive('passed', AT + 2),
+    resolveActive(kind, AT + 2),
   )
+}
+
+/** After promotion: second team holds the floor; previous waiting cleared. */
+export function visualStressPromotedActiveClaimSnapshot(revision = 133): PublicState {
+  return visualStressTwoBuzzResolveSnapshot('incorrect', revision)
+}
+
+/** Exhausted response opportunity after the last queued team is resolved. */
+export function visualStressExhaustedBuzzSnapshot(revision = 134): PublicState {
+  return visualStressSingleBuzzResolveSnapshot('passed', revision)
+}
+
+/**
+ * S05 Path A — correct adjudication: empty buzz + resolved boardOutcome.
+ * Must not project buzz exhausted ("No one left to answer").
+ */
+export function visualStressBoardCorrectOutcomeSnapshot(revision = 140): PublicState {
+  return visualStressTwoBuzzResolveSnapshot('correct', revision)
+}
+
+/**
+ * S05 Path A — incorrect adjudication with next team still active.
+ * boardOutcome (prior team) coexists with buzz active (next team).
+ * Same command sequence as {@link visualStressPromotedActiveClaimSnapshot}.
+ */
+export function visualStressBoardIncorrectWithActiveSnapshot(revision = 141): PublicState {
+  return visualStressPromotedActiveClaimSnapshot(revision)
+}
+
+/** S05 Path A — passed adjudication after single buzz (exhausted queue + outcome). */
+export function visualStressBoardPassedOutcomeSnapshot(revision = 142): PublicState {
+  return visualStressExhaustedBuzzSnapshot(revision)
 }

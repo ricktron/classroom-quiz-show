@@ -29,7 +29,7 @@ import { exportGameDefinition } from '../export/exportGame'
 
 describe('Slice 15 privacy and version invariants', () => {
   it('keeps public contracts unchanged while Slice 16 advances IndexedDB to version 2', () => {
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(8)
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(9)
     expect(SYNC_SCHEMA_VERSION).toBe(2)
     expect(SUPPORTED_SCHEMA_VERSION).toBe(1)
     expect(PERSISTENCE_WIRE_VERSION).toBe(1)

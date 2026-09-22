@@ -86,7 +86,7 @@ Gameplay code must never know asset filenames.
 | Cue | When |
 | --- | --- |
 | `active-claim` | First accepted `TEAM_BUZZED` that establishes the active respondent; or `ACTIVE_RESPONSE_RESOLVED` with `passed` that promotes a waiting team |
-| `positive-award` | Positive `TEAM_SCORE_ADJUSTED` in `full-credit` or `partial-credit`; Final `FINAL_TEAM_SETTLED` with `outcome === 'correct'` (including zero wager) |
+| `positive-award` | Positive `TEAM_SCORE_ADJUSTED` in `full-credit` or `partial-credit`; Final `FINAL_TEAM_SETTLED` with `outcome === 'correct'` (including zero wager). **Not** board `ACTIVE_RESPONSE_RESOLVED` `correct` (S05 Path A — board correct is silent; no new cue category). |
 | `incorrect` | `ACTIVE_RESPONSE_RESOLVED` with `incorrect` (even if promotion follows — **incorrect only**); Final settle `incorrect` |
 | `timer-expired` | Accepted `RESPONSE_TIMER_EXPIRED`, `FINAL_WAGER_WINDOW_EXPIRED`, or `FINAL_RESPONSE_WINDOW_EXPIRED` |
 | `game-complete` | Newly accepted live `GAME_SESSION_ENDED` transitioning active → ended; one cue per atomic suffix |

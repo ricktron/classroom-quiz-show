@@ -7,6 +7,12 @@ import { importGameFromUnknown } from '../import/importGame'
 import { boardGameFile, richBoardConfig } from '../test/categoryBoardFixtures'
 import { createManualClock } from '../time/clock'
 import { DEFAULT_RESPONSE_SECONDS } from '../game/timing/limits'
+import { responsePhaseFor } from '../state/reducer'
+import {
+  dispatchLeftoverRunningResolve,
+  leftoverTeamBoardStore,
+  LEFTOVER_TILE,
+} from '../test/leftoverRunningBoardFixtures'
 
 /**
  * Host response-timer controls — component behaviour (Slice 7).
@@ -381,5 +387,76 @@ describe('accessibility and scope', () => {
       <ResponseTimerHostPanel dispatch={() => store.dispatch({ type: 'UNDO', issuedAt: AT })} game={game} />,
     )
     expect(container).toBeEmptyDOMElement()
+  })
+})
+
+function teamBoardStore(): SessionStore {
+  return leftoverTeamBoardStore()
+}
+
+const TILE = LEFTOVER_TILE
+
+describe('correct-closed Host timer presentation (F7)', () => {
+  it('disables Arm/Start/Pause/Stop and enables Reset while Correct owns leftover running', () => {
+    const store = teamBoardStore()
+    dispatchLeftoverRunningResolve(store, 'correct', AT)
+    expect(responsePhaseFor(store.getState().session!.game!, ROUND).timer.status).toBe('running')
+    renderPanel(store)
+
+    expect(screen.getByTestId('rth-status')).toHaveTextContent('Closed — not a live response timer')
+    expect(screen.getByTestId('rth-status')).not.toHaveTextContent('Running')
+    expect(screen.getByTestId('rth-remaining')).toHaveTextContent('—')
+    expect(button(/^arm clue$/i)).toBeDisabled()
+    expect(button(/start timer/i)).toBeDisabled()
+    expect(button(/^pause$/i)).toBeDisabled()
+    expect(button(/^resume$/i)).toBeDisabled()
+    expect(button(/stop timer/i)).toBeDisabled()
+    expect(button(/reset window/i)).toBeEnabled()
+    expect(screen.getByTestId('rth-duration')).toBeDisabled()
+  })
+
+  it('enables Reset after idle-timer Correct (outcome alone makes phase non-initial)', () => {
+    const store = teamBoardStore()
+    openClue(store)
+    store.dispatch({ type: 'ARM_RESPONSE_PHASE', issuedAt: AT, roundId: ROUND })
+    store.dispatch({
+      type: 'RECORD_TEAM_BUZZ',
+      issuedAt: AT + 1,
+      roundId: ROUND,
+      tileId: TILE,
+      teamId: 'red',
+    })
+    store.dispatch({
+      type: 'RESOLVE_ACTIVE_RESPONSE',
+      issuedAt: AT + 2,
+      roundId: ROUND,
+      tileId: TILE,
+      resolution: { kind: 'correct' },
+    })
+    expect(responsePhaseFor(store.getState().session!.game!, ROUND).timer.status).toBe('idle')
+    renderPanel(store)
+    expect(button(/reset window/i)).toBeEnabled()
+    expect(button(/^arm clue$/i)).toBeDisabled()
+    expect(button(/start timer/i)).toBeDisabled()
+  })
+
+  it('restores normal controls after Correct → Reset', () => {
+    const store = teamBoardStore()
+    dispatchLeftoverRunningResolve(store, 'correct', AT)
+    renderPanel(store)
+    fireEvent.click(button(/reset window/i))
+    expect(button(/^arm clue$/i)).toBeEnabled()
+    expect(button(/start timer/i)).toBeEnabled()
+    expect(button(/reset window/i)).toBeDisabled()
+    expect(screen.getByTestId('rth-status')).toHaveTextContent('No timer running')
+  })
+
+  it('does not disable live timer controls after incorrect with leftover running', () => {
+    const store = teamBoardStore()
+    dispatchLeftoverRunningResolve(store, 'incorrect', AT)
+    renderPanel(store)
+    expect(screen.getByTestId('rth-status')).toHaveTextContent('Running')
+    expect(button(/^pause$/i)).toBeEnabled()
+    expect(button(/stop timer/i)).toBeEnabled()
   })
 })

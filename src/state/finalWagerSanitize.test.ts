@@ -50,7 +50,7 @@ function serialized(store: SessionStore): string {
 
 describe('the wire protocol', () => {
   it('is at public-state version 8 and envelope version 2', () => {
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(8)
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(9)
     expect(SYNC_SCHEMA_VERSION).toBe(2)
   })
 

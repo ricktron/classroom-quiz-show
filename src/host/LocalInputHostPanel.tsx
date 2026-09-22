@@ -225,6 +225,37 @@ export function LocalInputHostPanel({
 
   const send = (command: SessionCommand) => dispatch(command)
   const canResolve = open && tileId !== null && activeTeamId !== null
+  const resolveActive = (kind: 'correct' | 'incorrect' | 'passed') => {
+    if (tileId === null) return
+    send({
+      type: 'RESOLVE_ACTIVE_RESPONSE',
+      issuedAt: clock.now(),
+      roundId: round.id,
+      tileId,
+      resolution: { kind },
+    })
+  }
+
+  let activeTeamCopy: string
+  if (activeTeamId !== null) {
+    activeTeamCopy = nameOf(activeTeamId)
+  } else if (status.status === 'exhausted') {
+    activeTeamCopy = 'Nobody — every team that buzzed has had a turn'
+  } else if (phase?.outcome?.kind === 'correct') {
+    activeTeamCopy = `Closed — ${nameOf(phase.outcome.teamId)} marked correct`
+  } else {
+    activeTeamCopy = 'Nobody has buzzed yet'
+  }
+
+  let boardOutcomeCopy = 'None yet'
+  if (phase?.outcome != null) {
+    const KIND_LABEL = {
+      correct: 'Correct',
+      incorrect: 'Incorrect',
+      passed: 'Passed',
+    } as const
+    boardOutcomeCopy = `${nameOf(phase.outcome.teamId)} — ${KIND_LABEL[phase.outcome.kind]}`
+  }
 
   return (
     <section className="lih" aria-labelledby="lih-title">
@@ -352,19 +383,15 @@ export function LocalInputHostPanel({
       <div aria-live="polite">
         <dl className="lih__summary">
           <dt>Active team</dt>
-          <dd data-testid="lih-active">
-            {activeTeamId === null
-              ? status.status === 'exhausted'
-                ? 'Nobody — every team that buzzed has had a turn'
-                : 'Nobody has buzzed yet'
-              : nameOf(activeTeamId)}
-          </dd>
+          <dd data-testid="lih-active">{activeTeamCopy}</dd>
           <dt>Waiting queue</dt>
           <dd data-testid="lih-waiting">
             {waitingIds.length === 0
               ? 'Empty'
               : waitingIds.map((id, index) => `${index + 1}. ${nameOf(id)}`).join(' · ')}
           </dd>
+          <dt>Last board adjudication</dt>
+          <dd data-testid="lih-board-outcome">{boardOutcomeCopy}</dd>
         </dl>
       </div>
 
@@ -372,18 +399,18 @@ export function LocalInputHostPanel({
         <button
           type="button"
           className="btn"
+          data-testid="lih-correct"
+          disabled={!canResolve}
+          onClick={() => resolveActive('correct')}
+        >
+          Mark correct
+        </button>
+        <button
+          type="button"
+          className="btn"
           data-testid="lih-incorrect"
           disabled={!canResolve}
-          onClick={() =>
-            tileId !== null &&
-            send({
-              type: 'RESOLVE_ACTIVE_RESPONSE',
-              issuedAt: clock.now(),
-              roundId: round.id,
-              tileId,
-              resolution: { kind: 'incorrect' },
-            })
-          }
+          onClick={() => resolveActive('incorrect')}
         >
           Mark incorrect and advance
         </button>
@@ -392,16 +419,7 @@ export function LocalInputHostPanel({
           className="btn btn--secondary"
           data-testid="lih-pass"
           disabled={!canResolve}
-          onClick={() =>
-            tileId !== null &&
-            send({
-              type: 'RESOLVE_ACTIVE_RESPONSE',
-              issuedAt: clock.now(),
-              roundId: round.id,
-              tileId,
-              resolution: { kind: 'passed' },
-            })
-          }
+          onClick={() => resolveActive('passed')}
         >
           Pass and advance
         </button>
@@ -412,8 +430,9 @@ export function LocalInputHostPanel({
       </p>
 
       <p className="host__note lih__hint">
-        Marking a response incorrect moves no points and passing moves no points —
-        awarding and deducting stay in the scoring panel, for every team. Close the
+        Marking a response correct, incorrect, or passed moves no points —
+        awarding and deducting stay in the scoring panel, for every team. Correct
+        ends this response opportunity without revealing the answer. Close the
         queue by resetting the window, returning to the board, or revealing the
         answer.
       </p>

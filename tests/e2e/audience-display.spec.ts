@@ -19,7 +19,7 @@ function team(key: string, name: string, accent: string, score: number) {
 
 function baseSnapshot(overrides: PublicSnapshot = {}): PublicSnapshot {
   return {
-    schemaVersion: 8,
+    schemaVersion: 9,
     revision: 1,
     phase: 'ready',
     headline: 'Session ready',
@@ -253,7 +253,7 @@ test.describe('audience display scenes and privacy', () => {
         response: {
           armed: true,
           timer: { status: 'running', durationMs: 20_000, deadline: Date.now() + 20_000 },
-          buzz: { status: 'active', activeTeamKey: 't0', waitingCount: 1 },
+          buzz: { status: 'active', activeTeamKey: 't0', waitingCount: 1 }, boardOutcome: { status: 'none' },
         },
       }),
     )

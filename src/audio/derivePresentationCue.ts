@@ -80,6 +80,12 @@ function deriveFromActiveResponseResolved(
     return waitingCount > 0 ? 'active-claim' : null
   }
 
+  // Board `correct` is deliberately silent (ADR-020): positive-award stays
+  // score/Final driven. No new sound category for board correctness.
+  if (event.resolution.kind === 'correct') {
+    return null
+  }
+
   return null
 }
 

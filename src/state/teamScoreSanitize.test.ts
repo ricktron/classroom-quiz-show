@@ -454,7 +454,7 @@ describe('isPublicTeamsState — the wire guard', () => {
 
 describe('wire version', () => {
   it('is 8 — Slice 6→4 teams, 7→5 response, 8→6 buzz, 11→7 media, 14→8 final', () => {
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(8)
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(9)
   })
 
   it('rejects the Slice 5 wire shape (version 3) instead of reinterpreting it', () => {

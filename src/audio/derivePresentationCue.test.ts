@@ -80,7 +80,7 @@ const buzz = (teamId: string, at = AT): SessionCommand => ({
   teamId,
 })
 
-const resolve = (kind: 'incorrect' | 'passed', at = AT): SessionCommand => ({
+const resolve = (kind: 'incorrect' | 'passed' | 'correct', at = AT): SessionCommand => ({
   type: 'RESOLVE_ACTIVE_RESPONSE',
   issuedAt: at,
   roundId: ROUND,
@@ -221,6 +221,12 @@ describe('derivePresentationCue — ordinary response', () => {
     const store = armedStore()
     store.dispatch(buzz('red'))
     expect(cueForNext(store, resolve('incorrect', AT + 1))).toBe('incorrect')
+  })
+
+  it('board correct → silent (positive-award stays score/Final driven)', () => {
+    const store = armedStore()
+    store.dispatch(buzz('red'))
+    expect(cueForNext(store, resolve('correct', AT + 1))).toBeNull()
   })
 
   it('passed without promotion → none', () => {

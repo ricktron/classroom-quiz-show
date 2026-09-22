@@ -426,6 +426,28 @@ describe('running the queue', () => {
     arm(store)
     renderPanel(store)
     expect(screen.getByTestId('lih-active')).toHaveTextContent('Nobody has buzzed yet')
+    expect(screen.getByTestId('lih-board-outcome')).toHaveTextContent('None yet')
+  })
+
+  it('shows durable correct adjudication instead of false empty-queue copy', () => {
+    const { store } = queuedPanel()
+    fireEvent.click(screen.getByRole('button', { name: /mark correct/i }))
+    expect(screen.getByTestId('lih-active')).toHaveTextContent(
+      'Closed — Red Team marked correct',
+    )
+    expect(screen.getByTestId('lih-active')).not.toHaveTextContent('Nobody has buzzed yet')
+    expect(screen.getByTestId('lih-board-outcome')).toHaveTextContent('Red Team — Correct')
+    expect(queueOf(store).order).toEqual([])
+  })
+
+  it('keeps durable incorrect and passed adjudication visible after promotion / exhaust', () => {
+    const { store } = queuedPanel()
+    fireEvent.click(screen.getByRole('button', { name: /mark incorrect and advance/i }))
+    expect(screen.getByTestId('lih-active')).toHaveTextContent('Blue Team')
+    expect(screen.getByTestId('lih-board-outcome')).toHaveTextContent('Red Team — Incorrect')
+    fireEvent.click(screen.getByRole('button', { name: /pass and advance/i }))
+    expect(screen.getByTestId('lih-board-outcome')).toHaveTextContent('Blue Team — Passed')
+    expect(activeRespondent(queueOf(store))).toBe('green')
   })
 
   it('disables both queue actions when there is nobody to advance', () => {

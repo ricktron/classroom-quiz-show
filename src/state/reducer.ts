@@ -33,6 +33,7 @@ import {
 import {
   INITIAL_RESPONSE_PHASE_STATE,
   TEAM_BUZZ_INTERRUPTION,
+  isCorrectClosedOpportunity,
   isInitialResponsePhase,
   isResponseInterruptionSource,
   type ResponsePhaseState,
@@ -41,6 +42,7 @@ import {
 import {
   activeRespondent,
   appendBuzz,
+  EMPTY_BUZZ_QUEUE,
   hasTeamBuzzed,
   isActiveResponseResolution,
   promoteNext,
@@ -543,10 +545,13 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
     }
 
     case 'RESPONSE_PHASE_ARMED':
-      return withResponsePhase(state, event.type, event.roundId, (phase) =>
+      return withResponsePhase(state, event.type, event.roundId, (phase) => {
         // Fail safe on a log that arms an already-armed clue: not applicable.
-        phase.armed ? null : { ...phase, armed: true },
-      )
+        // Also fail closed while a durable correct outcome still owns the
+        // opportunity — disarm ≠ structural end; re-arm must not reopen.
+        if (phase.armed || isCorrectClosedOpportunity(phase)) return null
+        return { ...phase, armed: true }
+      })
 
     case 'RESPONSE_PHASE_DISARMED':
       return withResponsePhase(state, event.type, event.roundId, (phase) =>
@@ -556,6 +561,9 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
     case 'RESPONSE_TIMER_STARTED':
       return withResponsePhase(state, event.type, event.roundId, (phase) => {
         if (phase.timer.status !== 'idle') return null
+        // A leftover interrupted/expired/idle clock must not reopen intake after
+        // opportunity-ending correct.
+        if (isCorrectClosedOpportunity(phase)) return null
         const timer: ResponseTimerState = {
           status: 'running',
           timerId: event.timerId,
@@ -568,6 +576,9 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
 
     case 'RESPONSE_TIMER_PAUSED':
       return withResponsePhase(state, event.type, event.roundId, (phase) => {
+        // Opportunity-ending correct owns the phase: a forged PAUSED beside
+        // Correct must leave state unchanged (no throw, no cleared outcome).
+        if (isCorrectClosedOpportunity(phase)) return null
         const current = phase.timer
         // Identity is re-checked on APPLICATION as well as on planning, so a
         // stored log that pauses a timer other than the live one degrades to "not
@@ -584,6 +595,7 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
 
     case 'RESPONSE_TIMER_RESUMED':
       return withResponsePhase(state, event.type, event.roundId, (phase) => {
+        if (isCorrectClosedOpportunity(phase)) return null
         const current = phase.timer
         if (current.status !== 'paused' || current.timerId !== event.timerId) return null
         const timer: ResponseTimerState = {
@@ -598,6 +610,7 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
 
     case 'RESPONSE_TIMER_INTERRUPTED':
       return withResponsePhase(state, event.type, event.roundId, (phase) => {
+        if (isCorrectClosedOpportunity(phase)) return null
         const current = phase.timer
         if (current.status !== 'running' && current.status !== 'paused') return null
         if (current.timerId !== event.timerId) return null
@@ -617,6 +630,9 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
 
     case 'RESPONSE_TIMER_EXPIRED':
       return withResponsePhase(state, event.type, event.roundId, (phase) => {
+        // Correct-closed: even a three-way-matching EXPIRED must not mutate the
+        // leftover running countdown beside durable Correct.
+        if (isCorrectClosedOpportunity(phase)) return null
         const current = phase.timer
         // The three-way match — running, same timer, same deadline — is what makes
         // "exactly one effective expiry per countdown" structural rather than a
@@ -635,7 +651,7 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
         // accepted either — disarming IS the intake gate. It moves no points.
         // The queue is KEPT: who buzzed before the clock ran out is still a fact,
         // and the host may still resolve the active team's turn.
-        return { armed: false, timer, queue: phase.queue }
+        return { armed: false, timer, queue: phase.queue, outcome: phase.outcome }
       })
 
     case 'RESPONSE_PHASE_RESET':
@@ -647,8 +663,10 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
       return withResponsePhase(state, event.type, event.roundId, (phase) => {
         // Arming is re-checked on APPLICATION as well as on planning, so a stored
         // log that buzzes a disarmed clue degrades to "not applicable" rather
-        // than fabricating a respondent nobody let in.
-        if (!phase.armed) return null
+        // than fabricating a respondent nobody let in. Correct-closed is the
+        // structural end of the opportunity — even a corrupt armed+correct log
+        // must not accept another buzz.
+        if (!phase.armed || isCorrectClosedOpportunity(phase)) return null
         const queue = appendBuzz(phase.queue, event.teamId)
         // `null` means the team is already in the queue: the duplicate rule is
         // structural in `appendBuzz`, so it holds on replay of any log at all.
@@ -663,12 +681,26 @@ export function reduce(state: PrivateState, event: SessionEvent): PrivateState {
         // and advancing the pointer anyway would promote the wrong team.
         if (activeRespondent(phase.queue) !== event.teamId) return null
         if (!isActiveResponseResolution(event.resolution)) return null
+        const outcome = { teamId: event.teamId, kind: event.resolution.kind }
+        if (event.resolution.kind === 'correct') {
+          // Opportunity-ending adjudication: empty the queue (not exhausted —
+          // exhausted would falsely project "No one left to answer"), disarm so
+          // no further buzz is accepted, leave the timer untouched, and record
+          // the outcome. Scores nothing; reveals nothing; does not return to the
+          // board.
+          return {
+            ...phase,
+            armed: false,
+            queue: EMPTY_BUZZ_QUEUE,
+            outcome,
+          }
+        }
         const queue = promoteNext(phase.queue)
         if (queue === null) return null
         // Promotion moves the pointer and NOTHING else: arming is untouched (so a
         // still-armed clue keeps taking buzzes), the timer is untouched, and no
-        // score moves.
-        return { ...phase, queue }
+        // score moves. Outcome is replaced with the most recent adjudication.
+        return { ...phase, queue, outcome }
       })
 
     // Undo markers change nothing directly; `replay` neutralizes their targets.
@@ -1587,6 +1619,12 @@ export function planCommand(
       // Arming an armed clue is not a fact worth recording, and recording it would
       // make "undo" ambiguous between two identical states.
       if (context.phase.armed) return { status: 'rejected', reason: 'invalid-response-phase' }
+      // Opportunity-ending correct owns the phase until an explicit clear
+      // (RESET / tile / reveal / round). Silent re-arm would reopen intake while
+      // Display still shows Correct — disarm ≠ structural end.
+      if (isCorrectClosedOpportunity(context.phase)) {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
       return {
         status: 'accepted',
         events: [
@@ -1629,6 +1667,10 @@ export function planCommand(
       if (context.phase.timer.status !== 'idle') {
         return { status: 'rejected', reason: 'invalid-response-phase' }
       }
+      // Stale leftover timer state beside Correct must not reopen the opportunity.
+      if (isCorrectClosedOpportunity(context.phase)) {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
       if (!isInstant(at)) return { status: 'rejected', reason: 'malformed-command' }
       // The authored default is the fallback; an explicit host choice is validated
       // against exactly the same bounds, so the UI can never widen the window.
@@ -1664,6 +1706,11 @@ export function planCommand(
     case 'PAUSE_RESPONSE_TIMER': {
       const context = resolveResponsePhase(state, command.roundId)
       if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      // After opportunity-ending correct, leftover running countdown must not keep
+      // accepting pause — Correct owns the phase until explicit clear.
+      if (isCorrectClosedOpportunity(context.phase)) {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
       const timer = context.phase.timer
       if (timer.status !== 'running') {
         return { status: 'rejected', reason: 'invalid-response-phase' }
@@ -1692,6 +1739,9 @@ export function planCommand(
     case 'RESUME_RESPONSE_TIMER': {
       const context = resolveResponsePhase(state, command.roundId)
       if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      if (isCorrectClosedOpportunity(context.phase)) {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
       const timer = context.phase.timer
       if (timer.status !== 'paused') {
         return { status: 'rejected', reason: 'invalid-response-phase' }
@@ -1721,6 +1771,9 @@ export function planCommand(
     case 'INTERRUPT_RESPONSE_TIMER': {
       const context = resolveResponsePhase(state, command.roundId)
       if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      if (isCorrectClosedOpportunity(context.phase)) {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
       const timer = context.phase.timer
       if (timer.status !== 'running' && timer.status !== 'paused') {
         return { status: 'rejected', reason: 'invalid-response-phase' }
@@ -1757,6 +1810,11 @@ export function planCommand(
     case 'EXPIRE_RESPONSE_TIMER': {
       const context = resolveResponsePhase(state, command.roundId)
       if ('reason' in context) return { status: 'rejected', reason: context.reason }
+      // Prefer invalid-response-phase while Correct owns the opportunity so the
+      // rejection names structural closure, not merely a stale callback.
+      if (isCorrectClosedOpportunity(context.phase)) {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
+      }
       const timer = context.phase.timer
       // Everything below is what makes a stale timeout callback harmless. A
       // callback left over from a timer that was reset, restarted, paused, undone,
@@ -1823,6 +1881,11 @@ export function planCommand(
       // not count is inert rather than partially applied.
       if (!namesLiveOpportunity(command.tileId, context.tileId)) {
         return { status: 'rejected', reason: 'tile-mismatch' }
+      }
+      // Opportunity-ending correct closes intake structurally — ahead of the
+      // ordinary arming gate, so a corrupt armed+correct state still rejects.
+      if (isCorrectClosedOpportunity(context.phase)) {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
       }
       // Arming is the intake gate (OG-1 + OG-2): while the clue is armed the
       // queue keeps taking new teams, and disarming stops acceptance immediately.
@@ -1899,6 +1962,13 @@ export function planCommand(
       }
       if (!isActiveResponseResolution(command.resolution)) {
         return { status: 'rejected', reason: 'malformed-command' }
+      }
+      // After opportunity-ending correct the queue is empty, so resolve already
+      // fails via no-active-respondent. Keep the correct-closed gate explicit so
+      // a second resolve cannot reopen adjudication while Correct still owns the
+      // phase.
+      if (isCorrectClosedOpportunity(context.phase)) {
+        return { status: 'rejected', reason: 'invalid-response-phase' }
       }
       // Nothing to promote from: an empty queue and an exhausted one both land
       // here, and both are honest "there is no active respondent" rejections

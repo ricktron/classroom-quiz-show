@@ -14,6 +14,7 @@
  */
 
 import { BuzzQueueDisplay } from '../BuzzQueueDisplay'
+import { BoardOutcomeDisplay } from '../BoardOutcomeDisplay'
 import { ResponseTimerDisplay } from '../ResponseTimerDisplay'
 import { FinalCountdown } from '../FinalWagerDisplay'
 import type {
@@ -112,6 +113,12 @@ export function SignalRail({
 
   if (response && (mode === 'compact' || mode === 'expanded')) {
     const buzzNone = response.buzz.status === 'none'
+    // Opportunity-ending correct closes intake: do not imply the window is still
+    // open for buzzes. Incorrect+promote / pass+exhaust keep their buzz status
+    // compositions (active / exhausted) and are not gated here.
+    const correctClosed =
+      response.boardOutcome.status === 'resolved' && response.boardOutcome.kind === 'correct'
+    const showIntakeReady = buzzNone && !correctClosed
     return (
       <aside
         className={`signal-rail signal-rail--${mode}`}
@@ -119,12 +126,20 @@ export function SignalRail({
         data-mode={mode}
         aria-label={mode === 'expanded' ? 'Response status' : 'Display status'}
       >
-        <ResponseTimerDisplay
-          response={response}
-          hostClockOffsetMs={hostClockOffsetMs}
-          clock={clock}
-        />
-        {buzzNone ? (
+        {/*
+          Correct-closed is not a live response window: suppress the entire
+          response-timer panel (no Time remaining / role=timer / Ready). Final
+          mode uses FinalCountdown above and is unaffected. Incorrect / pass
+          still mount ResponseTimerDisplay normally.
+        */}
+        {!correctClosed ? (
+          <ResponseTimerDisplay
+            response={response}
+            hostClockOffsetMs={hostClockOffsetMs}
+            clock={clock}
+          />
+        ) : null}
+        {showIntakeReady ? (
           <p
             className={`signal-rail__status${response.armed ? ' signal-rail__status--armed' : ''}`}
             data-testid="signal-rail-status"
@@ -143,6 +158,7 @@ export function SignalRail({
           observed identity transition rather than a remount catch-up seed.
         */}
         <BuzzQueueDisplay buzz={response.buzz} teams={teams} />
+        <BoardOutcomeDisplay boardOutcome={response.boardOutcome} teams={teams} />
       </aside>
     )
   }

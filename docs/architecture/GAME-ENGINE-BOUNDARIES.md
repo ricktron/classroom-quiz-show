@@ -467,7 +467,14 @@ alternates and notes remain strings. Unsupported kinds, unsafe sources,
 malformed trusted content and unknown public media fail closed.
 `MediaContentDisplay` renders only the allow-listed public DTO, including alt
 text, optional caption/attribution and an explicit load-failure fallback.
-`PUBLIC_STATE_SCHEMA_VERSION` is **7**; the sync envelope remains version **2**.
+At Slice 11 completion, `PUBLIC_STATE_SCHEMA_VERSION` was **7** (media-era
+public DTO pin); the sync envelope remained version **2**. That **7** figure is
+historical Slice 11 status — it is **not** the current PublicState schema.
+**Current** `PUBLIC_STATE_SCHEMA_VERSION` is **9** (S05 Path A nested
+`response.boardOutcome` allow-list; see
+[`../CQS-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY.md`](../CQS-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY.md)
+and ADR-008 Path A amendment). Schema **8** carried buzz choreography-era
+response facts without board outcome. Older schema consumers fail closed.
 Audio, video, remote media and timer/media coupling remain deferred.
 
 ## 10. Game-pack format (future)
