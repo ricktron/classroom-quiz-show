@@ -47,7 +47,11 @@
   `CQS-REAL-MVP-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY` is **TERMINALLY
   COMPLETE** after PR #91 squash/main
   `42bbdfff5bd09386958f40dbb6475d69c8b0ab2d` (accepted head
-  `fc87c49d4bf46b4901e77628b497b98b0ea67d4e`). S05 parent
+  `fc87c49d4bf46b4901e77628b497b98b0ea67d4e`).
+  `CQS-REAL-MVP-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY` is **TERMINALLY
+  COMPLETE** after PR #93 squash/main
+  `80b287664bccb16c2516802bc64080a82e08faeb` (accepted head
+  `fce42ee66ba9047c8ede1beb602cf2479cc677af`). S05 parent
   `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
   remains **OPEN / NOT TERMINAL**. S04D, additional S05 work, and S06 are
   **not authorized**. Next Program action is an owner decision /
@@ -245,7 +249,7 @@ This table is not an implementation backlog with slice-level authority.
 | teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal; S04B Class Setup extends it on `main` |
 | controller `F-UX-01` | **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** — ordinary Sony Class Setup copy no longer requires WebHID / report-ID / profile jargon; evidence bound to H5/H6 identities |
 | feedback/support path | **OPEN** — S04D product direction registered; implementation not begun |
-| flagship visual fidelity | **PARTIAL / F1 + buzz TERMINALLY COMPLETE** — S05-F1 static Board + Clue Display readability and S05 buzz / active-claim choreography are **TERMINALLY COMPLETE** on main; remaining S05 choreography / Host polish / presentation work open and **NOT AUTHORIZED** |
+| flagship visual fidelity | **PARTIAL / F1 + buzz + board-outcome Path A TERMINALLY COMPLETE** — S05-F1, S05 buzz / active-claim, and S05 board-outcome public authority (Path A foundation) are **TERMINALLY COMPLETE** on main; theatrical outcome / score / board / Final / Host polish remain open and **NOT AUTHORIZED** |
 | packaged offline/recovery equivalence | **FOUNDATION IMPLEMENTED** (Electron shell + IndexedDB identity). Library backup/restore is **IMPLEMENTED ON MAIN** (S04C-H3); packaged restore smoke **NOT RUN** |
 | packaged macOS qualification | **PARTIAL** (H5 selection/hardware PASS transferred; H6 readiness PASS on Namtai `054c:1000` + four handsets for terminal S04B; Windows physical **NOT RUN**; clean-room / signed release still open) |
 | packaged Windows qualification | **OPEN** (CI installer path; physical Windows runtime **NOT RUN**) |
@@ -521,6 +525,14 @@ COMPLETE** after PR #91 squash/main
 `9a0b8527d670dfdf6aaec58fbb70f3577fab443b`; post-merge CI / Playwright /
 Desktop / Pages / Sonar SUCCESS). Evidence:
 [`../CQS-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY.md`](../CQS-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY.md).
+`CQS-REAL-MVP-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY` is **TERMINALLY
+COMPLETE** after PR #93 squash/main
+`80b287664bccb16c2516802bc64080a82e08faeb` (accepted head
+`fce42ee66ba9047c8ede1beb602cf2479cc677af`; sole parent
+`ba032bb1326027d5ca0bc0c84c2248b511c8b15d`; trees **EXACT MATCH**
+`051793253785f4e7dc9f7bd01966ced847462176`; post-merge CI / Playwright /
+Desktop / Pages / Sonar SUCCESS). Evidence:
+[`../CQS-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY.md`](../CQS-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY.md).
 S05 parent remains **OPEN / NOT TERMINAL**. **S04D / additional S05 / S06
 are NOT AUTHORIZED.** Next Program action is an **owner decision /
 read-only remaining-S05 reconciliation** (routing ≠ authority). REAL MVP
@@ -540,12 +552,16 @@ CQS-REAL-MVP-S04C-DISPLAY-PLACEMENT-AND-WAKE-REPUBLISH-RECOVERY: TERMINALLY COMP
 S04C: TERMINALLY COMPLETE
 S05-F1: TERMINALLY COMPLETE
 S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY: TERMINALLY COMPLETE
+S05-BOARD-OUTCOME-PUBLIC-AUTHORITY: TERMINALLY COMPLETE
 S05 parent: OPEN / NOT TERMINAL
 S04D / additional S05 / S06: NOT AUTHORIZED
 ```
 
-S05 buzz / active-claim terminal evidence (candidate docs; does not
-predict this terminalization PR’s eventual squash SHA):
+S05 board-outcome public authority terminal evidence (candidate docs; does
+not predict this terminalization PR’s eventual squash SHA):
+[`../receipts/2026-09-22-cqs-real-mvp-s05-board-outcome-public-authority-terminal-post-merge-reconciliation.md`](../receipts/2026-09-22-cqs-real-mvp-s05-board-outcome-public-authority-terminal-post-merge-reconciliation.md).
+
+S05 buzz / active-claim terminal evidence:
 [`../receipts/2026-09-21-cqs-real-mvp-s05-buzz-active-claim-terminal-post-merge-reconciliation.md`](../receipts/2026-09-21-cqs-real-mvp-s05-buzz-active-claim-terminal-post-merge-reconciliation.md).
 
 S05-F1 terminal evidence:
