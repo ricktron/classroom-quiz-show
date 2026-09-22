@@ -225,6 +225,16 @@ export function LocalInputHostPanel({
 
   const send = (command: SessionCommand) => dispatch(command)
   const canResolve = open && tileId !== null && activeTeamId !== null
+  const resolveActive = (kind: 'correct' | 'incorrect' | 'passed') => {
+    if (tileId === null) return
+    send({
+      type: 'RESOLVE_ACTIVE_RESPONSE',
+      issuedAt: clock.now(),
+      roundId: round.id,
+      tileId,
+      resolution: { kind },
+    })
+  }
 
   let activeTeamCopy: string
   if (activeTeamId !== null) {
@@ -391,16 +401,7 @@ export function LocalInputHostPanel({
           className="btn"
           data-testid="lih-correct"
           disabled={!canResolve}
-          onClick={() =>
-            tileId !== null &&
-            send({
-              type: 'RESOLVE_ACTIVE_RESPONSE',
-              issuedAt: clock.now(),
-              roundId: round.id,
-              tileId,
-              resolution: { kind: 'correct' },
-            })
-          }
+          onClick={() => resolveActive('correct')}
         >
           Mark correct
         </button>
@@ -409,16 +410,7 @@ export function LocalInputHostPanel({
           className="btn"
           data-testid="lih-incorrect"
           disabled={!canResolve}
-          onClick={() =>
-            tileId !== null &&
-            send({
-              type: 'RESOLVE_ACTIVE_RESPONSE',
-              issuedAt: clock.now(),
-              roundId: round.id,
-              tileId,
-              resolution: { kind: 'incorrect' },
-            })
-          }
+          onClick={() => resolveActive('incorrect')}
         >
           Mark incorrect and advance
         </button>
@@ -427,16 +419,7 @@ export function LocalInputHostPanel({
           className="btn btn--secondary"
           data-testid="lih-pass"
           disabled={!canResolve}
-          onClick={() =>
-            tileId !== null &&
-            send({
-              type: 'RESOLVE_ACTIVE_RESPONSE',
-              issuedAt: clock.now(),
-              roundId: round.id,
-              tileId,
-              resolution: { kind: 'passed' },
-            })
-          }
+          onClick={() => resolveActive('passed')}
         >
           Pass and advance
         </button>

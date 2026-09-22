@@ -43,6 +43,38 @@ function armedStore(): SessionStore {
   return store
 }
 
+function buzz(store: SessionStore, teamId: string, at: number): void {
+  store.dispatch({
+    type: 'RECORD_TEAM_BUZZ',
+    issuedAt: at,
+    roundId: ROUND,
+    tileId: TILE,
+    teamId,
+  })
+}
+
+function resolve(
+  store: SessionStore,
+  kind: 'correct' | 'incorrect' | 'passed',
+  at: number,
+): void {
+  store.dispatch({
+    type: 'RESOLVE_ACTIVE_RESPONSE',
+    issuedAt: at,
+    roundId: ROUND,
+    tileId: TILE,
+    resolution: { kind },
+  })
+}
+
+/** Two teams buzzed; active is red with blue waiting. */
+function twoTeamArmedStore(): SessionStore {
+  const store = armedStore()
+  buzz(store, 'red', AT + 1)
+  buzz(store, 'blue', AT + 2)
+  return store
+}
+
 describe('PublicBoardResponseOutcome sanitizer (S05 Path A)', () => {
   it('bumps PublicState schema 8 → 9 and keeps sync envelope + persistence wire', () => {
     expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(9)
@@ -52,13 +84,7 @@ describe('PublicBoardResponseOutcome sanitizer (S05 Path A)', () => {
 
   it('projects none until an adjudication exists', () => {
     const store = armedStore()
-    store.dispatch({
-      type: 'RECORD_TEAM_BUZZ',
-      issuedAt: AT + 1,
-      roundId: ROUND,
-      tileId: TILE,
-      teamId: 'red',
-    })
+    buzz(store, 'red', AT + 1)
     expect(store.getPublicState().response?.boardOutcome).toEqual({ status: 'none' })
     expect(store.getPublicState().response?.buzz).toEqual({
       status: 'active',
@@ -68,28 +94,8 @@ describe('PublicBoardResponseOutcome sanitizer (S05 Path A)', () => {
   })
 
   it('projects correct with positional teamKey and empty buzz (not exhausted)', () => {
-    const store = armedStore()
-    store.dispatch({
-      type: 'RECORD_TEAM_BUZZ',
-      issuedAt: AT + 1,
-      roundId: ROUND,
-      tileId: TILE,
-      teamId: 'red',
-    })
-    store.dispatch({
-      type: 'RECORD_TEAM_BUZZ',
-      issuedAt: AT + 2,
-      roundId: ROUND,
-      tileId: TILE,
-      teamId: 'blue',
-    })
-    store.dispatch({
-      type: 'RESOLVE_ACTIVE_RESPONSE',
-      issuedAt: AT + 3,
-      roundId: ROUND,
-      tileId: TILE,
-      resolution: { kind: 'correct' },
-    })
+    const store = twoTeamArmedStore()
+    resolve(store, 'correct', AT + 3)
     const response = store.getPublicState().response
     expect(response?.boardOutcome).toEqual({
       status: 'resolved',
@@ -103,28 +109,8 @@ describe('PublicBoardResponseOutcome sanitizer (S05 Path A)', () => {
   })
 
   it('projects incorrect while promoting next — buzz active coexists with outcome', () => {
-    const store = armedStore()
-    store.dispatch({
-      type: 'RECORD_TEAM_BUZZ',
-      issuedAt: AT + 1,
-      roundId: ROUND,
-      tileId: TILE,
-      teamId: 'red',
-    })
-    store.dispatch({
-      type: 'RECORD_TEAM_BUZZ',
-      issuedAt: AT + 2,
-      roundId: ROUND,
-      tileId: TILE,
-      teamId: 'blue',
-    })
-    store.dispatch({
-      type: 'RESOLVE_ACTIVE_RESPONSE',
-      issuedAt: AT + 3,
-      roundId: ROUND,
-      tileId: TILE,
-      resolution: { kind: 'incorrect' },
-    })
+    const store = twoTeamArmedStore()
+    resolve(store, 'incorrect', AT + 3)
     expect(store.getPublicState().response?.boardOutcome).toEqual({
       status: 'resolved',
       teamKey: 't0',
@@ -139,13 +125,7 @@ describe('PublicBoardResponseOutcome sanitizer (S05 Path A)', () => {
 
   it('proves adjudication ≠ scoring — score alone never creates boardOutcome', () => {
     const store = armedStore()
-    store.dispatch({
-      type: 'RECORD_TEAM_BUZZ',
-      issuedAt: AT + 1,
-      roundId: ROUND,
-      tileId: TILE,
-      teamId: 'red',
-    })
+    buzz(store, 'red', AT + 1)
     store.dispatch({
       type: 'ADJUST_TEAM_SCORE',
       issuedAt: AT + 2,
@@ -160,20 +140,8 @@ describe('PublicBoardResponseOutcome sanitizer (S05 Path A)', () => {
 
   it('clears boardOutcome when the opportunity resets', () => {
     const store = armedStore()
-    store.dispatch({
-      type: 'RECORD_TEAM_BUZZ',
-      issuedAt: AT + 1,
-      roundId: ROUND,
-      tileId: TILE,
-      teamId: 'red',
-    })
-    store.dispatch({
-      type: 'RESOLVE_ACTIVE_RESPONSE',
-      issuedAt: AT + 2,
-      roundId: ROUND,
-      tileId: TILE,
-      resolution: { kind: 'correct' },
-    })
+    buzz(store, 'red', AT + 1)
+    resolve(store, 'correct', AT + 2)
     expect(store.getPublicState().response?.boardOutcome.status).toBe('resolved')
     store.dispatch({ type: 'RESET_RESPONSE_PHASE', issuedAt: AT + 3, roundId: ROUND })
     expect(store.getPublicState().response).toBeNull()
