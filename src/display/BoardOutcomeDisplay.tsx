@@ -112,8 +112,14 @@ export function BoardOutcomeDisplay({
       return
     }
 
-    // Same identity (incl. Path S-C score-only team DTO refreshes): keep ack.
+    // Same semantic identity: Path S-C score / waiting refreshes keep in-flight
+    // ack, but ownership yield (ownsAck true→false) must clear immediately so
+    // BuzzQueueDisplay is the sole transient motion owner. Reclaiming ownership
+    // on the same id (ownsAck false→true) must not late-ack.
     if (previous === semanticId) {
+      if (!ownsAck) {
+        setOutcomeChanged(false)
+      }
       return
     }
 
@@ -145,7 +151,10 @@ export function BoardOutcomeDisplay({
   const secondary =
     activeClaimPresent &&
     (boardOutcome.kind === 'incorrect' || boardOutcome.kind === 'passed')
-  const changedClass = outcomeChanged ? ' bod--outcome-changed' : ''
+  // Visible ack requires both a lifecycle transition and current ownership —
+  // gates the one paint before the effect clears after ownsAck yields.
+  const showAck = outcomeChanged && ownsAck
+  const changedClass = showAck ? ' bod--outcome-changed' : ''
   const secondaryClass = secondary ? ' bod--secondary' : ''
 
   return (
@@ -155,7 +164,7 @@ export function BoardOutcomeDisplay({
       data-outcome-kind={boardOutcome.kind}
       data-outcome-team={boardOutcome.teamKey}
       data-seeded="true"
-      data-outcome-changed={outcomeChanged ? 'true' : 'false'}
+      data-outcome-changed={showAck ? 'true' : 'false'}
       data-motion-owner={secondary ? 'buzz' : 'outcome'}
       data-composition={secondary ? 'static-secondary' : 'primary'}
       aria-live="polite"

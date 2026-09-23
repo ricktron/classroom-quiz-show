@@ -11,13 +11,17 @@ only; never gameplay authority; never delayed authoritative text.
   `CQS-REAL-MVP-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY`
 - **Parent:** `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
   (parent remains **OPEN / NOT TERMINAL**)
-- **Tranche status:** **AUTHORIZED DELIVERY CANDIDATE** (NOT ACCEPTED / NOT TERMINAL)
+- **Tranche status:** **AUTHORIZED DELIVERY CANDIDATE — REPAIRED / NOT ACCEPTED / NOT TERMINAL**
+- **Repair auth:**
+  `AUTHORIZE-CQS-REAL-MVP-S05-PR96-PRESENTATION-F-HANDOFF-EVIDENCE-DOCS-REPAIR-1`
+- **Rejected tip (pre-repair):** `ff424e0ac044f03c1af64694f196b1969dbd7a4a`
 - **Date (UTC):** 2026-09-23
 
 ```text
 durable snapshot ≠ just-happened event
 semantic identity local only (teamKey + kind)
 composition: active Incorrect/Passed → buzz owns motion
+ownership handoff: exhausted→late active clears outcome ack
 Path S-C: score refresh must not restart outcome ack
 Correct audio-silent; no new sounds; Host unchanged
 PublicState 9 / sync 2 / persistence 1 unchanged
@@ -34,9 +38,10 @@ Stop for Rick
 | --- | --- |
 | Canonical base | `ff335f2cf005a7fb1b06a9588b67894d523ccb6f` |
 | Branch | `feat/cqs-real-mvp-s05-board-outcome-presentation-choreography` |
-| Exact head | `cb11b798b450edf6bb1caefa07043c2a597d1083` |
+| Exact tip | **Re-observe from GitHub** PR [#96](https://github.com/ricktron/classroom-quiz-show/pull/96) head (do not pin a self-predicting Exact-head SHA in this durable closeout) |
 | PR | [#96](https://github.com/ricktron/classroom-quiz-show/pull/96) (non-draft; auto-merge off) |
-| Product verification tip | `385fc6d54cab639db9a7e6cc9b36969d79ff88d0` (CI green matrix; subsequent commits docs-only) |
+| Rejected tip (exact-head review) | `ff424e0ac044f03c1af64694f196b1969dbd7a4a` — **REPAIR REQUIRED** findings applied under repair auth above |
+| Product verification tip (historical) | `385fc6d54cab639db9a7e6cc9b36969d79ff88d0` (CI-green product tip before docs-only / repair commits; not the live Exact head) |
 | Intervening main after expected base | **none** at branch creation (`origin/main` === base) |
 
 ---
@@ -75,10 +80,13 @@ Acknowledgement ownership follows the buzz pattern:
 
 1. Track local semantic id `${teamKey}:${kind}` (or `null` when `none`).
 2. First observation **seeds** prior id (catch-up / remount → no fabricated ack).
-3. Identity unchanged → keep in-flight ack (including Path S-C score-only refreshes).
-4. Observed identity transition may acknowledge when this surface owns motion.
-5. Authoritative kind + team text renders **immediately** — never after an entrance delay.
-6. Hold marker ~420ms (outlasts `--dur-emphasized` 320ms); numeric constant.
+3. Identity unchanged + still owns motion → keep in-flight ack (including Path S-C score-only refreshes).
+4. Identity unchanged + ownership yields (`ownsAck` false) → **clear** outcome ack immediately (late-buzz handoff).
+5. Ownership reclaim on the same id must **not** late-ack.
+6. Observed identity transition may acknowledge when this surface owns motion.
+7. Authoritative kind + team text renders **immediately** — never after an entrance delay.
+8. Hold marker ~420ms (outlasts `--dur-emphasized` 320ms); numeric constant.
+9. Visible ack = lifecycle ack **and** current `ownsAck` (gates one-paint race).
 
 DOM carriers: `data-seeded="true"`, `data-outcome-changed`, `data-motion-owner`,
 `data-composition`.
@@ -92,6 +100,7 @@ DOM carriers: `data-seeded="true"`, `data-outcome-changed`, `data-motion-owner`,
 | Correct (buzz `none`; no active claim) | **BoardOutcomeDisplay** | Primary; may acknowledge on observed transition |
 | Incorrect / Passed + promoted **active** claim | **BuzzQueueDisplay** | Immediate **static secondary** (`.bod--secondary`); no outcome ack |
 | Incorrect / Passed + **exhausted** (no active claim) | **BoardOutcomeDisplay** may own | Primary; may acknowledge on observed transition |
+| Incorrect / Passed **exhausted → late active** (same semantic id) | **BuzzQueueDisplay** | Outcome ack clears immediately; secondary; no competing pulse; no late re-ack on ownership reclaim |
 | Remount into any resolved snapshot | none (seed) | Truthful text; `data-outcome-changed=false` |
 
 Signal Rail passes `activeClaimPresent={response.buzz.status === 'active'}`.
@@ -152,13 +161,17 @@ BuzzQueueDisplay production untouched. No reducer / sanitizer / Host / scoreboar
 ## J. Automated evidence
 
 - Unit: remount seed; none→Correct ack; Incorrect+active static secondary;
-  Passed+exhausted may own; Path S-C score refresh; hold clear; Signal Rail
-  composition; BuzzQueueDisplay + AudienceDisplayShell regressions
-- E2E: remount / observed Correct / Incorrect+active composition / Passed /
-  Path S-C / reduced-motion / high-contrast; 720p + 1080p
+  Passed+exhausted may own; Path S-C score refresh; hold clear;
+  **F-HANDOFF** Incorrect/Passed exhausted→late active; **F-PASSED-ACTIVE**;
+  **F-RAPID-STALE** A→B; clear/reset re-ack; Signal Rail composition;
+  BuzzQueueDisplay + AudienceDisplayShell regressions
+- E2E: remount / observed Correct / Incorrect+active / Passed / Path S-C /
+  **F-HANDOFF** late buzz / **F-PASSED-ACTIVE** / reduced-motion **computed**
+  `animationName === 'none'` (+ no-preference non-none) / high-contrast;
+  720p + 1080p
 - Re-run Path A authority + buzz choreography + F1 stress as regression
 - `git diff --check`; `npm run verify`; `npm run verify:all` (report exact)
-- Sonar QG — no threshold weaken / no NOSONAR
+- Sonar QG — no threshold weaken / no NOSONAR — re-observe on repaired tip
 
 ---
 
@@ -171,23 +184,26 @@ Keyboard Host→Display path covered by injection e2e. Physical Sony / projector
 
 ## L. Verification (local — re-observe on PR tip)
 
-Observed on tip `5a1354fd8032c053adef352996e4f61b03dcfb5d` / PR [#96](https://github.com/ricktron/classroom-quiz-show/pull/96)
-(verification matrix observed on prior tip `385fc6d…`; docs-only follow-up
-does not reopen product surfaces):
+Historical product-verification tip `385fc6d…` and rejected tip `ff424e0…`
+retained as qualified history. **Live Exact tip: re-observe from GitHub**
+PR [#96](https://github.com/ricktron/classroom-quiz-show/pull/96) after repair
+push — do not self-pin here.
+
+Observed on this repair working tree (pre-push; tip advances on push):
 
 | Check | Result |
 | --- | --- |
 | `git diff --check` | **clean** (exit 0) |
-| Focused unit (BoardOutcomeDisplay, SignalRail, BuzzQueueDisplay, AudienceDisplayShell) | **56 passed** |
-| Lint / typecheck | **clean** (3 pre-existing ThemeProvider react-refresh warnings only; 0 errors) |
-| `npm run verify` | local `usePublicState` BroadcastChannel `MessageEvent` / `ERR_INVALID_ARG_TYPE` failure reproduces on this VM (jsdom + Node BroadcastChannel) — **baseline**, not introduced by this child (same class as Path A closeout). **PR CI Lint/typecheck/unit/build: SUCCESS** |
-| E2E presentation + authority + buzz @ 720p/1080p | **38 passed**, 4 skipped (720p-only cases on 1080p) |
-| E2E F1 stress (local) | one `desktop-1080p` prompt scrollHeight **1px** over tolerance (355 vs ≤354) — environment font metric; **PR CI Playwright e2e: SUCCESS** (authoritative) |
-| `npm run verify:all` | not claimed as local green (blocked by BroadcastChannel baseline); **CI matrix SUCCESS** for lint/unit/build + Playwright |
-| BroadcastChannel baseline | **Honest:** local VM fail; CI unit job green — classify as known jsdom/Node BC issue, not product regression |
-| SonarCloud Code Analysis | **SUCCESS** on PR #96 — no threshold weaken / no NOSONAR |
-| Desktop artifacts (unsigned macOS + Windows) | **SUCCESS** |
-| Desktop unit + Electron shell | **SUCCESS** |
+| Focused unit (BoardOutcomeDisplay, SignalRail, BuzzQueueDisplay, AudienceDisplayShell) | **61 passed** (includes F-HANDOFF / F-RAPID-STALE / F-PASSED-ACTIVE / clear-reset) |
+| Lint / typecheck | **clean** (3 pre-existing ThemeProvider react-refresh warnings only; 0 errors; `tsc -b --noEmit` clean) |
+| `npm run verify` | local `usePublicState` BroadcastChannel `MessageEvent` / `ERR_INVALID_ARG_TYPE` failure reproduces on this VM (jsdom + Node BroadcastChannel) — **baseline**, not introduced by this repair. **Do not claim local verify green.** Re-observe CI unit on repaired tip. |
+| E2E presentation @ 720p/1080p | **19 passed**, 3 skipped (720p-only on 1080p) |
+| E2E authority + buzz @ 720p/1080p | **24 passed**, 2 skipped |
+| E2E F1 stress (local) | `desktop-1080p` prompt scrollHeight **1px** over tolerance (355 vs ≤354) — environment font metric (same class as prior tip); **re-observe CI Playwright** |
+| `npm run verify:all` | not claimed as local green (blocked by BroadcastChannel baseline) |
+| BroadcastChannel baseline | **Honest:** local VM fail; CI unit job is authoritative when local fails |
+| SonarCloud | Re-observe QG / issues / hotspots / duplication on repaired tip — no threshold weaken / no NOSONAR |
+| Desktop / CI gates | Re-observe on repaired tip |
 
 Physical qualification remains **S06** and is **not** claimed.
 
@@ -222,7 +238,9 @@ NOT TERMINAL**.
 | Sev | Note |
 | --- | --- |
 | HIGH (mitigated) | Remount fabricate — acceptance tests assert seed |
+| HIGH (repaired) | Ownership handoff exhausted→late active — outcome ack clears; buzz sole motion owner |
 | MEDIUM (mitigated) | Dual motion Incorrect+active — composition yields to buzz |
+| MEDIUM (repaired) | Rapid A→B / stale timer + Passed+active + reduced-motion computed proof |
 | LOW | Shared seed helper not extracted (prefer leave Buzz production alone) |
 
 ---
@@ -248,9 +266,14 @@ No terminal receipt. No historical rewrite.
 | Remount Correct → no ack | unit + e2e `data-outcome-changed=false` |
 | Observed Correct → ack, text immediate | unit + e2e |
 | Incorrect+active → buzz owns; outcome static secondary | unit + SignalRail + e2e |
+| Passed+active → buzz owns; Passed secondary (not danger) | unit + e2e |
 | Passed+exhausted → outcome may own | unit + e2e |
+| Exhausted→late active handoff → outcome ack cleared | unit + e2e |
+| Rapid A→B / stale A timer cannot clear B | unit (fake timers) |
+| Clear/reset → same id may re-ack | unit |
 | Score refresh → ack continues (Path S-C) | unit + e2e |
-| Reduced-motion / high-contrast text carriers | e2e 720p |
+| Reduced-motion computed `animationName === 'none'` | e2e 720p |
+| High-contrast text carriers | e2e 720p |
 
 ---
 
@@ -260,10 +283,11 @@ No terminal receipt. No historical rewrite.
 | --- | --- |
 | Title | `feat(s05): add board-outcome presentation choreography` |
 | PR | [#96](https://github.com/ricktron/classroom-quiz-show/pull/96) |
-| Head | `cb11b798b450edf6bb1caefa07043c2a597d1083` |
+| Head | **Re-observe from GitHub** (rejected tip `ff424e0…`; repaired tip after push) |
 | Draft | **false** (non-draft) |
 | Auto-merge | **OFF** (`autoMergeRequest` null) |
 | Merge | **Do not merge** (Stop for Rick) |
+| Next | Fresh independent exact-head re-review of repaired tip |
 
 ---
 
@@ -274,22 +298,23 @@ No terminal receipt. No historical rewrite.
 - Not PublicState / schema / score / audio / Host change
 - Not S04D / S06 / release / physical projector qualification
 - Not `outcomeKey`
+- Not ACCEPT CANDIDATE from this repair alone
 
 ---
 
 ## T. Status label
 
 ```text
-AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL
+AUTHORIZED DELIVERY CANDIDATE — REPAIRED / NOT ACCEPTED / NOT TERMINAL
 ```
 
 ---
 
 ## U. Next owner decision
 
-Rick: exact-head review → accept / repair / reject. Do **not** merge from this
-packet. Do **not** terminalize S05 parent. Do **not** start board/round-flow,
-Final, S04D, or S06 from this closeout.
+Rick: **fresh** exact-head re-review of the repaired tip → accept / repair /
+reject. Do **not** merge from this packet. Do **not** terminalize S05 parent.
+Do **not** start board/round-flow, Final, S04D, or S06 from this closeout.
 
 ```text
 Stop for Rick.

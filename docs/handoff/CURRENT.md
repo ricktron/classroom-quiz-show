@@ -27,7 +27,7 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S04A–S04C, **S05-F1**, **S05 buzz / active-claim choreography**, and **S05 board-outcome public authority** **TERMINALLY COMPLETE**. **S05 SCORE CHANGE: OWNER DECISION RESOLVED — PATH S-C**. **`CQS-REAL-MVP-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY`**: **AUTHORIZED DELIVERY CANDIDATE** (NOT ACCEPTED / NOT TERMINAL). S05 parent **OPEN / NOT TERMINAL**. Remaining S05 (board/round-flow, Final / winner), S04D, S06 **NOT AUTHORIZED**. REAL MVP is **not** complete. |
+| Current Program frontier | S04A–S04C, **S05-F1**, **S05 buzz / active-claim choreography**, and **S05 board-outcome public authority** **TERMINALLY COMPLETE**. **S05 SCORE CHANGE: OWNER DECISION RESOLVED — PATH S-C**. **`CQS-REAL-MVP-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY`**: **AUTHORIZED DELIVERY CANDIDATE — REPAIRED** (NOT ACCEPTED / NOT TERMINAL). S05 parent **OPEN / NOT TERMINAL**. Remaining S05 (board/round-flow, Final / winner), S04D, S06 **NOT AUTHORIZED**. REAL MVP is **not** complete. |
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
 | S04 canon | product direction **registered** |
@@ -43,7 +43,7 @@ also read
 | S05 buzz / active-claim choreography | **TERMINALLY COMPLETE** |
 | S05 board-outcome public authority | **TERMINALLY COMPLETE** |
 | S05 score-change owner decision | **RESOLVED — PATH S-C** |
-| S05 board-outcome presentation choreography | **AUTHORIZED DELIVERY CANDIDATE** (NOT ACCEPTED / NOT TERMINAL) |
+| S05 board-outcome presentation choreography | **AUTHORIZED DELIVERY CANDIDATE — REPAIRED** (NOT ACCEPTED / NOT TERMINAL) |
 | S05 parent | **OPEN / NOT TERMINAL** |
 | S04D / additional S05 / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
@@ -319,7 +319,7 @@ existing `CQS-OPP-PRESENTATION-EFFECTS` only.
 
 ```text
 CQS-REAL-MVP-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY:
-AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL
+AUTHORIZED DELIVERY CANDIDATE — REPAIRED / NOT ACCEPTED / NOT TERMINAL
 ```
 
 Delivery evidence (re-observe PR tip; do not treat as terminal):
@@ -353,7 +353,7 @@ S05-F1: TERMINALLY COMPLETE
 S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05-BOARD-OUTCOME-PUBLIC-AUTHORITY: TERMINALLY COMPLETE
 S05-SCORE-CHANGE: RESOLVED — PATH S-C
-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY: AUTHORIZED DELIVERY CANDIDATE (NOT ACCEPTED / NOT TERMINAL)
+S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY: AUTHORIZED DELIVERY CANDIDATE — REPAIRED / NOT ACCEPTED / NOT TERMINAL
 S05 parent: OPEN / NOT TERMINAL
 S04D / additional S05 / S06: NOT AUTHORIZED
 ```

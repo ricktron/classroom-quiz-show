@@ -125,7 +125,7 @@ Path S-C** resolves the score-change major moment as the immediate static
 authoritative update (ADR-006 unchanged); animated score presentation is
 **not** mandatory remaining S05 work.
 `CQS-REAL-MVP-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY` is an
-**AUTHORIZED DELIVERY CANDIDATE** only (NOT ACCEPTED / NOT TERMINAL).
+**AUTHORIZED DELIVERY CANDIDATE — REPAIRED** only (NOT ACCEPTED / NOT TERMINAL).
 Remaining S05 families (board/round-flow, Final / winner presentation,
 Host polish) stay later and require fresh bounded authorization. The S05
 parent remains **OPEN / NOT TERMINAL**.
@@ -410,9 +410,10 @@ hardware, recovery, and the end-to-end experience.
   score presentation unchanged). Board-outcome **presentation
   choreography** under
   `CQS-REAL-MVP-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY` is an
-  **AUTHORIZED DELIVERY CANDIDATE** only (NOT ACCEPTED / NOT TERMINAL;
+  **AUTHORIZED DELIVERY CANDIDATE — REPAIRED** only (NOT ACCEPTED / NOT TERMINAL;
   lifecycle acknowledgement on existing `boardOutcome`; remount-safe seed;
-  Incorrect/Passed + active claim yields motion to buzz). Score-change
+  Incorrect/Passed + active claim yields motion to buzz; exhausted→late-active
+  handoff clears outcome ack). Score-change
   choreography is **not** required S05 work after Path S-C (see §18).
 
 ### 18. Scoreboard

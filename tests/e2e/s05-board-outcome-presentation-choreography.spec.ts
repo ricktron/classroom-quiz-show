@@ -206,7 +206,7 @@ test.describe('S05 board-outcome presentation choreography', () => {
     await assertNoHorizontalOverflow(page)
   })
 
-  test('720p reduced-motion Correct acknowledgement keeps readable text carriers', async ({
+  test('720p reduced-motion Correct acknowledgement disables animation; static cue remains', async ({
     page,
   }, info) => {
     test.skip(info.project.name !== 'projector-720p', '720p project only')
@@ -219,7 +219,122 @@ test.describe('S05 board-outcome presentation choreography', () => {
     await expect(outcome).toContainText(FIRST_TEAM)
     await expect(outcome).toHaveAttribute('data-outcome-changed', 'true')
     await expect(outcome).toHaveClass(/bod--outcome-changed/)
+
+    const motionProof = await outcome.evaluate((el) => {
+      const cs = getComputedStyle(el)
+      const kind = el.querySelector('.bod__kind')
+      const kindCs = kind ? getComputedStyle(kind) : null
+      return {
+        animationName: cs.animationName,
+        boxShadow: cs.boxShadow,
+        textDecorationLine: kindCs?.textDecorationLine ?? null,
+      }
+    })
+    expect(motionProof.animationName, JSON.stringify(motionProof)).toBe('none')
+    // Static inset + underline carriers remain under reduce.
+    expect(motionProof.boxShadow === 'none' || motionProof.boxShadow === '').toBe(false)
+    expect(motionProof.textDecorationLine).toMatch(/underline/)
+
     await assertOutcomeChromeInsideBox(page)
+    await assertNoHorizontalOverflow(page)
+  })
+
+  test('720p no-preference Correct acknowledgement runs bounded non-none animation', async ({
+    page,
+  }, info) => {
+    test.skip(info.project.name !== 'projector-720p', '720p project only')
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await openDisplay(page)
+    await injectPublicState(page, visualStressArmedWaitingBuzzSnapshot(149))
+    await injectPublicState(page, visualStressBoardCorrectOutcomeSnapshot(150))
+    const outcome = page.getByTestId('board-outcome')
+    await expect(outcome).toHaveAttribute('data-outcome-changed', 'true')
+    const animationName = await outcome.evaluate((el) => getComputedStyle(el).animationName)
+    expect(animationName).not.toBe('none')
+    expect(animationName.toLowerCase()).toContain('bod-ack')
+    await assertOutcomeChromeInsideBox(page)
+  })
+
+  test('F-HANDOFF: Incorrect exhausted→late active yields motion to buzz', async ({
+    page,
+  }, info) => {
+    test.skip(
+      info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
+      'projector viewports only',
+    )
+    await openDisplay(page)
+    await injectPublicState(page, visualStressArmedWaitingBuzzSnapshot(149))
+
+    // Exhausted Incorrect (single respondent) — outcome may own ack.
+    const exhausted = structuredClone(visualStressBoardPassedOutcomeSnapshot(160))
+    if (exhausted.response) {
+      exhausted.response.boardOutcome = {
+        status: 'resolved',
+        teamKey: 't0',
+        kind: 'incorrect',
+      }
+    }
+    await injectPublicState(page, exhausted)
+    const outcome = page.getByTestId('board-outcome')
+    await expect(outcome).toContainText('Incorrect')
+    await expect(outcome).toContainText(FIRST_TEAM)
+    await expect(outcome).toHaveAttribute('data-outcome-changed', 'true')
+    await expect(outcome).toHaveAttribute('data-motion-owner', 'outcome')
+    await expect(page.getByTestId('bqd')).toHaveAttribute('data-status', 'exhausted')
+
+    // Late B buzz while armed / hold active — same outcome identity.
+    const lateBuzz: PublicState = structuredClone(exhausted)
+    lateBuzz.revision = 161
+    if (lateBuzz.response) {
+      lateBuzz.response.buzz = {
+        status: 'active',
+        activeTeamKey: 't1',
+        waitingCount: 0,
+      }
+    }
+    await injectPublicState(page, lateBuzz)
+    await expect(outcome).toContainText('Incorrect')
+    await expect(outcome).toHaveAttribute('data-outcome-changed', 'false')
+    await expect(outcome).not.toHaveClass(/bod--outcome-changed/)
+    await expect(outcome).toHaveClass(/bod--secondary/)
+    await expect(outcome).toHaveAttribute('data-motion-owner', 'buzz')
+    await expect(outcome).toHaveAttribute('data-composition', 'static-secondary')
+    await expect(page.getByTestId('bqd-active')).toContainText(SECOND_TEAM)
+    await expect(page.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
+    await assertNoHorizontalOverflow(page)
+  })
+
+  test('F-PASSED-ACTIVE: Passed + promoted active is static secondary', async ({
+    page,
+  }, info) => {
+    test.skip(
+      info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
+      'projector viewports only',
+    )
+    await openDisplay(page)
+    await injectPublicState(page, visualStressArmedWaitingBuzzSnapshot(149))
+
+    const passedActive: PublicState = structuredClone(
+      visualStressBoardIncorrectWithActiveSnapshot(162),
+    )
+    if (passedActive.response?.boardOutcome.status === 'resolved') {
+      passedActive.response.boardOutcome = {
+        ...passedActive.response.boardOutcome,
+        kind: 'passed',
+      }
+    }
+    await injectPublicState(page, passedActive)
+
+    const outcome = page.getByTestId('board-outcome')
+    await expect(outcome).toContainText('Passed')
+    await expect(outcome).toContainText(FIRST_TEAM)
+    await expect(outcome).toHaveAttribute('data-outcome-changed', 'false')
+    await expect(outcome).toHaveClass(/bod--secondary/)
+    await expect(outcome).toHaveClass(/bod--passed/)
+    await expect(outcome).not.toHaveClass(/bod--incorrect/)
+    await expect(outcome).toHaveAttribute('data-motion-owner', 'buzz')
+    await expect(page.getByTestId('bqd-active')).toContainText(SECOND_TEAM)
+    await expect(page.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
     await assertNoHorizontalOverflow(page)
   })
 
