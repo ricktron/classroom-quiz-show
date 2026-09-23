@@ -313,6 +313,13 @@ describe('SignalRail', () => {
     expect(screen.queryByText(/Response ready/i)).toBeNull()
     expect(screen.getByTestId('bqd-active')).toHaveTextContent('Bravo')
     expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-kind', 'incorrect')
+    // Composition: buzz owns motion; outcome is immediate static secondary.
+    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-motion-owner', 'buzz')
+    expect(screen.getByTestId('board-outcome')).toHaveAttribute(
+      'data-composition',
+      'static-secondary',
+    )
+    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-changed', 'false')
 
     rerender(
       <SignalRail
@@ -331,5 +338,31 @@ describe('SignalRail', () => {
     expect(screen.queryByText(/Response ready/i)).toBeNull()
     expect(screen.getByTestId('bqd')).toHaveAttribute('data-status', 'exhausted')
     expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-kind', 'passed')
+    // Exhausted has no active claim — outcome owns motion on observed kind change.
+    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-motion-owner', 'outcome')
+    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-composition', 'primary')
+    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-changed', 'true')
+  })
+
+  it('Correct-closed outcome remount seeds without fabricating acknowledgement', () => {
+    render(
+      <SignalRail
+        mode="compact"
+        response={{
+          armed: false,
+          timer: { status: 'idle' },
+          buzz: { status: 'none' },
+          boardOutcome: { status: 'resolved', teamKey: 't0', kind: 'correct' },
+        }}
+        teams={TEAMS}
+        round={null}
+        revealedTeamName={null}
+      />,
+    )
+    const outcome = screen.getByTestId('board-outcome')
+    expect(outcome).toHaveAttribute('data-outcome-kind', 'correct')
+    expect(outcome).toHaveAttribute('data-outcome-changed', 'false')
+    expect(outcome).toHaveAttribute('data-motion-owner', 'outcome')
+    expect(outcome).not.toHaveClass('bod--outcome-changed')
   })
 })

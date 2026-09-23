@@ -1,11 +1,16 @@
 /**
- * Board-outcome foundation presentation — restrained text only.
- * Theatrical choreography is deferred to a later authorized presentation child.
+ * Board-outcome presentation (Path A text + S05 acknowledgement choreography).
+ *
+ * Authoritative Correct / Incorrect / Passed text is never delayed for motion.
+ * Acknowledgement uses inset / surface emphasis around already-visible truth
+ * (buzz-style; --dur-emphasized 320ms; hold ~420ms). Reduced motion keeps a
+ * static inset ring + underline. Incorrect/Passed beside an active claim is
+ * static secondary (`.bod--secondary`) — BuzzQueueDisplay owns motion.
  */
 
 .bod {
   margin: 0;
-  padding: 0.15em 0 0;
+  padding: 0.2em 0.35em;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -14,7 +19,11 @@
   font-size: clamp(0.95rem, 1.6vw + 0.55rem, 1.35rem);
   line-height: 1.2;
   letter-spacing: 0.01em;
-  color: var(--cqs-ink, inherit);
+  color: var(--fg-primary, inherit);
+  border-radius: var(--radius, 0.25em);
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .bod__kind {
@@ -27,13 +36,118 @@
 }
 
 .bod--correct .bod__kind {
-  color: var(--cqs-positive, inherit);
+  color: var(--state-success);
 }
 
 .bod--incorrect .bod__kind {
-  color: var(--cqs-negative, inherit);
+  color: var(--state-danger);
 }
 
 .bod--passed .bod__kind {
-  color: var(--cqs-muted-ink, inherit);
+  color: var(--fg-muted, inherit);
+}
+
+/* Static secondary beside promoted active claim — readable, non-competing. */
+.bod--secondary {
+  font-size: clamp(0.85rem, 1.3vw + 0.45rem, 1.15rem);
+  opacity: 0.92;
+  padding: 0.1em 0.2em;
+}
+
+.bod--secondary .bod__kind {
+  font-weight: 600;
+}
+
+/*
+ * Outcome-change acknowledgement: inset wash stays inside clipped ancestors.
+ * Kind-specific token wash; text carriers remain primary.
+ */
+.bod--outcome-changed.bod--correct {
+  box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-success);
+  background: var(--state-success-wash, color-mix(in srgb, var(--state-success) 14%, transparent));
+}
+
+.bod--outcome-changed.bod--incorrect {
+  box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-danger);
+  background: var(--state-danger-wash, color-mix(in srgb, var(--state-danger) 14%, transparent));
+}
+
+.bod--outcome-changed.bod--passed {
+  box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--border-strong, var(--fg-muted));
+  background: color-mix(in srgb, var(--fg-muted, #888) 12%, transparent);
+}
+
+.bod--outcome-changed .bod__kind {
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+  text-decoration-thickness: 0.08em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bod--outcome-changed.bod--correct {
+    animation: bod-ack-correct var(--dur-emphasized) var(--ease-emphasized) 1;
+  }
+
+  .bod--outcome-changed.bod--incorrect {
+    animation: bod-ack-incorrect var(--dur-emphasized) var(--ease-emphasized) 1;
+  }
+
+  .bod--outcome-changed.bod--passed {
+    animation: bod-ack-passed var(--dur-emphasized) var(--ease-emphasized) 1;
+  }
+
+  .bod--outcome-changed .bod__kind {
+    text-decoration: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bod--outcome-changed {
+    animation: none;
+  }
+}
+
+@keyframes bod-ack-correct {
+  from {
+    box-shadow: inset 0 0 0 0 transparent;
+    background: transparent;
+  }
+  45% {
+    box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-success);
+    background: color-mix(in srgb, var(--state-success) 18%, transparent);
+  }
+  to {
+    box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-success);
+    background: var(--state-success-wash, color-mix(in srgb, var(--state-success) 14%, transparent));
+  }
+}
+
+@keyframes bod-ack-incorrect {
+  from {
+    box-shadow: inset 0 0 0 0 transparent;
+    background: transparent;
+  }
+  45% {
+    box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-danger);
+    background: color-mix(in srgb, var(--state-danger) 18%, transparent);
+  }
+  to {
+    box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-danger);
+    background: var(--state-danger-wash, color-mix(in srgb, var(--state-danger) 14%, transparent));
+  }
+}
+
+@keyframes bod-ack-passed {
+  from {
+    box-shadow: inset 0 0 0 0 transparent;
+    background: transparent;
+  }
+  45% {
+    box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--border-strong, var(--fg-muted));
+    background: color-mix(in srgb, var(--fg-muted, #888) 16%, transparent);
+  }
+  to {
+    box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--border-strong, var(--fg-muted));
+    background: color-mix(in srgb, var(--fg-muted, #888) 12%, transparent);
+  }
 }
