@@ -34,8 +34,8 @@ Stop for Rick
 | --- | --- |
 | Canonical base | `ff335f2cf005a7fb1b06a9588b67894d523ccb6f` |
 | Branch | `feat/cqs-real-mvp-s05-board-outcome-presentation-choreography` |
-| Exact head | *(re-observe PR tip)* |
-| PR | *(re-observe; non-draft; auto-merge off)* |
+| Exact head | `385fc6d54cab639db9a7e6cc9b36969d79ff88d0` |
+| PR | [#96](https://github.com/ricktron/classroom-quiz-show/pull/96) (non-draft; auto-merge off) |
 | Intervening main after expected base | **none** at branch creation (`origin/main` === base) |
 
 ---
@@ -170,15 +170,23 @@ Keyboard Host→Display path covered by injection e2e. Physical Sony / projector
 
 ## L. Verification (local — re-observe on PR tip)
 
+Observed on tip `385fc6d54cab639db9a7e6cc9b36969d79ff88d0` / PR [#96](https://github.com/ricktron/classroom-quiz-show/pull/96):
+
 | Check | Result |
 | --- | --- |
-| `git diff --check` | *(fill on tip)* |
-| Focused unit (BoardOutcome / SignalRail / Buzz / AudienceShell) | *(fill)* |
-| E2E presentation + authority + buzz + F1 stress | *(fill)* |
-| `npm run verify` | *(fill)* |
-| `npm run verify:all` | *(fill)* |
-| BroadcastChannel baseline | Classify honestly if flaky under parallel load |
-| SonarCloud Quality Gate | *(fill — no weaken)* |
+| `git diff --check` | **clean** (exit 0) |
+| Focused unit (BoardOutcomeDisplay, SignalRail, BuzzQueueDisplay, AudienceDisplayShell) | **56 passed** |
+| Lint / typecheck | **clean** (3 pre-existing ThemeProvider react-refresh warnings only; 0 errors) |
+| `npm run verify` | local `usePublicState` BroadcastChannel `MessageEvent` / `ERR_INVALID_ARG_TYPE` failure reproduces on this VM (jsdom + Node BroadcastChannel) — **baseline**, not introduced by this child (same class as Path A closeout). **PR CI Lint/typecheck/unit/build: SUCCESS** |
+| E2E presentation + authority + buzz @ 720p/1080p | **38 passed**, 4 skipped (720p-only cases on 1080p) |
+| E2E F1 stress (local) | one `desktop-1080p` prompt scrollHeight **1px** over tolerance (355 vs ≤354) — environment font metric; **PR CI Playwright e2e: SUCCESS** (authoritative) |
+| `npm run verify:all` | not claimed as local green (blocked by BroadcastChannel baseline); **CI matrix SUCCESS** for lint/unit/build + Playwright |
+| BroadcastChannel baseline | **Honest:** local VM fail; CI unit job green — classify as known jsdom/Node BC issue, not product regression |
+| SonarCloud Code Analysis | **SUCCESS** on PR #96 — no threshold weaken / no NOSONAR |
+| Desktop artifacts (unsigned macOS + Windows) | **SUCCESS** |
+| Desktop unit + Electron shell | **SUCCESS** |
+
+Physical qualification remains **S06** and is **not** claimed.
 
 ---
 
@@ -248,8 +256,10 @@ No terminal receipt. No historical rewrite.
 | Fact | Value |
 | --- | --- |
 | Title | `feat(s05): add board-outcome presentation choreography` |
+| PR | [#96](https://github.com/ricktron/classroom-quiz-show/pull/96) |
+| Head | `385fc6d54cab639db9a7e6cc9b36969d79ff88d0` |
 | Draft | **false** (non-draft) |
-| Auto-merge | **OFF** |
+| Auto-merge | **OFF** (`autoMergeRequest` null) |
 | Merge | **Do not merge** (Stop for Rick) |
 
 ---
