@@ -4,6 +4,7 @@
  * content cannot silently diverge from rendered Display state.
  */
 
+import type { GameDefinition } from '../game/gameDefinition'
 import { importGameFromUnknown } from '../import/importGame'
 import type { SessionCommand } from '../state/commands'
 import type { PublicState } from '../state/publicState'
@@ -94,17 +95,21 @@ function resolveActive(
   }
 }
 
-function createStressStore(): SessionStore {
-  const result = importGameFromUnknown(visualStressGameFile())
-  if (result.status !== 'success') {
-    throw new Error(`visual stress fixture failed to import: ${result.status}`)
-  }
+/**
+ * Shared post-import seed for visual-stress session stores (INIT → game →
+ * round advance → stress score profile). Keeps board-only and board+Final
+ * fixture paths from cloning the same dispatch ladder.
+ */
+function seedInitializedStressStore(
+  definition: GameDefinition,
+  sessionId: string,
+): SessionStore {
   const store = createSessionStore()
-  store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 's05-f1-stress' })
+  store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId })
   store.dispatch({
     type: 'INITIALIZE_GAME',
     issuedAt: AT,
-    definition: result.definition,
+    definition,
   })
   store.dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: AT })
   for (const [teamId, delta] of STRESS_SCORE_DELTAS) {
@@ -119,6 +124,14 @@ function createStressStore(): SessionStore {
     })
   }
   return store
+}
+
+function createStressStore(): SessionStore {
+  const result = importGameFromUnknown(visualStressGameFile())
+  if (result.status !== 'success') {
+    throw new Error(`visual stress fixture failed to import: ${result.status}`)
+  }
+  return seedInitializedStressStore(result.definition, 's05-f1-stress')
 }
 
 function snapshotAt(store: SessionStore, revision: number, ...commands: SessionCommand[]): PublicState {
@@ -233,26 +246,7 @@ function createStressBoardFinalStore(): SessionStore {
   if (result.status !== 'success') {
     throw new Error(`visual stress board+final fixture failed: ${result.status}`)
   }
-  const store = createSessionStore()
-  store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 's05-board-flow-final' })
-  store.dispatch({
-    type: 'INITIALIZE_GAME',
-    issuedAt: AT,
-    definition: result.definition,
-  })
-  store.dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: AT })
-  for (const [teamId, delta] of STRESS_SCORE_DELTAS) {
-    if (delta === 0) continue
-    store.dispatch({
-      type: 'ADJUST_TEAM_SCORE',
-      issuedAt: AT,
-      teamId,
-      delta,
-      mode: 'manual-correction',
-      source: { kind: 'manual' },
-    })
-  }
-  return store
+  return seedInitializedStressStore(result.definition, 's05-board-flow-final')
 }
 
 /** Open long text prompt (schema-max) with timer chrome + eight stress teams. */

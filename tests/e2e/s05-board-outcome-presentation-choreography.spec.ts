@@ -6,7 +6,11 @@ import {
   visualStressBoardPassedOutcomeSnapshot,
 } from '../../src/test/visualStressDisplaySnapshots'
 import { visualStressTeams } from '../../src/test/visualStressFixtures'
-import { injectPublicState, openDisplay } from './helpers/displayPublicState'
+import {
+  assertNoHorizontalOverflow,
+  injectPublicState,
+  openDisplay,
+} from './helpers/displayPublicState'
 import type { PublicState } from '../../src/state/publicState'
 
 /**
@@ -17,7 +21,6 @@ import type { PublicState } from '../../src/state/publicState'
  * expansion. Physical Sony / projector qualification remains S06.
  */
 
-const VIEWPORT_TOLERANCE_PX = 2
 const OUTCOME_CHROME_TOLERANCE_PX = 2
 
 test.describe.configure({ mode: 'serial' })
@@ -25,19 +28,6 @@ test.describe.configure({ mode: 'serial' })
 const TEAM_NAMES = visualStressTeams().map((team) => String(team.name))
 const FIRST_TEAM = TEAM_NAMES[0]!
 const SECOND_TEAM = TEAM_NAMES[1]!
-
-async function assertNoHorizontalOverflow(page: Page) {
-  const report = await page.evaluate(() => {
-    const doc = document.documentElement
-    return {
-      overflowX: Math.max(0, doc.scrollWidth - window.innerWidth),
-      overflowY: Math.max(0, doc.scrollHeight - window.innerHeight),
-      viewport: { width: window.innerWidth, height: window.innerHeight },
-    }
-  })
-  expect(report.overflowX, JSON.stringify(report)).toBeLessThanOrEqual(VIEWPORT_TOLERANCE_PX)
-  expect(report.overflowY, JSON.stringify(report)).toBeLessThanOrEqual(VIEWPORT_TOLERANCE_PX)
-}
 
 /** Outcome ack chrome must stay inside the element box (inset; no outward clip). */
 async function assertOutcomeChromeInsideBox(page: Page) {

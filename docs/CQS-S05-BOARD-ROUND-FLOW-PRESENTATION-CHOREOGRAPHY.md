@@ -7,11 +7,13 @@ authoritative content; never full-board-while-clue schema expansion.
 
 - **Authorization:**
   `AUTHORIZE-CQS-REAL-MVP-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY-1`
+- **Gate / repair authorization:**
+  `AUTHORIZE-CQS-REAL-MVP-S05-PR98-VERIFICATION-GATE-RECONCILIATION-AND-BOUNDED-REPAIR-1`
 - **Tranche:**
   `CQS-REAL-MVP-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY`
 - **Parent:** `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
   (parent remains **OPEN / NOT TERMINAL**)
-- **Tranche status:** **AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL**
+- **Tranche status:** **AUTHORIZED DELIVERY CANDIDATE — REPAIRED / NOT ACCEPTED / NOT TERMINAL**
 - **Date (UTC):** 2026-09-23
 
 ```text
@@ -34,7 +36,10 @@ Stop for Rick
 | --- | --- |
 | Canonical implementation base | `89c952344843f4924c84b1719ef93a3881372ecd` |
 | Implementation branch | `cursor/cqs-real-mvp-s05-board-round-flow-presentation-fb16` |
-| Exact head | `a817d1f08876b0afaf7f1f8c896466a182f40c25` |
+| PR #98 live candidate head | **re-observe from GitHub / exact-head review** (do not pin a tip SHA here) |
+| Historical product implementation tip | `4c5b575871a2823576d165758425d65633e9bc18` (historical) |
+| Historical docs-identity tip (pre-gate) | `a817d1f08876b0afaf7f1f8c896466a182f40c25` (historical) |
+| Historical gate-failing tip (Sonar 3.2% duplication) | `5171eecb6968516b2d7ee087ed8524d3540d4910` (historical) |
 | PR | [#98](https://github.com/ricktron/classroom-quiz-show/pull/98) — non-draft; auto-merge **OFF** |
 
 ---
@@ -97,8 +102,10 @@ Tokens: `--dur-emphasized`, `--ease-emphasized`, `--state-active` inset/wash; re
 - `src/display/useSemanticPresentationAck.test.tsx`
 - `src/display/CategoryBoardDisplay.test.tsx`
 - `src/display/audience/AudienceDisplayShell.test.tsx`
-- `src/test/visualStressDisplaySnapshots.ts` (board-flow snapshots)
+- `src/test/visualStressDisplaySnapshots.ts` (board-flow snapshots; later Sonar-only seed helper extract)
 - `tests/e2e/s05-board-round-flow-presentation-choreography.spec.ts`
+- `tests/e2e/helpers/displayPublicState.ts` (shared overflow assert; Sonar-only)
+- sibling S05 e2e overflow imports (outcome / buzz; Sonar-only)
 
 **Docs / routing**
 
@@ -113,7 +120,7 @@ untouched. No reducer / sanitizer changes.
 
 ## J–R. Verification / non-claims
 
-| Check | Result (tip `4c5b575…`) |
+| Check | Result (historical local verification tip `4c5b575…`) |
 | --- | --- |
 | `git diff --check` | clean |
 | lint / typecheck / build | pass (3 pre-existing ThemeProvider warnings) |
@@ -121,7 +128,12 @@ untouched. No reducer / sanitizer changes.
 | Full unit | known local BroadcastChannel/`usePublicState` baseline fail — not claimed pass |
 | New board-flow e2e | 18 passed / 2 skipped (720p+1080p) |
 | Regression (outcome auth+presentation, buzz, F1 720p) | passed |
-| Sonar MCP | unavailable this run — report CI check-run; no NOSONAR |
+
+### Gate reconciliation (historical tip `5171eec…`)
+
+On settled exact-head CI @ `5171eec…`: five required gates **SUCCESS**; SonarCloud **FAILURE** solely for **3.2%** new-code duplication (required ≤3%). Bounded Case A repair extracted shared stress-store seed + shared e2e overflow assert; no product behavior change; no NOSONAR / exclusions / QG weaken.
+
+Re-observe live tip CI / Sonar metrics on GitHub after repair — do not treat this closeout as pinning the repaired SHA.
 
 Physical S06 not claimed. Parent not terminalized. Successor
 `CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY` named only —
@@ -136,7 +148,7 @@ auto-merge **OFF**.
 
 ```text
 CQS-REAL-MVP-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY:
-AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL
+AUTHORIZED DELIVERY CANDIDATE — REPAIRED / NOT ACCEPTED / NOT TERMINAL
 
 S05 parent:
 OPEN / NOT TERMINAL

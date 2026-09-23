@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import {
   visualStressBoardSnapshot,
   visualStressBoardWithFinalReadySnapshot,
@@ -8,7 +8,11 @@ import {
   visualStressPromptOnlySnapshot,
   visualStressSelectedSnapshot,
 } from '../../src/test/visualStressDisplaySnapshots'
-import { injectPublicState, openDisplay } from './helpers/displayPublicState'
+import {
+  assertNoHorizontalOverflow,
+  injectPublicState,
+  openDisplay,
+} from './helpers/displayPublicState'
 
 /**
  * S05 board / round-flow presentation choreography — remount-safe causality
@@ -19,22 +23,7 @@ import { injectPublicState, openDisplay } from './helpers/displayPublicState'
  * expansion. Physical Sony / projector qualification remains S06.
  */
 
-const VIEWPORT_TOLERANCE_PX = 2
-
 test.describe.configure({ mode: 'serial' })
-
-async function assertNoHorizontalOverflow(page: Page) {
-  const report = await page.evaluate(() => {
-    const doc = document.documentElement
-    return {
-      overflowX: Math.max(0, doc.scrollWidth - window.innerWidth),
-      overflowY: Math.max(0, doc.scrollHeight - window.innerHeight),
-      viewport: { width: window.innerWidth, height: window.innerHeight },
-    }
-  })
-  expect(report.overflowX, JSON.stringify(report)).toBeLessThanOrEqual(VIEWPORT_TOLERANCE_PX)
-  expect(report.overflowY, JSON.stringify(report)).toBeLessThanOrEqual(VIEWPORT_TOLERANCE_PX)
-}
 
 test.describe('S05 board/round-flow presentation choreography', () => {
   test('remount into board seeds durable board without fabricating reveal', async ({
