@@ -27,7 +27,7 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S04A–S04C, **S05-F1**, **S05 buzz / active-claim choreography**, and **S05 board-outcome public authority** **TERMINALLY COMPLETE**. S05 parent **OPEN / NOT TERMINAL**. Next Program action is an **owner decision / read-only remaining-S05 reconciliation** (routing ≠ authority). S04D / additional S05 / S06 remain **NOT AUTHORIZED**. REAL MVP is **not** complete. |
+| Current Program frontier | S04A–S04C, **S05-F1**, **S05 buzz / active-claim choreography**, and **S05 board-outcome public authority** **TERMINALLY COMPLETE**. **S05 SCORE CHANGE: OWNER DECISION RESOLVED — PATH S-C**. S05 parent **OPEN / NOT TERMINAL**. Next candidate frontier: **board-outcome presentation choreography** (routing ≠ authority; requires separate bounded owner authorization). S04D / additional S05 / S06 remain **NOT AUTHORIZED**. REAL MVP is **not** complete. |
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
 | S04 canon | product direction **registered** |
@@ -42,6 +42,7 @@ also read
 | S05-F1 | **TERMINALLY COMPLETE** |
 | S05 buzz / active-claim choreography | **TERMINALLY COMPLETE** |
 | S05 board-outcome public authority | **TERMINALLY COMPLETE** |
+| S05 score-change owner decision | **RESOLVED — PATH S-C** |
 | S05 parent | **OPEN / NOT TERMINAL** |
 | S04D / additional S05 / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
@@ -127,11 +128,15 @@ after PR #87.
 is **TERMINALLY COMPLETE** on main after PR #89.
 `CQS-REAL-MVP-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY` is **TERMINALLY COMPLETE**
 on main after PR #91. `CQS-REAL-MVP-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY` is
-**TERMINALLY COMPLETE** on main after PR #93. S05 parent remains **OPEN /
-NOT TERMINAL**. Remaining S05 choreography / presentation work, S04D, and
-S06 remain **NOT AUTHORIZED**. Next Program action is an **owner decision /
-read-only remaining-S05 reconciliation** (routing ≠ authority). REAL MVP is
-**not** complete. This handoff does not name or authorize a successor.
+**TERMINALLY COMPLETE** on main after PR #93. **S05 score-change owner
+decision: RESOLVED — PATH S-C** (immediate static authoritative updates;
+ADR-006 unchanged). S05 parent remains **OPEN / NOT TERMINAL**. Remaining
+S05 presentation work (board-outcome theatrical acknowledgement,
+board/round-flow, bounded Final / winner presentation), S04D, and S06
+remain **NOT AUTHORIZED**. Next candidate frontier is **board-outcome
+presentation choreography** (routing ≠ authority; requires separate
+bounded owner authorization). REAL MVP is **not** complete. This handoff
+does not name or authorize a successor.
 
 Those remain **existing qualified foundations** plus the S03 desktop
 foundation, S04 canon, and terminal S04A teacher-workflow foundation. Do
@@ -169,7 +174,7 @@ See the REAL MVP gap register in
 | teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal; S04B Class Setup extends it on `main` |
 | controller `F-UX-01` | **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** |
 | feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
-| flagship visual fidelity | **PARTIAL / F1 + buzz + board-outcome Path A TERMINALLY COMPLETE** — S05-F1, S05 buzz / active-claim, and S05 board-outcome public authority (Path A) **TERMINALLY COMPLETE** on main; theatrical remaining S05 open and **NOT AUTHORIZED** |
+| flagship visual fidelity | **PARTIAL / F1 + buzz + board-outcome Path A TERMINALLY COMPLETE** — S05-F1, S05 buzz / active-claim, and S05 board-outcome public authority (Path A) **TERMINALLY COMPLETE** on main; **score-change Path S-C RESOLVED**; theatrical remaining S05 open and **NOT AUTHORIZED** |
 | packaged offline/recovery and OS qualification | **PARTIAL** (H5 selection/hardware **PASS recorded 2026-09-11** and transferred; H6 readiness **PASS** on Namtai `054c:1000` + four handsets; Windows physical runtime **NOT RUN**) |
 | clean-room teacher qualification | **OPEN** |
 | **C-3** / **C-6** | **FOUNDATION IMPLEMENTED / UNSIGNED** |
@@ -296,23 +301,44 @@ squash/main `80b287664bccb16c2516802bc64080a82e08faeb` (sole parent
 `ba032bb1326027d5ca0bc0c84c2248b511c8b15d`; accepted/main trees **EXACT
 MATCH** `051793253785f4e7dc9f7bd01966ced847462176`; post-merge CI /
 Playwright / Desktop / Pages / Sonar SUCCESS). Path A foundation only.
-ADR-006 score presentation is **unchanged**. `FUTURE OWNER DECISION STILL
-REQUIRED FOR S05 SCORE-CHANGE REQUIREMENT`. Theatrical board-outcome /
-score choreography remain **unauthorized**. S05 parent remains **OPEN /
-NOT TERMINAL**. Do **not** start S04D, additional S05 presentation
-children, or S06 from this handoff. Next Program action is an **owner
-decision / read-only remaining-S05 reconciliation** (routing ≠ authority).
-REAL MVP is **not** complete. Do **not** claim Windows physical
-qualification, projector/sleep physical qualification, Sony physical
-re-qualification, local hardware qualification for H2 (none required),
-local qualification for H3 (**NONE**), local qualification for H4
-(**NONE**), a browser quota-fill experiment, physical projector
-qualification for F1 / buzz / board-outcome, or a signed release from this
-handoff. This handoff does **not** claim that this docs-only
-terminalization candidate is itself merged, and does **not** predict its
-eventual squash SHA. An accepted **LOW** remains: after a successful Keep,
-the collapsed **More detail about this file** note may still say nothing
-was saved. The primary status line is the durable outcome.
+ADR-006 score presentation is **unchanged**.
+
+```text
+S05 SCORE CHANGE:
+OWNER DECISION RESOLVED — PATH S-C
+```
+
+For REAL MVP, the immediate static authoritative scoreboard update already
+governed by ADR-006 satisfies the S05 score-change major moment. No live
+scoreboard count-up, flash, animate, or re-sort is required for S05
+completion. No separate score-change choreography, public score-change
+event identity, or PublicState bump is required. Future scoreboard
+animation is deferred / banked (not rejected; not authorized) under
+existing `CQS-OPP-PRESENTATION-EFFECTS` only. Theatrical board-outcome
+presentation choreography remains **unauthorized**. S05 parent remains
+**OPEN / NOT TERMINAL**. Do **not** start S04D, additional S05 presentation
+children, or S06 from this handoff.
+
+```text
+Next candidate frontier:
+board-outcome presentation choreography
+— requires separate bounded owner authorization.
+```
+
+Preserve for any future board-outcome presentation child (not authorized
+here): existing `boardOutcome` only; no `outcomeKey` by default; no score
+behavior / score animation / ADR-006 change; Correct remains audio-silent
+unless separately decided; remount must not fabricate “just happened”;
+reduced-motion semantic parity; Host remains restrained. REAL MVP is
+**not** complete. Do **not** claim Windows physical qualification,
+projector/sleep physical qualification, Sony physical re-qualification,
+local hardware qualification for H2 (none required), local qualification
+for H3 (**NONE**), local qualification for H4 (**NONE**), a browser
+quota-fill experiment, physical projector qualification for F1 / buzz /
+board-outcome, or a signed release from this handoff. An accepted **LOW**
+remains: after a successful Keep, the collapsed **More detail about this
+file** note may still say nothing was saved. The primary status line is
+the durable outcome.
 
 ```text
 routing ≠ authority
@@ -327,6 +353,7 @@ S04C: TERMINALLY COMPLETE
 S05-F1: TERMINALLY COMPLETE
 S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05-BOARD-OUTCOME-PUBLIC-AUTHORITY: TERMINALLY COMPLETE
+S05-SCORE-CHANGE: RESOLVED — PATH S-C
 S05 parent: OPEN / NOT TERMINAL
 S04D / additional S05 / S06: NOT AUTHORIZED
 ```
@@ -338,6 +365,9 @@ squash SHA):
 
 S05 board-outcome public authority implementation closeout:
 [`../CQS-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY.md`](../CQS-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY.md).
+
+S05 score-change Path S-C owner-decision registration:
+[`../receipts/2026-09-22-cqs-real-mvp-s05-score-change-path-s-c-owner-decision.md`](../receipts/2026-09-22-cqs-real-mvp-s05-score-change-path-s-c-owner-decision.md).
 
 S05 buzz / active-claim terminal post-merge reconciliation (candidate docs):
 [`../receipts/2026-09-21-cqs-real-mvp-s05-buzz-active-claim-terminal-post-merge-reconciliation.md`](../receipts/2026-09-21-cqs-real-mvp-s05-buzz-active-claim-terminal-post-merge-reconciliation.md).

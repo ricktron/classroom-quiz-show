@@ -205,6 +205,21 @@ audio, or board styling.
 - **No live AI in CQS v1 (2026-08-13, S04 canon):** AI-assisted workbook
   generation occurs outside CQS. S04A direction includes an Import Quality
   Report and Export Generation Feedback loop.
+- **S05 score-change treatment (2026-09-22):** For REAL MVP, the S05
+  “score change” major moment is intentionally satisfied by the immediate
+  static authoritative scoreboard update already governed by
+  [`architecture/ADR-006-teams-and-scoring.md`](architecture/ADR-006-teams-and-scoring.md).
+  ADR-006 remains in force: stable authored team order; no count-up, flash,
+  transition, or live-scoreboard re-sort. No separate score-change
+  choreography, public score-change event identity, or PublicState bump is
+  required for S05 completion. Future scoreboard / score-change animation
+  is deferred and separately owner-gated under
+  `CQS-OPP-PRESENTATION-EFFECTS` in
+  [`plans/POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](plans/POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md)
+  (not rejected; not authorized). See
+  [`plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md`](plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md)
+  §30 and receipt
+  [`receipts/2026-09-22-cqs-real-mvp-s05-score-change-path-s-c-owner-decision.md`](receipts/2026-09-22-cqs-real-mvp-s05-score-change-path-s-c-owner-decision.md).
 
 (These are targets for the engine. As of Slice 8 the `category-board` round
 implements the board, the first scoring strategy implements bounded integer

@@ -120,10 +120,13 @@ Display may become theatrical. Host remains operational and restrained.
 
 **S05-F1** (`CQS-REAL-MVP-S05-F1-CORE-DISPLAY-READABILITY-AND-VISUAL-STRESS`)
 is **TERMINALLY COMPLETE** on main for static Board + Clue Display
-readability and automated visual-stress foundation. Remaining S05 families
-(choreography, Host polish, further presentation) stay later and require
-fresh bounded authorization. The S05 parent remains **OPEN / NOT
-TERMINAL**.
+readability and automated visual-stress foundation. **S05 score-change
+Path S-C** resolves the score-change major moment as the immediate static
+authoritative update (ADR-006 unchanged); animated score presentation is
+**not** mandatory remaining S05 work. Remaining S05 families
+(board-outcome theatrical acknowledgement, board/round-flow, Final /
+winner presentation, Host polish) stay later and require fresh bounded
+authorization. The S05 parent remains **OPEN / NOT TERMINAL**.
 ### S06
 
 Integrated release qualification: Windows-first physical use, projector
@@ -403,7 +406,8 @@ hardware, recovery, and the end-to-end experience.
   COMPLETE** on main after PR #93 (private `correct` adjudication +
   PublicState schema **9** `boardOutcome` + minimal Display text; ADR-006
   score presentation unchanged). Theatrical correct/incorrect **feedback
-  presentation** / score choreography remain S05 — **LATER**.
+  presentation** remains S05 — **LATER**. Score-change choreography is
+  **not** required S05 work after Path S-C (see §18).
 
 ### 18. Scoreboard
 
@@ -416,7 +420,13 @@ hardware, recovery, and the end-to-end experience.
 - **Research routing:** Lupton, Hodent.
 - **Ownership / state:** **ALREADY IMPLEMENTED FOUNDATION**
   (`src/display/TeamScoreboard.tsx`, `src/display/audience/ScoreLayout.tsx`).
-  Score presentation is S05 — **LATER**.
+  **S05 score-change moment (Path S-C, 2026-09-22):** satisfied for REAL
+  MVP by the immediate static authoritative total update already governed
+  by ADR-006 — no live count-up / flash / transition / re-sort; no separate
+  score-change choreography required for S05 terminal completion. Future
+  scoreboard animation remains deferred / banked under
+  `CQS-OPP-PRESENTATION-EFFECTS` (not authorized; not rejected). Animated
+  score presentation is **not** mandatory remaining S05 work.
 
 ### 19. Manual score correction
 
