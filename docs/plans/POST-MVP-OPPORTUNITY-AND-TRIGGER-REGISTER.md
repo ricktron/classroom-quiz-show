@@ -139,7 +139,13 @@ note only *additional* authority where it exists.
     until separately authorized).
   - **Live score-change animation** (count-up / flash / animate totals /
     mid-play re-sort) is **not** pre-authorized by Path S-C or by
-    `CQS-RA2-TEAM-ORDER-01`. Any later proposal requires a fresh owner
+    `CQS-RA2-TEAM-ORDER-01`:
+
+    ```text
+    LIVE SCORE-CHANGE ANIMATION IS NOT PRE-AUTHORIZED.
+    ```
+
+    Any later proposal requires a fresh owner
     decision, ADR-006 review/amendment if necessary, reduced-motion
     equivalent, no flashing dependency, no delayed truth, no score-order
     instability during ordinary gameplay, no animation completion as
