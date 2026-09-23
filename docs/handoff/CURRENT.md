@@ -27,7 +27,7 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S04A–S04C, **S05-F1**, **S05 buzz / active-claim choreography**, and **S05 board-outcome public authority** **TERMINALLY COMPLETE**. **S05 SCORE CHANGE: OWNER DECISION RESOLVED — PATH S-C**. S05 parent **OPEN / NOT TERMINAL**. Next candidate frontier: **board-outcome presentation choreography** (routing ≠ authority; requires separate bounded owner authorization). S04D / additional S05 / S06 remain **NOT AUTHORIZED**. REAL MVP is **not** complete. |
+| Current Program frontier | S04A–S04C, **S05-F1**, **S05 buzz / active-claim choreography**, and **S05 board-outcome public authority** **TERMINALLY COMPLETE**. **S05 SCORE CHANGE: OWNER DECISION RESOLVED — PATH S-C**. **`CQS-REAL-MVP-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY`**: **AUTHORIZED DELIVERY CANDIDATE — REPAIRED** (NOT ACCEPTED / NOT TERMINAL). S05 parent **OPEN / NOT TERMINAL**. Remaining S05 (board/round-flow, Final / winner), S04D, S06 **NOT AUTHORIZED**. REAL MVP is **not** complete. |
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
 | S04 canon | product direction **registered** |
@@ -43,6 +43,7 @@ also read
 | S05 buzz / active-claim choreography | **TERMINALLY COMPLETE** |
 | S05 board-outcome public authority | **TERMINALLY COMPLETE** |
 | S05 score-change owner decision | **RESOLVED — PATH S-C** |
+| S05 board-outcome presentation choreography | **AUTHORIZED DELIVERY CANDIDATE — REPAIRED** (NOT ACCEPTED / NOT TERMINAL) |
 | S05 parent | **OPEN / NOT TERMINAL** |
 | S04D / additional S05 / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
@@ -314,23 +315,21 @@ scoreboard count-up, flash, animate, or re-sort is required for S05
 completion. No separate score-change choreography, public score-change
 event identity, or PublicState bump is required. Future scoreboard
 animation is deferred / banked (not rejected; not authorized) under
-existing `CQS-OPP-PRESENTATION-EFFECTS` only. Theatrical board-outcome
-presentation choreography remains **unauthorized**. S05 parent remains
-**OPEN / NOT TERMINAL**. Do **not** start S04D, additional S05 presentation
-children, or S06 from this handoff.
+existing `CQS-OPP-PRESENTATION-EFFECTS` only.
 
 ```text
-Next candidate frontier:
-board-outcome presentation choreography
-— requires separate bounded owner authorization.
+CQS-REAL-MVP-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY:
+AUTHORIZED DELIVERY CANDIDATE — REPAIRED / NOT ACCEPTED / NOT TERMINAL
 ```
 
-Preserve for any future board-outcome presentation child (not authorized
-here): existing `boardOutcome` only; no `outcomeKey` by default; no score
-behavior / score animation / ADR-006 change; Correct remains audio-silent
-unless separately decided; remount must not fabricate “just happened”;
-reduced-motion semantic parity; Host remains restrained. REAL MVP is
-**not** complete. Do **not** claim Windows physical qualification,
+Delivery evidence (re-observe PR tip; do not treat as terminal):
+[`../CQS-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY.md`](../CQS-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY.md).
+Existing `boardOutcome` only; no `outcomeKey`; Path S-C / ADR-006 unchanged;
+Correct audio-silent; remount must not fabricate “just happened”;
+Incorrect/Passed + active claim → buzz owns motion; Host restrained. S05
+parent remains **OPEN / NOT TERMINAL**. Do **not** start board/round-flow,
+Final/winner, S04D, or S06 from this handoff. REAL MVP is **not** complete.
+Do **not** claim Windows physical qualification,
 projector/sleep physical qualification, Sony physical re-qualification,
 local hardware qualification for H2 (none required), local qualification
 for H3 (**NONE**), local qualification for H4 (**NONE**), a browser
@@ -354,6 +353,7 @@ S05-F1: TERMINALLY COMPLETE
 S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05-BOARD-OUTCOME-PUBLIC-AUTHORITY: TERMINALLY COMPLETE
 S05-SCORE-CHANGE: RESOLVED — PATH S-C
+S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY: AUTHORIZED DELIVERY CANDIDATE — REPAIRED / NOT ACCEPTED / NOT TERMINAL
 S05 parent: OPEN / NOT TERMINAL
 S04D / additional S05 / S06: NOT AUTHORIZED
 ```

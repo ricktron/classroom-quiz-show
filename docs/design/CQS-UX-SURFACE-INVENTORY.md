@@ -123,10 +123,12 @@ is **TERMINALLY COMPLETE** on main for static Board + Clue Display
 readability and automated visual-stress foundation. **S05 score-change
 Path S-C** resolves the score-change major moment as the immediate static
 authoritative update (ADR-006 unchanged); animated score presentation is
-**not** mandatory remaining S05 work. Remaining S05 families
-(board-outcome theatrical acknowledgement, board/round-flow, Final /
-winner presentation, Host polish) stay later and require fresh bounded
-authorization. The S05 parent remains **OPEN / NOT TERMINAL**.
+**not** mandatory remaining S05 work.
+`CQS-REAL-MVP-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY` is an
+**AUTHORIZED DELIVERY CANDIDATE — REPAIRED** only (NOT ACCEPTED / NOT TERMINAL).
+Remaining S05 families (board/round-flow, Final / winner presentation,
+Host polish) stay later and require fresh bounded authorization. The S05
+parent remains **OPEN / NOT TERMINAL**.
 ### S06
 
 Integrated release qualification: Windows-first physical use, projector
@@ -405,9 +407,14 @@ hardware, recovery, and the end-to-end experience.
   `CQS-REAL-MVP-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY` is **TERMINALLY
   COMPLETE** on main after PR #93 (private `correct` adjudication +
   PublicState schema **9** `boardOutcome` + minimal Display text; ADR-006
-  score presentation unchanged). Theatrical correct/incorrect **feedback
-  presentation** remains S05 — **LATER**. Score-change choreography is
-  **not** required S05 work after Path S-C (see §18).
+  score presentation unchanged). Board-outcome **presentation
+  choreography** under
+  `CQS-REAL-MVP-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY` is an
+  **AUTHORIZED DELIVERY CANDIDATE — REPAIRED** only (NOT ACCEPTED / NOT TERMINAL;
+  lifecycle acknowledgement on existing `boardOutcome`; remount-safe seed;
+  Incorrect/Passed + active claim yields motion to buzz; exhausted→late-active
+  handoff clears outcome ack). Score-change
+  choreography is **not** required S05 work after Path S-C (see §18).
 
 ### 18. Scoreboard
 

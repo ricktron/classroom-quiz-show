@@ -158,7 +158,16 @@ export function SignalRail({
           observed identity transition rather than a remount catch-up seed.
         */}
         <BuzzQueueDisplay buzz={response.buzz} teams={teams} />
-        <BoardOutcomeDisplay boardOutcome={response.boardOutcome} teams={teams} />
+        {/*
+          activeClaimPresent is local composition only (not PublicState). When
+          Incorrect/Passed coexists with a promoted active claim, buzz owns
+          acknowledgement motion and BoardOutcome stays static secondary.
+        */}
+        <BoardOutcomeDisplay
+          boardOutcome={response.boardOutcome}
+          teams={teams}
+          activeClaimPresent={response.buzz.status === 'active'}
+        />
       </aside>
     )
   }
