@@ -880,6 +880,27 @@ Intentionally design major game moments:
 - Final answer / reveal
 - winner celebration
 
+**Score change (REAL MVP / Path S-C, 2026-09-22):** the moment remains in
+this list. For REAL MVP it is intentionally designed as a **quiet
+authoritative update** — the immediate static scoreboard total change
+already governed by ADR-006 — not an animated effect. Interpretation:
+
+```text
+score change
+→ immediate authoritative static scoreboard update
+→ no additional choreography required for REAL MVP
+→ ADR-006 unchanged
+```
+
+No live count-up, flash, transition, or re-sort. No separate score-change
+event identity or PublicState bump for S05. Future scoreboard animation
+remains deferred / banked (not rejected) under
+`CQS-OPP-PRESENTATION-EFFECTS` and is distinct from
+`CQS-RA2-TEAM-ORDER-01` optional ceremonial between-round / game-end
+motion. See
+[`../PROJECT.md`](../PROJECT.md) Approved product decisions and
+[`../receipts/2026-09-22-cqs-real-mvp-s05-score-change-path-s-c-owner-decision.md`](../receipts/2026-09-22-cqs-real-mvp-s05-score-change-path-s-c-owner-decision.md).
+
 Use restrained, intentional motion / audio. Preserve reduced-motion
 equivalents.
 

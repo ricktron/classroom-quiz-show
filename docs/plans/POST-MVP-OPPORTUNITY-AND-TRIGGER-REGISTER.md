@@ -116,6 +116,7 @@ note only *additional* authority where it exists.
   between-round leaderboard motion, entrance effects, sound packs, and a
   future **theme song / opening music identity**.
 - **Activation:** `post-mvp-priority` · **Arc:** `CQS-ARC-IDENTITY`
+  · **State:** **INACTIVE** (not triggered; not authorized)
 - **Not the same as MVP Slice 22:** Amendment 004 plans a tiny **generic**
   application-owned cue layer as MVP Slice 22 — Minimal Presentation Audio.
   That slice does **not** activate this opportunity and does **not** include
@@ -127,6 +128,25 @@ note only *additional* authority where it exists.
   Licensing-safe **generic** application cues are an explicit Slice 22
   requirement and do **not** imply all presentation-audio licensing questions
   are solved.
+- **Banked (2026-09-22, S05 Path S-C — not rejected; not authorized):**
+  owner direction banks later exploration of scoreboard animation,
+  score-change acknowledgement, and ceremonial score / leaderboard
+  presentation under this **existing** opportunity only (no duplicate
+  opportunity id). Distinction:
+  - **`CQS-RA2-TEAM-ORDER-01`** already preserves optional ceremonial
+    score-order transitions **between rounds and at game end**, returning
+    to stable authored positions afterward (presentation-only; not active
+    until separately authorized).
+  - **Live score-change animation** (count-up / flash / animate totals /
+    mid-play re-sort) is **not** pre-authorized by Path S-C or by
+    `CQS-RA2-TEAM-ORDER-01`. Any later proposal requires a fresh owner
+    decision, ADR-006 review/amendment if necessary, reduced-motion
+    equivalent, no flashing dependency, no delayed truth, no score-order
+    instability during ordinary gameplay, no animation completion as
+    gameplay authority, and lifecycle/remount truthfulness.
+  - REAL MVP S05 score-change moment is already satisfied by the immediate
+    static authoritative update (Path S-C); see
+    [`../receipts/2026-09-22-cqs-real-mvp-s05-score-change-path-s-c-owner-decision.md`](../receipts/2026-09-22-cqs-real-mvp-s05-score-change-path-s-c-owner-decision.md).
 - **Dependencies:** theme/token foundation and audience display (MVP Slices
   17–18); preferably after MVP Slice 22’s minimal cue layer if that ships;
   `CQS-RA2-TEAM-ORDER-01` bounds; accessibility requirements of §10.4.
