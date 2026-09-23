@@ -7,14 +7,15 @@ only; never gameplay authority; never delayed authoritative text.
 
 - **Authorization:**
   `AUTHORIZE-CQS-REAL-MVP-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY-1`
+- **Repair auth:**
+  `AUTHORIZE-CQS-REAL-MVP-S05-PR96-PRESENTATION-F-HANDOFF-EVIDENCE-DOCS-REPAIR-1`
+- **Terminalization authorization (this packet):**
+  `AUTHORIZE-CQS-REAL-MVP-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY-TERMINALIZATION-CANDIDATE-1`
 - **Tranche:**
   `CQS-REAL-MVP-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY`
 - **Parent:** `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
   (parent remains **OPEN / NOT TERMINAL**)
-- **Tranche status:** **AUTHORIZED DELIVERY CANDIDATE — REPAIRED / NOT ACCEPTED / NOT TERMINAL**
-- **Repair auth:**
-  `AUTHORIZE-CQS-REAL-MVP-S05-PR96-PRESENTATION-F-HANDOFF-EVIDENCE-DOCS-REPAIR-1`
-- **Rejected tip (pre-repair):** `ff424e0ac044f03c1af64694f196b1969dbd7a4a`
+- **Tranche status:** **TERMINALLY COMPLETE**
 - **Date (UTC):** 2026-09-23
 
 ```text
@@ -26,9 +27,23 @@ Path S-C: score refresh must not restart outcome ack
 Correct audio-silent; no new sounds; Host unchanged
 PublicState 9 / sync 2 / persistence 1 unchanged
 no outcomeKey / no ADR-006 reopen
-child delivery ≠ parent terminal
+child terminal ≠ parent terminal
 Stop for Rick
 ```
+
+### Review / repair / merge chain (observed)
+
+| Head | Verdict |
+| --- | --- |
+| `ff424e0ac044f03c1af64694f196b1969dbd7a4a` | **REPAIR REQUIRED** — independent exact-head review: F-HANDOFF, F-RAPID-STALE, F-PASSED-ACTIVE, F-REDUCED-MOTION-PROOF, F-CLOSEOUT-HEAD-TRUTH |
+| `24a52dc0148fcf8457cda1607c72a185acc1a0e6` | intermediate repair (F-HANDOFF + evidence + docs) — not independently accepted alone |
+| `e9744bf168d40f9b5d8fe916139e4a21903bc61c` | **ACCEPT CANDIDATE** (Sonar dedupe `it.each` + shared e2e helper on repaired tip) |
+| squash / main `36efee350961ac58f4670cb3cb495997b3487311` | **MERGED** (PR #96; sole parent `ff335f2…`; trees **EXACT MATCH** `56941fb4…`) |
+
+Repair alone did **not** mark this tranche independently accepted. Do not
+flatten the rejected-tip → ACCEPT lineage to first-pass success. Do not
+reopen closed F-HANDOFF / F-RAPID-STALE / F-PASSED-ACTIVE /
+F-REDUCED-MOTION-PROOF / F-CLOSEOUT-HEAD-TRUTH as still-broken.
 
 ---
 
@@ -36,13 +51,17 @@ Stop for Rick
 
 | Fact | Value |
 | --- | --- |
-| Canonical base | `ff335f2cf005a7fb1b06a9588b67894d523ccb6f` |
-| Branch | `feat/cqs-real-mvp-s05-board-outcome-presentation-choreography` |
-| Exact tip | **Re-observe from GitHub** PR [#96](https://github.com/ricktron/classroom-quiz-show/pull/96) head (do not pin a self-predicting Exact-head SHA in this durable closeout) |
-| PR | [#96](https://github.com/ricktron/classroom-quiz-show/pull/96) (non-draft; auto-merge off) |
-| Rejected tip (exact-head review) | `ff424e0ac044f03c1af64694f196b1969dbd7a4a` — **REPAIR REQUIRED** findings applied under repair auth above |
-| Product verification tip (historical) | `385fc6d54cab639db9a7e6cc9b36969d79ff88d0` (CI-green product tip before docs-only / repair commits; not the live Exact head) |
-| Intervening main after expected base | **none** at branch creation (`origin/main` === base) |
+| Canonical implementation base | `ff335f2cf005a7fb1b06a9588b67894d523ccb6f` |
+| Implementation branch | `feat/cqs-real-mvp-s05-board-outcome-presentation-choreography` |
+| Accepted implementation head | `e9744bf168d40f9b5d8fe916139e4a21903bc61c` |
+| Squash / main | `36efee350961ac58f4670cb3cb495997b3487311` |
+| PR | [#96](https://github.com/ricktron/classroom-quiz-show/pull/96) **MERGED** |
+| Rejected tip (exact-head review) | `ff424e0ac044f03c1af64694f196b1969dbd7a4a` — **REPAIR REQUIRED** |
+| Product verification tip (historical) | `385fc6d54cab639db9a7e6cc9b36969d79ff88d0` (CI-green product tip before docs-only / repair commits; not the accepted Exact head) |
+
+Intervening `origin/main` delta after expected implementation squash at start
+of this terminalization packet: **none** (canonical main remains
+`36efee3…`).
 
 ---
 
@@ -170,8 +189,8 @@ BuzzQueueDisplay production untouched. No reducer / sanitizer / Host / scoreboar
   `animationName === 'none'` (+ no-preference non-none) / high-contrast;
   720p + 1080p
 - Re-run Path A authority + buzz choreography + F1 stress as regression
-- `git diff --check`; `npm run verify`; `npm run verify:all` (report exact)
-- Sonar QG — no threshold weaken / no NOSONAR — re-observe on repaired tip
+- `git diff --check`; CI unit / Playwright / Desktop / Sonar on accepted tip
+  and post-merge main (report exact; local BroadcastChannel baseline may fail)
 
 ---
 
@@ -182,28 +201,19 @@ Keyboard Host→Display path covered by injection e2e. Physical Sony / projector
 
 ---
 
-## L. Verification (local — re-observe on PR tip)
+## L. Verification (historical tip evidence preserved)
 
 Historical product-verification tip `385fc6d…` and rejected tip `ff424e0…`
-retained as qualified history. **Live Exact tip: re-observe from GitHub**
-PR [#96](https://github.com/ricktron/classroom-quiz-show/pull/96) after repair
-push — do not self-pin here.
+retained as qualified history. Accepted implementation tip
+`e9744bf168d40f9b5d8fe916139e4a21903bc61c` and squash/main
+`36efee350961ac58f4670cb3cb495997b3487311` are the terminal identity pins
+(§T).
 
-Observed on this repair working tree (pre-push; tip advances on push):
-
-| Check | Result |
-| --- | --- |
-| `git diff --check` | **clean** (exit 0) |
-| Focused unit (BoardOutcomeDisplay, SignalRail, BuzzQueueDisplay, AudienceDisplayShell) | **61 passed** (includes F-HANDOFF / F-RAPID-STALE / F-PASSED-ACTIVE / clear-reset) |
-| Lint / typecheck | **clean** (3 pre-existing ThemeProvider react-refresh warnings only; 0 errors; `tsc -b --noEmit` clean) |
-| `npm run verify` | local `usePublicState` BroadcastChannel `MessageEvent` / `ERR_INVALID_ARG_TYPE` failure reproduces on this VM (jsdom + Node BroadcastChannel) — **baseline**, not introduced by this repair. **Do not claim local verify green.** Re-observe CI unit on repaired tip. |
-| E2E presentation @ 720p/1080p | **19 passed**, 3 skipped (720p-only on 1080p) |
-| E2E authority + buzz @ 720p/1080p | **24 passed**, 2 skipped |
-| E2E F1 stress (local) | `desktop-1080p` prompt scrollHeight **1px** over tolerance (355 vs ≤354) — environment font metric (same class as prior tip); **re-observe CI Playwright** |
-| `npm run verify:all` | not claimed as local green (blocked by BroadcastChannel baseline) |
-| BroadcastChannel baseline | **Honest:** local VM fail; CI unit job is authoritative when local fails |
-| SonarCloud | Re-observe QG / issues / hotspots / duplication on repaired tip — no threshold weaken / no NOSONAR |
-| Desktop / CI gates | Re-observe on repaired tip |
+Post-merge workflows on exact main `36efee3…`: CI, Playwright, Desktop
+artifacts (unsigned macOS + Windows), Pages, and SonarCloud check-run —
+all **SUCCESS**. PR-head Sonar inventory (**11** `typescript:S1607`;
+~**1.3%** dup) remains separate tip evidence; do not transplant unrelated
+branch Sonar dashboard metrics onto main.
 
 Physical qualification remains **S06** and is **not** claimed.
 
@@ -216,8 +226,7 @@ Physical qualification remains **S06** and is **not** claimed.
 | PublicState / schema / version bumps / `outcomeKey` / event identity / timestamps / animation ids | **Yes** |
 | Scoring / score animation / ADR-006 / OPP activation / new audio / Host redesign | **Yes** |
 | Reducer / command-event / sanitizer / persistence / sync / Final / board-flow / winner | **Yes** |
-| Merge / auto-merge / S05 parent terminalization / S04D / S06 / release | **Yes** |
-| Transplant if `origin/main` ≠ base | **N/A** — exact match at start |
+| S05 parent terminalization / S04D / S06 / release | **Yes** |
 
 ---
 
@@ -251,11 +260,9 @@ NOT TERMINAL**.
 | --- | --- |
 | ADR-006 | **Unchanged** — Path S-C preserved |
 | ADR-020 | **Unchanged** — board Correct silent |
-| STATUS / CURRENT / ARC | Living routing: this child **AUTHORIZED DELIVERY CANDIDATE**; parent OPEN; Path S-C registered |
-| UX inventory §17 | Theatrical presentation registered as delivery candidate (not terminal) |
-| This doc | Delivery closeout — **NOT ACCEPTED / NOT TERMINAL** |
-
-No terminal receipt. No historical rewrite.
+| STATUS / CURRENT / ARC | Living routing reconciled to child **TERMINALLY COMPLETE**; parent OPEN; Path S-C registered; remaining = board/round-flow · Final · winner |
+| UX inventory §17 | Presentation choreography registered as **TERMINALLY COMPLETE** |
+| This doc | Implementation closeout + terminal identity; preserves rejected/repair chain; does **not** claim this docs-only terminalization PR is merged |
 
 ---
 
@@ -277,45 +284,78 @@ No terminal receipt. No historical rewrite.
 
 ---
 
-## R. PR state
+## R. Implementation PR state (historical)
 
 | Fact | Value |
 | --- | --- |
 | Title | `feat(s05): add board-outcome presentation choreography` |
-| PR | [#96](https://github.com/ricktron/classroom-quiz-show/pull/96) |
-| Head | **Re-observe from GitHub** (rejected tip `ff424e0…`; repaired tip after push) |
-| Draft | **false** (non-draft) |
-| Auto-merge | **OFF** (`autoMergeRequest` null) |
-| Merge | **Do not merge** (Stop for Rick) |
-| Next | Fresh independent exact-head re-review of repaired tip |
+| PR | [#96](https://github.com/ricktron/classroom-quiz-show/pull/96) **MERGED** |
+| Accepted head | `e9744bf168d40f9b5d8fe916139e4a21903bc61c` |
+| Squash / main | `36efee350961ac58f4670cb3cb495997b3487311` |
+| Rejected tip | `ff424e0ac044f03c1af64694f196b1969dbd7a4a` |
 
 ---
 
 ## S. Explicit non-claims
 
-- Not independently accepted / not terminally complete
 - Not S05 parent terminal
-- Not PublicState / schema / score / audio / Host change
+- Not PublicState / schema / score animation / audio / Host change
+- Not board/round-flow / Final / winner authorization
 - Not S04D / S06 / release / physical projector qualification
 - Not `outcomeKey`
-- Not ACCEPT CANDIDATE from this repair alone
+- Not a claim that this docs-only terminalization PR is merged
+- Does **not** predict this terminalization PR’s eventual squash SHA
 
 ---
 
-## T. Status label
+## T. Post-merge identity
 
-```text
-AUTHORIZED DELIVERY CANDIDATE — REPAIRED / NOT ACCEPTED / NOT TERMINAL
-```
+| Fact | Value |
+| --- | --- |
+| PR | [#96](https://github.com/ricktron/classroom-quiz-show/pull/96) **MERGED** |
+| Rejected tip | `ff424e0ac044f03c1af64694f196b1969dbd7a4a` — **REPAIR REQUIRED** |
+| Accepted implementation head | `e9744bf168d40f9b5d8fe916139e4a21903bc61c` → **ACCEPT CANDIDATE** |
+| Squash / main | `36efee350961ac58f4670cb3cb495997b3487311` |
+| Sole parent | `ff335f2cf005a7fb1b06a9588b67894d523ccb6f` |
+| Accepted / main tree | **EXACT MATCH** `56941fb4f404c5adcbbfbe9de976c29a8f2c9f05` |
+| Post-merge workflows | CI, Playwright, Desktop artifacts (unsigned macOS + Windows), Pages, SonarCloud check-run — all **SUCCESS** |
+| Tranche status | **TERMINALLY COMPLETE** |
+| Parent status | **OPEN / NOT TERMINAL** |
+
+Terminal post-merge reconciliation:
+[`receipts/2026-09-23-cqs-real-mvp-s05-board-outcome-presentation-choreography-terminal-post-merge-reconciliation.md`](receipts/2026-09-23-cqs-real-mvp-s05-board-outcome-presentation-choreography-terminal-post-merge-reconciliation.md).
 
 ---
 
 ## U. Next owner decision
 
-Rick: **fresh** exact-head re-review of the repaired tip → accept / repair /
-reject. Do **not** merge from this packet. Do **not** terminalize S05 parent.
-Do **not** start board/round-flow, Final, S04D, or S06 from this closeout.
+**Independent exact-head review of the docs-only S05 board-outcome
+presentation choreography terminalization candidate** that carries the
+terminal receipt and current-routing reconciliation.
+
+Does not authorize merge of that docs PR, board/round-flow / Final / winner,
+S04D, S06, S05 parent terminalization, score animation / ADR-006 reopen, or
+REAL MVP complete.
 
 ```text
 Stop for Rick.
+TERMINALLY COMPLETE (presentation child) — S05 parent OPEN / NOT TERMINAL
+accepted e9744bf… → squash 36efee3… tree EXACT MATCH 56941fb4…
+rejected lineage preserved: ff424e0… REPAIR REQUIRED
+Path S-C registered; score animation banked; no outcomeKey; ADR-006 closed
+remaining S05: board/round-flow · Final · winner
 ```
+
+---
+
+## Appendix — Implementation merge pin
+
+| Fact | Value |
+| --- | --- |
+| PR | https://github.com/ricktron/classroom-quiz-show/pull/96 |
+| Accepted head | `e9744bf168d40f9b5d8fe916139e4a21903bc61c` |
+| Squash / main | `36efee350961ac58f4670cb3cb495997b3487311` |
+| Trees | **EXACT MATCH** `56941fb4f404c5adcbbfbe9de976c29a8f2c9f05` |
+| Rejected exact head | `ff424e0ac044f03c1af64694f196b1969dbd7a4a` — **REPAIR REQUIRED** |
+| Implementation merge | **MERGED** (squash) |
+| Docs terminalization PR | separate candidate; auto-merge **off**; do **not** merge without exact-head review |
