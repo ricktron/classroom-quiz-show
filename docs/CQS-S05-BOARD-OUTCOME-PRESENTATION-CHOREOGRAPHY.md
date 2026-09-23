@@ -34,8 +34,9 @@ Stop for Rick
 | --- | --- |
 | Canonical base | `ff335f2cf005a7fb1b06a9588b67894d523ccb6f` |
 | Branch | `feat/cqs-real-mvp-s05-board-outcome-presentation-choreography` |
-| Exact head | `5a1354fd8032c053adef352996e4f61b03dcfb5d` |
+| Exact head | `5a1354fd8032c053adef352996e4f61b03dcfb5d` (docs verify-fill tip; re-observe PR tip if advanced) |
 | PR | [#96](https://github.com/ricktron/classroom-quiz-show/pull/96) (non-draft; auto-merge off) |
+| Product verification tip | `385fc6d54cab639db9a7e6cc9b36969d79ff88d0` (CI green matrix) |
 | Intervening main after expected base | **none** at branch creation (`origin/main` === base) |
 
 ---
