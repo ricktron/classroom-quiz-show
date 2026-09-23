@@ -34,7 +34,7 @@ Stop for Rick
 | --- | --- |
 | Canonical implementation base | `89c952344843f4924c84b1719ef93a3881372ecd` |
 | Implementation branch | `cursor/cqs-real-mvp-s05-board-round-flow-presentation-fb16` |
-| Exact head | `4c5b575871a2823576d165758425d65633e9bc18` |
+| Exact head | `a817d1f08876b0afaf7f1f8c896466a182f40c25` |
 | PR | [#98](https://github.com/ricktron/classroom-quiz-show/pull/98) — non-draft; auto-merge **OFF** |
 
 ---
