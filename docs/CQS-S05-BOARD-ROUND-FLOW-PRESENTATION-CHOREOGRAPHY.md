@@ -33,9 +33,9 @@ Stop for Rick
 | Fact | Value |
 | --- | --- |
 | Canonical implementation base | `89c952344843f4924c84b1719ef93a3881372ecd` |
-| Implementation branch | `feat/cqs-real-mvp-s05-board-round-flow-presentation` |
-| Exact head | *(re-observe at delivery tip; do not predict merge SHA)* |
-| PR | *(delivery PR number after open — non-draft; auto-merge OFF)* |
+| Implementation branch | `cursor/cqs-real-mvp-s05-board-round-flow-presentation-fb16` |
+| Exact head | `4c5b575871a2823576d165758425d65633e9bc18` |
+| PR | [#98](https://github.com/ricktron/classroom-quiz-show/pull/98) — non-draft; auto-merge **OFF** |
 
 ---
 
@@ -113,10 +113,22 @@ untouched. No reducer / sanitizer changes.
 
 ## J–R. Verification / non-claims
 
-See delivery PR and Project store closeout for exact commands, CI, and Sonar
-metrics observed at tip. Physical S06 not claimed. Parent not terminalized.
-Successor `CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY`
-named only — **not authorized**.
+| Check | Result (tip `4c5b575…`) |
+| --- | --- |
+| `git diff --check` | clean |
+| lint / typecheck / build | pass (3 pre-existing ThemeProvider warnings) |
+| Focused unit | 59 passed |
+| Full unit | known local BroadcastChannel/`usePublicState` baseline fail — not claimed pass |
+| New board-flow e2e | 18 passed / 2 skipped (720p+1080p) |
+| Regression (outcome auth+presentation, buzz, F1 720p) | passed |
+| Sonar MCP | unavailable this run — report CI check-run; no NOSONAR |
+
+Physical S06 not claimed. Parent not terminalized. Successor
+`CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY` named only —
+**not authorized**.
+
+PR: [#98](https://github.com/ricktron/classroom-quiz-show/pull/98) — non-draft;
+auto-merge **OFF**.
 
 ---
 
