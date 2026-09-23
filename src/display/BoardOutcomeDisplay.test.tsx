@@ -99,25 +99,39 @@ describe('outcome acknowledgement choreography', () => {
     expect(el).toHaveClass('bod--outcome-changed')
   })
 
-  it('Incorrect + active claim is immediate static secondary (buzz owns motion)', () => {
-    vi.useFakeTimers()
-    const { rerender } = renderOutcome({ status: 'none' })
-    rerender(
-      <BoardOutcomeDisplay
-        boardOutcome={{ status: 'resolved', teamKey: 't0', kind: 'incorrect' }}
-        teams={TEAMS}
-        activeClaimPresent={true}
-      />,
-    )
-    const el = screen.getByTestId('board-outcome')
-    expect(el).toHaveTextContent('Incorrect')
-    expect(el).toHaveTextContent('Red Team')
-    expect(el).toHaveAttribute('data-outcome-changed', 'false')
-    expect(el).not.toHaveClass('bod--outcome-changed')
-    expect(el).toHaveClass('bod--secondary')
-    expect(el).toHaveAttribute('data-motion-owner', 'buzz')
-    expect(el).toHaveAttribute('data-composition', 'static-secondary')
-  })
+  it.each([
+    { kind: 'incorrect' as const, label: 'Incorrect', assertKindClass: null },
+    {
+      kind: 'passed' as const,
+      label: 'Passed',
+      assertKindClass: 'bod--passed' as const,
+    },
+  ])(
+    '$label + active claim is immediate static secondary (buzz owns motion)',
+    ({ kind, label, assertKindClass }) => {
+      vi.useFakeTimers()
+      const { rerender } = renderOutcome({ status: 'none' })
+      rerender(
+        <BoardOutcomeDisplay
+          boardOutcome={{ status: 'resolved', teamKey: 't0', kind }}
+          teams={TEAMS}
+          activeClaimPresent={true}
+        />,
+      )
+      const el = screen.getByTestId('board-outcome')
+      expect(el).toHaveTextContent(label)
+      expect(el).toHaveTextContent('Red Team')
+      expect(el).toHaveAttribute('data-outcome-changed', 'false')
+      expect(el).not.toHaveClass('bod--outcome-changed')
+      expect(el).toHaveClass('bod--secondary')
+      expect(el).toHaveAttribute('data-motion-owner', 'buzz')
+      expect(el).toHaveAttribute('data-composition', 'static-secondary')
+      if (assertKindClass) {
+        expect(el).toHaveClass(assertKindClass)
+        expect(el).not.toHaveClass('bod--incorrect')
+      }
+    },
+  )
 
   it('Passed + exhausted (no active claim) may own acknowledgement motion', () => {
     vi.useFakeTimers()
@@ -203,114 +217,62 @@ describe('outcome acknowledgement choreography', () => {
     expect(el).toHaveAttribute('data-motion-owner', 'buzz')
   })
 
-  it('F-HANDOFF: Incorrect exhausted→late active clears outcome ack; no late re-ack', () => {
-    vi.useFakeTimers()
-    const { rerender } = renderOutcome({ status: 'none' })
-    rerender(
-      <BoardOutcomeDisplay
-        boardOutcome={{ status: 'resolved', teamKey: 't0', kind: 'incorrect' }}
-        teams={TEAMS}
-        activeClaimPresent={false}
-      />,
-    )
-    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-changed', 'true')
-    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-motion-owner', 'outcome')
+  it.each([
+    { kind: 'incorrect' as const, label: 'Incorrect' },
+    { kind: 'passed' as const, label: 'Passed' },
+  ])(
+    'F-HANDOFF: $label exhausted→late active clears outcome ack; no late re-ack',
+    ({ kind, label }) => {
+      vi.useFakeTimers()
+      const { rerender } = renderOutcome({ status: 'none' })
+      rerender(
+        <BoardOutcomeDisplay
+          boardOutcome={{ status: 'resolved', teamKey: 't0', kind }}
+          teams={TEAMS}
+          activeClaimPresent={false}
+        />,
+      )
+      expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-changed', 'true')
+      expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-motion-owner', 'outcome')
 
-    // Late buzz while hold active: same semanticId, ownsAck true→false.
-    rerender(
-      <BoardOutcomeDisplay
-        boardOutcome={{ status: 'resolved', teamKey: 't0', kind: 'incorrect' }}
-        teams={TEAMS}
-        activeClaimPresent={true}
-      />,
-    )
-    const afterHandoff = screen.getByTestId('board-outcome')
-    expect(afterHandoff).toHaveTextContent('Incorrect')
-    expect(afterHandoff).toHaveAttribute('data-outcome-changed', 'false')
-    expect(afterHandoff).not.toHaveClass('bod--outcome-changed')
-    expect(afterHandoff).toHaveClass('bod--secondary')
-    expect(afterHandoff).toHaveAttribute('data-motion-owner', 'buzz')
-    expect(afterHandoff).toHaveAttribute('data-composition', 'static-secondary')
+      // Late buzz while hold active: same semanticId, ownsAck true→false.
+      rerender(
+        <BoardOutcomeDisplay
+          boardOutcome={{ status: 'resolved', teamKey: 't0', kind }}
+          teams={TEAMS}
+          activeClaimPresent={true}
+        />,
+      )
+      const afterHandoff = screen.getByTestId('board-outcome')
+      expect(afterHandoff).toHaveTextContent(label)
+      expect(afterHandoff).toHaveAttribute('data-outcome-changed', 'false')
+      expect(afterHandoff).not.toHaveClass('bod--outcome-changed')
+      expect(afterHandoff).toHaveClass('bod--secondary')
+      expect(afterHandoff).toHaveAttribute('data-motion-owner', 'buzz')
+      expect(afterHandoff).toHaveAttribute('data-composition', 'static-secondary')
+      if (kind === 'passed') {
+        expect(afterHandoff).not.toHaveClass('bod--incorrect')
+      }
 
-    // Stale A hold timeout must stay harmless (ack already cleared).
-    act(() => {
-      vi.advanceTimersByTime(420)
-    })
-    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-changed', 'false')
+      // Stale A hold timeout must stay harmless (ack already cleared).
+      act(() => {
+        vi.advanceTimersByTime(420)
+      })
+      expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-changed', 'false')
 
-    // ownsAck false→true same id must not late-ack.
-    rerender(
-      <BoardOutcomeDisplay
-        boardOutcome={{ status: 'resolved', teamKey: 't0', kind: 'incorrect' }}
-        teams={TEAMS}
-        activeClaimPresent={false}
-      />,
-    )
-    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-changed', 'false')
-    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-motion-owner', 'outcome')
-    expect(screen.getByTestId('board-outcome')).toHaveTextContent('Incorrect')
-  })
-
-  it('F-HANDOFF: Passed exhausted→late active clears outcome ack; no late re-ack', () => {
-    vi.useFakeTimers()
-    const { rerender } = renderOutcome({ status: 'none' })
-    rerender(
-      <BoardOutcomeDisplay
-        boardOutcome={{ status: 'resolved', teamKey: 't0', kind: 'passed' }}
-        teams={TEAMS}
-        activeClaimPresent={false}
-      />,
-    )
-    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-changed', 'true')
-
-    rerender(
-      <BoardOutcomeDisplay
-        boardOutcome={{ status: 'resolved', teamKey: 't0', kind: 'passed' }}
-        teams={TEAMS}
-        activeClaimPresent={true}
-      />,
-    )
-    const el = screen.getByTestId('board-outcome')
-    expect(el).toHaveTextContent('Passed')
-    expect(el).toHaveAttribute('data-outcome-changed', 'false')
-    expect(el).toHaveClass('bod--secondary')
-    expect(el).toHaveAttribute('data-motion-owner', 'buzz')
-    expect(el).not.toHaveClass('bod--incorrect')
-
-    act(() => {
-      vi.advanceTimersByTime(420)
-    })
-    rerender(
-      <BoardOutcomeDisplay
-        boardOutcome={{ status: 'resolved', teamKey: 't0', kind: 'passed' }}
-        teams={TEAMS}
-        activeClaimPresent={false}
-      />,
-    )
-    expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-changed', 'false')
-  })
-
-  it('F-PASSED-ACTIVE: Passed + active claim is immediate static secondary', () => {
-    vi.useFakeTimers()
-    const { rerender } = renderOutcome({ status: 'none' })
-    rerender(
-      <BoardOutcomeDisplay
-        boardOutcome={{ status: 'resolved', teamKey: 't0', kind: 'passed' }}
-        teams={TEAMS}
-        activeClaimPresent={true}
-      />,
-    )
-    const el = screen.getByTestId('board-outcome')
-    expect(el).toHaveTextContent('Passed')
-    expect(el).toHaveTextContent('Red Team')
-    expect(el).toHaveAttribute('data-outcome-changed', 'false')
-    expect(el).not.toHaveClass('bod--outcome-changed')
-    expect(el).toHaveClass('bod--secondary')
-    expect(el).toHaveClass('bod--passed')
-    expect(el).not.toHaveClass('bod--incorrect')
-    expect(el).toHaveAttribute('data-motion-owner', 'buzz')
-    expect(el).toHaveAttribute('data-composition', 'static-secondary')
-  })
+      // ownsAck false→true same id must not late-ack.
+      rerender(
+        <BoardOutcomeDisplay
+          boardOutcome={{ status: 'resolved', teamKey: 't0', kind }}
+          teams={TEAMS}
+          activeClaimPresent={false}
+        />,
+      )
+      expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-changed', 'false')
+      expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-motion-owner', 'outcome')
+      expect(screen.getByTestId('board-outcome')).toHaveTextContent(label)
+    },
+  )
 
   it('F-RAPID-STALE: rapid A→B before hold; stale A timer cannot clear B early', () => {
     vi.useFakeTimers()

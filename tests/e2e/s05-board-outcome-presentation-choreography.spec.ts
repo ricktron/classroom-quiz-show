@@ -68,6 +68,30 @@ async function assertOutcomeChromeInsideBox(page: Page) {
   expect(report.transform === 'none' || report.transform === 'matrix(1, 0, 0, 1, 0, 0)').toBe(true)
 }
 
+/** Outcome is static secondary beside promoted active claim (buzz owns motion). */
+async function assertOutcomeStaticSecondaryBesideBuzz(
+  page: Page,
+  kindText: string,
+  options?: { readonly expectClaimChanged?: boolean; readonly passedNotDanger?: boolean },
+) {
+  const outcome = page.getByTestId('board-outcome')
+  await expect(outcome).toContainText(kindText)
+  await expect(outcome).toContainText(FIRST_TEAM)
+  await expect(outcome).toHaveAttribute('data-outcome-changed', 'false')
+  await expect(outcome).not.toHaveClass(/bod--outcome-changed/)
+  await expect(outcome).toHaveClass(/bod--secondary/)
+  await expect(outcome).toHaveAttribute('data-motion-owner', 'buzz')
+  await expect(outcome).toHaveAttribute('data-composition', 'static-secondary')
+  if (options?.passedNotDanger) {
+    await expect(outcome).toHaveClass(/bod--passed/)
+    await expect(outcome).not.toHaveClass(/bod--incorrect/)
+  }
+  await expect(page.getByTestId('bqd-active')).toContainText(SECOND_TEAM)
+  if (options?.expectClaimChanged !== false) {
+    await expect(page.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
+  }
+}
+
 test.describe('S05 board-outcome presentation choreography', () => {
   test('remount into Correct seeds truth without fabricating acknowledgement', async ({
     page,
@@ -121,18 +145,30 @@ test.describe('S05 board-outcome presentation choreography', () => {
     await openDisplay(page)
     await injectPublicState(page, visualStressArmedWaitingBuzzSnapshot(149))
     await injectPublicState(page, visualStressBoardIncorrectWithActiveSnapshot(151))
+    await assertOutcomeStaticSecondaryBesideBuzz(page, 'Incorrect')
+    await assertNoHorizontalOverflow(page)
+  })
 
-    const outcome = page.getByTestId('board-outcome')
-    await expect(outcome).toContainText('Incorrect')
-    await expect(outcome).toContainText(FIRST_TEAM)
-    await expect(outcome).toHaveAttribute('data-outcome-changed', 'false')
-    await expect(outcome).not.toHaveClass(/bod--outcome-changed/)
-    await expect(outcome).toHaveClass(/bod--secondary/)
-    await expect(outcome).toHaveAttribute('data-motion-owner', 'buzz')
-    await expect(outcome).toHaveAttribute('data-composition', 'static-secondary')
-
-    await expect(page.getByTestId('bqd-active')).toContainText(SECOND_TEAM)
-    await expect(page.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
+  test('F-PASSED-ACTIVE: Passed + promoted active is static secondary', async ({
+    page,
+  }, info) => {
+    test.skip(
+      info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
+      'projector viewports only',
+    )
+    await openDisplay(page)
+    await injectPublicState(page, visualStressArmedWaitingBuzzSnapshot(149))
+    const passedActive: PublicState = structuredClone(
+      visualStressBoardIncorrectWithActiveSnapshot(162),
+    )
+    if (passedActive.response?.boardOutcome.status === 'resolved') {
+      passedActive.response.boardOutcome = {
+        ...passedActive.response.boardOutcome,
+        kind: 'passed',
+      }
+    }
+    await injectPublicState(page, passedActive)
+    await assertOutcomeStaticSecondaryBesideBuzz(page, 'Passed', { passedNotDanger: true })
     await assertNoHorizontalOverflow(page)
   })
 
@@ -293,48 +329,7 @@ test.describe('S05 board-outcome presentation choreography', () => {
       }
     }
     await injectPublicState(page, lateBuzz)
-    await expect(outcome).toContainText('Incorrect')
-    await expect(outcome).toHaveAttribute('data-outcome-changed', 'false')
-    await expect(outcome).not.toHaveClass(/bod--outcome-changed/)
-    await expect(outcome).toHaveClass(/bod--secondary/)
-    await expect(outcome).toHaveAttribute('data-motion-owner', 'buzz')
-    await expect(outcome).toHaveAttribute('data-composition', 'static-secondary')
-    await expect(page.getByTestId('bqd-active')).toContainText(SECOND_TEAM)
-    await expect(page.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
-    await assertNoHorizontalOverflow(page)
-  })
-
-  test('F-PASSED-ACTIVE: Passed + promoted active is static secondary', async ({
-    page,
-  }, info) => {
-    test.skip(
-      info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
-      'projector viewports only',
-    )
-    await openDisplay(page)
-    await injectPublicState(page, visualStressArmedWaitingBuzzSnapshot(149))
-
-    const passedActive: PublicState = structuredClone(
-      visualStressBoardIncorrectWithActiveSnapshot(162),
-    )
-    if (passedActive.response?.boardOutcome.status === 'resolved') {
-      passedActive.response.boardOutcome = {
-        ...passedActive.response.boardOutcome,
-        kind: 'passed',
-      }
-    }
-    await injectPublicState(page, passedActive)
-
-    const outcome = page.getByTestId('board-outcome')
-    await expect(outcome).toContainText('Passed')
-    await expect(outcome).toContainText(FIRST_TEAM)
-    await expect(outcome).toHaveAttribute('data-outcome-changed', 'false')
-    await expect(outcome).toHaveClass(/bod--secondary/)
-    await expect(outcome).toHaveClass(/bod--passed/)
-    await expect(outcome).not.toHaveClass(/bod--incorrect/)
-    await expect(outcome).toHaveAttribute('data-motion-owner', 'buzz')
-    await expect(page.getByTestId('bqd-active')).toContainText(SECOND_TEAM)
-    await expect(page.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
+    await assertOutcomeStaticSecondaryBesideBuzz(page, 'Incorrect')
     await assertNoHorizontalOverflow(page)
   })
 
