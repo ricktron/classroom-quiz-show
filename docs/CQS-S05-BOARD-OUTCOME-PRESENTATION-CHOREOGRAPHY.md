@@ -34,7 +34,7 @@ Stop for Rick
 | --- | --- |
 | Canonical base | `ff335f2cf005a7fb1b06a9588b67894d523ccb6f` |
 | Branch | `feat/cqs-real-mvp-s05-board-outcome-presentation-choreography` |
-| Exact head | `385fc6d54cab639db9a7e6cc9b36969d79ff88d0` |
+| Exact head | `5a1354fd8032c053adef352996e4f61b03dcfb5d` |
 | PR | [#96](https://github.com/ricktron/classroom-quiz-show/pull/96) (non-draft; auto-merge off) |
 | Intervening main after expected base | **none** at branch creation (`origin/main` === base) |
 
@@ -170,7 +170,9 @@ Keyboard Host→Display path covered by injection e2e. Physical Sony / projector
 
 ## L. Verification (local — re-observe on PR tip)
 
-Observed on tip `385fc6d54cab639db9a7e6cc9b36969d79ff88d0` / PR [#96](https://github.com/ricktron/classroom-quiz-show/pull/96):
+Observed on tip `5a1354fd8032c053adef352996e4f61b03dcfb5d` / PR [#96](https://github.com/ricktron/classroom-quiz-show/pull/96)
+(verification matrix observed on prior tip `385fc6d…`; docs-only follow-up
+does not reopen product surfaces):
 
 | Check | Result |
 | --- | --- |
@@ -257,7 +259,7 @@ No terminal receipt. No historical rewrite.
 | --- | --- |
 | Title | `feat(s05): add board-outcome presentation choreography` |
 | PR | [#96](https://github.com/ricktron/classroom-quiz-show/pull/96) |
-| Head | `385fc6d54cab639db9a7e6cc9b36969d79ff88d0` |
+| Head | `5a1354fd8032c053adef352996e4f61b03dcfb5d` |
 | Draft | **false** (non-draft) |
 | Auto-merge | **OFF** (`autoMergeRequest` null) |
 | Merge | **Do not merge** (Stop for Rick) |
