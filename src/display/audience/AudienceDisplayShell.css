@@ -378,7 +378,11 @@
   width: 100%;
 }
 
-/* Result emphasis — structural + text; motion optional */
+/* Result emphasis — structural + text; motion optional.
+ * Selection / prompt / board-enter acks are owned by CategoryBoardDisplay
+ * (remount-safe seed). Shell no longer pulses unseeded emphasis-selection.
+ * Final/winner shell pulses remain successor scope (not seeded in this child).
+ */
 .audience__result {
   margin: var(--space-3) 0 0;
   text-align: center;
@@ -392,7 +396,6 @@
 }
 
 .audience--emphasis-answer .cbd__answer,
-.audience--emphasis-selection .cbd__selection-header,
 .audience--emphasis-final-reveal .fwd__reveal,
 .audience--emphasis-final-settle .audience__result,
 .audience--emphasis-unique-leader .audience__result--unique,
@@ -404,11 +407,46 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .audience--emphasis-answer .cbd__answer,
-  .audience--emphasis-selection .cbd__selection-header,
   .audience--emphasis-final-reveal .fwd__reveal,
   .audience--emphasis-unique-leader .audience__result--unique,
   .audience--emphasis-tied .audience__result--tied {
     animation: audience-pulse var(--dur-emphasized) var(--ease-emphasized) 1;
+  }
+}
+
+/* Display-side board→Final bridge (S05 board/round-flow). Remount-safe. */
+.audience__final--bridge-ack {
+  box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
+  border-radius: var(--radius-panel);
+  background: color-mix(in srgb, var(--state-active) 10%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .audience__final--bridge-ack {
+    animation: audience-final-bridge-ack var(--dur-emphasized) var(--ease-emphasized) 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .audience__final--bridge-ack {
+    animation: none;
+    outline: var(--bw-emphasized, 2px) solid var(--state-active);
+    outline-offset: 2px;
+  }
+}
+
+@keyframes audience-final-bridge-ack {
+  from {
+    box-shadow: inset 0 0 0 0 transparent;
+    background: transparent;
+  }
+  45% {
+    box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
+    background: color-mix(in srgb, var(--state-active) 16%, transparent);
+  }
+  to {
+    box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
+    background: color-mix(in srgb, var(--state-active) 10%, transparent);
   }
 }
 

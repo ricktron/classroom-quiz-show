@@ -1,13 +1,19 @@
 /**
- * Audience display spatial composition (Slice 18).
+ * Audience display spatial composition (Slice 18 + S05 board/round-flow bridge).
  *
  * Owns projector layout only: product identity, Nexus Core, primary scene,
  * adaptive scores, and Signal Rail. Does not own game state or sync.
+ *
+ * Round→Final bridge acknowledgement is remount-safe local presentation only:
+ * first observation of Final seeds without fabricating arrival ceremony;
+ * observed board→Final kind switch may acknowledge. Final wager / reveal /
+ * winner choreography remain successor scope.
  */
 
 import { CategoryBoardDisplay } from '../CategoryBoardDisplay'
 import { FinalWagerDisplay } from '../FinalWagerDisplay'
 import {
+  PUBLIC_BOARD_KIND,
   PUBLIC_FINAL_KIND,
   type PublicGameView,
   type PublicState,
@@ -19,6 +25,7 @@ import {
   selectAudiencePresentation,
   selectPublicTimer,
 } from './selectAudiencePresentation'
+import { useSemanticPresentationAck } from '../useSemanticPresentationAck'
 import './AudienceDisplayShell.css'
 
 /** Neutral public-safe game line preserved for existing projector contracts. */
@@ -70,6 +77,33 @@ function resolveFinalRevealedName(
   return null
 }
 
+/** Round-kind semantic id for Display-side board→Final bridge only. */
+function roundKindSemanticId(publicState: PublicState): string | null {
+  const round = publicState.round
+  if (!round) return null
+  if (round.kind === PUBLIC_BOARD_KIND) return `board:${round.stage}`
+  if (round.kind === PUBLIC_FINAL_KIND) return `final:${round.stage}`
+  return null
+}
+
+/** Acknowledge only observed category-board → Final kind switch. */
+function shouldAcknowledgeFinalBridge(previous: string | null, next: string | null): boolean {
+  if (!previous || !next) return false
+  return previous.startsWith('board:') && next.startsWith('final:')
+}
+
+/**
+ * Board/clue flow motion yields when buzz is active or a board outcome is
+ * resolved — response surfaces dominate competing theatrical motion.
+ */
+function ownsBoardFlowMotion(publicState: PublicState): boolean {
+  const response = publicState.response
+  if (!response) return true
+  if (response.buzz.status === 'active') return false
+  if (response.boardOutcome.status === 'resolved') return false
+  return true
+}
+
 export function AudienceDisplayShell({
   publicState,
   hostClockOffsetMs = 0,
@@ -96,6 +130,13 @@ export function AudienceDisplayShell({
   const leaderKey = finalResult?.leaderTeamKey ?? null
   const publicTimer = selectPublicTimer(publicState)
 
+  const kindId = roundKindSemanticId(publicState)
+  const { seeded: finalBridgeSeeded, changed: finalBridgeAck } = useSemanticPresentationAck(
+    kindId,
+    { shouldAcknowledge: shouldAcknowledgeFinalBridge },
+  )
+  const flowOwnsMotion = ownsBoardFlowMotion(publicState)
+
   const scoresRegion =
     publicState.teams !== null && scoreLayout !== 'none' ? (
       <div
@@ -115,6 +156,7 @@ export function AudienceDisplayShell({
         `audience--rail-${signalRail}`,
         emphasis !== 'none' ? `audience--emphasis-${emphasis}` : '',
         showDecorativeLattice ? 'audience--quiet' : '',
+        finalBridgeAck ? 'audience--final-bridge-ack' : '',
       ]
         .filter(Boolean)
         .join(' ')}
@@ -125,6 +167,8 @@ export function AudienceDisplayShell({
       data-score-layout={scoreLayout}
       data-rail={signalRail}
       data-emphasis={emphasis}
+      data-final-bridge-seeded={finalBridgeSeeded ? 'true' : 'false'}
+      data-final-bridge-ack={finalBridgeAck ? 'true' : 'false'}
     >
       <header className="audience__header">
         <p className="audience__brand">Classroom Quiz Show</p>
@@ -162,9 +206,10 @@ export function AudienceDisplayShell({
             <div className="audience__round" aria-live="polite" data-testid="display-round">
               {publicState.round.kind === PUBLIC_FINAL_KIND ? (
                 <div
-                  className="audience__final"
+                  className={`audience__final${finalBridgeAck ? ' audience__final--bridge-ack' : ''}`}
                   data-leader-key={leaderKey ?? undefined}
                   data-testid="audience-final"
+                  data-final-bridge-ack={finalBridgeAck ? 'true' : 'false'}
                 >
                   <FinalWagerDisplay
                     round={publicState.round}
@@ -195,6 +240,7 @@ export function AudienceDisplayShell({
                   round={publicState.round}
                   clearedCategoryKeys={boardDepletion?.clearedCategoryKeys ?? []}
                   depletion={boardDepletion}
+                  ownsFlowMotion={flowOwnsMotion}
                 />
               )}
             </div>

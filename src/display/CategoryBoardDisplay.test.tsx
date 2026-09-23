@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, act } from '@testing-library/react'
 import { CategoryBoardDisplay } from './CategoryBoardDisplay'
 import type { PublicRoundState } from '../state/publicState'
 import { createSessionStore, type SessionStore } from '../state/store'
@@ -258,5 +258,121 @@ describe('S05-F1 spatial memory and used-state cues', () => {
     expect(screen.getByTestId('cbd-open')).toHaveClass('cbd--answer')
     expect(screen.getByTestId('cbd-open')).toHaveAttribute('data-answer-revealed', 'true')
     expect(screen.getByTestId('cbd-answer')).toHaveTextContent('Answer')
+  })
+})
+
+describe('S05 board/round-flow presentation choreography', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  function boardRound(...commands: SessionCommand[]) {
+    const store = boardStore()
+    commands.forEach((command) => store.dispatch(command))
+    const round = store.getPublicState().round
+    if (round === null || round.kind !== 'board') throw new Error('expected board round')
+    return { store, round }
+  }
+
+  it('remount into board seeds without fabricating board-enter acknowledgement', () => {
+    const { round } = boardRound()
+    render(<CategoryBoardDisplay round={round} />)
+    const board = screen.getByTestId('cbd-board')
+    expect(board).toHaveAttribute('data-seeded', 'true')
+    expect(board).toHaveAttribute('data-flow-ack', 'false')
+    expect(board).toHaveAttribute('data-flow-moment', 'none')
+  })
+
+  it('observed board→selected acknowledges without delaying selection text', () => {
+    const store = boardStore()
+    const { rerender } = render(
+      <CategoryBoardDisplay round={store.getPublicState().round!} />,
+    )
+    expect(screen.getByTestId('cbd-board')).toHaveAttribute('data-flow-ack', 'false')
+
+    store.dispatch(select('alpha-100'))
+    rerender(<CategoryBoardDisplay round={store.getPublicState().round!} />)
+    const open = screen.getByTestId('cbd-open')
+    expect(open).toHaveAttribute('data-flow-ack', 'true')
+    expect(open).toHaveAttribute('data-flow-moment', 'selection')
+    expect(screen.getByTestId('cbd-category')).toHaveTextContent('Alpha Category')
+    expect(screen.getByTestId('cbd-value')).toHaveTextContent('100')
+    expect(screen.getByTestId('cbd-selection-header')).toHaveAttribute('data-selection-ack', 'true')
+  })
+
+  it('remount into selected seeds without fabricating selection acknowledgement', () => {
+    const { round } = boardRound(select('alpha-100'))
+    render(<CategoryBoardDisplay round={round} />)
+    const open = screen.getByTestId('cbd-open')
+    expect(open).toHaveAttribute('data-seeded', 'true')
+    expect(open).toHaveAttribute('data-flow-ack', 'false')
+    expect(screen.getByTestId('cbd-selection-header')).toHaveAttribute('data-selection-ack', 'false')
+  })
+
+  it('observed selected→prompt acknowledges question reveal', () => {
+    const store = boardStore()
+    store.dispatch(select('alpha-100'))
+    const { rerender } = render(
+      <CategoryBoardDisplay round={store.getPublicState().round!} />,
+    )
+    expect(screen.getByTestId('cbd-open')).toHaveAttribute('data-flow-ack', 'false')
+
+    store.dispatch(revealPrompt)
+    rerender(<CategoryBoardDisplay round={store.getPublicState().round!} />)
+    const open = screen.getByTestId('cbd-open')
+    expect(open).toHaveAttribute('data-flow-moment', 'prompt-reveal')
+    expect(screen.getByTestId('cbd-prompt')).toHaveAttribute('data-prompt-ack', 'true')
+    expect(screen.getByTestId('cbd-prompt')).toHaveTextContent('Alpha one hundred prompt')
+  })
+
+  it('observed clue→board acknowledges return and orients the used tile', () => {
+    const store = boardStore()
+    store.dispatch(select('alpha-100'))
+    store.dispatch(revealPrompt)
+    store.dispatch(revealAnswer)
+    const { rerender } = render(
+      <CategoryBoardDisplay round={store.getPublicState().round!} />,
+    )
+
+    store.dispatch(returnToBoard)
+    const publicRound = store.getPublicState().round!
+    rerender(<CategoryBoardDisplay round={publicRound} />)
+    const board = screen.getByTestId('cbd-board')
+    expect(board).toHaveAttribute('data-flow-moment', 'board-enter')
+    expect(board).toHaveAttribute('data-flow-ack', 'true')
+    expect(screen.getByTestId('cbd-tile-c0t0')).toHaveAttribute('data-return-orient', 'true')
+  })
+
+  it('same semantic board state does not restart acknowledgement after hold', () => {
+    const store = boardStore()
+    const { rerender } = render(
+      <CategoryBoardDisplay round={store.getPublicState().round!} />,
+    )
+    store.dispatch(select('alpha-100'))
+    rerender(<CategoryBoardDisplay round={store.getPublicState().round!} />)
+    expect(screen.getByTestId('cbd-open')).toHaveAttribute('data-flow-ack', 'true')
+
+    act(() => {
+      vi.advanceTimersByTime(420)
+    })
+    expect(screen.getByTestId('cbd-open')).toHaveAttribute('data-flow-ack', 'false')
+
+    rerender(<CategoryBoardDisplay round={store.getPublicState().round!} />)
+    expect(screen.getByTestId('cbd-open')).toHaveAttribute('data-flow-ack', 'false')
+  })
+
+  it('yields flow acknowledgement when ownsFlowMotion is false', () => {
+    const store = boardStore()
+    const { rerender } = render(
+      <CategoryBoardDisplay round={store.getPublicState().round!} ownsFlowMotion />,
+    )
+    store.dispatch(select('alpha-100'))
+    rerender(
+      <CategoryBoardDisplay round={store.getPublicState().round!} ownsFlowMotion={false} />,
+    )
+    expect(screen.getByTestId('cbd-open')).toHaveAttribute('data-flow-ack', 'false')
   })
 })
