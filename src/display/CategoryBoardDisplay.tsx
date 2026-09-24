@@ -26,9 +26,11 @@
  *
  * Local semantic stage identity + remount-safe seed/ack (buzz/outcome pattern):
  * first observation seeds without fabricating reveal/selection/prompt/return
- * ceremony; observed transitions may acknowledge. Optional return-to-board tile
+ * ceremony; observed forward transitions may acknowledge (direction-aware —
+ * undo must not look like forward ceremony). Optional return-to-board tile
  * orientation uses prior already-public selection (categoryTitle + value) held
- * only in this mounted lifecycle — never persisted / never synchronized.
+ * only in this mounted lifecycle — never persisted / never synchronized — and
+ * orients only when exactly one used tile matches (0 or 2+ → suppress).
  * Category-clear acknowledgement fires only when cleared keys newly appear
  * after seed. Motion yields when `ownsFlowMotion` is false (buzz/outcome).
  */
@@ -56,6 +58,16 @@ export interface CategoryBoardDisplayProps {
   readonly ownsFlowMotion?: boolean
 }
 
+type BoardFlowStage = 'board' | 'selected' | 'prompt' | 'answer'
+
+type BoardFlowIdentity =
+  | { readonly stage: 'board' }
+  | {
+      readonly stage: 'selected' | 'prompt' | 'answer'
+      readonly categoryTitle: string
+      readonly value: number
+    }
+
 /** Local semantic identity for board ↔ clue stage flow. */
 function boardFlowSemanticId(round: Extract<PublicRoundState, { kind: typeof PUBLIC_BOARD_KIND }>): string {
   if (round.stage === 'board') return 'board'
@@ -63,21 +75,86 @@ function boardFlowSemanticId(round: Extract<PublicRoundState, { kind: typeof PUB
   return `${round.stage}:${categoryTitle}:${value}`
 }
 
-/** Acknowledge board / selected / prompt transitions; never fabricate answer ceremony. */
-function shouldAcknowledgeBoardFlow(_previous: string | null, next: string | null): boolean {
-  if (next === null) return false
-  if (next.startsWith('answer:')) return false
-  return next === 'board' || next.startsWith('selected:') || next.startsWith('prompt:')
+/** Parse board-flow semantic id into stage (+ public selection when on a clue). */
+function parseBoardFlowIdentity(id: string | null | undefined): BoardFlowIdentity | null {
+  if (!id) return null
+  if (id === 'board') return { stage: 'board' }
+  const match = /^(selected|prompt|answer):(.+):(\d+)$/.exec(id)
+  if (!match) return null
+  return {
+    stage: match[1] as Exclude<BoardFlowStage, 'board'>,
+    categoryTitle: match[2]!,
+    value: Number(match[3]),
+  }
+}
+
+/**
+ * Direction-aware board/clue acknowledgement.
+ *
+ * Forward `board → selected` and `selected → prompt` may ack. Return
+ * `prompt|answer → board` may ack board-enter. Undo / fail-safe paths must not
+ * look like forward ceremony: `prompt → selected`, `answer → prompt`, and
+ * `selected → board` suppress. Never fabricate answer ceremony.
+ */
+function shouldAcknowledgeBoardFlow(previous: string | null, next: string | null): boolean {
+  const nextId = parseBoardFlowIdentity(next)
+  if (!nextId) return false
+  if (nextId.stage === 'answer') return false
+
+  const previousId = parseBoardFlowIdentity(previous)
+  if (!previousId) return false
+
+  if (nextId.stage === 'board') {
+    // Completed clue return may acknowledge; undoing selection must not.
+    return previousId.stage === 'prompt' || previousId.stage === 'answer'
+  }
+
+  if (nextId.stage === 'selected') {
+    return previousId.stage === 'board'
+  }
+
+  if (nextId.stage === 'prompt') {
+    return (
+      previousId.stage === 'selected' &&
+      previousId.categoryTitle === nextId.categoryTitle &&
+      previousId.value === nextId.value
+    )
+  }
+
+  return false
 }
 
 /** Parse already-public selection identity from a flow semantic id. */
 function selectionFromFlowId(
   id: string | null | undefined,
 ): { categoryTitle: string; value: number } | null {
-  if (!id || id === 'board') return null
-  const match = /^(?:selected|prompt|answer):(.+):(\d+)$/.exec(id)
-  if (!match) return null
-  return { categoryTitle: match[1]!, value: Number(match[2]) }
+  const parsed = parseBoardFlowIdentity(id)
+  if (!parsed || parsed.stage === 'board') return null
+  return { categoryTitle: parsed.categoryTitle, value: parsed.value }
+}
+
+/**
+ * Return-tile orientation only when exactly one used public tile matches the
+ * prior already-public selection (categoryTitle + value). Zero or multiple
+ * matches → suppress (never first-match).
+ */
+function uniqueReturnOrientTileKey(
+  categories: Extract<
+    PublicRoundState,
+    { kind: typeof PUBLIC_BOARD_KIND; stage: 'board' }
+  >['categories'],
+  target: { categoryTitle: string; value: number },
+): string | null {
+  const matches: string[] = []
+  for (const category of categories) {
+    if (category.title !== target.categoryTitle) continue
+    for (const tile of category.tiles) {
+      if (tile.used && tile.value === target.value) {
+        matches.push(tile.key)
+      }
+    }
+  }
+  return matches.length === 1 ? matches[0]! : null
 }
 
 /** The neutral screen used whenever the round cannot be rendered safely. */
@@ -144,7 +221,7 @@ function CategoryBoardFlow({
 
     previousFlowIdRef.current = flowId
 
-    // Observed clue → board: light orientation on the matching used tile when found.
+    // Observed clue → board: orient only when exactly one used tile matches.
     if (
       ownsFlowMotion &&
       flowId === 'board' &&
@@ -152,18 +229,7 @@ function CategoryBoardFlow({
       priorSelectionRef.current &&
       round.stage === 'board'
     ) {
-      const target = priorSelectionRef.current
-      let found: string | null = null
-      for (const category of round.categories) {
-        if (category.title !== target.categoryTitle) continue
-        for (const tile of category.tiles) {
-          if (tile.used && tile.value === target.value) {
-            found = tile.key
-            break
-          }
-        }
-        if (found) break
-      }
+      const found = uniqueReturnOrientTileKey(round.categories, priorSelectionRef.current)
       if (found) {
         setOrientTileKey(found)
         setOrientEpoch((epoch) => epoch + 1)

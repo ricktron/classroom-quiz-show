@@ -29,13 +29,7 @@ const PRIVATE_MARKERS = [
 ]
 
 function boardStore(): SessionStore {
-  const result = importGameFromUnknown(boardGameFile(richBoardConfig()))
-  if (result.status !== 'success') throw new Error('fixture failed to import')
-  const store = createSessionStore()
-  store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 's' })
-  store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT, definition: result.definition })
-  store.dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: AT })
-  return store
+  return boardStoreFromConfig(richBoardConfig())
 }
 
 const select = (tileId: string): SessionCommand => ({
@@ -47,6 +41,18 @@ const select = (tileId: string): SessionCommand => ({
 const revealPrompt: SessionCommand = { type: 'REVEAL_CATEGORY_BOARD_PROMPT', issuedAt: AT, roundId: ROUND }
 const revealAnswer: SessionCommand = { type: 'REVEAL_CATEGORY_BOARD_ANSWER', issuedAt: AT, roundId: ROUND }
 const returnToBoard: SessionCommand = { type: 'RETURN_TO_CATEGORY_BOARD', issuedAt: AT, roundId: ROUND }
+const undo: SessionCommand = { type: 'UNDO', issuedAt: AT }
+
+/** Session store seeded from an untrusted board config via the real import pipeline. */
+function boardStoreFromConfig(config: Record<string, unknown>): SessionStore {
+  const result = importGameFromUnknown(boardGameFile(config))
+  if (result.status !== 'success') throw new Error('fixture failed to import')
+  const store = createSessionStore()
+  store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 's' })
+  store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT, definition: result.definition })
+  store.dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: AT })
+  return store
+}
 
 /** Render the projector at the state reached by the given commands. */
 function renderAt(...commands: SessionCommand[]) {
@@ -344,6 +350,189 @@ describe('S05 board/round-flow presentation choreography', () => {
     expect(board).toHaveAttribute('data-flow-moment', 'board-enter')
     expect(board).toHaveAttribute('data-flow-ack', 'true')
     expect(screen.getByTestId('cbd-tile-c0t0')).toHaveAttribute('data-return-orient', 'true')
+  })
+
+  it('undo prompt→selected does not acknowledge as forward selection', () => {
+    const store = boardStore()
+    store.dispatch(select('alpha-100'))
+    store.dispatch(revealPrompt)
+    const { rerender } = render(
+      <CategoryBoardDisplay round={store.getPublicState().round!} />,
+    )
+    expect(screen.getByTestId('cbd-open')).toHaveAttribute('data-flow-ack', 'false')
+
+    store.dispatch(undo)
+    rerender(<CategoryBoardDisplay round={store.getPublicState().round!} />)
+    const open = screen.getByTestId('cbd-open')
+    expect(open).toHaveAttribute('data-flow-ack', 'false')
+    expect(open).toHaveAttribute('data-flow-moment', 'none')
+    expect(screen.getByTestId('cbd-selection-header')).toHaveAttribute('data-selection-ack', 'false')
+    expect(screen.getByTestId('cbd-category')).toHaveTextContent('Alpha Category')
+    expect(screen.getByTestId('cbd-value')).toHaveTextContent('100')
+  })
+
+  it('undo answer→prompt does not acknowledge as forward prompt reveal', () => {
+    const store = boardStore()
+    store.dispatch(select('alpha-100'))
+    store.dispatch(revealPrompt)
+    store.dispatch(revealAnswer)
+    const { rerender } = render(
+      <CategoryBoardDisplay round={store.getPublicState().round!} />,
+    )
+    expect(screen.getByTestId('cbd-open')).toHaveAttribute('data-flow-ack', 'false')
+
+    store.dispatch(undo)
+    rerender(<CategoryBoardDisplay round={store.getPublicState().round!} />)
+    const open = screen.getByTestId('cbd-open')
+    expect(open).toHaveAttribute('data-flow-ack', 'false')
+    expect(open).toHaveAttribute('data-flow-moment', 'none')
+    expect(screen.getByTestId('cbd-prompt')).toHaveAttribute('data-prompt-ack', 'false')
+    expect(screen.getByTestId('cbd-prompt')).toHaveTextContent('Alpha one hundred prompt')
+  })
+
+  it('undo selected→board does not acknowledge board-enter', () => {
+    const store = boardStore()
+    store.dispatch(select('alpha-100'))
+    const { rerender } = render(
+      <CategoryBoardDisplay round={store.getPublicState().round!} />,
+    )
+    expect(screen.getByTestId('cbd-open')).toHaveAttribute('data-flow-ack', 'false')
+
+    store.dispatch(undo)
+    rerender(<CategoryBoardDisplay round={store.getPublicState().round!} />)
+    const board = screen.getByTestId('cbd-board')
+    expect(board).toHaveAttribute('data-flow-ack', 'false')
+    expect(board).toHaveAttribute('data-flow-moment', 'none')
+    expect(board).not.toHaveAttribute('data-orient-tile')
+  })
+
+  it('prompt→board return still acknowledges board-enter without inventing orientation', () => {
+    const store = boardStore()
+    store.dispatch(select('alpha-100'))
+    store.dispatch(revealPrompt)
+    const { rerender } = render(
+      <CategoryBoardDisplay round={store.getPublicState().round!} />,
+    )
+
+    store.dispatch(returnToBoard)
+    rerender(<CategoryBoardDisplay round={store.getPublicState().round!} />)
+    const board = screen.getByTestId('cbd-board')
+    expect(board).toHaveAttribute('data-flow-moment', 'board-enter')
+    expect(board).toHaveAttribute('data-flow-ack', 'true')
+    // Prompt return leaves the tile unused — orientation requires a unique used match.
+    expect(board).not.toHaveAttribute('data-orient-tile')
+  })
+
+  it('unique used title+value match orients; duplicate values suppress orientation', () => {
+    const store = boardStoreFromConfig({
+      categories: [
+        {
+          id: 'alpha',
+          title: 'Alpha Category',
+          tiles: [
+            {
+              id: 'alpha-100a',
+              value: 100,
+              prompt: 'First hundred prompt',
+              answer: 'First hundred answer',
+            },
+            {
+              id: 'alpha-100b',
+              value: 100,
+              prompt: 'Second hundred prompt',
+              answer: 'Second hundred answer',
+            },
+            {
+              id: 'alpha-200',
+              value: 200,
+              prompt: 'Two hundred prompt',
+              answer: 'Two hundred answer',
+            },
+          ],
+        },
+      ],
+    })
+
+    // Unique match: only one used tile at title+value → orient.
+    store.dispatch(select('alpha-200'))
+    store.dispatch(revealPrompt)
+    store.dispatch(revealAnswer)
+    const { rerender } = render(
+      <CategoryBoardDisplay round={store.getPublicState().round!} />,
+    )
+    store.dispatch(returnToBoard)
+    rerender(<CategoryBoardDisplay round={store.getPublicState().round!} />)
+    expect(screen.getByTestId('cbd-tile-c0t2')).toHaveAttribute('data-return-orient', 'true')
+
+    act(() => {
+      vi.advanceTimersByTime(420)
+    })
+
+    // Ambiguous: two used tiles share title+value 100 → suppress (never first-match).
+    store.dispatch(select('alpha-100a'))
+    store.dispatch(revealPrompt)
+    store.dispatch(revealAnswer)
+    store.dispatch(returnToBoard)
+    store.dispatch(select('alpha-100b'))
+    store.dispatch(revealPrompt)
+    store.dispatch(revealAnswer)
+    rerender(<CategoryBoardDisplay round={store.getPublicState().round!} />)
+    store.dispatch(returnToBoard)
+    rerender(<CategoryBoardDisplay round={store.getPublicState().round!} />)
+    const board = screen.getByTestId('cbd-board')
+    expect(board).toHaveAttribute('data-flow-moment', 'board-enter')
+    expect(board).not.toHaveAttribute('data-orient-tile')
+    expect(screen.getByTestId('cbd-tile-c0t0')).toHaveAttribute('data-return-orient', 'false')
+    expect(screen.getByTestId('cbd-tile-c0t1')).toHaveAttribute('data-return-orient', 'false')
+  })
+
+  it('duplicate category titles with same value suppress return orientation', () => {
+    const store = boardStoreFromConfig({
+      categories: [
+        {
+          id: 'left',
+          title: 'Shared Title',
+          tiles: [
+            {
+              id: 'left-100',
+              value: 100,
+              prompt: 'Left hundred prompt',
+              answer: 'Left hundred answer',
+            },
+          ],
+        },
+        {
+          id: 'right',
+          title: 'Shared Title',
+          tiles: [
+            {
+              id: 'right-100',
+              value: 100,
+              prompt: 'Right hundred prompt',
+              answer: 'Right hundred answer',
+            },
+          ],
+        },
+      ],
+    })
+
+    store.dispatch(select('left-100'))
+    store.dispatch(revealPrompt)
+    store.dispatch(revealAnswer)
+    store.dispatch(returnToBoard)
+    store.dispatch(select('right-100'))
+    store.dispatch(revealPrompt)
+    store.dispatch(revealAnswer)
+    const { rerender } = render(
+      <CategoryBoardDisplay round={store.getPublicState().round!} />,
+    )
+    store.dispatch(returnToBoard)
+    rerender(<CategoryBoardDisplay round={store.getPublicState().round!} />)
+    const board = screen.getByTestId('cbd-board')
+    expect(board).toHaveAttribute('data-flow-moment', 'board-enter')
+    expect(board).not.toHaveAttribute('data-orient-tile')
+    expect(screen.getByTestId('cbd-tile-c0t0')).toHaveAttribute('data-return-orient', 'false')
+    expect(screen.getByTestId('cbd-tile-c1t0')).toHaveAttribute('data-return-orient', 'false')
   })
 
   it('same semantic board state does not restart acknowledgement after hold', () => {

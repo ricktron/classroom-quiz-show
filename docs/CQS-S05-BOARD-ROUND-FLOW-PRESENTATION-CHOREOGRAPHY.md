@@ -9,12 +9,14 @@ authoritative content; never full-board-while-clue schema expansion.
   `AUTHORIZE-CQS-REAL-MVP-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY-1`
 - **Gate / repair authorization:**
   `AUTHORIZE-CQS-REAL-MVP-S05-PR98-VERIFICATION-GATE-RECONCILIATION-AND-BOUNDED-REPAIR-1`
+- **Semantic repair authorization:**
+  `AUTHORIZE-CQS-REAL-MVP-S05-PR98-SEM-UNDO-DIRECTION-AND-UNAMBIGUOUS-ORIENTATION-1`
 - **Tranche:**
   `CQS-REAL-MVP-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY`
 - **Parent:** `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
   (parent remains **OPEN / NOT TERMINAL**)
 - **Tranche status:** **AUTHORIZED DELIVERY CANDIDATE — REPAIRED / NOT ACCEPTED / NOT TERMINAL**
-- **Date (UTC):** 2026-09-23
+- **Date (UTC):** 2026-09-24
 
 ```text
 durable snapshot ≠ just-happened event
@@ -40,6 +42,7 @@ Stop for Rick
 | Historical product implementation tip | `4c5b575871a2823576d165758425d65633e9bc18` (historical) |
 | Historical docs-identity tip (pre-gate) | `a817d1f08876b0afaf7f1f8c896466a182f40c25` (historical) |
 | Historical gate-failing tip (Sonar 3.2% duplication) | `5171eecb6968516b2d7ee087ed8524d3540d4910` (historical) |
+| Historical semantic-rejected tip (F-UNDO-DIRECTION + F-UNAMBIGUOUS-ORIENTATION) | `ad544827ad2ad20f860fb06584dc45886d07dac0` (historical) |
 | PR | [#98](https://github.com/ricktron/classroom-quiz-show/pull/98) — non-draft; auto-merge **OFF** |
 
 ---
@@ -76,9 +79,9 @@ No `outcomeKey`, presentation timestamps, or animation sequence ids.
 | Moment | Behavior |
 | --- | --- |
 | Board reveal | First observation / remount seeds durable board (`data-flow-ack=false`). Observed enter/return may ack (`cbd--board-enter`). |
-| Tile selection | Observed `board → selected` acks selection header; remount into selected does not. |
-| Question reveal | Observed `selected → prompt` acks prompt; remount into prompt does not. No spatial morph. |
-| Return to board | Board immediate; optional return-orient on matching already-public used tile (categoryTitle + value from prior mounted selection). |
+| Tile selection | Observed `board → selected` acks selection header; remount into selected does not. Undo `prompt → selected` does not ack as selection. |
+| Question reveal | Observed `selected → prompt` acks prompt; remount into prompt does not. Undo `answer → prompt` does not ack as prompt-reveal. No spatial morph. |
+| Return to board | Board immediate from `prompt|answer → board` may ack board-enter; `selected → board` fail-safe suppresses board-enter. Optional return-orient only when exactly one used public tile matches prior already-public selection (categoryTitle + value). Zero or multiple matches suppress. |
 | Local memory | Prior selection identity + prior cleared-key set held only in mounted lifecycle; never persisted / synced / authoritative. |
 | Category completion | Durable Cleared / depletion primary. Newly appearing cleared keys after seed may light-ack; remount onto already-cleared does not. |
 | Round→Final bridge | Shell observes `board:* → final:*`; remount into Final seeds without ceremony. Final wager/reveal/winner **out of scope**. |
@@ -143,6 +146,15 @@ PR: [#98](https://github.com/ricktron/classroom-quiz-show/pull/98) — non-draft
 auto-merge **OFF**.
 
 ---
+
+### Semantic repair (historical tip `ad54482…`)
+
+Independent exact-head review at `ad54482…` required **F-UNDO-DIRECTION** and
+**F-UNAMBIGUOUS-ORIENTATION**. Bounded repair makes board-flow acknowledgement
+direction-aware and suppresses ambiguous return-tile orientation (exactly one
+used title+value match required). Store-driven undo + duplicate-value /
+duplicate-title regressions added. Live tip is **re-observe from GitHub /
+exact-head review** — do not pin the repaired SHA here.
 
 ## T. Status label
 
