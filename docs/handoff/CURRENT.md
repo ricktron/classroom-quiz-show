@@ -179,7 +179,7 @@ See the REAL MVP gap register in
 | teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal; S04B Class Setup extends it on `main` |
 | controller `F-UX-01` | **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** |
 | feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
-| flagship visual fidelity | **PARTIAL / S05 presentation children through board/round-flow TERMINALLY COMPLETE** — S05-F1, S05 buzz / active-claim, S05 board-outcome public authority (Path A), and S05 board-outcome presentation choreography **TERMINALLY COMPLETE** on main; **score-change Path S-C RESOLVED**; **board/round-flow presentation** **TERMINALLY COMPLETE**; remaining S05 (Final / winner, Host polish) open and **NOT AUTHORIZED** |
+| flagship visual fidelity | **PARTIAL / S05 presentation children through board/round-flow TERMINALLY COMPLETE** — S05-F1, S05 buzz / active-claim, S05 board-outcome public authority (Path A), and S05 board-outcome presentation choreography **TERMINALLY COMPLETE** on main; **score-change Path S-C RESOLVED**; **board/round-flow presentation** **TERMINALLY COMPLETE**; remaining S05 Final / winner/completion presentation open and **NOT AUTHORIZED** |
 | packaged offline/recovery and OS qualification | **PARTIAL** (H5 selection/hardware **PASS recorded 2026-09-11** and transferred; H6 readiness **PASS** on Namtai `054c:1000` + four handsets; Windows physical runtime **NOT RUN**) |
 | clean-room teacher qualification | **OPEN** |
 | **C-3** / **C-6** | **FOUNDATION IMPLEMENTED / UNSIGNED** |
