@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { act, render, screen } from '@testing-library/react'
 import { FinalWagerDisplay } from './FinalWagerDisplay'
 import {
   PUBLIC_BOARD_KIND,
@@ -242,5 +242,168 @@ describe('no host-only label reaches the projector', () => {
       }
       unmount()
     }
+  })
+})
+
+
+describe('S05 Final presentation choreography', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  const answerRound = (): PublicRoundState => ({
+    kind: PUBLIC_FINAL_KIND,
+    stage: 'answer-revealed',
+    prompt: PROMPT,
+    answer: 'Mantle convection',
+  })
+
+  const revealRound = (
+    settlement: null | { outcome: 'correct' | 'incorrect' | 'no-response'; delta: number },
+  ): PublicRoundState => ({
+    kind: PUBLIC_FINAL_KIND,
+    stage: 'team-reveal',
+    prompt: PROMPT,
+    answer: 'Mantle convection',
+    reveal: {
+      teamKey: 't1',
+      response: { kind: 'exact', text: 'Convection currents' },
+      wager: 50,
+      settlement,
+    },
+  })
+
+  it('seeds a remount without fabricating stage, reveal, settlement, or completion acknowledgement', () => {
+    const { unmount } = renderFinal(revealRound({ outcome: 'correct', delta: 50 }))
+    expect(screen.getByTestId('fwd-team-reveal')).toHaveAttribute('data-final-stage-ack', 'false')
+    expect(screen.getByTestId('fwd-reveal')).toHaveAttribute('data-reveal-ack', 'false')
+    expect(screen.getByTestId('fwd-reveal')).toHaveAttribute('data-settlement-ack', 'false')
+    unmount()
+
+    renderFinal({ kind: PUBLIC_FINAL_KIND, stage: 'complete', outcome: 'unique-leader' })
+    expect(screen.getByTestId('fwd-complete')).toHaveAttribute(
+      'data-final-completion-ack',
+      'false',
+    )
+  })
+
+  it('acknowledges truthful forward stage changes but not reverse movement', () => {
+    const { rerender } = render(
+      <FinalWagerDisplay round={{ kind: PUBLIC_FINAL_KIND, stage: 'setup' }} teams={TEAMS} />,
+    )
+
+    rerender(
+      <FinalWagerDisplay
+        round={{
+          kind: PUBLIC_FINAL_KIND,
+          stage: 'wager-entry',
+          timer: { status: 'idle' },
+        }}
+        teams={TEAMS}
+      />,
+    )
+    expect(screen.getByTestId('fwd-wager-entry')).toHaveAttribute('data-final-stage-ack', 'true')
+
+    rerender(
+      <FinalWagerDisplay round={{ kind: PUBLIC_FINAL_KIND, stage: 'setup' }} teams={TEAMS} />,
+    )
+    expect(screen.getByTestId('fwd-setup')).toHaveAttribute('data-final-stage-ack', 'false')
+  })
+
+  it('acknowledges a new team reveal once and score-only refresh does not restart it', () => {
+    const { rerender } = render(<FinalWagerDisplay round={answerRound()} teams={TEAMS} />)
+
+    const revealed = revealRound(null)
+    rerender(<FinalWagerDisplay round={revealed} teams={TEAMS} />)
+    expect(screen.getByTestId('fwd-reveal')).toHaveAttribute('data-reveal-ack', 'true')
+
+    act(() => {
+      vi.advanceTimersByTime(421)
+    })
+    expect(screen.getByTestId('fwd-reveal')).toHaveAttribute('data-reveal-ack', 'false')
+
+    const refreshedTeams: PublicTeamsState = {
+      status: 'available',
+      teams: [
+        { key: 't0', name: 'Red Team', accent: 'crimson', score: 300 },
+        { key: 't1', name: 'Blue Team', accent: 'azure', score: 150 },
+      ],
+    }
+    rerender(<FinalWagerDisplay round={revealed} teams={refreshedTeams} />)
+    expect(screen.getByTestId('fwd-reveal')).toHaveAttribute('data-reveal-ack', 'false')
+  })
+
+  it('acknowledges settlement, suppresses undo ceremony, and permits a real re-settlement', () => {
+    const pending = revealRound(null)
+    const settled = revealRound({ outcome: 'incorrect', delta: -50 })
+    const { rerender } = render(<FinalWagerDisplay round={pending} teams={TEAMS} />)
+
+    rerender(<FinalWagerDisplay round={settled} teams={TEAMS} />)
+    expect(screen.getByTestId('fwd-reveal')).toHaveAttribute('data-settlement-ack', 'true')
+    expect(screen.getByTestId('fwd-reveal-outcome')).toHaveClass('fwd__reveal-outcome--ack')
+
+    rerender(<FinalWagerDisplay round={pending} teams={TEAMS} />)
+    expect(screen.getByTestId('fwd-reveal')).toHaveAttribute('data-settlement-ack', 'false')
+
+    rerender(<FinalWagerDisplay round={settled} teams={TEAMS} />)
+    expect(screen.getByTestId('fwd-reveal')).toHaveAttribute('data-settlement-ack', 'true')
+  })
+
+  it('reserves winner naming and completion acknowledgement for explicit completion', () => {
+    const resolution: PublicRoundState = {
+      kind: PUBLIC_FINAL_KIND,
+      stage: 'resolution',
+      prompt: null,
+      answer: null,
+      reveal: null,
+      outcome: 'unique-leader',
+    }
+    const complete: PublicRoundState = {
+      kind: PUBLIC_FINAL_KIND,
+      stage: 'complete',
+      outcome: 'unique-leader',
+    }
+    const { rerender } = render(<FinalWagerDisplay round={resolution} teams={TEAMS} />)
+
+    expect(screen.queryByTestId('fwd-winner')).toBeNull()
+    rerender(<FinalWagerDisplay round={complete} teams={TEAMS} />)
+    expect(screen.getByTestId('fwd-complete')).toHaveAttribute(
+      'data-final-completion-ack',
+      'true',
+    )
+    expect(screen.getByTestId('fwd-winner')).toHaveTextContent('Winner')
+    expect(screen.getByTestId('fwd-winner')).toHaveTextContent('Red Team')
+  })
+
+  it('fails closed to generic completion when a unique public winner cannot be resolved', () => {
+    const complete: PublicRoundState = {
+      kind: PUBLIC_FINAL_KIND,
+      stage: 'complete',
+      outcome: 'unique-leader',
+    }
+    const tiedScores: PublicTeamsState = {
+      status: 'available',
+      teams: [
+        { key: 't0', name: 'Red Team', accent: 'crimson', score: 200 },
+        { key: 't1', name: 'Blue Team', accent: 'azure', score: 200 },
+      ],
+    }
+
+    const { rerender } = render(<FinalWagerDisplay round={complete} teams={tiedScores} />)
+    expect(screen.getByTestId('fwd-outcome')).toHaveTextContent(/game complete/i)
+    expect(screen.queryByTestId('fwd-winner')).toBeNull()
+
+    rerender(<FinalWagerDisplay round={complete} teams={{ status: 'unavailable' }} />)
+    expect(screen.queryByTestId('fwd-winner')).toBeNull()
+  })
+
+  it('keeps tied completion explicit and never invents a winner', () => {
+    renderFinal({ kind: PUBLIC_FINAL_KIND, stage: 'complete', outcome: 'tied' })
+    expect(screen.getByTestId('fwd-outcome')).toHaveTextContent(/a tie/i)
+    expect(screen.queryByTestId('fwd-winner')).toBeNull()
   })
 })
