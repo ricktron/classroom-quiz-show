@@ -357,10 +357,14 @@ SHA):
 Board-outcome presentation choreography implementation closeout:
 [`CQS-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY.md`](CQS-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY.md).
 
-Board/round-flow presentation choreography delivery closeout (candidate; not
-accepted / not terminal; does not predict this delivery PR’s eventual squash
-SHA):
+Board/round-flow presentation choreography implementation closeout
+(terminal child; implementation PR #98 merged):
 [`CQS-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY.md`](CQS-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY.md).
+
+Board/round-flow presentation choreography terminal post-merge reconciliation
+(candidate docs; does not predict this terminalization PR’s eventual squash
+SHA):
+[`receipts/2026-09-24-cqs-real-mvp-s05-board-round-flow-presentation-choreography-terminal-post-merge-reconciliation.md`](receipts/2026-09-24-cqs-real-mvp-s05-board-round-flow-presentation-choreography-terminal-post-merge-reconciliation.md).
 
 Board-outcome public authority terminal post-merge reconciliation (candidate docs; does not
 predict that terminalization PR’s eventual squash SHA):
