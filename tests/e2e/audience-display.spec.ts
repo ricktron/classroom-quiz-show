@@ -341,6 +341,8 @@ test.describe('audience display scenes and privacy', () => {
     )
     await expect(page.getByTestId('signal-rail')).toHaveAttribute('data-mode', 'final')
     await expect(page.getByTestId('fwd-team-reveal')).toBeVisible()
+    await expect(page.getByTestId('fwd-reveal')).toHaveAttribute('data-reveal-ack', 'false')
+    await expect(page.getByTestId('fwd-reveal')).toHaveAttribute('data-settlement-ack', 'false')
     await expect(page.getByTestId('signal-rail-revealed')).toHaveText('Alpha')
 
     await injectPublicState(
@@ -374,7 +376,13 @@ test.describe('audience display scenes and privacy', () => {
         },
       }),
     )
-    await expect(page.getByTestId('audience-result-unique')).toContainText('Alpha leads')
+    await expect(page.getByTestId('audience-result-unique')).toHaveCount(0)
+    await expect(page.getByTestId('fwd-complete')).toHaveAttribute(
+      'data-final-completion-ack',
+      'true',
+    )
+    await expect(page.getByTestId('fwd-winner')).toContainText('Winner')
+    await expect(page.getByTestId('fwd-winner')).toContainText('Alpha')
     await expect(page.getByTestId('signal-rail-status')).toContainText(/game complete/i)
 
     await injectPublicState(
@@ -388,8 +396,141 @@ test.describe('audience display scenes and privacy', () => {
         },
       }),
     )
-    await expect(page.getByTestId('audience-result-tied')).toHaveText('Tied')
+    await expect(page.getByTestId('audience-result-tied')).toHaveCount(0)
+    await expect(page.getByTestId('fwd-outcome')).toContainText(/a tie/i)
+    await expect(page.getByTestId('fwd-winner')).toHaveCount(0)
     await expect(page.getByTestId('signal-rail-status')).toContainText(/tied/i)
+  })
+
+  test('Final choreography is remount-safe, direction-aware, and completion-only for winner', async ({
+    page,
+  }, info) => {
+    test.skip(info.project.name === 'mobile-host', 'projector projects only')
+    await openDisplay(page)
+    const teams = {
+      status: 'available' as const,
+      teams: [team('t0', 'Alpha', 'crimson', 200), team('t1', 'Bravo', 'azure', 50)],
+    }
+
+    await injectPublicState(
+      page,
+      baseSnapshot({
+        revision: 60,
+        round: { kind: 'final', stage: 'setup' },
+        teams,
+      }),
+    )
+    await expect(page.getByTestId('fwd-setup')).toHaveAttribute('data-final-stage-ack', 'false')
+
+    await injectPublicState(
+      page,
+      baseSnapshot({
+        revision: 61,
+        round: { kind: 'final', stage: 'wager-entry', timer: { status: 'idle' } },
+        teams,
+      }),
+    )
+    await expect(page.getByTestId('fwd-wager-entry')).toHaveAttribute(
+      'data-final-stage-ack',
+      'true',
+    )
+
+    await injectPublicState(
+      page,
+      baseSnapshot({
+        revision: 62,
+        round: { kind: 'final', stage: 'setup' },
+        teams,
+      }),
+    )
+    await expect(page.getByTestId('fwd-setup')).toHaveAttribute('data-final-stage-ack', 'false')
+
+    const pendingReveal = {
+      kind: 'final' as const,
+      stage: 'team-reveal' as const,
+      prompt: { kind: 'text' as const, text: 'Final question' },
+      answer: '42',
+      reveal: {
+        teamKey: 't0',
+        response: { kind: 'exact' as const, text: '42' },
+        wager: 100,
+        settlement: null,
+      },
+    }
+    await injectPublicState(
+      page,
+      baseSnapshot({
+        revision: 63,
+        round: { kind: 'final', stage: 'answer-revealed', prompt: pendingReveal.prompt, answer: '42' },
+        teams,
+      }),
+    )
+    await injectPublicState(page, baseSnapshot({ revision: 64, round: pendingReveal, teams }))
+    await expect(page.getByTestId('fwd-reveal')).toHaveAttribute('data-reveal-ack', 'true')
+
+    await page.waitForTimeout(450)
+    await injectPublicState(
+      page,
+      baseSnapshot({
+        revision: 65,
+        round: pendingReveal,
+        teams: {
+          status: 'available',
+          teams: [team('t0', 'Alpha', 'crimson', 250), team('t1', 'Bravo', 'azure', 50)],
+        },
+      }),
+    )
+    await expect(page.getByTestId('fwd-reveal')).toHaveAttribute('data-reveal-ack', 'false')
+
+    const settledReveal = {
+      ...pendingReveal,
+      reveal: {
+        ...pendingReveal.reveal,
+        settlement: { outcome: 'correct' as const, delta: 100 },
+      },
+    }
+    await injectPublicState(page, baseSnapshot({ revision: 66, round: settledReveal, teams }))
+    await expect(page.getByTestId('fwd-reveal')).toHaveAttribute('data-settlement-ack', 'true')
+
+    await injectPublicState(page, baseSnapshot({ revision: 67, round: pendingReveal, teams }))
+    await expect(page.getByTestId('fwd-reveal')).toHaveAttribute('data-settlement-ack', 'false')
+
+    await injectPublicState(page, baseSnapshot({ revision: 68, round: settledReveal, teams }))
+    await expect(page.getByTestId('fwd-reveal')).toHaveAttribute('data-settlement-ack', 'true')
+
+    await injectPublicState(
+      page,
+      baseSnapshot({
+        revision: 69,
+        round: {
+          kind: 'final',
+          stage: 'resolution',
+          prompt: pendingReveal.prompt,
+          answer: '42',
+          reveal: settledReveal.reveal,
+          outcome: 'unique-leader',
+        },
+        teams,
+      }),
+    )
+    await expect(page.getByTestId('audience-result-unique')).toContainText('Alpha leads')
+    await expect(page.getByTestId('fwd-winner')).toHaveCount(0)
+
+    await injectPublicState(
+      page,
+      baseSnapshot({
+        revision: 70,
+        round: { kind: 'final', stage: 'complete', outcome: 'unique-leader' },
+        teams,
+      }),
+    )
+    await expect(page.getByTestId('audience-result-unique')).toHaveCount(0)
+    await expect(page.getByTestId('fwd-winner')).toContainText('Alpha')
+    await expect(page.getByTestId('fwd-complete')).toHaveAttribute(
+      'data-final-completion-ack',
+      'true',
+    )
+    await assertNoOverflow(page)
   })
 
   test('scores unavailable is explicit; null teams omit the scoreboard', async ({ page }, info) => {
