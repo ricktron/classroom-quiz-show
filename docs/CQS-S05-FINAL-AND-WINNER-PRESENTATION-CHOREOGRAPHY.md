@@ -5,7 +5,7 @@
 - **Authorization:** `AUTHORIZE-CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY-1`
 - **Authorized base:** `c39bce0f64ad9275e771e4ee01c56d4f0bf0a3e7`
 - **Parent:** `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
-- **Status:** **AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL**
+- **Status:** **TERMINALLY COMPLETE**
 - **Date (UTC):** 2026-09-24
 
 This is the final remaining implementation child inside S05. It authorizes a
@@ -319,12 +319,12 @@ S06
 ```
 
 
-## 12. Delivery candidate implementation
+## 12. Historical delivery candidate implementation
 
-The bounded implementation candidate is now present on the authorized delivery
-branch. It remains **NOT ACCEPTED / NOT TERMINAL** until exact-head CI,
-independent semantic review, merge authorization, merge, and post-merge
-terminal reconciliation.
+Before acceptance, the bounded implementation candidate was present on the
+authorized delivery branch and remained **NOT ACCEPTED / NOT TERMINAL** pending
+exact-head CI, independent semantic review, merge authorization, merge, and
+post-merge terminal reconciliation.
 
 Implemented presentation-only surfaces:
 
@@ -349,7 +349,29 @@ Changed implementation family is intentionally bounded to Final Display
 presentation, its audience-shell result wording, CSS, unit regressions, and
 focused projector e2e coverage.
 
-Verification must be re-observed on the immutable live candidate head. This
-document does not claim CI, semantic review, merge, terminalization, physical
-Windows/projector qualification, S05 parent completion, S04D, S06, signing, or
-release readiness.
+Historical candidate verification was later satisfied on accepted head
+`8e879b424d43a07a88e6ea7c1abd20b68add7c00`: all six PR-head checks
+succeeded and independent exact-head semantic review returned **PASS / ACCEPT
+IMPLEMENTATION CANDIDATE**. PR #101 was guarded-squash merged as
+`2b1aaa7d13a82079b26a820b98bc68e864daed3d`; accepted and squash trees are
+**EXACT MATCH** `ad4cb531856353db71b77c975b0d4b2efb0676b7`.
+
+## 13. Terminal reconciliation
+
+```text
+CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY:
+TERMINALLY COMPLETE
+S05 integrated owner playthrough: NEXT / NOT RUN
+S05 parent: OPEN / NOT TERMINAL
+```
+
+Post-merge checks on exact squash/main `2b1aaa7d…` all concluded **SUCCESS**,
+including Playwright, Desktop/Electron, unsigned Windows/macOS packaging,
+lint/typecheck/unit/build, production bundle, Deploy, and SonarCloud.
+
+Terminal post-merge evidence:
+[`receipts/2026-09-24-cqs-real-mvp-s05-final-and-winner-presentation-choreography-terminal-post-merge-reconciliation.md`](receipts/2026-09-24-cqs-real-mvp-s05-final-and-winner-presentation-choreography-terminal-post-merge-reconciliation.md).
+
+This terminalization does **not** terminalize the S05 parent, claim the
+whole-game owner playthrough was run, authorize S04D/S06, or establish physical
+Windows/projector/audio/Sony/release qualification.

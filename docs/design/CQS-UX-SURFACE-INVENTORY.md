@@ -128,10 +128,11 @@ authoritative update (ADR-006 unchanged); animated score presentation is
 **TERMINALLY COMPLETE** on main after PR #96.
 `CQS-REAL-MVP-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY` is
 **TERMINALLY COMPLETE** on main after PR #98 (board ↔ clue causality +
-Display-side Final bridge; remount-safe seed/ack). `CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY` is now the
-**AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL** S05 child. It covers bounded
-Final lifecycle + winner/completion Display choreography over existing public
-Final facts. The S05 parent remains **OPEN / NOT TERMINAL**.
+Display-side Final bridge; remount-safe seed/ack). `CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY` is
+**TERMINALLY COMPLETE** after PR #101. All currently authorized S05 presentation
+children are terminal; the deliberate whole-game owner playthrough is **NEXT /
+NOT RUN** before any S05 parent terminalization. The S05 parent remains **OPEN /
+NOT TERMINAL**.
 ### S06
 
 Integrated release qualification: Windows-first physical use, projector
@@ -326,8 +327,9 @@ hardware, recovery, and the end-to-end experience.
 - **Principles:** `P02`, `P04`, `P16`, `P13`, `P12`, `P19`.
 - **Research routing:** Endsley & Jones, Cooper, Swink.
 - **Ownership / state:** **ALREADY IMPLEMENTED FOUNDATION** (`src/host/`
-  panels). Host **visual fidelity** is S05 — **LATER**, and S05 keeps the Host
-  restrained.
+  panels). No separate current S05 Host-polish child remains open; the Host stays
+  deliberately restrained. Any future Host visual refinement requires fresh
+  owner authorization.
 
 ### 13. Category-board Host
 
@@ -339,7 +341,9 @@ hardware, recovery, and the end-to-end experience.
 - **Principles:** `P07`, `P13`, `P02`.
 - **Research routing:** Tidwell, Johnson.
 - **Ownership / state:** **ALREADY IMPLEMENTED FOUNDATION**
-  (`src/host/CategoryBoardHostPanel.tsx`). Presentation is S05 — **LATER**.
+  (`src/host/CategoryBoardHostPanel.tsx`). No separate current S05 Host-board
+  presentation child remains open; future refinement is deferred unless newly
+  authorized.
 
 ### 14. Student / projector category board
 
@@ -358,8 +362,8 @@ hardware, recovery, and the end-to-end experience.
   Used semantics, 8-team coexistence, 720p/1080p automation, high
   contrast). **S05 board/round-flow presentation choreography** is
   **TERMINALLY COMPLETE**
-  (remount-safe board reveal / return / category-clear ack). Further
-  presentation refinement remains S05 — **LATER**.
+  (remount-safe board reveal / return / category-clear ack). No further REAL MVP
+  S05 board-presentation implementation is open; future refinement is deferred.
 
 ### 15. Question / clue Display
 
@@ -378,7 +382,8 @@ hardware, recovery, and the end-to-end experience.
   **S05 board/round-flow presentation choreography** is
   **TERMINALLY COMPLETE**
   (remount-safe selection / question-reveal causality; no full-board-while-clue
-  morph). Further Clue presentation effects remain S05 — **LATER**.
+  morph). No further REAL MVP S05 Clue-presentation implementation is open;
+  future effects are deferred.
   Answer-reveal authorization is an architectural invariant, not a design
   choice.
 
@@ -464,8 +469,10 @@ hardware, recovery, and the end-to-end experience.
   reduced-motion path that loses the state change entirely.
 - **Principles:** `P15`, `P13`, `P17`.
 - **Research routing:** Head, Saffer, Hodent.
-- **Ownership / state:** S05 — **LATER** for choreography. Round model is an
-  **ALREADY IMPLEMENTED FOUNDATION** (ADR-003, ADR-005, ADR-014).
+- **Ownership / state:** Required REAL MVP S05 round-transition choreography is
+  **TERMINALLY COMPLETE** across board/round-flow and Final/winner children.
+  Round model remains an **ALREADY IMPLEMENTED FOUNDATION** (ADR-003, ADR-005,
+  ADR-014). Future transition refinement is deferred.
 
 ### 21. Final Wager
 
@@ -480,9 +487,8 @@ hardware, recovery, and the end-to-end experience.
 - **Ownership / state:** **ALREADY IMPLEMENTED FOUNDATION**
   (`FinalWagerHostPanel`, `FinalWagerDisplay`, ADR-014; a Final durability
   race was closed in Slice 23). Final + winner/completion **Display choreography**
-  is the authorized S05 child under
-  `AUTHORIZE-CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY-1`;
-  Final gameplay authority and Host workflow remain unchanged.
+  is **TERMINALLY COMPLETE** after PR #101; Final gameplay authority and Host
+  workflow remain unchanged.
 
 ### 22. Audio controls
 
@@ -557,9 +563,10 @@ hardware, recovery, and the end-to-end experience.
   motion competing with reading.
 - **Principles:** `P15`, `P17`, `P14`, `P23`.
 - **Research routing:** Head, Saffer, Hodent.
-- **Ownership / state:** S05 — **LATER** for the motion vocabulary.
-  `prefers-reduced-motion` handling is observed in existing Display CSS
-  (**ALREADY IMPLEMENTED FOUNDATION**).
+- **Ownership / state:** The required REAL MVP S05 motion vocabulary is
+  implemented across the terminal presentation children, with
+  `prefers-reduced-motion` preserving static state semantics. Broader motion
+  vocabulary expansion is deferred.
 
 ### 27. Startup / session recovery
 
@@ -710,9 +717,10 @@ hardware, recovery, and the end-to-end experience.
   acquiring behavioral authority.
 - **Principles:** `P24`, `P23`, `P13`, `P07`.
 - **Research routing:** Kholmatova, Lupton, Yablonski.
-- **Ownership / state:** S05 — **LATER** for implementation. A theme registry,
-  token surface and theme-isolation tests exist (**ALREADY IMPLEMENTED
-  FOUNDATION**); themes remain presentation-only.
+- **Ownership / state:** No separate current S05 design-system implementation
+  child remains open. A theme registry, token surface and theme-isolation tests
+  exist (**ALREADY IMPLEMENTED FOUNDATION**); broader design-system expansion is
+  deferred and themes remain presentation-only.
 
 ### 37. Information density / progressive disclosure
 
@@ -765,8 +773,9 @@ hardware, recovery, and the end-to-end experience.
   correct input feel late.
 - **Principles:** `P16`, `P15`, `P23`.
 - **Research routing:** Swink, Saffer, Head, Hodent.
-- **Ownership / state:** S05 — **LATER** for choreography. The immediacy
-  constraint applies to any slice that touches a live path.
+- **Ownership / state:** Required REAL MVP S05 live-path choreography is
+  implemented across the terminal S05 presentation children. The immediacy
+  constraint remains cross-cutting; further game-feel refinement is deferred.
 
 ---
 
