@@ -129,24 +129,40 @@ describe('AudienceDisplayShell', () => {
     expect(screen.getByTestId('cbd-prompt')).toHaveTextContent('What is H2O?')
   })
 
-  it('renders Final unique-leader and tied results distinctly', () => {
+  it('keeps resolution as leading/tied and reserves winner naming for completion', () => {
+    const teams = {
+      status: 'available' as const,
+      teams: [team('t0', 'Alpha', 'crimson', 100), team('t1', 'Bravo', 'azure', 400)],
+    }
     const { rerender } = render(
       <AudienceDisplayShell
         publicState={state({
           round: {
             kind: PUBLIC_FINAL_KIND,
-            stage: 'complete',
+            stage: 'resolution',
+            prompt: null,
+            answer: null,
+            reveal: null,
             outcome: 'unique-leader',
           },
-          teams: {
-            status: 'available',
-            teams: [team('t0', 'Alpha', 'crimson', 100), team('t1', 'Bravo', 'azure', 400)],
-          },
+          teams,
         })}
       />,
     )
     expect(screen.getByTestId('audience-result-unique')).toHaveTextContent(/Bravo leads/)
-    expect(screen.queryByTestId('audience-result-tied')).toBeNull()
+    expect(screen.queryByTestId('fwd-winner')).toBeNull()
+
+    rerender(
+      <AudienceDisplayShell
+        publicState={state({
+          round: { kind: PUBLIC_FINAL_KIND, stage: 'complete', outcome: 'unique-leader' },
+          teams,
+        })}
+      />,
+    )
+    expect(screen.queryByTestId('audience-result-unique')).toBeNull()
+    expect(screen.getByTestId('fwd-winner')).toHaveTextContent(/winner/i)
+    expect(screen.getByTestId('fwd-winner')).toHaveTextContent('Bravo')
 
     rerender(
       <AudienceDisplayShell
@@ -159,7 +175,9 @@ describe('AudienceDisplayShell', () => {
         })}
       />,
     )
-    expect(screen.getByTestId('audience-result-tied')).toHaveTextContent('Tied')
+    expect(screen.queryByTestId('audience-result-tied')).toBeNull()
+    expect(screen.getByTestId('fwd-outcome')).toHaveTextContent(/a tie/i)
+    expect(screen.queryByTestId('fwd-winner')).toBeNull()
   })
 
   it('marks unavailable rounds neutrally without projector controls', () => {
