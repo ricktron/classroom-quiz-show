@@ -125,8 +125,11 @@ Path S-C** resolves the score-change major moment as the immediate static
 authoritative update (ADR-006 unchanged); animated score presentation is
 **not** mandatory remaining S05 work.
 `CQS-REAL-MVP-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY` is
-**TERMINALLY COMPLETE** on main after PR #96. Remaining S05 families
-(board/round-flow, Final / winner presentation, Host polish) stay later and
+**TERMINALLY COMPLETE** on main after PR #96.
+`CQS-REAL-MVP-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY` is an
+**AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL** (board ↔ clue
+causality + Display-side Final bridge; remount-safe seed/ack). Remaining S05
+families (Final / winner presentation, Host polish) stay later and
 require fresh bounded authorization. The S05 parent remains **OPEN / NOT
 TERMINAL**.
 ### S06
@@ -353,8 +356,10 @@ hardware, recovery, and the end-to-end experience.
   fidelity / stress foundation is **TERMINALLY COMPLETE** on main
   (hierarchy, six×five stress layout, stable consumed slots, non-color
   Used semantics, 8-team coexistence, 720p/1080p automation, high
-  contrast). Later Board choreography or further presentation refinement
-  remains S05 — **LATER**.
+  contrast). **S05 board/round-flow presentation choreography** is an
+  **AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL**
+  (remount-safe board reveal / return / category-clear ack). Further
+  presentation refinement remains S05 — **LATER**.
 
 ### 15. Question / clue Display
 
@@ -370,7 +375,10 @@ hardware, recovery, and the end-to-end experience.
   fidelity and schema-max readability are **TERMINALLY COMPLETE** on main
   (distance-first hierarchy, full authored-text visibility, clipping
   protection, 8-team coexistence, timer/Signal Rail semantics preserved).
-  Later Clue choreography or presentation effects remain S05 — **LATER**.
+  **S05 board/round-flow presentation choreography** is an
+  **AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL**
+  (remount-safe selection / question-reveal causality; no full-board-while-clue
+  morph). Further Clue presentation effects remain S05 — **LATER**.
   Answer-reveal authorization is an architectural invariant, not a design
   choice.
 

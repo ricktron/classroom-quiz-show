@@ -11,7 +11,8 @@
  *     (limits.ts projector rationale).
  *  4. Nothing is conveyed by colour alone (a used tile also says "Used").
  *  5. Spatial memory: used tiles stay in place; columns keep authored order.
- *  6. No animation vocabulary in F1 (nothing for reduced-motion to suppress).
+ *  6. F1 ships static layout only; S05 board/round-flow adds remount-safe
+ *     acknowledgement motion gated by prefers-reduced-motion (seed/ack).
  *
  * Personality is CQS-specific classroom game-show presence — not proprietary
  * commercial trade dress.
@@ -399,5 +400,77 @@
 
   .cbd__answer-label {
     font-size: clamp(0.6rem, 0.9vw, 0.8rem);
+  }
+}
+
+/*
+ * S05 board/round-flow presentation acknowledgement.
+ * Inset / wash emphasis around already-visible truth (buzz/outcome tokens).
+ * Remount-safe: classes only apply after observed lifecycle transitions.
+ */
+
+.cbd__selection-header--ack,
+.cbd__prompt--ack,
+.cbd__tile--return-orient,
+.cbd__column--clear-ack .cbd__category,
+.cbd--board-enter {
+  box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
+}
+
+.cbd__selection-header--ack,
+.cbd__prompt--ack {
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--state-active) 12%, transparent);
+  padding: 0.15rem 0.35rem;
+}
+
+.cbd__tile--return-orient {
+  border-radius: var(--radius-tile);
+  background: color-mix(in srgb, var(--state-active) 10%, var(--surface-tile-used));
+}
+
+.cbd__column--clear-ack .cbd__category {
+  background: color-mix(in srgb, var(--state-active) 10%, var(--surface-cleared));
+}
+
+.cbd--board-enter {
+  border-radius: var(--radius-panel);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cbd__selection-header--ack,
+  .cbd__prompt--ack,
+  .cbd__tile--return-orient,
+  .cbd__column--clear-ack .cbd__category,
+  .cbd--board-enter {
+    animation: cbd-flow-ack var(--dur-emphasized) var(--ease-emphasized) 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cbd__selection-header--ack,
+  .cbd__prompt--ack,
+  .cbd__tile--return-orient,
+  .cbd__column--clear-ack .cbd__category,
+  .cbd--board-enter {
+    animation: none;
+    /* Static inset ring retained — meaning without theatrical motion. */
+    outline: var(--bw-emphasized, 2px) solid var(--state-active);
+    outline-offset: 2px;
+  }
+}
+
+@keyframes cbd-flow-ack {
+  from {
+    box-shadow: inset 0 0 0 0 transparent;
+    background: transparent;
+  }
+  45% {
+    box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
+    background: color-mix(in srgb, var(--state-active) 16%, transparent);
+  }
+  to {
+    box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
+    background: color-mix(in srgb, var(--state-active) 10%, transparent);
   }
 }

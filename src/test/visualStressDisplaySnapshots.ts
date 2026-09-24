@@ -4,6 +4,7 @@
  * content cannot silently diverge from rendered Display state.
  */
 
+import type { GameDefinition } from '../game/gameDefinition'
 import { importGameFromUnknown } from '../import/importGame'
 import type { SessionCommand } from '../state/commands'
 import type { PublicState } from '../state/publicState'
@@ -12,6 +13,7 @@ import {
   VISUAL_STRESS_IMAGE_TILE_ID,
   VISUAL_STRESS_LONG_TILE_ID,
   VISUAL_STRESS_ROUND_ID,
+  visualStressBoardConfig,
   visualStressGameFile,
 } from './visualStressFixtures'
 
@@ -93,17 +95,21 @@ function resolveActive(
   }
 }
 
-function createStressStore(): SessionStore {
-  const result = importGameFromUnknown(visualStressGameFile())
-  if (result.status !== 'success') {
-    throw new Error(`visual stress fixture failed to import: ${result.status}`)
-  }
+/**
+ * Shared post-import seed for visual-stress session stores (INIT → game →
+ * round advance → stress score profile). Keeps board-only and board+Final
+ * fixture paths from cloning the same dispatch ladder.
+ */
+function seedInitializedStressStore(
+  definition: GameDefinition,
+  sessionId: string,
+): SessionStore {
   const store = createSessionStore()
-  store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 's05-f1-stress' })
+  store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId })
   store.dispatch({
     type: 'INITIALIZE_GAME',
     issuedAt: AT,
-    definition: result.definition,
+    definition,
   })
   store.dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: AT })
   for (const [teamId, delta] of STRESS_SCORE_DELTAS) {
@@ -118,6 +124,14 @@ function createStressStore(): SessionStore {
     })
   }
   return store
+}
+
+function createStressStore(): SessionStore {
+  const result = importGameFromUnknown(visualStressGameFile())
+  if (result.status !== 'success') {
+    throw new Error(`visual stress fixture failed to import: ${result.status}`)
+  }
+  return seedInitializedStressStore(result.definition, 's05-f1-stress')
 }
 
 function snapshotAt(store: SessionStore, revision: number, ...commands: SessionCommand[]): PublicState {
@@ -147,7 +161,95 @@ export function visualStressBoardSnapshot(revision = 101): PublicState {
   )
 }
 
-/** Open long text prompt (schema-max) with timer chrome + eight teams. */
+/** Fresh board stage (no used tiles) + eight stress teams. */
+export function visualStressFreshBoardSnapshot(revision = 100): PublicState {
+  const store = createStressStore()
+  return snapshotAt(store, revision)
+}
+
+/** Selected stage only — category/value, no prompt yet. */
+export function visualStressSelectedSnapshot(revision = 105): PublicState {
+  const store = createStressStore()
+  return snapshotAt(store, revision, select(VISUAL_STRESS_LONG_TILE_ID))
+}
+
+/** Prompt revealed without arming response (quiet cognition). */
+export function visualStressPromptOnlySnapshot(revision = 106): PublicState {
+  const store = createStressStore()
+  return snapshotAt(store, revision, select(VISUAL_STRESS_LONG_TILE_ID), revealPrompt)
+}
+
+/**
+ * Board after every tile in the first stress category (alpha) is consumed —
+ * durable Cleared label + depletion. Prefer for remount-into-cleared tests.
+ */
+export function visualStressCategoryClearedBoardSnapshot(revision = 107): PublicState {
+  const store = createStressStore()
+  const commands: SessionCommand[] = []
+  for (const value of [100, 200, 300, 400, 500] as const) {
+    const tileId = `alpha-${value}`
+    commands.push(
+      select(tileId),
+      revealPrompt,
+      revealAnswer,
+      returnToBoard,
+    )
+  }
+  return snapshotAt(store, revision, ...commands)
+}
+
+/**
+ * Stress board + Final game: board stage ready to advance.
+ * Used for Display-side round→Final bridge observation tests.
+ */
+export function visualStressBoardWithFinalReadySnapshot(revision = 160): PublicState {
+  const store = createStressBoardFinalStore()
+  return snapshotAt(store, revision)
+}
+
+/** Final setup stage after advancing from the stress board (same store path). */
+export function visualStressFinalSetupFromBoardSnapshot(revision = 161): PublicState {
+  const store = createStressBoardFinalStore()
+  store.dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: AT })
+  const state = store.getPublicState()
+  return {
+    ...state,
+    revision,
+    phase: 'ready',
+    headline: 'Session ready',
+    detail: 'Playing',
+  }
+}
+
+function createStressBoardFinalStore(): SessionStore {
+  const result = importGameFromUnknown(
+    visualStressGameFile({
+      rounds: [
+        {
+          id: VISUAL_STRESS_ROUND_ID,
+          type: 'category-board',
+          title: 'Visual Stress Board',
+          config: visualStressBoardConfig(),
+        },
+        {
+          id: 'stress-final-round',
+          type: 'final-wager',
+          title: 'Visual Stress Final',
+          config: {
+            prompt: 'Stress Final prompt for bridge presentation only.',
+            answer: 'Stress Final answer withheld until reveal.',
+          },
+        },
+      ],
+    }),
+  )
+  if (result.status !== 'success') {
+    throw new Error(`visual stress board+final fixture failed: ${result.status}`)
+  }
+  return seedInitializedStressStore(result.definition, 's05-board-flow-final')
+}
+
+/** Open long text prompt (schema-max) with timer chrome + eight stress teams. */
 export function visualStressLongPromptSnapshot(revision = 110): PublicState {
   const store = createStressStore()
   return snapshotAt(

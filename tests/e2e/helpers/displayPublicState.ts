@@ -36,3 +36,23 @@ export async function injectPublicState(page: Page, payload: PublicState) {
   )
   expect(accepted).toBe(true)
 }
+
+const VIEWPORT_TOLERANCE_PX = 2
+
+/**
+ * Shared 720p/1080p geometry guard for S05 projector choreography specs.
+ * Extracted so overflow asserts are not cloned across board-flow / outcome /
+ * buzz e2e files (Sonar new-code duplication).
+ */
+export async function assertNoHorizontalOverflow(page: Page) {
+  const report = await page.evaluate(() => {
+    const doc = document.documentElement
+    return {
+      overflowX: Math.max(0, doc.scrollWidth - window.innerWidth),
+      overflowY: Math.max(0, doc.scrollHeight - window.innerHeight),
+      viewport: { width: window.innerWidth, height: window.innerHeight },
+    }
+  })
+  expect(report.overflowX, JSON.stringify(report)).toBeLessThanOrEqual(VIEWPORT_TOLERANCE_PX)
+  expect(report.overflowY, JSON.stringify(report)).toBeLessThanOrEqual(VIEWPORT_TOLERANCE_PX)
+}

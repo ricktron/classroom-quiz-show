@@ -7,7 +7,11 @@ import {
   visualStressPromotedActiveClaimSnapshot,
 } from '../../src/test/visualStressDisplaySnapshots'
 import { visualStressLongPrompt, visualStressTeams } from '../../src/test/visualStressFixtures'
-import { injectPublicState, openDisplay } from './helpers/displayPublicState'
+import {
+  assertNoHorizontalOverflow,
+  injectPublicState,
+  openDisplay,
+} from './helpers/displayPublicState'
 
 /**
  * S05 buzz / active-claim choreography — projector comprehension under stress.
@@ -17,7 +21,6 @@ import { injectPublicState, openDisplay } from './helpers/displayPublicState'
  * Sony / projector qualification remains S06.
  */
 
-const VIEWPORT_TOLERANCE_PX = 2
 const CLAIM_CHROME_TOLERANCE_PX = 2
 
 test.describe.configure({ mode: 'serial' })
@@ -26,19 +29,6 @@ const TEAM_NAMES = visualStressTeams().map((team) => String(team.name))
 const ACTIVE_TEAM = TEAM_NAMES[0]!
 const PROMOTED_TEAM = TEAM_NAMES[1]!
 const WAITING_TEAM_NAMES = TEAM_NAMES.slice(1)
-
-async function assertNoHorizontalOverflow(page: Page) {
-  const report = await page.evaluate(() => {
-    const doc = document.documentElement
-    return {
-      overflowX: Math.max(0, doc.scrollWidth - window.innerWidth),
-      overflowY: Math.max(0, doc.scrollHeight - window.innerHeight),
-      viewport: { width: window.innerWidth, height: window.innerHeight },
-    }
-  })
-  expect(report.overflowX, JSON.stringify(report)).toBeLessThanOrEqual(VIEWPORT_TOLERANCE_PX)
-  expect(report.overflowY, JSON.stringify(report)).toBeLessThanOrEqual(VIEWPORT_TOLERANCE_PX)
-}
 
 async function assertNoWaitingIdentities(page: Page) {
   const panel = page.getByTestId('bqd')

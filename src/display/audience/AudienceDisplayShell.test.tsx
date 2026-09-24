@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { AudienceDisplayShell } from './AudienceDisplayShell'
 import {
@@ -378,5 +378,55 @@ describe('AudienceDisplayShell', () => {
     expect(screen.getByTestId('tsb-team-t7')).toHaveTextContent(LONG)
     expect(screen.getByTestId('cbd-depletion')).toHaveTextContent('1 of 1 clues used')
     expect(screen.getByTestId('cbd-cleared-c0')).toHaveTextContent(/cleared/i)
+  })
+})
+
+describe('S05 Display-side round→Final bridge', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  const boardState = (): PublicState =>
+    state({
+      round: {
+        kind: PUBLIC_BOARD_KIND,
+        stage: 'board',
+        categories: [
+          {
+            key: 'c0',
+            title: 'Science',
+            tiles: [{ key: 'c0t0', value: 100, used: true }],
+          },
+        ],
+      },
+      teams: { status: 'available', teams: [team('t0', 'Alpha', 'crimson', 100)] },
+    })
+
+  const finalSetupState = (): PublicState =>
+    state({
+      revision: 4,
+      round: { kind: PUBLIC_FINAL_KIND, stage: 'setup' },
+      teams: { status: 'available', teams: [team('t0', 'Alpha', 'crimson', 100)] },
+    })
+
+  it('remount into Final seeds without fabricating bridge acknowledgement', () => {
+    render(<AudienceDisplayShell publicState={finalSetupState()} />)
+    const shell = screen.getByTestId('audience-shell')
+    expect(shell).toHaveAttribute('data-final-bridge-seeded', 'true')
+    expect(shell).toHaveAttribute('data-final-bridge-ack', 'false')
+    expect(screen.getByTestId('audience-final')).toHaveAttribute('data-final-bridge-ack', 'false')
+  })
+
+  it('observed board→Final acknowledges the Display-side bridge', () => {
+    const { rerender } = render(<AudienceDisplayShell publicState={boardState()} />)
+    expect(screen.getByTestId('audience-shell')).toHaveAttribute('data-final-bridge-ack', 'false')
+
+    rerender(<AudienceDisplayShell publicState={finalSetupState()} />)
+    expect(screen.getByTestId('audience-shell')).toHaveAttribute('data-final-bridge-ack', 'true')
+    expect(screen.getByTestId('audience-final')).toHaveAttribute('data-final-bridge-ack', 'true')
+    expect(screen.getByTestId('audience-final')).toHaveClass('audience__final--bridge-ack')
   })
 })
