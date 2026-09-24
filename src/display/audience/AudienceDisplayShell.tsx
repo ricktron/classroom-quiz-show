@@ -128,6 +128,8 @@ export function AudienceDisplayShell({
     teamsInAuthoredOrder,
   )
   const leaderKey = finalResult?.leaderTeamKey ?? null
+  const showFinalResolutionResult =
+    publicState.round?.kind === PUBLIC_FINAL_KIND && publicState.round.stage === 'resolution'
   const publicTimer = selectPublicTimer(publicState)
 
   const kindId = roundKindSemanticId(publicState)
@@ -216,7 +218,7 @@ export function AudienceDisplayShell({
                     teams={publicState.teams}
                     hostClockOffsetMs={hostClockOffsetMs}
                   />
-                  {finalResult?.outcome === 'unique-leader' && (
+                  {showFinalResolutionResult && finalResult?.outcome === 'unique-leader' && (
                     <p
                       className="audience__result audience__result--unique"
                       data-testid="audience-result-unique"
@@ -226,7 +228,7 @@ export function AudienceDisplayShell({
                         : 'Unique leader'}
                     </p>
                   )}
-                  {finalResult?.outcome === 'tied' && (
+                  {showFinalResolutionResult && finalResult?.outcome === 'tied' && (
                     <p
                       className="audience__result audience__result--tied"
                       data-testid="audience-result-tied"
