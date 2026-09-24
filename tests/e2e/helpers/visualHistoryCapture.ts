@@ -15,6 +15,17 @@ export const VISUAL_HISTORY_ROOT = path.resolve(
   '../../../docs/design/history/2026-09-s05-complete/screenshots',
 )
 
+export type DisplayCaptureShot = {
+  readonly folder: string
+  readonly basename: string
+  /** Null keeps the fail-closed waiting Display (no host publish). */
+  readonly state: PublicState | null
+  readonly theme?: 'default' | 'high-contrast'
+  readonly reducedMotion?: boolean
+  readonly waitForTestId?: string
+}
+
+
 /** Stabilize fonts/animations before historical screenshot. */
 export async function prepareDeterministicCapture(page: Page) {
   await page.emulateMedia({ reducedMotion: 'reduce' })
@@ -29,18 +40,7 @@ export async function prepareDeterministicCapture(page: Page) {
   })
 }
 
-export async function captureDisplayState(
-  page: Page,
-  options: {
-    readonly folder: string
-    readonly basename: string
-    /** Null keeps the fail-closed waiting Display (no host publish). */
-    readonly state: PublicState | null
-    readonly theme?: 'default' | 'high-contrast'
-    readonly reducedMotion?: boolean
-    readonly waitForTestId?: string
-  },
-) {
+export async function captureDisplayState(page: Page, options: DisplayCaptureShot) {
   if (options.reducedMotion) {
     await page.emulateMedia({ reducedMotion: 'reduce' })
   }

@@ -42,7 +42,18 @@ import {
 import {
   captureDisplayState,
   capturePage,
+  type DisplayCaptureShot,
 } from './helpers/visualHistoryCapture'
+
+function shot(
+  folder: string,
+  basename: string,
+  state: DisplayCaptureShot['state'],
+  waitForTestId?: string,
+  extras?: Pick<DisplayCaptureShot, 'theme' | 'reducedMotion'>,
+): DisplayCaptureShot {
+  return { folder, basename, state, waitForTestId, ...extras }
+}
 
 /**
  * S05 visual historian — deterministic browser captures into
@@ -65,255 +76,49 @@ test.describe('S05 visual historian capture', () => {
   test('audience Display surfaces (1080p + selected stress)', async ({ page }, info) => {
     test.skip(info.project.name !== 'desktop-1080p', '1080p historian primary viewport')
 
-    const shots: Array<{
-      folder: string
-      basename: string
-      state: ReturnType<typeof visualStressFreshBoardSnapshot> | null
-      waitForTestId?: string
-      theme?: 'default' | 'high-contrast'
-      reducedMotion?: boolean
-    }> = [
-      {
-        folder: 'audience',
-        basename: 'audience-board-pristine-1920x1080.png',
-        state: visualStressFreshBoardSnapshot(500),
-        waitForTestId: 'cbd-board',
-      },
-      {
-        folder: 'audience',
-        basename: 'audience-board-partial-1920x1080.png',
-        state: visualStressBoardSnapshot(501),
-        waitForTestId: 'cbd-board',
-      },
-      {
-        folder: 'audience',
-        basename: 'audience-board-depleted-1920x1080.png',
-        state: visualHistoryBoardDepletedSnapshot(502),
-        waitForTestId: 'cbd-board',
-      },
-      {
-        folder: 'round-flow',
-        basename: 'audience-board-category-cleared-1920x1080.png',
-        state: visualStressCategoryClearedBoardSnapshot(503),
-        waitForTestId: 'cbd-board',
-      },
-      {
-        folder: 'scoreboard',
-        basename: 'audience-scoreboard-stress-1920x1080.png',
-        state: visualStressBoardSnapshot(504),
-        waitForTestId: 'display-scores',
-      },
-      {
-        folder: 'clue',
-        basename: 'audience-clue-selected-1920x1080.png',
-        state: visualStressSelectedSnapshot(510),
-        waitForTestId: 'cbd-open',
-      },
-      {
-        folder: 'clue',
-        basename: 'audience-clue-prompt-1920x1080.png',
-        state: visualStressPromptOnlySnapshot(511),
-        waitForTestId: 'cbd-prompt',
-      },
-      {
-        folder: 'clue',
-        basename: 'audience-clue-answer-revealed-1920x1080.png',
-        state: visualStressAnswerRevealSnapshot(512),
-        waitForTestId: 'cbd-answer',
-      },
-      {
-        folder: 'stress',
-        basename: 'audience-clue-prompt-longtext-1920x1080.png',
-        state: visualStressLongPromptSnapshot(513),
-        waitForTestId: 'cbd-prompt',
-      },
-      {
-        folder: 'stress',
-        basename: 'audience-clue-image-1920x1080.png',
-        state: visualStressImagePromptSnapshot(514),
-        waitForTestId: 'mcd-img',
-      },
-      {
-        folder: 'buzz',
-        basename: 'audience-buzz-armed-waiting-1920x1080.png',
-        state: visualStressArmedWaitingBuzzSnapshot(520),
-        waitForTestId: 'signal-rail-status',
-      },
-      {
-        folder: 'buzz',
-        basename: 'audience-buzz-active-claim-1920x1080.png',
-        state: visualStressFirstActiveClaimSnapshot(521),
-        waitForTestId: 'bqd-active',
-      },
-      {
-        folder: 'buzz',
-        basename: 'audience-buzz-active-max-waiting-1920x1080.png',
-        state: visualStressActiveClaimMaxWaitingSnapshot(522),
-        waitForTestId: 'bqd-waiting',
-      },
-      {
-        folder: 'outcome',
-        basename: 'audience-outcome-correct-1920x1080.png',
-        state: visualStressBoardCorrectOutcomeSnapshot(530),
-        waitForTestId: 'board-outcome',
-      },
-      {
-        folder: 'outcome',
-        basename: 'audience-outcome-incorrect-with-active-1920x1080.png',
-        state: visualStressBoardIncorrectWithActiveSnapshot(531),
-        waitForTestId: 'board-outcome',
-      },
-      {
-        folder: 'outcome',
-        basename: 'audience-outcome-passed-1920x1080.png',
-        state: visualStressBoardPassedOutcomeSnapshot(532),
-        waitForTestId: 'board-outcome',
-      },
-      {
-        folder: 'round-flow',
-        basename: 'audience-round-final-bridge-1920x1080.png',
-        state: visualStressFinalSetupFromBoardSnapshot(540),
-        waitForTestId: 'audience-final',
-      },
-      {
-        folder: 'final',
-        basename: 'audience-final-setup-1920x1080.png',
-        state: visualHistoryFinalSetupSnapshot(550),
-        waitForTestId: 'fwd-setup',
-      },
-      {
-        folder: 'final',
-        basename: 'audience-final-wager-entry-1920x1080.png',
-        state: visualHistoryFinalWagerEntrySnapshot(551),
-        waitForTestId: 'fwd-wager-entry',
-      },
-      {
-        folder: 'final',
-        basename: 'audience-final-wagers-locked-1920x1080.png',
-        state: visualHistoryFinalWagersLockedSnapshot(552),
-        waitForTestId: 'audience-final',
-      },
-      {
-        folder: 'final',
-        basename: 'audience-final-response-entry-1920x1080.png',
-        state: visualHistoryFinalResponseEntrySnapshot(553),
-        waitForTestId: 'fwd-prompt',
-      },
-      {
-        folder: 'final',
-        basename: 'audience-final-responses-locked-1920x1080.png',
-        state: visualHistoryFinalResponsesLockedSnapshot(554),
-        waitForTestId: 'fwd-prompt',
-      },
-      {
-        folder: 'final',
-        basename: 'audience-final-answer-revealed-1920x1080.png',
-        state: visualHistoryFinalAnswerRevealedSnapshot(555),
-        waitForTestId: 'fwd-answer',
-      },
-      {
-        folder: 'final',
-        basename: 'audience-final-team-reveal-pending-1920x1080.png',
-        state: visualHistoryFinalTeamRevealPendingSnapshot(556),
-        waitForTestId: 'fwd-reveal-team',
-      },
-      {
-        folder: 'final',
-        basename: 'audience-final-settlement-correct-1920x1080.png',
-        state: visualHistoryFinalSettlementCorrectSnapshot(557),
-        waitForTestId: 'fwd-reveal-outcome',
-      },
-      {
-        folder: 'final',
-        basename: 'audience-final-settlement-incorrect-1920x1080.png',
-        state: visualHistoryFinalSettlementIncorrectSnapshot(558),
-        waitForTestId: 'fwd-reveal-outcome',
-      },
-      {
-        folder: 'final',
-        basename: 'audience-final-settlement-no-response-1920x1080.png',
-        state: visualHistoryFinalSettlementNoResponseSnapshot(559),
-        waitForTestId: 'fwd-reveal-outcome',
-      },
-      {
-        folder: 'final',
-        basename: 'audience-final-resolution-unique-leader-1920x1080.png',
-        state: visualHistoryFinalResolutionUniqueLeaderSnapshot(560),
-        waitForTestId: 'fwd-outcome',
-      },
-      {
-        folder: 'final',
-        basename: 'audience-final-resolution-tied-1920x1080.png',
-        state: visualHistoryFinalResolutionTiedSnapshot(561),
-        waitForTestId: 'fwd-outcome',
-      },
-      {
-        folder: 'final',
-        basename: 'audience-final-sudden-death-1920x1080.png',
-        state: visualHistoryFinalSuddenDeathSnapshot(562),
-        waitForTestId: 'fwd-sudden-death',
-      },
-      {
-        folder: 'completion',
-        basename: 'audience-final-complete-winner-1920x1080.png',
-        state: visualHistoryFinalCompleteWinnerSnapshot(570),
-        waitForTestId: 'fwd-outcome',
-      },
-      {
-        folder: 'completion',
-        basename: 'audience-final-complete-tied-1920x1080.png',
-        state: visualHistoryFinalCompleteTiedSnapshot(571),
-        waitForTestId: 'fwd-outcome',
-      },
-      {
-        folder: 'completion',
-        basename: 'audience-final-complete-generic-safe-1920x1080.png',
-        state: visualHistoryFinalCompleteGenericSafeSnapshot(572),
-        waitForTestId: 'fwd-outcome',
-      },
-      {
-        folder: 'recovery',
-        basename: 'audience-recovery-waiting-1920x1080.png',
-        state: null,
-        waitForTestId: 'audience-waiting-copy',
-      },
-      {
-        folder: 'recovery',
-        basename: 'audience-recovery-scores-unavailable-1920x1080.png',
-        state: visualHistoryScoresUnavailableSnapshot(580),
-        waitForTestId: 'tsb-unavailable',
-      },
-      {
-        folder: 'recovery',
-        basename: 'audience-recovery-round-unavailable-1920x1080.png',
-        state: visualHistoryRoundUnavailableSnapshot(581),
-        waitForTestId: 'audience-shell',
-      },
-      {
-        folder: 'stress',
-        basename: 'audience-board-high-contrast-1920x1080.png',
-        state: visualStressBoardSnapshot(590),
-        waitForTestId: 'cbd-board',
-        theme: 'high-contrast',
-      },
-      {
-        folder: 'stress',
-        basename: 'audience-clue-reduced-motion-1920x1080.png',
-        state: visualStressArmedWaitingBuzzSnapshot(591),
-        waitForTestId: 'signal-rail-status',
-        reducedMotion: true,
-      },
+    const shots: DisplayCaptureShot[] = [
+      shot('audience', 'audience-board-pristine-1920x1080.png', visualStressFreshBoardSnapshot(500), 'cbd-board'),
+      shot('audience', 'audience-board-partial-1920x1080.png', visualStressBoardSnapshot(501), 'cbd-board'),
+      shot('audience', 'audience-board-depleted-1920x1080.png', visualHistoryBoardDepletedSnapshot(502), 'cbd-board'),
+      shot('round-flow', 'audience-board-category-cleared-1920x1080.png', visualStressCategoryClearedBoardSnapshot(503), 'cbd-board'),
+      shot('scoreboard', 'audience-scoreboard-stress-1920x1080.png', visualStressBoardSnapshot(504), 'display-scores'),
+      shot('clue', 'audience-clue-selected-1920x1080.png', visualStressSelectedSnapshot(510), 'cbd-open'),
+      shot('clue', 'audience-clue-prompt-1920x1080.png', visualStressPromptOnlySnapshot(511), 'cbd-prompt'),
+      shot('clue', 'audience-clue-answer-revealed-1920x1080.png', visualStressAnswerRevealSnapshot(512), 'cbd-answer'),
+      shot('stress', 'audience-clue-prompt-longtext-1920x1080.png', visualStressLongPromptSnapshot(513), 'cbd-prompt'),
+      shot('stress', 'audience-clue-image-1920x1080.png', visualStressImagePromptSnapshot(514), 'mcd-img'),
+      shot('buzz', 'audience-buzz-armed-waiting-1920x1080.png', visualStressArmedWaitingBuzzSnapshot(520), 'signal-rail-status'),
+      shot('buzz', 'audience-buzz-active-claim-1920x1080.png', visualStressFirstActiveClaimSnapshot(521), 'bqd-active'),
+      shot('buzz', 'audience-buzz-active-max-waiting-1920x1080.png', visualStressActiveClaimMaxWaitingSnapshot(522), 'bqd-waiting'),
+      shot('outcome', 'audience-outcome-correct-1920x1080.png', visualStressBoardCorrectOutcomeSnapshot(530), 'board-outcome'),
+      shot('outcome', 'audience-outcome-incorrect-with-active-1920x1080.png', visualStressBoardIncorrectWithActiveSnapshot(531), 'board-outcome'),
+      shot('outcome', 'audience-outcome-passed-1920x1080.png', visualStressBoardPassedOutcomeSnapshot(532), 'board-outcome'),
+      shot('round-flow', 'audience-round-final-bridge-1920x1080.png', visualStressFinalSetupFromBoardSnapshot(540), 'audience-final'),
+      shot('final', 'audience-final-setup-1920x1080.png', visualHistoryFinalSetupSnapshot(550), 'fwd-setup'),
+      shot('final', 'audience-final-wager-entry-1920x1080.png', visualHistoryFinalWagerEntrySnapshot(551), 'fwd-wager-entry'),
+      shot('final', 'audience-final-wagers-locked-1920x1080.png', visualHistoryFinalWagersLockedSnapshot(552), 'audience-final'),
+      shot('final', 'audience-final-response-entry-1920x1080.png', visualHistoryFinalResponseEntrySnapshot(553), 'fwd-prompt'),
+      shot('final', 'audience-final-responses-locked-1920x1080.png', visualHistoryFinalResponsesLockedSnapshot(554), 'fwd-prompt'),
+      shot('final', 'audience-final-answer-revealed-1920x1080.png', visualHistoryFinalAnswerRevealedSnapshot(555), 'fwd-answer'),
+      shot('final', 'audience-final-team-reveal-pending-1920x1080.png', visualHistoryFinalTeamRevealPendingSnapshot(556), 'fwd-reveal-team'),
+      shot('final', 'audience-final-settlement-correct-1920x1080.png', visualHistoryFinalSettlementCorrectSnapshot(557), 'fwd-reveal-outcome'),
+      shot('final', 'audience-final-settlement-incorrect-1920x1080.png', visualHistoryFinalSettlementIncorrectSnapshot(558), 'fwd-reveal-outcome'),
+      shot('final', 'audience-final-settlement-no-response-1920x1080.png', visualHistoryFinalSettlementNoResponseSnapshot(559), 'fwd-reveal-outcome'),
+      shot('final', 'audience-final-resolution-unique-leader-1920x1080.png', visualHistoryFinalResolutionUniqueLeaderSnapshot(560), 'fwd-outcome'),
+      shot('final', 'audience-final-resolution-tied-1920x1080.png', visualHistoryFinalResolutionTiedSnapshot(561), 'fwd-outcome'),
+      shot('final', 'audience-final-sudden-death-1920x1080.png', visualHistoryFinalSuddenDeathSnapshot(562), 'fwd-sudden-death'),
+      shot('completion', 'audience-final-complete-winner-1920x1080.png', visualHistoryFinalCompleteWinnerSnapshot(570), 'fwd-outcome'),
+      shot('completion', 'audience-final-complete-tied-1920x1080.png', visualHistoryFinalCompleteTiedSnapshot(571), 'fwd-outcome'),
+      shot('completion', 'audience-final-complete-generic-safe-1920x1080.png', visualHistoryFinalCompleteGenericSafeSnapshot(572), 'fwd-outcome'),
+      shot('recovery', 'audience-recovery-waiting-1920x1080.png', null, 'audience-waiting-copy'),
+      shot('recovery', 'audience-recovery-scores-unavailable-1920x1080.png', visualHistoryScoresUnavailableSnapshot(580), 'tsb-unavailable'),
+      shot('recovery', 'audience-recovery-round-unavailable-1920x1080.png', visualHistoryRoundUnavailableSnapshot(581), 'audience-shell'),
+      shot('stress', 'audience-board-high-contrast-1920x1080.png', visualStressBoardSnapshot(590), 'cbd-board', { theme: 'high-contrast' }),
+      shot('stress', 'audience-clue-reduced-motion-1920x1080.png', visualStressArmedWaitingBuzzSnapshot(591), 'signal-rail-status', { reducedMotion: true }),
     ]
 
-    for (const shot of shots) {
-      await captureDisplayState(page, {
-        folder: shot.folder,
-        basename: shot.basename,
-        state: shot.state,
-        waitForTestId: shot.waitForTestId,
-        theme: shot.theme,
-        reducedMotion: shot.reducedMotion,
-      })
+    for (const entry of shots) {
+      await captureDisplayState(page, entry)
     }
   })
 
