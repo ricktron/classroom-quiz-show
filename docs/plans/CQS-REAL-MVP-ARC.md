@@ -59,8 +59,11 @@
   **TERMINALLY COMPLETE** after PR #96 squash/main
   `36efee350961ac58f4670cb3cb495997b3487311` (accepted head
   `e9744bf168d40f9b5d8fe916139e4a21903bc61c`).
-  `CQS-REAL-MVP-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY` is an
-  **AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL**. S05 parent
+  `CQS-REAL-MVP-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY` is
+  **TERMINALLY COMPLETE** after PR #98 squash/main
+  `11064f3afa4f29dd0c0dbb671b3d88f3a73293f2` (accepted head
+  `ba37f690f67e0edd6b36e54d13524024601dba4b`; trees **EXACT MATCH**
+  `7bb8d5a80afc83afb71b629c1e3fc28b24e9d3d0`). S05 parent
   `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
   remains **OPEN / NOT TERMINAL**. S04D, further S05 work
   (Final / winner), and S06 are **not authorized**. REAL
@@ -257,7 +260,7 @@ This table is not an implementation backlog with slice-level authority.
 | teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal; S04B Class Setup extends it on `main` |
 | controller `F-UX-01` | **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** — ordinary Sony Class Setup copy no longer requires WebHID / report-ID / profile jargon; evidence bound to H5/H6 identities |
 | feedback/support path | **OPEN** — S04D product direction registered; implementation not begun |
-| flagship visual fidelity | **PARTIAL / F1 + buzz + board-outcome Path A + presentation TERMINALLY COMPLETE; board/round-flow DELIVERY CANDIDATE** — S05-F1, S05 buzz / active-claim, S05 board-outcome public authority (Path A foundation), and S05 board-outcome presentation choreography are **TERMINALLY COMPLETE** on main; **score-change Path S-C RESOLVED** (static authoritative update; ADR-006 unchanged); board/round-flow is an **AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL**; Final / Host polish remain open and **NOT AUTHORIZED** |
+| flagship visual fidelity | **PARTIAL / S05 presentation children through board/round-flow TERMINALLY COMPLETE** — S05-F1, S05 buzz / active-claim, S05 board-outcome public authority (Path A foundation), and S05 board-outcome presentation choreography are **TERMINALLY COMPLETE** on main; **score-change Path S-C RESOLVED** (static authoritative update; ADR-006 unchanged); board/round-flow is **TERMINALLY COMPLETE**; Final / Host polish remain open and **NOT AUTHORIZED** |
 | packaged offline/recovery equivalence | **FOUNDATION IMPLEMENTED** (Electron shell + IndexedDB identity). Library backup/restore is **IMPLEMENTED ON MAIN** (S04C-H3); packaged restore smoke **NOT RUN** |
 | packaged macOS qualification | **PARTIAL** (H5 selection/hardware PASS transferred; H6 readiness PASS on Namtai `054c:1000` + four handsets for terminal S04B; Windows physical **NOT RUN**; clean-room / signed release still open) |
 | packaged Windows qualification | **OPEN** (CI installer path; physical Windows runtime **NOT RUN**) |
@@ -559,9 +562,15 @@ Desktop / Pages / Sonar check-run SUCCESS). Lifecycle acknowledgement on
 existing `boardOutcome` only; no `outcomeKey`; Path S-C preserved.
 Evidence:
 [`../CQS-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY.md`](../CQS-S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY.md).
-`CQS-REAL-MVP-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY` is an
-**AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL**. Evidence:
-[`../CQS-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY.md`](../CQS-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY.md).
+`CQS-REAL-MVP-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY` is
+**TERMINALLY COMPLETE** after PR #98 squash/main
+`11064f3afa4f29dd0c0dbb671b3d88f3a73293f2` (accepted head
+`ba37f690f67e0edd6b36e54d13524024601dba4b`; sole parent
+`89c952344843f4924c84b1719ef93a3881372ecd`; trees **EXACT MATCH**
+`7bb8d5a80afc83afb71b629c1e3fc28b24e9d3d0`). Evidence:
+[`../CQS-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY.md`](../CQS-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY.md)
+and terminal post-merge reconciliation
+[`../receipts/2026-09-24-cqs-real-mvp-s05-board-round-flow-presentation-choreography-terminal-post-merge-reconciliation.md`](../receipts/2026-09-24-cqs-real-mvp-s05-board-round-flow-presentation-choreography-terminal-post-merge-reconciliation.md).
 **S04D / further S05 (Final / winner) / S06 are NOT
 AUTHORIZED.** REAL MVP is **not** complete.
 
@@ -580,7 +589,7 @@ S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05-BOARD-OUTCOME-PUBLIC-AUTHORITY: TERMINALLY COMPLETE
 S05-SCORE-CHANGE: RESOLVED — PATH S-C
 S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY: AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL
+S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05 parent: OPEN / NOT TERMINAL
 S04D / Final+winner S05 / S06: NOT AUTHORIZED
 ```
