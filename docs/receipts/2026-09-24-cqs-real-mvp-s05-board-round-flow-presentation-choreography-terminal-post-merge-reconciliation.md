@@ -82,12 +82,11 @@ On exact squash/main `11064f3…`:
 - Package unsigned Windows artifact — **SUCCESS**
 - Package unsigned macOS artifact — **SUCCESS**
 - Lint, typecheck, unit tests, build — **SUCCESS**
-- Playwright e2e — **IN PROGRESS at initial candidate preparation**
+- Playwright e2e — **SUCCESS** (completed 2026-09-24T03:10:57Z)
 
-The accepted PR head and squash/main trees are **EXACT MATCH**, so the
-accepted-head Playwright PASS is causally transferable to the merged code.
-Nevertheless, the terminalization PR must re-observe the main Playwright run
-before exact-head acceptance/merge of this docs-only reconciliation.
+All observed post-merge checks on exact squash/main `11064f3…` concluded
+**SUCCESS**. Accepted PR head and squash/main trees are **EXACT MATCH**, and
+the merged main composition also passed its own Playwright run.
 
 ## H. Contract / scope audit
 
@@ -137,7 +136,7 @@ REAL MVP: NOT COMPLETE
 ## K. Next decision
 
 Independent exact-head review of this docs-only terminalization candidate,
-including re-observation of the still-running post-merge Playwright check.
+with the complete post-merge main verification record above.
 
 This receipt does not merge the terminalization PR, authorize Final/winner,
 authorize S04D/S06, terminalize S05 parent, or declare REAL MVP complete.
