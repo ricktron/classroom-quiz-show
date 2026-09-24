@@ -159,6 +159,81 @@
   color: var(--fg-muted);
 }
 
+/* S05 Final choreography: acknowledgement follows, never gates, authoritative state. */
+.fwd--stage-ack {
+  box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
+}
+
+.fwd__reveal--ack {
+  box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
+}
+
+.fwd__reveal-outcome--ack {
+  border-radius: calc(var(--radius) * 0.7);
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+
+.fwd--complete {
+  justify-content: center;
+  min-height: clamp(12rem, 36vh, 24rem);
+}
+
+.fwd--completion-ack {
+  box-shadow:
+    inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active),
+    0 0 0 var(--bw-standard) color-mix(in srgb, var(--state-active) 30%, transparent);
+}
+
+.fwd__winner {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.2rem, 0.7vw, 0.6rem);
+  padding: clamp(0.5rem, 1.4vw, 1.2rem);
+  border: var(--bw-emphasized, 2px) solid var(--state-active);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--state-active) 10%, var(--surface-raised));
+}
+
+.fwd__winner-name {
+  font-size: clamp(2rem, 6vw, 5rem);
+  font-weight: 800;
+  line-height: 1;
+  overflow-wrap: anywhere;
+  color: var(--fg-strong);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fwd--stage-ack,
+  .fwd__reveal--ack,
+  .fwd__reveal-outcome--ack {
+    animation: fwd-final-ack var(--dur-emphasized) var(--ease-emphasized) 1;
+  }
+
+  .fwd--completion-ack .fwd__winner {
+    animation: fwd-final-complete var(--dur-emphasized) var(--ease-emphasized) 1;
+  }
+}
+
+@keyframes fwd-final-ack {
+  from {
+    transform: scale(0.992);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes fwd-final-complete {
+  from {
+    transform: scale(0.97);
+    opacity: 0.72;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 @keyframes fwd-pulse {
   0%,
   100% {

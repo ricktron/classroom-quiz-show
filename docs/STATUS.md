@@ -15,7 +15,7 @@ delivery/review/repair/qualification/release work,
 | --- | --- |
 | What is historically complete? | Slices **1–23**. Original 23-slice foundation/qualification roadmap: **COMPLETE**. Slice 23: **TERMINALLY COMPLETE**. Guidance Polish S01: **TERMINALLY COMPLETE**. |
 | What is active? | **`CQS-REAL-MVP-1`: ACTIVE / CANONICALLY REGISTERED**. S03 implements the production Electron thin shell and unsigned desktop packaging path (ADR-021 **Accepted**). S04 canon registers remaining product direction. S04A, S04B, and **S04C** (including H1–H4 and display-placement / wake recovery) are **TERMINALLY COMPLETE**. **S05-F1**, **S05 buzz / active-claim choreography**, **S05 board-outcome public authority**, and **S05 board-outcome presentation choreography** are **TERMINALLY COMPLETE**; **S05 board/round-flow presentation choreography** is **TERMINALLY COMPLETE**; S05 parent remains **OPEN / NOT TERMINAL**. Post-MVP arcs remain **INACTIVE**. |
-| What remains? | REAL MVP teacher-adoptable product work remains open. S04A, S04B, and S04C are **TERMINALLY COMPLETE**. **S05-F1**, **S05 buzz / active-claim choreography**, **S05 board-outcome public authority** (Path A foundation), and **S05 board-outcome presentation choreography** are **TERMINALLY COMPLETE**. **S05 score-change owner decision: RESOLVED — PATH S-C**. **`CQS-REAL-MVP-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY`** is **TERMINALLY COMPLETE**. S05 parent remains **OPEN / NOT TERMINAL**. **`CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY` is AUTHORIZED / NOT IMPLEMENTED / NOT TERMINAL.** S04D and S06 remain **NOT AUTHORIZED**. Desktop artifacts are **unsigned** qualification/development-candidate builds, not a teacher-trusted signed release. |
+| What remains? | REAL MVP teacher-adoptable product work remains open. S04A, S04B, and S04C are **TERMINALLY COMPLETE**. **S05-F1**, **S05 buzz / active-claim choreography**, **S05 board-outcome public authority** (Path A foundation), and **S05 board-outcome presentation choreography** are **TERMINALLY COMPLETE**. **S05 score-change owner decision: RESOLVED — PATH S-C**. **`CQS-REAL-MVP-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY`** is **TERMINALLY COMPLETE**. S05 parent remains **OPEN / NOT TERMINAL**. **`CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY` is AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL.** S04D and S06 remain **NOT AUTHORIZED**. Desktop artifacts are **unsigned** qualification/development-candidate builds, not a teacher-trusted signed release. |
 | What is blocked / open? | See the [gap register](plans/CQS-REAL-MVP-ARC.md#6-initial-gap-register). C-3 / C-6 **FOUNDATION IMPLEMENTED / UNSIGNED**. `F-UX-01` **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** (ordinary Sony Class Setup copy; evidence bound to H5/H6 identities). `CQS-Q23-LOW-02` **OPEN / LOW / MONITOR**. H4 salvage collapsed detail **OPEN / LOW**. `CQS-Q23-CLASS-B-01` **OPEN / CONTROLLED**. `CQS-OD-066` **DEFERRED / NOT REAL MVP**. Packaged macOS Sony physical **H5 selection/hardware PASS transferred**; **H6 readiness PASS** on Namtai `054c:1000` + four handsets. Windows physical runtime **NOT RUN** (S06). Signing / notarization **OPEN OWNER GATE**. C-7 Raspberry Pi **outside REAL MVP**. C-8 LAN **outside REAL MVP**. Post-MVP arcs **INACTIVE**. |
 | Current Program frontier | S04A–S04C, **S05-F1**, **S05 buzz / active-claim choreography**, **S05 board-outcome public authority**, and **S05 board-outcome presentation choreography** are **TERMINALLY COMPLETE** on main. **S05 score-change owner decision: RESOLVED — PATH S-C**. **S05 board/round-flow presentation choreography** is **TERMINALLY COMPLETE**. S05 parent remains **OPEN / NOT TERMINAL**. **Final + winner/completion presentation is the active authorized S05 child.** S04D and S06 remain **NOT AUTHORIZED**. REAL MVP is **not** complete. |
 
@@ -42,7 +42,7 @@ S05-SCORE-CHANGE: RESOLVED — PATH S-C
 S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05 parent: OPEN / NOT TERMINAL
-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY: AUTHORIZED / NOT IMPLEMENTED / NOT TERMINAL
+S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY: AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL
 S04D / S06: NOT AUTHORIZED
 post-MVP arcs: INACTIVE
 ```
@@ -316,7 +316,7 @@ no full-board-while-clue or Final/winner expansion. Evidence:
 and terminal post-merge reconciliation
 [`receipts/2026-09-24-cqs-real-mvp-s05-board-round-flow-presentation-choreography-terminal-post-merge-reconciliation.md`](receipts/2026-09-24-cqs-real-mvp-s05-board-round-flow-presentation-choreography-terminal-post-merge-reconciliation.md).
 `CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY` is
-**AUTHORIZED / NOT IMPLEMENTED / NOT TERMINAL**. S04D and S06 remain
+**AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL**. S04D and S06 remain
 **NOT AUTHORIZED**. REAL MVP is **not** complete. This
 status does not claim Windows physical qualification, projector/sleep
 physical qualification, signing, notarization, or a quota-fill experiment.
@@ -337,7 +337,7 @@ S05-BOARD-OUTCOME-PUBLIC-AUTHORITY: TERMINALLY COMPLETE
 S05-SCORE-CHANGE: RESOLVED — PATH S-C
 S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY: AUTHORIZED / NOT IMPLEMENTED / NOT TERMINAL
+S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY: AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL
 S05 parent: OPEN / NOT TERMINAL
 S04D / S06: NOT AUTHORIZED
 ```

@@ -9,6 +9,7 @@ import { MediaContentDisplay } from './MediaContentDisplay'
 import { useResponseCountdown } from './useResponseCountdown'
 import { describeRemaining, formatRemaining } from '../time/duration'
 import type { Clock } from '../time/clock'
+import { useSemanticPresentationAck } from './useSemanticPresentationAck'
 import './FinalWagerDisplay.css'
 
 /**
@@ -123,6 +124,72 @@ function teamNameFor(teams: PublicTeamsState | null, key: string): string {
   return teams.teams.find((team) => team.key === key)?.name ?? 'Team'
 }
 
+/** Name the unique public score maximum, or fail closed when it is not unique/available. */
+function uniquePublicLeaderName(teams: PublicTeamsState | null): string | null {
+  if (teams === null || teams.status !== 'available' || teams.teams.length === 0) return null
+  let max = -Infinity
+  let leaderName: string | null = null
+  let tied = false
+  for (const team of teams.teams) {
+    if (team.score > max) {
+      max = team.score
+      leaderName = team.name
+      tied = false
+    } else if (team.score === max) {
+      tied = true
+    }
+  }
+  return leaderName !== null && !tied ? leaderName : null
+}
+
+function finalStageSemanticId(round: PublicRoundState): string | null {
+  return round.kind === PUBLIC_FINAL_KIND ? `stage:${round.stage}` : null
+}
+
+const FINAL_STAGE_FORWARD = new Set([
+  'setup>wager-entry',
+  'wager-entry>wagers-locked',
+  'wagers-locked>response-entry',
+  'response-entry>responses-locked',
+  'responses-locked>answer-revealed',
+  'resolution>sudden-death',
+])
+
+function shouldAcknowledgeFinalStage(previous: string | null, next: string | null): boolean {
+  if (!previous?.startsWith('stage:') || !next?.startsWith('stage:')) return false
+  return FINAL_STAGE_FORWARD.has(`${previous.slice(6)}>${next.slice(6)}`)
+}
+
+function revealSemanticId(round: PublicRoundState): string | null {
+  if (round.kind !== PUBLIC_FINAL_KIND || round.stage !== 'team-reveal') return null
+  return round.reveal.teamKey
+}
+
+function settlementSemanticId(round: PublicRoundState): string | null {
+  if (round.kind !== PUBLIC_FINAL_KIND) return null
+  if (round.stage !== 'team-reveal' && round.stage !== 'resolution') return null
+  const reveal = round.reveal
+  if (reveal === null) return null
+  if (reveal.settlement === null) return `${reveal.teamKey}:pending`
+  return `${reveal.teamKey}:settled:${reveal.settlement.outcome}:${reveal.settlement.delta}`
+}
+
+function shouldAcknowledgeSettlement(previous: string | null, next: string | null): boolean {
+  if (!previous || !next) return false
+  const previousTeam = previous.split(':', 1)[0]
+  const nextTeam = next.split(':', 1)[0]
+  return (
+    previousTeam === nextTeam &&
+    previous.endsWith(':pending') &&
+    next.startsWith(`${nextTeam}:settled:`)
+  )
+}
+
+function completionSemanticId(round: PublicRoundState): string | null {
+  if (round.kind !== PUBLIC_FINAL_KIND || round.stage !== 'complete') return null
+  return `complete:${round.outcome}`
+}
+
 /**
  * One revealed team. Everything is stated in WORDS — the response state, the
  * wager, the outcome and the points — so nothing depends on colour and nothing is
@@ -131,13 +198,22 @@ function teamNameFor(teams: PublicTeamsState | null, key: string): string {
 function RevealPanel({
   reveal,
   teams,
+  revealAck,
+  settlementAck,
 }: {
   readonly reveal: PublicFinalReveal
   readonly teams: PublicTeamsState | null
+  readonly revealAck: boolean
+  readonly settlementAck: boolean
 }) {
   const { settlement } = reveal
   return (
-    <div className="fwd__reveal" data-testid="fwd-reveal">
+    <div
+      className={`fwd__reveal${revealAck ? ' fwd__reveal--ack' : ''}`}
+      data-testid="fwd-reveal"
+      data-reveal-ack={revealAck ? 'true' : 'false'}
+      data-settlement-ack={settlementAck ? 'true' : 'false'}
+    >
       <p className="fwd__reveal-team" data-testid="fwd-reveal-team">
         {teamNameFor(teams, reveal.teamKey)}
       </p>
@@ -162,7 +238,7 @@ function RevealPanel({
       */}
       {settlement !== null && (
         <p
-          className={`fwd__reveal-outcome fwd__reveal-outcome--${settlement.outcome}`}
+          className={`fwd__reveal-outcome fwd__reveal-outcome--${settlement.outcome}${settlementAck ? ' fwd__reveal-outcome--ack' : ''}`}
           data-testid="fwd-reveal-outcome"
         >
           <span className="fwd__label">Result</span>
@@ -188,7 +264,31 @@ export function FinalWagerDisplay({
 }: FinalWagerDisplayProps) {
   void _hostClockOffsetMs
   void _clock
+
+  const { changed: stageAck } = useSemanticPresentationAck(finalStageSemanticId(round), {
+    shouldAcknowledge: shouldAcknowledgeFinalStage,
+  })
+  const { changed: revealAck } = useSemanticPresentationAck(revealSemanticId(round))
+  const { changed: settlementAck } = useSemanticPresentationAck(settlementSemanticId(round), {
+    shouldAcknowledge: shouldAcknowledgeSettlement,
+  })
+  const { changed: completionAck } = useSemanticPresentationAck(completionSemanticId(round))
+
   if (round.kind !== PUBLIC_FINAL_KIND) return <Unavailable />
+
+  const rootClass = (...extra: string[]) =>
+    [
+      'fwd',
+      ...extra,
+      stageAck ? 'fwd--stage-ack' : '',
+      completionAck ? 'fwd--completion-ack' : '',
+    ]
+      .filter(Boolean)
+      .join(' ')
+  const presentationAttrs = {
+    'data-final-stage-ack': stageAck ? 'true' : 'false',
+    'data-final-completion-ack': completionAck ? 'true' : 'false',
+  }
 
   const heading = (
     <p className="fwd__heading" data-testid="fwd-heading">
@@ -199,7 +299,7 @@ export function FinalWagerDisplay({
   switch (round.stage) {
     case 'setup':
       return (
-        <div className="fwd" data-testid="fwd-setup">
+        <div className={rootClass()} {...presentationAttrs} data-testid="fwd-setup">
           {heading}
           <p className="fwd__status">Getting ready</p>
         </div>
@@ -207,7 +307,7 @@ export function FinalWagerDisplay({
 
     case 'wager-entry':
       return (
-        <div className="fwd" data-testid="fwd-wager-entry">
+        <div className={rootClass()} {...presentationAttrs} data-testid="fwd-wager-entry">
           {heading}
           <p className="fwd__status">Place your wagers</p>
           {/*
@@ -219,7 +319,7 @@ export function FinalWagerDisplay({
 
     case 'wagers-locked':
       return (
-        <div className="fwd" data-testid="fwd-wagers-locked">
+        <div className={rootClass()} {...presentationAttrs} data-testid="fwd-wagers-locked">
           {heading}
           <p className="fwd__status">Wagers are locked</p>
         </div>
@@ -227,7 +327,7 @@ export function FinalWagerDisplay({
 
     case 'response-entry':
       return (
-        <div className="fwd fwd--question" data-testid="fwd-response-entry">
+        <div className={rootClass('fwd--question')} {...presentationAttrs} data-testid="fwd-response-entry">
           {heading}
           <div className="fwd__prompt" data-testid="fwd-prompt">
             <MediaContentDisplay content={round.prompt} />
@@ -238,7 +338,7 @@ export function FinalWagerDisplay({
 
     case 'responses-locked':
       return (
-        <div className="fwd fwd--question" data-testid="fwd-responses-locked">
+        <div className={rootClass('fwd--question')} {...presentationAttrs} data-testid="fwd-responses-locked">
           {heading}
           <div className="fwd__prompt" data-testid="fwd-prompt">
             <MediaContentDisplay content={round.prompt} />
@@ -249,7 +349,7 @@ export function FinalWagerDisplay({
 
     case 'answer-revealed':
       return (
-        <div className="fwd fwd--question" data-testid="fwd-answer-revealed">
+        <div className={rootClass('fwd--question')} {...presentationAttrs} data-testid="fwd-answer-revealed">
           {heading}
           <div className="fwd__prompt" data-testid="fwd-prompt">
             <MediaContentDisplay content={round.prompt} />
@@ -263,7 +363,7 @@ export function FinalWagerDisplay({
 
     case 'team-reveal':
       return (
-        <div className="fwd fwd--question" data-testid="fwd-team-reveal">
+        <div className={rootClass('fwd--question')} {...presentationAttrs} data-testid="fwd-team-reveal">
           {heading}
           {/*
             The question stays in view beside the reveal for the same documented
@@ -277,13 +377,18 @@ export function FinalWagerDisplay({
             <span className="fwd__label">Answer</span>
             <span className="fwd__value">{round.answer}</span>
           </p>
-          <RevealPanel reveal={round.reveal} teams={teams} />
+          <RevealPanel
+            reveal={round.reveal}
+            teams={teams}
+            revealAck={revealAck}
+            settlementAck={settlementAck}
+          />
         </div>
       )
 
     case 'resolution':
       return (
-        <div className="fwd" data-testid="fwd-resolution">
+        <div className={rootClass()} {...presentationAttrs} data-testid="fwd-resolution">
           {heading}
           {round.prompt !== null && (
             <div className="fwd__prompt" data-testid="fwd-prompt">
@@ -300,7 +405,12 @@ export function FinalWagerDisplay({
             The last team judged stays in view beside the result, so the moment
             the final wager is settled is not blanked out from under the class.
           */}
-          {round.reveal !== null && <RevealPanel reveal={round.reveal} teams={teams} />}
+          {round.reveal !== null && <RevealPanel
+            reveal={round.reveal}
+            teams={teams}
+            revealAck={revealAck}
+            settlementAck={settlementAck}
+          />}
           <p className="fwd__status" data-testid="fwd-outcome">
             {round.outcome === 'tied' ? 'The lead is tied' : 'All wagers settled'}
           </p>
@@ -309,22 +419,31 @@ export function FinalWagerDisplay({
 
     case 'sudden-death':
       return (
-        <div className="fwd" data-testid="fwd-sudden-death">
+        <div className={rootClass()} {...presentationAttrs} data-testid="fwd-sudden-death">
           {heading}
           <p className="fwd__status">Sudden death</p>
           <p className="fwd__substatus">The tied teams play one more question.</p>
         </div>
       )
 
-    case 'complete':
+    case 'complete': {
+      const winnerName =
+        round.outcome === 'unique-leader' ? uniquePublicLeaderName(teams) : null
       return (
-        <div className="fwd" data-testid="fwd-complete">
+        <div className={rootClass('fwd--complete')} {...presentationAttrs} data-testid="fwd-complete">
           {heading}
           <p className="fwd__status" data-testid="fwd-outcome">
             {round.outcome === 'tied' ? 'Game complete — a tie' : 'Game complete'}
           </p>
+          {winnerName !== null && (
+            <div className="fwd__winner" data-testid="fwd-winner">
+              <span className="fwd__label">Winner</span>
+              <span className="fwd__winner-name">{winnerName}</span>
+            </div>
+          )}
         </div>
       )
+    }
 
     default:
       return <Unavailable />
