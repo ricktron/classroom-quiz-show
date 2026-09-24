@@ -66,10 +66,12 @@
   `7bb8d5a80afc83afb71b629c1e3fc28b24e9d3d0`). S05 parent
   `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
   remains **OPEN / NOT TERMINAL**. `CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY` is
-  **AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL** under
-  `AUTHORIZE-CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY-1`.
-  S04D and S06 are **not authorized**. REAL
-  MVP is **not** complete.
+  **TERMINALLY COMPLETE** after PR #101 squash/main
+  `2b1aaa7d13a82079b26a820b98bc68e864daed3d` (accepted head
+  `8e879b424d43a07a88e6ea7c1abd20b68add7c00`; trees **EXACT MATCH**
+  `ad4cb531856353db71b77c975b0d4b2efb0676b7`). The deliberate whole-game S05
+  owner playthrough is **NEXT / NOT RUN** before any S05 parent terminalization.
+  S04D and S06 are **not authorized**. REAL MVP is **not** complete.
 
 This document is the canonical **CQS REAL MVP Program** plan of record. It
 registers `CQS-REAL-MVP-1` as the current owner-approved Program without
@@ -574,8 +576,17 @@ Evidence:
 and terminal post-merge reconciliation
 [`../receipts/2026-09-24-cqs-real-mvp-s05-board-round-flow-presentation-choreography-terminal-post-merge-reconciliation.md`](../receipts/2026-09-24-cqs-real-mvp-s05-board-round-flow-presentation-choreography-terminal-post-merge-reconciliation.md).
 `CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY` is
-**AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL**. **S04D / S06 remain NOT
-AUTHORIZED.** REAL MVP is **not** complete.
+**TERMINALLY COMPLETE** after PR #101 squash/main
+`2b1aaa7d13a82079b26a820b98bc68e864daed3d` (accepted head
+`8e879b424d43a07a88e6ea7c1abd20b68add7c00`; sole parent
+`b0da6a1c848e9b781ce4ec447c12076a642e7cd9`; trees **EXACT MATCH**
+`ad4cb531856353db71b77c975b0d4b2efb0676b7`). Evidence:
+[`../CQS-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY.md`](../CQS-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY.md)
+and terminal post-merge reconciliation
+[`../receipts/2026-09-24-cqs-real-mvp-s05-final-and-winner-presentation-choreography-terminal-post-merge-reconciliation.md`](../receipts/2026-09-24-cqs-real-mvp-s05-final-and-winner-presentation-choreography-terminal-post-merge-reconciliation.md).
+S05 parent remains **OPEN / NOT TERMINAL**; deliberate whole-game owner
+playthrough is **NEXT / NOT RUN**. **S04D / S06 remain NOT AUTHORIZED.** REAL
+MVP is **not** complete.
 
 ```text
 routing ≠ authority
@@ -594,7 +605,8 @@ S05-SCORE-CHANGE: RESOLVED — PATH S-C
 S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05 parent: OPEN / NOT TERMINAL
-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY: AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL
+S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
+S05 integrated owner playthrough: NEXT / NOT RUN
 S04D / S06: NOT AUTHORIZED
 ```
 
