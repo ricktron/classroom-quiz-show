@@ -28,6 +28,7 @@
     "test:run": "vitest run",
     "test:e2e": "playwright test",
     "test:desktop": "npm run build:desktop && playwright test -c tests/desktop/playwright.config.ts",
+    "capture:visual-history": "CQS_VISUAL_HISTORY_CAPTURE=1 playwright test tests/e2e/s05-visual-history-capture.spec.ts --project=desktop-1080p --project=projector-720p",
     "verify": "npm run lint && npm run typecheck && npm run test:run",
     "verify:all": "npm run lint && npm run typecheck && npm run test:run && npm run build && npm run test:e2e"
   },

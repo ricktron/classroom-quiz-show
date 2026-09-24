@@ -779,6 +779,22 @@ hardware, recovery, and the end-to-end experience.
 
 ---
 
+## 2b. Visual historical atlas (discovery pointer)
+
+Living inventory entries above remain the **current** UX surface census for
+design routing. Milestone **screenshots** live separately under
+[`history/`](history/) and are **not** implementation authority.
+
+Current S05-complete / pre-owner-playthrough archive:
+
+- [`history/2026-09-s05-complete/`](history/2026-09-s05-complete/)
+- Atlas: [`history/2026-09-s05-complete/CQS-VISUAL-SURFACE-ATLAS.md`](history/2026-09-s05-complete/CQS-VISUAL-SURFACE-ATLAS.md)
+- Manifest: [`history/2026-09-s05-complete/CAPTURE-MANIFEST.json`](history/2026-09-s05-complete/CAPTURE-MANIFEST.json)
+
+Do not duplicate historical screenshot catalogs into this inventory.
+
+---
+
 ## 3. Non-claims
 
 This inventory does **not**:
@@ -792,3 +808,5 @@ This inventory does **not**:
 - close `F-UX-01` / `CQS-Q23-LOW-01`;
 - describe the then-unmerged S04B candidate's implementation as merged at
   the observation epoch.
+- treat [`history/`](history/) screenshots as current product authority or as
+  a substitute for the deliberate whole-game owner playthrough.
