@@ -54,6 +54,40 @@ function boardStoreFromConfig(config: Record<string, unknown>): SessionStore {
   return store
 }
 
+function answerClue(store: SessionStore, tileId: string): void {
+  store.dispatch(select(tileId))
+  store.dispatch(revealPrompt)
+  store.dispatch(revealAnswer)
+}
+
+function duplicateValueBoardStore(includeUniqueTwoHundred = false): SessionStore {
+  const tiles = [
+    {
+      id: 'alpha-100a',
+      value: 100,
+      prompt: 'First hundred prompt',
+      answer: 'First hundred answer',
+    },
+    {
+      id: 'alpha-100b',
+      value: 100,
+      prompt: 'Second hundred prompt',
+      answer: 'Second hundred answer',
+    },
+  ]
+  if (includeUniqueTwoHundred) {
+    tiles.push({
+      id: 'alpha-200',
+      value: 200,
+      prompt: 'Two hundred prompt',
+      answer: 'Two hundred answer',
+    })
+  }
+  return boardStoreFromConfig({
+    categories: [{ id: 'alpha', title: 'Alpha Category', tiles }],
+  })
+}
+
 /** Render the projector at the state reached by the given commands. */
 function renderAt(...commands: SessionCommand[]) {
   const store = boardStore()
@@ -336,9 +370,7 @@ describe('S05 board/round-flow presentation choreography', () => {
 
   it('observed clue→board acknowledges return and orients the used tile', () => {
     const store = boardStore()
-    store.dispatch(select('alpha-100'))
-    store.dispatch(revealPrompt)
-    store.dispatch(revealAnswer)
+    answerClue(store, 'alpha-100')
     const { rerender } = render(
       <CategoryBoardDisplay round={store.getPublicState().round!} />,
     )
@@ -407,32 +439,9 @@ describe('S05 board/round-flow presentation choreography', () => {
   })
 
   it('undo selected→board cannot orient an older used duplicate-value tile', () => {
-    const store = boardStoreFromConfig({
-      categories: [
-        {
-          id: 'alpha',
-          title: 'Alpha Category',
-          tiles: [
-            {
-              id: 'alpha-100a',
-              value: 100,
-              prompt: 'First hundred prompt',
-              answer: 'First hundred answer',
-            },
-            {
-              id: 'alpha-100b',
-              value: 100,
-              prompt: 'Second hundred prompt',
-              answer: 'Second hundred answer',
-            },
-          ],
-        },
-      ],
-    })
+    const store = duplicateValueBoardStore()
 
-    store.dispatch(select('alpha-100a'))
-    store.dispatch(revealPrompt)
-    store.dispatch(revealAnswer)
+    answerClue(store, 'alpha-100a')
     store.dispatch(returnToBoard)
     store.dispatch(select('alpha-100b'))
 
@@ -475,39 +484,10 @@ describe('S05 board/round-flow presentation choreography', () => {
   })
 
   it('unique used title+value match orients; duplicate values suppress orientation', () => {
-    const store = boardStoreFromConfig({
-      categories: [
-        {
-          id: 'alpha',
-          title: 'Alpha Category',
-          tiles: [
-            {
-              id: 'alpha-100a',
-              value: 100,
-              prompt: 'First hundred prompt',
-              answer: 'First hundred answer',
-            },
-            {
-              id: 'alpha-100b',
-              value: 100,
-              prompt: 'Second hundred prompt',
-              answer: 'Second hundred answer',
-            },
-            {
-              id: 'alpha-200',
-              value: 200,
-              prompt: 'Two hundred prompt',
-              answer: 'Two hundred answer',
-            },
-          ],
-        },
-      ],
-    })
+    const store = duplicateValueBoardStore(true)
 
     // Unique match: only one used tile at title+value → orient.
-    store.dispatch(select('alpha-200'))
-    store.dispatch(revealPrompt)
-    store.dispatch(revealAnswer)
+    answerClue(store, 'alpha-200')
     const { rerender } = render(
       <CategoryBoardDisplay round={store.getPublicState().round!} />,
     )
@@ -520,13 +500,9 @@ describe('S05 board/round-flow presentation choreography', () => {
     })
 
     // Ambiguous: two used tiles share title+value 100 → suppress (never first-match).
-    store.dispatch(select('alpha-100a'))
-    store.dispatch(revealPrompt)
-    store.dispatch(revealAnswer)
+    answerClue(store, 'alpha-100a')
     store.dispatch(returnToBoard)
-    store.dispatch(select('alpha-100b'))
-    store.dispatch(revealPrompt)
-    store.dispatch(revealAnswer)
+    answerClue(store, 'alpha-100b')
     rerender(<CategoryBoardDisplay round={store.getPublicState().round!} />)
     store.dispatch(returnToBoard)
     rerender(<CategoryBoardDisplay round={store.getPublicState().round!} />)
@@ -567,13 +543,9 @@ describe('S05 board/round-flow presentation choreography', () => {
       ],
     })
 
-    store.dispatch(select('left-100'))
-    store.dispatch(revealPrompt)
-    store.dispatch(revealAnswer)
+    answerClue(store, 'left-100')
     store.dispatch(returnToBoard)
-    store.dispatch(select('right-100'))
-    store.dispatch(revealPrompt)
-    store.dispatch(revealAnswer)
+    answerClue(store, 'right-100')
     const { rerender } = render(
       <CategoryBoardDisplay round={store.getPublicState().round!} />,
     )
@@ -588,9 +560,7 @@ describe('S05 board/round-flow presentation choreography', () => {
 
   it('suppresses active return orientation immediately when buzz/outcome owns motion', () => {
     const store = boardStore()
-    store.dispatch(select('alpha-100'))
-    store.dispatch(revealPrompt)
-    store.dispatch(revealAnswer)
+    answerClue(store, 'alpha-100')
 
     const { rerender } = render(
       <CategoryBoardDisplay round={store.getPublicState().round!} ownsFlowMotion />,
