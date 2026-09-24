@@ -65,8 +65,10 @@
   `ba37f690f67e0edd6b36e54d13524024601dba4b`; trees **EXACT MATCH**
   `7bb8d5a80afc83afb71b629c1e3fc28b24e9d3d0`). S05 parent
   `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
-  remains **OPEN / NOT TERMINAL**. S04D, further S05 work
-  (Final / winner), and S06 are **not authorized**. REAL
+  remains **OPEN / NOT TERMINAL**. `CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY` is
+  **AUTHORIZED / NOT IMPLEMENTED / NOT TERMINAL** under
+  `AUTHORIZE-CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY-1`.
+  S04D and S06 are **not authorized**. REAL
   MVP is **not** complete.
 
 This document is the canonical **CQS REAL MVP Program** plan of record. It
@@ -571,7 +573,8 @@ Evidence:
 [`../CQS-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY.md`](../CQS-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY.md)
 and terminal post-merge reconciliation
 [`../receipts/2026-09-24-cqs-real-mvp-s05-board-round-flow-presentation-choreography-terminal-post-merge-reconciliation.md`](../receipts/2026-09-24-cqs-real-mvp-s05-board-round-flow-presentation-choreography-terminal-post-merge-reconciliation.md).
-**S04D / further S05 (Final / winner) / S06 are NOT
+`CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY` is
+**AUTHORIZED / NOT IMPLEMENTED / NOT TERMINAL**. **S04D / S06 remain NOT
 AUTHORIZED.** REAL MVP is **not** complete.
 
 ```text
@@ -591,7 +594,8 @@ S05-SCORE-CHANGE: RESOLVED — PATH S-C
 S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05 parent: OPEN / NOT TERMINAL
-S04D / Final+winner S05 / S06: NOT AUTHORIZED
+S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY: AUTHORIZED / NOT IMPLEMENTED / NOT TERMINAL
+S04D / S06: NOT AUTHORIZED
 ```
 
 S05 score-change Path S-C owner-decision registration:

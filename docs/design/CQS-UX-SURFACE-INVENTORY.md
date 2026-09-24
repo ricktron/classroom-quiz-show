@@ -128,10 +128,10 @@ authoritative update (ADR-006 unchanged); animated score presentation is
 **TERMINALLY COMPLETE** on main after PR #96.
 `CQS-REAL-MVP-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY` is
 **TERMINALLY COMPLETE** on main after PR #98 (board ↔ clue causality +
-Display-side Final bridge; remount-safe seed/ack). Remaining S05
-family (Final / winner-completion presentation) stays later and
-require fresh bounded authorization. The S05 parent remains **OPEN / NOT
-TERMINAL**.
+Display-side Final bridge; remount-safe seed/ack). `CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY` is now the
+**AUTHORIZED / NOT IMPLEMENTED / NOT TERMINAL** S05 child. It covers bounded
+Final lifecycle + winner/completion Display choreography over existing public
+Final facts. The S05 parent remains **OPEN / NOT TERMINAL**.
 ### S06
 
 Integrated release qualification: Windows-first physical use, projector
@@ -479,7 +479,10 @@ hardware, recovery, and the end-to-end experience.
 - **Research routing:** Hodent, Endsley & Jones.
 - **Ownership / state:** **ALREADY IMPLEMENTED FOUNDATION**
   (`FinalWagerHostPanel`, `FinalWagerDisplay`, ADR-014; a Final durability
-  race was closed in Slice 23). Final **choreography** is S05 — **LATER**.
+  race was closed in Slice 23). Final + winner/completion **Display choreography**
+  is the authorized S05 child under
+  `AUTHORIZE-CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY-1`;
+  Final gameplay authority and Host workflow remain unchanged.
 
 ### 22. Audio controls
 
