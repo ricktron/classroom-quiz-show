@@ -1,7 +1,6 @@
 import {
   PUBLIC_FINAL_KIND,
   type PublicFinalReveal,
-  type PublicFinalWagerState,
   type PublicResponseTimer,
   type PublicRoundState,
   type PublicTeamsState,
@@ -129,18 +128,18 @@ function teamNameFor(teams: PublicTeamsState | null, key: string): string {
 function uniquePublicLeaderName(teams: PublicTeamsState | null): string | null {
   if (teams === null || teams.status !== 'available' || teams.teams.length === 0) return null
   let max = -Infinity
-  let leader: (typeof teams.teams)[number] | null = null
+  let leaderName: string | null = null
   let tied = false
   for (const team of teams.teams) {
     if (team.score > max) {
       max = team.score
-      leader = team
+      leaderName = team.name
       tied = false
     } else if (team.score === max) {
       tied = true
     }
   }
-  return leader !== null && !tied ? leader.name : null
+  return leaderName !== null && !tied ? leaderName : null
 }
 
 function finalStageSemanticId(round: PublicRoundState): string | null {
