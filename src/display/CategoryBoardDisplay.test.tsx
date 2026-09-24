@@ -406,6 +406,57 @@ describe('S05 board/round-flow presentation choreography', () => {
     expect(board).not.toHaveAttribute('data-orient-tile')
   })
 
+  it('undo selected→board cannot orient an older used duplicate-value tile', () => {
+    const store = boardStoreFromConfig({
+      categories: [
+        {
+          id: 'alpha',
+          title: 'Alpha Category',
+          tiles: [
+            {
+              id: 'alpha-100a',
+              value: 100,
+              prompt: 'First hundred prompt',
+              answer: 'First hundred answer',
+            },
+            {
+              id: 'alpha-100b',
+              value: 100,
+              prompt: 'Second hundred prompt',
+              answer: 'Second hundred answer',
+            },
+          ],
+        },
+      ],
+    })
+
+    store.dispatch(select('alpha-100a'))
+    store.dispatch(revealPrompt)
+    store.dispatch(revealAnswer)
+    store.dispatch(returnToBoard)
+    store.dispatch(select('alpha-100b'))
+
+    const { rerender } = render(
+      <CategoryBoardDisplay round={store.getPublicState().round!} />,
+    )
+
+    store.dispatch(undo)
+    rerender(<CategoryBoardDisplay round={store.getPublicState().round!} />)
+
+    const board = screen.getByTestId('cbd-board')
+    expect(board).toHaveAttribute('data-flow-ack', 'false')
+    expect(board).toHaveAttribute('data-flow-moment', 'none')
+    expect(board).not.toHaveAttribute('data-orient-tile')
+    expect(screen.getByTestId('cbd-tile-c0t0')).toHaveAttribute(
+      'data-return-orient',
+      'false',
+    )
+    expect(screen.getByTestId('cbd-tile-c0t1')).toHaveAttribute(
+      'data-return-orient',
+      'false',
+    )
+  })
+
   it('prompt→board return still acknowledges board-enter without inventing orientation', () => {
     const store = boardStore()
     store.dispatch(select('alpha-100'))
@@ -533,6 +584,37 @@ describe('S05 board/round-flow presentation choreography', () => {
     expect(board).not.toHaveAttribute('data-orient-tile')
     expect(screen.getByTestId('cbd-tile-c0t0')).toHaveAttribute('data-return-orient', 'false')
     expect(screen.getByTestId('cbd-tile-c1t0')).toHaveAttribute('data-return-orient', 'false')
+  })
+
+  it('suppresses active return orientation immediately when buzz/outcome owns motion', () => {
+    const store = boardStore()
+    store.dispatch(select('alpha-100'))
+    store.dispatch(revealPrompt)
+    store.dispatch(revealAnswer)
+
+    const { rerender } = render(
+      <CategoryBoardDisplay round={store.getPublicState().round!} ownsFlowMotion />,
+    )
+
+    store.dispatch(returnToBoard)
+    const returnedRound = store.getPublicState().round!
+    rerender(<CategoryBoardDisplay round={returnedRound} ownsFlowMotion />)
+    expect(screen.getByTestId('cbd-tile-c0t0')).toHaveAttribute(
+      'data-return-orient',
+      'true',
+    )
+
+    // AudienceDisplayShell drives this false whenever buzz or boardOutcome owns
+    // presentation. The same board snapshot must suppress orientation at once.
+    rerender(
+      <CategoryBoardDisplay round={returnedRound} ownsFlowMotion={false} />,
+    )
+    const board = screen.getByTestId('cbd-board')
+    expect(board).not.toHaveAttribute('data-orient-tile')
+    expect(screen.getByTestId('cbd-tile-c0t0')).toHaveAttribute(
+      'data-return-orient',
+      'false',
+    )
   })
 
   it('same semantic board state does not restart acknowledgement after hold', () => {

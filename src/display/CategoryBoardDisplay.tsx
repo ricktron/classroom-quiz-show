@@ -201,8 +201,6 @@ function CategoryBoardFlow({
     ownsMotion: ownsFlowMotion,
   })
 
-  // Prior already-public selection retained only for return-to-board orientation.
-  const priorSelectionRef = useRef<{ categoryTitle: string; value: number } | null>(null)
   const [orientTileKey, setOrientTileKey] = useState<string | null>(null)
   const [orientEpoch, setOrientEpoch] = useState(0)
   const previousFlowIdRef = useRef<string | null | undefined>(undefined)
@@ -211,25 +209,29 @@ function CategoryBoardFlow({
     const previous = previousFlowIdRef.current
     if (previous === undefined) {
       previousFlowIdRef.current = flowId
-      const seededSelection = selectionFromFlowId(flowId)
-      if (seededSelection) priorSelectionRef.current = seededSelection
       return
     }
 
-    const prevSelection = selectionFromFlowId(previous)
-    if (prevSelection) priorSelectionRef.current = prevSelection
-
     previousFlowIdRef.current = flowId
 
-    // Observed clue → board: orient only when exactly one used tile matches.
+    // Buzz / outcome choreography owns the projector immediately when present.
+    if (!ownsFlowMotion) {
+      setOrientTileKey(null)
+      return
+    }
+
+    const returnSelection = selectionFromFlowId(previous)
+
+    // Return orientation is part of truthful forward prompt|answer → board only.
+    // Undo selected → board must never borrow an older used tile with the same
+    // public categoryTitle + value.
     if (
-      ownsFlowMotion &&
       flowId === 'board' &&
-      previous !== 'board' &&
-      priorSelectionRef.current &&
-      round.stage === 'board'
+      round.stage === 'board' &&
+      returnSelection &&
+      shouldAcknowledgeBoardFlow(previous, flowId)
     ) {
-      const found = uniqueReturnOrientTileKey(round.categories, priorSelectionRef.current)
+      const found = uniqueReturnOrientTileKey(round.categories, returnSelection)
       if (found) {
         setOrientTileKey(found)
         setOrientEpoch((epoch) => epoch + 1)
@@ -302,6 +304,7 @@ function CategoryBoardFlow({
         : flowChanged && flowId.startsWith('prompt:')
           ? 'prompt-reveal'
           : 'none'
+  const visibleOrientTileKey = ownsFlowMotion ? orientTileKey : null
 
   if (round.stage === 'board') {
     if (round.categories.length === 0) return <Unavailable />
@@ -318,7 +321,7 @@ function CategoryBoardFlow({
         data-seeded={seeded ? 'true' : 'false'}
         data-flow-ack={flowMoment === 'board-enter' ? 'true' : 'false'}
         data-flow-moment={flowMoment}
-        data-orient-tile={orientTileKey ?? undefined}
+        data-orient-tile={visibleOrientTileKey ?? undefined}
       >
         {depletion && depletion.totalTiles > 0 && (
           <p className="cbd__depletion" data-testid="cbd-depletion">
@@ -350,13 +353,13 @@ function CategoryBoardFlow({
                 <ul className="cbd__tiles">
                   {category.tiles.map((tile) => {
                     const orient =
-                      orientTileKey === tile.key ? ' cbd__tile--return-orient' : ''
+                      visibleOrientTileKey === tile.key ? ' cbd__tile--return-orient' : ''
                     return (
                       <li
                         key={tile.key}
                         className={`cbd__tile${tile.used ? ' cbd__tile--used' : ''}${orient}`}
                         data-testid={`cbd-tile-${tile.key}`}
-                        data-return-orient={orientTileKey === tile.key ? 'true' : 'false'}
+                        data-return-orient={visibleOrientTileKey === tile.key ? 'true' : 'false'}
                       >
                         {/*
                           A used tile is marked with the WORD "Used", not just a
