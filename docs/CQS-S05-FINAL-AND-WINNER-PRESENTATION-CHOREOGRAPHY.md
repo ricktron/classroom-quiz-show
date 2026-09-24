@@ -5,7 +5,7 @@
 - **Authorization:** `AUTHORIZE-CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY-1`
 - **Authorized base:** `c39bce0f64ad9275e771e4ee01c56d4f0bf0a3e7`
 - **Parent:** `CQS-REAL-MVP-S05-FLAGSHIP-VISUAL-FIDELITY-AND-GAME-SHOW-CHOREOGRAPHY`
-- **Status:** **AUTHORIZED / NOT IMPLEMENTED / NOT TERMINAL**
+- **Status:** **AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL**
 - **Date (UTC):** 2026-09-24
 
 This is the final remaining implementation child inside S05. It authorizes a
@@ -317,3 +317,39 @@ S05 parent terminalization
 S04D
 S06
 ```
+
+
+## 12. Delivery candidate implementation
+
+The bounded implementation candidate is now present on the authorized delivery
+branch. It remains **NOT ACCEPTED / NOT TERMINAL** until exact-head CI,
+independent semantic review, merge authorization, merge, and post-merge
+terminal reconciliation.
+
+Implemented presentation-only surfaces:
+
+- `FinalWagerDisplay` owns local semantic acknowledgement for truthful forward
+  Final stage transitions, team reveal, settlement, and explicit completion;
+- first observation/remount seeds quietly;
+- reverse/undo transitions do not acknowledge as new forward ceremony;
+- score-only refresh does not restart team reveal acknowledgement;
+- settlement undo clears acknowledgement and a later real re-settlement may
+  acknowledge again;
+- unique-leader resolution remains **leads**, never winner;
+- only `complete + unique-leader` may name the unique public score maximum as
+  **Winner**;
+- tied or inconsistent/unavailable public-score completion never invents a
+  winner;
+- existing board→Final bridge remains the entry choreography owner;
+- existing Path S-C scoreboard, ADR-020 audio, Final gameplay authority, Host
+  workflow, and PublicState **9** / sync **2** / persistence **1** remain
+  unchanged.
+
+Changed implementation family is intentionally bounded to Final Display
+presentation, its audience-shell result wording, CSS, unit regressions, and
+focused projector e2e coverage.
+
+Verification must be re-observed on the immutable live candidate head. This
+document does not claim CI, semantic review, merge, terminalization, physical
+Windows/projector qualification, S05 parent completion, S04D, S06, signing, or
+release readiness.
