@@ -129,7 +129,7 @@ authoritative update (ADR-006 unchanged); animated score presentation is
 `CQS-REAL-MVP-S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY` is
 **TERMINALLY COMPLETE** on main after PR #98 (board ↔ clue causality +
 Display-side Final bridge; remount-safe seed/ack). `CQS-REAL-MVP-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY` is now the
-**AUTHORIZED / NOT IMPLEMENTED / NOT TERMINAL** S05 child. It covers bounded
+**AUTHORIZED DELIVERY CANDIDATE — NOT ACCEPTED / NOT TERMINAL** S05 child. It covers bounded
 Final lifecycle + winner/completion Display choreography over existing public
 Final facts. The S05 parent remains **OPEN / NOT TERMINAL**.
 ### S06
