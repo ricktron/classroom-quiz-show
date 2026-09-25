@@ -87,6 +87,38 @@ Expected repository root is the path above and `origin` must resolve to
 does not match, stop and re-discover rather than assuming the machine layout is
 unchanged.
 
+### MacBook Air stale-checkout recovery
+
+This checkout has historically been left on old feature branches between
+sessions. Do not assume it is already on `main`.
+
+Before switching branches, inspect:
+
+```bash
+git status --short --branch
+```
+
+If untracked or modified files are present, preserve them before changing
+branches. For a temporary safety snapshot that includes untracked files:
+
+```bash
+git stash push -u -m "pre-sync local leftovers"
+```
+
+Then move to canonical `main` and fast-forward only:
+
+```bash
+git fetch origin
+git switch main
+git pull --ff-only
+git rev-parse HEAD
+```
+
+Do not automatically re-apply an old stash onto current `main`. Inspect it
+later with `git stash list` / `git stash show --stat` and reconcile only if
+its contents are still needed. Never delete or overwrite unexplained local
+files merely to make a checkout clean.
+
 ## Working discipline
 
 - One branch and one bounded slice or reconciliation objective.
