@@ -44,7 +44,7 @@ naming a surface ≠ authorizing work on it
 | --- | --- |
 | **ALREADY IMPLEMENTED FOUNDATION** | Merged on `main` and treated as an existing qualified foundation. Not unfinished work to rebuild. Later slices may extend it only within their own scope. |
 | **CURRENT** | Historical inventory label for work that sat inside the active S04B registered scope at this inventory's observation epoch. It does not express current Program status or authorization. |
-| **LATER** | Owned by a named later slice that is not currently authorized for implementation (for example remaining S05 work, S04D, or S06). |
+| **LATER** | Owned by a named later slice that is not currently authorized for implementation (for example S04D or S06). Historical rows may still retain an S05-era `LATER` label when describing the inventory's original observation epoch. |
 | **DEFERRED** | Outside REAL MVP, or dependent on an unresolved owner gate. |
 | **NOT IMPLEMENTED** | No such surface is observed on `main`. Stated as absence, not as a plan. |
 
@@ -402,7 +402,7 @@ hardware, recovery, and the end-to-end experience.
   Slice 8). Buzz / active-claim **choreography** under
   `CQS-REAL-MVP-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY` is **TERMINALLY
   COMPLETE** on main after PR #91. Cause-specific rebound copy, outcome
-  feedback, and broader S05 spectacle remain **LATER**.
+  feedback is terminal for required S05 presentation scope. Broader spectacle is deferred / banked and requires fresh owner authorization.
 
 ### 17. Answer adjudication
 
@@ -600,8 +600,9 @@ hardware, recovery, and the end-to-end experience.
 - **Principles:** `P08`, `P21`, `P22`.
 - **Research routing:** Cooper.
 - **Ownership / state:** **ALREADY IMPLEMENTED FOUNDATION**
-  (`src/summary/`, ADR-015). Winner-celebration choreography is S05 —
-  **LATER**.
+  (`src/summary/`, ADR-015). Required Final + winner/completion presentation
+  choreography is **TERMINALLY COMPLETE** after PR #101; any further
+  celebration refinement is deferred unless newly authorized.
 
 ### 29. Post-game summary
 
