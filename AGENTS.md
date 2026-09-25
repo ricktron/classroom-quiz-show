@@ -87,15 +87,18 @@ Expected repository root is the path above and `origin` must resolve to
 does not match, stop and re-discover rather than assuming the machine layout is
 unchanged.
 
-### MacBook Air stale-checkout recovery
+### MacBook Air worktree-aware testing
 
-This checkout has historically been left on old feature branches between
-sessions. Do not assume it is already on `main`.
+This MacBook Air uses multiple Git worktrees for CQS. A branch can be checked
+out in only one registered worktree at a time, so **never assume `main` is
+available in the checkout currently open in Terminal or Cursor**.
 
-Before switching branches, inspect:
+Before any branch switch or local testing setup, inspect both the current
+checkout and the registered worktree topology:
 
 ```bash
 git status --short --branch
+git worktree list --porcelain
 ```
 
 If untracked or modified files are present, preserve them before changing
@@ -105,19 +108,58 @@ branches. For a temporary safety snapshot that includes untracked files:
 git stash push -u -m "pre-sync local leftovers"
 ```
 
-Then move to canonical `main` and fast-forward only:
-
-```bash
-git fetch origin
-git switch main
-git pull --ff-only
-git rev-parse HEAD
-```
-
 Do not automatically re-apply an old stash onto current `main`. Inspect it
 later with `git stash list` / `git stash show --stat` and reconcile only if
 its contents are still needed. Never delete or overwrite unexplained local
 files merely to make a checkout clean.
+
+If `main` is already checked out in another worktree, do **not** force it,
+delete that worktree, or repoint it merely to run a test. Either use the
+existing verified `main` worktree or use a detached testing surface at the
+exact canonical commit.
+
+For repeatable owner testing, prefer a dedicated detached worktree such as:
+
+```text
+/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show-owner-test
+```
+
+Create it only when needed and only from the verified canonical repository:
+
+```bash
+git fetch origin
+git worktree add --detach "../classroom-quiz-show-owner-test" origin/main
+```
+
+On later testing sessions, if that worktree already exists and is clean:
+
+```bash
+cd "/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show-owner-test"
+git fetch origin
+git switch --detach origin/main
+git status --short --branch
+git rev-parse HEAD
+```
+
+A detached owner-test worktree is intentional: it avoids competing for the
+`main` branch and makes the exact tested commit explicit. Do not author
+product changes there during an owner acceptance run.
+
+### Worktree lifecycle
+
+A worktree is a temporary execution/testing/review surface, not durable
+evidence. Durable evidence belongs in commits, PRs, receipts, and repository
+documentation.
+
+At the close of a development/review/testing lane, classify the worktree as
+active, blocked, or ready to retire. Do not remove worktrees merely because
+they are old, and do not delete branches just because a worktree is retired.
+Any cleanup is a separate, explicitly approved action after fresh Git and
+GitHub verification.
+
+Use `git worktree list --porcelain` as the authoritative local topology
+check. Physical folder names such as `classroom-quiz-show-s04b` are not
+durable ownership or status claims.
 
 ## Working discipline
 
