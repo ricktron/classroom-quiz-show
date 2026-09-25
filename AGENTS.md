@@ -161,6 +161,44 @@ Use `git worktree list --porcelain` as the authoritative local topology
 check. Physical folder names such as `classroom-quiz-show-s04b` are not
 durable ownership or status claims.
 
+### Local owner-test provenance
+
+For any owner acceptance / physical local test, record enough evidence to
+reproduce what was actually tested. At minimum capture:
+
+- host and user;
+- repository/worktree path;
+- remote identity;
+- exact tested commit SHA;
+- branch or detached-HEAD state;
+- whether the worktree was clean before the run;
+- launch method (for example `npm run desktop` versus a packaged artifact);
+- OS version when platform behavior matters;
+- display topology (for example MacBook Host + iPad Sidecar Audience);
+- attached physical hardware when relevant.
+
+A compact preflight is:
+
+```bash
+hostname
+whoami
+pwd
+git rev-parse --show-toplevel
+git remote get-url origin
+git status --short --branch
+git rev-parse HEAD
+git worktree list --porcelain
+sw_vers
+```
+
+For source-run testing, the Git SHA is the primary tested-code identity. For a
+packaged artifact, record the artifact/provenance SHA as well; a local checkout
+SHA alone does not prove which package was launched.
+
+Do not call a later test equivalent merely because it ran on the same MacBook.
+Commit, package, OS, display topology, and attached hardware are separate
+evidence dimensions.
+
 ## Working discipline
 
 - One branch and one bounded slice or reconciliation objective.
