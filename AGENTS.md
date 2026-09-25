@@ -55,6 +55,38 @@ For delivery, repair, review, qualification, and release work, also read
 [`docs/governance/EXECUTION-GUIDANCE.md`](docs/governance/EXECUTION-GUIDANCE.md).
 That file is the canonical detailed execution guide. Do not copy it here.
 
+## Owner MacBook Air local checkout
+
+This is a convenience hint for Rick's primary macOS development machine. It
+does **not** override Git/repository identity and must be verified before any
+mutation.
+
+- **Machine:** Rick's MacBook Air. The shell host may appear as `ricks`;
+  historical receipts also record `Ricks-MacBook-Air.local`.
+- **User:** `macdaddy`
+- **Verified CQS checkout:**
+  `/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show`
+
+When a local command is needed and the shell starts in `~`, go directly to
+the known checkout instead of searching for the repository again:
+
+```bash
+cd "/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show"
+```
+
+Then verify identity before mutation:
+
+```bash
+git rev-parse --show-toplevel
+git remote get-url origin
+git status --short --branch
+```
+
+Expected repository root is the path above and `origin` must resolve to
+`ricktron/classroom-quiz-show`. If the path no longer exists or Git identity
+does not match, stop and re-discover rather than assuming the machine layout is
+unchanged.
+
 ## Working discipline
 
 - One branch and one bounded slice or reconciliation objective.
