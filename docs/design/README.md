@@ -28,6 +28,7 @@ research evidence ≠ CQS product authority
 | --- | --- |
 | [`CQS-UX-DOCTRINE.md`](CQS-UX-DOCTRINE.md) | **Adopted** cross-product CQS interaction/experience doctrine. Stable principle ids `CQS-UX-P01`…`CQS-UX-P25`. |
 | [`CQS-UX-SURFACE-INVENTORY.md`](CQS-UX-SURFACE-INVENTORY.md) | The durable CQS UX/UI surface inventory: user, job, states, risks, applicable principles, and **which Program slice owns the work**. |
+| [`history/`](history/) | **Visual historical archives** (milestone screenshots + capture manifests). Not implementation authority. Current: [`history/2026-09-s05-complete/`](history/2026-09-s05-complete/). |
 | [`../research/CQS-UX-UI-REFERENCE-BIBLIOGRAPHY.md`](../research/CQS-UX-UI-REFERENCE-BIBLIOGRAPHY.md) | The reference shelf — external sources with honest per-source **evidence state**. |
 | [`../research/CQS-UX-SOURCE-PRINCIPLE-MATRIX.md`](../research/CQS-UX-SOURCE-PRINCIPLE-MATRIX.md) | The bridge from sources and observed CQS evidence to each adopted principle. |
 

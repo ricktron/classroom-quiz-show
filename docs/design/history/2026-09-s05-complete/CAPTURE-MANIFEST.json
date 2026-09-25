@@ -1,0 +1,1202 @@
+{
+  "schemaVersion": 1,
+  "repository": "ricktron/classroom-quiz-show",
+  "milestone": "S05 presentation children complete / pre-owner-playthrough",
+  "canonicalBaseSha": "4368cc9eeb7dbf3ef342926e1d0fba7ba4c10f9b",
+  "capturedAt": "2026-09-24",
+  "s05ParentStatus": "OPEN / NOT TERMINAL",
+  "ownerPlaythrough": "NOT RUN",
+  "s04d": "NOT AUTHORIZED",
+  "s06": "NOT AUTHORIZED",
+  "counts": {
+    "surfacesInventoried": 58,
+    "automatedCapture": 50,
+    "ownerOrLocalCapture": 5,
+    "s06Deferred": 3
+  },
+  "surfaces": [
+    {
+      "id": "APP-HOME",
+      "title": "Home / launch",
+      "role": "App",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "app",
+      "basename": "app-home-1920x1080.png",
+      "path": "screenshots/app/app-home-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/",
+      "privacy": "shared-teacher",
+      "purpose": "Teacher entry: library, import, open classroom controls",
+      "trigger": "Navigate to Home with empty local library",
+      "components": [
+        "HomeRoute"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "APP-HOME-WITH-GAME",
+      "title": "Home after demo import",
+      "role": "App",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "app",
+      "basename": "app-home-with-game-1920x1080.png",
+      "path": "screenshots/app/app-home-with-game-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/",
+      "privacy": "shared-teacher",
+      "purpose": "Game library populated after successful import",
+      "trigger": "Import demo game on Home",
+      "components": [
+        "HomeRoute"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "APP-HOST-EMPTY",
+      "title": "Host empty / load a game",
+      "role": "Host",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "host",
+      "basename": "host-empty-load-game.png",
+      "path": "screenshots/host/host-empty-load-game.png",
+      "viewport": "host-desktop",
+      "route": "#/host",
+      "privacy": "host-private",
+      "purpose": "Host console before a game is loaded",
+      "trigger": "Open Host with no active session game",
+      "components": [
+        "HostRoute",
+        "GamePackImportPanel"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUTH-EDIT-DEMO",
+      "title": "Authoring edit after demo import",
+      "role": "App",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "authoring",
+      "basename": "authoring-edit-demo-1920x1080.png",
+      "path": "screenshots/authoring/authoring-edit-demo-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/edit/:gameId",
+      "privacy": "host-private",
+      "purpose": "In-app board authoring surface for a saved game",
+      "trigger": "Home \u2192 Edit on demo game",
+      "components": [
+        "AuthoringRoute"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUTH-IMPORT-SUCCESS",
+      "title": "Import quality report (success)",
+      "role": "App",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "authoring",
+      "basename": "authoring-import-success-1920x1080.png",
+      "path": "screenshots/authoring/authoring-import-success-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/",
+      "privacy": "host-private",
+      "purpose": "Teacher-facing import success / quality report",
+      "trigger": "Import demo game; quality report visible",
+      "components": [
+        "HomeRoute",
+        "ImportQualityReport"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUTH-IMPORT-FAILURE",
+      "title": "Import validation failure",
+      "role": "App",
+      "class": "edge",
+      "authority": "LOCAL-DESKTOP-CAPTURE",
+      "folder": "authoring",
+      "basename": null,
+      "path": null,
+      "viewport": "n/a",
+      "route": "#/",
+      "privacy": "host-private",
+      "purpose": "Malformed/unsupported content fail-closed messaging",
+      "trigger": "Import intentionally invalid file on Home or Host",
+      "components": [
+        "HomeRoute",
+        "GamePackImportPanel"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": "Requires a prepared invalid fixture file; owner may use Host import panel."
+    },
+    {
+      "id": "SETUP-CLASS-NAMES",
+      "title": "Class Setup \u2014 team names",
+      "role": "Host",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "setup",
+      "basename": "setup-class-team-names.png",
+      "path": "screenshots/setup/setup-class-team-names.png",
+      "viewport": "host-desktop",
+      "route": "#/",
+      "privacy": "host-private",
+      "purpose": "Team naming board before play",
+      "trigger": "Home import demo \u2192 Class Setup names task",
+      "components": [
+        "ClassroomSetupPanel"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "SETUP-SONY-COPY",
+      "title": "Class Setup \u2014 Sony ordinary copy",
+      "role": "Host",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "setup",
+      "basename": "setup-sony-ordinary-copy.png",
+      "path": "screenshots/setup/setup-sony-ordinary-copy.png",
+      "viewport": "host-desktop",
+      "route": "#/",
+      "privacy": "host-private",
+      "purpose": "Teacher-facing Sony setup copy without WebHID jargon",
+      "trigger": "Class Setup visible after demo import",
+      "components": [
+        "ClassroomSetupPanel"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "SETUP-PHYSICAL-SONY",
+      "title": "Sony physical pairing / sleep / wake",
+      "role": "Host",
+      "class": "edge",
+      "authority": "OWNER-HARDWARE-CAPTURE",
+      "folder": "setup",
+      "basename": null,
+      "path": null,
+      "viewport": "n/a",
+      "route": null,
+      "privacy": "host-private",
+      "purpose": "Physical controller readiness and recovery",
+      "trigger": "Namtai / Sony handsets on owner hardware",
+      "components": [
+        "ClassroomSetupPanel"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "HOST-BOARD-CONTROL",
+      "title": "Host category-board control",
+      "role": "Host",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "host",
+      "basename": "host-board-control.png",
+      "path": "screenshots/host/host-board-control.png",
+      "viewport": "host-desktop",
+      "route": "#/host",
+      "privacy": "host-private",
+      "purpose": "Private board controls with answers withheld from Audience",
+      "trigger": "Load board+Final sample; advance to board",
+      "components": [
+        "CategoryBoardHost",
+        "HostRoute"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "HOST-CLUE-SELECTED",
+      "title": "Host clue selected / reveal controls",
+      "role": "Host",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "host",
+      "basename": "host-clue-selected.png",
+      "path": "screenshots/host/host-clue-selected.png",
+      "viewport": "host-desktop",
+      "route": "#/host",
+      "privacy": "host-private",
+      "purpose": "Host prompt/answer reveal and scoring targets",
+      "trigger": "Select a board tile on Host",
+      "components": [
+        "CategoryBoardHost",
+        "TeamScoringPanel"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "HOST-FINAL-SETUP",
+      "title": "Host Final setup / begin",
+      "role": "Host",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "host",
+      "basename": "host-final-setup.png",
+      "path": "screenshots/host/host-final-setup.png",
+      "viewport": "host-desktop",
+      "route": "#/host",
+      "privacy": "host-private",
+      "purpose": "Private Final controls before public wager window",
+      "trigger": "Advance to Final after board scoring",
+      "components": [
+        "FinalWagerHostPanel"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "HOST-FINAL-SETTLEMENT",
+      "title": "Host Final settlement controls",
+      "role": "Host",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "host",
+      "basename": "host-final-settlement.png",
+      "path": "screenshots/host/host-final-settlement.png",
+      "viewport": "host-desktop",
+      "route": "#/host",
+      "privacy": "host-private",
+      "purpose": "Host adjudication during team reveal",
+      "trigger": "Reach Final team-reveal on Host",
+      "components": [
+        "FinalWagerHostPanel"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "HOST-ELECTRON-CHROME",
+      "title": "Electron Host window chrome",
+      "role": "Host",
+      "class": "normal",
+      "authority": "LOCAL-DESKTOP-CAPTURE",
+      "folder": "host",
+      "basename": null,
+      "path": null,
+      "viewport": "n/a",
+      "route": null,
+      "privacy": "host-private",
+      "purpose": "Native window chrome / menu / dual-window shell",
+      "trigger": "Packaged or `npm run desktop` Electron Host",
+      "components": [
+        "desktop main process"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-BOARD-PRISTINE",
+      "title": "Audience pristine board",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "audience",
+      "basename": "audience-board-pristine-1920x1080.png",
+      "path": "screenshots/audience/audience-board-pristine-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Unused category board with eight stress teams",
+      "trigger": "Inject visualStressFreshBoardSnapshot",
+      "components": [
+        "CategoryBoardDisplay",
+        "AudienceDisplayShell",
+        "TeamScoreboard"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-BOARD-PARTIAL",
+      "title": "Audience partially used board",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "audience",
+      "basename": "audience-board-partial-1920x1080.png",
+      "path": "screenshots/audience/audience-board-partial-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Used vs unused tiles; long category titles; score extremes",
+      "trigger": "Inject visualStressBoardSnapshot",
+      "components": [
+        "CategoryBoardDisplay",
+        "TeamScoreboard"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-BOARD-CLEARED-CATEGORY",
+      "title": "Audience cleared-category board",
+      "role": "Audience",
+      "class": "edge",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "round-flow",
+      "basename": "audience-board-category-cleared-1920x1080.png",
+      "path": "screenshots/round-flow/audience-board-category-cleared-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Durable Cleared label after category depletion",
+      "trigger": "Inject visualStressCategoryClearedBoardSnapshot",
+      "components": [
+        "CategoryBoardDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-BOARD-DEPLETED",
+      "title": "Audience nearly/fully depleted board",
+      "role": "Audience",
+      "class": "edge",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "audience",
+      "basename": "audience-board-depleted-1920x1080.png",
+      "path": "screenshots/audience/audience-board-depleted-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "All tiles used; board exhaustion presentation",
+      "trigger": "Inject visualHistoryBoardDepletedSnapshot",
+      "components": [
+        "CategoryBoardDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-BOARD-720P",
+      "title": "Audience board at 720p",
+      "role": "Audience",
+      "class": "stress",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "stress",
+      "basename": "audience-board-partial-1280x720.png",
+      "path": "screenshots/stress/audience-board-partial-1280x720.png",
+      "viewport": "1280x720",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Projector 720p geometry stress for the same partial board",
+      "trigger": "Inject visualStressBoardSnapshot at 1280\u00d7720",
+      "components": [
+        "CategoryBoardDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-CLUE-SELECTED",
+      "title": "Audience clue selected",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "clue",
+      "basename": "audience-clue-selected-1920x1080.png",
+      "path": "screenshots/clue/audience-clue-selected-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Category/value selection before prompt",
+      "trigger": "Inject visualStressSelectedSnapshot",
+      "components": [
+        "CategoryBoardDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-CLUE-PROMPT",
+      "title": "Audience prompt (quiet cognition)",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "clue",
+      "basename": "audience-clue-prompt-1920x1080.png",
+      "path": "screenshots/clue/audience-clue-prompt-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Prompt revealed without buzz arming",
+      "trigger": "Inject visualStressPromptOnlySnapshot",
+      "components": [
+        "CategoryBoardDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-CLUE-PROMPT-LONG",
+      "title": "Audience long-prompt stress",
+      "role": "Audience",
+      "class": "stress",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "stress",
+      "basename": "audience-clue-prompt-longtext-1920x1080.png",
+      "path": "screenshots/stress/audience-clue-prompt-longtext-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Schema-max prompt readability with timer chrome",
+      "trigger": "Inject visualStressLongPromptSnapshot",
+      "components": [
+        "CategoryBoardDisplay",
+        "SignalRail"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-CLUE-IMAGE",
+      "title": "Audience image clue",
+      "role": "Audience",
+      "class": "stress",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "stress",
+      "basename": "audience-clue-image-1920x1080.png",
+      "path": "screenshots/stress/audience-clue-image-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Media clue projector balance",
+      "trigger": "Inject visualStressImagePromptSnapshot",
+      "components": [
+        "MediaContentDisplay",
+        "CategoryBoardDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-CLUE-ANSWER",
+      "title": "Audience answer revealed",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "clue",
+      "basename": "audience-clue-answer-revealed-1920x1080.png",
+      "path": "screenshots/clue/audience-clue-answer-revealed-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Answer reveal retaining the prompt",
+      "trigger": "Inject visualStressAnswerRevealSnapshot",
+      "components": [
+        "CategoryBoardDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-BUZZ-ARMED",
+      "title": "Audience buzz open / waiting",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "buzz",
+      "basename": "audience-buzz-armed-waiting-1920x1080.png",
+      "path": "screenshots/buzz/audience-buzz-armed-waiting-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Response armed with no active claim",
+      "trigger": "Inject visualStressArmedWaitingBuzzSnapshot",
+      "components": [
+        "BuzzQueueDisplay",
+        "SignalRail"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-BUZZ-ACTIVE",
+      "title": "Audience active claim",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "buzz",
+      "basename": "audience-buzz-active-claim-1920x1080.png",
+      "path": "screenshots/buzz/audience-buzz-active-claim-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "First active claim identity + waiting count",
+      "trigger": "Inject visualStressFirstActiveClaimSnapshot",
+      "components": [
+        "BuzzQueueDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-BUZZ-MAX-WAITING",
+      "title": "Audience active claim max waiting",
+      "role": "Audience",
+      "class": "stress",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "buzz",
+      "basename": "audience-buzz-active-max-waiting-1920x1080.png",
+      "path": "screenshots/buzz/audience-buzz-active-max-waiting-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Eight-team waiting count stress",
+      "trigger": "Inject visualStressActiveClaimMaxWaitingSnapshot",
+      "components": [
+        "BuzzQueueDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-OUTCOME-CORRECT",
+      "title": "Audience correct outcome",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "outcome",
+      "basename": "audience-outcome-correct-1920x1080.png",
+      "path": "screenshots/outcome/audience-outcome-correct-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Path A Correct adjudication presentation",
+      "trigger": "Inject visualStressBoardCorrectOutcomeSnapshot",
+      "components": [
+        "BoardOutcomeDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-OUTCOME-INCORRECT",
+      "title": "Audience incorrect + promoted claim",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "outcome",
+      "basename": "audience-outcome-incorrect-with-active-1920x1080.png",
+      "path": "screenshots/outcome/audience-outcome-incorrect-with-active-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Incorrect outcome beside next active claim",
+      "trigger": "Inject visualStressBoardIncorrectWithActiveSnapshot",
+      "components": [
+        "BoardOutcomeDisplay",
+        "BuzzQueueDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-OUTCOME-PASSED",
+      "title": "Audience passed / no-response outcome",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "outcome",
+      "basename": "audience-outcome-passed-1920x1080.png",
+      "path": "screenshots/outcome/audience-outcome-passed-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Passed adjudication with exhausted queue",
+      "trigger": "Inject visualStressBoardPassedOutcomeSnapshot",
+      "components": [
+        "BoardOutcomeDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-SCOREBOARD-STRESS",
+      "title": "Audience scoreboard stress (8 teams / negatives)",
+      "role": "Audience",
+      "class": "stress",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "scoreboard",
+      "basename": "audience-scoreboard-stress-1920x1080.png",
+      "path": "screenshots/scoreboard/audience-scoreboard-stress-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Long names, negative and large scores, eight teams",
+      "trigger": "Board partial snapshot score strip/column",
+      "components": [
+        "TeamScoreboard",
+        "ScoreLayout"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": "Same frame as AUD-BOARD-PARTIAL; captured as dedicated crop-intent full frame."
+    },
+    {
+      "id": "AUD-ROUND-FINAL-BRIDGE",
+      "title": "Audience board \u2192 Final bridge",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "round-flow",
+      "basename": "audience-round-final-bridge-1920x1080.png",
+      "path": "screenshots/round-flow/audience-round-final-bridge-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Display-side transition into Final setup",
+      "trigger": "Inject visualStressFinalSetupFromBoardSnapshot",
+      "components": [
+        "FinalWagerDisplay",
+        "AudienceDisplayShell"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-FINAL-SETUP",
+      "title": "Audience Final setup",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "final",
+      "basename": "audience-final-setup-1920x1080.png",
+      "path": "screenshots/final/audience-final-setup-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Neutral Final getting-ready panel",
+      "trigger": "Inject visualHistoryFinalSetupSnapshot",
+      "components": [
+        "FinalWagerDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-FINAL-WAGER",
+      "title": "Audience Final wager phase",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "final",
+      "basename": "audience-final-wager-entry-1920x1080.png",
+      "path": "screenshots/final/audience-final-wager-entry-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Public wager window without wager amounts",
+      "trigger": "Inject visualHistoryFinalWagerEntrySnapshot",
+      "components": [
+        "FinalWagerDisplay",
+        "SignalRail"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-FINAL-WAGERS-LOCKED",
+      "title": "Audience Final wagers locked",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "final",
+      "basename": "audience-final-wagers-locked-1920x1080.png",
+      "path": "screenshots/final/audience-final-wagers-locked-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Locked wager phase in words",
+      "trigger": "Inject visualHistoryFinalWagersLockedSnapshot",
+      "components": [
+        "FinalWagerDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-FINAL-RESPONSE",
+      "title": "Audience Final response phase",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "final",
+      "basename": "audience-final-response-entry-1920x1080.png",
+      "path": "screenshots/final/audience-final-response-entry-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Question public; answers/responses still private",
+      "trigger": "Inject visualHistoryFinalResponseEntrySnapshot",
+      "components": [
+        "FinalWagerDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-FINAL-RESPONSES-LOCKED",
+      "title": "Audience Final responses locked",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "final",
+      "basename": "audience-final-responses-locked-1920x1080.png",
+      "path": "screenshots/final/audience-final-responses-locked-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Prompt remains; responses not yet public",
+      "trigger": "Inject visualHistoryFinalResponsesLockedSnapshot",
+      "components": [
+        "FinalWagerDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-FINAL-ANSWER",
+      "title": "Audience Final answer revealed",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "final",
+      "basename": "audience-final-answer-revealed-1920x1080.png",
+      "path": "screenshots/final/audience-final-answer-revealed-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Canonical answer beside prompt",
+      "trigger": "Inject visualHistoryFinalAnswerRevealedSnapshot",
+      "components": [
+        "FinalWagerDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-FINAL-TEAM-PENDING",
+      "title": "Audience Final team reveal pending settlement",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "final",
+      "basename": "audience-final-team-reveal-pending-1920x1080.png",
+      "path": "screenshots/final/audience-final-team-reveal-pending-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "One team response/wager public before adjudication",
+      "trigger": "Inject visualHistoryFinalTeamRevealPendingSnapshot",
+      "components": [
+        "FinalWagerDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-FINAL-SETTLE-CORRECT",
+      "title": "Audience Final settlement correct",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "final",
+      "basename": "audience-final-settlement-correct-1920x1080.png",
+      "path": "screenshots/final/audience-final-settlement-correct-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Correct settlement wording + signed delta",
+      "trigger": "Inject visualHistoryFinalSettlementCorrectSnapshot",
+      "components": [
+        "FinalWagerDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-FINAL-SETTLE-INCORRECT",
+      "title": "Audience Final settlement incorrect",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "final",
+      "basename": "audience-final-settlement-incorrect-1920x1080.png",
+      "path": "screenshots/final/audience-final-settlement-incorrect-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Incorrect settlement wording + signed delta",
+      "trigger": "Inject visualHistoryFinalSettlementIncorrectSnapshot",
+      "components": [
+        "FinalWagerDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-FINAL-SETTLE-NO-RESPONSE",
+      "title": "Audience Final settlement no-response",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "final",
+      "basename": "audience-final-settlement-no-response-1920x1080.png",
+      "path": "screenshots/final/audience-final-settlement-no-response-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "No-response settlement wording",
+      "trigger": "Inject visualHistoryFinalSettlementNoResponseSnapshot",
+      "components": [
+        "FinalWagerDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-FINAL-RESOLUTION-LEADER",
+      "title": "Audience Final unique-leader resolution",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "final",
+      "basename": "audience-final-resolution-unique-leader-1920x1080.png",
+      "path": "screenshots/final/audience-final-resolution-unique-leader-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Leads / settled state \u2014 not winner until complete",
+      "trigger": "Inject visualHistoryFinalResolutionUniqueLeaderSnapshot",
+      "components": [
+        "FinalWagerDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-FINAL-RESOLUTION-TIED",
+      "title": "Audience Final tied resolution",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "final",
+      "basename": "audience-final-resolution-tied-1920x1080.png",
+      "path": "screenshots/final/audience-final-resolution-tied-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Tied lead decision state without celebration",
+      "trigger": "Inject visualHistoryFinalResolutionTiedSnapshot",
+      "components": [
+        "FinalWagerDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-FINAL-SUDDEN-DEATH",
+      "title": "Audience Final sudden death",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "final",
+      "basename": "audience-final-sudden-death-1920x1080.png",
+      "path": "screenshots/final/audience-final-sudden-death-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Neutral sudden-death panel",
+      "trigger": "Inject visualHistoryFinalSuddenDeathSnapshot",
+      "components": [
+        "FinalWagerDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-COMPLETE-WINNER",
+      "title": "Audience completed unique winner",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "completion",
+      "basename": "audience-final-complete-winner-1920x1080.png",
+      "path": "screenshots/completion/audience-final-complete-winner-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Winner naming only after explicit game completion",
+      "trigger": "Inject visualHistoryFinalCompleteWinnerSnapshot",
+      "components": [
+        "FinalWagerDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-COMPLETE-TIED",
+      "title": "Audience completed tied finish",
+      "role": "Audience",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "completion",
+      "basename": "audience-final-complete-tied-1920x1080.png",
+      "path": "screenshots/completion/audience-final-complete-tied-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Tied-finish completion without inventing a winner",
+      "trigger": "Inject visualHistoryFinalCompleteTiedSnapshot",
+      "components": [
+        "FinalWagerDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-COMPLETE-GENERIC",
+      "title": "Audience generic safe completion",
+      "role": "Audience",
+      "class": "recovery",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "completion",
+      "basename": "audience-final-complete-generic-safe-1920x1080.png",
+      "path": "screenshots/completion/audience-final-complete-generic-safe-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Fail closed when unique winner cannot be publicly resolved",
+      "trigger": "Inject visualHistoryFinalCompleteGenericSafeSnapshot",
+      "components": [
+        "FinalWagerDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-RECOVERY-WAITING",
+      "title": "Audience waiting / reconnect",
+      "role": "Audience",
+      "class": "recovery",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "recovery",
+      "basename": "audience-recovery-waiting-1920x1080.png",
+      "path": "screenshots/recovery/audience-recovery-waiting-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Fail-closed Display before valid host publish",
+      "trigger": "Open #/display with INITIAL_PUBLIC_STATE",
+      "components": [
+        "AudienceDisplayShell",
+        "NexusCore"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-RECOVERY-SCORES-UNAVAILABLE",
+      "title": "Audience scores unavailable",
+      "role": "Audience",
+      "class": "recovery",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "recovery",
+      "basename": "audience-recovery-scores-unavailable-1920x1080.png",
+      "path": "screenshots/recovery/audience-recovery-scores-unavailable-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Neutral Scores unavailable panel",
+      "trigger": "Inject visualHistoryScoresUnavailableSnapshot",
+      "components": [
+        "ScoreLayout",
+        "TeamScoreboard"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-RECOVERY-ROUND-UNAVAILABLE",
+      "title": "Audience round unavailable",
+      "role": "Audience",
+      "class": "recovery",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "recovery",
+      "basename": "audience-recovery-round-unavailable-1920x1080.png",
+      "path": "screenshots/recovery/audience-recovery-round-unavailable-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "Neutral round unavailable fail-closed scene",
+      "trigger": "Inject visualHistoryRoundUnavailableSnapshot",
+      "components": [
+        "AudienceDisplayShell"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-HIGH-CONTRAST",
+      "title": "Audience high-contrast theme",
+      "role": "Audience",
+      "class": "stress",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "stress",
+      "basename": "audience-board-high-contrast-1920x1080.png",
+      "path": "screenshots/stress/audience-board-high-contrast-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display?theme=high-contrast",
+      "privacy": "public",
+      "purpose": "Deterministic high-contrast theme on partial board",
+      "trigger": "openDisplay(high-contrast) + visualStressBoardSnapshot",
+      "components": [
+        "ThemeProvider",
+        "CategoryBoardDisplay"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "AUD-REDUCED-MOTION",
+      "title": "Audience reduced motion",
+      "role": "Audience",
+      "class": "stress",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "stress",
+      "basename": "audience-clue-reduced-motion-1920x1080.png",
+      "path": "screenshots/stress/audience-clue-reduced-motion-1920x1080.png",
+      "viewport": "1920x1080",
+      "route": "#/display",
+      "privacy": "public",
+      "purpose": "prefers-reduced-motion presentation on armed clue",
+      "trigger": "emulateMedia(reducedMotion) + armed buzz snapshot",
+      "components": [
+        "CategoryBoardDisplay",
+        "SignalRail"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "DESKTOP-DUAL-WINDOW",
+      "title": "Electron Host + Display dual window",
+      "role": "Shared",
+      "class": "normal",
+      "authority": "LOCAL-DESKTOP-CAPTURE",
+      "folder": "host",
+      "basename": null,
+      "path": null,
+      "viewport": "n/a",
+      "route": null,
+      "privacy": "shared-teacher",
+      "purpose": "Native dual-window placement on owner desktop",
+      "trigger": "Electron shell opens Host + Display windows",
+      "components": [
+        "desktop main process"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "SIDECAR-TWO-SCREEN",
+      "title": "MacBook Host + iPad Sidecar Audience",
+      "role": "Shared",
+      "class": "edge",
+      "authority": "OWNER-HARDWARE-CAPTURE",
+      "folder": "host",
+      "basename": null,
+      "path": null,
+      "viewport": "n/a",
+      "route": null,
+      "privacy": "shared-teacher",
+      "purpose": "Owner playthrough two-screen Sidecar arrangement",
+      "trigger": "Rick Sidecar extended display playthrough",
+      "components": [
+        "Electron display enumeration"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": "Not classroom-projector qualification (S06)."
+    },
+    {
+      "id": "S06-WINDOWS-PROJECTOR",
+      "title": "Windows teacher + classroom projector",
+      "role": "Shared",
+      "class": "edge",
+      "authority": "S06-DEFERRED",
+      "folder": "stress",
+      "basename": null,
+      "path": null,
+      "viewport": "n/a",
+      "route": null,
+      "privacy": "public",
+      "purpose": "Actual classroom projector qualification",
+      "trigger": "Authorized S06 hardware qualification",
+      "components": [
+        "Electron Display window"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "S06-PHYSICAL-CONTROLLERS",
+      "title": "Physical Sony controllers in class",
+      "role": "Host",
+      "class": "edge",
+      "authority": "S06-DEFERRED",
+      "folder": "setup",
+      "basename": null,
+      "path": null,
+      "viewport": "n/a",
+      "route": null,
+      "privacy": "host-private",
+      "purpose": "Classroom physical controller evidence",
+      "trigger": "Authorized S06 hardware qualification",
+      "components": [
+        "ClassroomSetupPanel",
+        "input adapters"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    },
+    {
+      "id": "S06-SLEEP-WAKE-AUDIO",
+      "title": "Sleep/wake, disconnect, classroom audio",
+      "role": "Shared",
+      "class": "recovery",
+      "authority": "S06-DEFERRED",
+      "folder": "recovery",
+      "basename": null,
+      "path": null,
+      "viewport": "n/a",
+      "route": null,
+      "privacy": "shared-teacher",
+      "purpose": "Physical recovery and audio qualification",
+      "trigger": "Authorized S06 hardware qualification",
+      "components": [
+        "audio cues",
+        "display placement"
+      ],
+      "ownerInspectionRequired": true,
+      "notes": null
+    }
+  ],
+  "implementationShaForScreenshots": "4368cc9eeb7dbf3ef342926e1d0fba7ba4c10f9b",
+  "note": "Automated screenshots render application UI from this implementation SHA. Historian docs/harness commits may land after it; they must not rewrite these images for later UI."
+}

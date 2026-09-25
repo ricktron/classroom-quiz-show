@@ -44,7 +44,7 @@ naming a surface ≠ authorizing work on it
 | --- | --- |
 | **ALREADY IMPLEMENTED FOUNDATION** | Merged on `main` and treated as an existing qualified foundation. Not unfinished work to rebuild. Later slices may extend it only within their own scope. |
 | **CURRENT** | Historical inventory label for work that sat inside the active S04B registered scope at this inventory's observation epoch. It does not express current Program status or authorization. |
-| **LATER** | Owned by a named later slice that is not currently authorized for implementation (for example remaining S05 work, S04D, or S06). |
+| **LATER** | Owned by a named later slice that is not currently authorized for implementation (for example S04D or S06). Historical rows may still retain an S05-era `LATER` label when describing the inventory's original observation epoch. |
 | **DEFERRED** | Outside REAL MVP, or dependent on an unresolved owner gate. |
 | **NOT IMPLEMENTED** | No such surface is observed on `main`. Stated as absence, not as a plan. |
 
@@ -402,7 +402,7 @@ hardware, recovery, and the end-to-end experience.
   Slice 8). Buzz / active-claim **choreography** under
   `CQS-REAL-MVP-S05-BUZZ-ACTIVE-CLAIM-CHOREOGRAPHY` is **TERMINALLY
   COMPLETE** on main after PR #91. Cause-specific rebound copy, outcome
-  feedback, and broader S05 spectacle remain **LATER**.
+  feedback is terminal for required S05 presentation scope. Broader spectacle is deferred / banked and requires fresh owner authorization.
 
 ### 17. Answer adjudication
 
@@ -600,8 +600,9 @@ hardware, recovery, and the end-to-end experience.
 - **Principles:** `P08`, `P21`, `P22`.
 - **Research routing:** Cooper.
 - **Ownership / state:** **ALREADY IMPLEMENTED FOUNDATION**
-  (`src/summary/`, ADR-015). Winner-celebration choreography is S05 —
-  **LATER**.
+  (`src/summary/`, ADR-015). Required Final + winner/completion presentation
+  choreography is **TERMINALLY COMPLETE** after PR #101; any further
+  celebration refinement is deferred unless newly authorized.
 
 ### 29. Post-game summary
 
@@ -779,6 +780,22 @@ hardware, recovery, and the end-to-end experience.
 
 ---
 
+## 2b. Visual historical atlas (discovery pointer)
+
+Living inventory entries above remain the **current** UX surface census for
+design routing. Milestone **screenshots** live separately under
+[`history/`](history/) and are **not** implementation authority.
+
+Current S05-complete / pre-owner-playthrough archive:
+
+- [`history/2026-09-s05-complete/`](history/2026-09-s05-complete/)
+- Atlas: [`history/2026-09-s05-complete/CQS-VISUAL-SURFACE-ATLAS.md`](history/2026-09-s05-complete/CQS-VISUAL-SURFACE-ATLAS.md)
+- Manifest: [`history/2026-09-s05-complete/CAPTURE-MANIFEST.json`](history/2026-09-s05-complete/CAPTURE-MANIFEST.json)
+
+Do not duplicate historical screenshot catalogs into this inventory.
+
+---
+
 ## 3. Non-claims
 
 This inventory does **not**:
@@ -792,3 +809,5 @@ This inventory does **not**:
 - close `F-UX-01` / `CQS-Q23-LOW-01`;
 - describe the then-unmerged S04B candidate's implementation as merged at
   the observation epoch.
+- treat [`history/`](history/) screenshots as current product authority or as
+  a substitute for the deliberate whole-game owner playthrough.
