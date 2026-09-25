@@ -89,12 +89,19 @@ unchanged.
 
 ### MacBook Air worktree-aware testing
 
-This MacBook Air uses multiple Git worktrees for CQS. A branch can be checked
-out in only one registered worktree at a time, so **never assume `main` is
-available in the checkout currently open in Terminal or Cursor**.
+Rick's preferred steady state is intentionally simple:
 
-Before any branch switch or local testing setup, inspect both the current
-checkout and the registered worktree topology:
+- exactly **one persistent CQS worktree**, the canonical checkout at
+  `/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show`;
+- that persistent checkout should normally be on `main`;
+- every non-`main` branch/worktree must correspond to active, unmerged work;
+- after a PR is merged and the lane is truthfully closed, its local worktree,
+  local branch, and remote head branch should be retired after fresh
+  verification;
+- merged or closed worktrees are not historical evidence and should not be
+  retained merely for posterity.
+
+Before any branch switch, testing run, or cleanup, inspect topology first:
 
 ```bash
 git status --short --branch
@@ -113,53 +120,57 @@ later with `git stash list` / `git stash show --stat` and reconcile only if
 its contents are still needed. Never delete or overwrite unexplained local
 files merely to make a checkout clean.
 
-If `main` is already checked out in another worktree, do **not** force it,
-delete that worktree, or repoint it merely to run a test. Either use the
-existing verified `main` worktree or use a detached testing surface at the
-exact canonical commit.
+If `main` is checked out in another worktree, do **not** force-switch it or
+delete that worktree merely to unblock a command. First classify every
+registered worktree from fresh local Git state and current GitHub PR state.
 
-For repeatable owner testing, prefer a dedicated detached worktree such as:
+For owner testing, prefer the permanent canonical checkout on current clean
+`main`. If an isolated detached test worktree is exceptionally needed, treat
+it as ephemeral and retire it immediately after its evidence is captured; do
+not keep a permanent owner-test worktree.
 
-```text
-/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show-owner-test
-```
-
-Create it only when needed and only from the verified canonical repository:
-
-```bash
-git fetch origin
-git worktree add --detach "../classroom-quiz-show-owner-test" origin/main
-```
-
-On later testing sessions, if that worktree already exists and is clean:
-
-```bash
-cd "/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show-owner-test"
-git fetch origin
-git switch --detach origin/main
-git status --short --branch
-git rev-parse HEAD
-```
-
-A detached owner-test worktree is intentional: it avoids competing for the
-`main` branch and makes the exact tested commit explicit. Do not author
-product changes there during an owner acceptance run.
-
-### Worktree lifecycle
+### Worktree and branch lifecycle
 
 A worktree is a temporary execution/testing/review surface, not durable
 evidence. Durable evidence belongs in commits, PRs, receipts, and repository
 documentation.
 
-At the close of a development/review/testing lane, classify the worktree as
-active, blocked, or ready to retire. Do not remove worktrees merely because
-they are old, and do not delete branches just because a worktree is retired.
-Any cleanup is a separate, explicitly approved action after fresh Git and
-GitHub verification.
+The target steady state after completed work is:
 
-Use `git worktree list --porcelain` as the authoritative local topology
-check. Physical folder names such as `classroom-quiz-show-s04b` are not
-durable ownership or status claims.
+```text
+/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show
+  -> main
+```
+
+with no other CQS worktree unless it represents active unmerged work.
+
+For each merged lane, closeout should:
+
+1. verify the worktree is clean;
+2. verify the GitHub PR is currently merged;
+3. verify the local worktree HEAD is the expected PR head, merge-verification
+   commit, or another explicitly documented reviewed target;
+4. remove the linked worktree with `git worktree remove`;
+5. delete the local feature/docs/fix branch after its merged representation is
+   established;
+6. delete the remote head branch if it still exists;
+7. prune stale remote refs and dead worktree registrations;
+8. re-run `git worktree list --porcelain` and branch inspection to prove the
+   intended topology remains.
+
+Because CQS commonly uses squash merge, `git branch -d` may reject a branch
+whose PR was correctly merged. A forced local branch delete is acceptable only
+after exact PR/HEAD verification establishes that the branch has no unique
+unmerged work. Never use `git branch -D` as generic cleanup.
+
+The repository preference is to enable GitHub's automatic deletion of merged
+PR head branches. Until that repository setting is enabled, remote branch
+retirement remains an explicit closeout step.
+
+Cleanup is never inferred from age, branch names, `[gone]`, or folder names.
+Use `git worktree list --porcelain` as the authoritative local topology check
+and current GitHub PR state as merge evidence. If deletion evidence is
+ambiguous, retain the worktree/branch and classify it as blocked until resolved.
 
 ### Local owner-test provenance
 
