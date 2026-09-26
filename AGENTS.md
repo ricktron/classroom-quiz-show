@@ -94,6 +94,25 @@ canon and does **not** authorize implementation. Settled doctrine does not
 need external sources re-read to re-prove it. Consultation levels are defined
 in [`docs/design/README.md`](docs/design/README.md) §2.
 
+## Visual historian routing
+
+When the owner authorizes a visual-history / graphical-surface archive, read
+[`docs/design/history/HISTORIAN-WORKFLOW.md`](docs/design/history/HISTORIAN-WORKFLOW.md)
+before capture or mutation.
+
+Visual historian archives preserve **what CQS looked like at a named
+milestone**. They are historical evidence, not current implementation
+authority, UX approval, owner acceptance, or physical classroom qualification.
+
+- Bind every milestone archive to an exact implementation SHA.
+- Preserve Host/private versus Audience/public authority and use synthetic data.
+- Distinguish browser automation, local/native owner evidence, and later
+  physical qualification; never substitute one evidence class for another.
+- Treat merged milestone screenshots as immutable. A later UI gets a **new
+  milestone archive**, not overwritten old PNGs.
+- Do not let historian work authorize product changes, roadmap advancement,
+  slice terminalization, or release claims.
+
 ## Product invariants
 
 Permanent essentials (see the canonical docs for full detail):
