@@ -181,3 +181,40 @@ deterministic runtime validation CQS enforces on import. CQS does not
 claim every 500-point clue is objectively harder than every 400-point
 clue. Definition-of-done items above remain met; this amendment does not
 reopen them.
+
+## 12. Amendment (2026-09-27, continued) — Difficulty Profile (audience × overall challenge × ramp)
+
+Same owner-approved refinement, still `authoringRulesVersion` `2` (not
+bumped). Adds a **Difficulty Profile** the external model resolves before
+authoring, tracked in ADR-023's matching continued amendment:
+
+`Audience baseline × Overall challenge × Difficulty ramp`
+
+- **Audience baseline** = expected learner/course context, free natural
+  language (not a fixed grade list), resolved only from teacher
+  instruction, course context, or supplied materials — never from an
+  individual student's characteristics, accommodations, or presumed
+  ability.
+- **Overall challenge** = board-wide difficulty relative to that audience
+  (`Accessible | Standard | Challenging`; `Standard` default).
+- **Difficulty ramp** = steepness of the 100→500 progression, independent
+  of challenge (`Shallow | Standard | Steep`; `Standard` default).
+
+Interaction policy: infer from explicit teacher/source evidence when
+clear; otherwise ask exactly one batched clarification covering only the
+unresolved settings; when interaction is unavailable (or the teacher says
+to use judgment), use the Standard/Standard defaults and never fail
+generation over it.
+
+The profile operates inside the existing taught-scope boundary (never
+authorizes outside facts), preserves the existing cross-category
+same-value calibration rule, and expands the existing hidden-values
+board-wide calibration QA pass to also check the resolved profile.
+
+No new workbook column/sheet/header; `workbookFormatVersion` stays `1`;
+`MAX_WORKBOOK_ROWS` was not raised — both generated `INSTRUCTIONS` sheets
+were kept well under the existing cap by consolidating prose into denser
+rows. Non-claim preserved: CQS guides pedagogical difficulty; it does not
+objectively or deterministically validate it. This amendment does not
+reopen the §10 definition-of-done and is not S04D/S05/S06/new-game-mode
+work.

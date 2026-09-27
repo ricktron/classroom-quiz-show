@@ -120,3 +120,56 @@ ADR-018), not pedagogical difficulty. CQS does not claim every 500-point
 clue is objectively harder than every 400-point clue — the contract gives
 the external model substantially stronger board-wide and within-category
 guidance for aligning cognitive demand with point value.
+
+## Amendment (2026-09-27, continued) — Difficulty Profile: audience × overall challenge × ramp
+
+Same owner-approved bounded refinement, still inside `authoringRulesVersion`
+`2` (not bumped to `3`). Adds a **Difficulty Profile** — `audience baseline
+× overall challenge × difficulty ramp` — that the external model resolves
+before authoring, on top of the calibration contract above.
+
+- **audience baseline**: free natural language, deliberately *not* a fixed
+  enumerated grade/course list (for example first grade; middle-school
+  science; 9th-grade Earth & Space Science; AP/advanced high school;
+  introductory college; adult/professional learners), resolved only from
+  explicit teacher instruction, course context, or supplied materials —
+  never from an individual student's personal characteristics,
+  accommodations, or presumed ability;
+- **overall challenge**: `Accessible | Standard | Challenging`, relative to
+  the resolved audience (typed `ChallengeLevel` data); `Standard` is the
+  default;
+- **difficulty ramp**: `Shallow | Standard | Steep`, the steepness of the
+  100→500 spread, independent of overall challenge (typed `RampLevel`
+  data); `Standard` is the default;
+- these three settings are independent — challenge and ramp reshape the
+  board's demand and spread, they never change the audience;
+- **minimize teacher friction**: infer each setting from the request,
+  course context, and supplied materials first, interpreting natural
+  language freely; only when a setting remains genuinely ambiguous and the
+  environment supports interaction, ask **one** batched question covering
+  just the unresolved settings — never three separate questions, and never
+  re-ask a setting the request/materials already resolved;
+- **non-interactive fallback**: when interaction is unavailable, or the
+  teacher says to use judgment, infer audience only from explicit evidence
+  (never invent a specific learner population), default overall challenge
+  and ramp to `Standard`, and never fail generation because the
+  clarification could not happen;
+- the whole profile operates **inside** the existing taught-scope boundary
+  — it never authorizes outside facts, and the existing
+  `INSUFFICIENT SOURCE EVIDENCE` behavior governs unsupported demand at any
+  challenge/ramp setting;
+- the existing cross-category same-value calibration rule is preserved
+  unchanged under any profile;
+- the existing board-wide hidden-values calibration QA pass is **expanded**
+  to also check the resolved profile (does the finished board actually
+  feel like the requested audience + challenge + ramp?), still without
+  chain-of-thought output.
+
+No new workbook column, sheet, or header was added; `workbookFormatVersion`
+remains `1`. The generated `INSTRUCTIONS` sheet row count was kept well
+under the existing `MAX_WORKBOOK_ROWS` transport cap (`limits.ts`,
+unchanged) by consolidating several sections' prose into fewer, denser rows
+rather than raising the cap. This profile is generation guidance the
+external model resolves and follows; it is not a runtime configuration
+option, account setting, or individual-learner profiling feature, and CQS
+still does not deterministically validate pedagogical difficulty.
