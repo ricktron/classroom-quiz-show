@@ -3,9 +3,20 @@ import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createRequire } from 'node:module'
+import { buildTestWorkbookBytes } from '../../src/authoring/testWorkbookFactory'
 
 /**
  * Slice 20 — spreadsheet authoring seed through the real host UI.
+ *
+ * External AI authoring template framework (2026-09) update: the downloaded
+ * workbook template is now academically blank (see `docs/architecture/ADR-023
+ * -external-ai-authoring-template-contract.md` and
+ * `src/authoring/templates.test.ts`). It must never masquerade as a playable
+ * game merely because it was downloaded, so the "valid workbook" flow tests
+ * below build a completed workbook fixture with `buildTestWorkbookBytes`
+ * (the same node-safe helper the unit/component authoring tests use) rather
+ * than re-uploading the pristine downloaded template. A dedicated test below
+ * proves the downloaded blank template stays fail-closed.
  *
  * Exact-head provenance: Playwright webServer builds then previews this
  * checkout (`npm run build && npm run preview -- --port 4173 --strictPort`).
@@ -16,6 +27,13 @@ import { createRequire } from 'node:module'
 test.describe.configure({ mode: 'serial' })
 
 const require = createRequire(import.meta.url)
+
+function writeWorkbookFixture(filename: string, bytes: Uint8Array): string {
+  const dir = mkdtempSync(join(tmpdir(), 'cqs-s20-fixture-'))
+  const path = join(dir, filename)
+  writeFileSync(path, bytes)
+  return path
+}
 
 async function openHost(page: Page) {
   await page.goto('#/host')
@@ -46,14 +64,35 @@ test('teacher can download both workbook templates', async ({ page }) => {
   expect(finalDownload.suggestedFilename()).toMatch(/board-plus-final.*\.xlsx$/i)
 })
 
-test('valid Classic workbook uploads, requires approval, then loads for play', async ({ page }) => {
+test('downloaded blank Classic template is academically blank and cannot become playable', async ({
+  page,
+}) => {
   await openHost(page)
   await initSession(page)
 
   const downloadPromise = page.waitForEvent('download')
   await page.getByTestId('spreadsheet-download-classic').click()
   const download = await downloadPromise
-  const path = await saveDownload(download, 'classic.xlsx')
+  const path = await saveDownload(download, 'classic-blank.xlsx')
+
+  // An untouched downloadable template is structurally prepared but carries no
+  // semantic academic content (Title/GameKey/Prompt/Answer are blank), so it
+  // must fail to parse into a draft rather than quietly becoming playable.
+  await page.getByTestId('spreadsheet-upload').setInputFiles(path)
+  await expect(page.getByTestId('spreadsheet-diagnostics')).toBeVisible()
+  await expect(page.getByTestId('spreadsheet-profile')).toHaveText('—')
+  await expect(page.getByTestId('spreadsheet-approve')).toBeDisabled()
+  await expect(page.getByTestId('spreadsheet-review')).not.toBeVisible()
+})
+
+test('valid Classic workbook uploads, requires approval, then loads for play', async ({ page }) => {
+  await openHost(page)
+  await initSession(page)
+
+  const path = writeWorkbookFixture(
+    'classic-completed.xlsx',
+    buildTestWorkbookBytes({ profile: 'classic-board' }),
+  )
 
   await page.getByTestId('spreadsheet-upload').setInputFiles(path)
   await expect(page.getByTestId('spreadsheet-profile')).toHaveText('classic-board')
@@ -81,10 +120,10 @@ test('valid Board + Final authors/imports and can reach Final', async ({ page })
   await openHost(page)
   await initSession(page)
 
-  const downloadPromise = page.waitForEvent('download')
-  await page.getByTestId('spreadsheet-download-final').click()
-  const download = await downloadPromise
-  const path = await saveDownload(download, 'final.xlsx')
+  const path = writeWorkbookFixture(
+    'board-plus-final-completed.xlsx',
+    buildTestWorkbookBytes({ profile: 'board-plus-final' }),
+  )
 
   await page.getByTestId('spreadsheet-upload').setInputFiles(path)
   await expect(page.getByTestId('spreadsheet-profile')).toHaveText('board-plus-final')

@@ -25,6 +25,7 @@ import {
   sheetsForProfile,
   type WorkbookProfile,
 } from './contract'
+import { AUTHORING_RULES_VERSION } from './authoringRules'
 import { revalidateDraft } from './validateDraft'
 import {
   deriveBoardRoundId,
@@ -385,10 +386,50 @@ function cellAt(row: readonly RawCell[], map: HeaderMap, header: string): RawCel
   return row[idx]
 }
 
+/**
+ * `authoringRulesVersion` is additive generation-contract provenance (ADR-023
+ * §2), never a structural compatibility gate. A malformed value is a warning,
+ * never a blocker; a newer-than-known value is a warning, never
+ * `unsupported-workbook-version`. Extracted from `parseMeta` to keep that
+ * function's branching bounded to structural metadata.
+ */
+function parseAuthoringRulesVersionMeta(
+  raw: string | undefined,
+  a1: string | undefined,
+  issues: AuthoringIssue[],
+): number | undefined {
+  if (raw === undefined || raw === '') return undefined
+  const parsed = Number(raw)
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    issues.push(
+      authoringIssue(
+        'malformed-metadata',
+        'warning',
+        'workbook',
+        'CQS_META.authoringRulesVersion must be a positive integer when present.',
+        { sheet: META_SHEET, field: META_KEYS.authoringRulesVersion, a1 },
+      ),
+    )
+    return undefined
+  }
+  if (parsed > AUTHORING_RULES_VERSION) {
+    issues.push(
+      authoringIssue(
+        'metadata-contradiction',
+        'warning',
+        'workbook',
+        `This workbook was authored with generation rules version ${parsed}; this CQS build knows rules version ${AUTHORING_RULES_VERSION}. Structural workbook validation still applies.`,
+        { sheet: META_SHEET, field: META_KEYS.authoringRulesVersion, a1 },
+      ),
+    )
+  }
+  return parsed
+}
+
 function parseMeta(
   workbook: RawWorkbook,
   issues: AuthoringIssue[],
-): { profile: WorkbookProfile } | null {
+): { profile: WorkbookProfile; authoringRulesVersion?: number } | null {
   const matches = workbook.sheetNames.filter((n) => n === META_SHEET)
   if (matches.length === 0) {
     issues.push(
@@ -445,6 +486,7 @@ function parseMeta(
   const format = values.get(META_KEYS.format)?.value
   const versionRaw = values.get(META_KEYS.workbookFormatVersion)?.value
   const profileRaw = values.get(META_KEYS.profile)?.value
+  const authoringRulesVersionRaw = values.get(META_KEYS.authoringRulesVersion)?.value
 
   if (format !== WORKBOOK_FORMAT) {
     issues.push(
@@ -477,6 +519,12 @@ function parseMeta(
     return null
   }
 
+  const authoringRulesVersion = parseAuthoringRulesVersionMeta(
+    authoringRulesVersionRaw,
+    values.get(META_KEYS.authoringRulesVersion)?.a1,
+    issues,
+  )
+
   if (!profileRaw || !isWorkbookProfile(profileRaw)) {
     issues.push(
       authoringIssue(
@@ -490,7 +538,7 @@ function parseMeta(
     return null
   }
 
-  return { profile: profileRaw }
+  return { profile: profileRaw, authoringRulesVersion }
 }
 
 function parseGameSheet(
@@ -1157,6 +1205,7 @@ export async function parseWorkbookBytes(
     provenance: {
       filename,
       workbookFormatVersion: WORKBOOK_FORMAT_VERSION,
+      authoringRulesVersion: meta.authoringRulesVersion,
       profile: meta.profile,
       detectedSheets: adapted.workbook.sheetNames,
     },

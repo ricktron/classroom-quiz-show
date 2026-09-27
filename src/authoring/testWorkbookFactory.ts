@@ -74,6 +74,9 @@ export function buildTestWorkbookBytes(options: BuildWorkbookOptions = {}): Uint
       META_KEYS.workbookFormatVersion,
       options.meta?.workbookFormatVersion ?? String(WORKBOOK_FORMAT_VERSION),
     ],
+    ...(options.meta?.authoringRulesVersion !== undefined
+      ? [[META_KEYS.authoringRulesVersion, options.meta.authoringRulesVersion]]
+      : []),
     [META_KEYS.profile, options.meta?.profile ?? profile],
   ]
   XLSX.utils.book_append_sheet(wb, sheetFromAoa(meta), META_SHEET)

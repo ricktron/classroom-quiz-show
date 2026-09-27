@@ -121,6 +121,24 @@ Format 1 requires **exactly one** populated semantic data row on `GAME`.
 Additional populated rows are blockers (`ambiguous-semantic-rows`); there is no
 silent “first row wins” interpretation.
 
+> **Clarification (2026-09-27, no architecture change).** “Optional” above
+> describes the `classic-board` profile. For `board-plus-final`, at least one
+> `Team1Name…Team8Name` slot is required: a `final-wager` round cannot wager,
+> reveal, or settle without a team — the same `final-round-requires-teams`
+> invariant the canonical importer enforces independently — so the workbook
+> layer front-loads that check with a located `GAME`/`Team1Name` diagnostic
+> instead of a later generic import failure. `Team1Name…Team8Name` remain a
+> small, fixed set of **default** team-slot names: reusable Game content,
+> never a class's actual Session team identity (see
+> [`CQS-PRODUCT-CONTRACT.md`](../CQS-PRODUCT-CONTRACT.md) §4, Game versus
+> Session). They are distinct from the optional reusable Game-owned
+> team-name bank (the `TEAM_NAMES` sheet added by the external AI
+> authoring template framework; target ≈96 names, fewer than 64 is a
+> quality notice, never an import blocker — see
+> [`CQS-EXTERNAL-AI-AUTHORING-TEMPLATE-FRAMEWORK.md`](../plans/CQS-EXTERNAL-AI-AUTHORING-TEMPLATE-FRAMEWORK.md)).
+> This is documentation reconciliation only; no canonical importer, trust
+> boundary, or gameplay requirement changed.
+
 `CLUES`: one clue/row with CategoryOrder, Category, ClueOrder, Value, Prompt,
 Answer, optional Alternate1…8, Notes, Multiplier.
 
