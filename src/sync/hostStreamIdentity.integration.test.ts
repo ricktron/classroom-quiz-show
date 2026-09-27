@@ -3,6 +3,7 @@ import { INITIAL_PUBLIC_STATE, type PublicState } from '../state/publicState'
 import { createMemoryChannelHub } from './channel'
 import { createPublicStateBroadcaster } from './broadcaster'
 import { createPublicStateReceiver } from './receiver'
+import { canPublishHostPublicState } from '../host/writeAuthority'
 
 const AT = 1_700_000_000_000
 
@@ -70,21 +71,20 @@ describe('Host stream identity over sync transport', () => {
     expect(received.map((s) => s.revision)).toEqual([3])
   })
 
-  it('only the leader Host tab publishes when leadership gating is applied at the hook layer', () => {
-    const hub = createMemoryChannelHub()
-    const received: PublicState[] = []
-    createPublicStateReceiver({ onState: (s) => received.push(s), channel: hub.createChannel() })
-
-    const leader = createPublicStateBroadcaster({
-      getSnapshot: () => stateAt(1),
-      channel: hub.createChannel(),
-      hostStreamId: 'leader-stream',
-    })
-    leader.publish(stateAt(1))
-    expect(received).toHaveLength(1)
-
-    // Follower path: no broadcaster created in useHostSync — simulate by not publishing.
-    expect(received).toHaveLength(1)
-    leader.close()
+  it('documents publish gating: unknown + durable storage does not publish', () => {
+    expect(
+      canPublishHostPublicState({
+        bootPhase: 'ready',
+        leadership: 'unknown',
+        durabilityStatus: 'idle',
+      }),
+    ).toBe(false)
+    expect(
+      canPublishHostPublicState({
+        bootPhase: 'ready',
+        leadership: 'leader',
+        durabilityStatus: 'idle',
+      }),
+    ).toBe(true)
   })
 })

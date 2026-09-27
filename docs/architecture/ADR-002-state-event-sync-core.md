@@ -188,8 +188,8 @@ Multiple Host tabs could also publish interleaved snapshots on one channel.
   the last accepted envelope; the superseded stream id is then rejected for the
   remainder of the receiver lifetime so a late former-Host tab cannot regain
   effective authority.
-- Persistence **leader** Host tabs publish; **follower** tabs do not wire sync
-  broadcast (see `useHostSync`).
+- Persistence **leader** Host tabs publish; **follower** tabs and tabs still
+  resolving lease leadership do not (`canPublishHostPublicState` / `useHostSync`).
 
 **Consequences:** Hard break for version-2 sync envelopes (acceptable: same-origin
 Host/Display ship together). Historical ADR references that “`SYNC_SCHEMA_VERSION`

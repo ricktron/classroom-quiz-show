@@ -103,7 +103,7 @@ export function FoundationControls({
     initialHistory: persistence.initialHistory,
     storeEpoch: persistence.storeEpoch,
   })
-  useHostSync(store, clock, { leadership: persistence.leadership })
+  useHostSync(store, clock, { canPublish: persistence.canPublishPublicState })
   const presentationAudio = usePresentationAudio(store)
 
   const now = () => clock.now()

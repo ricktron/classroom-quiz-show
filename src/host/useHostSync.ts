@@ -7,7 +7,12 @@ import { systemClock, type Clock } from '../time/clock'
 export type HostSyncLeadership = 'unknown' | 'leader' | 'follower'
 
 export interface UseHostSyncOptions {
-  readonly leadership?: HostSyncLeadership
+  /**
+   * When false, this tab does not broadcast (follower, boot in progress, or lease
+   * not yet resolved). In-memory-only play uses `unknown` leadership with
+   * unavailable durability once boot is ready.
+   */
+  readonly canPublish?: boolean
   readonly hostStreamId?: string
 }
 
@@ -19,22 +24,23 @@ export interface UseHostSyncOptions {
  * answers `request-state` from freshly opened displays. Only sanitized
  * `PublicState` ever crosses the channel — private state stays on the host.
  *
- * Follower Host tabs do not publish; persistence leadership defines which tab
- * may broadcast so two Host instances cannot interleave effective authority.
+ * Follower Host tabs do not publish. Only the persistence leader (or in-memory-only
+ * play with no durable lease) may broadcast so two Host instances cannot
+ * interleave effective authority.
  */
 export function useHostSync(
   store: SessionStore,
   clock: Clock = systemClock,
   options: UseHostSyncOptions = {},
 ): void {
-  const leadership = options.leadership ?? 'unknown'
+  const canPublish = options.canPublish ?? false
   const hostStreamId = useMemo(
     () => options.hostStreamId ?? createHostStreamId(),
     [options.hostStreamId],
   )
 
   useEffect(() => {
-    if (leadership === 'follower') return
+    if (!canPublish) return
 
     const snapshot = () => store.getPublicState()
     const broadcaster = createPublicStateBroadcaster({
@@ -52,5 +58,5 @@ export function useHostSync(
       unsubscribe()
       broadcaster.close()
     }
-  }, [store, clock, hostStreamId, leadership])
+  }, [store, clock, hostStreamId, canPublish])
 }
