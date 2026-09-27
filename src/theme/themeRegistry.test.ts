@@ -108,7 +108,7 @@ describe('theme stylesheet completeness', () => {
     const defaultBlock = declarationsInBlock(":root[data-theme='default']")
     expect(defaultBlock).toContain('--border-tile: #35d6e8')
     expect(defaultBlock).toContain('--edge-tile: inset 0 0 0 1px #35d6e8')
-    expect(defaultBlock).toContain('--edge-selected: inset 0 0 0 2px #35d6e8')
+    expect(defaultBlock).toContain('--edge-selected: inset 0 0 0 2px #9fefff')
     // Rejected package form was translucent --border-tile / --edge-tile.
     expect(defaultBlock).not.toMatch(
       /--border-tile:\s*rgba\(53,\s*214,\s*232,\s*0\.55\)/,
