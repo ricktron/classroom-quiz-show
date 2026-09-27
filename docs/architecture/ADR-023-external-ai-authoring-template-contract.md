@@ -1,7 +1,15 @@
 # ADR-023 — External AI authoring template contract
 
-- **Status:** Accepted design direction
+- **Status:** Accepted — merged via PR #107
 - **Date:** 2026-09-26
+- **Accepted:** 2026-09-27 (implementation PR
+  [#107](https://github.com/ricktron/classroom-quiz-show/pull/107); accepted
+  exact head `a1ebebfb4cf3c9ada228a0bfa3feacc5f9d83a75`; squash
+  `c359a2e39e316de91e7952ae5a05f99091a94dc0`; merged **2026-09-27T15:38:31Z**;
+  accepted-head and squash trees are **EXACT MATCH**
+  `9e67e974a8e8b3c0716e5a8d09f322b0a3aa7b47`; post-merge CI (lint/typecheck/
+  unit/build, Playwright e2e), Desktop artifacts, and Pages succeeded on that
+  exact squash/main SHA)
 - **Scope:** downloadable external-authoring templates and generation-rule versioning
 - **Depends on:** ADR-004, ADR-018, CQS Product Contract
 - **Supersedes:** nothing
