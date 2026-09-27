@@ -125,10 +125,14 @@ test.describe('Display visual convergence workflow gaps', () => {
     await expect(team).toContainText(one[0]!.name)
     const nameBox = page.locator('[data-testid^="tsb-team-"] .tsb__name').first()
     const box = await nameBox.boundingBox()
+    const teamBox = await team.boundingBox()
     expect(box).toBeTruthy()
-    // Schema-max names must keep a horizontal reading track (not character-stack).
-    expect(box!.width).toBeGreaterThan(140)
-    expect(box!.height).toBeLessThan(120)
+    expect(teamBox).toBeTruthy()
+    // Schema-max names must keep a horizontal reading track (not ~1ch glyph stack).
+    // Linux CI fonts yield ~110px name tracks beside extreme scores; glyph-stack is ~10–20px.
+    expect(box!.width).toBeGreaterThan(90)
+    expect(box!.height).toBeLessThan(140)
+    expect(teamBox!.width).toBeGreaterThan(220)
     await assertNoHorizontalOverflow(page)
   })
 
