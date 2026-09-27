@@ -79,7 +79,7 @@ describe('SpreadsheetAuthoringPanel', () => {
     await waitFor(() => {
       expect(screen.getByTestId('spreadsheet-load-outcome')).toHaveTextContent('loaded')
     })
-    expect(store.getState().session?.game?.definition.title).toContain('Earth')
+    expect(store.getState().session?.game?.definition.title).toBe('Classic Fixture')
     },
     20_000,
   )
