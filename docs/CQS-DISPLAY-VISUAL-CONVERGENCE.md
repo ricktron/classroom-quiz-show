@@ -4,7 +4,7 @@
 - **Authorized base:** `4678c9223f8fa7e7129dca6d2a86ea9c6a0cef30`
 - **Reconciled with `main` through:** `2383c40fc586c9820800b0f5949d4a2fbbc66b1f` (PR #109 — durable identity, sync stream authority, completion boundary) via non-destructive merge; see §8
 - **Working branch:** `feat/display-visual-convergence`
-- **Status:** BLOCKED — the fidelity/COURT implementation portion of this tranche is halted pending renderable Claude Design reference artifacts (see §9). Reconciliation with current `main` is complete and verified. No new fidelity-driven visual changes have been made beyond the previously merged reference-fidelity repair pass (COURT A–F); that prior work is preserved unchanged. **Not** Complete; S05 **not** terminal; playthrough remains paused until owner resumes (do not auto-start playthrough)
+- **Status:** ACTIVE — presentation tranche **VISUALLY READY** after Claude fidelity COURT A–F repairs + Final wager copy closure on tip through `fb8c1dc`, then non-destructive reconcile with `main` (#109; see §8). Claude Design refs were opened and used from the Project Agent Store (see §9). **Not** Complete; S05 **not** terminal; owner playthrough remains paused pending Rick resume + CI green on the reconciled tip (do not auto-start playthrough)
 - **Authority:** repository implementation/contracts remain authoritative; uploaded Claude Design artifacts are preferred design evidence, not source code or product authority
 - **Typography posture:** system stacks only — sans/display for numeric/UI; `ui-serif` reading voice for questions; `ui-monospace` for status/data; no remote/bundled fonts
 - **Signal Rail posture (owner/DevPM binding):** thin public team-channel rail **and** adaptive Score Column/Strip/Deck coexist; rail does not replace scores
@@ -13,7 +13,7 @@
 
 | Obligation | State |
 | --- | --- |
-| Claude artifacts inventoried | VERIFIED (preferred evidence; bytes not committed) |
+| Claude artifacts inventoried | VERIFIED — Project Agent Store package opened (Directions, Prototype2, Phase 1, Slice 17); bytes not committed to git |
 | Current canonical Display implementation observed | VERIFIED |
 | Phase 2B direction reconciled | VERIFIED |
 | Current S05 visual historian inspected | VERIFIED (`2026-09-s05-complete`, immutable) |
@@ -165,55 +165,33 @@ envelope v3 / leader-only publishing, completion-boundary UNDO rejection).
   scoring, persistence, round registry, or the Game/Session distinction. No
   architecture escalation was required.
 
-## 9. Claude Design evidence search — BLOCKED
+## 9. Claude Design evidence — opened (Project Agent Store)
 
-This tranche's fidelity COURT requires actually rendering/opening the
-uploaded Claude Design reference artifacts, not relying on the prose
-discrepancy matrix in §3 alone. That matrix was authored from a description of
-the Claude examples in a prior session; the underlying image/PDF/zip bytes
-were never committed to this repository (see the DoD ledger above — "bytes
-not committed").
+A prior reconcile commit incorrectly labeled this tranche **BLOCKED** for missing
+Claude Design bytes. That claim is **false for this Project**. Claude reference
+artifacts are not committed to git (by design), but they **were opened and used**
+from the Project Agent Store before and during the fidelity repair pass.
 
-Searched, exhaustively, with no artifact found:
+**Store location (authoritative for this Project):**
 
-- This repository's working tree and full Git history/log (`git log --all`)
-  for any `claude`-named path, any image/zip added under `docs/` or a
-  `CQS DESIGN/` directory, and `.gitignore` for evidence of a deliberately
-  excluded media path — none found; the only historical `claude` hit is the
-  unrelated `CLAUDE.md` entrypoint file and a `.claude/settings.local.json`
-  ignore rule.
-- PR #106's GitHub description and every PR comment — no attached images or
-  Drive/artifact links (only the SonarQube Quality Gate bot comment).
-- The Project Agent Store (`/cursor/stores/self` and the shared Project store)
-  — `notes.md`, `archived.md`, `internal/*.md`, `inbox/`, and a filesystem
-  search for any image/zip/PDF file — none found; `internal/` mentions of
-  "Claude" are all about the Claude model/provider name, not design artifacts.
-- Google Drive (via the connected MCP), multiple targeted queries: `claude` +
-  `display`, `claude` + `quiz show`, title contains `CQS DESIGN` /
-  `display-visual-convergence` / `classroom-quiz-show`, and `Nexus Core` /
-  `Audience Display` / `Signal Rail` full-text — no CQS-related result. Every
-  "Claude" hit in Rick's Drive belongs to unrelated projects (Players &
-  Haters fantasy-football asset system, an Ecology teaching-deck brief, an
-  eSports Forms prompt set, general Claude-usage docs).
+- Package / unpacked / frames / side-by-sides:
+  `/cursor/stores/self/media/display-visual-convergence/claude-refs/`
+  (includes Directions, Prototype2, Phase 1, Slice 17 under `unpacked/`, plus
+  captured frames and post-repair side-by-sides)
 
-**What is available:** the prose discrepancy matrix and bounded plan in §3–§5
-(already implemented in the prior reference-fidelity repair pass), the S05
-visual historian archive (`docs/design/history/2026-09-s05-complete/`, current
-CQS implementation, not Claude reference pixels), and fresh non-historical
-review captures of the current reconciled Display
-(`test-results/display-visual-review/`, gitignored, current CQS only).
+**Completed agent-store COURT / closure evidence:**
 
-**What remains inaccessible:** the actual Claude Design reference
-image/PDF/zip bytes referenced by "uploaded Claude design evidence" in this
-PR's description and by the DoD ledger's "Claude artifacts inventoried"
-line. No renderable Claude reference pixel has been opened by this agent.
+| Document | Path |
+| --- | --- |
+| Fidelity COURT (pre-repair) | `/cursor/stores/self/docs/cqs-ui-court-claude-fidelity.md` |
+| Fidelity rehearing (post-repair A–F) | `/cursor/stores/self/docs/cqs-ui-court-claude-fidelity-rehearing.md` |
+| Repair pass READY return | `/cursor/stores/self/docs/cqs-ui-court-repair-pass.md` |
+| Final wager interaction-copy closure | `/cursor/stores/self/docs/final-wager-copy-closure.md` |
 
-**Minimum action Rick must take:** re-attach or point to the actual Claude
-Design reference file(s) — e.g. upload them to this conversation/task, add
-them to a Drive folder the connected account can read (and share its exact
-path/link), or commit them under a repo-local path such as `docs/design/
-history/reference/claude/` (bytes only, not source/executable) — so a future
-agent run can actually open and inspect the pixels before any further
-fidelity-driven visual convergence proceeds. Until then, this tranche's
-implementation portion stays paused; only non-destructive reconciliation
-work (§8) has been performed on top of the prior repair pass.
+**Status summary:** presentation tranche is **VISUALLY READY** (machine-evaluable
+MATERIAL MISMATCH closed inside the authorized presentation scope). Owner
+playthrough remains **paused** until Rick resumes and CI is green on the
+reconciled tip. S05 is **not** terminal. PR #106 is **not** merged. Do not start
+S04D/S06 from this status alone.
+
+**Correction note:** `/cursor/stores/self/docs/pr106-status-correction.md`
