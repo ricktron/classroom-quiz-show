@@ -79,7 +79,7 @@ function twoTeamArmedStore(): SessionStore {
 describe('PublicBoardResponseOutcome sanitizer (S05 Path A)', () => {
   it('bumps PublicState schema 8 → 9 and keeps sync envelope + persistence wire', () => {
     expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(9)
-    expect(SYNC_SCHEMA_VERSION).toBe(2)
+    expect(SYNC_SCHEMA_VERSION).toBe(3)
     expect(PERSISTENCE_WIRE_VERSION).toBe(1)
   })
 

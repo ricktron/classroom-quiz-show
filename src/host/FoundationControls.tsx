@@ -103,7 +103,7 @@ export function FoundationControls({
     initialHistory: persistence.initialHistory,
     storeEpoch: persistence.storeEpoch,
   })
-  useHostSync(store, clock)
+  useHostSync(store, clock, { leadership: persistence.leadership })
   const presentationAudio = usePresentationAudio(store)
 
   const now = () => clock.now()
@@ -575,6 +575,7 @@ export function FoundationControls({
             <button
               type="button"
               className="btn btn--secondary"
+              disabled={!hasSession || game?.gameLifecycle === 'ended'}
               onClick={() => dispatch({ type: 'UNDO', issuedAt: now() })}
             >
               Undo last reversible

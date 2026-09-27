@@ -166,3 +166,32 @@ reproducible.
   read-only cannot modify host, malformed injected message neither crashes nor
   exposes data, host closure leaves display safe. The existing projector-leak,
   routing, PWA/offline, responsive, and accessibility suites remain green.
+
+## Amendment — sync envelope 2 → 3 (pre-human-gate integration repair)
+
+**Status:** Accepted as merged implementation truth when the repair lands.
+
+**Problem:** Display-side revision watermarks were monotonic for the lifetime of
+the receiver but Host broadcasting lifetimes could restart with a lower revision
+sequence, so a persistent Display rejected valid state from a restarted Host.
+Multiple Host tabs could also publish interleaved snapshots on one channel.
+
+**Decision:**
+
+- Bump `SYNC_SCHEMA_VERSION` to **3**. Version **2** envelopes fail closed with
+  `unsupported-version`.
+- Require opaque **`hostStreamId`** transport metadata on every `public-state`
+  message. It identifies one Host broadcasting lifetime and is distinct from game
+  `sessionId`.
+- Scope revision monotonicity **within** one `hostStreamId`. When the stream id
+  changes, the Display accepts the envelope when its `sentAt` is not older than
+  the last accepted envelope; the superseded stream id is then rejected for the
+  remainder of the receiver lifetime so a late former-Host tab cannot regain
+  effective authority.
+- Persistence **leader** Host tabs publish; **follower** tabs do not wire sync
+  broadcast (see `useHostSync`).
+
+**Consequences:** Hard break for version-2 sync envelopes (acceptable: same-origin
+Host/Display ship together). Historical ADR references that “`SYNC_SCHEMA_VERSION`
+stays **2**” are superseded for runtime behavior by this amendment and
+`src/sync/protocol.ts`.

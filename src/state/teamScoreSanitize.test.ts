@@ -11,7 +11,7 @@ import {
   type PublicState,
 } from './publicState'
 import type { PrivateState } from './privateState'
-import { decodeEnvelope } from '../sync/protocol'
+import { decodeEnvelope, SYNC_SCHEMA_VERSION } from '../sync/protocol'
 import { importGameFromUnknown } from '../import/importGame'
 import { boardGameFile, richBoardConfig } from '../test/categoryBoardFixtures'
 import { teamBoardGameFile, teamsList, twoTeams } from '../test/teamFixtures'
@@ -472,8 +472,8 @@ describe('wire version', () => {
     expect(isPublicState(legacy)).toBe(false)
     const decoded = decodeEnvelope({
       protocol: 'classroom-quiz-show/sync',
-      schemaVersion: 2,
-      message: { type: 'public-state', sentAt: 1_700_000_000_000, revision: 9, payload: legacy },
+      schemaVersion: SYNC_SCHEMA_VERSION,
+      message: { type: 'public-state', hostStreamId: 'test-stream', sentAt: 1_700_000_000_000, revision: 9, payload: legacy },
     })
     expect(decoded.ok).toBe(false)
     if (!decoded.ok) expect(decoded.reason).toBe('malformed-payload')

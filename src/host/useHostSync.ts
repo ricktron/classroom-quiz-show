@@ -1,7 +1,15 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import type { SessionStore } from '../state/store'
 import { createPublicStateBroadcaster } from '../sync/broadcaster'
+import { createHostStreamId } from '../sync/hostStream'
 import { systemClock, type Clock } from '../time/clock'
+
+export type HostSyncLeadership = 'unknown' | 'leader' | 'follower'
+
+export interface UseHostSyncOptions {
+  readonly leadership?: HostSyncLeadership
+  readonly hostStreamId?: string
+}
 
 /**
  * Wire an authoritative store to the broadcast transport.
@@ -11,17 +19,27 @@ import { systemClock, type Clock } from '../time/clock'
  * answers `request-state` from freshly opened displays. Only sanitized
  * `PublicState` ever crosses the channel — private state stays on the host.
  *
- * Publication is driven by STORE CHANGES, never by a clock. Starting a timer
- * publishes one snapshot carrying a deadline; the seconds ticking away after that
- * publish nothing at all, because the display derives them locally (Slice 7). The
- * clock passed here is used only to stamp `sentAt` on the envelope, so a display
- * can estimate the difference between the two machines' clocks.
+ * Follower Host tabs do not publish; persistence leadership defines which tab
+ * may broadcast so two Host instances cannot interleave effective authority.
  */
-export function useHostSync(store: SessionStore, clock: Clock = systemClock): void {
+export function useHostSync(
+  store: SessionStore,
+  clock: Clock = systemClock,
+  options: UseHostSyncOptions = {},
+): void {
+  const leadership = options.leadership ?? 'unknown'
+  const hostStreamId = useMemo(
+    () => options.hostStreamId ?? createHostStreamId(),
+    [options.hostStreamId],
+  )
+
   useEffect(() => {
+    if (leadership === 'follower') return
+
     const snapshot = () => store.getPublicState()
     const broadcaster = createPublicStateBroadcaster({
       getSnapshot: snapshot,
+      hostStreamId,
       clock,
     })
 
@@ -34,5 +52,5 @@ export function useHostSync(store: SessionStore, clock: Clock = systemClock): vo
       unsubscribe()
       broadcaster.close()
     }
-  }, [store, clock])
+  }, [store, clock, hostStreamId, leadership])
 }

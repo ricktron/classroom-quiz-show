@@ -30,7 +30,7 @@ import { exportGameDefinition } from '../export/exportGame'
 describe('Slice 15 privacy and version invariants', () => {
   it('keeps public contracts unchanged while Slice 16 advances IndexedDB to version 2', () => {
     expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(9)
-    expect(SYNC_SCHEMA_VERSION).toBe(2)
+    expect(SYNC_SCHEMA_VERSION).toBe(3)
     expect(SUPPORTED_SCHEMA_VERSION).toBe(1)
     expect(PERSISTENCE_WIRE_VERSION).toBe(1)
     expect(PERSISTENCE_DB_VERSION).toBe(4)
@@ -60,6 +60,7 @@ describe('Slice 15 privacy and version invariants', () => {
 
     const envelope = encodeEnvelope({
       type: 'public-state',
+      hostStreamId: 'test-stream',
       revision: publicState.revision,
       payload: publicState,
       sentAt: AT,
@@ -111,6 +112,7 @@ describe('Slice 15 privacy and version invariants', () => {
     const publicState = store.getPublicState()
     const sync = encodeEnvelope({
       type: 'public-state',
+      hostStreamId: 'test-stream',
       revision: publicState.revision,
       payload: publicState,
       sentAt: AT,

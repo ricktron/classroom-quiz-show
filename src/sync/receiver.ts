@@ -3,6 +3,7 @@ import {
   createBroadcastChannelTransport,
   type SyncChannel,
 } from './channel'
+import { shouldAcceptHostStreamSnapshot, type HostStreamRevisionCursor } from './hostStream'
 import { SYNC_CHANNEL_NAME, decodeEnvelope, encodeEnvelope } from './protocol'
 import { systemClock, type Clock } from '../time/clock'
 
@@ -30,8 +31,8 @@ export const MAX_CLOCK_OFFSET_CORRECTION_MS = 5_000
  *
  * The display is never authoritative. This receiver:
  *   - decodes every inbound message and drops anything invalid (fail closed),
- *   - ignores stale or duplicate revisions using a monotonic `revision` guard,
- *     so out-of-order or repeated deliveries never move the display backwards,
+ *   - ignores stale or duplicate snapshots using Host-stream identity plus a
+ *     monotonic `revision` guard within one stream,
  *   - only surfaces a strictly-newer valid snapshot via `onState`, and
  *   - sends one `request-state` on start so a freshly opened/refreshed display
  *     immediately asks the host to republish (resuming the subscription safely).
@@ -60,8 +61,10 @@ export interface ReceiverOptions {
   onClockOffset?: (offsetMs: number) => void
   /** Injectable transport (defaults to the real BroadcastChannel). */
   channel?: SyncChannel
-  /** Highest revision already applied (defaults to 0). */
+  /** Highest revision already applied for {@link initialHostStreamId} (defaults to 0). */
   initialRevision?: number
+  /** Stream cursor seed for tests simulating an already-open Display. */
+  initialHostStreamId?: string | null
   /** Clock used to timestamp receipt (defaults to the real one). */
   clock?: Clock
 }
@@ -71,17 +74,36 @@ export function createPublicStateReceiver(
 ): PublicStateReceiver {
   const channel = options.channel ?? createBroadcastChannelTransport(SYNC_CHANNEL_NAME)
   const clock = options.clock ?? systemClock
-  let lastRevision = options.initialRevision ?? 0
+  let cursor: HostStreamRevisionCursor = {
+    streamId: options.initialHostStreamId ?? null,
+    revision: options.initialRevision ?? 0,
+    sentAt: 0,
+  }
+  const rejectedStreamIds = new Set<string>()
 
   const unsubscribe = channel.subscribe((data) => {
     const decoded = decodeEnvelope(data)
     if (!decoded.ok) return // transport decode failure → ignore
     if (decoded.message.type !== 'public-state') return // e.g. another display's request
 
-    const { revision, sentAt, payload } = decoded.message
-    // Stale or duplicate revision → ignore; only strictly-newer advances.
-    if (revision <= lastRevision) return
-    lastRevision = revision
+    const { hostStreamId, revision, sentAt, payload } = decoded.message
+    if (
+      !shouldAcceptHostStreamSnapshot(
+        cursor,
+        {
+          streamId: hostStreamId,
+          revision,
+          sentAt,
+        },
+        rejectedStreamIds,
+      )
+    ) {
+      return
+    }
+    if (cursor.streamId !== null && hostStreamId !== cursor.streamId) {
+      rejectedStreamIds.add(cursor.streamId)
+    }
+    cursor = { streamId: hostStreamId, revision, sentAt }
     options.onState(payload)
     // Estimated once per accepted snapshot, so an authoritative republish also
     // re-corrects the estimate. Reading the clock here is a presentation-edge

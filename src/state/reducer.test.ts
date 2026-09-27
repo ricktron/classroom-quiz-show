@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { importGameFromUnknown } from '../import/importGame'
+import { teamBoardGameFile, twoTeams } from '../test/teamFixtures'
 import type { SessionCommand } from './commands'
 import type { SessionEvent } from './events'
 import { INITIAL_PRIVATE_STATE } from './privateState'
@@ -218,5 +220,26 @@ describe('undo semantics', () => {
     expect(replay(history).session?.counter).toBe(0)
     // init + 2 advances + 2 undo markers = 5 (the 3rd undo was rejected)
     expect(history).toHaveLength(5)
+  })
+
+  it('rejects UNDO once the game lifecycle has ended', () => {
+    const imported = importGameFromUnknown(teamBoardGameFile(twoTeams()))
+    if (imported.status !== 'success') throw new Error('fixture failed')
+    const history = run([
+      init,
+      { type: 'INITIALIZE_GAME', issuedAt: AT, definition: imported.definition },
+      {
+        type: 'ADJUST_TEAM_SCORE',
+        issuedAt: AT,
+        teamId: imported.definition.teams[0]!.id,
+        delta: 100,
+        mode: 'manual-correction',
+        source: { kind: 'manual' },
+      },
+      { type: 'END_GAME_SESSION', issuedAt: AT + 1 },
+    ])
+    expect(replay(history).session?.game?.gameLifecycle).toBe('ended')
+    const outcome = planCommand(replay(history), history, { type: 'UNDO', issuedAt: AT + 2 })
+    expect(outcome).toEqual({ status: 'rejected', reason: 'nothing-to-undo' })
   })
 })
