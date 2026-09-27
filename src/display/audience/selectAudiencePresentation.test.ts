@@ -174,6 +174,7 @@ describe('selectAudiencePresentation', () => {
     expect(endedComplete.nexus.stageLabel).toBe('Game complete')
     // Round ordinal must not repeat the stage status in the Nexus Core.
     expect(endedComplete.nexus.roundLabel).toBeNull()
+    expect(endedComplete.nexus.detail).toBeNull()
   })
 
   it('exhaustively maps category-board stages', () => {

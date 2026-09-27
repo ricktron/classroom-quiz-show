@@ -16,9 +16,11 @@
 .mcd__text {
   max-width: min(56ch, 100%);
   margin-inline: auto;
+  /* Absorb glyph ascent/descent so Range metrics stay inside the element box. */
+  padding-block: 0.08em;
   font-size: clamp(1.2rem, 0.45rem + 2.6vh, 3.15rem);
-  font-weight: 600;
-  line-height: 1.28;
+  font-weight: 700;
+  line-height: 1.22;
   letter-spacing: 0.005em;
   overflow-wrap: anywhere;
   hyphens: auto;
@@ -27,7 +29,7 @@
 /* Medium stems keep strong presence without exhausting vertical budget. */
 .mcd__text[data-length='medium'] {
   font-size: clamp(1.15rem, 0.4rem + 2.35vh, 2.85rem);
-  line-height: 1.25;
+  line-height: 1.2;
   max-width: min(60ch, 100%);
 }
 
@@ -38,7 +40,7 @@
  */
 .mcd__text[data-length='long'] {
   font-size: clamp(1.125rem, 0.38rem + 2.2vh, 2.55rem);
-  line-height: 1.22;
+  line-height: 1.18;
   max-width: min(72ch, 100%);
 }
 

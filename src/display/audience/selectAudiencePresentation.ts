@@ -369,11 +369,19 @@ function nexusFor(
   const roundLabel = describeGameRound(game)
   // Suppress round ordinal when it merely repeats the stage status (e.g. ended
   // game → "Game complete" would otherwise appear twice in the Nexus Core).
+  // Also drop a stale generic "Playing" detail once the stage already says the
+  // game is complete — host/fixture detail can lag the ended transition.
+  const cleanedDetail =
+    detail !== null &&
+    stageLabel === 'Game complete' &&
+    /^playing$/i.test(detail.trim())
+      ? null
+      : detail
   return {
     brand: BRAND,
     roundLabel: roundLabel !== null && roundLabel === stageLabel ? null : roundLabel,
     stageLabel,
-    detail,
+    detail: cleanedDetail,
   }
 }
 

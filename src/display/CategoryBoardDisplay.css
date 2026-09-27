@@ -179,7 +179,7 @@
 /* Long stems: recede category/value chrome to protect distance-first type. */
 .cbd--open:has(.mcd__text[data-length='long']) {
   gap: clamp(0.3rem, 1vh, 1rem);
-  padding: clamp(0.4rem, 1.1vh, 1.1rem) clamp(0.5rem, 1.4vw, 1.15rem);
+  padding: clamp(0.55rem, 1.25vh, 1.25rem) clamp(0.5rem, 1.4vw, 1.15rem);
   justify-content: flex-start;
 }
 
@@ -266,6 +266,8 @@
   font-size: clamp(1rem, 0.35rem + 2vh, 2.55rem);
   font-weight: 700;
   line-height: 1.2;
+  /* Match prompt glyph absorption so Range metrics stay inside the box. */
+  padding-block: 0.08em;
   overflow-wrap: anywhere;
 }
 
