@@ -158,6 +158,22 @@ describe('selectAudiencePresentation', () => {
         }),
       ).scene,
     ).toBe('complete')
+
+    const endedComplete = selectAudiencePresentation(
+      baseState({
+        game: {
+          status: 'ended',
+          roundCount: 2,
+          currentRound: 2,
+          roundAvailability: 'available',
+        },
+        round: { kind: PUBLIC_FINAL_KIND, stage: 'complete', outcome: 'unique-leader' },
+      }),
+    )
+    expect(endedComplete.scene).toBe('complete')
+    expect(endedComplete.nexus.stageLabel).toBe('Game complete')
+    // Round ordinal must not repeat the stage status in the Nexus Core.
+    expect(endedComplete.nexus.roundLabel).toBeNull()
   })
 
   it('exhaustively maps category-board stages', () => {

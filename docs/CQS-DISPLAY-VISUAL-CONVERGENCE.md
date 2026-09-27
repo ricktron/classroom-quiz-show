@@ -3,25 +3,25 @@
 - **Objective:** pre-owner-playthrough Audience / Display visual convergence
 - **Authorized base:** `4678c9223f8fa7e7129dca6d2a86ea9c6a0cef30`
 - **Working branch:** `feat/display-visual-convergence`
-- **Status:** ACTIVE — bounded implementation
+- **Status:** ACTIVE — bounded implementation candidate for owner playthrough decision
 - **Authority:** repository implementation/contracts remain authoritative; uploaded Claude Design artifacts are preferred design evidence, not source code or product authority
 
 ## 1. Definition-of-done ledger
 
 | Obligation | State |
 | --- | --- |
-| Claude artifacts inventoried | VERIFIED |
+| Claude artifacts inventoried | VERIFIED (preferred evidence; bytes not committed) |
 | Current canonical Display implementation observed | VERIFIED |
 | Phase 2B direction reconciled | VERIFIED |
-| Current S05 visual historian inspected | VERIFIED |
+| Current S05 visual historian inspected | VERIFIED (`2026-09-s05-complete`, immutable) |
 | Discrepancy matrix | VERIFIED |
 | Bounded implementation plan | VERIFIED |
-| Presentation-only convergence implementation | IN PROGRESS |
-| 720p / 1080p / 1–8 team stress verification | NOT STARTED |
-| Reduced-motion / high-contrast verification | NOT STARTED |
+| Presentation-only convergence implementation | VERIFIED (CSS + presentation selector dedupe) |
+| 720p / 1080p / 1–8 team stress verification | IN PROGRESS — evidence via gated review captures |
+| Reduced-motion / high-contrast verification | IN PROGRESS — covered by existing suite + visual review |
 | Integrated COURT review | IN PROGRESS |
-| Post-convergence historian milestone | NOT STARTED |
-| Owner-playthrough candidate handoff | NOT STARTED |
+| Post-convergence historian milestone | NOT STARTED — owner gate after playthrough |
+| Owner-playthrough candidate handoff | IN PROGRESS |
 
 ## 2. Evidence hierarchy
 
@@ -63,6 +63,8 @@ The existing `2026-09-s05-complete` historian archive is immutable.
 5. Give Signal Rail a consistent structural band treatment without inventing public queue data.
 6. Make durable board outcomes visibly consequential even after transient acknowledgement ends.
 7. Give Final and completion a full-stage hierarchy, with stronger winner emphasis.
+8. Suppress duplicate Nexus round/stage labels (e.g. ended game “Game complete”).
+9. Visually retire accessible page title and Nexus brand from the active broadcast stage while keeping them available to AT / waiting scenes.
 
 ### CQS-specific improvements
 
@@ -70,6 +72,7 @@ The existing `2026-09-s05-complete` historian archive is immutable.
 - Keep the accepted two-theme token system and no new font/dependency.
 - Keep Score Column / Strip / Deck thresholds from accepted Phase 2B, even where an individual Claude frame shows only four teams.
 - Keep used-state text and non-color structure rather than relying on dimming alone.
+- Prefer left product identity over duplicating brand inside the Nexus during active play.
 
 ## 5. Intentional deviations from Claude references
 
@@ -116,3 +119,14 @@ The candidate must preserve the repository-defined checks and the existing evide
 - clipping and overflow.
 
 No green test substitutes for the final integrated COURT review or owner playthrough.
+
+Review captures (non-historical):
+
+```bash
+CQS_DISPLAY_VISUAL_REVIEW=1 npx playwright test \
+  tests/e2e/display-visual-convergence-review.spec.ts \
+  --project=desktop-1080p --project=projector-720p
+```
+
+Outputs land under `test-results/display-visual-review/` and must not overwrite
+`docs/design/history/2026-09-s05-complete/`.

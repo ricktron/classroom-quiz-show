@@ -366,9 +366,12 @@ function nexusFor(
   game: PublicGameView | null,
   detail: string | null,
 ): NexusCorePresentation {
+  const roundLabel = describeGameRound(game)
+  // Suppress round ordinal when it merely repeats the stage status (e.g. ended
+  // game → "Game complete" would otherwise appear twice in the Nexus Core).
   return {
     brand: BRAND,
-    roundLabel: describeGameRound(game),
+    roundLabel: roundLabel !== null && roundLabel === stageLabel ? null : roundLabel,
     stageLabel,
     detail,
   }

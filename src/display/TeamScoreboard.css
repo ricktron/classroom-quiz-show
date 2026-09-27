@@ -158,7 +158,11 @@
 }
 
 .tsb--column .tsb__team {
+  /* Clear the left accent bar so name/score never sit under the structural cue. */
   padding: clamp(0.45rem, 0.8vw, 0.7rem) clamp(0.55rem, 0.9vw, 0.8rem);
+  padding-inline-start: calc(
+    clamp(0.55rem, 0.9vw, 0.8rem) + var(--accent-bar-height, 4px) + 0.35rem
+  );
 }
 
 .tsb--strip .tsb__team,
