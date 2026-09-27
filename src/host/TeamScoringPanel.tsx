@@ -467,7 +467,7 @@ export function TeamScoringPanel({
           type="button"
           className="btn btn--secondary"
           data-testid="tsp-undo-score"
-          disabled={!canUndoScore}
+          disabled={!canUndoScore || !active}
           onClick={() => dispatch({ type: 'UNDO', issuedAt: clock.now() })}
         >
           Undo last score change

@@ -385,13 +385,14 @@ describe('the derived countdown', () => {
 describe('the wire protocol', () => {
   it('is at public-state version 8 and envelope version 2', () => {
     expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(9)
-    expect(SYNC_SCHEMA_VERSION).toBe(2)
+    expect(SYNC_SCHEMA_VERSION).toBe(3)
   })
 
   it('carries a sending stamp on every public-state envelope', () => {
     const state = startedStore(30).getPublicState()
     const envelope = encodeEnvelope({
       type: 'public-state',
+      hostStreamId: 'test-stream',
       revision: state.revision,
       sentAt: AT,
       payload: state,
@@ -408,7 +409,7 @@ describe('the wire protocol', () => {
     const decoded = decodeEnvelope({
       protocol: 'classroom-quiz-show/sync',
       schemaVersion: 1,
-      message: { type: 'public-state', revision: state.revision, payload: state },
+      message: { type: 'public-state', hostStreamId: 'test-stream', revision: state.revision, payload: state },
     })
     expect(decoded.ok).toBe(false)
     if (!decoded.ok) expect(decoded.reason).toBe('unsupported-version')
@@ -420,7 +421,7 @@ describe('the wire protocol', () => {
       const decoded = decodeEnvelope({
         protocol: 'classroom-quiz-show/sync',
         schemaVersion: SYNC_SCHEMA_VERSION,
-        message: { type: 'public-state', revision: state.revision, sentAt, payload: state },
+        message: { type: 'public-state', hostStreamId: 'test-stream', revision: state.revision, sentAt, payload: state },
       })
       expect(decoded.ok, `sentAt ${String(sentAt)}`).toBe(false)
       if (!decoded.ok) expect(decoded.reason).toBe('malformed-payload')

@@ -1258,6 +1258,9 @@ export function planCommand(
     }
 
     case 'UNDO': {
+      if (state.session?.game?.gameLifecycle === 'ended') {
+        return { status: 'rejected', reason: 'nothing-to-undo' }
+      }
       const target = findUndoTarget(history)
       if (!target) return { status: 'rejected', reason: 'nothing-to-undo' }
       return {

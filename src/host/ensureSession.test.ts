@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { createSessionStore } from '../state/store'
 import {
   ensureSession,
-  nextHostSessionId,
-  resetHostSessionIdCounterForTests,
+  setCreateSessionIdForTests,
 } from './ensureSession'
+import { createSessionId } from './sessionIdentity'
 
 describe('ensureSession', () => {
   beforeEach(() => {
-    resetHostSessionIdCounterForTests()
+    setCreateSessionIdForTests(null)
   })
 
   it('starts a session when none exists', () => {
@@ -53,7 +53,9 @@ describe('ensureSession', () => {
   })
 
   it('allocates distinct host session ids', () => {
-    expect(nextHostSessionId()).toBe('session-1')
-    expect(nextHostSessionId()).toBe('session-2')
+    let seq = 0
+    setCreateSessionIdForTests(() => `session-${++seq}`)
+    expect(createSessionId()).toBe('session-1')
+    expect(createSessionId()).toBe('session-2')
   })
 })
