@@ -68,6 +68,15 @@ Negative: generated blank templates are intentionally not playable until complet
 
 ## Amendment (2026-09-27) — `authoringRulesVersion` 1 → 2, difficulty calibration V2
 
+Merged via PR [#108](https://github.com/ricktron/classroom-quiz-show/pull/108)
+(accepted exact head `44b2c417370bb0cdd9677d75dc58ff6cedd4cb65`; squash
+`9135b813cd08fe67ac7395d4f5fc2bd5f818e464`; merged **2026-09-27T20:02:52Z**;
+accepted-head and squash trees are **EXACT MATCH** `5b3d3d042bce1837bf8f7a4064d09b429a9b46fa`;
+post-merge CI (lint/typecheck/unit/build, Playwright e2e), Desktop artifacts,
+SonarCloud, and Pages succeeded on that exact squash/main SHA). Both
+amendments below (calibration V2 and the Difficulty Profile continuation)
+landed together in that one PR.
+
 Owner-approved bounded refinement, no architecture change. `AUTHORING_RULES_VERSION`
 moved from `1` to `2` to strengthen the difficulty-calibration generation
 contract this ADR already scopes under §2 and §5. `workbookFormatVersion`
