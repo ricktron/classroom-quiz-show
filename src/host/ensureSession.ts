@@ -1,5 +1,9 @@
 import type { SessionCommand } from '../state/commands'
 import type { DispatchResult } from '../state/store'
+import { createSessionId } from './sessionIdentity'
+
+export { createSessionId, nextHostSessionId } from './sessionIdentity'
+export { resetHostSessionIdCounterForTests, setCreateSessionIdForTests } from './sessionIdentity'
 
 /**
  * Host-side session bootstrap for teacher content-load paths.
@@ -8,18 +12,6 @@ import type { DispatchResult } from '../state/store'
  * exists, do nothing. When none exists, dispatch the ordinary INIT_SESSION
  * command so import/load can proceed without a hidden prerequisite.
  */
-
-let sessionCounter = 0
-
-export function nextHostSessionId(): string {
-  sessionCounter += 1
-  return `session-${sessionCounter}`
-}
-
-/** Test-only: reset the counter so session ids stay deterministic. */
-export function resetHostSessionIdCounterForTests(): void {
-  sessionCounter = 0
-}
 
 export type EnsureSessionResult =
   | { readonly status: 'ready' }
@@ -36,7 +28,7 @@ export function ensureSession(
   if (hasSession) return { status: 'ready' }
 
   const now = options.now ?? (() => Date.now())
-  const sessionId = options.sessionId ?? nextHostSessionId
+  const sessionId = options.sessionId ?? createSessionId
   const result = dispatch({
     type: 'INIT_SESSION',
     issuedAt: now(),

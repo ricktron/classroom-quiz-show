@@ -31,3 +31,15 @@ export function rejectIfCannotPersist(
   }
   return { ok: false, message: UNKNOWN_WRITE_BLOCKED_MESSAGE }
 }
+
+/** Whether this Host tab may broadcast sanitized PublicState on the sync channel. */
+export function canPublishHostPublicState(input: {
+  readonly bootPhase: 'loading' | 'recovery' | 'invalid-recovery' | 'ready'
+  readonly leadership: PersistLeadership
+  readonly durabilityStatus: 'loading' | 'unavailable' | 'idle' | 'saving' | 'saved' | 'failed'
+}): boolean {
+  if (input.bootPhase !== 'ready') return false
+  if (input.leadership === 'follower') return false
+  if (input.leadership === 'leader') return true
+  return input.durabilityStatus === 'unavailable'
+}

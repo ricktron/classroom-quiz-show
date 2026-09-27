@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createSessionStore } from '../state/store'
-import { generateWorkbookTemplate } from '../authoring'
+import { buildTestWorkbookBytes } from '../authoring/testWorkbookFactory'
 import { SpreadsheetAuthoringPanel } from './SpreadsheetAuthoringPanel'
 
 function renderPanel(
@@ -58,8 +58,8 @@ describe('SpreadsheetAuthoringPanel', () => {
     'uploads a valid classic workbook, reviews, requires approval, then loads',
     async () => {
     const { store, bytesByName } = renderPanel()
-    const template = generateWorkbookTemplate('classic-board')
-    await uploadNamed(bytesByName, template.filename, template.bytes)
+    const bytes = buildTestWorkbookBytes({ profile: 'classic-board' })
+    await uploadNamed(bytesByName, 'classic.xlsx', bytes)
 
     await waitFor(() => {
       expect(screen.getByTestId('spreadsheet-profile')).toHaveTextContent('classic-board')
@@ -79,7 +79,7 @@ describe('SpreadsheetAuthoringPanel', () => {
     await waitFor(() => {
       expect(screen.getByTestId('spreadsheet-load-outcome')).toHaveTextContent('loaded')
     })
-    expect(store.getState().session?.game?.definition.title).toContain('Earth')
+    expect(store.getState().session?.game?.definition.title).toBe('Classic Fixture')
     },
     20_000,
   )
@@ -88,8 +88,8 @@ describe('SpreadsheetAuthoringPanel', () => {
     'clears stale success when a new workbook is selected',
     async () => {
       const { bytesByName } = renderPanel()
-      const classic = generateWorkbookTemplate('classic-board')
-      await uploadNamed(bytesByName, classic.filename, classic.bytes)
+      const classic = buildTestWorkbookBytes({ profile: 'classic-board' })
+      await uploadNamed(bytesByName, 'classic.xlsx', classic)
       await waitFor(() => expect(screen.getByTestId('spreadsheet-approve')).toBeEnabled(), {
         timeout: 15_000,
       })
@@ -101,8 +101,8 @@ describe('SpreadsheetAuthoringPanel', () => {
         { timeout: 15_000 },
       )
 
-      const finalTemplate = generateWorkbookTemplate('board-plus-final')
-      await uploadNamed(bytesByName, finalTemplate.filename, finalTemplate.bytes)
+      const finalTemplate = buildTestWorkbookBytes({ profile: 'board-plus-final' })
+      await uploadNamed(bytesByName, 'final.xlsx', finalTemplate)
       await waitFor(
         () => {
           expect(screen.getByTestId('spreadsheet-profile')).toHaveTextContent('board-plus-final')
@@ -134,8 +134,8 @@ describe('SpreadsheetAuthoringPanel', () => {
     'supports bounded correction and revalidation',
     async () => {
       const { bytesByName } = renderPanel()
-      const template = generateWorkbookTemplate('classic-board')
-      await uploadNamed(bytesByName, template.filename, template.bytes)
+      const template = buildTestWorkbookBytes({ profile: 'classic-board' })
+      await uploadNamed(bytesByName, 'classic.xlsx', template)
       await waitFor(() => expect(screen.getByTestId('spreadsheet-correct-title')).toBeInTheDocument(), {
         timeout: 15_000,
       })

@@ -14,6 +14,15 @@
 > [`CQS-REAL-MVP-S04-FAMILY-DIRECTION.md`](CQS-REAL-MVP-S04-FAMILY-DIRECTION.md)
 > §§8–9. This file remains a historical/post-MVP planning view.
 
+> **Current-state reconciliation (2026-09-26).**
+> Slice 20 and S04A subsequently implemented the XLSX workbook seed, explicit
+> approval/canonical-import path, Import Quality Report, and Generation Feedback.
+> The owner has also approved the external AI authoring-template framework in
+> [`CQS-EXTERNAL-AI-AUTHORING-TEMPLATE-FRAMEWORK.md`](CQS-EXTERNAL-AI-AUTHORING-TEMPLATE-FRAMEWORK.md),
+> including separate authoring-rules versioning and academically blank generated
+> templates. Historical statements below describing Slice 20 as unstarted are
+> preserved as history rather than silently rewritten.
+
 Domain view of the first post-MVP arc (`CQS-OD-080`). Canonical decisions:
 [`../decisions/EXPANDED-VISION-OWNER-DECISIONS.md`](../decisions/EXPANDED-VISION-OWNER-DECISIONS.md)
 (`CQS-OD-041`…`CQS-OD-052`, `CQS-OD-058`); architecture boundary:

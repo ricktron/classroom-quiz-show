@@ -111,6 +111,7 @@ describe('Display wake catch-up over request-state', () => {
     const receiver = createPublicStateReceiver({
       onState: (s) => received.push(s),
       channel: hub.createChannel(),
+      initialHostStreamId: 'stream-a',
       initialRevision: 9,
     })
 
@@ -118,6 +119,7 @@ describe('Display wake catch-up over request-state', () => {
     channel.post(
       encodeEnvelope({
         type: 'public-state',
+        hostStreamId: 'stream-a',
         revision: 8,
         sentAt: 1,
         payload: stateAt(8),

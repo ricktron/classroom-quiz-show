@@ -1,5 +1,6 @@
 import { isPublicState, type PublicState } from '../state/publicState'
 import { isInstant } from '../time/clock'
+import { isHostStreamId } from './hostStream'
 
 /**
  * Versioned synchronization envelope + fail-closed decoding.
@@ -27,8 +28,12 @@ export const SYNC_PROTOCOL = 'classroom-quiz-show/sync' as const
  * clock, and silently treating "absent" as "no offset" is exactly the implicit
  * compatibility guessing ADR-004 refuses. A version-1 envelope is rejected with
  * `unsupported-version` and the display keeps its last safe state.
+ *
+ * Bumped 2 → 3 when `public-state` gained required `hostStreamId` (pre-human-gate
+ * integration repair): revisions are scoped to one Host broadcasting lifetime.
+ * A version-2 envelope is rejected with `unsupported-version`.
  */
-export const SYNC_SCHEMA_VERSION = 2 as const
+export const SYNC_SCHEMA_VERSION = 3 as const
 /** Same-origin channel name shared by host and display in one browser. */
 export const SYNC_CHANNEL_NAME = 'classroom-quiz-show:sync' as const
 
@@ -44,6 +49,11 @@ export const SYNC_CHANNEL_NAME = 'classroom-quiz-show:sync' as const
  */
 export interface PublicStateMessage {
   readonly type: 'public-state'
+  /**
+   * Opaque Host broadcasting-lifetime identity. Revisions are monotonic only within
+   * one `hostStreamId`; a new id signals a new Host lifetime (transport metadata).
+   */
+  readonly hostStreamId: string
   readonly revision: number
   /** The host's wall clock when this envelope was posted (ms since the epoch). */
   readonly sentAt: number
@@ -103,6 +113,9 @@ export function decodeEnvelope(raw: unknown): DecodeResult {
       return { ok: true, message: { type: 'request-state' } }
 
     case 'public-state': {
+      if (!isHostStreamId(message.hostStreamId)) {
+        return { ok: false, reason: 'malformed-payload' }
+      }
       if (typeof message.revision !== 'number' || !Number.isFinite(message.revision)) {
         return { ok: false, reason: 'malformed-payload' }
       }
@@ -118,6 +131,7 @@ export function decodeEnvelope(raw: unknown): DecodeResult {
         ok: true,
         message: {
           type: 'public-state',
+          hostStreamId: message.hostStreamId,
           revision: message.revision,
           sentAt: message.sentAt,
           payload: message.payload,

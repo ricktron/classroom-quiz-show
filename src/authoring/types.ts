@@ -71,6 +71,8 @@ export interface DraftFinal {
 export interface DraftProvenance {
   readonly filename: string
   readonly workbookFormatVersion: typeof WORKBOOK_FORMAT_VERSION
+  /** Generation-contract provenance. Optional for older/in-app drafts. */
+  readonly authoringRulesVersion?: number
   readonly profile: WorkbookProfile
   readonly detectedSheets: readonly string[]
   /** Additive origin seam. Omitted on historical workbook drafts. */

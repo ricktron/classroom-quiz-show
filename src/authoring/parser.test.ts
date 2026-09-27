@@ -74,6 +74,22 @@ describe('workbook parser', () => {
     }
   })
 
+  it('treats a malformed authoringRulesVersion as a non-blocking warning, deliberately', async () => {
+    // authoringRulesVersion is additive generation-contract provenance, not a
+    // structural compatibility signal (ADR-023 §2). A malformed value must not
+    // fail closed the way a malformed workbookFormatVersion does.
+    const result = await parseWorkbookBytes(
+      buildTestWorkbookBytes({ meta: { authoringRulesVersion: 'not-a-number' } }),
+      'malformed-rules-version.xlsx',
+    )
+    expect(result.status).toBe('success')
+    if (result.status !== 'success') return
+    expect(result.draft.provenance.authoringRulesVersion).toBeUndefined()
+    const issue = result.draft.issues.find((i) => i.field === 'authoringRulesVersion')
+    expect(issue?.code).toBe('malformed-metadata')
+    expect(issue?.severity).toBe('warning')
+  })
+
   it('rejects unsupported workbook version and profile', async () => {
     const version = await parseWorkbookBytes(
       buildTestWorkbookBytes({ meta: { workbookFormatVersion: '2' } }),
@@ -86,6 +102,55 @@ describe('workbook parser', () => {
       'profile.xlsx',
     )
     expect(profile.status).toBe('failure')
+  })
+
+  it('preserves a future authoring-rules version without treating it as a structural format failure', async () => {
+    const result = await parseWorkbookBytes(
+      buildTestWorkbookBytes({ meta: { authoringRulesVersion: '99' } }),
+      'future-rules.xlsx',
+    )
+    expect(result.status).toBe('success')
+    if (result.status !== 'success') return
+    expect(result.draft.provenance.authoringRulesVersion).toBe(99)
+    expect(
+      result.draft.issues.some(
+        (issue) =>
+          issue.code === 'metadata-contradiction' &&
+          issue.severity === 'warning' &&
+          issue.field === 'authoringRulesVersion',
+      ),
+    ).toBe(true)
+    expect(result.draft.issues.some((issue) => issue.code === 'unsupported-workbook-version')).toBe(false)
+  })
+
+  it('treats authoring-rules version 1 as structurally compatible provenance under rules version 2', async () => {
+    // AUTHORING_RULES_VERSION moved 1 -> 2 (ADR-023 2026-09-27 amendment).
+    // Rules version 1 is provenance, not a structural rejection reason: an
+    // older workbook must still parse and import cleanly.
+    const result = await parseWorkbookBytes(
+      buildTestWorkbookBytes({ meta: { authoringRulesVersion: '1' } }),
+      'rules-v1-provenance.xlsx',
+    )
+    expect(result.status).toBe('success')
+    if (result.status !== 'success') return
+    expect(result.draft.provenance.authoringRulesVersion).toBe(1)
+    expect(result.draft.issues.some((issue) => issue.field === 'authoringRulesVersion')).toBe(false)
+    expect(result.draft.issues.some((issue) => issue.code === 'unsupported-workbook-version')).toBe(false)
+
+    const registry = createDefaultRegistry()
+    const approved = approveAndImportDraft(result.draft, { registry })
+    expect(approved.status).toBe('success')
+  })
+
+  it('parses successfully when authoringRulesVersion metadata is entirely absent (pre-ADR-023 workbook)', async () => {
+    const result = await parseWorkbookBytes(
+      buildTestWorkbookBytes({ profile: 'classic-board' }),
+      'no-rules-version.xlsx',
+    )
+    expect(result.status).toBe('success')
+    if (result.status !== 'success') return
+    expect(result.draft.provenance.authoringRulesVersion).toBeUndefined()
+    expect(result.draft.issues.some((issue) => issue.code === 'unsupported-workbook-version')).toBe(false)
   })
 
   it('rejects missing CQS_META and missing semantic sheets', async () => {
@@ -269,5 +334,61 @@ describe('workbook parser', () => {
     if (parsed.status !== 'success') return
     expect(parsed.draft.issues.some((i) => i.code === 'ambiguous-semantic-rows')).toBe(false)
     expect(parsed.draft.final?.prompt.length).toBeGreaterThan(0)
+  })
+
+  it('blocks a Board + Final workbook with no authored team names with a located diagnostic', async () => {
+    // A `final-wager` round wagers, reveals, and settles per team, so the
+    // canonical importer itself rejects zero teams
+    // (`final-round-requires-teams`, src/import). Requiring Team1Name at the
+    // workbook layer surfaces that same invariant earlier with a located
+    // GAME/Team1Name diagnostic instead of a later generic canonical failure.
+    // This is a Board + Final structural precondition, not a Game/Session
+    // identity conflict: authored team slots stay reusable Game content
+    // (default names only); actual per-class identity remains Session state
+    // set later at Class Setup (see src/session/sessionTeamIdentities.test.ts).
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({
+        profile: 'board-plus-final',
+        gameRows: [
+          [...GAME_HEADERS],
+          ['No Teams Fixture', 'no-teams-fixture', 30, '', '', '', '', '', '', '', ''],
+        ],
+      }),
+      'no-teams.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    expect(parsed.draft.status).toBe('blocked')
+    const teamIssue = parsed.draft.issues.find((i) => i.field === 'Team1Name')
+    expect(teamIssue).toBeDefined()
+    expect(teamIssue?.severity).toBe('blocker')
+    expect(teamIssue?.sheet).toBe('GAME')
+
+    const approval = approveAndImportDraft(parsed.draft, { registry: createDefaultRegistry() })
+    expect(approval.status).toBe('failure')
+    if (approval.status !== 'failure') return
+    expect(approval.issues.some((i) => i.field === 'Team1Name')).toBe(true)
+  })
+
+  it('does not require a team name for Classic Board (no final round to wager)', async () => {
+    const parsed = await parseWorkbookBytes(
+      buildTestWorkbookBytes({
+        profile: 'classic-board',
+        gameRows: [
+          [...GAME_HEADERS],
+          ['No Teams Classic Fixture', 'no-teams-classic-fixture', 30, '', '', '', '', '', '', '', ''],
+        ],
+      }),
+      'no-teams-classic.xlsx',
+    )
+    expect(parsed.status).toBe('success')
+    if (parsed.status !== 'success') return
+    expect(parsed.draft.issues.some((i) => i.field === 'Team1Name')).toBe(false)
+
+    const approval = approveAndImportDraft(parsed.draft, { registry: createDefaultRegistry() })
+    expect(approval.status).toBe('success')
+    if (approval.status !== 'success') return
+    expect(isGameDefinition(approval.importResult.definition)).toBe(true)
+    expect(approval.importResult.definition.teams ?? []).toEqual([])
   })
 })

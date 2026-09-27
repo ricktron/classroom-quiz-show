@@ -12,7 +12,7 @@ import {
   type PublicState,
 } from './publicState'
 import { createSessionStore, type SessionStore } from './store'
-import { decodeEnvelope, encodeEnvelope } from '../sync/protocol'
+import { decodeEnvelope, encodeEnvelope, SYNC_SCHEMA_VERSION } from '../sync/protocol'
 import { importGameFromUnknown } from '../import/importGame'
 import { createGameDefinition } from '../game/gameDefinition'
 import { placeholderRound } from '../game/roundDefinition'
@@ -370,8 +370,14 @@ describe('wire version', () => {
     expect(isPublicState(legacy)).toBe(false)
     const decoded = decodeEnvelope({
       protocol: 'classroom-quiz-show/sync',
-      schemaVersion: 2,
-      message: { type: 'public-state', sentAt: 1_700_000_000_000, revision: 9, payload: legacy },
+      schemaVersion: SYNC_SCHEMA_VERSION,
+      message: {
+        type: 'public-state',
+        hostStreamId: 'test-stream',
+        sentAt: 1_700_000_000_000,
+        revision: 9,
+        payload: legacy,
+      },
     })
     expect(decoded.ok).toBe(false)
     if (!decoded.ok) expect(decoded.reason).toBe('malformed-payload')
@@ -383,9 +389,10 @@ describe('wire version', () => {
     expect(isPublicState(version6)).toBe(false)
     const decoded = decodeEnvelope({
       protocol: 'classroom-quiz-show/sync',
-      schemaVersion: 2,
+      schemaVersion: SYNC_SCHEMA_VERSION,
       message: {
         type: 'public-state',
+        hostStreamId: 'test-stream',
         sentAt: 1_700_000_000_000,
         revision: current.revision,
         payload: version6,
@@ -398,7 +405,7 @@ describe('wire version', () => {
   it('round-trips a current-version board payload through the sync envelope', () => {
     const publicState = drive(boardStore(), select('alpha-100'), revealPrompt)
     const decoded = decodeEnvelope(
-      encodeEnvelope({ type: 'public-state', sentAt: 1_700_000_000_000, revision: publicState.revision, payload: publicState }),
+      encodeEnvelope({ type: 'public-state', hostStreamId: 'test-stream', sentAt: 1_700_000_000_000, revision: publicState.revision, payload: publicState }),
     )
     expect(decoded.ok).toBe(true)
     if (decoded.ok && decoded.message.type === 'public-state') {

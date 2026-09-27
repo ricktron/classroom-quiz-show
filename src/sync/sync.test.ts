@@ -36,11 +36,13 @@ describe('broadcaster ↔ receiver over an in-memory hub', () => {
     createPublicStateReceiver({
       onState: (s) => received.push(s),
       channel: hub.createChannel(),
+      initialHostStreamId: 'stream-1',
       initialRevision: 5,
     })
     const broadcaster = createPublicStateBroadcaster({
       getSnapshot: () => stateAt(5),
       channel: hub.createChannel(),
+      hostStreamId: 'stream-1',
     })
 
     broadcaster.publish(stateAt(4)) // stale
@@ -92,7 +94,7 @@ describe('broadcaster ↔ receiver over an in-memory hub', () => {
 
     // A malicious/confused display posts a public-state envelope.
     const rogue = hub.createChannel()
-    rogue.post(encodeEnvelope({ type: 'public-state', sentAt: 1_700_000_000_000, revision: 99, payload: stateAt(99) }))
+    rogue.post(encodeEnvelope({ type: 'public-state', hostStreamId: 'test-stream', sentAt: 1_700_000_000_000, revision: 99, payload: stateAt(99) }))
 
     // The host only republishes on request-state, never on public-state.
     expect(getSnapshot).not.toHaveBeenCalled()

@@ -34,6 +34,7 @@ function persistence(overrides: Partial<UseHostPersistence> = {}): UseHostPersis
     initialHistory: [],
     storeEpoch: 0,
     canDispatchSessionCommands: true,
+    canPublishPublicState: true,
     canPersistMutations: true,
     assertCanPersist: vi.fn(() => ({ ok: true as const, message: 'This window can save.' })),
     resume: vi.fn(),

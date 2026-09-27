@@ -10,6 +10,7 @@ import { systemClock, type Clock } from '../time/clock'
 import { nextHostSessionId } from './ensureSession'
 import {
   canPersistMutations,
+  canPublishHostPublicState,
   rejectIfCannotPersist,
   type PersistWriteSurface,
 } from './writeAuthority'
@@ -133,6 +134,8 @@ export interface UseHostPersistence {
   readonly initialHistory: readonly SessionEvent[]
   readonly storeEpoch: number
   readonly canDispatchSessionCommands: boolean
+  /** True when this tab may broadcast sanitized PublicState to the Display. */
+  readonly canPublishPublicState: boolean
   /** True only while this window is the durable writer. */
   readonly canPersistMutations: boolean
   /**
@@ -1006,6 +1009,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     initialHistory,
     storeEpoch,
     canDispatchSessionCommands: bootPhase === 'ready' && leadership !== 'follower',
+    canPublishPublicState: canPublishHostPublicState({ bootPhase, leadership, durabilityStatus }),
     canPersistMutations: canPersistMutations(leadership),
     assertCanPersist,
     resume,

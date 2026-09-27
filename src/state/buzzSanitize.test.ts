@@ -338,7 +338,7 @@ describe('the wire protocol', () => {
     expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(9)
     // The envelope did NOT change: `sentAt` is unchanged and no new transport
     // metadata was needed, so version 2 stands.
-    expect(SYNC_SCHEMA_VERSION).toBe(2)
+    expect(SYNC_SCHEMA_VERSION).toBe(3)
   })
 
   it('round-trips a snapshot carrying a queue', () => {
@@ -347,7 +347,7 @@ describe('the wire protocol', () => {
     buzz(store, 'blue')
     const payload = store.getPublicState()
     const decoded = decodeEnvelope(
-      encodeEnvelope({ type: 'public-state', revision: payload.revision, sentAt: AT, payload }),
+      encodeEnvelope({ type: 'public-state', hostStreamId: 'test-stream', revision: payload.revision, sentAt: AT, payload }),
     )
     expect(decoded.ok).toBe(true)
     expect(decoded.ok && decoded.message.type === 'public-state' && decoded.message.payload).toEqual(
@@ -367,7 +367,7 @@ describe('the wire protocol', () => {
     const stale = { ...store.getPublicState(), schemaVersion: 5 }
     expect(isPublicState(stale)).toBe(false)
     const decoded = decodeEnvelope(
-      encodeEnvelope({ type: 'public-state', revision: 1, sentAt: AT, payload: stale as never }),
+      encodeEnvelope({ type: 'public-state', hostStreamId: 'test-stream', revision: 1, sentAt: AT, payload: stale as never }),
     )
     expect(decoded.ok).toBe(false)
     expect(decoded.ok === false && decoded.reason).toBe('malformed-payload')

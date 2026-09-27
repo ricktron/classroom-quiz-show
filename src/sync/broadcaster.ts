@@ -1,4 +1,5 @@
 import type { PublicState } from '../state/publicState'
+import { createHostStreamId, type CreateHostStreamId } from './hostStream'
 import {
   createBroadcastChannelTransport,
   type SyncChannel,
@@ -26,6 +27,10 @@ export interface PublicStateBroadcaster {
 export interface BroadcasterOptions {
   /** Returns the current sanitized snapshot (used to answer `request-state`). */
   getSnapshot: () => PublicState
+  /** Stable for this broadcaster instance; scopes revision sequences on the wire. */
+  readonly hostStreamId?: string
+  /** Injectable factory (defaults to {@link createHostStreamId}). */
+  readonly createHostStreamId?: CreateHostStreamId
   /** Injectable transport (defaults to the real BroadcastChannel). */
   channel?: SyncChannel
   /**
@@ -44,6 +49,8 @@ export function createPublicStateBroadcaster(
 ): PublicStateBroadcaster {
   const channel = options.channel ?? createBroadcastChannelTransport(SYNC_CHANNEL_NAME)
   const clock = options.clock ?? systemClock
+  const hostStreamId =
+    options.hostStreamId ?? (options.createHostStreamId ?? createHostStreamId)()
 
   const unsubscribe = channel.subscribe((data) => {
     const decoded = decodeEnvelope(data)
@@ -57,6 +64,7 @@ export function createPublicStateBroadcaster(
     channel.post(
       encodeEnvelope({
         type: 'public-state',
+        hostStreamId,
         revision: state.revision,
         sentAt: clock.now(),
         payload: state,

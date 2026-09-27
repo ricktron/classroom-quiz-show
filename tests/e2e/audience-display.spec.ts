@@ -66,9 +66,10 @@ async function injectPublicState(page: Page, payload: PublicSnapshot) {
       const ch = new BroadcastChannel(name)
       ch.postMessage({
         protocol: 'classroom-quiz-show/sync',
-        schemaVersion: 2,
+        schemaVersion: 3,
         message: {
           type: 'public-state',
+          hostStreamId: 'e2e-test-stream',
           revision: p.revision as number,
           sentAt: Date.now(),
           payload: p,
