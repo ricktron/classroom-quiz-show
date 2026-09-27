@@ -268,7 +268,13 @@ test.describe('audience display scenes and privacy', () => {
     await expect(page.getByTestId('nexus-timer')).toHaveAttribute('data-status', 'running')
     await expect(page.getByTestId('bqd-active')).toHaveText('Alpha')
     await expect(page.getByTestId('bqd-waiting')).toContainText('1 team waiting')
-    await expect(page.getByTestId('signal-rail')).not.toContainText('Bravo')
+    // Public channel strip may list Bravo; buzz panel must not invent queue identity.
+    await expect(page.getByTestId('signal-rail-channel-t1')).toContainText('Bravo')
+    await expect(page.getByTestId('signal-rail-channel-t1')).toHaveAttribute(
+      'data-channel-status',
+      'ready',
+    )
+    await expect(page.getByTestId('bqd-active')).not.toContainText('Bravo')
 
     await injectPublicState(
       page,

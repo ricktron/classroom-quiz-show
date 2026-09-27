@@ -459,15 +459,21 @@
   color: var(--fg-interactive);
 }
 
-/* Nested buzz/outcome panels lose heavy card chrome inside the rail. */
+/* Nested buzz/outcome panels lose heavy card chrome inside the rail.
+ * Outcome-change acknowledgement (inset wash + box-shadow) must remain —
+ * do not wipe `.bod--outcome-changed` carriers under reduce-motion. */
 .signal-rail .bqd,
 .signal-rail .bod {
   border-radius: 0;
-  background: transparent;
-  box-shadow: none;
   border-width: 0;
   border-block: var(--bw-standard) solid var(--border-waiting);
   padding-block: clamp(0.2rem, 0.5vw, 0.45rem);
+}
+
+.signal-rail .bqd,
+.signal-rail .bod:not(.bod--outcome-changed) {
+  background: transparent;
+  box-shadow: none;
 }
 
 .signal-rail .bqd--active {
