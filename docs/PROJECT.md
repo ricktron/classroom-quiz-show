@@ -205,6 +205,17 @@ audio, or board styling.
 - **No live AI in CQS v1 (2026-08-13, S04 canon):** AI-assisted workbook
   generation occurs outside CQS. S04A direction includes an Import Quality
   Report and Export Generation Feedback loop.
+- **External AI authoring templates (2026-09-26):** XLSX is the primary
+  teacher-facing external-authoring artifact. Each supported gameplay/profile
+  should use a versioned, profile-specific workbook whose embedded model-neutral
+  rules are sufficient for a capable external LLM to produce CQS-ready content
+  from a teacher request and/or supplied class materials. Workbook structural
+  version and authoring-rules version are separate contracts. Templates remain
+  untrusted data and must re-enter the canonical importer after explicit teacher
+  review/approval. Future game formats should add their own template/rule
+  modules rather than expand one universal spreadsheet. See
+  [`architecture/ADR-023-external-ai-authoring-template-contract.md`](architecture/ADR-023-external-ai-authoring-template-contract.md)
+  and [`plans/CQS-EXTERNAL-AI-AUTHORING-TEMPLATE-FRAMEWORK.md`](plans/CQS-EXTERNAL-AI-AUTHORING-TEMPLATE-FRAMEWORK.md).
 - **S05 score-change treatment (2026-09-22):** For REAL MVP, the S05
   “score change” major moment is intentionally satisfied by the immediate
   static authoritative scoreboard update already governed by
