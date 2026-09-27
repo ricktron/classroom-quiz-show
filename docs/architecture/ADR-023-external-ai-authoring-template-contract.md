@@ -65,3 +65,58 @@ Positive: simpler teacher workflow, independent evolution of generation quality,
 Neutral: no live AI runtime, account, backend, network dependency, or canonical schema change; older workbook-format-1 files remain structurally valid when they lack authoring-rules provenance.
 
 Negative: generated blank templates are intentionally not playable until completed; authoring-rule quality becomes a maintained product contract that needs tests and future review.
+
+## Amendment (2026-09-27) — `authoringRulesVersion` 1 → 2, difficulty calibration V2
+
+Owner-approved bounded refinement, no architecture change. `AUTHORING_RULES_VERSION`
+moved from `1` to `2` to strengthen the difficulty-calibration generation
+contract this ADR already scopes under §2 and §5. `workbookFormatVersion`
+remains `1`; no workbook sheet, header, or column changed; no live AI runtime
+or trust-boundary change.
+
+Rules version 2 strengthens `src/authoring/authoringRules.ts` with:
+
+- **within-category monotonicity**: the existing 100→500 ladder guidance is
+  retained and sharpened per band;
+- **board-wide / cross-category calibration**: a same-value clue (for
+  example every 300) should carry comparable reasoning demand in every
+  category on the board, not only within its own category;
+- **qualitative difficulty dimensions** (`DifficultyDimension`: reasoning
+  steps, integration, transfer, discrimination, precision) as reusable
+  typed vocabulary for the model to reason with — guidance only, never a
+  numeric score the model computes or reports;
+- **explicit anti-patterns**: obscurity, length, trivia/traps, and topical
+  importance are each named as *not* equivalent to difficulty;
+- **instructional-evidence-relative calibration**: difficulty is calibrated
+  against what the supplied class materials actually taught and emphasized,
+  never against generic textbook/trivia norms, and never against any
+  individual student's inferred ability;
+- **taught-scope ceiling**: 400/500 clues must still stay inside the taught
+  scope; when evidence cannot support the required demand, the contract
+  directs an `INSUFFICIENT SOURCE EVIDENCE` note rather than manufactured
+  obscurity (existing §6 grounding rule, now bound explicitly to the top of
+  the difficulty ladder too);
+- **100-point floor / 500-point ceiling**: 100 stays a genuinely accessible
+  entry point; 500 stays the board's highest *ordinary* demand, earned
+  through synthesis/transfer/integration;
+- **board-wide calibration QA pass**: before returning the workbook, the
+  model performs a hidden-values thought experiment (would the actual
+  written demand re-sort the clues into the same 100–500 order without
+  seeing the labels?) and repairs mismatches — without emitting
+  chain-of-thought about that repair;
+- **concise Final Wager clarification**: Final should be at least as
+  demanding as the board's 400–500 range, not a step down from it (no
+  Final redesign).
+
+Per §2 above, `authoringRulesVersion` remains additive generation-contract
+provenance, not a structural compatibility gate: a workbook carrying
+provenance `1` (or no provenance at all) remains structurally valid under
+workbook format 1, and a future rules version beyond what a given CQS build
+knows remains a warning, never an `unsupported-workbook-version` structural
+failure. Point-value calibration is generation guidance for the external
+model, not a deterministic runtime validation CQS enforces on import; CQS
+still deterministically validates structure/content constraints (ADR-004,
+ADR-018), not pedagogical difficulty. CQS does not claim every 500-point
+clue is objectively harder than every 400-point clue — the contract gives
+the external model substantially stronger board-wide and within-category
+guidance for aligning cognitive demand with point value.

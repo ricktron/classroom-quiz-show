@@ -146,3 +146,38 @@ A new game format should normally receive its own profile-specific template and 
 - [x] future per-format template strategy documented.
 
 This tranche does **not** implement additional gameplay formats or a live AI service.
+
+## 11. Amendment (2026-09-27) — difficulty calibration V2 (`authoringRulesVersion` 2)
+
+Owner-approved bounded refinement of §5's difficulty model, tracked in
+[ADR-023](../architecture/ADR-023-external-ai-authoring-template-contract.md)'s
+2026-09-27 amendment. `AUTHORING_RULES_VERSION` moved `1` → `2`. Workbook
+format, sheets, headers, and columns are unchanged; no live AI runtime was
+added.
+
+The generation contract now additionally asks the external model to:
+
+- calibrate the same point value comparably **across every category**, not
+  only rising demand within one category;
+- vary demand along named qualitative dimensions (reasoning steps,
+  integration, transfer, discrimination, precision) instead of an
+  unstated or numeric notion of "hard";
+- treat obscurity, prompt length, trivia/traps, and topical importance as
+  explicitly **not** the same thing as difficulty;
+- calibrate relative to the supplied class materials' actual taught scope
+  and emphasis (never generic difficulty norms, and never an inferred
+  individual student's ability);
+- keep 400/500 clues inside the taught scope, using
+  `INSUFFICIENT SOURCE EVIDENCE` rather than manufactured obscurity when
+  the source materials cannot support the required demand;
+- run a final board-wide "hidden-values" calibration pass and repair
+  mismatches before returning the workbook, without emitting
+  chain-of-thought about that repair;
+- keep a concise Final Wager weight clarification (at least as demanding
+  as the board's 400–500 range) without redesigning Final.
+
+This remains generation guidance for the external model, not a
+deterministic runtime validation CQS enforces on import. CQS does not
+claim every 500-point clue is objectively harder than every 400-point
+clue. Definition-of-done items above remain met; this amendment does not
+reopen them.
