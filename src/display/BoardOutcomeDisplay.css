@@ -151,3 +151,30 @@
     background: color-mix(in srgb, var(--fg-muted, #888) 12%, transparent);
   }
 }
+
+
+/* Durable consequence treatment: result remains prominent after transient acknowledgement. */
+.bod:not(.bod--secondary) {
+  width: min(100%, 72rem);
+  justify-content: center;
+  margin-inline: auto;
+  padding: clamp(0.45rem, 0.9vw, 0.75rem) clamp(0.8rem, 1.5vw, 1.35rem);
+  border-inline-start: clamp(0.35rem, 0.6vw, 0.65rem) solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-recessed);
+  font-size: clamp(1.15rem, 2vw + 0.45rem, 1.9rem);
+}
+
+.bod--correct:not(.bod--secondary) {
+  border-inline-start-color: var(--state-success);
+  background: var(--state-success-wash);
+}
+
+.bod--incorrect:not(.bod--secondary) {
+  border-inline-start-color: var(--state-danger);
+  background: var(--state-danger-wash);
+}
+
+.bod--passed:not(.bod--secondary) {
+  border-inline-start-color: var(--fg-muted);
+}
