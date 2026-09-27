@@ -27,8 +27,8 @@
   background: var(--surface-board);
   box-shadow: var(--edge-board), var(--shadow-surface);
   border: var(--bw-standard) solid var(--border-board-grid);
-  border-radius: var(--radius-panel);
-  padding: clamp(0.35rem, 0.9vw, 0.95rem);
+  border-radius: var(--radius-sm);
+  padding: clamp(0.35rem, 0.8vw, 0.8rem);
   box-sizing: border-box;
   max-height: 100%;
   min-height: 0;
@@ -87,8 +87,9 @@
   letter-spacing: 0.04em;
   color: var(--fg-strong);
   background: var(--surface-raised);
-  border: var(--bw-strong) solid var(--border-board-grid);
-  border-radius: var(--radius-md);
+  border: var(--bw-standard) solid var(--border-board-grid);
+  border-top: var(--bw-emphasis, 3px) solid var(--state-structural);
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow-surface);
   overflow-wrap: anywhere;
   hyphens: auto;
@@ -116,9 +117,9 @@
   background: var(--surface-tile);
   border: none;
   box-shadow: var(--edge-tile), var(--shadow-surface);
-  border-radius: var(--radius-tile);
-  font-weight: 800;
-  font-size: clamp(1.05rem, 2.15vw + 0.2vh, 2.45rem);
+  border-radius: var(--radius-sm);
+  font-weight: 900;
+  font-size: clamp(1.15rem, 2.35vw + 0.2vh, 2.7rem);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
 }
@@ -152,12 +153,13 @@
   align-items: center;
   gap: clamp(0.45rem, 1.4vh, 1.75rem);
   text-align: center;
-  background: var(--surface-question);
-  border: var(--bw-standard) solid var(--border-panel);
-  border-radius: var(--radius-panel);
-  padding: clamp(0.55rem, 1.5vh, 1.5rem) clamp(0.55rem, 1.6vw, 1.35rem);
-  box-shadow: var(--edge-selected), var(--shadow-elevated);
-  max-width: min(64rem, 100%);
+  background: transparent;
+  border: 0;
+  border-block: var(--bw-strong) solid var(--border-panel);
+  border-radius: 0;
+  padding: clamp(0.75rem, 1.8vh, 1.7rem) clamp(0.8rem, 2vw, 2rem);
+  box-shadow: none;
+  max-width: min(86rem, 100%);
   max-height: 100%;
   margin-inline: auto;
   width: 100%;
@@ -473,4 +475,16 @@
     box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
     background: color-mix(in srgb, var(--state-active) 10%, transparent);
   }
+}
+
+
+/* Dormant board memory recedes without disappearing or relying on opacity. */
+.cbd__tile--used {
+  background: var(--surface-recessed);
+  color: var(--state-dormant);
+  border-color: var(--border-subtle);
+}
+
+.cbd__column--cleared .cbd__category {
+  border-top-color: var(--state-cleared);
 }
