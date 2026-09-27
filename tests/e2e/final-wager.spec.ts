@@ -96,7 +96,10 @@ test('a complete classic Final: private wagers, reveal, settlement and completio
   await expect(host.getByTestId('fwh-mode-classic')).toBeChecked()
   await host.getByTestId('fwh-begin').click()
   await expect(display.getByTestId('fwd-wager-entry')).toBeVisible()
-  await expect(display.getByText(/place your wagers/i)).toBeVisible()
+  await expect(display.getByText(/choose your wager/i)).toBeVisible()
+  await expect(display.getByTestId('fwd-wager-privacy')).toContainText(
+    /keep it private until your teacher collects it/i,
+  )
 
   // Only the team with a positive score qualifies under Classic.
   await expect(host.getByTestId('fwh-cap-basalts')).toBeVisible()

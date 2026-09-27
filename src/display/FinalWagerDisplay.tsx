@@ -311,7 +311,10 @@ export function FinalWagerDisplay({
       return (
         <div className={rootClass()} {...presentationAttrs} data-testid="fwd-wager-entry">
           {heading}
-          <p className="fwd__status">Place your wagers</p>
+          <p className="fwd__status">Choose your wager</p>
+          <p className="fwd__substatus" data-testid="fwd-wager-privacy">
+            Keep it private until your teacher collects it.
+          </p>
           {/*
             Primary Final countdown lives on the Final Signal Rail (Slice 18 R1)
             so the scene and rail do not compete with identical clocks.
