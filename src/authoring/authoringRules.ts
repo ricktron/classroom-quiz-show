@@ -1,6 +1,6 @@
 import type { WorkbookProfile } from './contract'
 
-export const AUTHORING_RULES_VERSION = 1 as const
+export const AUTHORING_RULES_VERSION = 2 as const
 
 export const CLASSIC_BOARD_DEFAULTS = {
   categoryCount: 6,
@@ -10,6 +10,17 @@ export const CLASSIC_BOARD_DEFAULTS = {
 
 export interface DifficultyBand {
   readonly value: number
+  readonly label: string
+  readonly guidance: string
+}
+
+/**
+ * Qualitative levers a model can vary to raise or lower cognitive demand.
+ * These are guidance vocabulary for reasoning with, never a numeric rubric
+ * to compute, weight, or report back (ADR-023 §2 / §7).
+ */
+export interface DifficultyDimension {
+  readonly id: string
   readonly label: string
   readonly guidance: string
 }
@@ -26,15 +37,24 @@ export interface ExternalAuthoringRuleSet {
   readonly profileLabel: string
   readonly defaultBoard: typeof CLASSIC_BOARD_DEFAULTS
   readonly difficultyBands: readonly DifficultyBand[]
+  readonly difficultyDimensions: readonly DifficultyDimension[]
   readonly sections: readonly AuthoringRuleSection[]
 }
 
 const DIFFICULTY_BANDS: readonly DifficultyBand[] = [
-  { value: 100, label: 'Foundational', guidance: 'Direct recognition or recall of an important taught idea. Clear wording and strong source support; never a trick.' },
+  { value: 100, label: 'Foundational', guidance: 'Direct recognition or recall of an important taught idea. Clear wording and strong source support; never a trick. A genuinely accessible entry point for most students who engaged with the material.' },
   { value: 200, label: 'Developing', guidance: 'A distinction, relationship, or one-step application that goes beyond simple recall without depending on obscurity.' },
   { value: 300, label: 'Intermediate', guidance: 'Connect two ideas, interpret a short representation, or apply a concept in a familiar context.' },
-  { value: 400, label: 'Advanced', guidance: 'Use multi-step reasoning, compare close alternatives, infer cause/effect, or apply learning in a less familiar context.' },
-  { value: 500, label: 'Challenge', guidance: 'Synthesize or transfer important learning, resolve a meaningful misconception, or integrate multiple source elements. Difficulty must come from thinking, not trivia.' },
+  { value: 400, label: 'Advanced', guidance: 'Use multi-step reasoning, compare close alternatives, infer cause/effect, or apply learning in a less familiar context — still grounded in what was actually taught.' },
+  { value: 500, label: 'Challenge', guidance: 'Synthesize or transfer important learning, resolve a meaningful misconception, or integrate multiple source elements. The board\u2019s highest ordinary demand, earned through thinking, never through trivia or obscurity.' },
+]
+
+const DIFFICULTY_DIMENSIONS: readonly DifficultyDimension[] = [
+  { id: 'reasoning-steps', label: 'Reasoning steps', guidance: 'how many connected inferential steps the response requires, not how many facts must be memorized' },
+  { id: 'integration', label: 'Integration', guidance: 'whether the student must combine multiple taught ideas rather than recall one isolated fact' },
+  { id: 'transfer', label: 'Transfer', guidance: 'whether the student must apply a taught idea to a new example or context rather than repeat it verbatim' },
+  { id: 'discrimination', label: 'Discrimination', guidance: 'whether the student must distinguish between closely related concepts, not merely recognize an isolated term' },
+  { id: 'precision', label: 'Precision', guidance: 'how exact or complete the expected response must be, not how obscurely it is worded' },
 ]
 
 /**
@@ -136,6 +156,36 @@ const BOARD_SECTION: AuthoringRuleSection = {
   ],
 }
 
+/**
+ * Difficulty is a generation contract, not a scoring engine: this section
+ * asks the model to calibrate cognitive demand within each category and
+ * across the whole board, using the qualitative levers in
+ * `DIFFICULTY_DIMENSIONS`, and to repair mismatches before returning the
+ * workbook. It never asks for a computed or reported numeric score.
+ *
+ * Kept deliberately row-efficient: the generated INSTRUCTIONS sheet shares
+ * `MAX_WORKBOOK_ROWS` (limits.ts) with every other section across both
+ * profiles, so this section packs the dimension vocabulary into one line
+ * rather than one row per dimension.
+ */
+const dimensionLine = DIFFICULTY_DIMENSIONS.map(
+  (dimension) => `${dimension.label} (${dimension.guidance})`,
+).join('; ')
+
+const CALIBRATION_SECTION: AuthoringRuleSection = {
+  id: 'difficulty-calibration',
+  title: 'Difficulty calibration (within-category and board-wide)',
+  rules: ruleLines(`
+    Calibrate difficulty on two axes at once: rising demand from 100 to 500 within each category, and comparable demand across every category at the same point value; a 300 clue in one category should feel like roughly the same reasoning demand as a 300 clue in any other category on this board.
+    Vary demand using these qualitative levers, never a numeric rubric to compute or report: ${dimensionLine}.
+    Difficulty is not obscurity, length, a trick/trap, or topical importance: a rare fact, a longer or more decorative prompt, misleading phrasing, or a frequently emphasized idea does not by itself justify a higher point value. Base difficulty on the thinking actually required.
+    Calibrate relative to what the supplied class materials actually taught and emphasized, not to generic textbook, standardized-test, or trivia-night norms, and never to any individual student's inferred ability, grade history, or reading level.
+    Even 400- and 500-point clues must stay inside the taught scope. When evidence cannot support the required demand, leave that slot's Prompt and Answer blank with an INSUFFICIENT SOURCE EVIDENCE note in Notes rather than manufacturing obscurity to fill it.
+    Keep 100 a genuinely accessible entry point and 500 the board's highest ordinary demand, earned through synthesis, transfer, integration, or resolving a real misconception, never through obscurity or trivia.
+    Before returning the workbook, run one final board-wide calibration pass: mentally cover the point-value column and check whether the demand you actually wrote would re-sort the clues back into the same 100-500 order, both within each category and across the whole board. Repair any mismatch without narrating the repair or including chain-of-thought about how you calibrated difficulty.
+  `),
+}
+
 const TEAM_NAMES_SECTION: AuthoringRuleSection = {
   id: 'team-names',
   title: 'Optional team-name bank',
@@ -155,6 +205,7 @@ const FINAL_SECTION: AuthoringRuleSection = {
     'Final should reward synthesis, transfer, interpretation, or connection across ideas rather than hinge on a niche fact.',
     'The canonical answer and acceptable alternates must be gradable quickly. Put strictness guidance in Notes when the response needs a specific idea.',
     'Do not create Final by simply copying or lightly rewording a board clue.',
+    'Final should feel appropriately weighty for a culminating wager relative to the board you just calibrated: at least as demanding as the board\u2019s 400-500 range, never a step down.',
   ],
 }
 
@@ -165,8 +216,9 @@ export function getExternalAuthoringRuleSet(profile: WorkbookProfile): ExternalA
     profileLabel: profile === 'classic-board' ? 'Classic Board' : 'Board + Final',
     defaultBoard: CLASSIC_BOARD_DEFAULTS,
     difficultyBands: DIFFICULTY_BANDS,
+    difficultyDimensions: DIFFICULTY_DIMENSIONS,
     sections: profile === 'board-plus-final'
-      ? [...SHARED_SECTIONS, BOARD_SECTION, FINAL_SECTION, TEAM_NAMES_SECTION]
-      : [...SHARED_SECTIONS, BOARD_SECTION, TEAM_NAMES_SECTION],
+      ? [...SHARED_SECTIONS, BOARD_SECTION, CALIBRATION_SECTION, FINAL_SECTION, TEAM_NAMES_SECTION]
+      : [...SHARED_SECTIONS, BOARD_SECTION, CALIBRATION_SECTION, TEAM_NAMES_SECTION],
   }
 }
