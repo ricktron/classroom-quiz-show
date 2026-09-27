@@ -94,6 +94,7 @@ export function buildModelNeutralInstructions(profile: WorkbookProfile): string[
       ? '- FINAL has exactly one semantic row with Prompt + Answer, and at least one default team name is present.'
       : '- Classic Board contains no Final semantic content.',
     '- Any intentionally incomplete slot is incomplete because evidence was insufficient, not because content was fabricated to fill space.',
+    '- Same-value clues feel comparably demanding across every category, and 400/500 clues earn their value through reasoning, synthesis, or transfer, never obscurity.',
     '- Return the completed .xlsx workbook artifact rather than prose around it.',
     '- Do not include chain-of-thought or private reasoning.',
     '',

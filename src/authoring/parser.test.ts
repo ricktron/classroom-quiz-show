@@ -123,6 +123,36 @@ describe('workbook parser', () => {
     expect(result.draft.issues.some((issue) => issue.code === 'unsupported-workbook-version')).toBe(false)
   })
 
+  it('treats authoring-rules version 1 as structurally compatible provenance under rules version 2', async () => {
+    // AUTHORING_RULES_VERSION moved 1 -> 2 (ADR-023 2026-09-27 amendment).
+    // Rules version 1 is provenance, not a structural rejection reason: an
+    // older workbook must still parse and import cleanly.
+    const result = await parseWorkbookBytes(
+      buildTestWorkbookBytes({ meta: { authoringRulesVersion: '1' } }),
+      'rules-v1-provenance.xlsx',
+    )
+    expect(result.status).toBe('success')
+    if (result.status !== 'success') return
+    expect(result.draft.provenance.authoringRulesVersion).toBe(1)
+    expect(result.draft.issues.some((issue) => issue.field === 'authoringRulesVersion')).toBe(false)
+    expect(result.draft.issues.some((issue) => issue.code === 'unsupported-workbook-version')).toBe(false)
+
+    const registry = createDefaultRegistry()
+    const approved = approveAndImportDraft(result.draft, { registry })
+    expect(approved.status).toBe('success')
+  })
+
+  it('parses successfully when authoringRulesVersion metadata is entirely absent (pre-ADR-023 workbook)', async () => {
+    const result = await parseWorkbookBytes(
+      buildTestWorkbookBytes({ profile: 'classic-board' }),
+      'no-rules-version.xlsx',
+    )
+    expect(result.status).toBe('success')
+    if (result.status !== 'success') return
+    expect(result.draft.provenance.authoringRulesVersion).toBeUndefined()
+    expect(result.draft.issues.some((issue) => issue.code === 'unsupported-workbook-version')).toBe(false)
+  })
+
   it('rejects missing CQS_META and missing semantic sheets', async () => {
     const template = generateWorkbookTemplate('classic-board')
     // Corrupt by rebuilding without META via factory missing sheet simulation:

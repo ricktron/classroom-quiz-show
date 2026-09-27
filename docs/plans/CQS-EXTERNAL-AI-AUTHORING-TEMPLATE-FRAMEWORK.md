@@ -146,3 +146,75 @@ A new game format should normally receive its own profile-specific template and 
 - [x] future per-format template strategy documented.
 
 This tranche does **not** implement additional gameplay formats or a live AI service.
+
+## 11. Amendment (2026-09-27) — difficulty calibration V2 (`authoringRulesVersion` 2)
+
+Owner-approved bounded refinement of §5's difficulty model, tracked in
+[ADR-023](../architecture/ADR-023-external-ai-authoring-template-contract.md)'s
+2026-09-27 amendment. `AUTHORING_RULES_VERSION` moved `1` → `2`. Workbook
+format, sheets, headers, and columns are unchanged; no live AI runtime was
+added.
+
+The generation contract now additionally asks the external model to:
+
+- calibrate the same point value comparably **across every category**, not
+  only rising demand within one category;
+- vary demand along named qualitative dimensions (reasoning steps,
+  integration, transfer, discrimination, precision) instead of an
+  unstated or numeric notion of "hard";
+- treat obscurity, prompt length, trivia/traps, and topical importance as
+  explicitly **not** the same thing as difficulty;
+- calibrate relative to the supplied class materials' actual taught scope
+  and emphasis (never generic difficulty norms, and never an inferred
+  individual student's ability);
+- keep 400/500 clues inside the taught scope, using
+  `INSUFFICIENT SOURCE EVIDENCE` rather than manufactured obscurity when
+  the source materials cannot support the required demand;
+- run a final board-wide "hidden-values" calibration pass and repair
+  mismatches before returning the workbook, without emitting
+  chain-of-thought about that repair;
+- keep a concise Final Wager weight clarification (at least as demanding
+  as the board's 400–500 range) without redesigning Final.
+
+This remains generation guidance for the external model, not a
+deterministic runtime validation CQS enforces on import. CQS does not
+claim every 500-point clue is objectively harder than every 400-point
+clue. Definition-of-done items above remain met; this amendment does not
+reopen them.
+
+## 12. Amendment (2026-09-27, continued) — Difficulty Profile (audience × overall challenge × ramp)
+
+Same owner-approved refinement, still `authoringRulesVersion` `2` (not
+bumped). Adds a **Difficulty Profile** the external model resolves before
+authoring, tracked in ADR-023's matching continued amendment:
+
+`Audience baseline × Overall challenge × Difficulty ramp`
+
+- **Audience baseline** = expected learner/course context, free natural
+  language (not a fixed grade list), resolved only from teacher
+  instruction, course context, or supplied materials — never from an
+  individual student's characteristics, accommodations, or presumed
+  ability.
+- **Overall challenge** = board-wide difficulty relative to that audience
+  (`Accessible | Standard | Challenging`; `Standard` default).
+- **Difficulty ramp** = steepness of the 100→500 progression, independent
+  of challenge (`Shallow | Standard | Steep`; `Standard` default).
+
+Interaction policy: infer from explicit teacher/source evidence when
+clear; otherwise ask exactly one batched clarification covering only the
+unresolved settings; when interaction is unavailable (or the teacher says
+to use judgment), use the Standard/Standard defaults and never fail
+generation over it.
+
+The profile operates inside the existing taught-scope boundary (never
+authorizes outside facts), preserves the existing cross-category
+same-value calibration rule, and expands the existing hidden-values
+board-wide calibration QA pass to also check the resolved profile.
+
+No new workbook column/sheet/header; `workbookFormatVersion` stays `1`;
+`MAX_WORKBOOK_ROWS` was not raised — both generated `INSTRUCTIONS` sheets
+were kept well under the existing cap by consolidating prose into denser
+rows. Non-claim preserved: CQS guides pedagogical difficulty; it does not
+objectively or deterministically validate it. This amendment does not
+reopen the §10 definition-of-done and is not S04D/S05/S06/new-game-mode
+work.
