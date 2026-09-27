@@ -36,6 +36,13 @@ export {
 } from './undoStack'
 export { generateWorkbookTemplate, downloadWorkbookTemplate } from './generateTemplate'
 export { buildModelNeutralInstructions } from './instructions'
+export {
+  AUTHORING_RULES_VERSION,
+  CLASSIC_BOARD_DEFAULTS,
+  getExternalAuthoringRuleSet,
+  type AuthoringRuleSection,
+  type ExternalAuthoringRuleSet,
+} from './authoringRules'
 export { preflightWorkbookBytes, assertWorkbookFilename } from './preflight'
 export {
   MAX_WORKBOOK_BYTES,
