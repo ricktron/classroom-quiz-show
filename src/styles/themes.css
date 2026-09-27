@@ -78,7 +78,7 @@
   --type-projector-team: clamp(0.8rem, 1.1vw, 1.1rem);
   --type-projector-score: clamp(1.25rem, 2.05vw, 2.1rem);
   --type-projector-claim: clamp(1.45rem, 3.3vw, 2.7rem);
-  --type-projector-winner: clamp(3.4rem, 9vw, 8.5rem);
+  --type-projector-winner: clamp(3.2rem, 8.2vw, 7.6rem);
 
   /*
    * Default theme values. Also applied when data-theme is absent before the
