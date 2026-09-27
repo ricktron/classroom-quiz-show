@@ -17,7 +17,8 @@
 
 .tsb__title {
   margin: 0 0 0.35rem;
-  font-size: clamp(0.85rem, 1.3vw, 1.15rem);
+  font-family: var(--font-sans);
+  font-size: var(--type-projector-label);
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -65,9 +66,10 @@
 }
 
 .tsb__name {
+  font-family: var(--font-sans);
   font-size: clamp(0.9rem, 1.5vw, 1.5rem);
   font-weight: 600;
-  line-height: 1.15;
+  line-height: 1.18;
   /* Long team names wrap rather than overflow / ellipsis into ambiguity. */
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -181,8 +183,8 @@
 .tsb--column .tsb__name,
 .tsb--strip .tsb__name,
 .tsb--deck .tsb__name {
-  font-size: clamp(0.78rem, 1.15vw, 1.15rem);
-  line-height: 1.08;
+  font-size: var(--type-projector-team);
+  line-height: 1.14;
 }
 
 /* Column: prefer word wraps; keep a readable name track beside extreme scores. */
@@ -193,19 +195,19 @@
 }
 
 .tsb--column .tsb__score {
-  font-size: clamp(1.25rem, 2.1vw, 2.15rem);
+  font-size: var(--type-projector-score);
   min-width: max-content;
 }
 
 .tsb--strip .tsb__score,
 .tsb--deck .tsb__score {
-  font-size: clamp(1.25rem, 2.15vw, 2.15rem);
+  font-size: var(--type-projector-score);
 }
 
 .tsb--strip .tsb__title,
 .tsb--deck .tsb__title {
   margin-bottom: 0.2rem;
-  font-size: clamp(0.7rem, 0.95vw, 0.9rem);
+  font-size: var(--type-projector-label);
 }
 
 @media (max-height: 800px) {
@@ -221,11 +223,11 @@
 
   .tsb--deck .tsb__name,
   .tsb--strip .tsb__name {
-    font-size: clamp(0.7rem, 1vw, 0.9rem);
+    font-size: clamp(0.8rem, 1.15vw, 1rem);
   }
 
   .tsb--deck .tsb__score,
   .tsb--strip .tsb__score {
-    font-size: clamp(1.05rem, 1.75vw, 1.55rem);
+    font-size: clamp(1.1rem, 1.85vw, 1.65rem);
   }
 }

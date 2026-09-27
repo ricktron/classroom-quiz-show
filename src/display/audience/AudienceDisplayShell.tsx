@@ -139,6 +139,15 @@ export function AudienceDisplayShell({
   )
   const flowOwnsMotion = ownsBoardFlowMotion(publicState)
 
+  // Presentation-only: do not echo a stale Host "Playing" detail once the
+  // public stage already says the game is complete (mirrors Nexus cleanup).
+  const hostDetail =
+    publicState.detail !== null &&
+    nexus.stageLabel === 'Game complete' &&
+    /^playing$/i.test(publicState.detail.trim())
+      ? null
+      : publicState.detail
+
   const scoresRegion =
     publicState.teams !== null && scoreLayout !== 'none' ? (
       <div
@@ -184,7 +193,7 @@ export function AudienceDisplayShell({
         <p className="audience__host-line" aria-live="polite">
           <span className="audience__status-dot" aria-hidden="true" />
           {publicState.headline}
-          {publicState.detail ? ` — ${publicState.detail}` : ''}
+          {hostDetail ? ` — ${hostDetail}` : ''}
         </p>
         {publicState.game && (
           <p className="audience__game-line" aria-live="polite" data-testid="display-game">

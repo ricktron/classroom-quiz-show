@@ -39,7 +39,8 @@
 .audience__brand {
   grid-area: brand;
   margin: 0;
-  font-size: clamp(0.75rem, 1.1vw, 1rem);
+  font-family: var(--font-sans);
+  font-size: var(--type-projector-brand);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--fg-interactive);
@@ -106,10 +107,11 @@
 .audience__host-line,
 .audience__game-line {
   margin: 0;
-  font-size: clamp(0.72rem, 0.9vw, 0.95rem);
+  font-family: var(--font-sans);
+  font-size: var(--type-projector-meta);
   color: var(--fg-muted);
   max-width: 48rem;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .audience__host-line {
@@ -300,6 +302,19 @@
   padding-block: var(--space-1);
 }
 
+/* Completion: Nexus + Final body own "Game complete"; drop duplicate right line. */
+.audience--scene-complete .audience__game-line {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .audience__lattice {
   position: absolute;
   inset: 0;
@@ -349,9 +364,18 @@
 .signal-rail__status,
 .signal-rail__revealed {
   margin: 0;
-  font-size: clamp(1rem, 1.8vw, 1.5rem);
-  font-weight: 700;
+  font-family: var(--font-sans);
+  font-size: var(--type-projector-status);
+  font-weight: 650;
   color: var(--fg-strong);
+}
+
+/* Idle board Ready is secondary to the board — do not outshout tiles. */
+.signal-rail--compact .signal-rail__status:only-child {
+  font-size: var(--type-projector-status-idle);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--fg-secondary);
 }
 
 .signal-rail__revealed {
@@ -643,12 +667,12 @@
   }
 
   .tsb__name {
-    font-size: clamp(0.68rem, 1.05vw, 0.95rem);
-    line-height: 1.08;
+    font-size: clamp(0.8rem, 1.15vw, 1rem);
+    line-height: 1.12;
   }
 
   .tsb__score {
-    font-size: clamp(0.95rem, 2vw, 1.55rem);
+    font-size: clamp(1.05rem, 2vw, 1.6rem);
   }
 
   .audience__footer {

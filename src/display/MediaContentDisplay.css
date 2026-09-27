@@ -18,9 +18,10 @@
   margin-inline: auto;
   /* Absorb glyph ascent/descent so Range metrics stay inside the element box. */
   padding-block: 0.08em;
-  font-size: clamp(1.2rem, 0.45rem + 2.6vh, 3.15rem);
+  font-family: var(--font-display, var(--font-sans));
+  font-size: var(--type-projector-question);
   font-weight: 700;
-  line-height: 1.22;
+  line-height: 1.24;
   letter-spacing: 0.005em;
   overflow-wrap: anywhere;
   hyphens: auto;
@@ -39,8 +40,10 @@
  * budget — type must not shrink below distance-first usability.
  */
 .mcd__text[data-length='long'] {
-  font-size: clamp(1.125rem, 0.38rem + 2.2vh, 2.55rem);
-  line-height: 1.18;
+  font-size: var(--type-projector-question-long);
+  /* Long stems: slightly lighter weight for reading comfort at distance. */
+  font-weight: 650;
+  line-height: 1.22;
   max-width: min(72ch, 100%);
 }
 
@@ -127,6 +130,10 @@
 
 :root[data-theme='high-contrast'] .mcd__text {
   font-weight: 800;
+}
+
+:root[data-theme='high-contrast'] .mcd__text[data-length='long'] {
+  font-weight: 700;
 }
 
 :root[data-theme='high-contrast'] .mcd__img {

@@ -369,6 +369,34 @@ describe('AudienceDisplayShell', () => {
     expect(screen.getByTestId('nexus-timer-status')).toHaveTextContent(/ready/i)
   })
 
+  it('suppresses stale Playing detail on host-line when stage is Game complete', () => {
+    render(
+      <AudienceDisplayShell
+        publicState={state({
+          headline: 'Session ready',
+          detail: 'Playing',
+          game: {
+            status: 'ended',
+            roundCount: 2,
+            currentRound: 2,
+            roundAvailability: 'available',
+          },
+          round: {
+            kind: PUBLIC_FINAL_KIND,
+            stage: 'complete',
+            outcome: 'unique-leader',
+          },
+          teams: { status: 'available', teams: [team('t0', 'Red Team', 'crimson', 500)] },
+          response: null,
+        })}
+      />,
+    )
+    const host = document.querySelector('.audience__host-line')
+    expect(host).toHaveTextContent(/Session ready/)
+    expect(host).not.toHaveTextContent(/Playing/)
+    expect(screen.getByTestId('nexus-core')).toHaveTextContent(/Game complete/)
+  })
+
   it('uses Score Deck row-major order for eight teams', () => {
     const eight = Array.from({ length: 8 }, (_, i) =>
       team(`t${i}`, i === 7 ? LONG : `Team ${i}`, 'azure', 1000 - i),

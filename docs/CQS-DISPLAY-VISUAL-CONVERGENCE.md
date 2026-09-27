@@ -3,8 +3,9 @@
 - **Objective:** pre-owner-playthrough Audience / Display visual convergence
 - **Authorized base:** `4678c9223f8fa7e7129dca6d2a86ea9c6a0cef30`
 - **Working branch:** `feat/display-visual-convergence`
-- **Status:** ACTIVE — bounded implementation candidate for owner playthrough decision
+- **Status:** ACTIVE — near-MVP owner-playthrough candidate after machine-evaluable visual polish
 - **Authority:** repository implementation/contracts remain authoritative; uploaded Claude Design artifacts are preferred design evidence, not source code or product authority
+- **Typography posture:** system fonts only (`--font-sans` / `--font-display` alias); bounded `--type-projector-*` roles; no remote/bundled fonts
 
 ## 1. Definition-of-done ledger
 
@@ -19,10 +20,12 @@
 | Presentation-only convergence implementation | VERIFIED (CSS + presentation selector dedupe) |
 | 720p / 1080p / 1–8 team stress verification | VERIFIED — gated review captures + workflow gap e2e + Score Column geometry repair |
 | Reduced-motion / high-contrast verification | VERIFIED — theme/S05-F1 suite + HC/RM review frames |
-| Integrated COURT review | VERIFIED — Hearing 7 evidence-closure readiness (READY FOR RICK OWNER PLAYTHROUGH) |
+| Integrated COURT review | VERIFIED — Hearing 7 evidence-closure + near-MVP polish COURT (8 questions) |
 | Authoritative coverage matrix | VERIFIED — agent-store matrix (unit vs browser vs visual classes) |
+| System-font canon + Display typography inventory | VERIFIED — Option A scale/weight/spacing; inventory in agent store |
+| Near-MVP machine-evaluable visual polish exhausted | VERIFIED — typography/formatting/visual COURT; remaining items owner-only/physical |
 | Post-convergence historian milestone | DEFERRED TO LATER AUTHORIZED QUALIFICATION — owner gate after playthrough |
-| Owner-playthrough candidate handoff | OWNER PLAYTHROUGH PENDING — short evidence-closure handoff; not merged; S05 not terminal |
+| Owner-playthrough candidate handoff | OWNER PLAYTHROUGH PENDING — near-MVP gate handoff; not merged; S05 not terminal; do not ask Rick until READY |
 
 ## 2. Evidence hierarchy
 

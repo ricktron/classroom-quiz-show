@@ -134,7 +134,8 @@
 }
 
 .cbd__tile-used {
-  font-size: clamp(0.65rem, 1.05vw, 1rem);
+  font-family: var(--font-sans);
+  font-size: clamp(0.75rem, 1.1vw, 1rem);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;

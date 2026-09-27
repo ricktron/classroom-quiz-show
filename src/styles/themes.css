@@ -57,6 +57,23 @@
   --type-caption: 0.85rem;
 
   /*
+   * Projector Display type roles — system-font only (--font-sans / --font-display).
+   * Named floors for classroom-distance hierarchy; components may still compose
+   * length-aware clamps for schema-max stems without one-off patch spam.
+   */
+  --type-projector-brand: clamp(0.8rem, 1.1vw, 1rem);
+  --type-projector-meta: clamp(0.78rem, 0.95vw, 0.95rem);
+  --type-projector-label: clamp(0.75rem, 1.05vw, 0.95rem);
+  --type-projector-status: clamp(0.9rem, 1.4vw, 1.25rem);
+  --type-projector-status-idle: clamp(0.85rem, 1.25vw, 1.1rem);
+  --type-projector-question: clamp(1.2rem, 0.45rem + 2.6vh, 3.15rem);
+  --type-projector-question-long: clamp(1.15rem, 0.4rem + 2.15vh, 2.55rem);
+  --type-projector-team: clamp(0.85rem, 1.15vw, 1.15rem);
+  --type-projector-score: clamp(1.3rem, 2.15vw, 2.2rem);
+  --type-projector-claim: clamp(1.4rem, 3.2vw, 2.6rem);
+  --type-projector-winner: clamp(3rem, 8vw, 7.5rem);
+
+  /*
    * Default theme values. Also applied when data-theme is absent before the
    * provider mounts, so first paint stays coherent.
    */
