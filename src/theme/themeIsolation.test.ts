@@ -38,7 +38,7 @@ describe('Slice 17 isolation invariants', () => {
     expect(COMPETITIVE_PROFILE_VERSION).toBe(1)
   })
 
-  it('measures corrected opaque tile-edge contrast at approximately 3.63:1', () => {
+  it('measures opaque cyan tile-edge contrast on dark luminous slabs', () => {
     const lin = (c: number) => {
       const s = c / 255
       return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
@@ -50,9 +50,9 @@ describe('Slice 17 isolation invariants', () => {
       const l2 = lum(b[0]!, b[1]!, b[2]!)
       return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)
     }
-    // #35d6e8 on #0f5fb0 — binding correction supersedes translucent package edge.
-    const measured = ratio([53, 214, 232], [15, 95, 176])
-    expect(measured).toBeGreaterThan(3.5)
-    expect(measured).toBeLessThan(3.8)
+    // #35d6e8 on #0a1624 — dark luminous slabs (Nexus Broadcast); opaque edge retained.
+    const measured = ratio([53, 214, 232], [10, 22, 36])
+    expect(measured).toBeGreaterThan(9)
+    expect(measured).toBeLessThan(12)
   })
 })

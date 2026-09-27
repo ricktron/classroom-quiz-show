@@ -298,7 +298,9 @@ describe('AudienceDisplayShell', () => {
     expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-kind', 'correct')
     expect(screen.getByTestId('board-outcome')).toHaveTextContent('Correct')
     expect(screen.queryByTestId('nexus-timer')).toBeNull()
-    expect(screen.queryByText(/^Ready$/i)).toBeNull()
+    // Intake Ready suppressed; channel-rail Ready labels are a separate signature object.
+    expect(screen.queryByTestId('signal-rail-status')).toBeNull()
+    expect(screen.queryByText(/Response ready/i)).toBeNull()
     expect(screen.queryByTestId('rtd')).toBeNull()
 
     // Ordinary idle Ready when outcome is none (non-regression).
@@ -339,7 +341,8 @@ describe('AudienceDisplayShell', () => {
     expect(store.getPublicState().response?.timer).toEqual({ status: 'idle' })
     expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-kind', 'correct')
     expect(screen.queryByTestId('nexus-timer')).toBeNull()
-    expect(screen.queryByText(/^Ready$/i)).toBeNull()
+    expect(screen.queryByTestId('signal-rail-status')).toBeNull()
+    expect(screen.queryByText(/Response ready/i)).toBeNull()
 
     store.dispatch({ type: 'UNDO', issuedAt: LEFTOVER_AT + 4 })
     rerender(<AudienceDisplayShell publicState={store.getPublicState()} />)

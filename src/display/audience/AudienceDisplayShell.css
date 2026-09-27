@@ -9,8 +9,8 @@
   max-height: 100dvh;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: clamp(0.4rem, 0.8vw, 0.75rem);
-  padding: clamp(0.55rem, 1vw, 1rem);
+  gap: clamp(0.25rem, 0.55vw, 0.55rem);
+  padding: clamp(0.35rem, 0.75vw, 0.75rem);
   background: var(--surface-projector);
   color: var(--fg-primary);
   overflow: hidden;
@@ -45,6 +45,7 @@
   text-transform: uppercase;
   color: var(--fg-interactive);
   font-weight: 700;
+  opacity: 0.82;
 }
 
 .audience__headline {
@@ -107,11 +108,12 @@
 .audience__host-line,
 .audience__game-line {
   margin: 0;
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-size: var(--type-projector-meta);
   color: var(--fg-muted);
   max-width: 48rem;
   line-height: 1.25;
+  opacity: 0.88;
 }
 
 .audience__host-line {
@@ -142,7 +144,7 @@
   vertical-align: middle;
 }
 
-/* Nexus Core */
+/* Nexus Core — persistent locus; thinner chrome so the board owns the stage. */
 .nexus {
   grid-area: nexus;
   justify-self: center;
@@ -150,13 +152,13 @@
   flex-wrap: wrap;
   justify-content: center;
   align-items: baseline;
-  gap: 0.25rem clamp(0.65rem, 1.3vw, 1.25rem);
-  padding: clamp(0.35rem, 0.7vw, 0.6rem) clamp(0.8rem, 1.5vw, 1.35rem);
-  border: var(--bw-strong) solid var(--border-panel);
+  gap: 0.2rem clamp(0.5rem, 1.1vw, 1rem);
+  padding: clamp(0.22rem, 0.5vw, 0.45rem) clamp(0.65rem, 1.2vw, 1.1rem);
+  border: var(--bw-standard) solid color-mix(in srgb, var(--state-structural) 55%, transparent);
   border-radius: var(--radius-sm);
-  background: var(--surface-raised);
-  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--state-structural) 45%, transparent);
-  max-width: 48rem;
+  background: color-mix(in srgb, var(--surface-raised) 70%, transparent);
+  box-shadow: none;
+  max-width: 42rem;
   width: 100%;
   text-align: center;
   position: relative;
@@ -333,53 +335,144 @@
   border-radius: var(--radius-panel);
 }
 
-/* Signal Rail */
+/*
+ * Signal Rail — thin spanning signature object (team channels + event strip).
+ * Not a renamed bordered status card. Scores remain in TeamScoreboard.
+ */
 .signal-rail {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.signal-rail__channels {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  width: 100%;
+  min-height: 0;
+  border-block: var(--bw-hairline, 1px) solid color-mix(in srgb, var(--state-structural) 55%, transparent);
+  background: color-mix(in srgb, var(--surface-recessed) 88%, transparent);
+}
+
+.signal-rail__channel {
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  grid-template-rows: var(--accent-bar-height, 4px) auto auto;
+  gap: 0.12rem;
+  padding: 0 0.35rem 0.28rem;
+  border-inline-end: var(--bw-hairline, 1px) solid color-mix(in srgb, var(--border-subtle) 70%, transparent);
+  text-align: left;
+}
+
+.signal-rail__channel:last-child {
+  border-inline-end: 0;
+}
+
+.signal-rail__channel-accent {
+  display: block;
+  height: var(--accent-bar-height, 4px);
+  width: 100%;
+  background: var(--team-accent, var(--state-structural));
+  border-radius: 1px;
+}
+
+.signal-rail__channel-name {
+  font-family: var(--font-sans);
+  font-size: clamp(0.65rem, 0.95vw, 0.85rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-strong);
+  overflow-wrap: anywhere;
+  line-height: 1.15;
+}
+
+.signal-rail__channel-status {
+  font-family: var(--font-mono);
+  font-size: clamp(0.6rem, 0.85vw, 0.75rem);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  line-height: 1.1;
+}
+
+.signal-rail__channel--answering {
+  background: color-mix(in srgb, var(--state-active) 10%, transparent);
+}
+
+.signal-rail__channel--answering .signal-rail__channel-status {
+  color: var(--state-active);
+  font-weight: 600;
+}
+
+.signal-rail__event {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: clamp(0.35rem, 0.9vw, 0.8rem);
-  min-height: 2.15rem;
-  padding: clamp(0.28rem, 0.55vw, 0.5rem) clamp(0.75rem, 1.25vw, 1.15rem);
-  border: var(--bw-standard) solid var(--border-panel);
-  border-radius: var(--radius-sm);
-  background: var(--surface-base);
-  box-shadow: inset 0 3px 0 var(--state-structural);
+  gap: clamp(0.25rem, 0.7vw, 0.55rem);
+  min-height: 1.6rem;
+  padding: clamp(0.2rem, 0.45vw, 0.4rem) clamp(0.4rem, 0.9vw, 0.85rem);
+  border: 0;
+  border-block-start: var(--bw-standard) solid color-mix(in srgb, var(--state-structural) 40%, transparent);
+  background: transparent;
 }
 
-.signal-rail--expanded {
-  min-height: 3.4rem;
-  border-color: var(--border-strong, var(--border-standard));
-  background: var(--surface-raised);
-  box-shadow: inset 0 4px 0 var(--state-structural);
+.signal-rail--expanded .signal-rail__event {
+  min-height: 2.4rem;
+  border-block-start-color: var(--state-structural);
 }
 
-.signal-rail--final {
-  border-color: var(--border-panel);
-  background: var(--surface-recessed);
+.signal-rail--final .signal-rail__event {
+  border-block-start-color: color-mix(in srgb, var(--state-structural) 55%, transparent);
 }
 
 .signal-rail__status,
 .signal-rail__revealed {
   margin: 0;
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-size: var(--type-projector-status);
-  font-weight: 650;
+  font-weight: 600;
   color: var(--fg-strong);
 }
 
 /* Idle board Ready is secondary to the board — do not outshout tiles. */
-.signal-rail--compact .signal-rail__status:only-child {
+.signal-rail--compact .signal-rail__event:has(.signal-rail__status:only-child) .signal-rail__status {
   font-size: var(--type-projector-status-idle);
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-weight: 500;
+  letter-spacing: 0.06em;
   color: var(--fg-secondary);
 }
 
 .signal-rail__revealed {
   color: var(--fg-interactive);
+}
+
+/* Nested buzz/outcome panels lose heavy card chrome inside the rail. */
+.signal-rail .bqd,
+.signal-rail .bod {
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  border-width: 0;
+  border-block: var(--bw-standard) solid var(--border-waiting);
+  padding-block: clamp(0.2rem, 0.5vw, 0.45rem);
+}
+
+.signal-rail .bqd--active {
+  border-block-color: var(--border-active);
+  box-shadow: none;
 }
 
 /* Primary Final countdown on the Final Signal Rail (reuses FinalCountdown leaf). */

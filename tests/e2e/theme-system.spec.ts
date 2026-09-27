@@ -116,7 +116,7 @@ test.describe('token application and contrast', () => {
     const defaultTile = await cssVar(page, '--surface-tile')
     const defaultEdge = await cssVar(page, '--edge-tile')
     const defaultFg = await cssVar(page, '--fg-primary')
-    expect(defaultTile).toBe('#0f5fb0')
+    expect(defaultTile).toBe('#0a1624')
     expect(defaultEdge).toBe('inset 0 0 0 1px #35d6e8')
     expect(defaultFg).toBeTruthy()
 
@@ -129,12 +129,12 @@ test.describe('token application and contrast', () => {
     expect(hcTile).not.toBe(defaultTile)
   })
 
-  test('corrected default tile edge contrast is approximately 3.63:1', async ({ page }) => {
+  test('default dark-slab tile edge contrast exceeds 3:1 (opaque cyan)', async ({ page }) => {
     await page.goto('#/display?theme=default')
-    // Solid #35d6e8 on #0f5fb0 — opaque sources, no alpha compositing required.
-    const ratio = contrastRatio([53, 214, 232], [15, 95, 176])
-    expect(ratio).toBeGreaterThan(3.5)
-    expect(ratio).toBeLessThan(3.8)
+    // Solid #35d6e8 on dark luminous slab #0a1624 — Nexus Broadcast tile language.
+    const ratio = contrastRatio([53, 214, 232], [10, 22, 36])
+    expect(ratio).toBeGreaterThan(9)
+    expect(ratio).toBeLessThan(12)
 
     const edge = await cssVar(page, '--edge-tile')
     expect(edge).not.toContain('rgba(53, 214, 232, 0.55)')

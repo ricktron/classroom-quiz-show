@@ -33,9 +33,10 @@
 
 .fwd__heading {
   margin: 0;
-  font-size: clamp(0.85rem, 1.3vw, 1.15rem);
+  font-family: var(--font-mono);
+  font-size: clamp(0.8rem, 1.2vw, 1.05rem);
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--fg-muted);
 }
@@ -56,10 +57,13 @@
 
 .fwd__prompt {
   /* The question owns the vertical space when one is on screen. */
-  font-size: clamp(1.2rem, 2.8vw, 2.4rem);
-  line-height: 1.25;
+  font-family: var(--font-reading, var(--font-serif));
+  font-size: clamp(1.25rem, 2.9vw, 2.55rem);
+  font-weight: 600;
+  line-height: 1.3;
   overflow-wrap: anywhere;
   color: var(--fg-question);
+  text-wrap: pretty;
 }
 
 .fwd__answer {
@@ -72,11 +76,18 @@
 }
 
 .fwd__label {
+  font-family: var(--font-mono);
   font-size: clamp(0.7rem, 1.1vw, 0.95rem);
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--fg-muted);
+}
+
+.fwd__winner .fwd__label {
+  color: var(--state-warning);
+  letter-spacing: 0.18em;
+  font-size: clamp(0.75rem, 1.2vw, 1.05rem);
 }
 
 .fwd__value {
@@ -179,36 +190,38 @@
 
 .fwd--complete {
   justify-content: center;
-  min-height: clamp(16rem, 52vh, 32rem);
-  border-block-color: var(--state-winner);
+  min-height: clamp(18rem, 58vh, 36rem);
+  border-block-color: transparent;
   background:
-    radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--state-winner) 13%, transparent), transparent 52%),
+    radial-gradient(circle at 50% 32%, color-mix(in srgb, var(--state-winner) 16%, transparent), transparent 58%),
     var(--surface-question);
 }
 
 .fwd--completion-ack {
-  box-shadow:
-    inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active),
-    0 0 0 var(--bw-standard) color-mix(in srgb, var(--state-active) 30%, transparent);
+  box-shadow: none;
 }
 
 .fwd__winner {
   display: flex;
   flex-direction: column;
-  gap: clamp(0.35rem, 0.9vw, 0.75rem);
-  width: min(100%, 72rem);
+  align-items: center;
+  gap: clamp(0.25rem, 0.7vw, 0.55rem);
+  width: min(100%, 80rem);
   margin-inline: auto;
-  padding: clamp(1rem, 2vw, 2rem);
-  border: var(--bw-emphasis, 3px) solid var(--state-winner);
-  border-radius: var(--radius-sm);
-  background: var(--surface-raised);
+  /* Ceremonial stage — less nested frame chrome. */
+  padding: clamp(0.5rem, 1.2vw, 1.25rem);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .fwd__winner-name {
-  font-family: var(--font-display, var(--font-sans));
+  font-family: var(--font-sans);
   font-size: var(--type-projector-winner);
   font-weight: 900;
-  line-height: 1;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
   overflow-wrap: anywhere;
   color: var(--fg-strong);
 }

@@ -3,9 +3,9 @@
 - **Objective:** pre-owner-playthrough Audience / Display visual convergence
 - **Authorized base:** `4678c9223f8fa7e7129dca6d2a86ea9c6a0cef30`
 - **Working branch:** `feat/display-visual-convergence`
-- **Status:** ACTIVE — near-MVP owner-playthrough candidate after machine-evaluable visual polish
+- **Status:** ACTIVE — reference-fidelity repair pass (COURT A–F) in progress toward owner playthrough; **not** Complete; S05 **not** terminal; playthrough remains paused until READY
 - **Authority:** repository implementation/contracts remain authoritative; uploaded Claude Design artifacts are preferred design evidence, not source code or product authority
-- **Typography posture:** system fonts only (`--font-sans` / `--font-display` alias); bounded `--type-projector-*` roles; no remote/bundled fonts
+- **Typography posture:** system stacks only — sans/display for numeric/UI; `ui-serif` reading voice for questions; `ui-monospace` for status/data; no remote/bundled fonts
 
 ## 1. Definition-of-done ledger
 
