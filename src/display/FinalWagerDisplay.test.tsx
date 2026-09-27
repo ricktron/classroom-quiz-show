@@ -47,7 +47,10 @@ describe('each Final stage renders from the DTO alone', () => {
       timer: { status: 'running', durationMs: 60_000, deadline: Date.now() + 60_000 },
     })
     expect(screen.getByTestId('fwd-wager-entry')).toBeInTheDocument()
-    expect(screen.getByText(/place your wagers/i)).toBeInTheDocument()
+    expect(screen.getByText(/choose your wager/i)).toBeInTheDocument()
+    expect(screen.getByTestId('fwd-wager-privacy')).toHaveTextContent(
+      /keep it private until your teacher collects it/i,
+    )
     // Primary Final countdown moved to SignalRail (Slice 18 R1) — leaf must not duplicate it.
     expect(screen.queryByTestId('fwd-timer')).not.toBeInTheDocument()
     expect(screen.queryByTestId('fwd-reveal-wager')).not.toBeInTheDocument()
@@ -377,6 +380,7 @@ describe('S05 Final presentation choreography', () => {
     )
     expect(screen.getByTestId('fwd-winner')).toHaveTextContent('Winner')
     expect(screen.getByTestId('fwd-winner')).toHaveTextContent('Red Team')
+    expect(screen.getByTestId('fwd-winner-score')).toHaveTextContent('300')
   })
 
   it('fails closed to generic completion when a unique public winner cannot be resolved', () => {

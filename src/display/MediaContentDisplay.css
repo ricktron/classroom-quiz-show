@@ -16,12 +16,17 @@
 .mcd__text {
   max-width: min(56ch, 100%);
   margin-inline: auto;
-  font-size: clamp(1.2rem, 0.45rem + 2.6vh, 3.15rem);
-  font-weight: 700;
-  line-height: 1.22;
+  /* Absorb glyph ascent/descent so Range metrics stay inside the element box. */
+  padding-block: 0.08em;
+  /* System-serif reading voice — distinct from sans UI/numeric chrome. */
+  font-family: var(--font-reading, var(--font-serif));
+  font-size: var(--type-projector-question);
+  font-weight: 600;
+  line-height: 1.28;
   letter-spacing: 0.005em;
   overflow-wrap: anywhere;
   hyphens: auto;
+  text-wrap: pretty;
 }
 
 /* Medium stems keep strong presence without exhausting vertical budget. */
@@ -37,8 +42,10 @@
  * budget — type must not shrink below distance-first usability.
  */
 .mcd__text[data-length='long'] {
-  font-size: clamp(1.125rem, 0.38rem + 2.2vh, 2.55rem);
-  line-height: 1.18;
+  font-size: var(--type-projector-question-long);
+  /* Long stems: calmer reading weight at distance. */
+  font-weight: 550;
+  line-height: 1.26;
   max-width: min(72ch, 100%);
 }
 
@@ -125,6 +132,10 @@
 
 :root[data-theme='high-contrast'] .mcd__text {
   font-weight: 800;
+}
+
+:root[data-theme='high-contrast'] .mcd__text[data-length='long'] {
+  font-weight: 700;
 }
 
 :root[data-theme='high-contrast'] .mcd__img {

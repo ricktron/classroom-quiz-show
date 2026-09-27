@@ -105,6 +105,14 @@ describe('wager entry distinguishes a draft from a committed value', () => {
     return store
   }
 
+  it('tells the teacher to collect wagers privately before entering them', () => {
+    const store = wagerStore()
+    renderPanel(store)
+    expect(screen.getByTestId('fwh-phase')).toHaveTextContent(
+      /collect each team's wager privately, then enter and save it below/i,
+    )
+  })
+
   it('shows each eligible team its frozen cap', () => {
     const store = wagerStore()
     renderPanel(store)

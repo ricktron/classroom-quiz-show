@@ -298,7 +298,9 @@ describe('AudienceDisplayShell', () => {
     expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-kind', 'correct')
     expect(screen.getByTestId('board-outcome')).toHaveTextContent('Correct')
     expect(screen.queryByTestId('nexus-timer')).toBeNull()
-    expect(screen.queryByText(/^Ready$/i)).toBeNull()
+    // Intake Ready suppressed; channel-rail Ready labels are a separate signature object.
+    expect(screen.queryByTestId('signal-rail-status')).toBeNull()
+    expect(screen.queryByText(/Response ready/i)).toBeNull()
     expect(screen.queryByTestId('rtd')).toBeNull()
 
     // Ordinary idle Ready when outcome is none (non-regression).
@@ -339,7 +341,8 @@ describe('AudienceDisplayShell', () => {
     expect(store.getPublicState().response?.timer).toEqual({ status: 'idle' })
     expect(screen.getByTestId('board-outcome')).toHaveAttribute('data-outcome-kind', 'correct')
     expect(screen.queryByTestId('nexus-timer')).toBeNull()
-    expect(screen.queryByText(/^Ready$/i)).toBeNull()
+    expect(screen.queryByTestId('signal-rail-status')).toBeNull()
+    expect(screen.queryByText(/Response ready/i)).toBeNull()
 
     store.dispatch({ type: 'UNDO', issuedAt: LEFTOVER_AT + 4 })
     rerender(<AudienceDisplayShell publicState={store.getPublicState()} />)
@@ -367,6 +370,34 @@ describe('AudienceDisplayShell', () => {
     expect(screen.queryByTestId('board-outcome')).toBeNull()
     expect(screen.getByTestId('nexus-timer')).toHaveAttribute('data-status', 'idle')
     expect(screen.getByTestId('nexus-timer-status')).toHaveTextContent(/ready/i)
+  })
+
+  it('suppresses stale Playing detail on host-line when stage is Game complete', () => {
+    render(
+      <AudienceDisplayShell
+        publicState={state({
+          headline: 'Session ready',
+          detail: 'Playing',
+          game: {
+            status: 'ended',
+            roundCount: 2,
+            currentRound: 2,
+            roundAvailability: 'available',
+          },
+          round: {
+            kind: PUBLIC_FINAL_KIND,
+            stage: 'complete',
+            outcome: 'unique-leader',
+          },
+          teams: { status: 'available', teams: [team('t0', 'Red Team', 'crimson', 500)] },
+          response: null,
+        })}
+      />,
+    )
+    const host = document.querySelector('.audience__host-line')
+    expect(host).toHaveTextContent(/Session ready/)
+    expect(host).not.toHaveTextContent(/Playing/)
+    expect(screen.getByTestId('nexus-core')).toHaveTextContent(/Game complete/)
   })
 
   it('uses Score Deck row-major order for eight teams', () => {

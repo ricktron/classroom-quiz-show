@@ -25,7 +25,7 @@ const ACTIVE: PublicResponseState = {
 const PROMPT = { kind: 'text' as const, text: 'Final question?' }
 
 describe('SignalRail', () => {
-  it('Compact rail exposes no team queue identities', () => {
+  it('Compact rail shows public team channels but no queue identities', () => {
     render(
       <SignalRail
         mode="compact"
@@ -41,12 +41,28 @@ describe('SignalRail', () => {
     )
     expect(screen.getByTestId('signal-rail')).toHaveAttribute('data-mode', 'compact')
     expect(screen.getByTestId('signal-rail-status')).toHaveTextContent(/waiting for a buzz/i)
-    expect(screen.queryByText('Alpha')).toBeNull()
-    expect(screen.queryByText('Bravo')).toBeNull()
+    // Signature channel rail lists public teams; scores stay on TeamScoreboard.
+    expect(screen.getByTestId('signal-rail-channels')).toBeInTheDocument()
+    expect(screen.getByTestId('signal-rail-channel-t0')).toHaveTextContent(/Alpha/i)
+    expect(screen.getByTestId('signal-rail-channel-t1')).toHaveTextContent(/Bravo/i)
     expect(screen.queryByText(/next/i)).toBeNull()
   })
 
-  it('Expanded rail exposes only active team and anonymous waiting count', () => {
+  it('omits team channels when scores/teams are unavailable (fail closed)', () => {
+    render(
+      <SignalRail
+        mode="compact"
+        response={null}
+        teams={{ status: 'unavailable' }}
+        round={{ kind: PUBLIC_BOARD_KIND, stage: 'board', categories: [] }}
+        revealedTeamName={null}
+      />,
+    )
+    expect(screen.queryByTestId('signal-rail-channels')).toBeNull()
+    expect(screen.getByTestId('signal-rail-status')).toHaveTextContent(/ready/i)
+  })
+
+  it('Expanded rail exposes only active claim in buzz panel plus anonymous waiting count', () => {
     render(
       <SignalRail
         mode="expanded"
@@ -59,7 +75,16 @@ describe('SignalRail', () => {
     expect(screen.getByTestId('signal-rail')).toHaveAttribute('data-mode', 'expanded')
     expect(screen.getByTestId('bqd-active')).toHaveTextContent('Alpha')
     expect(screen.getByTestId('bqd-waiting')).toHaveTextContent('2 teams waiting')
-    expect(screen.queryByText('Bravo')).toBeNull()
+    // Public channel strip may list Bravo; buzz panel must not invent queue identity for Bravo.
+    expect(screen.getByTestId('signal-rail-channel-t1')).toHaveTextContent(/Bravo/i)
+    expect(screen.getByTestId('signal-rail-channel-t1')).toHaveAttribute(
+      'data-channel-status',
+      'ready',
+    )
+    expect(screen.getByTestId('signal-rail-channel-t0')).toHaveAttribute(
+      'data-channel-status',
+      'answering',
+    )
   })
 
   it('Compact rail marks waiting-for-buzz when armed with no active claim', () => {

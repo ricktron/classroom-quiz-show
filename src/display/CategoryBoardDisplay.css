@@ -19,16 +19,17 @@
  */
 
 .cbd {
-  --cbd-gap: clamp(0.3rem, 0.85vw, 0.9rem);
-  --cbd-col-min: clamp(5.25rem, 11.5vw, 9.25rem);
+  --cbd-gap: clamp(0.22rem, 0.7vw, 0.7rem);
+  --cbd-col-min: clamp(5.5rem, 12vw, 10rem);
   width: 100%;
-  max-width: min(96rem, 100%);
+  max-width: min(98rem, 100%);
   margin: 0 auto;
-  background: var(--surface-board);
-  box-shadow: var(--edge-board), var(--shadow-surface);
-  border: var(--bw-standard) solid var(--border-board-grid);
-  border-radius: var(--radius-panel);
-  padding: clamp(0.35rem, 0.9vw, 0.95rem);
+  /* Board owns the stage — flatter geometry, less enclosing chrome. */
+  background: transparent;
+  box-shadow: none;
+  border: 0;
+  border-radius: 0;
+  padding: clamp(0.15rem, 0.45vw, 0.45rem);
   box-sizing: border-box;
   max-height: 100%;
   min-height: 0;
@@ -70,26 +71,28 @@
 
 .cbd__category {
   margin: 0;
-  padding: clamp(0.35rem, 0.85vw, 0.7rem) clamp(0.3rem, 0.7vw, 0.55rem);
-  min-height: clamp(2.2rem, 5.2vh, 3.75rem);
-  max-height: 22%;
+  padding: clamp(0.3rem, 0.75vw, 0.6rem) clamp(0.25rem, 0.6vw, 0.5rem);
+  min-height: clamp(2rem, 4.8vh, 3.4rem);
+  max-height: 20%;
   flex: 0 1 auto;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 0.2rem 0.35rem;
-  font-size: clamp(0.78rem, 1.2vw + 0.15vh, 1.3rem);
-  line-height: 1.15;
+  gap: 0.15rem 0.3rem;
+  font-family: var(--font-sans);
+  font-size: clamp(0.82rem, 1.25vw + 0.15vh, 1.35rem);
+  line-height: 1.12;
   font-weight: 800;
   text-align: center;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: var(--fg-strong);
-  background: var(--surface-raised);
-  border: var(--bw-strong) solid var(--border-board-grid);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-surface);
+  background: transparent;
+  border: 0;
+  border-top: var(--bw-emphasis, 3px) solid var(--state-structural);
+  border-radius: 0;
+  box-shadow: none;
   overflow-wrap: anywhere;
   hyphens: auto;
 }
@@ -111,16 +114,18 @@
   justify-content: center;
   flex: 1 1 0;
   min-height: 0;
-  padding: 0.3rem;
+  padding: 0.2rem;
   color: var(--fg-strong);
+  /* Dark luminous slab — enormous values, thin cyan edge, not a filled button. */
   background: var(--surface-tile);
   border: none;
-  box-shadow: var(--edge-tile), var(--shadow-surface);
+  box-shadow: var(--edge-tile);
   border-radius: var(--radius-tile);
-  font-weight: 800;
-  font-size: clamp(1.05rem, 2.15vw + 0.2vh, 2.45rem);
+  font-family: var(--font-sans);
+  font-weight: 900;
+  font-size: clamp(1.45rem, 2.85vw + 0.35vh, 3.35rem);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
 }
 
 /* Used: transparent/dormant AND dashed AND labelled — three independent cues. */
@@ -133,7 +138,8 @@
 }
 
 .cbd__tile-used {
-  font-size: clamp(0.65rem, 1.05vw, 1rem);
+  font-family: var(--font-sans);
+  font-size: clamp(0.75rem, 1.1vw, 1rem);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -152,12 +158,13 @@
   align-items: center;
   gap: clamp(0.45rem, 1.4vh, 1.75rem);
   text-align: center;
-  background: var(--surface-question);
-  border: var(--bw-standard) solid var(--border-panel);
-  border-radius: var(--radius-panel);
-  padding: clamp(0.55rem, 1.5vh, 1.5rem) clamp(0.55rem, 1.6vw, 1.35rem);
-  box-shadow: var(--edge-selected), var(--shadow-elevated);
-  max-width: min(64rem, 100%);
+  background: transparent;
+  border: 0;
+  border-block: var(--bw-strong) solid var(--border-panel);
+  border-radius: 0;
+  padding: clamp(0.75rem, 1.8vh, 1.7rem) clamp(0.8rem, 2vw, 2rem);
+  box-shadow: none;
+  max-width: min(86rem, 100%);
   max-height: 100%;
   margin-inline: auto;
   width: 100%;
@@ -177,7 +184,7 @@
 /* Long stems: recede category/value chrome to protect distance-first type. */
 .cbd--open:has(.mcd__text[data-length='long']) {
   gap: clamp(0.3rem, 1vh, 1rem);
-  padding: clamp(0.4rem, 1.1vh, 1.1rem) clamp(0.5rem, 1.4vw, 1.15rem);
+  padding: clamp(0.55rem, 1.25vh, 1.25rem) clamp(0.5rem, 1.4vw, 1.15rem);
   justify-content: flex-start;
 }
 
@@ -253,6 +260,7 @@
 }
 
 .cbd__answer-label {
+  font-family: var(--font-mono);
   font-size: clamp(0.68rem, 1vw + 0.15vh, 1rem);
   font-weight: 700;
   text-transform: uppercase;
@@ -261,9 +269,12 @@
 }
 
 .cbd__answer-text {
+  font-family: var(--font-reading, var(--font-serif));
   font-size: clamp(1rem, 0.35rem + 2vh, 2.55rem);
-  font-weight: 700;
-  line-height: 1.2;
+  font-weight: 600;
+  line-height: 1.25;
+  /* Match prompt glyph absorption so Range metrics stay inside the box. */
+  padding-block: 0.08em;
   overflow-wrap: anywhere;
 }
 
@@ -473,4 +484,16 @@
     box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
     background: color-mix(in srgb, var(--state-active) 10%, transparent);
   }
+}
+
+
+/* Dormant board memory recedes without disappearing or relying on opacity. */
+.cbd__tile--used {
+  background: var(--surface-recessed);
+  color: var(--state-dormant);
+  border-color: var(--border-subtle);
+}
+
+.cbd__column--cleared .cbd__category {
+  border-top-color: var(--state-cleared);
 }

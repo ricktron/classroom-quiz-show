@@ -97,7 +97,8 @@ export interface FinalWagerHostPanelProps {
 /** Host-facing description of each Final phase. Host-only copy. */
 const PHASE_COPY: Readonly<Record<string, string>> = {
   setup: 'Not started — choose who plays, then begin Final.',
-  'wager-entry': 'Taking wagers. Every eligible team needs an explicit wager.',
+  'wager-entry':
+    "Collect each team's wager privately, then enter and save it below.",
   'wagers-locked': 'Wagers locked. Choose how to record responses, then show the question.',
   'response-entry': 'Question is public. Record what each team answered.',
   'responses-locked': 'Responses locked. Reveal the answer when the room is ready.',

@@ -1,6 +1,10 @@
 /**
  * Signal Rail — Compact, Expanded, or Final. Exactly one mode.
  *
+ * Signature object: a thin spanning **team-segmented channel rail** (public teams
+ * only) plus event/status content. Adaptive Score Column / Strip / Deck remain
+ * separate TeamScoreboard layouts — this rail does not replace scores.
+ *
  * Facts come only from sanitized public DTOs. Never shows queue order,
  * waiting-team identities, Final eligibility, or unrevealed content.
  *
@@ -21,6 +25,7 @@ import type {
   PublicFinalWagerState,
   PublicResponseState,
   PublicRoundState,
+  PublicTeam,
   PublicTeamsState,
 } from '../../state/publicState'
 import { PUBLIC_FINAL_KIND } from '../../state/publicState'
@@ -35,6 +40,21 @@ export interface SignalRailProps {
   readonly hostClockOffsetMs?: number
   readonly clock?: Clock
   readonly revealedTeamName: string | null
+}
+
+const KNOWN_ACCENTS: readonly string[] = [
+  'crimson',
+  'azure',
+  'emerald',
+  'amber',
+  'violet',
+  'teal',
+  'rose',
+  'slate',
+]
+
+function accentClass(accent: string): string {
+  return KNOWN_ACCENTS.includes(accent) ? ` accent--${accent}` : ''
 }
 
 /** Tie-aware Final rail status derived from the public Final DTO alone. */
@@ -70,26 +90,89 @@ function finalPublicTimer(round: PublicFinalWagerState) {
   return null
 }
 
-export function SignalRail({
+/**
+ * Public-safe per-channel status. Never invents waiting-queue identities —
+ * only the active claim team (when present) is marked Answering.
+ */
+function channelStatus(
+  team: PublicTeam,
+  response: PublicResponseState | null,
+  revealedTeamName: string | null,
+): string {
+  if (response?.buzz.status === 'active' && response.buzz.activeTeamKey === team.key) {
+    return 'Answering'
+  }
+  if (revealedTeamName !== null && revealedTeamName === team.name) {
+    return 'Revealed'
+  }
+  if (response?.boardOutcome.status === 'resolved' && response.boardOutcome.teamKey === team.key) {
+    if (response.boardOutcome.kind === 'correct') return 'Correct'
+    if (response.boardOutcome.kind === 'incorrect') return 'Incorrect'
+    if (response.boardOutcome.kind === 'passed') return 'Passed'
+  }
+  if (response?.armed) return 'Ready'
+  return 'Ready'
+}
+
+/**
+ * Thin team-segmented signature strip. Fails closed (omitted) when teams are
+ * unavailable or absent — never invents channels.
+ */
+function TeamChannelRail({
+  teams,
+  response,
+  revealedTeamName,
+}: {
+  readonly teams: PublicTeamsState | null
+  readonly response: PublicResponseState | null
+  readonly revealedTeamName: string | null
+}) {
+  if (teams === null || teams.status !== 'available' || teams.teams.length === 0) {
+    return null
+  }
+
+  return (
+    <div
+      className="signal-rail__channels"
+      data-testid="signal-rail-channels"
+      aria-label="Team channels"
+    >
+      {teams.teams.map((team) => {
+        const status = channelStatus(team, response, revealedTeamName)
+        const answering =
+          response?.buzz.status === 'active' && response.buzz.activeTeamKey === team.key
+        return (
+          <div
+            key={team.key}
+            className={`signal-rail__channel${accentClass(team.accent)}${
+              answering ? ' signal-rail__channel--answering' : ''
+            }`}
+            data-testid={`signal-rail-channel-${team.key}`}
+            data-channel-status={status.toLowerCase()}
+          >
+            <span className="signal-rail__channel-accent" aria-hidden="true" />
+            <span className="signal-rail__channel-name">{team.name}</span>
+            <span className="signal-rail__channel-status">{status}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function EventBody({
   mode,
   response,
   teams,
   round,
-  hostClockOffsetMs = 0,
+  hostClockOffsetMs,
   clock,
   revealedTeamName,
 }: SignalRailProps) {
-  if (mode === 'hidden') return null
-
   if (mode === 'final' && round?.kind === PUBLIC_FINAL_KIND) {
     const timer = finalPublicTimer(round)
     return (
-      <aside
-        className="signal-rail signal-rail--final"
-        data-testid="signal-rail"
-        data-mode="final"
-        aria-label="Final status"
-      >
+      <div className="signal-rail__event" data-testid="signal-rail-event">
         <p className="signal-rail__status" data-testid="signal-rail-status">
           {finalRailStatus(round)}
         </p>
@@ -107,35 +190,21 @@ export function SignalRail({
             testId="signal-rail-timer"
           />
         )}
-      </aside>
+      </div>
     )
   }
 
   if (response && (mode === 'compact' || mode === 'expanded')) {
     const buzzNone = response.buzz.status === 'none'
-    // Opportunity-ending correct closes intake: do not imply the window is still
-    // open for buzzes. Incorrect+promote / pass+exhaust keep their buzz status
-    // compositions (active / exhausted) and are not gated here.
     const correctClosed =
       response.boardOutcome.status === 'resolved' && response.boardOutcome.kind === 'correct'
     const showIntakeReady = buzzNone && !correctClosed
     return (
-      <aside
-        className={`signal-rail signal-rail--${mode}`}
-        data-testid="signal-rail"
-        data-mode={mode}
-        aria-label={mode === 'expanded' ? 'Response status' : 'Display status'}
-      >
-        {/*
-          Correct-closed is not a live response window: suppress the entire
-          response-timer panel (no Time remaining / role=timer / Ready). Final
-          mode uses FinalCountdown above and is unaffected. Incorrect / pass
-          still mount ResponseTimerDisplay normally.
-        */}
+      <div className="signal-rail__event" data-testid="signal-rail-event">
         {!correctClosed ? (
           <ResponseTimerDisplay
             response={response}
-            hostClockOffsetMs={hostClockOffsetMs}
+            hostClockOffsetMs={hostClockOffsetMs ?? 0}
             clock={clock}
           />
         ) : null}
@@ -145,43 +214,73 @@ export function SignalRail({
             data-testid="signal-rail-status"
             data-buzz-ready={response.armed ? 'armed' : 'ready'}
           >
-            {/*
-              Ready/armed before any claim: class must see that the response
-              opportunity is live without an active team. Keep this compact so
-              it does not compete with the readable clue or timer.
-            */}
             {response.armed ? 'Waiting for a buzz' : 'Response ready'}
           </p>
         ) : null}
-        {/*
-          Stay mounted while buzz is `none` (renders null) so none→active is an
-          observed identity transition rather than a remount catch-up seed.
-        */}
         <BuzzQueueDisplay buzz={response.buzz} teams={teams} />
-        {/*
-          activeClaimPresent is local composition only (not PublicState). When
-          Incorrect/Passed coexists with a promoted active claim, buzz owns
-          acknowledgement motion and BoardOutcome stays static secondary.
-        */}
         <BoardOutcomeDisplay
           boardOutcome={response.boardOutcome}
           teams={teams}
           activeClaimPresent={response.buzz.status === 'active'}
         />
-      </aside>
+      </div>
     )
   }
 
   return (
-    <aside
-      className="signal-rail signal-rail--compact"
-      data-testid="signal-rail"
-      data-mode="compact"
-      aria-label="Display status"
-    >
+    <div className="signal-rail__event" data-testid="signal-rail-event">
       <p className="signal-rail__status" data-testid="signal-rail-status">
         Ready
       </p>
+    </div>
+  )
+}
+
+export function SignalRail({
+  mode,
+  response,
+  teams,
+  round,
+  hostClockOffsetMs = 0,
+  clock,
+  revealedTeamName,
+}: SignalRailProps) {
+  if (mode === 'hidden') return null
+
+  const railMode =
+    mode === 'final' && round?.kind === PUBLIC_FINAL_KIND
+      ? 'final'
+      : response && (mode === 'compact' || mode === 'expanded')
+        ? mode
+        : 'compact'
+
+  return (
+    <aside
+      className={`signal-rail signal-rail--${railMode}`}
+      data-testid="signal-rail"
+      data-mode={railMode}
+      aria-label={
+        railMode === 'final'
+          ? 'Final status'
+          : railMode === 'expanded'
+            ? 'Response status'
+            : 'Display status'
+      }
+    >
+      <TeamChannelRail
+        teams={teams}
+        response={response}
+        revealedTeamName={revealedTeamName}
+      />
+      <EventBody
+        mode={mode}
+        response={response}
+        teams={teams}
+        round={round}
+        hostClockOffsetMs={hostClockOffsetMs}
+        clock={clock}
+        revealedTeamName={revealedTeamName}
+      />
     </aside>
   )
 }

@@ -124,8 +124,10 @@ function teamNameFor(teams: PublicTeamsState | null, key: string): string {
   return teams.teams.find((team) => team.key === key)?.name ?? 'Team'
 }
 
-/** Name the unique public score maximum, or fail closed when it is not unique/available. */
-function uniquePublicLeaderName(teams: PublicTeamsState | null): string | null {
+/** Unique public score maximum, or fail closed when it is not unique/available. */
+function uniquePublicLeader(
+  teams: PublicTeamsState | null,
+): { readonly name: string; readonly score: number } | null {
   if (teams === null || teams.status !== 'available' || teams.teams.length === 0) return null
   let max = -Infinity
   let leaderName: string | null = null
@@ -139,7 +141,7 @@ function uniquePublicLeaderName(teams: PublicTeamsState | null): string | null {
       tied = true
     }
   }
-  return leaderName !== null && !tied ? leaderName : null
+  return leaderName !== null && !tied ? { name: leaderName, score: max } : null
 }
 
 function finalStageSemanticId(round: PublicRoundState): string | null {
@@ -309,7 +311,10 @@ export function FinalWagerDisplay({
       return (
         <div className={rootClass()} {...presentationAttrs} data-testid="fwd-wager-entry">
           {heading}
-          <p className="fwd__status">Place your wagers</p>
+          <p className="fwd__status">Choose your wager</p>
+          <p className="fwd__substatus" data-testid="fwd-wager-privacy">
+            Keep it private until your teacher collects it.
+          </p>
           {/*
             Primary Final countdown lives on the Final Signal Rail (Slice 18 R1)
             so the scene and rail do not compete with identical clocks.
@@ -427,18 +432,24 @@ export function FinalWagerDisplay({
       )
 
     case 'complete': {
-      const winnerName =
-        round.outcome === 'unique-leader' ? uniquePublicLeaderName(teams) : null
+      const winner =
+        round.outcome === 'unique-leader' ? uniquePublicLeader(teams) : null
       return (
         <div className={rootClass('fwd--complete')} {...presentationAttrs} data-testid="fwd-complete">
-          {heading}
-          <p className="fwd__status" data-testid="fwd-outcome">
+          {winner === null ? heading : null}
+          <p
+            className={winner !== null ? 'fwd__substatus' : 'fwd__status'}
+            data-testid="fwd-outcome"
+          >
             {round.outcome === 'tied' ? 'Game complete — a tie' : 'Game complete'}
           </p>
-          {winnerName !== null && (
+          {winner !== null && (
             <div className="fwd__winner" data-testid="fwd-winner">
               <span className="fwd__label">Winner</span>
-              <span className="fwd__winner-name">{winnerName}</span>
+              <span className="fwd__winner-name">{winner.name}</span>
+              <span className="fwd__winner-score" data-testid="fwd-winner-score">
+                {winner.score.toLocaleString('en-US')}
+              </span>
             </div>
           )}
         </div>

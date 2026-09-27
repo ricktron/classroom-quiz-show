@@ -52,6 +52,7 @@
 
 .bqd__label {
   margin: 0;
+  font-family: var(--font-mono);
   font-size: clamp(0.85rem, 1.3vw, 1.15rem);
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -65,9 +66,10 @@
 
 .bqd__active {
   margin: 0.1rem 0 0;
-  font-size: clamp(1.4rem, 3.2vw, 2.6rem);
+  font-family: var(--font-sans);
+  font-size: var(--type-projector-claim);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.12;
   /* Long team names wrap rather than widening the projector. */
   overflow-wrap: anywhere;
 }
