@@ -3,9 +3,10 @@
 - **Objective:** pre-owner-playthrough Audience / Display visual convergence
 - **Authorized base:** `4678c9223f8fa7e7129dca6d2a86ea9c6a0cef30`
 - **Working branch:** `feat/display-visual-convergence`
-- **Status:** ACTIVE — reference-fidelity repair pass (COURT A–F) in progress toward owner playthrough; **not** Complete; S05 **not** terminal; playthrough remains paused until READY
+- **Status:** ACTIVE — reference-fidelity repair pass (COURT A–F) implemented on PR tip; machine-evaluable presentation tranche READY for owner playthrough resume; **not** Complete; S05 **not** terminal; playthrough remains paused until owner resumes (do not auto-start playthrough)
 - **Authority:** repository implementation/contracts remain authoritative; uploaded Claude Design artifacts are preferred design evidence, not source code or product authority
 - **Typography posture:** system stacks only — sans/display for numeric/UI; `ui-serif` reading voice for questions; `ui-monospace` for status/data; no remote/bundled fonts
+- **Signal Rail posture (owner/DevPM binding):** thin public team-channel rail **and** adaptive Score Column/Strip/Deck coexist; rail does not replace scores
 
 ## 1. Definition-of-done ledger
 
@@ -25,7 +26,7 @@
 | System-font canon + Display typography inventory | VERIFIED — Option A scale/weight/spacing; inventory in agent store |
 | Near-MVP machine-evaluable visual polish exhausted | VERIFIED — typography/formatting/visual COURT; remaining items owner-only/physical |
 | Post-convergence historian milestone | DEFERRED TO LATER AUTHORIZED QUALIFICATION — owner gate after playthrough |
-| Owner-playthrough candidate handoff | OWNER PLAYTHROUGH PENDING — near-MVP gate handoff; not merged; S05 not terminal; do not ask Rick until READY |
+| Owner-playthrough candidate handoff | OWNER PLAYTHROUGH PENDING — presentation tranche READY (agent-store repair-pass); not merged; S05 not terminal; do not start playthrough until owner resumes |
 
 ## 2. Evidence hierarchy
 
