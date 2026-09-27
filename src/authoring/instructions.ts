@@ -58,6 +58,7 @@ export function buildModelNeutralInstructions(profile: WorkbookProfile): string[
     'STRUCTURAL CONTRACT',
     '- Editable semantic sheets: GAME, CLUES, TEAM_NAMES, and FINAL when this profile includes it.',
     '- GAME: Title, GameKey, optional ResponseSeconds, optional Team1Name…Team8Name.',
+    '- GameKey: create a short stable slug derived from the game title; prefer letters/numbers/hyphens with no spaces (for example plate-tectonics-review).',
     '- TEAM_NAMES: optional reusable game-owned name bank, one TeamName per row.',
     '- CLUES: one clue per row: CategoryOrder, Category, ClueOrder, Value, Prompt, Answer, optional alternates/Notes/Multiplier.',
     profile === 'board-plus-final'
