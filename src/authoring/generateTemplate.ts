@@ -18,6 +18,10 @@ import {
   sheetsForProfile,
   type WorkbookProfile,
 } from './contract'
+import {
+  AUTHORING_RULES_VERSION,
+  CLASSIC_BOARD_DEFAULTS,
+} from './authoringRules'
 import { buildModelNeutralInstructions } from './instructions'
 import { literalTextCell } from './formulaText'
 import { writeWorkbookBytes, XLSX } from './sheetjsAdapter'
@@ -31,7 +35,6 @@ function aoaToSheet(rows: readonly (readonly (string | number | null | undefined
     }),
   )
   const sheet = XLSX.utils.aoa_to_sheet(aoa)
-  // Force every string cell through literal text semantics for injection safety.
   const ref = sheet['!ref']
   if (ref) {
     const range = XLSX.utils.decode_range(ref)
@@ -40,9 +43,7 @@ function aoaToSheet(rows: readonly (readonly (string | number | null | undefined
         const addr = XLSX.utils.encode_cell({ r, c })
         const cell = sheet[addr]
         if (!cell) continue
-        if (typeof cell.v === 'string') {
-          sheet[addr] = literalTextCell(cell.v)
-        }
+        if (typeof cell.v === 'string') sheet[addr] = literalTextCell(cell.v)
       }
     }
   }
@@ -54,77 +55,54 @@ function metaSheet(profile: WorkbookProfile): XLSX.WorkSheet {
     ['Key', 'Value'],
     [META_KEYS.format, WORKBOOK_FORMAT],
     [META_KEYS.workbookFormatVersion, String(WORKBOOK_FORMAT_VERSION)],
+    [META_KEYS.authoringRulesVersion, String(AUTHORING_RULES_VERSION)],
     [META_KEYS.profile, profile],
   ])
 }
 
 function instructionsSheet(profile: WorkbookProfile): XLSX.WorkSheet {
-  const lines = buildModelNeutralInstructions(profile)
-  return aoaToSheet(lines.map((line) => [line]))
+  return aoaToSheet(buildModelNeutralInstructions(profile).map((line) => [line]))
 }
 
-function gameSheet(profile: WorkbookProfile): XLSX.WorkSheet {
-  const header = [...GAME_HEADERS]
-  const classicRow = [
-    'Earth & Space Quick Board',
-    'earth-space-quick',
-    30,
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-  ]
-  const finalRow = [
-    'Earth & Space with Final',
-    'earth-space-final',
-    30,
-    'Team Aurora',
-    'Team Borealis',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-  ]
-  // Format 1 allows exactly one populated GAME data row. Invalid-pattern
-  // guidance lives in INSTRUCTIONS, not as a second semantic GAME row.
-  return aoaToSheet([header, profile === 'classic-board' ? classicRow : finalRow])
+function gameSheet(): XLSX.WorkSheet {
+  return aoaToSheet([
+    [...GAME_HEADERS],
+    ['', '', 30, '', '', '', '', '', '', '', ''],
+  ])
 }
 
 function cluesSheet(): XLSX.WorkSheet {
-  const header = [...CLUE_HEADERS]
-  const rows: (string | number)[][] = [
-    header,
-    [1, 'Solar System', 1, 100, 'Which planet is known as the Red Planet?', 'Mars', 'The Red Planet', '', '', '', '', '', '', '', 'Common grade-band opener', 1],
-    [1, 'Solar System', 2, 200, 'What is the largest planet in our solar system?', 'Jupiter', '', '', '', '', '', '', '', '', '', 1],
-    [2, 'Atmosphere', 1, 100, 'What gas do plants take in during photosynthesis?', 'Carbon dioxide', 'CO2', '', '', '', '', '', '', '', '', 1],
-    [2, 'Atmosphere', 2, 200, 'Which layer of the atmosphere contains the ozone layer?', 'Stratosphere', '', '', '', '', '', '', '', '', '', 1],
-  ]
+  const rows: (string | number)[][] = [[...CLUE_HEADERS]]
+  for (let categoryOrder = 1; categoryOrder <= CLASSIC_BOARD_DEFAULTS.categoryCount; categoryOrder += 1) {
+    for (let clueOrder = 1; clueOrder <= CLASSIC_BOARD_DEFAULTS.cluesPerCategory; clueOrder += 1) {
+      const value = CLASSIC_BOARD_DEFAULTS.values[clueOrder - 1] ?? clueOrder * 100
+      rows.push([
+        categoryOrder,
+        '',
+        clueOrder,
+        value,
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        1,
+      ])
+    }
+  }
   return aoaToSheet(rows)
 }
 
 function finalSheet(): XLSX.WorkSheet {
   return aoaToSheet([
     [...FINAL_HEADERS],
-    [
-      'This process moves heat through the mantle and drives plate motion. Name it.',
-      'Mantle convection',
-      'Convection currents',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      'Press for the mechanism, not just "the core".',
-      'Final Wager',
-    ],
+    ['', '', '', '', '', '', '', '', '', '', '', 'Final Wager'],
   ])
 }
 
@@ -133,6 +111,7 @@ export function generateWorkbookTemplate(profile: WorkbookProfile): {
   readonly filename: string
   readonly profile: WorkbookProfile
   readonly workbookFormatVersion: typeof WORKBOOK_FORMAT_VERSION
+  readonly authoringRulesVersion: typeof AUTHORING_RULES_VERSION
 } {
   const wb = XLSX.utils.book_new()
   const sheets = sheetsForProfile(profile)
@@ -147,7 +126,7 @@ export function generateWorkbookTemplate(profile: WorkbookProfile): {
         sheet = instructionsSheet(profile)
         break
       case GAME_SHEET:
-        sheet = gameSheet(profile)
+        sheet = gameSheet()
         break
       case 'CLUES':
         sheet = cluesSheet()
@@ -160,13 +139,9 @@ export function generateWorkbookTemplate(profile: WorkbookProfile): {
     }
     XLSX.utils.book_append_sheet(wb, sheet, name)
   }
-  XLSX.utils.book_append_sheet(
-    wb,
-    aoaToSheet([[...TEAM_NAME_HEADERS], ['Comet Crew'], ['Mantle Movers']]),
-    TEAM_NAMES_SHEET,
-  )
 
-  // Hide META for teacher usability (convenience, not security).
+  XLSX.utils.book_append_sheet(wb, aoaToSheet([[...TEAM_NAME_HEADERS]]), TEAM_NAMES_SHEET)
+
   if (!wb.Workbook) wb.Workbook = {}
   if (!wb.Workbook.Sheets) wb.Workbook.Sheets = []
   for (const name of wb.SheetNames) {
@@ -180,14 +155,15 @@ export function generateWorkbookTemplate(profile: WorkbookProfile): {
 
   const filename =
     profile === 'classic-board'
-      ? 'cqs-classic-board-template.xlsx'
-      : 'cqs-board-plus-final-template.xlsx'
+      ? 'cqs-classic-board-authoring-template.xlsx'
+      : 'cqs-board-plus-final-authoring-template.xlsx'
 
   return {
     bytes: writeWorkbookBytes(wb),
     filename,
     profile,
     workbookFormatVersion: WORKBOOK_FORMAT_VERSION,
+    authoringRulesVersion: AUTHORING_RULES_VERSION,
   }
 }
 
