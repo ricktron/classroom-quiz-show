@@ -3,37 +3,44 @@ import { generateWorkbookTemplate } from './generateTemplate'
 import { parseWorkbookBytes } from './parseWorkbook'
 import { adaptSheetJsWorkbook } from './sheetjsAdapter'
 import { WORKBOOK_FORMAT_VERSION } from './contract'
+import {
+  AUTHORING_RULES_VERSION,
+  CLASSIC_BOARD_DEFAULTS,
+  getExternalAuthoringRuleSet,
+} from './authoringRules'
 import { isFormulaLeadingText } from './formulaText'
 import { buildModelNeutralInstructions } from './instructions'
 
 describe('workbook templates', () => {
   for (const profile of ['classic-board', 'board-plus-final'] as const) {
-    it(`generates a logically repeatable ${profile} template`, async () => {
+    it(`generates a logically repeatable blank ${profile} authoring template`, async () => {
       const a = generateWorkbookTemplate(profile)
       const b = generateWorkbookTemplate(profile)
       expect(a.filename).toBe(b.filename)
       expect(a.profile).toBe(profile)
       expect(a.workbookFormatVersion).toBe(WORKBOOK_FORMAT_VERSION)
+      expect(a.authoringRulesVersion).toBe(AUTHORING_RULES_VERSION)
       expect(a.bytes.byteLength).toBeGreaterThan(1000)
-      // Logical determinism: same sheet set / metadata when re-parsed.
-      const parsedA = await parseWorkbookBytes(a.bytes, a.filename)
-      const parsedB = await parseWorkbookBytes(b.bytes, b.filename)
-      expect(parsedA.status).toBe('success')
-      expect(parsedB.status).toBe('success')
-      if (parsedA.status !== 'success' || parsedB.status !== 'success') return
-      expect(parsedA.draft.profile).toBe(profile)
-      expect(parsedB.draft.game.gameCanonicalId).toBe(parsedA.draft.game.gameCanonicalId)
-      expect(parsedA.draft.board.categories.length).toBeGreaterThan(0)
-      expect(parsedA.draft.game.teamNameBank).toEqual(['Comet Crew', 'Mantle Movers'])
-      expect(parsedA.draft.issues.some((i) => i.severity === 'blocker')).toBe(false)
+
+      const adapted = adaptSheetJsWorkbook(a.bytes)
+      expect(adapted.status).toBe('success')
+      if (adapted.status !== 'success') return
+      expect(adapted.workbook.sheetNames).toContain('INSTRUCTIONS')
+      expect(adapted.workbook.sheetNames).toContain('GAME')
+      expect(adapted.workbook.sheetNames).toContain('CLUES')
+
+      // An untouched template must never masquerade as playable content.
+      const parsed = await parseWorkbookBytes(a.bytes, a.filename)
+      expect(parsed.status).toBe('failure')
     })
   }
 
-  it('includes model-neutral instructions and required sheets', async () => {
+  it('embeds the versioned model-neutral authoring contract and required sheets', () => {
     const classic = generateWorkbookTemplate('classic-board')
     const adapted = adaptSheetJsWorkbook(classic.bytes)
     expect(adapted.status).toBe('success')
     if (adapted.status !== 'success') return
+
     expect(adapted.workbook.sheetNames).toEqual([
       'CQS_META',
       'INSTRUCTIONS',
@@ -41,14 +48,25 @@ describe('workbook templates', () => {
       'CLUES',
       'TEAM_NAMES',
     ])
+
     const instructions = buildModelNeutralInstructions('classic-board').join('\n')
-    expect(instructions).toContain('Recommended target: 96 unique names')
-    expect(instructions).toContain('Strong quality warning below 64')
-    expect(instructions).toContain('model-neutral external-authoring instructions')
-    expect(instructions).toContain('workbookFormatVersion: 1')
-    expect(instructions).toContain('return the completed')
+    expect(instructions).toContain(`authoringRulesVersion: ${AUTHORING_RULES_VERSION}`)
+    expect(instructions).toContain('6 categories with 5 clues each')
+    expect(instructions).toContain('100, 200, 300, 400, 500')
+    expect(instructions).toContain('Difficulty must come from thinking, not trivia')
+    expect(instructions).toContain('INSUFFICIENT SOURCE EVIDENCE')
+    expect(instructions).toContain('return the completed .xlsx artifact')
     expect(instructions).not.toContain('OpenAI')
     expect(instructions).not.toContain('ChatGPT')
+  })
+
+  it('keeps educational rules data-driven and profile-specific', () => {
+    const classic = getExternalAuthoringRuleSet('classic-board')
+    const withFinal = getExternalAuthoringRuleSet('board-plus-final')
+    expect(classic.defaultBoard).toEqual(CLASSIC_BOARD_DEFAULTS)
+    expect(classic.difficultyBands.map((band) => band.value)).toEqual([100, 200, 300, 400, 500])
+    expect(classic.sections.some((section) => section.id === 'final')).toBe(false)
+    expect(withFinal.sections.some((section) => section.id === 'final')).toBe(true)
   })
 
   it('writes formula-leading text as literal cells', () => {
@@ -59,13 +77,17 @@ describe('workbook templates', () => {
     expect(isFormulaLeadingText('Mars')).toBe(false)
   })
 
-  it('Board + Final template includes FINAL and parses with teams', async () => {
+  it('Board + Final template includes FINAL without shipping sample academic content', () => {
     const generated = generateWorkbookTemplate('board-plus-final')
-    const parsed = await parseWorkbookBytes(generated.bytes, generated.filename)
-    expect(parsed.status).toBe('success')
-    if (parsed.status !== 'success') return
-    expect(parsed.draft.final).toBeDefined()
-    expect(parsed.draft.game.teams.length).toBeGreaterThanOrEqual(2)
-    expect(parsed.draft.provenance.detectedSheets).toContain('FINAL')
+    const adapted = adaptSheetJsWorkbook(generated.bytes)
+    expect(adapted.status).toBe('success')
+    if (adapted.status !== 'success') return
+    expect(adapted.workbook.sheetNames).toContain('FINAL')
+
+    const text = JSON.stringify(adapted.workbook)
+    expect(text).not.toContain('Solar System')
+    expect(text).not.toContain('Mars')
+    expect(text).not.toContain('Mantle convection')
+    expect(text).not.toContain('Comet Crew')
   })
 })
