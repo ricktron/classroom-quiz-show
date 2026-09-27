@@ -377,6 +377,7 @@ describe('S05 Final presentation choreography', () => {
     )
     expect(screen.getByTestId('fwd-winner')).toHaveTextContent('Winner')
     expect(screen.getByTestId('fwd-winner')).toHaveTextContent('Red Team')
+    expect(screen.getByTestId('fwd-winner-score')).toHaveTextContent('300')
   })
 
   it('fails closed to generic completion when a unique public winner cannot be resolved', () => {

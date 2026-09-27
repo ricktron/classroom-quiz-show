@@ -226,6 +226,17 @@
   color: var(--fg-strong);
 }
 
+/* Public score under the winner name — stage-scale, not a nested card. */
+.fwd__winner-score {
+  font-family: var(--font-display, var(--font-sans));
+  font-size: clamp(2.4rem, 7vw, 6.5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-interactive, var(--state-structural));
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .fwd--stage-ack,
   .fwd__reveal--ack,
