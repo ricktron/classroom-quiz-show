@@ -386,6 +386,46 @@ function cellAt(row: readonly RawCell[], map: HeaderMap, header: string): RawCel
   return row[idx]
 }
 
+/**
+ * `authoringRulesVersion` is additive generation-contract provenance (ADR-023
+ * §2), never a structural compatibility gate. A malformed value is a warning,
+ * never a blocker; a newer-than-known value is a warning, never
+ * `unsupported-workbook-version`. Extracted from `parseMeta` to keep that
+ * function's branching bounded to structural metadata.
+ */
+function parseAuthoringRulesVersionMeta(
+  raw: string | undefined,
+  a1: string | undefined,
+  issues: AuthoringIssue[],
+): number | undefined {
+  if (raw === undefined || raw === '') return undefined
+  const parsed = Number(raw)
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    issues.push(
+      authoringIssue(
+        'malformed-metadata',
+        'warning',
+        'workbook',
+        'CQS_META.authoringRulesVersion must be a positive integer when present.',
+        { sheet: META_SHEET, field: META_KEYS.authoringRulesVersion, a1 },
+      ),
+    )
+    return undefined
+  }
+  if (parsed > AUTHORING_RULES_VERSION) {
+    issues.push(
+      authoringIssue(
+        'metadata-contradiction',
+        'warning',
+        'workbook',
+        `This workbook was authored with generation rules version ${parsed}; this CQS build knows rules version ${AUTHORING_RULES_VERSION}. Structural workbook validation still applies.`,
+        { sheet: META_SHEET, field: META_KEYS.authoringRulesVersion, a1 },
+      ),
+    )
+  }
+  return parsed
+}
+
 function parseMeta(
   workbook: RawWorkbook,
   issues: AuthoringIssue[],
@@ -479,42 +519,11 @@ function parseMeta(
     return null
   }
 
-  let authoringRulesVersion: number | undefined
-  if (authoringRulesVersionRaw !== undefined && authoringRulesVersionRaw !== '') {
-    const parsedRulesVersion = Number(authoringRulesVersionRaw)
-    if (!Number.isInteger(parsedRulesVersion) || parsedRulesVersion < 1) {
-      issues.push(
-        authoringIssue(
-          'malformed-metadata',
-          'warning',
-          'workbook',
-          'CQS_META.authoringRulesVersion must be a positive integer when present.',
-          {
-            sheet: META_SHEET,
-            field: META_KEYS.authoringRulesVersion,
-            a1: values.get(META_KEYS.authoringRulesVersion)?.a1,
-          },
-        ),
-      )
-    } else {
-      authoringRulesVersion = parsedRulesVersion
-      if (parsedRulesVersion > AUTHORING_RULES_VERSION) {
-        issues.push(
-          authoringIssue(
-            'metadata-contradiction',
-            'warning',
-            'workbook',
-            `This workbook was authored with generation rules version ${parsedRulesVersion}; this CQS build knows rules version ${AUTHORING_RULES_VERSION}. Structural workbook validation still applies.`,
-            {
-              sheet: META_SHEET,
-              field: META_KEYS.authoringRulesVersion,
-              a1: values.get(META_KEYS.authoringRulesVersion)?.a1,
-            },
-          ),
-        )
-      }
-    }
-  }
+  const authoringRulesVersion = parseAuthoringRulesVersionMeta(
+    authoringRulesVersionRaw,
+    values.get(META_KEYS.authoringRulesVersion)?.a1,
+    issues,
+  )
 
   if (!profileRaw || !isWorkbookProfile(profileRaw)) {
     issues.push(
