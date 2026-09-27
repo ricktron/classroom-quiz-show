@@ -25,6 +25,7 @@ import {
   sheetsForProfile,
   type WorkbookProfile,
 } from './contract'
+import { AUTHORING_RULES_VERSION } from './authoringRules'
 import { revalidateDraft } from './validateDraft'
 import {
   deriveBoardRoundId,
@@ -388,7 +389,7 @@ function cellAt(row: readonly RawCell[], map: HeaderMap, header: string): RawCel
 function parseMeta(
   workbook: RawWorkbook,
   issues: AuthoringIssue[],
-): { profile: WorkbookProfile } | null {
+): { profile: WorkbookProfile; authoringRulesVersion?: number } | null {
   const matches = workbook.sheetNames.filter((n) => n === META_SHEET)
   if (matches.length === 0) {
     issues.push(
@@ -445,6 +446,7 @@ function parseMeta(
   const format = values.get(META_KEYS.format)?.value
   const versionRaw = values.get(META_KEYS.workbookFormatVersion)?.value
   const profileRaw = values.get(META_KEYS.profile)?.value
+  const authoringRulesVersionRaw = values.get(META_KEYS.authoringRulesVersion)?.value
 
   if (format !== WORKBOOK_FORMAT) {
     issues.push(
@@ -477,6 +479,43 @@ function parseMeta(
     return null
   }
 
+  let authoringRulesVersion: number | undefined
+  if (authoringRulesVersionRaw !== undefined && authoringRulesVersionRaw !== '') {
+    const parsedRulesVersion = Number(authoringRulesVersionRaw)
+    if (!Number.isInteger(parsedRulesVersion) || parsedRulesVersion < 1) {
+      issues.push(
+        authoringIssue(
+          'malformed-metadata',
+          'warning',
+          'workbook',
+          'CQS_META.authoringRulesVersion must be a positive integer when present.',
+          {
+            sheet: META_SHEET,
+            field: META_KEYS.authoringRulesVersion,
+            a1: values.get(META_KEYS.authoringRulesVersion)?.a1,
+          },
+        ),
+      )
+    } else {
+      authoringRulesVersion = parsedRulesVersion
+      if (parsedRulesVersion > AUTHORING_RULES_VERSION) {
+        issues.push(
+          authoringIssue(
+            'metadata-contradiction',
+            'warning',
+            'workbook',
+            `This workbook was authored with generation rules version ${parsedRulesVersion}; this CQS build knows rules version ${AUTHORING_RULES_VERSION}. Structural workbook validation still applies.`,
+            {
+              sheet: META_SHEET,
+              field: META_KEYS.authoringRulesVersion,
+              a1: values.get(META_KEYS.authoringRulesVersion)?.a1,
+            },
+          ),
+        )
+      }
+    }
+  }
+
   if (!profileRaw || !isWorkbookProfile(profileRaw)) {
     issues.push(
       authoringIssue(
@@ -490,7 +529,7 @@ function parseMeta(
     return null
   }
 
-  return { profile: profileRaw }
+  return { profile: profileRaw, authoringRulesVersion }
 }
 
 function parseGameSheet(
@@ -1157,6 +1196,7 @@ export async function parseWorkbookBytes(
     provenance: {
       filename,
       workbookFormatVersion: WORKBOOK_FORMAT_VERSION,
+      authoringRulesVersion: meta.authoringRulesVersion,
       profile: meta.profile,
       detectedSheets: adapted.workbook.sheetNames,
     },
