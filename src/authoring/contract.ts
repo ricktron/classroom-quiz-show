@@ -44,6 +44,7 @@ export const BOARD_PLUS_FINAL_SHEETS = [
 export const META_KEYS = {
   format: 'format',
   workbookFormatVersion: 'workbookFormatVersion',
+  authoringRulesVersion: 'authoringRulesVersion',
   profile: 'profile',
 } as const
 
