@@ -138,3 +138,82 @@
   font-size: clamp(1rem, 1.8vw, 1.5rem);
   color: var(--fg-muted);
 }
+
+
+/* Visual-convergence density: score regions stay readable but yield space to play. */
+.tsb--column .tsb__title {
+  text-align: left;
+  margin-bottom: 0.45rem;
+}
+
+.tsb--column .tsb__team,
+.tsb--strip .tsb__team,
+.tsb--deck .tsb__team {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: clamp(0.4rem, 0.8vw, 0.75rem);
+  text-align: left;
+  border-radius: var(--radius-sm);
+}
+
+.tsb--column .tsb__team {
+  padding: clamp(0.45rem, 0.8vw, 0.7rem) clamp(0.55rem, 0.9vw, 0.8rem);
+}
+
+.tsb--strip .tsb__team,
+.tsb--deck .tsb__team {
+  padding: clamp(0.3rem, 0.55vw, 0.48rem) clamp(0.45rem, 0.75vw, 0.7rem);
+}
+
+.tsb--column .tsb__accent-bar {
+  inset-block: 0;
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+  width: var(--accent-bar-height);
+  height: auto;
+}
+
+.tsb--column .tsb__name,
+.tsb--strip .tsb__name,
+.tsb--deck .tsb__name {
+  font-size: clamp(0.78rem, 1.15vw, 1.15rem);
+  line-height: 1.08;
+}
+
+.tsb--column .tsb__score {
+  font-size: clamp(1.45rem, 2.5vw, 2.5rem);
+}
+
+.tsb--strip .tsb__score,
+.tsb--deck .tsb__score {
+  font-size: clamp(1.25rem, 2.15vw, 2.15rem);
+}
+
+.tsb--strip .tsb__title,
+.tsb--deck .tsb__title {
+  margin-bottom: 0.2rem;
+  font-size: clamp(0.7rem, 0.95vw, 0.9rem);
+}
+
+@media (max-height: 800px) {
+  .tsb--deck .tsb__list,
+  .tsb--strip .tsb__list {
+    gap: 0.25rem;
+  }
+
+  .tsb--deck .tsb__team,
+  .tsb--strip .tsb__team {
+    padding: 0.2rem 0.4rem;
+  }
+
+  .tsb--deck .tsb__name,
+  .tsb--strip .tsb__name {
+    font-size: clamp(0.7rem, 1vw, 0.9rem);
+  }
+
+  .tsb--deck .tsb__score,
+  .tsb--strip .tsb__score {
+    font-size: clamp(1.05rem, 1.75vw, 1.55rem);
+  }
+}
