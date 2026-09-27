@@ -88,6 +88,25 @@ describe('workbook parser', () => {
     expect(profile.status).toBe('failure')
   })
 
+  it('preserves a future authoring-rules version without treating it as a structural format failure', async () => {
+    const result = await parseWorkbookBytes(
+      buildTestWorkbookBytes({ meta: { authoringRulesVersion: '99' } }),
+      'future-rules.xlsx',
+    )
+    expect(result.status).toBe('success')
+    if (result.status !== 'success') return
+    expect(result.draft.provenance.authoringRulesVersion).toBe(99)
+    expect(
+      result.draft.issues.some(
+        (issue) =>
+          issue.code === 'metadata-contradiction' &&
+          issue.severity === 'warning' &&
+          issue.field === 'authoringRulesVersion',
+      ),
+    ).toBe(true)
+    expect(result.draft.issues.some((issue) => issue.code === 'unsupported-workbook-version')).toBe(false)
+  })
+
   it('rejects missing CQS_META and missing semantic sheets', async () => {
     const template = generateWorkbookTemplate('classic-board')
     // Corrupt by rebuilding without META via factory missing sheet simulation:
