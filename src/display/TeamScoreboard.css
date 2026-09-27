@@ -185,8 +185,16 @@
   line-height: 1.08;
 }
 
+/* Column: prefer word wraps; keep a readable name track beside extreme scores. */
+.tsb--column .tsb__name {
+  overflow-wrap: break-word;
+  word-break: normal;
+  min-width: 0;
+}
+
 .tsb--column .tsb__score {
-  font-size: clamp(1.45rem, 2.5vw, 2.5rem);
+  font-size: clamp(1.25rem, 2.1vw, 2.15rem);
+  min-width: max-content;
 }
 
 .tsb--strip .tsb__score,

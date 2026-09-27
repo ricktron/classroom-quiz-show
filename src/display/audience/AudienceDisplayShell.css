@@ -229,7 +229,9 @@
 }
 
 .audience--scores-column .audience__body {
-  grid-template-columns: minmax(10rem, 13.5rem) minmax(0, 1fr);
+  /* Wide enough for schema-max names + extreme signed scores without
+   * character-stack wrapping in the Score Column. */
+  grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
 }
 
 .audience__primary {
@@ -601,7 +603,7 @@
   }
 
   .audience--scores-column .audience__body {
-    grid-template-columns: minmax(8.5rem, 13rem) 1fr;
+    grid-template-columns: minmax(14rem, 18rem) 1fr;
   }
 
   .audience__header {

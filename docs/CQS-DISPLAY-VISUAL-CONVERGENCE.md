@@ -17,11 +17,12 @@
 | Discrepancy matrix | VERIFIED |
 | Bounded implementation plan | VERIFIED |
 | Presentation-only convergence implementation | VERIFIED (CSS + presentation selector dedupe) |
-| 720p / 1080p / 1–8 team stress verification | IN PROGRESS — evidence via gated review captures |
-| Reduced-motion / high-contrast verification | IN PROGRESS — covered by existing suite + visual review |
-| Integrated COURT review | IN PROGRESS |
-| Post-convergence historian milestone | NOT STARTED — owner gate after playthrough |
-| Owner-playthrough candidate handoff | IN PROGRESS |
+| 720p / 1080p / 1–8 team stress verification | VERIFIED — gated review captures + workflow gap e2e + Score Column geometry repair |
+| Reduced-motion / high-contrast verification | VERIFIED — theme/S05-F1 suite + HC/RM review frames |
+| Integrated COURT review | VERIFIED — Hearing 7 evidence-closure readiness (READY FOR RICK OWNER PLAYTHROUGH) |
+| Authoritative coverage matrix | VERIFIED — agent-store matrix (unit vs browser vs visual classes) |
+| Post-convergence historian milestone | DEFERRED TO LATER AUTHORIZED QUALIFICATION — owner gate after playthrough |
+| Owner-playthrough candidate handoff | OWNER PLAYTHROUGH PENDING — short evidence-closure handoff; not merged; S05 not terminal |
 
 ## 2. Evidence hierarchy
 
