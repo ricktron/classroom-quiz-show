@@ -90,17 +90,20 @@ test('incomplete-name Back to setup stays enabled in play posture', async ({ pag
   await expect(page.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'play')
 
   // Return to setup and clear one name so Start is blocked — then enter play
-  // with incomplete names via the same onPlay path (L0: chrome Back never gated).
+  // with incomplete names via the same onPlay handler (L0: chrome Back never gated).
   await page.getByTestId('setup-play').click()
   await expect(page.getByTestId('classroom-setup')).toBeVisible()
-  const firstName = page.locator('[data-testid^="tnsb-manual-"]').first()
-  await firstName.fill('')
-  await firstName.blur()
+  await page.getByTestId('setup-revisit-names').click()
+  await page.locator('[data-testid^="tnsb-reset-"]').first().click()
   await expect(page.getByTestId('setup-play')).toBeDisabled()
 
+  // Disabled Start still owns onPlay; invoke it directly so we reach play with
+  // incomplete names without a Session/schema change.
   await page.getByTestId('setup-play').evaluate((el: HTMLButtonElement) => {
-    el.disabled = false
-    el.click()
+    const propsKey = Object.keys(el).find((key) => key.startsWith('__reactProps$'))
+    const props = propsKey ? (el as unknown as Record<string, { onClick?: (event: Event) => void }>)[propsKey] : null
+    if (!props?.onClick) throw new Error('setup-play React onClick missing')
+    props.onClick(new MouseEvent('click', { bubbles: true, cancelable: true }))
   })
 
   await expect(page.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'play')
@@ -144,11 +147,14 @@ test('hydration B: Start + gameplay Resume lands play', async ({ page }) => {
   await expect(page.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'play')
 
   await ensureHostMoreOpen(page)
-  await page.getByRole('button', { name: /advance to next round/i }).click()
+  await page.getByRole('button', { name: /^advance to next round$/i }).click()
+  await expect(page.getByTestId('event-history')).toContainText('ROUND_ADVANCED')
   await waitForSessionSaved(page)
 
   await resumeAfterReload(page)
 
+  await ensureHostMoreOpen(page)
+  await expect(page.getByTestId('event-history')).toContainText('ROUND_ADVANCED')
   await expect(page.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'play')
   await expect(page.getByTestId('classroom-setup')).toHaveCount(0)
   await expect(page.getByTestId('setup-play')).toHaveText(/back to setup/i)
@@ -188,5 +194,7 @@ test('hydration D: Back to setup keeps Session', async ({ page }) => {
   await ensureHostMoreOpen(page)
   await expect(page.getByTestId('game-title')).toHaveText(title)
   await expect(page.getByTestId('game-lifecycle')).not.toHaveText(/ended/i)
-  await expect(page.locator('[data-testid^="tnsb-manual-"]').first()).toHaveValue(/Team /)
+  await expect(page.getByTestId('setup-names-summary')).toContainText(/Team 1/)
+  await expect(page.getByTestId('setup-play')).toHaveText(/start game/i)
+  await expect(page.getByTestId('setup-play')).toBeEnabled()
 })

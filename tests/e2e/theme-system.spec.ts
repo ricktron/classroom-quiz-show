@@ -90,14 +90,13 @@ test.describe('host selector and display launch', () => {
     await ensureHostMoreOpen(page)
     await page.getByRole('radio', { name: 'Default' }).check()
     expect(await themeId(page)).toBe('default')
-    // Host opens with a named target; each launch must carry only the currently
-    // validated theme query from Host chrome.
-    const secondPopupPromise = context.waitForEvent('page')
+    // Chrome uses a named Display window (Focus display). Re-click navigates the
+    // same browsing context with the currently validated theme query.
     await display.click()
-    const second = await secondPopupPromise
-    await second.waitForLoadState()
-    expect(second.url()).toContain('#/display?theme=default')
-    expect(await themeId(second)).toBe('default')
+    await first.waitForURL(/#\/display\?theme=default/)
+    await first.waitForLoadState()
+    expect(first.url()).toContain('#/display?theme=default')
+    expect(await themeId(first)).toBe('default')
   })
 
   test('direct display and hostile query values fail closed safely', async ({ page }) => {

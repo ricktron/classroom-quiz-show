@@ -127,19 +127,23 @@ export function FoundationControls({
   // Hydrate play posture once per store epoch from effective history (Slice A).
   // Live Start / Back remain the only runtime setters. Empty history keeps the
   // URL-seeded default (bare `#/host` → play; `?play=` → setup).
+  // Read the live store — React history/game state can lag one tick behind a
+  // storeEpoch remount after Resume.
   const postureHydratedEpochRef = useRef<number | null>(null)
   useEffect(() => {
     if (persistence.bootPhase !== 'ready') return
     if (postureHydratedEpochRef.current === persistence.storeEpoch) return
+    const liveHistory = store.getHistory()
+    const liveGame = store.getState().session?.game ?? null
     postureHydratedEpochRef.current = persistence.storeEpoch
-    if (history.length === 0) return
+    if (liveHistory.length === 0) return
     setPlayReady(
       deriveHostPlayPosture({
-        history,
-        canStartPlay: canStartPlayFromGame(game),
+        history: liveHistory,
+        canStartPlay: canStartPlayFromGame(liveGame),
       }),
     )
-  }, [persistence.bootPhase, persistence.storeEpoch, history, game])
+  }, [persistence.bootPhase, persistence.storeEpoch, history, game, store])
 
   // Home Resume carries a one-shot navigation intent. Apply the same Host resume
   // path once recovery is readable, then clear the intent so refresh re-prompts.
@@ -213,15 +217,21 @@ export function FoundationControls({
     if (persistence.bootPhase !== 'ready') return
     if (!persistence.canDispatchSessionCommands) return
     if (playLoadedRef.current === playGameId) return
-    if (game?.definition.id === playGameId) {
+    // Read the live store — React `history`/`game` state can lag one tick behind
+    // a storeEpoch remount after Resume (useState stays stale until subscribe sync).
+    const liveGame = store.getState().session?.game ?? null
+    const liveHistory = store.getHistory()
+    if (liveGame?.definition.id === playGameId) {
       playLoadedRef.current = playGameId
       setPlayReplaceNeeded(false)
       return
     }
+    // Recovered non-empty history still applying: never loadSaved over it.
+    if (liveGame === null && liveHistory.length > 0) return
     void persistence
       .loadSaved({
         gameId: playGameId,
-        activeGame: game,
+        activeGame: liveGame,
         dispatch,
         getHistory: () => store.getHistory(),
         registry,
@@ -268,6 +278,7 @@ export function FoundationControls({
     persistence.canDispatchSessionCommands,
     game?.definition.id,
     playReplaceArmed,
+    persistence.storeEpoch,
   ])
 
   useEffect(() => {

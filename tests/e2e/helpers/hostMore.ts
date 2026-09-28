@@ -11,5 +11,6 @@ export async function ensureHostMoreOpen(page: Page): Promise<void> {
   if ((await more.count()) === 0) return
   const open = await more.getAttribute('open')
   if (open !== null) return
-  await more.locator('summary').click()
+  // Prefer the Host More summary only — Advanced nests other <summary> nodes.
+  await more.locator(':scope > summary').click()
 }
