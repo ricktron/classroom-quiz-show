@@ -7,7 +7,7 @@
  * remain a React-local toggle.
  *
  * Residuals (accepted): Start with no gameplay → setup after reload (one click);
- * Back-then-reload → play if gameplay exists (one click).
+ * Back-then-reload → play when gameplay exists (names incomplete still play / L0).
  */
 
 import type { EventType, SessionEvent } from '../state/events'
@@ -86,6 +86,10 @@ export function canStartPlayFromGame(game: PrivateGameState | null): boolean {
 /**
  * Pure hydration derivation. Empty history → caller keeps URL-seeded default
  * (bare `#/host` stays play; `?play=` stays setup).
+ *
+ * Gameplay after the init cut restores play even when names are incomplete
+ * (L0 / mid-Final Resume). `canStartPlay` remains available to callers for
+ * readiness UI; it does not gate hydration play restoration.
  */
 export function deriveHostPlayPosture(input: {
   readonly history: readonly SessionEvent[]
@@ -109,6 +113,5 @@ export function deriveHostPlayPosture(input: {
     }
   }
   const tail = cutIdx < 0 ? fx : fx.slice(cutIdx + 1)
-  const hasGameplay = tail.some((event) => isHostPlayPostureGameplayEvent(event.type))
-  return hasGameplay && input.canStartPlay
+  return tail.some((event) => isHostPlayPostureGameplayEvent(event.type))
 }

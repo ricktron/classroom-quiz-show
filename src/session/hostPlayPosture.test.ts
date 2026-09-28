@@ -54,19 +54,11 @@ describe('hostPlayPosture', () => {
     ).toBe(false)
   })
 
-  it('derives play when gameplay follows init and names can start', () => {
+  it('derives play when gameplay follows init even if names cannot start (L0)', () => {
     const store = createSessionStore()
     const definition = namedTwoTeamGame()
     store.dispatch({ type: 'INIT_SESSION', issuedAt: 1, sessionId: 's1' })
     store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: 2, definition })
-    for (const team of definition.teams) {
-      store.dispatch({
-        type: 'SET_SESSION_TEAM_NAME',
-        issuedAt: 3,
-        teamId: team.id,
-        name: team.name,
-      })
-    }
     store.dispatch({
       type: 'SELECT_ROUND',
       issuedAt: 5,
@@ -83,7 +75,7 @@ describe('hostPlayPosture', () => {
         history: store.getHistory(),
         canStartPlay: false,
       }),
-    ).toBe(false)
+    ).toBe(true)
   })
 
   it('canStartPlayFromGame requires assigned unique session names', () => {
