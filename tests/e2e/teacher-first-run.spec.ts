@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { ensureHostMoreOpen } from './helpers/hostMore'
 
 /**
  * Slice 23 teacher first-run repair — clean-teacher path.
@@ -13,9 +14,7 @@ import { resolve } from 'node:path'
 test.describe.configure({ mode: 'serial' })
 
 async function openFreshHost(page: Page) {
-  await page.goto('./')
-  await expect(page.getByRole('heading', { name: /^home$/i })).toBeVisible()
-  await page.getByRole('link', { name: /open classroom controls/i }).click()
+  await page.goto('#/host')
   await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
 }
 
@@ -29,12 +28,13 @@ test('clean teacher can load a sample game without hidden session initialize', a
   expect(body).not.toContain('foundation / testing controls — not gameplay')
   expect(body).not.toContain('they are diagnostics, not a game')
 
-  await expect(page.getByRole('heading', { name: /ready to run class/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /ready to run class/i })).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: /classroom controls/i })).toHaveCount(0)
+  await expect(page.getByTestId('host-chrome-display')).toBeVisible()
+  await expect(page.getByTestId('host-chrome-mute')).toBeVisible()
+
+  await ensureHostMoreOpen(page)
   await expect(page.getByRole('heading', { name: /load a game/i })).toBeVisible()
-  await expect(page.getByRole('heading', { name: /classroom controls/i })).toBeVisible()
-  await expect(
-    page.getByRole('button', { name: /open audience display/i }),
-  ).toBeVisible()
   await expect(page.getByRole('button', { name: /start new game session/i })).toBeVisible()
   await expect(page.getByRole('heading', { name: /advanced diagnostics/i })).toBeVisible()
 
@@ -53,11 +53,10 @@ test('clean teacher can load a sample game without hidden session initialize', a
   const result = page.getByTestId('import-result')
   await expect(result).toContainText(/import succeeded — game loaded/i)
   await expect(result).not.toContainText(/initialize a session first/i)
+  await ensureHostMoreOpen(page)
   await expect(page.getByTestId('game-title')).toBeVisible()
   await expect(page.getByTestId('import-active-game')).not.toHaveText('none')
-  await expect(
-    page.getByRole('button', { name: /open audience display/i }),
-  ).toBeVisible()
+  await expect(page.getByTestId('host-chrome-display')).toBeVisible()
 })
 
 test('teacher quick-start documents the supported MVP host path', async () => {
@@ -69,9 +68,11 @@ test('teacher quick-start documents the supported MVP host path', async () => {
   expect(quickStart).toMatch(/New Game/i)
   expect(quickStart).toMatch(/Import Game/i)
   expect(quickStart).toMatch(/Load a game/i)
-  expect(quickStart).toMatch(/Open display/i)
+  expect(quickStart).toMatch(/Open [Dd]isplay/i)
+  expect(quickStart).toMatch(/Start Game/i)
   expect(quickStart).toMatch(/resume/i)
   expect(quickStart).toMatch(/Clear all local CQS data/i)
+  expect(quickStart).not.toMatch(/Open classroom controls/i)
   expect(quickStart).not.toMatch(/arrive in a later slice/i)
   expect(quickStart).not.toMatch(/foundation \/ testing controls/i)
 })

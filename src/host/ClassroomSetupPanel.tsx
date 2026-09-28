@@ -92,7 +92,6 @@ export function ClassroomSetupPanel({
   audioUnderstood,
   audioMuted,
   onAudioTest,
-  onPanicMute,
   playReady,
   onPlay,
   onSelectedIdentitiesChange,
@@ -243,16 +242,6 @@ export function ClassroomSetupPanel({
             Get this class ready to play. Buzzers are optional.
           </p>
         </div>
-        <div className="classroom-setup__emergency">
-          <button
-            type="button"
-            className="btn btn--secondary"
-            data-testid="setup-panic-mute"
-            onClick={onPanicMute}
-          >
-            {audioMuted ? 'Sound is muted' : 'Mute all sounds'}
-          </button>
-        </div>
       </header>
 
       <nav
@@ -388,8 +377,8 @@ export function ClassroomSetupPanel({
           {showSound && (
             <div className="classroom-setup__task" data-testid="setup-sound-task">
               <p className="host__note">
-                Test sound so you know what the class will hear. Mute stays available above if
-                things get loud.
+                Test sound so you know what the class will hear. Mute stays available in Host
+                controls if things get loud.
               </p>
               <button
                 type="button"
@@ -418,7 +407,7 @@ export function ClassroomSetupPanel({
 
           {currentTask === 'play' && (
             <p className="host__note" data-testid="setup-ready-copy">
-              Required setup is complete. Play when the class is ready.
+              Required setup is complete. Start Game when the class is ready.
             </p>
           )}
         </section>
@@ -435,13 +424,13 @@ export function ClassroomSetupPanel({
           type="button"
           className={`btn classroom-setup__play${playEnabled && !playReady ? ' classroom-setup__play--dominant' : ''}`}
           data-testid="setup-play"
-          disabled={!playEnabled}
-          aria-describedby={playBlocker ? 'setup-play-blocker' : undefined}
+          disabled={playReady ? false : !playEnabled}
+          aria-describedby={!playReady && playBlocker ? 'setup-play-blocker' : undefined}
           onClick={onPlay}
         >
-          {playReady ? 'Back to setup' : 'Play'}
+          {playReady ? 'Back to setup' : 'Start Game'}
         </button>
-        {playBlocker ? (
+        {!playReady && playBlocker ? (
           <p id="setup-play-blocker" className="classroom-setup__blocker" data-testid="setup-play-blocker" role="status">
             {playBlocker}
           </p>

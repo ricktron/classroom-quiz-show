@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { ensureHostMoreOpen } from './helpers/hostMore'
 import { FORBIDDEN_DISPLAY_LABELS } from '../../src/test/leakLabels'
 
 /**
@@ -202,6 +203,7 @@ async function gamepadWatch(page: Page) {
 async function openHost(page: Page) {
   await page.goto('#/host')
   await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
+  await ensureHostMoreOpen(page)
 }
 
 async function openDisplay(page: Page) {

@@ -1,10 +1,24 @@
 import { test, expect, type Page } from '@playwright/test'
+import { ensureHostMoreOpen } from './helpers/hostMore'
 
 /**
  * Slice 17 theme system — host selector, display launch validation, token
  * application, stress composition, and reduced-motion parity. Reuses the
  * existing 1080p / 720p Playwright projects.
+ *
+ * MENUS Slice A moved Theme under Host More and renamed the chrome Display
+ * opener to Open display / Focus display.
  */
+
+async function openHostTheme(page: Page): Promise<void> {
+  await page.goto('#/host')
+  await ensureHostMoreOpen(page)
+  await expect(page.getByRole('group', { name: 'Theme' })).toBeVisible()
+}
+
+function hostDisplayOpener(page: Page) {
+  return page.getByTestId('host-chrome-display')
+}
 
 async function themeId(page: Page): Promise<string | null> {
   return page.locator('html').getAttribute('data-theme')
@@ -43,13 +57,14 @@ test.describe('host selector and display launch', () => {
     page,
     context,
   }) => {
-    await page.goto('#/host')
-    await expect(page.getByRole('group', { name: 'Theme' })).toBeVisible()
+    await openHostTheme(page)
     await page.getByRole('radio', { name: 'High contrast' }).check()
     expect(await themeId(page)).toBe('high-contrast')
 
+    const display = hostDisplayOpener(page)
+    await expect(display).toHaveText(/open display|focus display/i)
     const popupPromise = context.waitForEvent('page')
-    await page.getByRole('button', { name: /open audience display/i }).click()
+    await display.click()
     const popup = await popupPromise
     await popup.waitForLoadState()
     expect(popup.url()).toContain('#/display?theme=high-contrast')
@@ -62,25 +77,26 @@ test.describe('host selector and display launch', () => {
     page,
     context,
   }) => {
-    await page.goto('#/host')
+    await openHostTheme(page)
     await page.getByRole('radio', { name: 'High contrast' }).check()
+    const display = hostDisplayOpener(page)
     const firstPopupPromise = context.waitForEvent('page')
-    await page.getByRole('button', { name: /open audience display/i }).click()
+    await display.click()
     const first = await firstPopupPromise
     await first.waitForLoadState()
     expect(first.url()).toContain('#/display?theme=high-contrast')
     expect(await themeId(first)).toBe('high-contrast')
 
+    await ensureHostMoreOpen(page)
     await page.getByRole('radio', { name: 'Default' }).check()
     expect(await themeId(page)).toBe('default')
-    // Host opens with noopener, so each launch is a fresh browsing context that
-    // must carry only the currently validated theme query.
-    const secondPopupPromise = context.waitForEvent('page')
-    await page.getByRole('button', { name: /open audience display/i }).click()
-    const second = await secondPopupPromise
-    await second.waitForLoadState()
-    expect(second.url()).toContain('#/display?theme=default')
-    expect(await themeId(second)).toBe('default')
+    // Chrome uses a named Display window (Focus display). Re-click navigates the
+    // same browsing context with the currently validated theme query.
+    await display.click()
+    await first.waitForURL(/#\/display\?theme=default/)
+    await first.waitForLoadState()
+    expect(first.url()).toContain('#/display?theme=default')
+    expect(await themeId(first)).toBe('default')
   })
 
   test('direct display and hostile query values fail closed safely', async ({ page }) => {
@@ -141,7 +157,7 @@ test.describe('token application and contrast', () => {
   })
 
   test('primary text and essential borders meet contrast targets on host', async ({ page }) => {
-    await page.goto('#/host')
+    await openHostTheme(page)
     await page.getByRole('radio', { name: 'Default' }).check()
     const pairs = await page.evaluate(() => {
       const cs = getComputedStyle(document.documentElement)

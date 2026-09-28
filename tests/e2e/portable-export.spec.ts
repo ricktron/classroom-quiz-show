@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { test, expect, type Page } from '@playwright/test'
+import { ensureHostMoreOpen } from './helpers/hostMore'
 import { CANONICAL_GAME_FILE_FORMAT, SUPPORTED_SCHEMA_VERSION } from '../../src/import/canonicalFormat'
 
 /**
@@ -71,6 +72,7 @@ const EXPORT_GAME_TEXT = JSON.stringify(EXPORT_GAME)
 async function openHost(page: Page) {
   await page.goto('#/host')
   await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
+  await ensureHostMoreOpen(page)
 }
 
 async function openDisplay(page: Page) {

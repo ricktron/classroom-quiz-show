@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { ensureHostMoreOpen } from './helpers/hostMore'
 import { PERSISTENCE_WIRE_FORMAT } from '../../src/persistence/constants'
 import { FORBIDDEN_DISPLAY_LABELS } from '../../src/test/leakLabels'
 
@@ -24,6 +25,7 @@ const PRIVATE_SAMPLE_CONTENT = [
 async function openHost(page: Page) {
   await page.goto('#/host')
   await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
+  await ensureHostMoreOpen(page)
   await expect(page.getByTestId('persistence-status')).toBeVisible()
   await expect(page.getByTestId('persistence-status')).not.toContainText(/loading/i)
 }

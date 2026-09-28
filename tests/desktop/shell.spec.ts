@@ -1,4 +1,5 @@
 import { expect, test, _electron as electron, type ElectronApplication, type Page } from '@playwright/test'
+import { ensureHostMoreOpen } from '../e2e/helpers/hostMore'
 import { mkdtempSync, readdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -31,8 +32,11 @@ async function hostWindow(app: ElectronApplication): Promise<Page> {
 }
 
 async function openClassroomHost(page: Page): Promise<void> {
-  await page.getByRole('link', { name: /open classroom controls/i }).click()
+  await page.evaluate(() => {
+    window.location.hash = '#/host'
+  })
   await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
+  await ensureHostMoreOpen(page)
 }
 
 function isolationProbe() {

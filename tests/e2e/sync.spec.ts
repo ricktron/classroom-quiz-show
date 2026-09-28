@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { ensureHostMoreOpen } from './helpers/hostMore'
 
 /**
  * Same-browser host/display synchronization over BroadcastChannel.
@@ -23,6 +24,7 @@ async function openDisplay(page: Page) {
 async function openHost(page: Page) {
   await page.goto('#/host')
   await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
+  await ensureHostMoreOpen(page)
 }
 
 test('a host status change appears on the display', async ({ context }) => {

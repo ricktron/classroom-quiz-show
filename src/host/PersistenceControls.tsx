@@ -17,6 +17,8 @@ import {
 } from './sessionRecoveryCopy'
 import './PersistenceControls.css'
 
+export type PersistenceControlsVariant = 'full' | 'recovery' | 'library'
+
 export interface PersistenceControlsProps {
   readonly persistence: UseHostPersistence
   readonly activeGame: PrivateGameState | null
@@ -24,6 +26,11 @@ export interface PersistenceControlsProps {
   readonly registry: RoundRegistry
   readonly dispatch: (command: SessionCommand) => DispatchResult
   readonly getHistory: () => readonly SessionEvent[]
+  /**
+   * Slice A split: recovery stays contextual when needed; library/clear-all
+   * demote under Host More. Default `full` preserves unit-test layout.
+   */
+  readonly variant?: PersistenceControlsVariant
   /** Injected for tests; production hard-reloads after a successful aggregate wipe. */
   readonly reloadPage?: () => void
 }
@@ -35,6 +42,7 @@ export function PersistenceControls({
   registry,
   dispatch,
   getHistory,
+  variant = 'full',
   reloadPage = defaultReloadPage,
 }: PersistenceControlsProps) {
   const [replaceArmed, setReplaceArmed] = useState(false)
@@ -104,29 +112,52 @@ export function PersistenceControls({
     reloadPage()
   }
 
+  const showRecovery = variant === 'full' || variant === 'recovery'
+  const showLibrary = variant === 'full' || variant === 'library'
+  // Library demotion must not duplicate the recovery/status live region when both
+  // PersistenceControls instances are mounted (recovery outside More + library inside).
+  const showStatusChrome = variant !== 'library'
+  const title =
+    variant === 'library'
+      ? 'Saved games library'
+      : variant === 'recovery'
+        ? 'This class session'
+        : 'Saved games and this class session'
+  // Unique heading ids when recovery + library are both mounted (Slice A split).
+  const titleId =
+    variant === 'library'
+      ? 'persistence-title-library'
+      : variant === 'recovery'
+        ? 'persistence-title-recovery'
+        : 'persistence-title'
+
   return (
-    <section className="persistence" aria-labelledby="persistence-title">
-      <h3 id="persistence-title">Saved games and this class session</h3>
-      <p
-        className="host__note persistence__status"
-        data-testid="persistence-status"
-        aria-label="Save status"
-        aria-live="polite"
-      >
-        {statusText}
-      </p>
-      {warning && (
-        <p className="host__note persistence__warning" data-testid="persistence-warning">
-          {warning}
-        </p>
-      )}
-      {readOnly && (
-        <p className="host__note persistence__notice" data-testid="persistence-follower-notice">
-          Another Classroom Quiz Show window is saving on this device. This window is read-only.
-        </p>
+    <section className="persistence" aria-labelledby={titleId} data-variant={variant}>
+      <h3 id={titleId}>{title}</h3>
+      {showStatusChrome && (
+        <>
+          <p
+            className="host__note persistence__status"
+            data-testid="persistence-status"
+            aria-label="Save status"
+            aria-live="polite"
+          >
+            {statusText}
+          </p>
+          {warning && (
+            <p className="host__note persistence__warning" data-testid="persistence-warning">
+              {warning}
+            </p>
+          )}
+          {readOnly && (
+            <p className="host__note persistence__notice" data-testid="persistence-follower-notice">
+              Another Classroom Quiz Show window is saving on this device. This window is read-only.
+            </p>
+          )}
+        </>
       )}
 
-      {persistence.bootPhase === 'recovery' && persistence.recovery && (
+      {showRecovery && persistence.bootPhase === 'recovery' && persistence.recovery && (
         <fieldset
           className="foundation__panel persistence__recovery"
           data-testid="persistence-recovery"
@@ -165,7 +196,7 @@ export function PersistenceControls({
         </fieldset>
       )}
 
-      {persistence.bootPhase === 'invalid-recovery' && persistence.invalidRecovery && (
+      {showRecovery && persistence.bootPhase === 'invalid-recovery' && persistence.invalidRecovery && (
         <div className="foundation__panel persistence__recovery" data-testid="persistence-recovery" role="alert">
           <h4>Recovery data could not be used</h4>
           <p className="host__note">
@@ -192,7 +223,7 @@ export function PersistenceControls({
         </div>
       )}
 
-      <div className="foundation__panel persistence__library" data-testid="persistence-library">
+      {showLibrary && <div className="foundation__panel persistence__library" data-testid="persistence-library">
         <h4>Saved games</h4>
         <p className="host__note">
           These are reusable games. Loading one starts or replaces this class session only. It does
@@ -270,9 +301,9 @@ export function PersistenceControls({
         <p className="host__note persistence__message" aria-live="polite">
           {actionMessage ?? persistence.message}
         </p>
-      </div>
+      </div>}
 
-      <div
+      {showLibrary && <div
         className="foundation__panel persistence__clear-all"
         data-testid="persistence-clear-all"
       >
@@ -330,7 +361,7 @@ export function PersistenceControls({
             ? actionMessage
             : null}
         </p>
-      </div>
+      </div>}
     </section>
   )
 }

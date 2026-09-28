@@ -44,24 +44,20 @@ function renderAt(path: string) {
 }
 
 describe('route resolution', () => {
-  it('root shows teacher Home with New Game, Import, and classroom controls', async () => {
+  it('root shows teacher Home with New Game and Import', async () => {
     renderAt(ROUTES.root)
     expect(await screen.findByRole('heading', { name: /^home$/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /new game/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /import game/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /open classroom controls/i })).toHaveAttribute(
-      'href',
-      '/host',
-    )
+    expect(screen.queryByRole('link', { name: /open classroom controls/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: /choose a screen/i })).not.toBeInTheDocument()
   })
 
-  it('host route warns it is private and presents a ready classroom surface', () => {
+  it('host route warns it is private and presents Host chrome', () => {
     renderAt(ROUTES.host)
     expect(screen.getByText(/do not project this screen/i)).toBeInTheDocument()
-    expect(
-      screen.getByRole('heading', { name: /ready to run class/i }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /host control/i })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /ready to run class/i })).not.toBeInTheDocument()
     expect(screen.queryByText(/arrive in a later slice/i)).not.toBeInTheDocument()
   })
 

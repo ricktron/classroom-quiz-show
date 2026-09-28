@@ -347,4 +347,44 @@ describe('PersistenceControls', () => {
     expect(screen.getByTestId('persistence-clear-all-action')).toHaveTextContent(/clear all local/i)
     expect(screen.getByTestId('persistence-recovery')).toHaveTextContent(/your saved games stay/i)
   })
+
+  it('uses unique heading ids when recovery and library are both mounted', () => {
+    const p = persistence({
+      bootPhase: 'recovery',
+      recovery: { events: [], savedAt: 1 },
+      library: [{ gameId: 'sample-game', title: 'Sample Game', savedAt: 1, hasDraft: false, playable: true }],
+    })
+    const registry = createDefaultRegistry()
+    render(
+      <>
+        <PersistenceControls
+          variant="recovery"
+          persistence={p}
+          activeGame={null}
+          activeDefinition={definition()}
+          registry={registry}
+          dispatch={vi.fn()}
+          getHistory={() => []}
+        />
+        <PersistenceControls
+          variant="library"
+          persistence={p}
+          activeGame={null}
+          activeDefinition={definition()}
+          registry={registry}
+          dispatch={vi.fn()}
+          getHistory={() => []}
+        />
+      </>,
+    )
+
+    const recoveryHeading = screen.getByRole('heading', { name: /this class session/i })
+    const libraryHeading = screen.getByRole('heading', { name: /saved games library/i })
+    expect(recoveryHeading).toHaveAttribute('id', 'persistence-title-recovery')
+    expect(libraryHeading).toHaveAttribute('id', 'persistence-title-library')
+    expect(recoveryHeading.getAttribute('id')).not.toBe(libraryHeading.getAttribute('id'))
+    expect(document.querySelectorAll('#persistence-title-recovery')).toHaveLength(1)
+    expect(document.querySelectorAll('#persistence-title-library')).toHaveLength(1)
+    expect(document.querySelectorAll('#persistence-title')).toHaveLength(0)
+  })
 })

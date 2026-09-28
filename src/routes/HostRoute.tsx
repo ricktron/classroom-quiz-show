@@ -1,11 +1,10 @@
 import type { ReactElement } from 'react'
 import { Link } from 'react-router-dom'
-import { ROUTES, absoluteDisplayUrlWithTheme } from './paths'
+import { ROUTES } from './paths'
 import { FoundationControls } from '../host/FoundationControls'
 import type { UseHostPersistenceOptions } from '../host/useHostPersistence'
 import { isDesktopRuntime } from '../runtime/cqsRuntime'
-import { ThemeProvider, useOptionalTheme, useTheme } from '../theme/ThemeProvider'
-import { THEME_META, type ThemeId } from '../theme/themeRegistry'
+import { ThemeProvider, useOptionalTheme } from '../theme/ThemeProvider'
 import './HostRoute.css'
 
 export interface HostRouteProps {
@@ -17,18 +16,6 @@ function HostRouteContent({
 }: {
   readonly persistenceOptions?: UseHostPersistenceOptions
 }): ReactElement {
-  const { themeId, setThemeId } = useTheme()
-
-  function openDisplay() {
-    // Open the projector display in a separate window/tab. Uses an absolute,
-    // base-path-aware URL carrying only the validated theme ID.
-    window.open(
-      absoluteDisplayUrlWithTheme(themeId),
-      'quiz-show-display',
-      'noopener',
-    )
-  }
-
   return (
     <div className="screen host">
       <div className="host__banner" role="note">
@@ -38,46 +25,9 @@ function HostRouteContent({
         </span>
       </div>
 
-      <fieldset className="host__theme">
-        <legend className="host__theme-legend">Theme</legend>
-        <p className="host__theme-description" id="host-theme-description">
-          Applies to this host and displays opened from it.
-        </p>
-        <div
-          className="host__theme-options"
-          role="presentation"
-          aria-describedby="host-theme-description"
-        >
-          {THEME_META.map((meta) => (
-            <label key={meta.id} className="host__theme-option">
-              <input
-                type="radio"
-                name="host-theme"
-                value={meta.id}
-                checked={themeId === meta.id}
-                onChange={() => setThemeId(meta.id as ThemeId)}
-              />
-              <span className="host__theme-option-label">{meta.label}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
-
       <main className="screen__main" aria-labelledby="host-title">
-        <h1 id="host-title">Host control</h1>
-
-        <section className="host__status" aria-live="polite">
-          <h2>Ready to run class</h2>
-          <p>
-            Load a game below, set up teams and optional buzzers, then open the audience display.
-            See the repository teacher quick start for a short walkthrough.
-          </p>
-        </section>
-
-        <div className="host__actions">
-          <button type="button" className="btn" onClick={openDisplay}>
-            Open audience display
-          </button>
+        <div className="host__title-row">
+          <h1 id="host-title">Host control</h1>
           <Link className="btn btn--secondary" to={ROUTES.root}>
             Back to Home
           </Link>
@@ -85,7 +35,7 @@ function HostRouteContent({
 
         <p className="host__note">
           {isDesktopRuntime()
-            ? 'Keep this Host on your laptop. When your computer has one other screen, opening the audience display moves it there. If that window is off every connected screen, Focus audience display brings it back onto a connected screen. If it is still on the wrong screen, move it yourself.'
+            ? 'Keep this Host on your laptop. When your computer has one other screen, opening the audience display moves it there. If that window is off every connected screen, Focus display brings it back onto a connected screen. If it is still on the wrong screen, move it yourself.'
             : 'Keep this Host on your laptop and put the audience display window on the projector. They are separate screens on purpose.'}
         </p>
 
@@ -98,12 +48,9 @@ function HostRouteContent({
 /**
  * Private teacher host screen.
  *
- * Owns the working classroom quiz-show host surface: content loading, gameplay
- * panels when a game is loaded, and secondary advanced diagnostics. It must
- * never be projected, hence the persistent warning banner.
- *
- * Slice 17 adds a session-local theme selector below the private-host banner.
- * Theme choice is presentation-only: no persistence, events, or public wire.
+ * Owns the working classroom quiz-show host surface. MENUS Slice A focuses the
+ * ordinary Host after Start Game; power paths live under More. Theme selection
+ * is demoted into FoundationControls More (session-local; no persistence).
  *
  * When the application shell already provides ThemeProvider, that instance owns
  * state. Otherwise a local provider covers MemoryRouter harnesses that render

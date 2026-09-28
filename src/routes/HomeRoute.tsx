@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { isDesktopRuntime } from '../runtime/cqsRuntime'
 import { ROUTES, absoluteDisplayUrlWithTheme, editPath, playPath } from './paths'
 import { useHostPersistence, type UseHostPersistenceOptions } from '../host/useHostPersistence'
@@ -651,9 +651,6 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
         <button type="button" className="btn btn--secondary" onClick={openDisplay}>
           Open Display
         </button>
-        <Link className="btn btn--secondary" to={ROUTES.host}>
-          Open classroom controls
-        </Link>
       </div>
 
       {importOpen && (

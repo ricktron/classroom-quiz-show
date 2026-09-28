@@ -72,10 +72,9 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('setup-sony-copy').textContent).not.toMatch(/WebHID|054c|report id|cqs\.sony/i)
   })
 
-  it('exposes panic mute and does not put teacher diagnostics on the current task', () => {
-    const { onPanicMute } = renderSetup()
-    fireEvent.click(screen.getByTestId('setup-panic-mute'))
-    expect(onPanicMute).toHaveBeenCalled()
+  it('does not nest Mute in Class setup (Mute lives in Host chrome)', () => {
+    renderSetup()
+    expect(screen.queryByTestId('setup-panic-mute')).toBeNull()
     expect(screen.getByTestId('setup-current-task').textContent).not.toMatch(
       /WebHID|IndexedDB|054c|keepalive/i,
     )
@@ -378,10 +377,21 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('team-name-selection-board')).toBeVisible()
   })
 
-  it('keeps Mute all sounds available without making it the current task', () => {
+  it('keeps Class setup focused on names without requiring Mute as the current task', () => {
     renderSetup()
-    expect(screen.getByTestId('setup-panic-mute')).toBeVisible()
     expect(screen.getByTestId('setup-current-task')).not.toHaveAttribute('data-task', 'sound')
     expect(screen.getByTestId('setup-current-task')).toHaveTextContent(/choose team names/i)
+  })
+
+  it('never disables Back to setup when names are incomplete (L0)', () => {
+    renderSetup({ playReady: true, initialSessionNames: {} })
+    const back = screen.getByTestId('setup-play')
+    expect(back).toHaveTextContent(/back to setup/i)
+    expect(back).not.toBeDisabled()
+  })
+
+  it('labels the ordinary setup CTA Start Game', () => {
+    renderSetup()
+    expect(screen.getByTestId('setup-play')).toHaveTextContent(/^start game$/i)
   })
 })
