@@ -4,6 +4,9 @@
  * Compact summary statuses are orientation, not a second settings toolbar.
  * Required, optional, readiness, fallback, and outcome stay distinct.
  *
+ * Ready ≡ canStartPlay (teams 1–8 + Session names assigned + unique).
+ * Optional Buzzers / Display / Sound never revoke Ready or own "needs attention".
+ *
  * Sony buzzer readiness must use the same teacher-summary layers as the
  * detailed Sony setup section — never a coarser parallel "ready" claim.
  */
@@ -17,7 +20,13 @@ import {
 
 export type ReadinessTone = 'ready' | 'optional' | 'warning'
 
-export type CompactReadinessStatus = 'complete' | 'current' | 'optional' | 'skipped' | 'blocked'
+/** Teacher-facing compact status vocabulary — no "Current". */
+export type CompactReadinessStatus =
+  | 'complete'
+  | 'optional'
+  | 'skipped'
+  | 'needs-attention'
+  | 'blocked'
 
 export type SetupTaskId = 'teams' | 'names' | 'buzzers' | 'display' | 'sound'
 
@@ -34,6 +43,7 @@ export interface CompactReadinessItem {
   readonly mark: string
   readonly status: CompactReadinessStatus
   readonly statusWord: string
+  readonly detail: string
 }
 
 export interface ClassroomReadinessInput {
@@ -60,6 +70,10 @@ export interface ClassroomSetupGuidanceInput extends ClassroomReadinessInput {
   readonly unnamedTeamLabels?: readonly string[]
   readonly buzzerSkipped?: boolean
   readonly repairActive?: boolean
+  /**
+   * @deprecated B+F: expansion is UI-only. Ignored by readiness status /
+   * dominant Ready selector. Kept optional for call-site compatibility.
+   */
   readonly focusOverride?: SetupTaskId | null
 }
 
@@ -144,19 +158,19 @@ export function classroomReadinessItems(input: ClassroomReadinessInput): readonl
     },
     {
       id: 'display',
-      label: input.displayOpen ? 'Display ready' : 'Display not open yet',
+      label: input.displayOpen ? 'Window open' : 'Window not open',
       detail: input.displayOpen
-        ? 'The audience display is open.'
+        ? 'The audience display window is open.'
         : 'Open the audience display when you are ready.',
-      tone: input.displayOpen ? 'ready' : 'warning',
+      tone: input.displayOpen ? 'ready' : 'optional',
     },
     {
       id: 'audio',
-      label: input.audioMuted ? 'Sound muted' : input.audioUnderstood ? 'Audio ready' : 'Audio not checked',
+      label: soundFactLabel(input),
       detail: input.audioMuted
         ? 'All presentation sound is muted. Unmute when you want cues.'
         : input.audioUnderstood
-          ? 'Sound is on. Mute all sounds is always available.'
+          ? 'Sound was tested. Mute all sounds is always available.'
           : 'Test sound or mute it so you know what the class will hear.',
       tone: input.audioUnderstood || input.audioMuted ? 'ready' : 'optional',
     },
@@ -183,6 +197,20 @@ export function soundIsReady(
   return input.audioUnderstood || input.audioMuted
 }
 
+/** Teacher-facing sound fact — never “Sound is ready” confidence language. */
+export function soundFactLabel(
+  input: Pick<ClassroomReadinessInput, 'audioUnderstood' | 'audioMuted'>,
+): string {
+  if (input.audioMuted) return 'Sound muted'
+  if (input.audioUnderstood) return 'Sound tested'
+  return 'Sound not tested'
+}
+
+/** Teacher-facing display window fact — never “Display ready”. */
+export function displayFactLabel(input: Pick<ClassroomReadinessInput, 'displayOpen'>): string {
+  return input.displayOpen ? 'Window open' : 'Window not open'
+}
+
 /**
  * Required-state blocker for Play. Buzzers, Display, and sound never appear
  * here — they cannot strand the class.
@@ -204,23 +232,53 @@ export function playBlockerExplanation(input: ClassroomSetupGuidanceInput): stri
   return null
 }
 
+/**
+ * Required-task emphasis for the setup workspace.
+ * Returns `'play'` (Ready) whenever {@link canStartPlay} — optionals never gate Ready.
+ * Does not consult focusOverride / teacher expand state.
+ */
 export function dominantSetupTask(input: ClassroomSetupGuidanceInput): SetupTaskId | 'play' {
-  if (input.focusOverride) return input.focusOverride
+  if (canStartPlay(input)) return 'play'
   if (!teamsAreReady(input)) return 'teams'
   if (!namesAreReady(input)) return 'names'
+  return 'play'
+}
+
+/**
+ * Optional chore suggestion after Ready. Never drives Ready heading or
+ * Start Game dominance. Null when required unmet or all optionals settled.
+ */
+export function optionalSetupChore(input: ClassroomSetupGuidanceInput): SetupTaskId | null {
+  if (!canStartPlay(input)) return null
   if (input.repairActive) return 'buzzers'
   const sonyReady = resolvedSonyFullyReady(input)
   if (!sonyReady && !input.buzzerSkipped) return 'buzzers'
   if (!input.displayOpen) return 'display'
   if (!soundIsReady(input)) return 'sound'
-  return 'play'
+  return null
+}
+
+/** Unresolved optional facts for the Ready exception / status line. */
+export function unresolvedOptionalFacts(input: ClassroomSetupGuidanceInput): readonly string[] {
+  if (!canStartPlay(input)) return []
+  const facts: string[] = []
+  const sonyReady = resolvedSonyFullyReady(input)
+  if (!sonyReady && !input.buzzerSkipped) {
+    facts.push('Buzzers not set up (optional)')
+  } else if (input.buzzerSkipped && !sonyReady) {
+    facts.push('Buzzers skipped')
+  }
+  if (!input.displayOpen) facts.push('Audience display window not open')
+  if (input.audioMuted) facts.push('Sound muted')
+  else if (!input.audioUnderstood) facts.push('Sound not tested')
+  return facts
 }
 
 function statusWord(status: CompactReadinessStatus): string {
   switch (status) {
     case 'complete':
       return 'complete'
-    case 'current':
+    case 'needs-attention':
       return 'needs attention'
     case 'optional':
       return 'optional'
@@ -235,7 +293,7 @@ function markFor(status: CompactReadinessStatus): string {
   switch (status) {
     case 'complete':
       return '✓'
-    case 'current':
+    case 'needs-attention':
       return '●'
     case 'optional':
       return '○'
@@ -246,56 +304,69 @@ function markFor(status: CompactReadinessStatus): string {
   }
 }
 
+function namesDetail(input: ClassroomSetupGuidanceInput): string {
+  if (namesAreReady(input)) return 'Each team has a unique class name.'
+  if (!teamsAreReady(input)) return 'Finish teams before choosing names.'
+  const unnamed = (input.unnamedTeamLabels ?? []).filter((label) => label.length > 0)
+  if (unnamed.length > 0 && input.teamCount > 0) {
+    const named = Math.max(0, input.teamCount - unnamed.length)
+    return `${named} of ${input.teamCount} named`
+  }
+  if (!input.namesUnique) return 'Each team needs a different name.'
+  return 'Choose names with buzzers or type them.'
+}
+
+function buzzersDetail(input: ClassroomSetupGuidanceInput): string {
+  if (resolvedSonyFullyReady(input)) {
+    return 'Buzzers ready. Keyboard still works.'
+  }
+  if (input.buzzerSkipped) return 'Skipped for this class. Keyboard works.'
+  if (input.sonyTeacherSummary != null) {
+    return teacherSummaryLabel(input.sonyTeacherSummary)
+  }
+  return 'Optional. Keyboard controls still work.'
+}
+
 export function compactReadinessItems(
   input: ClassroomSetupGuidanceInput,
 ): readonly CompactReadinessItem[] {
-  const current = dominantSetupTask(input)
   const sonyReady = resolvedSonyFullyReady(input)
-  const teamsStatus: CompactReadinessStatus = teamsAreReady(input)
-    ? current === 'teams'
-      ? 'current'
-      : 'complete'
-    : 'blocked'
+  const teamsStatus: CompactReadinessStatus = teamsAreReady(input) ? 'complete' : 'blocked'
   const namesStatus: CompactReadinessStatus = !teamsAreReady(input)
     ? 'blocked'
     : namesAreReady(input)
-      ? current === 'names'
-        ? 'current'
-        : 'complete'
-      : current === 'names'
-        ? 'current'
-        : 'blocked'
+      ? 'complete'
+      : 'needs-attention'
+  // Optionals never own "needs attention" merely for being next chore.
   const buzzerStatus: CompactReadinessStatus = sonyReady
     ? 'complete'
     : input.buzzerSkipped
       ? 'skipped'
-      : current === 'buzzers'
-        ? 'current'
-        : 'optional'
-  const displayStatus: CompactReadinessStatus = input.displayOpen
-    ? 'complete'
-    : current === 'display'
-      ? 'current'
       : 'optional'
-  const soundStatus: CompactReadinessStatus = soundIsReady(input)
-    ? 'complete'
-    : current === 'sound'
-      ? 'current'
-      : 'optional'
+  const displayStatus: CompactReadinessStatus = input.displayOpen ? 'complete' : 'optional'
+  const soundStatus: CompactReadinessStatus = soundIsReady(input) ? 'complete' : 'optional'
 
-  const items: readonly (readonly [SetupTaskId, string, CompactReadinessStatus])[] = [
-    ['teams', 'Teams', teamsStatus],
-    ['names', 'Names', namesStatus],
-    ['buzzers', 'Buzzers', buzzerStatus],
-    ['display', 'Display', displayStatus],
-    ['sound', 'Sound', soundStatus],
+  const items: readonly (readonly [SetupTaskId, string, CompactReadinessStatus, string])[] = [
+    [
+      'teams',
+      'Teams',
+      teamsStatus,
+      teamsAreReady(input)
+        ? `${input.teamCount} team${input.teamCount === 1 ? '' : 's'}`
+        : 'Needs 1–8 teams in the game editor',
+    ],
+    ['names', 'Names', namesStatus, namesDetail(input)],
+    ['buzzers', 'Buzzers', buzzerStatus, buzzersDetail(input)],
+    ['display', 'Display', displayStatus, displayFactLabel(input)],
+    ['sound', 'Sound', soundStatus, soundFactLabel(input)],
   ]
-  return items.map(([id, label, status]) => ({
+  return items.map(([id, label, status, detail]) => ({
     id,
     label,
     mark: markFor(status),
     status,
     statusWord: statusWord(status),
+    detail,
   }))
 }
 
@@ -312,7 +383,7 @@ export function currentTaskTitle(task: SetupTaskId | 'play'): string {
     case 'sound':
       return 'Check sound'
     case 'play':
-      return 'Ready to play'
+      return 'Ready'
   }
 }
 

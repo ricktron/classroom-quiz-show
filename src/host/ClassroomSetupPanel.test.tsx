@@ -44,8 +44,13 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('setup-play')).toBeDisabled()
     expect(screen.getByTestId('setup-play-blocker')).toHaveTextContent(/still need names/i)
     expect(screen.getByTestId('readiness-names')).toHaveTextContent(/needs attention/i)
+    expect(screen.getByTestId('setup-row-names')).toHaveAttribute('data-emphasized', 'true')
     expect(screen.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
-    expect(screen.queryByTestId('setup-display-preview')).toBeNull()
+    expect(screen.getByTestId('setup-row-teams')).toBeInTheDocument()
+    expect(screen.getByTestId('setup-row-buzzers')).toBeInTheDocument()
+    expect(screen.getByTestId('setup-row-display')).toBeInTheDocument()
+    expect(screen.getByTestId('setup-row-sound')).toBeInTheDocument()
+    expect(screen.queryByTestId('setup-ready-heading')).toBeNull()
   })
 
   it('lets a teacher finish with typed names when Sony is disconnected', () => {
@@ -56,6 +61,7 @@ describe('ClassroomSetupPanel', () => {
     fireEvent.change(screen.getByTestId('tnsb-manual-blue'), { target: { value: 'Ozone Owls' } })
     fireEvent.blur(screen.getByTestId('tnsb-manual-blue'))
     expect(screen.getByTestId('setup-play')).not.toBeDisabled()
+    expect(screen.getByTestId('setup-ready-heading')).toHaveTextContent(/ready/i)
     fireEvent.click(screen.getByTestId('setup-play'))
     expect(onPlay).toHaveBeenCalled()
   })
@@ -393,5 +399,77 @@ describe('ClassroomSetupPanel', () => {
   it('labels the ordinary setup CTA Start Game', () => {
     renderSetup()
     expect(screen.getByTestId('setup-play')).toHaveTextContent(/^start game$/i)
+  })
+
+  it('shows Ready with Start Game sole dominant while optionals stay unresolved', () => {
+    const { onOpenDisplay, onPlay } = renderSetup({
+      initialSessionNames: { red: 'Comet Crew', blue: 'Ozone Owls' },
+      sonyReady: false,
+      displayOpen: false,
+      audioUnderstood: false,
+    })
+    expect(screen.getByTestId('setup-ready-heading')).toHaveTextContent(/ready/i)
+    expect(screen.getByTestId('setup-play')).not.toBeDisabled()
+    expect(screen.getByTestId('setup-play')).toHaveClass('classroom-setup__play--dominant')
+    expect(screen.getByTestId('setup-open-display-secondary')).toBeVisible()
+    expect(screen.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'play')
+    expect(screen.queryByTestId('setup-buzzers-task')).toBeNull()
+    expect(screen.queryByTestId('setup-display-task')).toBeNull()
+    expect(screen.queryByTestId('setup-sound-task')).toBeNull()
+    expect(screen.getByTestId('readiness-sony')).toHaveTextContent(/optional/i)
+    expect(screen.getByTestId('readiness-sony').textContent).not.toMatch(/needs attention/i)
+    expect(screen.getByTestId('readiness-display').textContent).not.toMatch(/needs attention|display ready/i)
+    expect(screen.getByTestId('readiness-audio').textContent).toMatch(/not tested/i)
+    expect(screen.getByTestId('setup-ready-status').textContent).not.toMatch(/display ready|sound is ready/i)
+    expect(document.body.textContent).not.toMatch(/Display ready|Sound is ready/i)
+
+    fireEvent.click(screen.getByTestId('setup-open-display-secondary'))
+    expect(onOpenDisplay).toHaveBeenCalled()
+
+    fireEvent.click(screen.getByTestId('setup-row-buzzers').querySelector('button')!)
+    expect(screen.getByTestId('setup-buzzers-task')).toBeVisible()
+    expect(screen.getByTestId('setup-ready-heading')).toBeVisible()
+    expect(screen.getByTestId('setup-play')).not.toBeDisabled()
+    expect(screen.getByTestId('setup-optional-tag')).toHaveTextContent(/optional/i)
+
+    fireEvent.click(screen.getByTestId('setup-skip-buzzers'))
+    expect(screen.getByTestId('readiness-sony')).toHaveTextContent(/skipped/i)
+    expect(screen.getByTestId('setup-ready-heading')).toBeVisible()
+    expect(screen.getByTestId('setup-play')).not.toBeDisabled()
+
+    fireEvent.click(screen.getByTestId('setup-play'))
+    expect(onPlay).toHaveBeenCalled()
+  })
+
+  it('revokes Ready when a required name is cleared after Ready', () => {
+    renderSetup({
+      initialSessionNames: { red: 'Comet Crew', blue: 'Ozone Owls' },
+      displayOpen: false,
+    })
+    expect(screen.getByTestId('setup-ready-heading')).toBeVisible()
+    fireEvent.click(screen.getByTestId('setup-revisit-names'))
+    fireEvent.click(screen.getByTestId('tnsb-reset-red'))
+    expect(screen.queryByTestId('setup-ready-heading')).toBeNull()
+    expect(screen.getByTestId('setup-play')).toBeDisabled()
+    expect(screen.getByTestId('setup-play-blocker')).toBeVisible()
+    expect(screen.getByTestId('readiness-names')).toHaveTextContent(/needs attention/i)
+  })
+
+  it('keeps five readiness rows visible and expand survives without changing optional status', () => {
+    renderSetup({
+      initialSessionNames: { red: 'Comet Crew', blue: 'Ozone Owls' },
+      sonyReady: false,
+      displayOpen: false,
+      audioUnderstood: false,
+    })
+    for (const id of ['teams', 'names', 'buzzers', 'display', 'sound'] as const) {
+      expect(screen.getByTestId(`setup-row-${id}`)).toBeInTheDocument()
+    }
+    fireEvent.click(screen.getByTestId('readiness-display'))
+    expect(screen.getByTestId('setup-display-task')).toBeVisible()
+    expect(screen.getByTestId('setup-display-fact')).toHaveTextContent(/window not open/i)
+    expect(screen.getByTestId('setup-ready-heading')).toBeVisible()
+    expect(screen.getByTestId('readiness-display')).toHaveTextContent(/optional/i)
+    expect(screen.getByTestId('setup-row-display')).toHaveAttribute('data-emphasized', 'false')
   })
 })

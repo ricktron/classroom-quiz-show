@@ -6,8 +6,12 @@ import {
   classroomReadinessItems,
   compactReadinessItems,
   currentTaskTitle,
+  displayFactLabel,
   dominantSetupTask,
+  optionalSetupChore,
   playBlockerExplanation,
+  soundFactLabel,
+  unresolvedOptionalFacts,
 } from './classroomReadiness'
 import {
   classifyTeacherSummaryFromHardware,
@@ -96,27 +100,122 @@ describe('classroom readiness', () => {
       namesAssigned: false,
       sonyReady: false,
       displayOpen: false,
+      unnamedTeamLabels: ['Team 1', 'Team 2', 'Team 3', 'Team 4'],
     })
-    expect(compact.find((item) => item.id === 'names')?.status).toBe('current')
+    expect(compact.find((item) => item.id === 'names')?.status).toBe('needs-attention')
+    expect(compact.find((item) => item.id === 'names')?.statusWord).toMatch(/needs attention/i)
     expect(compact.find((item) => item.id === 'buzzers')?.status).toBe('optional')
     expect(compact.find((item) => item.id === 'display')?.status).toBe('optional')
+    expect(compact.find((item) => item.id === 'buzzers')?.statusWord).not.toMatch(/needs attention/i)
+    expect(compact.find((item) => item.id === 'display')?.statusWord).not.toMatch(/needs attention/i)
   })
 
-  it('treats buzzers as optional current work after names, never as class-ready', () => {
-    expect(dominantSetupTask({ ...ready, sonyReady: false, displayOpen: false })).toBe('buzzers')
-    expect(dominantSetupTask({ ...ready, sonyReady: false, buzzerSkipped: true })).toBe('play')
+  it('returns Ready (play) when required met even if optionals unresolved', () => {
+    expect(
+      dominantSetupTask({
+        ...ready,
+        sonyReady: false,
+        displayOpen: false,
+        audioUnderstood: false,
+        buzzerSkipped: false,
+      }),
+    ).toBe('play')
+    expect(dominantSetupTask({ ...ready, sonyReady: false, buzzerSkipped: true, displayOpen: false })).toBe(
+      'play',
+    )
     expect(
       compactReadinessItems({ ...ready, sonyReady: false, buzzerSkipped: true }).find(
         (item) => item.id === 'buzzers',
       )?.status,
     ).toBe('skipped')
+    expect(optionalSetupChore({ ...ready, sonyReady: false, displayOpen: false })).toBe('buzzers')
+    expect(
+      optionalSetupChore({
+        ...ready,
+        sonyReady: false,
+        buzzerSkipped: true,
+        displayOpen: false,
+      }),
+    ).toBe('display')
   })
 
   it('keeps receiver-ready, controller-ready, and class-ready as separate layers', () => {
     expect(canStartPlay({ ...ready, sonyReady: false })).toBe(true)
-    expect(dominantSetupTask({ ...ready, sonyReady: false })).toBe('buzzers')
+    expect(dominantSetupTask({ ...ready, sonyReady: false })).toBe('play')
     expect(dominantSetupTask(ready)).toBe('play')
     expect(playBlockerExplanation({ ...ready, sonyReady: false })).toBeNull()
+  })
+
+  it('uses window open / sound fact vocabulary — never Display ready or Sound is ready', () => {
+    expect(displayFactLabel({ displayOpen: true })).toMatch(/window open/i)
+    expect(displayFactLabel({ displayOpen: false })).toMatch(/window not open/i)
+    expect(soundFactLabel({ audioUnderstood: false, audioMuted: false })).toMatch(/not tested/i)
+    expect(soundFactLabel({ audioUnderstood: true, audioMuted: false })).toMatch(/tested/i)
+    expect(soundFactLabel({ audioUnderstood: false, audioMuted: true })).toMatch(/muted/i)
+
+    const closed = classroomReadinessItems({ ...ready, displayOpen: false, audioUnderstood: false })
+    expect(closed.find((item) => item.id === 'display')?.label).not.toMatch(/display ready/i)
+    expect(closed.find((item) => item.id === 'display')?.label).toMatch(/window not open/i)
+    expect(closed.find((item) => item.id === 'audio')?.label).toMatch(/not tested/i)
+
+    const open = classroomReadinessItems(ready)
+    expect(open.find((item) => item.id === 'display')?.label).not.toMatch(/display ready/i)
+    expect(open.find((item) => item.id === 'display')?.label).toMatch(/window open/i)
+    expect(JSON.stringify(open)).not.toMatch(/Display ready|Sound is ready/i)
+
+    const compact = compactReadinessItems({
+      ...ready,
+      displayOpen: false,
+      audioUnderstood: false,
+      sonyReady: false,
+    })
+    expect(compact.find((item) => item.id === 'display')?.detail).toMatch(/window not open/i)
+    expect(compact.find((item) => item.id === 'sound')?.detail).toMatch(/not tested/i)
+    expect(compact.every((item) => item.status !== ('current' as never))).toBe(true)
+  })
+
+  it('lists unresolved optional facts without revoking Ready', () => {
+    const input = {
+      ...ready,
+      sonyReady: false,
+      displayOpen: false,
+      audioUnderstood: false,
+      buzzerSkipped: false,
+    }
+    expect(canStartPlay(input)).toBe(true)
+    expect(dominantSetupTask(input)).toBe('play')
+    const facts = unresolvedOptionalFacts(input)
+    expect(facts.join(' ')).toMatch(/buzzers/i)
+    expect(facts.join(' ')).toMatch(/display/i)
+    expect(facts.join(' ')).toMatch(/sound/i)
+    expect(unresolvedOptionalFacts({ ...input, buzzerSkipped: true }).join(' ')).toMatch(/skipped/i)
+  })
+
+  it('ignores focusOverride for Ready / status (expansion is UI-only)', () => {
+    expect(
+      dominantSetupTask({
+        ...ready,
+        namesAssigned: false,
+        focusOverride: 'display',
+      }),
+    ).toBe('names')
+    expect(
+      dominantSetupTask({
+        ...ready,
+        sonyReady: false,
+        displayOpen: false,
+        focusOverride: 'sound',
+      }),
+    ).toBe('play')
+    expect(
+      compactReadinessItems({
+        ...ready,
+        namesAssigned: false,
+        sonyReady: false,
+        focusOverride: 'buzzers',
+        unnamedTeamLabels: ['Team 1'],
+      }).find((item) => item.id === 'buzzers')?.status,
+    ).toBe('optional')
   })
 })
 
