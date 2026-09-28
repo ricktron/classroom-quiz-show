@@ -269,8 +269,8 @@ export function unresolvedOptionalFacts(input: ClassroomSetupGuidanceInput): rea
     facts.push('Buzzers skipped')
   }
   if (!input.displayOpen) facts.push('Audience display window not open')
-  if (input.audioMuted) facts.push('Sound muted')
-  else if (!input.audioUnderstood) facts.push('Sound not tested')
+  // Muted / tested are settled sound facts; only untested remains unresolved.
+  if (!input.audioMuted && !input.audioUnderstood) facts.push('Sound not tested')
   return facts
 }
 
