@@ -46,6 +46,7 @@ import {
 } from '../session/hostPlayPosture'
 import { soundFactLabel } from '../session/classroomReadiness'
 import { THEME_META, type ThemeId } from '../theme/themeRegistry'
+import { ownsSameGameRosterRefresh } from './sameGameRosterRefresh'
 import './FoundationControls.css'
 
 /**
@@ -77,6 +78,12 @@ export function FoundationControls({
   const navigate = useNavigate()
   const playGameId = playGameIdFromSearch(searchParams.toString())
   const playLoadedRef = useRef<string | null>(null)
+  /** Latest-attempt counter for same-Game library roster refresh (Strict Mode safe). */
+  const rosterRefreshAttemptRef = useRef(0)
+  const playGameIdRef = useRef(playGameId)
+  playGameIdRef.current = playGameId
+  const storeEpochRef = useRef(0)
+  const playReplaceArmedRef = useRef(false)
   const homeResumeHandledRef = useRef(false)
   const [playReplaceNeeded, setPlayReplaceNeeded] = useState(false)
   const [playReplaceArmed, setPlayReplaceArmed] = useState(false)
@@ -215,9 +222,14 @@ export function FoundationControls({
     )
   }, [game?.definition, persistenceAdapter, registry, persistenceStoreEpoch])
 
+  storeEpochRef.current = persistence.storeEpoch
+
   const loadPlayRef = useRef<() => void>(() => {})
   loadPlayRef.current = () => {
-    if (!playGameId) return
+    if (!playGameId) {
+      rosterRefreshAttemptRef.current += 1
+      return
+    }
     if (persistence.bootPhase !== 'ready') return
     if (!persistence.canDispatchSessionCommands) return
     if (playLoadedRef.current === playGameId) return
@@ -229,45 +241,76 @@ export function FoundationControls({
       // Same Game id can still need a library refresh after authoring team-count
       // change (Edit → Save → Play). Compare team signatures; refresh only when
       // the saved definition roster drifted — not an indiscriminate session reset.
+      // Never silently replace: reuse existing loadSaved confirmation substrate.
       const adapter = persistence.adapter
       if (!adapter) {
         playLoadedRef.current = playGameId
         setPlayReplaceNeeded(false)
         return
       }
-      const liveSig = teamSetSignature(liveGame.definition.teams)
-      void loadLibraryRecord(adapter, playGameId).then((loaded) => {
-        if (playLoadedRef.current === playGameId) return
+      const requestPlayGameId = playGameId
+      const requestStoreEpoch = persistence.storeEpoch
+      const requestLiveTeamSig = teamSetSignature(liveGame.definition.teams)
+      const attempt = ++rosterRefreshAttemptRef.current
+      void loadLibraryRecord(adapter, requestPlayGameId).then((loaded) => {
+        const liveNow = store.getState().session?.game ?? null
+        const currentLiveTeamSig = liveNow
+          ? teamSetSignature(liveNow.definition.teams)
+          : ''
+        if (
+          !ownsSameGameRosterRefresh({
+            attempt,
+            latestAttempt: rosterRefreshAttemptRef.current,
+            requestPlayGameId,
+            currentPlayGameId: playGameIdRef.current,
+            requestStoreEpoch,
+            currentStoreEpoch: storeEpochRef.current,
+            requestLiveTeamSig,
+            currentLiveTeamSig,
+          })
+        ) {
+          return
+        }
+        if (playLoadedRef.current === requestPlayGameId) return
         if (!loaded.ok) {
-          playLoadedRef.current = playGameId
+          playLoadedRef.current = requestPlayGameId
           setPlayReplaceNeeded(false)
           return
         }
         const librarySig = teamSetSignature(loaded.value.definition.teams)
-        if (librarySig === liveSig) {
-          playLoadedRef.current = playGameId
+        if (librarySig === requestLiveTeamSig) {
+          playLoadedRef.current = requestPlayGameId
           setPlayReplaceNeeded(false)
           return
         }
+        // Roster drifted — ask the teacher before INITIALIZE_GAME can replace.
         void persistence
           .loadSaved({
-            gameId: playGameId,
-            activeGame: liveGame,
+            gameId: requestPlayGameId,
+            activeGame: liveNow,
             dispatch,
             getHistory: () => store.getHistory(),
             registry,
-            confirmedReplace: true,
+            confirmedReplace: playReplaceArmed,
           })
           .then((result) => {
+            if (attempt !== rosterRefreshAttemptRef.current) return
+            if (playGameIdRef.current !== requestPlayGameId) return
             if (result.ok) {
-              playLoadedRef.current = playGameId
+              playLoadedRef.current = requestPlayGameId
               setPlayReplaceNeeded(false)
               setPlayReplaceArmed(false)
+              return
+            }
+            if ('needsConfirmation' in result && result.needsConfirmation) {
+              setPlayReplaceNeeded(true)
             }
           })
       })
       return
     }
+    // Different-Game / fresh load — invalidate any pending same-Game refresh.
+    rosterRefreshAttemptRef.current += 1
     // Recovered non-empty history still applying: never loadSaved over it.
     if (liveGame === null && liveHistory.length > 0) return
     void persistence

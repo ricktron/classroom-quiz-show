@@ -92,8 +92,12 @@ test('0-team import mounts Class Setup; Edit → set count → Play returns with
   await playBtn.click()
 
   // Leaving Host for authoring persists an unfinished session; returning via
-  // Play lands on recovery. Resume, then expect library team-roster refresh.
+  // Play lands on recovery. Resume, then same-Game roster drift must ask the
+  // teacher before replacing the Session (never silent confirmedReplace).
   await page.getByRole('button', { name: /^resume session$/i }).click({ timeout: 15_000 })
+
+  await expect(page.getByTestId('play-replace-confirm')).toBeVisible({ timeout: 15_000 })
+  await page.getByRole('button', { name: /load this game and replace the current session/i }).click()
 
   await expect(page.getByTestId('classroom-setup')).toBeVisible({ timeout: 15_000 })
   await expect(page.getByTestId('readiness-teams')).toHaveAttribute('data-status', 'complete')

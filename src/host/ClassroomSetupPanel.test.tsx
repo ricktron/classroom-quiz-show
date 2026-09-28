@@ -513,6 +513,42 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('setup-names-summary')).toHaveTextContent(/Classroom Squad 8/)
   })
 
+  it('keeps Start Game sole dominant when Teams is revisited while Ready', () => {
+    const onEditGame = vi.fn()
+    renderSetup({ ...READY_OPTIONALS_UNRESOLVED, onEditGame })
+    expect(screen.getByTestId('setup-ready-heading')).toBeVisible()
+    expect(screen.getByTestId('setup-play')).not.toBeDisabled()
+    expect(screen.getByTestId('setup-play')).toHaveClass('classroom-setup__play--dominant')
+
+    fireEvent.click(screen.getByTestId('readiness-teams'))
+    expect(screen.getByTestId('setup-teams-task')).toBeVisible()
+    expect(screen.getByTestId('setup-ready-heading')).toBeVisible()
+    expect(screen.getByTestId('setup-play')).not.toBeDisabled()
+    expect(screen.getByTestId('setup-play')).toHaveClass('classroom-setup__play--dominant')
+
+    const edit = screen.getByTestId('setup-edit-game')
+    expect(edit).toBeVisible()
+    expect(edit).toHaveClass('btn--secondary')
+    expect(edit.className.split(/\s+/)).not.toContain('btn--primary')
+    expect(edit).not.toHaveClass('classroom-setup__play--dominant')
+  })
+
+  it('keeps Edit this game primary when Teams are blocked (0-team repair)', () => {
+    renderSetup({ teams: [], onEditGame: vi.fn() })
+    const edit = screen.getByTestId('setup-edit-game')
+    expect(edit).toBeVisible()
+    expect(edit).toHaveClass('btn')
+    expect(edit).not.toHaveClass('btn--secondary')
+  })
+
+  it('keeps Edit this game secondary when Teams are valid but Names still required', () => {
+    renderSetup({ onEditGame: vi.fn(), initialSessionNames: {} })
+    fireEvent.click(screen.getByTestId('readiness-teams'))
+    const edit = screen.getByTestId('setup-edit-game')
+    expect(edit).toHaveClass('btn--secondary')
+    expect(screen.getByTestId('setup-play')).toBeDisabled()
+  })
+
   it('mounts Class Setup for 0-team with Teams/Names blocked, Start disabled, and Edit CTA', () => {
     const onEditGame = vi.fn()
     renderSetup({ teams: [], onEditGame })

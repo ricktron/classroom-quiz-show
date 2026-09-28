@@ -423,7 +423,10 @@ export function ClassroomSetupPanel({
           {onEditGame && (
             <button
               type="button"
-              className="btn"
+              // Teams blocked → Edit may be the primary repair CTA.
+              // Teams valid (incl. Ready + Teams revisited) → Edit stays secondary
+              // so Start Game remains the sole dominant control when Ready.
+              className={teamsOk ? 'btn btn--secondary' : 'btn'}
               data-testid="setup-edit-game"
               onClick={onEditGame}
             >

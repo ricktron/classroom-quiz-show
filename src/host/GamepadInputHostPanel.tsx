@@ -203,6 +203,11 @@ export function GamepadInputHostPanel({
   const wbuzzPresent = sony.wbuzzController != null
   useEffect(() => {
     onWbuzzPresentChange?.(wbuzzPresent)
+    // Clear lifted signal on unmount so Host does not keep a stale true after
+    // the sole Gamepad owner leaves the tree.
+    return () => {
+      onWbuzzPresentChange?.(false)
+    }
   }, [wbuzzPresent, onWbuzzPresentChange])
 
   const publishTeacherSummary = useCallback(
