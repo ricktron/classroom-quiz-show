@@ -16,6 +16,8 @@ import {
   currentTaskTitle,
   dominantSetupTask,
   playBlockerExplanation,
+  unresolvedOptionalFacts,
+  type CompactReadinessItem,
   type SetupTaskId,
 } from '../session/classroomReadiness'
 import type { SonyBuzzTeacherSummary } from '../input/sonyBuzzTeacherReadiness'
@@ -78,6 +80,16 @@ function teamOrdinalLabel(team: TeamDefinition, index: number): string {
   return team.name.trim().length > 0 ? team.name : `Team ${index + 1}`
 }
 
+function readinessTestId(id: SetupTaskId): string {
+  if (id === 'buzzers') return 'readiness-sony'
+  if (id === 'sound') return 'readiness-audio'
+  return `readiness-${id}`
+}
+
+function rowTestId(id: SetupTaskId): string {
+  return `setup-row-${id}`
+}
+
 export function ClassroomSetupPanel({
   teams,
   teamNameBank,
@@ -108,10 +120,16 @@ export function ClassroomSetupPanel({
     seedSelection(teamNameBank, teamIds, initialSessionNames),
   )
   const [buzzerSkipped, setBuzzerSkipped] = useState(false)
-  const [focusOverride, setFocusOverride] = useState<SetupTaskId | null>(null)
+  /**
+   * Teacher expand pin. `undefined` = follow pure default (required dominant or
+   * none when Ready). Does not feed readiness status.
+   */
+  const [expandOverride, setExpandOverride] = useState<SetupTaskId | null | undefined>(undefined)
   const lastPress = useRef<{ teamId: string; intentKey: string; at: number } | null>(null)
   const lastSingleObservationAt = useRef<number>(0)
   const lastBatchKey = useRef<string>('')
+  const prevClassReady = useRef<boolean | null>(null)
+  const prevPureDominant = useRef<SetupTaskId | 'play' | null>(null)
 
   useEffect(() => {
     setSelection(seedSelection(teamNameBank, teamIds, initialNamesRef.current))
@@ -204,20 +222,68 @@ export function ClassroomSetupPanel({
     unnamedTeamLabels,
     buzzerSkipped: buzzerSkipped || sonyReady,
     repairActive: false,
-    focusOverride: playReady ? null : focusOverride,
   }
   const playEnabled = canStartPlay(guidance)
   const playBlocker = playBlockerExplanation(guidance)
-  const currentTask = playReady ? 'play' : dominantSetupTask(guidance)
+  const pureDominant = dominantSetupTask(guidance)
+  const classReady = playEnabled && !playReady
   const summary = compactReadinessItems(guidance)
-  const showNames = !playReady && (currentTask === 'names' || focusOverride === 'names')
-  const showDisplay = !playReady && (currentTask === 'display' || focusOverride === 'display')
-  const showSound = !playReady && (currentTask === 'sound' || focusOverride === 'sound')
-  const showBuzzers = !playReady && (currentTask === 'buzzers' || focusOverride === 'buzzers')
+  const optionalFacts = unresolvedOptionalFacts(guidance)
   const namesComplete = namesAssigned && unique
   const claimedList = teams
     .map((team) => claimed[team.id])
     .filter((name): name is string => typeof name === 'string')
+
+  // Genuine transitions: required work completes → drop pin on that required row
+  // so Ready stage appears; optional teacher pins survive Ready.
+  useEffect(() => {
+    const wasReady = prevClassReady.current
+    const wasDominant = prevPureDominant.current
+    prevClassReady.current = playEnabled
+    prevPureDominant.current = pureDominant
+
+    if (wasReady === null) return
+
+    if (!wasReady && playEnabled) {
+      setExpandOverride((current) => {
+        if (current === undefined) return undefined
+        if (current === 'teams' || current === 'names') return undefined
+        return current
+      })
+      return
+    }
+
+    if (
+      wasDominant &&
+      wasDominant !== pureDominant &&
+      (wasDominant === 'teams' || wasDominant === 'names') &&
+      pureDominant === 'play'
+    ) {
+      setExpandOverride((current) =>
+        current === wasDominant || current === undefined ? undefined : current,
+      )
+    }
+  }, [playEnabled, pureDominant])
+
+  const defaultExpanded: SetupTaskId | null =
+    playReady || playEnabled ? null : pureDominant === 'play' ? null : pureDominant
+  const expandedTask: SetupTaskId | null =
+    expandOverride === undefined ? defaultExpanded : expandOverride
+
+  const emphasizedTask: SetupTaskId | null =
+    playReady || playEnabled ? null : pureDominant === 'play' ? null : pureDominant
+
+  const toggleRow = (id: SetupTaskId) => {
+    setExpandOverride((current) => {
+      const effective = current === undefined ? defaultExpanded : current
+      if (effective === id) return null
+      return id
+    })
+  }
+
+  const expandRow = (id: SetupTaskId) => {
+    setExpandOverride(id)
+  }
 
   const previewTeams = {
     status: 'available' as const,
@@ -229,8 +295,239 @@ export function ClassroomSetupPanel({
     })),
   }
 
-  const focusTask = (id: SetupTaskId) => {
-    setFocusOverride((current) => (current === id ? null : id))
+  const stageTitle = playReady
+    ? 'In play'
+    : playEnabled
+      ? expandedTask
+        ? currentTaskTitle(expandedTask)
+        : 'Ready'
+      : currentTaskTitle(pureDominant === 'play' ? 'names' : pureDominant)
+
+  const renderCollapsedSecondary = (item: CompactReadinessItem) => {
+    if (expandedTask === item.id) return null
+    if (item.id === 'names' && namesComplete) {
+      return (
+        <button
+          type="button"
+          className="btn btn--secondary classroom-setup__row-action"
+          data-testid="setup-revisit-names"
+          onClick={(event) => {
+            event.stopPropagation()
+            expandRow('names')
+          }}
+        >
+          Change names
+        </button>
+      )
+    }
+    if (item.id === 'buzzers' && !sonyReady && !buzzerSkipped) {
+      return (
+        <button
+          type="button"
+          className="btn btn--secondary classroom-setup__row-action"
+          data-testid="setup-skip-buzzers"
+          onClick={(event) => {
+            event.stopPropagation()
+            setBuzzerSkipped(true)
+          }}
+        >
+          Skip
+        </button>
+      )
+    }
+    if (item.id === 'display' && !displayOpen) {
+      return (
+        <button
+          type="button"
+          className="btn btn--secondary classroom-setup__row-action"
+          data-testid="setup-open-display"
+          onClick={(event) => {
+            event.stopPropagation()
+            onOpenDisplay()
+          }}
+        >
+          Open display
+        </button>
+      )
+    }
+    if (item.id === 'sound' && !audioUnderstood && !audioMuted) {
+      return (
+        <button
+          type="button"
+          className="btn btn--secondary classroom-setup__row-action"
+          data-testid="setup-audio-test"
+          onClick={(event) => {
+            event.stopPropagation()
+            onAudioTest()
+          }}
+        >
+          Test sound
+        </button>
+      )
+    }
+    return null
+  }
+
+  const renderStageBody = () => {
+    if (playReady) {
+      return namesComplete ? (
+        <p className="classroom-setup__quiet" data-testid="setup-names-summary">
+          Names ready: {claimedList.join(', ')}
+        </p>
+      ) : null
+    }
+
+    if (!expandedTask && playEnabled) {
+      return (
+        <div className="classroom-setup__ready-stage" data-testid="setup-ready-stage">
+          <p className="host__note" data-testid="setup-ready-copy">
+            Required setup is complete. Start Game when the class is ready.
+          </p>
+          {namesComplete && (
+            <p className="classroom-setup__quiet" data-testid="setup-names-summary">
+              Names ready: {claimedList.join(', ')}
+            </p>
+          )}
+          {optionalFacts.length > 0 && (
+            <p className="host__note classroom-setup__optional-facts" data-testid="setup-optional-facts">
+              Still optional: {optionalFacts.join(' · ')}
+            </p>
+          )}
+          <div data-testid="setup-display-preview" className="classroom-setup__preview-inline">
+            <TeamScoreboard teams={previewTeams} layout={teams.length <= 4 ? 'column' : 'strip'} />
+          </div>
+        </div>
+      )
+    }
+
+    if (expandedTask === 'teams') {
+      return (
+        <div className="classroom-setup__task" data-testid="setup-teams-task">
+          <p className="host__note">This game still needs 1–8 teams before class names.</p>
+        </div>
+      )
+    }
+
+    if (expandedTask === 'names') {
+      return (
+        <div className="classroom-setup__task" data-testid="setup-names-task">
+          <p className="host__note" data-testid="setup-sony-copy">
+            Each team presses Blue, Orange, Green, or Yellow — top to bottom on the controller —
+            to choose a name. Red shows four more names for that team only. You can also type a
+            name. Keyboard always works.
+          </p>
+          <TeamNameSelectionBoard
+            views={teamIds.map((id) => selection.views[id]!).filter(Boolean)}
+            teamLabels={Object.fromEntries(
+              teams.map((team, index) => [team.id, teamOrdinalLabel(team, index)]),
+            )}
+            onClaim={(teamId, choiceIndex) =>
+              apply(applyTeamNameInputs(selection, [{ kind: 'claim', teamId, choiceIndex }]).state)
+            }
+            onCycle={(teamId) =>
+              apply(applyTeamNameInputs(selection, [{ kind: 'cycle', teamId }]).state)
+            }
+            onManual={(teamId, name) =>
+              apply(applyTeamNameInputs(selection, [{ kind: 'manual', teamId, name }]).state)
+            }
+            onReset={(teamId) =>
+              apply(applyTeamNameInputs(selection, [{ kind: 'reset', teamId }]).state)
+            }
+            reducedMotion={reducedMotion}
+            highContrast={highContrast}
+            grayscale={grayscale}
+          />
+        </div>
+      )
+    }
+
+    if (expandedTask === 'buzzers') {
+      return (
+        <div className="classroom-setup__task" data-testid="setup-buzzers-task">
+          {playEnabled && (
+            <p className="classroom-setup__optional-tag" data-testid="setup-optional-tag">
+              Optional
+            </p>
+          )}
+          <p className="host__note" data-testid="setup-buzzers-copy">
+            {classSetupBuzzerTaskCopy({ sonyReady, sonyTeacherSummary })}
+          </p>
+          <p className="host__note">
+            Connect controllers in the Buzzers section below. This row does not remount that panel.
+          </p>
+          {!sonyReady && !buzzerSkipped && (
+            <button
+              type="button"
+              className="btn btn--secondary"
+              data-testid="setup-skip-buzzers"
+              onClick={() => setBuzzerSkipped(true)}
+            >
+              Skip buzzers
+            </button>
+          )}
+        </div>
+      )
+    }
+
+    if (expandedTask === 'display') {
+      return (
+        <div className="classroom-setup__task" data-testid="setup-display-task">
+          {playEnabled && (
+            <p className="classroom-setup__optional-tag" data-testid="setup-optional-tag">
+              Optional
+            </p>
+          )}
+          <p className="host__note">
+            {isDesktopRuntime()
+              ? 'Open the audience display when you are ready. If this computer has one other screen, Classroom Quiz Show moves the audience display there. If that window is off every connected screen (for example after a projector disconnect), choose Focus audience display again and the desktop app brings it back onto a connected screen—usually the one with the Host. If it is still on the wrong screen, move it yourself. The class can still start without it.'
+              : 'Open the audience display on the projector when you are ready. Put that window on the projector yourself. The class can still start without it.'}
+          </p>
+          <p className="host__note" data-testid="setup-display-fact">
+            {displayOpen ? 'Window open.' : 'Window not open.'}
+          </p>
+          <button
+            type="button"
+            className="btn btn--secondary"
+            data-testid="setup-open-display"
+            onClick={onOpenDisplay}
+          >
+            {displayOpen ? 'Focus audience display' : 'Open audience display'}
+          </button>
+          <div data-testid="setup-display-preview" className="classroom-setup__preview-inline">
+            <TeamScoreboard teams={previewTeams} layout={teams.length <= 4 ? 'column' : 'strip'} />
+          </div>
+        </div>
+      )
+    }
+
+    if (expandedTask === 'sound') {
+      return (
+        <div className="classroom-setup__task" data-testid="setup-sound-task">
+          {playEnabled && (
+            <p className="classroom-setup__optional-tag" data-testid="setup-optional-tag">
+              Optional
+            </p>
+          )}
+          <p className="host__note">
+            Test sound so you know what the class will hear. Mute stays available in Host controls if
+            things get loud.
+          </p>
+          <p className="host__note" data-testid="setup-sound-fact">
+            {audioMuted ? 'Sound muted.' : audioUnderstood ? 'Sound tested.' : 'Sound not tested.'}
+          </p>
+          <button
+            type="button"
+            className="btn btn--secondary"
+            data-testid="setup-audio-test"
+            onClick={onAudioTest}
+          >
+            {audioUnderstood || audioMuted ? 'Test sound again' : 'Test sound'}
+          </button>
+        </div>
+      )
+    }
+
+    return null
   }
 
   return (
@@ -244,174 +541,69 @@ export function ClassroomSetupPanel({
         </div>
       </header>
 
-      <nav
-        className="classroom-setup__readiness"
-        data-testid="classroom-readiness"
-        aria-label="Class setup progress"
-      >
-        {summary.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className="classroom-setup__chip"
-            data-testid={`readiness-${item.id === 'buzzers' ? 'sony' : item.id === 'sound' ? 'audio' : item.id}`}
-            data-status={item.status}
-            aria-current={currentTask === item.id ? 'step' : undefined}
-            onClick={() => focusTask(item.id)}
-          >
-            <span className="classroom-setup__chip-mark" aria-hidden="true">
-              {item.mark}
-            </span>
-            <span className="classroom-setup__chip-label">{item.label}</span>
-            <span className="classroom-setup__chip-status">{item.statusWord}</span>
-          </button>
-        ))}
-      </nav>
-
-      {!playReady && (
-        <section
-          className="classroom-setup__current"
-          aria-labelledby="setup-current-title"
-          data-testid="setup-current-task"
-          data-task={currentTask}
+      <div className="classroom-setup__workspace">
+        <div
+          className="classroom-setup__rail"
+          data-testid="classroom-readiness"
+          role="list"
+          aria-label="Class setup readiness"
         >
-          <h4 id="setup-current-title">{currentTaskTitle(currentTask)}</h4>
-
-          {currentTask === 'teams' && (
-            <p className="host__note">This game still needs 1–8 teams before class names.</p>
-          )}
-
-          {showNames && (
-            <div className="classroom-setup__task" data-testid="setup-names-task">
-              <p className="host__note" data-testid="setup-sony-copy">
-                Each team presses Blue, Orange, Green, or Yellow — top to bottom on the controller —
-                to choose a name. Red shows four more names for that team only. You can also type a
-                name. Keyboard always works.
-              </p>
-              <TeamNameSelectionBoard
-                views={teamIds.map((id) => selection.views[id]!).filter(Boolean)}
-                teamLabels={Object.fromEntries(
-                  teams.map((team, index) => [team.id, teamOrdinalLabel(team, index)]),
-                )}
-                onClaim={(teamId, choiceIndex) =>
-                  apply(applyTeamNameInputs(selection, [{ kind: 'claim', teamId, choiceIndex }]).state)
-                }
-                onCycle={(teamId) =>
-                  apply(applyTeamNameInputs(selection, [{ kind: 'cycle', teamId }]).state)
-                }
-                onManual={(teamId, name) =>
-                  apply(applyTeamNameInputs(selection, [{ kind: 'manual', teamId, name }]).state)
-                }
-                onReset={(teamId) =>
-                  apply(applyTeamNameInputs(selection, [{ kind: 'reset', teamId }]).state)
-                }
-                reducedMotion={reducedMotion}
-                highContrast={highContrast}
-                grayscale={grayscale}
-              />
-            </div>
-          )}
-
-          {!showNames && namesComplete && (
-            <p className="classroom-setup__quiet" data-testid="setup-names-summary">
-              Names ready: {claimedList.join(', ')}
-              <button
-                type="button"
-                className="btn btn--secondary classroom-setup__revisit"
-                data-testid="setup-revisit-names"
-                onClick={() => focusTask('names')}
+          {summary.map((item) => {
+            const expanded = expandedTask === item.id
+            const emphasized = emphasizedTask === item.id
+            return (
+              <div
+                key={item.id}
+                role="listitem"
+                className={[
+                  'classroom-setup__row',
+                  expanded ? 'classroom-setup__row--expanded' : '',
+                  emphasized ? 'classroom-setup__row--emphasized' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                data-testid={rowTestId(item.id)}
+                data-status={item.status}
+                data-expanded={expanded ? 'true' : 'false'}
+                data-emphasized={emphasized ? 'true' : 'false'}
               >
-                Change names
-              </button>
-            </p>
-          )}
+                <div className="classroom-setup__row-line">
+                  <button
+                    type="button"
+                    className="classroom-setup__row-summary"
+                    data-testid={readinessTestId(item.id)}
+                    data-status={item.status}
+                    aria-expanded={expanded}
+                    aria-controls={`setup-stage-${item.id}`}
+                    onClick={() => toggleRow(item.id)}
+                  >
+                    <span className="classroom-setup__row-mark" aria-hidden="true">
+                      {item.mark}
+                    </span>
+                    <span className="classroom-setup__row-label">{item.label}</span>
+                    <span className="classroom-setup__row-status">{item.statusWord}</span>
+                    <span className="classroom-setup__row-detail">{item.detail}</span>
+                  </button>
+                  {renderCollapsedSecondary(item)}
+                </div>
+              </div>
+            )
+          })}
+        </div>
 
-          {showBuzzers && (
-            <div className="classroom-setup__task" data-testid="setup-buzzers-task">
-              <p className="host__note" data-testid="setup-buzzers-copy">
-                {classSetupBuzzerTaskCopy({ sonyReady, sonyTeacherSummary })}
-              </p>
-              {!sonyReady && (
-                <button
-                  type="button"
-                  className="btn btn--secondary"
-                  data-testid="setup-skip-buzzers"
-                  onClick={() => {
-                    setBuzzerSkipped(true)
-                    setFocusOverride(null)
-                  }}
-                >
-                  Skip buzzers
-                </button>
-              )}
-            </div>
-          )}
-
-          {showDisplay && (
-            <div className="classroom-setup__task" data-testid="setup-display-task">
-              <p className="host__note">
-                {isDesktopRuntime()
-                  ? 'Open the audience display when you are ready. If this computer has one other screen, Classroom Quiz Show moves the audience display there. If that window is off every connected screen (for example after a projector disconnect), choose Focus audience display again and the desktop app brings it back onto a connected screen—usually the one with the Host. If it is still on the wrong screen, move it yourself. The class can still finish setup without it.'
-                  : 'Open the audience display on the projector when you are ready. Put that window on the projector yourself. The class can still finish setup without it.'}
-              </p>
-              <button type="button" className="btn" data-testid="setup-open-display" onClick={onOpenDisplay}>
-                {displayOpen ? 'Focus audience display' : 'Open audience display'}
-              </button>
-            </div>
-          )}
-
-          {!showDisplay && displayOpen && currentTask !== 'names' && (
-            <p className="classroom-setup__quiet">
-              Display is open.
-              <button
-                type="button"
-                className="btn btn--secondary classroom-setup__revisit"
-                data-testid="setup-open-display"
-                onClick={onOpenDisplay}
-              >
-                Focus audience display
-              </button>
-            </p>
-          )}
-
-          {showSound && (
-            <div className="classroom-setup__task" data-testid="setup-sound-task">
-              <p className="host__note">
-                Test sound so you know what the class will hear. Mute stays available in Host
-                controls if things get loud.
-              </p>
-              <button
-                type="button"
-                className="btn btn--secondary"
-                data-testid="setup-audio-test"
-                onClick={onAudioTest}
-              >
-                Test sound
-              </button>
-            </div>
-          )}
-
-          {!showSound && currentTask !== 'names' && (audioUnderstood || audioMuted) && (
-            <p className="classroom-setup__quiet">
-              {audioMuted ? 'Sound is muted.' : 'Sound is ready.'}
-              <button
-                type="button"
-                className="btn btn--secondary classroom-setup__revisit"
-                data-testid="setup-audio-test"
-                onClick={onAudioTest}
-              >
-                Test sound again
-              </button>
-            </p>
-          )}
-
-          {currentTask === 'play' && (
-            <p className="host__note" data-testid="setup-ready-copy">
-              Required setup is complete. Start Game when the class is ready.
-            </p>
-          )}
-        </section>
-      )}
+        {!playReady && (
+          <section
+            className="classroom-setup__stage"
+            aria-labelledby="setup-stage-title"
+            data-testid="setup-current-task"
+            data-task={expandedTask ?? (playEnabled ? 'play' : pureDominant)}
+            id={expandedTask ? `setup-stage-${expandedTask}` : 'setup-stage-ready'}
+          >
+            <h4 id="setup-stage-title">{stageTitle}</h4>
+            {renderStageBody()}
+          </section>
+        )}
+      </div>
 
       {playReady && namesComplete && (
         <p className="classroom-setup__quiet" data-testid="setup-names-summary">
@@ -419,43 +611,60 @@ export function ClassroomSetupPanel({
         </p>
       )}
 
-      <div className="classroom-setup__outcome">
-        <button
-          type="button"
-          className={`btn classroom-setup__play${playEnabled && !playReady ? ' classroom-setup__play--dominant' : ''}`}
-          data-testid="setup-play"
-          disabled={playReady ? false : !playEnabled}
-          aria-describedby={!playReady && playBlocker ? 'setup-play-blocker' : undefined}
-          onClick={onPlay}
-        >
-          {playReady ? 'Back to setup' : 'Start Game'}
-        </button>
+      <div
+        className={`classroom-setup__outcome${classReady ? ' classroom-setup__outcome--ready' : ''}`}
+        data-testid="setup-outcome-strip"
+      >
+        {classReady && (
+          <p className="classroom-setup__ready-heading" data-testid="setup-ready-heading" role="status">
+            ✓ Ready
+          </p>
+        )}
+        <div className="classroom-setup__outcome-actions">
+          <button
+            type="button"
+            className={`btn classroom-setup__play${classReady ? ' classroom-setup__play--dominant' : ''}`}
+            data-testid="setup-play"
+            disabled={playReady ? false : !playEnabled}
+            aria-describedby={!playReady && playBlocker ? 'setup-play-blocker' : undefined}
+            onClick={onPlay}
+          >
+            {playReady ? 'Back to setup' : 'Start Game'}
+          </button>
+          {classReady && !displayOpen && (
+            <button
+              type="button"
+              className="btn btn--secondary classroom-setup__secondary-display"
+              data-testid="setup-open-display-secondary"
+              onClick={onOpenDisplay}
+            >
+              Open display
+            </button>
+          )}
+        </div>
         {!playReady && playBlocker ? (
-          <p id="setup-play-blocker" className="classroom-setup__blocker" data-testid="setup-play-blocker" role="status">
+          <p
+            id="setup-play-blocker"
+            className="classroom-setup__blocker"
+            data-testid="setup-play-blocker"
+            role="status"
+          >
             {playBlocker}
           </p>
         ) : (
-          !playReady && (
+          !playReady &&
+          !classReady && (
             <p className="host__note classroom-setup__outcome-note">
               Buzzers are optional. Keyboard controls still work.
             </p>
           )
         )}
-      </div>
-
-      {!playReady && (showDisplay || currentTask === 'play') && (
-        <section className="classroom-setup__preview" aria-labelledby="display-preview-title">
-          <h4 id="display-preview-title">Audience preview</h4>
-          <p className="host__note">
-            This is what the class scoreboard will show. It is a host preview, not the projector
-            window.
+        {classReady && optionalFacts.length > 0 && (
+          <p className="host__note classroom-setup__outcome-note" data-testid="setup-ready-status" role="status">
+            {optionalFacts.join(' · ')}
           </p>
-          <div data-testid="setup-display-preview">
-            <TeamScoreboard teams={previewTeams} layout={teams.length <= 4 ? 'column' : 'strip'} />
-          </div>
-        </section>
-      )}
-
+        )}
+      </div>
     </section>
   )
 }

@@ -308,8 +308,10 @@ describe('PersistenceControls', () => {
     fireEvent.click(screen.getByTestId('persistence-clear-all-action'))
     await waitFor(() => expect(clearAllLocalData).toHaveBeenCalledTimes(1))
     expect(reloadPage).not.toHaveBeenCalled()
-    expect(screen.getByTestId('persistence-clear-all-message')).toHaveTextContent(
-      /may still contain/i,
+    await waitFor(() =>
+      expect(screen.getByTestId('persistence-clear-all-message')).toHaveTextContent(
+        /may still contain/i,
+      ),
     )
   })
 
