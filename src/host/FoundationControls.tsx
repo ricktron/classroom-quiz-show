@@ -270,8 +270,6 @@ export function FoundationControls({
     if (!hasGame) setMoreOpen(true)
   }, [hasGame])
 
-  const needsRecovery =
-    persistence.bootPhase === 'recovery' || persistence.bootPhase === 'invalid-recovery'
   const openDisplayTracked = () => {
     const opened = window.open(
       absoluteDisplayUrlWithTheme(theme?.themeId),
@@ -303,8 +301,6 @@ export function FoundationControls({
           : 'Sound not checked',
     )
   }
-  const durabilityFault =
-    persistence.durabilityStatus === 'failed' || persistence.durabilityStatus === 'unavailable'
 
   return (
     <section
@@ -317,25 +313,15 @@ export function FoundationControls({
         Host foundation
       </h2>
 
-      {needsRecovery && (
-        <PersistenceControls
-          variant="recovery"
-          persistence={persistence}
-          activeGame={game}
-          activeDefinition={game?.definition ?? null}
-          registry={registry}
-          dispatch={dispatch}
-          getHistory={() => store.getHistory()}
-        />
-      )}
-
-      {!needsRecovery && durabilityFault && (
-        <p className="host__note" role="status" data-testid="host-fault-slot">
-          {persistence.durabilityStatus === 'unavailable'
-            ? 'Saving on this device is unavailable. Recent changes might not survive refresh.'
-            : 'Saving on this device failed. Recent changes might not survive refresh.'}
-        </p>
-      )}
+      <PersistenceControls
+        variant="recovery"
+        persistence={persistence}
+        activeGame={game}
+        activeDefinition={game?.definition ?? null}
+        registry={registry}
+        dispatch={dispatch}
+        getHistory={() => store.getHistory()}
+      />
 
       {playReplaceNeeded && (
         <p className="host__note" role="alert" data-testid="play-replace-confirm">
@@ -513,6 +499,7 @@ export function FoundationControls({
             />
           </div>
         )}
+      </fieldset>
 
         <details
           className="foundation__more"
@@ -573,6 +560,7 @@ export function FoundationControls({
                 type="button"
                 className="btn"
                 data-testid="start-new-game-session"
+                disabled={!persistence.canDispatchSessionCommands}
                 onClick={() => {
                   if (hasSession && !startSessionArmed) {
                     setStartSessionArmed(true)
@@ -594,7 +582,7 @@ export function FoundationControls({
                 type="button"
                 className="btn btn--secondary"
                 data-testid="reset-class-session"
-                disabled={!hasSession}
+                disabled={!hasSession || !persistence.canDispatchSessionCommands}
                 onClick={() => {
                   if (!resetArmed) {
                     setResetArmed(true)
@@ -891,7 +879,6 @@ export function FoundationControls({
             </div>
           </section>
         </details>
-      </fieldset>
     </section>
   )
 }

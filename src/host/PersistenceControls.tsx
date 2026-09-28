@@ -114,7 +114,9 @@ export function PersistenceControls({
 
   const showRecovery = variant === 'full' || variant === 'recovery'
   const showLibrary = variant === 'full' || variant === 'library'
-  const showStatusChrome = true
+  // Library demotion must not duplicate the recovery/status live region when both
+  // PersistenceControls instances are mounted (recovery outside More + library inside).
+  const showStatusChrome = variant !== 'library'
   const title =
     variant === 'library'
       ? 'Saved games library'
