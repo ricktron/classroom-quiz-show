@@ -430,7 +430,7 @@ This planning document is satisfied when:
 - [x] This plan records subordinate authority, product DoD, settled IA,
   qualification limits, #110 harvest rules, slices A–I with full fields,
   sequencing, acceptance matrix, owner gate, and authority language
-- [ ] Draft PR opened for Rick review (docs only; no product code; no merge)
+- [x] Draft PR opened for Rick review (docs only; no product code; no merge)
 
 Completing this plan DoD does **not** complete MENUS product work.
 
