@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { createTeamDefinitions } from '../game/teams/definition'
+import { TEAM_ACCENTS } from '../game/teams/accents'
 import { ClassroomSetupPanel } from './ClassroomSetupPanel'
 import { PRIMARY_BUZZ } from '../input/logicalAction'
 
@@ -8,6 +9,14 @@ const TEAMS = createTeamDefinitions([
   { id: 'red', name: 'Team 1', accent: 'crimson' },
   { id: 'blue', name: 'Team 2', accent: 'azure' },
 ])
+
+/** Ready with optionals unresolved — shared fixture for B+F Ready regressions. */
+const READY_OPTIONALS_UNRESOLVED = {
+  initialSessionNames: { red: 'Comet Crew', blue: 'Ozone Owls' },
+  sonyReady: false,
+  displayOpen: false,
+  audioUnderstood: false,
+} as const
 
 function renderSetup(
   overrides: Partial<Parameters<typeof ClassroomSetupPanel>[0]> = {},
@@ -402,12 +411,7 @@ describe('ClassroomSetupPanel', () => {
   })
 
   it('shows Ready with Start Game sole dominant while optionals stay unresolved', () => {
-    const { onOpenDisplay, onPlay } = renderSetup({
-      initialSessionNames: { red: 'Comet Crew', blue: 'Ozone Owls' },
-      sonyReady: false,
-      displayOpen: false,
-      audioUnderstood: false,
-    })
+    const { onOpenDisplay, onPlay } = renderSetup({ ...READY_OPTIONALS_UNRESOLVED })
     expect(screen.getByTestId('setup-ready-heading')).toHaveTextContent(/ready/i)
     expect(screen.getByTestId('setup-play')).not.toBeDisabled()
     expect(screen.getByTestId('setup-play')).toHaveClass('classroom-setup__play--dominant')
@@ -456,12 +460,7 @@ describe('ClassroomSetupPanel', () => {
   })
 
   it('keeps five readiness rows visible and expand survives without changing optional status', () => {
-    renderSetup({
-      initialSessionNames: { red: 'Comet Crew', blue: 'Ozone Owls' },
-      sonyReady: false,
-      displayOpen: false,
-      audioUnderstood: false,
-    })
+    renderSetup({ ...READY_OPTIONALS_UNRESOLVED })
     for (const id of ['teams', 'names', 'buzzers', 'display', 'sound'] as const) {
       expect(screen.getByTestId(`setup-row-${id}`)).toBeInTheDocument()
     }
@@ -474,12 +473,7 @@ describe('ClassroomSetupPanel', () => {
   })
 
   it('keeps Start Game sole dominant when Display is expanded while Ready', () => {
-    renderSetup({
-      initialSessionNames: { red: 'Comet Crew', blue: 'Ozone Owls' },
-      sonyReady: false,
-      displayOpen: false,
-      audioUnderstood: false,
-    })
+    renderSetup({ ...READY_OPTIONALS_UNRESOLVED })
     expect(screen.getByTestId('setup-ready-heading')).toBeVisible()
     expect(screen.getByTestId('setup-play')).not.toBeDisabled()
     expect(screen.getByTestId('setup-play')).toHaveClass('classroom-setup__play--dominant')
@@ -502,16 +496,14 @@ describe('ClassroomSetupPanel', () => {
       Array.from({ length: 8 }, (_, i) => ({
         id: `t${i}`,
         name: `Team ${i + 1}`,
-        accent: (['crimson', 'azure', 'emerald', 'amber', 'violet', 'teal', 'rose', 'slate'] as const)[i]!,
+        accent: TEAM_ACCENTS[i]!,
       })),
     )
     const names = Object.fromEntries(eight.map((team, i) => [team.id, `Classroom Squad ${i + 1}`]))
     renderSetup({
+      ...READY_OPTIONALS_UNRESOLVED,
       teams: eight,
       initialSessionNames: names,
-      sonyReady: false,
-      displayOpen: false,
-      audioUnderstood: false,
     })
     expect(screen.getByTestId('setup-ready-heading')).toBeVisible()
     expect(screen.getByTestId('setup-play')).not.toBeDisabled()

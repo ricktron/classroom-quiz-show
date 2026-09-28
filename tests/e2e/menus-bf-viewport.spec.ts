@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
+import { fillAllTeamNames, importDemoToReady } from './helpers/menusClassSetup'
 
 /**
  * MENUS B+F — bounded viewport / stress evidence (browser automation).
@@ -11,67 +12,47 @@ import { test, expect, type Page } from '@playwright/test'
 
 test.describe.configure({ mode: 'serial' })
 
-const EIGHT_TEAM_GAME = JSON.stringify(
-  {
-    format: 'classroom-quiz-show/game',
-    schemaVersion: 1,
-    id: 'menus-bf-eight-team-stress',
-    title: 'B+F Eight-Team Stress Board',
-    teams: [
-      { id: 't0', name: 'Team 1', accent: 'crimson' },
-      { id: 't1', name: 'Team 2', accent: 'azure' },
-      { id: 't2', name: 'Team 3', accent: 'emerald' },
-      { id: 't3', name: 'Team 4', accent: 'amber' },
-      { id: 't4', name: 'Team 5', accent: 'violet' },
-      { id: 't5', name: 'Team 6', accent: 'teal' },
-      { id: 't6', name: 'Team 7', accent: 'rose' },
-      { id: 't7', name: 'Team 8', accent: 'slate' },
-    ],
-    timer: { responseSeconds: 45 },
-    rounds: [
-      {
-        id: 'board-round',
-        type: 'category-board',
-        title: 'Earth & Space Science',
-        config: {
-          categories: [
-            {
-              id: 'earth-structure',
-              title: 'Earth Structure',
-              tiles: [
-                {
-                  id: 'earth-structure-100',
-                  value: 100,
-                  prompt: 'Which layer of the Earth lies directly beneath the crust?',
-                  answer: 'The mantle',
-                },
-              ],
-            },
-          ],
-        },
+const TEAM_ACCENTS = [
+  'crimson',
+  'azure',
+  'emerald',
+  'amber',
+  'violet',
+  'teal',
+  'rose',
+  'slate',
+] as const
+
+const EIGHT_TEAM_GAME = JSON.stringify({
+  format: 'classroom-quiz-show/game',
+  schemaVersion: 1,
+  id: 'menus-bf-eight-team-stress',
+  title: 'B+F Eight-Team Stress Board',
+  teams: TEAM_ACCENTS.map((accent, i) => ({
+    id: `t${i}`,
+    name: `Team ${i + 1}`,
+    accent,
+  })),
+  timer: { responseSeconds: 45 },
+  rounds: [
+    {
+      id: 'board-round',
+      type: 'category-board',
+      title: 'Stress Board',
+      config: {
+        categories: [
+          {
+            id: 'stress-cat',
+            title: 'Stress',
+            tiles: [{ id: 'stress-100', value: 100, prompt: 'Stress prompt?', answer: 'Stress answer' }],
+          },
+        ],
       },
-    ],
-  },
-  null,
-  2,
-)
+    },
+  ],
+})
 
-async function fillAllTeamNames(page: Page): Promise<void> {
-  await page
-    .locator('[data-testid^="tnsb-manual-"]')
-    .first()
-    .waitFor({ state: 'visible' })
-  const manuals = page.locator('[data-testid^="tnsb-manual-"]')
-  const count = await manuals.count()
-  expect(count).toBeGreaterThan(0)
-  for (let i = 0; i < count; i += 1) {
-    const input = manuals.nth(i)
-    await input.fill(`Team ${i + 1}`)
-    await input.blur()
-  }
-}
-
-async function assertNoDestructiveHorizontalOverflow(page: Page): Promise<void> {
+async function assertReadySetupFitsViewport(page: import('@playwright/test').Page): Promise<void> {
   const report = await page.evaluate(() => {
     const doc = document.documentElement
     const setup = document.querySelector('[data-testid="classroom-setup"]')
@@ -98,40 +79,29 @@ async function assertNoDestructiveHorizontalOverflow(page: Page): Promise<void> 
   expect(report.playDominant).toBe(true)
 }
 
-async function importDemoReady(page: Page): Promise<void> {
-  await page.goto('./')
-  await page.getByTestId('home-import-game').click()
-  await page.getByTestId('home-import-demo').click()
-  await expect(page.getByTestId('import-quality-report')).toBeVisible()
-  await page.getByRole('button', { name: /^play$/i }).first().click()
-  await expect(page.getByTestId('classroom-setup')).toBeVisible()
-  await fillAllTeamNames(page)
-  await expect(page.getByTestId('setup-ready-heading')).toBeVisible()
+const VIEWPORTS = [
+  { label: '1280×720', width: 1280, height: 720 },
+  { label: '1366×768', width: 1366, height: 768 },
+  {
+    label: 'SIMULATED browser approx: 1366×768 at 125% (CSS ~1093×614)',
+    width: 1093,
+    height: 614,
+  },
+] as const
+
+for (const vp of VIEWPORTS) {
+  test(`${vp.label} Class Setup Ready remains usable without destructive overflow`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: vp.width, height: vp.height })
+    await importDemoToReady(page)
+    await assertReadySetupFitsViewport(page)
+    if (vp.width === 1093) {
+      await expect(page.getByTestId('setup-play')).toBeVisible()
+      await expect(page.getByTestId('classroom-readiness')).toBeVisible()
+    }
+  })
 }
-
-test('1280×720 Class Setup Ready remains usable without destructive overflow', async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 720 })
-  await importDemoReady(page)
-  await assertNoDestructiveHorizontalOverflow(page)
-})
-
-test('1366×768 Class Setup Ready remains usable without destructive overflow', async ({ page }) => {
-  await page.setViewportSize({ width: 1366, height: 768 })
-  await importDemoReady(page)
-  await assertNoDestructiveHorizontalOverflow(page)
-})
-
-test('SIMULATED browser approx: 1366×768 at 125% (CSS ~1093×614) — Ready usable', async ({
-  page,
-}) => {
-  // SIMULATED: approximates OS/browser 125% zoom on a 1366×768 laptop by
-  // shrinking the CSS viewport. NOT physical Windows display scaling evidence.
-  await page.setViewportSize({ width: 1093, height: 614 })
-  await importDemoReady(page)
-  await assertNoDestructiveHorizontalOverflow(page)
-  await expect(page.getByTestId('setup-play')).toBeVisible()
-  await expect(page.getByTestId('classroom-readiness')).toBeVisible()
-})
 
 test('eight-team Class Setup via authentic Home import stays Ready-usable', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 })
@@ -145,7 +115,7 @@ test('eight-team Class Setup via authentic Home import stays Ready-usable', asyn
   await expect(page.getByTestId('readiness-teams')).toContainText(/8 teams/i)
   await fillAllTeamNames(page)
   await expect(page.getByTestId('setup-ready-heading')).toBeVisible()
-  await assertNoDestructiveHorizontalOverflow(page)
+  await assertReadySetupFitsViewport(page)
   await expect(page.locator('[data-testid^="tnsb-manual-"]')).toHaveCount(0)
   await expect(page.getByTestId('setup-names-summary')).toContainText(/Team 8/)
 })

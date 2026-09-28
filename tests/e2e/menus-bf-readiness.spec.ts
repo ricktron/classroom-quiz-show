@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
+import { fillAllTeamNames, importDemoAndPlay } from './helpers/menusClassSetup'
 
 /**
  * MENUS B+F — Ready workspace + sole-dominant Start Game (minimum semantic journey).
@@ -6,31 +7,6 @@ import { test, expect, type Page } from '@playwright/test'
  */
 
 test.describe.configure({ mode: 'serial' })
-
-async function importDemoAndPlay(page: Page): Promise<void> {
-  await page.goto('./')
-  await page.getByTestId('home-import-game').click()
-  await page.getByTestId('home-import-demo').click()
-  await expect(page.getByTestId('import-quality-report')).toBeVisible()
-  await page.getByRole('button', { name: /^play$/i }).first().click()
-  await expect(page.getByTestId('classroom-setup')).toBeVisible()
-  await expect(page.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'setup')
-}
-
-async function fillAllTeamNames(page: Page): Promise<void> {
-  await page
-    .locator('[data-testid^="tnsb-manual-"]')
-    .first()
-    .waitFor({ state: 'visible' })
-  const manuals = page.locator('[data-testid^="tnsb-manual-"]')
-  const count = await manuals.count()
-  expect(count).toBeGreaterThan(0)
-  for (let i = 0; i < count; i += 1) {
-    const input = manuals.nth(i)
-    await input.fill(`Team ${i + 1}`)
-    await input.blur()
-  }
-}
 
 test('Ready with optionals unresolved keeps Start Game sole dominant then enters focused Host', async ({
   page,
