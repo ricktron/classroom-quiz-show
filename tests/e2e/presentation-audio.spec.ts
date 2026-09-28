@@ -110,6 +110,7 @@ test('presentation audio cues, mute backlog, and host-only controls', async ({ c
   await installPresentationAudioProbe(host)
 
   await host.goto('#/host')
+  await ensureHostMoreOpen(host)
   await expect(host.getByRole('heading', { name: /host control/i })).toBeVisible()
   await display.goto('#/display')
   await expect(display.getByRole('heading', { name: /game display ready/i })).toBeVisible()

@@ -92,7 +92,6 @@ export function ClassroomSetupPanel({
   audioUnderstood,
   audioMuted,
   onAudioTest,
-  onPanicMute: _onPanicMute,
   playReady,
   onPlay,
   onSelectedIdentitiesChange,

@@ -99,6 +99,7 @@ const TEXT_PACK_GAME = {
 async function openHost(page: Page) {
   await page.goto('#/host')
   await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
+  await ensureHostMoreOpen(page)
   await expect(page.getByTestId('persistence-status')).toBeVisible()
   await expect(page.getByTestId('persistence-status')).not.toContainText(/loading/i)
 }
