@@ -13,7 +13,7 @@
 
 | Obligation | State |
 | --- | --- |
-| Claude artifacts inventoried | VERIFIED — opened and rendered from the Project Agent Store (`CQS-Claude-Design-Reference-Package-restored.zip`, Drive file id `1-xxDu-PwLRRHTAFw45IFYzZ-bPUx3NzN`); bytes not committed to git; see §9 |
+| Claude artifacts inventoried | VERIFIED — opened and rendered; immutable package now committed at [`design/reference-artifacts/claude-design/2026-09-27/CQS-Claude-Design-Reference-Package.zip`](design/reference-artifacts/claude-design/2026-09-27/CQS-Claude-Design-Reference-Package.zip) (215071 bytes; SHA-256 `730573b599d00f6c3731539ed43ff1798cbd88db1d072334b1811e3b273261f0`); Drive file id `1-xxDu-PwLRRHTAFw45IFYzZ-bPUx3NzN` remains secondary provenance; see §9 |
 | Current canonical Display implementation observed | VERIFIED |
 | Phase 2B direction reconciled | VERIFIED |
 | Current S05 visual historian inspected | VERIFIED (`2026-09-s05-complete`, immutable) |
@@ -172,6 +172,8 @@ correctly BLOCKED: the store, this PR's description/comments, the repository,
 and Google Drive title search all genuinely had no accessible artifact at
 that time. One attempt in between falsely claimed the artifacts had been
 opened from a store path that did not exist; that claim was reverted.
+That earlier review blockage **before bytes were available** remains the
+historical account; it is not rewritten.
 
 The owner then supplied the exact Google Drive **file ID** (not a title
 search) for a restored package:
@@ -185,7 +187,19 @@ Downloaded via the Drive MCP `download_file_content` by exact id, saved and
 unpacked under the Project Agent Store at
 `media/display-visual-convergence/claude-refs/` (`unpacked/`, plus a
 `render/` working copy and `render-proof/` screenshots used only to prove
-openability — not committed to this repository).
+openability).
+
+**CURRENT durable store (repository):** the same byte-identical package is
+now committed as an immutable reference artifact:
+
+- Path: [`design/reference-artifacts/claude-design/2026-09-27/CQS-Claude-Design-Reference-Package.zip`](design/reference-artifacts/claude-design/2026-09-27/CQS-Claude-Design-Reference-Package.zip)
+- Size: `215071` bytes
+- SHA-256: `730573b599d00f6c3731539ed43ff1798cbd88db1d072334b1811e3b273261f0`
+- Index: [`design/reference-artifacts/claude-design/README.md`](design/reference-artifacts/claude-design/README.md)
+- Drive file id `1-xxDu-PwLRRHTAFw45IFYzZ-bPUx3NzN` remains secondary provenance only
+
+Do not overwrite that dated folder. Later packages get new dated folders.
+Inspect via `unzip` to a temp directory; do not modify the committed ZIP.
 
 **All four source families were independently proven to open and render**,
 not merely unzipped:
