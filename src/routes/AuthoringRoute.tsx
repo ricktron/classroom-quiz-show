@@ -66,6 +66,7 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
   const [draftWarning, setDraftWarning] = useState<string | null>(null)
   const writeGateRef = useRef(createGenerationWriteGate())
   const leadershipRef = useRef(persistence.leadership)
+  const cursorSeededForGameRef = useRef<string | null>(null)
   leadershipRef.current = persistence.leadership
   const blocker = useBlocker(saveTrust.dirty || saveTrust.phase === 'saving')
 
@@ -87,6 +88,8 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
         return
       }
       setDraft(loaded.value.draft)
+      setCursor(null)
+      cursorSeededForGameRef.current = null
       setDraftWarning(
         loaded.value.draftUnreadable
           ? 'The saved editor draft could not be read. You are seeing the last playable game. Extra editor notes may be missing.'
@@ -98,6 +101,20 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
       cancelled = true
     }
   }, [gameId, persistence.adapter, persistence.bootPhase, registry])
+
+  // Once per load: land on the first incomplete clue so New Game opens on content work.
+  useEffect(() => {
+    if (!draft || !gameId) return
+    if (cursorSeededForGameRef.current === gameId) return
+    cursorSeededForGameRef.current = gameId
+    const tiles = flattenTiles(draft)
+    const firstIncomplete =
+      tiles.find((tile) => {
+        const clue = findClue(draft, tile)
+        return clue !== null && clueNeedsTeacher(clue)
+      }) ?? null
+    setCursor(firstIncomplete ?? tiles[0] ?? null)
+  }, [draft, gameId])
 
   useEffect(() => {
     function onBeforeUnload(event: BeforeUnloadEvent): void {
@@ -247,6 +264,10 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
       </div>
       <main className="screen__main authoring" aria-labelledby="authoring-title">
         <h1 id="authoring-title">Edit game</h1>
+        <p className="host__note" data-testid="authoring-goal">
+          Fill the board first — category titles, questions, and answers. Final comes next. Team count,
+          default names, and the class name bank stay in Game settings until you need them.
+        </p>
         <p className="authoring__save" data-testid="authoring-save-status" aria-live="polite">
           {saveStatusLabel(saveTrust)}
           {saveTrust.phase === 'failed' ? ` — ${saveTrust.message}` : ''}
@@ -326,7 +347,7 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
 
         <p className="host__note" data-testid="authoring-validation">
           {draft.status === 'blocked'
-            ? 'This game still has missing questions or answers. You can save and come back.'
+            ? 'This game still has missing questions or answers. Start with the selected tile, then finish Final. You can save and come back.'
             : 'This game has the required content and can be played.'}
         </p>
 
@@ -386,11 +407,41 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
           />
         )}
 
-        <section className="authoring-final" aria-labelledby="default-teams-title">
-          <h2 id="default-teams-title">Default team names</h2>
+        {draft.final && !preview && (
+          <section className="authoring-final" aria-labelledby="final-title">
+            <h2 id="final-title">Final</h2>
+            <label htmlFor="final-prompt">Final question</label>
+            <textarea
+              id="final-prompt"
+              value={draft.final.prompt}
+              onChange={(event) => apply({ kind: 'final-field', field: 'prompt', value: event.target.value })}
+            />
+            <label htmlFor="final-answer">Final canonical answer</label>
+            <input
+              id="final-answer"
+              value={draft.final.answer}
+              onChange={(event) => apply({ kind: 'final-field', field: 'answer', value: event.target.value })}
+            />
+            <label htmlFor="final-notes">Final teacher notes</label>
+            <textarea
+              id="final-notes"
+              value={draft.final.notes ?? ''}
+              onChange={(event) => apply({ kind: 'final-field', field: 'notes', value: event.target.value })}
+            />
+            <label htmlFor="final-alt">Supported alternate</label>
+            <input
+              id="final-alt"
+              value={draft.final.alternates[0] ?? ''}
+              onChange={(event) => apply({ kind: 'final-field', field: 'alternate1', value: event.target.value })}
+            />
+          </section>
+        )}
+
+        <details className="authoring-settings" data-testid="authoring-game-settings">
+          <summary>Game settings — teams, default names, and class name bank</summary>
           <p className="host__note">
             These names are part of the reusable game. Class scores and controller assignments stay
-            in the session when you play.
+            in the session when you play. You can leave the defaults and change them later.
           </p>
           <label htmlFor="authoring-team-count">
             Number of teams
@@ -440,37 +491,7 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
               }
             />
           </label>
-        </section>
-
-        {draft.final && !preview && (
-          <section className="authoring-final" aria-labelledby="final-title">
-            <h2 id="final-title">Final</h2>
-            <label htmlFor="final-prompt">Final question</label>
-            <textarea
-              id="final-prompt"
-              value={draft.final.prompt}
-              onChange={(event) => apply({ kind: 'final-field', field: 'prompt', value: event.target.value })}
-            />
-            <label htmlFor="final-answer">Final canonical answer</label>
-            <input
-              id="final-answer"
-              value={draft.final.answer}
-              onChange={(event) => apply({ kind: 'final-field', field: 'answer', value: event.target.value })}
-            />
-            <label htmlFor="final-notes">Final teacher notes</label>
-            <textarea
-              id="final-notes"
-              value={draft.final.notes ?? ''}
-              onChange={(event) => apply({ kind: 'final-field', field: 'notes', value: event.target.value })}
-            />
-            <label htmlFor="final-alt">Supported alternate</label>
-            <input
-              id="final-alt"
-              value={draft.final.alternates[0] ?? ''}
-              onChange={(event) => apply({ kind: 'final-field', field: 'alternate1', value: event.target.value })}
-            />
-          </section>
-        )}
+        </details>
 
         {preview && (
           <section className="authoring-preview" aria-label="Board preview" data-testid="authoring-preview">
@@ -493,7 +514,16 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
           </section>
         )}
 
-        {report && <QualityReportPanel report={report} context="editor" />}
+        {report ? (
+          <details
+            className="authoring-settings"
+            data-testid="authoring-quality-details"
+            open={draft.status === 'blocked'}
+          >
+            <summary>Quality notes</summary>
+            <QualityReportPanel report={report} context="editor" />
+          </details>
+        ) : null}
       </main>
     </div>
   )

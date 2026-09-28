@@ -84,19 +84,13 @@ export function canStartPlayFromGame(game: PrivateGameState | null): boolean {
 }
 
 /**
- * Pure hydration derivation. Empty history → caller keeps URL-seeded default
- * (bare `#/host` stays play; `?play=` stays setup).
- *
- * Gameplay after the init cut restores play even when names are incomplete
- * (L0 / mid-Final Resume). `canStartPlay` remains available to callers for
- * readiness UI; it does not gate hydration play restoration.
+ * Effective history after the latest GAME_INITIALIZED (else SESSION_INITIALIZED)
+ * cut — same latest-init posture Slice A uses for Host Resume hydration.
  */
-export function deriveHostPlayPosture(input: {
-  readonly history: readonly SessionEvent[]
-  readonly canStartPlay: boolean
-}): boolean {
-  if (input.history.length === 0) return false
-  const fx = effectiveEvents(input.history)
+export function effectiveHistoryAfterLatestInit(
+  history: readonly SessionEvent[],
+): readonly SessionEvent[] {
+  const fx = effectiveEvents(history)
   let cutIdx = -1
   for (let i = fx.length - 1; i >= 0; i -= 1) {
     if (fx[i]?.type === 'GAME_INITIALIZED') {
@@ -112,6 +106,34 @@ export function deriveHostPlayPosture(input: {
       }
     }
   }
-  const tail = cutIdx < 0 ? fx : fx.slice(cutIdx + 1)
+  return cutIdx < 0 ? fx : fx.slice(cutIdx + 1)
+}
+
+/** Latest GAME_INITIALIZED still counted by effective history, if any. */
+export function latestEffectiveGameInitialized(
+  history: readonly SessionEvent[],
+): SessionEvent | null {
+  const fx = effectiveEvents(history)
+  for (let i = fx.length - 1; i >= 0; i -= 1) {
+    const event = fx[i]
+    if (event?.type === 'GAME_INITIALIZED') return event
+  }
+  return null
+}
+
+/**
+ * Pure hydration derivation. Empty history → caller keeps URL-seeded default
+ * (bare `#/host` stays play; `?play=` stays setup).
+ *
+ * Gameplay after the init cut restores play even when names are incomplete
+ * (L0 / mid-Final Resume). `canStartPlay` remains available to callers for
+ * readiness UI; it does not gate hydration play restoration.
+ */
+export function deriveHostPlayPosture(input: {
+  readonly history: readonly SessionEvent[]
+  readonly canStartPlay: boolean
+}): boolean {
+  if (input.history.length === 0) return false
+  const tail = effectiveHistoryAfterLatestInit(input.history)
   return tail.some((event) => isHostPlayPostureGameplayEvent(event.type))
 }

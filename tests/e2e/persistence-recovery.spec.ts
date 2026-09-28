@@ -165,6 +165,7 @@ test('display remains free of persistence UI and private storage content', async
     'imported-sample-board',
     'persistence',
     'resume session',
+    'resume class',
     'discard recovery',
     'saved definitions',
     'local persistence',
@@ -223,15 +224,14 @@ test('Home Start fresh discards only the unfinished session and keeps My Games',
 
   await host.goto('#/')
   await expect(host.getByTestId('home-resume')).toBeVisible()
-  await expect(host.getByRole('heading', { name: /my games/i })).toBeVisible()
-  await expect(host.getByLabel('My Games').getByText(SAMPLE_TITLE)).toBeVisible()
+  await expect(host.getByText(SAMPLE_TITLE).first()).toBeVisible()
 
   await host.getByTestId('home-discard-session').click()
   await expect(host.getByTestId('home-discard-session')).toContainText(/confirm start fresh/i)
   await host.getByTestId('home-discard-session').click()
 
   await expect(host.getByTestId('home-resume')).toHaveCount(0)
-  await expect(host.getByLabel('My Games').getByText(SAMPLE_TITLE)).toBeVisible()
+  await expect(host.getByTestId('home-hero-playable')).toContainText(SAMPLE_TITLE)
 
   await host.goto('#/host')
   await expect(host.getByRole('heading', { name: /host control/i })).toBeVisible()
@@ -319,6 +319,7 @@ test('Display stays free of Home recovery private copy after unfinished session 
   const displayText = (await display.locator('body').innerText()).toLowerCase()
   for (const label of [
     'resume session',
+    'resume class',
     'start fresh',
     'unfinished class session',
     'discard',

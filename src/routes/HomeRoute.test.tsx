@@ -31,6 +31,8 @@ import {
 } from '../host/sessionRecoveryCopy'
 import { ThemeProvider } from '../theme/ThemeProvider'
 import { shouldResumeRecoveryFromNavigation } from '../host/hostResumeNavigation'
+import { createBlankAuthoringDraft } from '../authoring/createBlankDraft'
+import { createStubGameDefinition } from '../persistence/savedDefinitions'
 
 function EditorProbe() {
   const params = useParams()
@@ -169,9 +171,13 @@ async function seedResumableSession(adapter: PersistenceAdapter): Promise<number
   return history.length
 }
 
-async function seedSavedGame(adapter: PersistenceAdapter, title = 'Library Keeper'): Promise<void> {
+async function seedSavedGame(
+  adapter: PersistenceAdapter,
+  title = 'Library Keeper',
+  gameId = 'library-keeper',
+): Promise<void> {
   const imported = importGameFromJsonText(
-    gameFileText().replace('Sample Game', title).replace('sample-game', 'library-keeper'),
+    gameFileText().replace('Sample Game', title).replace('sample-game', gameId),
   )
   if (imported.status !== 'success') throw new Error('fixture import failed')
   await adapter.open()
@@ -182,6 +188,26 @@ async function seedSavedGame(adapter: PersistenceAdapter, title = 'Library Keepe
   if (!saved.ok) throw new Error(saved.message)
 }
 
+let unfinishedSeedSerial = 0
+
+async function seedUnfinishedGame(
+  adapter: PersistenceAdapter,
+  title = 'Unfinished Draft',
+): Promise<string> {
+  unfinishedSeedSerial += 1
+  const gameKey = `unfinished-${unfinishedSeedSerial}-${AT}`
+  const draft = createBlankAuthoringDraft({ title: `${title} ${unfinishedSeedSerial}`, gameKey })
+  const stub = createStubGameDefinition(draft.game.gameCanonicalId, draft.game.title)
+  await adapter.open()
+  const saved = await saveDefinition(adapter, stub, {
+    mode: 'save',
+    registry: createDefaultRegistry(),
+    draft,
+  })
+  if (!saved.ok) throw new Error(saved.message)
+  return stub.id
+}
+
 describe('teacher Home', () => {
   it('shows teacher-first library actions and hides the old role picker', async () => {
     renderHome()
@@ -190,12 +216,17 @@ describe('teacher Home', () => {
     })
     expect(screen.getByRole('button', { name: /new game/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /import game/i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /recent games/i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /my games/i })).toBeInTheDocument()
+    expect(screen.getByTestId('home-empty')).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /recent games/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /^my games$/i })).not.toBeInTheDocument()
+    expect(screen.getByTestId('home-open-display')).toBeInTheDocument()
+    expect(screen.getByTestId('home-open-display')).toHaveClass('home__text-link')
+    expect(screen.getByTestId('home-open-display')).not.toHaveClass('btn')
     expect(screen.queryByRole('link', { name: /open classroom controls/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: /choose a screen/i })).not.toBeInTheDocument()
     expect(document.body.textContent).not.toMatch(/slice 13/i)
     expect(document.body.textContent).not.toMatch(/indexeddb/i)
+    expect(document.body.textContent).not.toMatch(/ready to play/i)
   })
 
   it('keeps host-private language off any projector-forbidden answer labels', async () => {
@@ -263,6 +294,9 @@ describe('teacher Home', () => {
     fireEvent.click(screen.getByTestId('home-import-demo'))
     fireEvent.click(screen.getByTestId('home-import-json'))
     fireEvent.click(screen.getByTestId('home-replace-saved-game'))
+    const more = document.querySelector('.home__game-more summary')
+    expect(more).not.toBeNull()
+    fireEvent.click(more!)
     fireEvent.click(screen.getAllByRole('button', { name: /duplicate/i })[0])
     fireEvent.click(screen.getAllByRole('button', { name: /^delete$/i })[0])
     fireEvent.click(screen.getAllByRole('button', { name: /confirm delete game/i })[0])
@@ -395,6 +429,191 @@ describe('teacher Home', () => {
       expect(screen.getByTestId('game-title')).toBeInTheDocument()
     })
     expect(screen.getByTestId('event-history').querySelectorAll('li')).toHaveLength(historyLength)
+  })
+
+  it('exposes Board + Final template download on Home Import without a second generator', async () => {
+    const downloads: string[] = []
+    const originalCreate = URL.createObjectURL
+    const originalRevoke = URL.revokeObjectURL
+    URL.createObjectURL = () => {
+      downloads.push('object-url')
+      return 'blob:test-template'
+    }
+    URL.revokeObjectURL = () => undefined
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined)
+    try {
+      await renderReadyHome()
+      await waitFor(() => expect(screen.getByTestId('home-import-game')).toBeEnabled())
+      fireEvent.click(screen.getByTestId('home-import-game'))
+      expect(screen.getByTestId('home-import-templates')).toBeInTheDocument()
+      expect(screen.getByTestId('home-download-board-plus-final')).toBeInTheDocument()
+      expect(screen.getByTestId('home-download-classic-board')).toBeInTheDocument()
+      fireEvent.click(screen.getByTestId('home-download-board-plus-final'))
+      expect(clickSpy).toHaveBeenCalled()
+      expect(downloads.length).toBeGreaterThan(0)
+    } finally {
+      clickSpy.mockRestore()
+      URL.createObjectURL = originalCreate
+      URL.revokeObjectURL = originalRevoke
+    }
+  })
+
+  it('features the most recent playable Game and demotes New Game when the library is populated', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await seedSavedGame(adapter, 'Hero Board')
+    await renderReadyHome({
+      createAdapter: () => adapter,
+      tabId: 'home-hero',
+      clock: createManualClock(AT),
+      leaseTtlMs: 60_000,
+      renewIntervalMs: 20_000,
+      broadcastChannel: null,
+    })
+    await waitFor(() => {
+      expect(screen.getByTestId('home-hero-playable')).toBeInTheDocument()
+    })
+    expect(screen.getByTestId('home-hero-play')).toBeInTheDocument()
+    expect(screen.getByTestId('home-new-game')).toHaveClass('btn--secondary')
+    expect(screen.getByText('Playable')).toBeInTheDocument()
+    expect(screen.queryByText(/ready to play/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /recent games/i })).not.toBeInTheDocument()
+  })
+
+  it('names the unfinished Game on the recovery banner', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await seedResumableSession(adapter)
+    await renderReadyHome({
+      createAdapter: () => adapter,
+      tabId: 'home-recovery-title',
+      clock: createManualClock(AT),
+      leaseTtlMs: 60_000,
+      renewIntervalMs: 20_000,
+      broadcastChannel: null,
+    })
+    await waitFor(() => {
+      expect(screen.getByTestId('home-resume')).toBeInTheDocument()
+    })
+    expect(screen.getByTestId('home-resume')).toHaveTextContent(/sample game/i)
+    expect(screen.getByTestId('home-resume-session')).toHaveTextContent(/resume class/i)
+    expect(screen.queryByTestId('home-hero-playable')).not.toBeInTheDocument()
+  })
+
+  it('keeps Resume sole dominant when recovery and a populated library coexist', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await seedSavedGame(adapter, 'Library During Recovery', 'lib-during-recovery')
+    await seedResumableSession(adapter)
+    await renderReadyHome({
+      createAdapter: () => adapter,
+      tabId: 'home-recovery-dominant-populated',
+      clock: createManualClock(AT),
+      leaseTtlMs: 60_000,
+      renewIntervalMs: 20_000,
+      broadcastChannel: null,
+    })
+    await waitFor(() => {
+      expect(screen.getByTestId('home-resume')).toBeInTheDocument()
+      expect(screen.getByText('Library During Recovery')).toBeInTheDocument()
+    })
+    expect(screen.getByTestId('home-resume-session')).toHaveClass('btn')
+    expect(screen.getByTestId('home-resume-session')).not.toHaveClass('btn--secondary')
+    expect(screen.getByTestId('home-discard-session')).toHaveClass('btn--secondary')
+    expect(screen.getByTestId('home-new-game')).toHaveClass('btn--secondary')
+    expect(screen.getByTestId('home-import-game')).toHaveClass('btn--secondary')
+    expect(screen.queryByTestId('home-hero-playable')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('home-hero-unfinished')).not.toBeInTheDocument()
+    const playButtons = screen.getAllByRole('button', { name: /^play$/i })
+    for (const button of playButtons) {
+      expect(button).toHaveClass('btn--secondary')
+    }
+    const editButtons = screen.getAllByRole('button', { name: /^edit$/i })
+    for (const button of editButtons) {
+      expect(button).toHaveClass('btn--secondary')
+    }
+    expect(screen.getByTestId('home-add-games')).toHaveAttribute('data-recovery-subordinate', 'true')
+    expect(screen.getByRole('heading', { name: /your games/i }).closest('section')).toHaveAttribute(
+      'data-recovery-subordinate',
+      'true',
+    )
+  })
+
+  it('keeps Resume sole dominant with empty library during valid recovery', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await seedResumableSession(adapter)
+    await renderReadyHome({
+      createAdapter: () => adapter,
+      tabId: 'home-recovery-dominant-empty',
+      clock: createManualClock(AT),
+      leaseTtlMs: 60_000,
+      renewIntervalMs: 20_000,
+      broadcastChannel: null,
+    })
+    await waitFor(() => {
+      expect(screen.getByTestId('home-resume')).toBeInTheDocument()
+    })
+    expect(screen.getByTestId('home-resume-session')).not.toHaveClass('btn--secondary')
+    expect(screen.getByTestId('home-new-game')).toHaveClass('btn--secondary')
+    expect(screen.getByTestId('home-import-game')).toHaveClass('btn--secondary')
+    expect(screen.queryByTestId('home-empty')).not.toBeInTheDocument()
+    expect(screen.getByTestId('home-add-games')).toHaveAttribute('data-recovery-subordinate', 'true')
+  })
+
+  it('lets invalid recovery discard own first attention over New/Import/library', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await seedSavedGame(adapter, 'Kept After Invalid', 'kept-invalid')
+    await adapter.open()
+    await adapter.withTransaction([OBJECT_STORE_ACTIVE_SESSIONS], async (tx) => {
+      await tx.put(OBJECT_STORE_ACTIVE_SESSIONS, ACTIVE_SESSION_KEY, { bad: true })
+    })
+    await renderReadyHome({
+      createAdapter: () => adapter,
+      tabId: 'home-invalid-dominant',
+      clock: createManualClock(AT),
+      leaseTtlMs: 60_000,
+      renewIntervalMs: 20_000,
+      broadcastChannel: null,
+    })
+    await waitFor(() => {
+      expect(screen.getByTestId('home-invalid-recovery')).toBeInTheDocument()
+    })
+    expect(screen.getByTestId('home-discard-session')).toHaveClass('btn')
+    expect(screen.getByTestId('home-discard-session')).not.toHaveClass('btn--secondary')
+    expect(screen.getByTestId('home-new-game')).toHaveClass('btn--secondary')
+    expect(screen.getByTestId('home-import-game')).toHaveClass('btn--secondary')
+    expect(screen.queryByTestId('home-hero-playable')).not.toBeInTheDocument()
+    const playButtons = screen.getAllByRole('button', { name: /^play$/i })
+    for (const button of playButtons) {
+      expect(button).toHaveClass('btn--secondary')
+    }
+  })
+
+  it('features the most recent unfinished Game with Continue when no playable exists', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await seedUnfinishedGame(adapter)
+    // Second unfinished is more recent and must be the featured hero once.
+    await seedUnfinishedGame(adapter)
+    await renderReadyHome({
+      createAdapter: () => adapter,
+      tabId: 'home-draft-only-hero',
+      clock: createManualClock(AT),
+      leaseTtlMs: 60_000,
+      renewIntervalMs: 20_000,
+      broadcastChannel: null,
+    })
+    await waitFor(() => {
+      expect(screen.getByTestId('home-hero-unfinished')).toBeInTheDocument()
+    })
+    expect(screen.getByTestId('home-hero-edit')).toHaveTextContent(/^continue$/i)
+    expect(screen.getByTestId('home-hero-edit')).not.toHaveClass('btn--secondary')
+    expect(screen.queryByTestId('home-hero-play')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('home-hero-playable')).not.toBeInTheDocument()
+    expect(screen.getByTestId('home-new-game')).toHaveClass('btn--secondary')
+    expect(screen.getByTestId('home-import-game')).toHaveClass('btn--secondary')
+    // Featured once: remaining unfinished appears in Your Games, not duplicated in hero.
+    expect(screen.getAllByTestId('home-hero-unfinished')).toHaveLength(1)
+    expect(screen.getByRole('heading', { name: /your games/i })).toBeInTheDocument()
+    const libraryEdit = screen.getAllByRole('button', { name: /^edit$/i })
+    expect(libraryEdit.length).toBeGreaterThanOrEqual(1)
+    expect(libraryEdit[0]).not.toHaveClass('btn--secondary')
   })
 
   it('start fresh clears only the active session and keeps My Games', async () => {

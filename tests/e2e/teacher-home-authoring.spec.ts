@@ -12,11 +12,13 @@ test('Home can import the demo game and open it for edit', async ({ page }) => {
   await page.getByRole('button', { name: /import demo game/i }).click()
   await expect(page.getByTestId('import-quality-report')).toBeVisible()
   await expect(page.getByTestId('home-status')).toContainText(/saved/i)
-  await expect(page.getByRole('heading', { name: /my games/i })).toBeVisible()
-  await page.getByRole('button', { name: /^edit$/i }).first().click()
+  await expect(page.getByTestId('home-hero-playable')).toBeVisible()
+  await page.getByTestId('home-hero-edit').click()
   await expect(page.getByRole('heading', { name: /edit game/i })).toBeVisible()
   await expect(page.getByTestId('authoring-save-status')).toBeVisible()
+  await expect(page.getByTestId('authoring-goal')).toBeVisible()
   await expect(page.getByRole('button', { name: /preview board/i })).toBeVisible()
+  await expect(page.getByTestId('authoring-game-settings')).not.toHaveAttribute('open')
 })
 
 test('Host play surface remains reachable via direct Host URL', async ({ page }) => {

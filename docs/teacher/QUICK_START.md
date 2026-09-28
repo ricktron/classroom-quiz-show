@@ -16,11 +16,12 @@ students.
 From Home you can:
 
 - **New Game** — create a category board and Final in the app
-- **Import Game** — paste a game file, import a spreadsheet, or load the demo
-- open **My Games** / **Recent Games**
-- **Play** a ready game, or **Edit** it
-- **Open Display** for the projector
-- reach Host via **Play** on a ready game (or open `#/host` for support /
+- **Import Game** — download a Board + Final (or Classic) spreadsheet template,
+  paste a game file, import a completed workbook, or load the demo
+- open **Your Games**
+- **Play** a playable game, or **Edit** a draft
+- **Open Display** as a small optional link for the projector
+- reach Host via **Play** on a playable game (or open `#/host` for support /
   advanced paths — not an ordinary Home action)
 
 ## 2. Create or import a game
@@ -28,18 +29,21 @@ From Home you can:
 The board itself is the editor. Fill the title, category headers, tiles
 (question, canonical answer, supported alternates, teacher notes, values), and
 Final. Incomplete tiles stay visibly unfinished. Save before you leave if you
-want to keep edits.
+want to keep edits. Team count, default names, and the class name bank live under
+**Game settings**.
 
-Spreadsheet import remains the bulk / power path. After import, CQS shows an
-**Import quality** report with errors, warnings, and quality notices. You can
-download local generation feedback as a text file for a future writing prompt.
-CQS does not call an AI service.
+Spreadsheet import remains the bulk / power path. From **Import Game**, download
+the blank Board + Final template (Classic Board is also available), fill it
+manually or with an external tool, then import the `.xlsx`. After import, CQS
+shows an **Import quality** report with errors, warnings, and quality notices.
+You can download local generation feedback as a text file for a future writing
+prompt. CQS does not call an AI service.
 
 ## 3. Play a class session
 
-**Play** starts a class session from the saved game. Session scores, team
-assignments, buzzes, and wagers belong to that class only. They do not write
-back into the reusable game.
+**Play** starts class preparation from the saved game. On Host, finish Teams and
+Names, then **Start Game**. Session scores, team assignments, buzzes, and wagers
+belong to that class only. They do not write back into the reusable game.
 
 **Reset this class session** clears that class run. It does not delete the
 saved game.

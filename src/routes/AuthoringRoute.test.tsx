@@ -92,6 +92,19 @@ describe('in-app board authoring', () => {
     expect(screen.getByTestId('authoring-save-status')).toHaveTextContent(/^saved$/i)
   })
 
+  it('opens New Game on the first incomplete tile and keeps team settings secondary', async () => {
+    await renderEditor()
+    await waitFor(() => {
+      expect(screen.getByTestId('tile-editor')).toBeInTheDocument()
+    })
+    expect(screen.getByTestId('tile-editor')).toHaveTextContent(/category 1/i)
+    expect(screen.getByTestId('authoring-game-settings')).toBeInTheDocument()
+    expect(screen.getByTestId('authoring-game-settings')).not.toHaveAttribute('open')
+    expect(screen.getByTestId('team-name-bank')).not.toBeVisible()
+    expect(screen.getByTestId('authoring-team-count')).not.toBeVisible()
+    expect(screen.getByTestId('authoring-goal')).toHaveTextContent(/fill the board first/i)
+  })
+
   it('edits title, a tile, and Final without claiming a false Saved state', async () => {
     await renderEditor()
     const title = screen.getByLabelText(/game title/i)
@@ -195,6 +208,12 @@ describe('in-app board authoring', () => {
 
   it('exposes Game-owned team count 1–8 via add/remove from the high end', async () => {
     await renderEditor()
+    const settings = screen.getByTestId('authoring-game-settings')
+    expect(settings).not.toHaveAttribute('open')
+    fireEvent.click(settings.querySelector('summary')!)
+    await waitFor(() => {
+      expect(screen.getByTestId('authoring-team-count')).toBeVisible()
+    })
     const count = screen.getByTestId('authoring-team-count')
     expect(count).toHaveValue(2)
     expect(screen.getByLabelText(/^team 1$/i)).toBeInTheDocument()
