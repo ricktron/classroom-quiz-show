@@ -16,7 +16,8 @@ students.
 From Home you can:
 
 - **New Game** — create a category board and Final in the app
-- **Import Game** — paste a game file, import a spreadsheet, or load the demo
+- **Import Game** — download a Board + Final (or Classic) spreadsheet template,
+  paste a game file, import a completed workbook, or load the demo
 - open **My Games** / **Recent Games**
 - **Play** a ready game, or **Edit** it
 - **Open Display** for the projector
@@ -30,10 +31,12 @@ The board itself is the editor. Fill the title, category headers, tiles
 Final. Incomplete tiles stay visibly unfinished. Save before you leave if you
 want to keep edits.
 
-Spreadsheet import remains the bulk / power path. After import, CQS shows an
-**Import quality** report with errors, warnings, and quality notices. You can
-download local generation feedback as a text file for a future writing prompt.
-CQS does not call an AI service.
+Spreadsheet import remains the bulk / power path. From **Import Game**, download
+the blank Board + Final template (Classic Board is also available), fill it
+manually or with an external tool, then import the `.xlsx`. After import, CQS
+shows an **Import quality** report with errors, warnings, and quality notices.
+You can download local generation feedback as a text file for a future writing
+prompt. CQS does not call an AI service.
 
 ## 3. Play a class session
 

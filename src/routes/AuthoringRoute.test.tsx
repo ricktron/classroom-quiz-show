@@ -92,6 +92,18 @@ describe('in-app board authoring', () => {
     expect(screen.getByTestId('authoring-save-status')).toHaveTextContent(/^saved$/i)
   })
 
+  it('opens New Game on the first incomplete tile and keeps team settings secondary', async () => {
+    await renderEditor()
+    await waitFor(() => {
+      expect(screen.getByTestId('tile-editor')).toBeInTheDocument()
+    })
+    expect(screen.getByTestId('tile-editor')).toHaveTextContent(/category 1/i)
+    expect(screen.getByTestId('authoring-game-settings')).toBeInTheDocument()
+    expect(screen.getByTestId('authoring-game-settings')).not.toHaveAttribute('open')
+    expect(screen.getByTestId('team-name-bank')).not.toBeVisible()
+    expect(screen.getByTestId('authoring-goal')).toHaveTextContent(/fill the board first/i)
+  })
+
   it('edits title, a tile, and Final without claiming a false Saved state', async () => {
     await renderEditor()
     const title = screen.getByLabelText(/game title/i)

@@ -42,6 +42,7 @@ import {
   type ImportCorrectionView,
 } from '../import/salvage'
 import { ImportSalvagePanel } from '../host/ImportSalvagePanel'
+import { downloadWorkbookTemplate } from '../authoring'
 import { draftFromDefinition } from '../authoring/draftFromDefinition'
 import type { AuthoringDraft } from '../authoring/types'
 import { parseWorkbookBytes } from '../authoring/parseWorkbook'
@@ -662,9 +663,33 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
             Import Game
           </h2>
           <p className="host__note">
-            Import a game file or spreadsheet. CQS checks it and saves it to My Games. Spreadsheet
-            import remains the bulk-editing path.
+            Download a blank spreadsheet template, fill it (manually or with an external tool), then
+            import the <code>.xlsx</code> here. CQS checks it and saves it to My Games. You can also
+            paste a game file or load the demo.
           </p>
+          <div
+            className="home__actions"
+            role="group"
+            aria-label="Spreadsheet templates"
+            data-testid="home-import-templates"
+          >
+            <button
+              type="button"
+              className="btn"
+              data-testid="home-download-board-plus-final"
+              onClick={() => downloadWorkbookTemplate('board-plus-final')}
+            >
+              Download Board + Final template
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              data-testid="home-download-classic-board"
+              onClick={() => downloadWorkbookTemplate('classic-board')}
+            >
+              Download Classic Board template
+            </button>
+          </div>
           <div className="home__actions">
             <button
               type="button"
