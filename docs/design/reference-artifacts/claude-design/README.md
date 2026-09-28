@@ -69,6 +69,12 @@ rm -rf "$TMP"
 
 ## Package B — CQS MENUS D04 — B-Adapted pre-game workflow (2026-09-28)
 
+**Acceptance note (D04-R1):** Subsequently accepted as the preferred MENUS
+implementation-design reference. The immutable ZIP preserves creation-time
+provenance; any “pending” wording inside the ZIP is pre-acceptance. Repository
+canon and owner decisions win over package-internal notes. Do **not** modify,
+recompress, replace, or rename the ZIP.
+
 | Field | Value |
 | --- | --- |
 | Title | **CQS MENUS D04 — B-Adapted pre-game workflow** |
@@ -78,8 +84,8 @@ rm -rf "$TMP"
 | Byte size | `165850` |
 | SHA-256 | `a17e8cad628806a533b10e16c637a6dcaa349b79220fa051ba5c1c3c577df612` |
 | Date added | `2026-09-28` (folder date); stored as exact accepted bytes (no repack) |
-| Purpose | Preferred design evidence for the teacher-facing **Home → Play → class setup → Ready → Start → in-game Host** pre-game workflow (B-Adapted Console structure + Ledger tone), after D02 Court IA settlement and D04-R1 fidelity repair |
-| Authority boundary | Preferred design evidence only. **Not** implementation authority. **Not** authority for gameplay engine behavior, persistence semantics, Sony hardware behavior, Audience / Display implementation, Windows/platform support claims, exact implementation mechanism, or Game vs Session ownership / Session schema. Repository canon and owner decisions win. Storing this package does **not** authorize MENUS product slices |
+| Purpose | Preferred design evidence for the teacher-facing **Home → Play → class setup → Ready → Start Game → in-game Host** pre-game workflow (B-Adapted Console structure + Ledger tone), after D02 Court IA settlement and D04-R1 fidelity repair |
+| Authority boundary | Preferred MENUS implementation-design reference (accepted). **Not** implementation authority. **Not** authority for gameplay engine behavior, persistence semantics, Sony hardware behavior, Audience / Display implementation, Windows/platform support claims, exact Start-posture mechanism, or Game vs Session ownership / Session schema. Repository canon and owner decisions win. Storing this package does **not** authorize MENUS product slices |
 
 ### Top-level contents (under `CQS-MENUS-D04-REFERENCE/`)
 
