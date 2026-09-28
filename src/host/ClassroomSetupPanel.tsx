@@ -29,6 +29,7 @@ import type { LocalInputAction } from '../input/logicalAction'
 import { isDesktopRuntime } from '../runtime/cqsRuntime'
 import { TeamNameSelectionBoard } from './TeamNameSelectionBoard'
 import { useOptionalTheme } from '../theme/ThemeProvider'
+import { teamSetSignature } from '../input/sonyBuzzSupportedProfile'
 import './ClassroomSetupPanel.css'
 
 export interface ClassroomSetupObservation {
@@ -56,6 +57,13 @@ export interface ClassroomSetupPanelProps {
   readonly onPanicMute: () => void
   readonly playReady: boolean
   readonly onPlay: () => void
+  /** Navigate to authoring for the active Game (0-team / team-count repair). */
+  readonly onEditGame?: () => void
+  /**
+   * Supported Namtai Wbuzz Gamepad detected (lifted from GamepadInputHostPanel).
+   * Unknown/false → keyboard-honest Names copy; never invent colour-press claims.
+   */
+  readonly wbuzzPresent?: boolean
   readonly onSelectedIdentitiesChange: (names: Readonly<Record<string, string>>) => void
   readonly reducedMotion?: boolean
   readonly grayscale?: boolean
@@ -99,6 +107,7 @@ export function ClassroomSetupPanel({
   observationBatch = null,
   sonyReady,
   sonyTeacherSummary = null,
+  wbuzzPresent = false,
   displayOpen,
   onOpenDisplay,
   audioUnderstood,
@@ -106,6 +115,7 @@ export function ClassroomSetupPanel({
   onAudioTest,
   playReady,
   onPlay,
+  onEditGame,
   onSelectedIdentitiesChange,
   reducedMotion = false,
   grayscale = false,
@@ -113,6 +123,8 @@ export function ClassroomSetupPanel({
   const theme = useOptionalTheme()
   const highContrast = theme?.themeId === 'high-contrast'
   const teamIds = useMemo(() => teams.map((team) => team.id), [teams])
+  /** Content identity for roster changes — array reference alone is not enough. */
+  const teamSignature = useMemo(() => teamSetSignature(teams), [teams])
   const bankKey = teamNameBank.join('\u0000')
   const initialNamesRef = useRef(initialSessionNames)
   initialNamesRef.current = initialSessionNames
@@ -133,11 +145,10 @@ export function ClassroomSetupPanel({
 
   useEffect(() => {
     setSelection(seedSelection(teamNameBank, teamIds, initialNamesRef.current))
-    // bankKey is the content identity; array identity must not reset an in-progress class.
-    // Session names are re-applied only on this bank/team reset so a live claim
-    // does not reshuffle the other teams' visible lists.
+    // bankKey / teamSignature are content identity; array identity must not reset
+    // an in-progress class. Session names re-apply only on this bank/roster reset.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reset only when bank contents or team ids change
-  }, [bankKey, teamIds])
+  }, [bankKey, teamSignature])
 
   const persistAndPublish = useCallback(
     (state: TeamNameSelectionState) => {
@@ -401,20 +412,48 @@ export function ClassroomSetupPanel({
     }
 
     if (expandedTask === 'teams') {
+      const teamsOk = teams.length >= 1 && teams.length <= 8
       return (
         <div className="classroom-setup__task" data-testid="setup-teams-task">
-          <p className="host__note">This game still needs 1–8 teams before class names.</p>
+          <p className="host__note">
+            {teamsOk
+              ? `${teams.length} team${teams.length === 1 ? '' : 's'} in this game. Change the count in the game editor if needed.`
+              : 'This game still needs 1–8 teams before class names. Add teams in the game editor.'}
+          </p>
+          {onEditGame && (
+            <button
+              type="button"
+              // Teams blocked → Edit may be the primary repair CTA.
+              // Teams valid (incl. Ready + Teams revisited) → Edit stays secondary
+              // so Start Game remains the sole dominant control when Ready.
+              className={teamsOk ? 'btn btn--secondary' : 'btn'}
+              data-testid="setup-edit-game"
+              onClick={onEditGame}
+            >
+              Edit this game
+            </button>
+          )}
         </div>
       )
     }
 
     if (expandedTask === 'names') {
+      // Teams not ready → Names blocked: no empty / nonsensical name board.
+      if (teams.length < 1 || teams.length > 8) {
+        return (
+          <div className="classroom-setup__task" data-testid="setup-names-task">
+            <p className="host__note" data-testid="setup-names-blocked-copy">
+              Finish teams before choosing names.
+            </p>
+          </div>
+        )
+      }
       return (
         <div className="classroom-setup__task" data-testid="setup-names-task">
           <p className="host__note" data-testid="setup-sony-copy">
-            Each team presses Blue, Orange, Green, or Yellow — top to bottom on the controller —
-            to choose a name. Red shows four more names for that team only. You can also type a
-            name. Keyboard always works.
+            {wbuzzPresent
+              ? 'Each team presses Blue, Orange, Green, or Yellow — top to bottom on the controller — to choose a name. Red shows four more names for that team only. You can also type a name. Keyboard always works.'
+              : 'Type a name for each team, or pick from the name choices. Keyboard always works.'}
           </p>
           <TeamNameSelectionBoard
             views={teamIds.map((id) => selection.views[id]!).filter(Boolean)}

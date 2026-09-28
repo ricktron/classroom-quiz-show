@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { GamepadInputHostPanel } from './GamepadInputHostPanel'
 import { createSessionStore, type SessionStore } from '../state/store'
@@ -13,6 +13,8 @@ import {
   controller,
   fakeGamepadSource,
   fakePollDriver,
+  reportedId,
+  reportedMapping,
   snapshot,
   type FakeGamepadSource,
   type FakePollDriver,
@@ -617,5 +619,118 @@ describe('accessibility', () => {
     attach(panel)
     expect(screen.getByTestId('gih-capture-blue')).toHaveAccessibleName(/Blue Team/)
     expect(screen.getByTestId('gih-clear-blue')).toHaveAccessibleName(/Blue Team/)
+  })
+})
+
+describe('wbuzzPresent lift (Slice E)', () => {
+  const WBUZZ_ID = 'Vendor: 054c Product: 1000'
+  const GENERIC_SONY_ID = 'Vendor: 054c Product: 0002'
+
+  function renderLiftPanel() {
+    const store = boardStore()
+    const source = fakeGamepadSource()
+    const driver = fakePollDriver()
+    const clock = createManualClock(AT)
+    const game = store.getState().session?.game
+    if (!game) throw new Error('fixture has no game')
+    const onWbuzzPresentChange = vi.fn()
+    const view = render(
+      <GamepadInputHostPanel
+        dispatch={store.dispatch}
+        game={game}
+        clock={clock}
+        source={source}
+        scheduler={driver}
+        persistenceAdapter={createMemoryPersistenceAdapter()}
+        webHidTransport={createFakeWebHidTransport({ available: false })}
+        onWbuzzPresentChange={onWbuzzPresentChange}
+      />,
+    )
+    return {
+      source,
+      driver,
+      onWbuzzPresentChange,
+      view,
+      poll() {
+        act(() => {
+          driver.poll()
+        })
+      },
+    }
+  }
+
+  it('reports false when no matching Wbuzz Gamepad is present', () => {
+    const panel = renderLiftPanel()
+    panel.poll()
+    expect(panel.onWbuzzPresentChange).toHaveBeenCalledWith(false)
+    expect(panel.onWbuzzPresentChange.mock.calls.every((call) => call[0] === false)).toBe(true)
+  })
+
+  it('reports true only for exact Wbuzz 054c:1000 with 20-button topology', () => {
+    const panel = renderLiftPanel()
+    act(() => {
+      panel.source.set(
+        snapshot(
+          controller(0, buttons(20), {
+            reportedId: reportedId(WBUZZ_ID),
+            reportedMapping: reportedMapping('standard'),
+          }),
+        ),
+      )
+    })
+    panel.poll()
+    expect(panel.onWbuzzPresentChange).toHaveBeenCalledWith(true)
+  })
+
+  it('does not report true for generic/unrecognized Gamepads', () => {
+    const panel = renderLiftPanel()
+    act(() => {
+      panel.source.set(
+        snapshot(
+          controller(0, buttons(12), {
+            reportedId: reportedId(GENERIC_SONY_ID),
+            reportedMapping: reportedMapping('standard'),
+          }),
+        ),
+      )
+    })
+    panel.poll()
+    expect(panel.onWbuzzPresentChange).not.toHaveBeenCalledWith(true)
+    expect(panel.onWbuzzPresentChange).toHaveBeenCalledWith(false)
+  })
+
+  it('does not report true when 054c:1000 id lacks 20-button topology', () => {
+    const panel = renderLiftPanel()
+    act(() => {
+      panel.source.set(
+        snapshot(
+          controller(0, buttons(12), {
+            reportedId: reportedId(WBUZZ_ID),
+            reportedMapping: reportedMapping('standard'),
+          }),
+        ),
+      )
+    })
+    panel.poll()
+    expect(panel.onWbuzzPresentChange).not.toHaveBeenCalledWith(true)
+  })
+
+  it('clears lifted true on unmount so Host cannot keep a stale present signal', () => {
+    const panel = renderLiftPanel()
+    act(() => {
+      panel.source.set(
+        snapshot(
+          controller(0, buttons(20), {
+            reportedId: reportedId(WBUZZ_ID),
+            reportedMapping: reportedMapping('standard'),
+          }),
+        ),
+      )
+    })
+    panel.poll()
+    expect(panel.onWbuzzPresentChange).toHaveBeenCalledWith(true)
+    panel.onWbuzzPresentChange.mockClear()
+    panel.view.unmount()
+    expect(panel.onWbuzzPresentChange).toHaveBeenCalledWith(false)
   })
 })

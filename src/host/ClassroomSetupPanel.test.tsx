@@ -512,4 +512,136 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('readiness-teams')).toHaveTextContent(/8 teams/i)
     expect(screen.getByTestId('setup-names-summary')).toHaveTextContent(/Classroom Squad 8/)
   })
+
+  it('keeps Start Game sole dominant when Teams is revisited while Ready', () => {
+    const onEditGame = vi.fn()
+    renderSetup({ ...READY_OPTIONALS_UNRESOLVED, onEditGame })
+    expect(screen.getByTestId('setup-ready-heading')).toBeVisible()
+    expect(screen.getByTestId('setup-play')).not.toBeDisabled()
+    expect(screen.getByTestId('setup-play')).toHaveClass('classroom-setup__play--dominant')
+
+    fireEvent.click(screen.getByTestId('readiness-teams'))
+    expect(screen.getByTestId('setup-teams-task')).toBeVisible()
+    expect(screen.getByTestId('setup-ready-heading')).toBeVisible()
+    expect(screen.getByTestId('setup-play')).not.toBeDisabled()
+    expect(screen.getByTestId('setup-play')).toHaveClass('classroom-setup__play--dominant')
+
+    const edit = screen.getByTestId('setup-edit-game')
+    expect(edit).toBeVisible()
+    expect(edit).toHaveClass('btn--secondary')
+    expect(edit.className.split(/\s+/)).not.toContain('btn--primary')
+    expect(edit).not.toHaveClass('classroom-setup__play--dominant')
+  })
+
+  it('keeps Edit this game primary when Teams are blocked (0-team repair)', () => {
+    renderSetup({ teams: [], onEditGame: vi.fn() })
+    const edit = screen.getByTestId('setup-edit-game')
+    expect(edit).toBeVisible()
+    expect(edit).toHaveClass('btn')
+    expect(edit).not.toHaveClass('btn--secondary')
+  })
+
+  it('keeps Edit this game secondary when Teams are valid but Names still required', () => {
+    renderSetup({ onEditGame: vi.fn(), initialSessionNames: {} })
+    fireEvent.click(screen.getByTestId('readiness-teams'))
+    const edit = screen.getByTestId('setup-edit-game')
+    expect(edit).toHaveClass('btn--secondary')
+    expect(screen.getByTestId('setup-play')).toBeDisabled()
+  })
+
+  it('mounts Class Setup for 0-team with Teams/Names blocked, Start disabled, and Edit CTA', () => {
+    const onEditGame = vi.fn()
+    renderSetup({ teams: [], onEditGame })
+    expect(screen.getByTestId('classroom-setup')).toBeVisible()
+    for (const id of ['teams', 'names', 'buzzers', 'display', 'sound'] as const) {
+      expect(screen.getByTestId(`setup-row-${id}`)).toBeInTheDocument()
+    }
+    expect(screen.getByTestId('readiness-teams')).toHaveAttribute('data-status', 'blocked')
+    expect(screen.getByTestId('readiness-names')).toHaveAttribute('data-status', 'blocked')
+    expect(screen.getByTestId('setup-play')).toBeDisabled()
+    expect(screen.getByTestId('setup-play-blocker')).toHaveTextContent(/still needs teams/i)
+    expect(screen.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'teams')
+    expect(screen.getByTestId('setup-edit-game')).toBeVisible()
+    fireEvent.click(screen.getByTestId('setup-edit-game'))
+    expect(onEditGame).toHaveBeenCalledTimes(1)
+    expect(screen.queryByTestId('setup-ready-heading')).toBeNull()
+    expect(screen.queryByTestId('tnsb-manual-red')).toBeNull()
+  })
+
+  it('hides name controls when Names is expanded while teams are blocked', () => {
+    renderSetup({ teams: [] })
+    fireEvent.click(screen.getByTestId('readiness-names'))
+    expect(screen.getByTestId('setup-names-task')).toBeVisible()
+    expect(screen.getByTestId('setup-names-blocked-copy')).toHaveTextContent(/finish teams/i)
+    expect(screen.queryByTestId('setup-sony-copy')).toBeNull()
+    expect(document.body.querySelectorAll('[data-testid^="tnsb-manual-"]')).toHaveLength(0)
+  })
+
+  it('uses keyboard-honest Names copy when wbuzzPresent is false', () => {
+    renderSetup({ wbuzzPresent: false })
+    const copy = screen.getByTestId('setup-sony-copy').textContent ?? ''
+    expect(copy).toMatch(/type a name/i)
+    expect(copy).toMatch(/keyboard always works/i)
+    expect(copy).not.toMatch(/Blue|Orange|Green|Yellow|Red/)
+  })
+
+  it('allows colour-press Names guidance only when wbuzzPresent is true', () => {
+    renderSetup({ wbuzzPresent: true })
+    const copy = screen.getByTestId('setup-sony-copy').textContent ?? ''
+    expect(copy).toMatch(/Blue, Orange, Green, or Yellow/)
+    expect(copy).toMatch(/type a name/i)
+    expect(copy).toMatch(/keyboard always works/i)
+  })
+
+  it('reseeds name selection when team roster signature changes', () => {
+    const onSelectedIdentitiesChange = vi.fn()
+    const { rerender } = render(
+      <ClassroomSetupPanel
+        teams={TEAMS}
+        teamNameBank={['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf', 'Hotel']}
+        leadership="leader"
+        observation={null}
+        sonyReady={false}
+        displayOpen={false}
+        onOpenDisplay={vi.fn()}
+        audioUnderstood={false}
+        audioMuted={false}
+        onAudioTest={vi.fn()}
+        onPanicMute={vi.fn()}
+        playReady={false}
+        onPlay={vi.fn()}
+        onSelectedIdentitiesChange={onSelectedIdentitiesChange}
+      />,
+    )
+    fireEvent.change(screen.getByTestId('tnsb-manual-red'), { target: { value: 'Comet Crew' } })
+    fireEvent.blur(screen.getByTestId('tnsb-manual-red'))
+    expect(onSelectedIdentitiesChange).toHaveBeenCalled()
+
+    const grown = createTeamDefinitions([
+      { id: 'red', name: 'Team 1', accent: 'crimson' },
+      { id: 'blue', name: 'Team 2', accent: 'azure' },
+      { id: 'green', name: 'Team 3', accent: 'emerald' },
+    ])
+    rerender(
+      <ClassroomSetupPanel
+        teams={grown}
+        teamNameBank={['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf', 'Hotel']}
+        leadership="leader"
+        observation={null}
+        sonyReady={false}
+        displayOpen={false}
+        onOpenDisplay={vi.fn()}
+        audioUnderstood={false}
+        audioMuted={false}
+        onAudioTest={vi.fn()}
+        onPanicMute={vi.fn()}
+        playReady={false}
+        onPlay={vi.fn()}
+        onSelectedIdentitiesChange={onSelectedIdentitiesChange}
+      />,
+    )
+    expect(screen.getByTestId('tnsb-manual-green')).toBeInTheDocument()
+    expect(screen.getByTestId('setup-play')).toBeDisabled()
+    expect(screen.getByTestId('readiness-names')).toHaveAttribute('data-status', 'needs-attention')
+  })
 })

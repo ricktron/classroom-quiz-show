@@ -110,6 +110,11 @@ export interface GamepadInputHostPanelProps {
   /** Same classification published by the detailed Sony readiness layers. */
   readonly onSonyTeacherSummaryChange?: (summary: SonyBuzzTeacherSummary) => void
   /**
+   * Supported Namtai Wbuzz Gamepad detected (`wbuzzController != null`).
+   * Lift only — Class Setup must not poll or classify devices itself.
+   */
+  readonly onWbuzzPresentChange?: (present: boolean) => void
+  /**
    * Safe Host diagnostic input signals (counts + semantic layers only).
    * Never device identity or classroom content.
    */
@@ -159,6 +164,7 @@ export function GamepadInputHostPanel({
   onSelectionBatch,
   onSonyReadyChange,
   onSonyTeacherSummaryChange,
+  onWbuzzPresentChange,
   onInputDiagnosticSignals,
 }: GamepadInputHostPanelProps) {
   const teams = game.definition.teams
@@ -193,6 +199,16 @@ export function GamepadInputHostPanel({
     transport: webHidTransport,
     persistenceAdapter,
   })
+
+  const wbuzzPresent = sony.wbuzzController != null
+  useEffect(() => {
+    onWbuzzPresentChange?.(wbuzzPresent)
+    // Clear lifted signal on unmount so Host does not keep a stale true after
+    // the sole Gamepad owner leaves the tree.
+    return () => {
+      onWbuzzPresentChange?.(false)
+    }
+  }, [wbuzzPresent, onWbuzzPresentChange])
 
   const publishTeacherSummary = useCallback(
     (summary: SonyBuzzTeacherSummary) => {
@@ -463,7 +479,7 @@ export function GamepadInputHostPanel({
             transport: sony.transport,
             associations: sony.associations,
             mappingStatus: sony.mappingStatus,
-            wbuzzPresent: sony.wbuzzController != null,
+            wbuzzPresent,
             onConnect: () => {
               void sony.connect()
             },
@@ -691,7 +707,7 @@ export function GamepadInputHostPanel({
           transport: sony.transport,
           associations: sony.associations,
           mappingStatus: sony.mappingStatus,
-          wbuzzPresent: sony.wbuzzController != null,
+          wbuzzPresent,
           onConnect: () => {
             void sony.connect()
           },

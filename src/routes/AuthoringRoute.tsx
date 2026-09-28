@@ -27,6 +27,7 @@ import { buildImportQualityReport } from '../import/qualityReport'
 import { openLibraryGame, saveAuthoringDraftToLibrary } from '../library/gameLibrary'
 import { persistenceErr } from '../persistence/results'
 import { ROUTES, playPath } from './paths'
+import { MAX_TEAMS, MIN_TEAMS } from '../game/teams/limits'
 import './HostRoute.css'
 import './AuthoringRoute.css'
 
@@ -120,6 +121,27 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
     },
     [],
   )
+
+  /** Game-owned team count 1–8 via existing add-team / end-only remove-team. */
+  const setTeamCount = useCallback((raw: number) => {
+    setDraft((current) => {
+      if (!current) return current
+      if (!Number.isFinite(raw)) return current
+      const target = Math.max(MIN_TEAMS, Math.min(MAX_TEAMS, Math.trunc(raw)))
+      let next = current
+      while (next.game.teams.length < target) {
+        next = applyDraftCorrection(next, { kind: 'add-team' })
+      }
+      while (next.game.teams.length > target) {
+        const maxOrder = Math.max(...next.game.teams.map((team) => team.order))
+        next = applyDraftCorrection(next, { kind: 'remove-team', order: maxOrder })
+      }
+      if (next === current) return current
+      setUndoStack((stack) => pushAuthoringUndo(stack, current))
+      setSaveTrust((state) => markSaveDirty(state))
+      return next
+    })
+  }, [])
 
   async function save(): Promise<void> {
     if (!draft || saveTrust.phase === 'saving') return
@@ -369,6 +391,29 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
           <p className="host__note">
             These names are part of the reusable game. Class scores and controller assignments stay
             in the session when you play.
+          </p>
+          <label htmlFor="authoring-team-count">
+            Number of teams
+            <input
+              id="authoring-team-count"
+              data-testid="authoring-team-count"
+              type="number"
+              min={MIN_TEAMS}
+              max={MAX_TEAMS}
+              value={draft.game.teams.length === 0 ? '' : draft.game.teams.length}
+              placeholder="1–8"
+              onChange={(event) => {
+                const raw = event.target.value
+                if (raw.trim() === '') return
+                const parsed = Number(raw)
+                if (!Number.isFinite(parsed)) return
+                setTeamCount(parsed)
+              }}
+            />
+          </label>
+          <p className="host__note" data-testid="authoring-team-count-hint">
+            Games use 1–8 teams. Changing the count updates this reusable game; class names are
+            chosen when you play.
           </p>
           {draft.game.teams.map((team) => (
             <label key={team.canonicalId} htmlFor={`team-${team.order}`}>
