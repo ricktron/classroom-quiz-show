@@ -1,9 +1,19 @@
 import { describe, expect, it } from 'vitest'
 import type { SessionEvent } from '../state/events'
+import { createGameDefinition } from '../game/gameDefinition'
+import { placeholderRound } from '../game/roundDefinition'
 import { createSampleGame } from '../game/sampleGame'
 import { createSessionStore } from '../state/store'
 import { deriveHostPlayPosture } from '../session/hostPlayPosture'
 import { describeRecoveryBanner, formatRecoveryHeading } from './recoveryBannerContext'
+
+function titledGame(id: string, title: string) {
+  return createGameDefinition({
+    id,
+    title,
+    rounds: [placeholderRound(`${id}-r1`, 'Round 1')],
+  })
+}
 
 function base(type: SessionEvent['type'], overrides: Record<string, unknown> = {}): SessionEvent {
   return {
@@ -46,12 +56,8 @@ describe('describeRecoveryBanner', () => {
   })
 
   it('uses latest-init cut: Game A play then Game B init is class setup', () => {
-    const gameA = createSampleGame()
-    const gameB = {
-      ...createSampleGame(),
-      id: 'game-b',
-      title: 'Game B Setup',
-    }
+    const gameA = titledGame('game-a', 'Game A')
+    const gameB = titledGame('game-b', 'Game B Setup')
     const store = createSessionStore()
     store.dispatch({ type: 'INIT_SESSION', issuedAt: 1, sessionId: 's1' })
     store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: 2, definition: gameA })
@@ -69,12 +75,8 @@ describe('describeRecoveryBanner', () => {
   })
 
   it('labels in play after Game B play following a prior Game A session', () => {
-    const gameA = createSampleGame()
-    const gameB = {
-      ...createSampleGame(),
-      id: 'game-b-play',
-      title: 'Game B Play',
-    }
+    const gameA = titledGame('game-a-play', 'Game A')
+    const gameB = titledGame('game-b-play', 'Game B Play')
     const store = createSessionStore()
     store.dispatch({ type: 'INIT_SESSION', issuedAt: 1, sessionId: 's1' })
     store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: 2, definition: gameA })
