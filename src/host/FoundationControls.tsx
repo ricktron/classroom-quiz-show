@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { absoluteDisplayUrlWithTheme, playGameIdFromSearch } from '../routes/paths'
+import { absoluteDisplayUrlWithTheme, editPath, playGameIdFromSearch } from '../routes/paths'
+import { teamSetSignature } from '../input/sonyBuzzSupportedProfile'
 import { useOptionalTheme } from '../theme/ThemeProvider'
 import { loadLibraryRecord } from '../persistence/savedDefinitions'
 import { ClassroomSetupPanel, type ClassroomSetupObservation } from './ClassroomSetupPanel'
@@ -97,6 +98,8 @@ export function FoundationControls({
   const [sonyTeacherSummary, setSonyTeacherSummary] = useState<SonyBuzzTeacherSummary | null>(
     null,
   )
+  /** Supported Namtai Wbuzz Gamepad detected — lifted from GamepadInputHostPanel only. */
+  const [wbuzzPresent, setWbuzzPresent] = useState(false)
   const [inputDiagnosticSignals, setInputDiagnosticSignals] =
     useState<HostInputDiagnosticSignals | null>(null)
   const displayWindowRef = useRef<Window | null>(null)
@@ -223,8 +226,46 @@ export function FoundationControls({
     const liveGame = store.getState().session?.game ?? null
     const liveHistory = store.getHistory()
     if (liveGame?.definition.id === playGameId) {
-      playLoadedRef.current = playGameId
-      setPlayReplaceNeeded(false)
+      // Same Game id can still need a library refresh after authoring team-count
+      // change (Edit → Save → Play). Compare team signatures; refresh only when
+      // the saved definition roster drifted — not an indiscriminate session reset.
+      const adapter = persistence.adapter
+      if (!adapter) {
+        playLoadedRef.current = playGameId
+        setPlayReplaceNeeded(false)
+        return
+      }
+      const liveSig = teamSetSignature(liveGame.definition.teams)
+      void loadLibraryRecord(adapter, playGameId).then((loaded) => {
+        if (playLoadedRef.current === playGameId) return
+        if (!loaded.ok) {
+          playLoadedRef.current = playGameId
+          setPlayReplaceNeeded(false)
+          return
+        }
+        const librarySig = teamSetSignature(loaded.value.definition.teams)
+        if (librarySig === liveSig) {
+          playLoadedRef.current = playGameId
+          setPlayReplaceNeeded(false)
+          return
+        }
+        void persistence
+          .loadSaved({
+            gameId: playGameId,
+            activeGame: liveGame,
+            dispatch,
+            getHistory: () => store.getHistory(),
+            registry,
+            confirmedReplace: true,
+          })
+          .then((result) => {
+            if (result.ok) {
+              playLoadedRef.current = playGameId
+              setPlayReplaceNeeded(false)
+              setPlayReplaceArmed(false)
+            }
+          })
+      })
       return
     }
     // Recovered non-empty history still applying: never loadSaved over it.
@@ -402,7 +443,7 @@ export function FoundationControls({
         </p>
       )}
 
-      {!playReady && game && state.session && game.definition.teams.length > 0 && (
+      {!playReady && game && state.session && (
         <ClassroomSetupPanel
           key={state.session.sessionId}
           teams={game.definition.teams}
@@ -413,6 +454,7 @@ export function FoundationControls({
           observationBatch={selectionObservationBatch}
           sonyReady={sonyReady}
           sonyTeacherSummary={sonyTeacherSummary}
+          wbuzzPresent={wbuzzPresent}
           displayOpen={displayOpen}
           onOpenDisplay={openDisplayTracked}
           audioUnderstood={audioUnderstood || presentationAudio.status.activation === 'ready'}
@@ -431,6 +473,9 @@ export function FoundationControls({
           onPlay={() => {
             setPlayReady(true)
             setMoreOpen(false)
+          }}
+          onEditGame={() => {
+            navigate(editPath(game.definition.id))
           }}
           onSelectedIdentitiesChange={(claimed) => {
             const issuedAt = now()
@@ -458,6 +503,7 @@ export function FoundationControls({
           onSelectionBatch={setSelectionObservationBatch}
           onSonyReadyChange={setSonyReady}
           onSonyTeacherSummaryChange={setSonyTeacherSummary}
+          onWbuzzPresentChange={setWbuzzPresent}
           onInputDiagnosticSignals={setInputDiagnosticSignals}
         />
       )}

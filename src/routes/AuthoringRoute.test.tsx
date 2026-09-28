@@ -192,4 +192,29 @@ describe('in-app board authoring', () => {
       /another classroom quiz show window is currently responsible for saving/i,
     )
   })
+
+  it('exposes Game-owned team count 1–8 via add/remove from the high end', async () => {
+    await renderEditor()
+    const count = screen.getByTestId('authoring-team-count')
+    expect(count).toHaveValue(2)
+    expect(screen.getByLabelText(/^team 1$/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/^team 2$/i)).toBeInTheDocument()
+
+    fireEvent.change(count, { target: { value: '3' } })
+    expect(screen.getByTestId('authoring-team-count')).toHaveValue(3)
+    expect(screen.getByLabelText(/^team 3$/i)).toHaveValue('Team 3')
+    expect(screen.getByTestId('authoring-save-status')).toHaveTextContent(/unsaved/i)
+
+    fireEvent.change(screen.getByLabelText(/^team 1$/i), { target: { value: 'Survivors' } })
+    fireEvent.change(count, { target: { value: '1' } })
+    expect(screen.getByTestId('authoring-team-count')).toHaveValue(1)
+    expect(screen.getByLabelText(/^team 1$/i)).toHaveValue('Survivors')
+    expect(screen.queryByLabelText(/^team 2$/i)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/^team 3$/i)).not.toBeInTheDocument()
+
+    fireEvent.change(count, { target: { value: '9' } })
+    expect(screen.getByTestId('authoring-team-count')).toHaveValue(8)
+    fireEvent.change(count, { target: { value: '0' } })
+    expect(screen.getByTestId('authoring-team-count')).toHaveValue(1)
+  })
 })
