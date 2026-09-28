@@ -97,7 +97,7 @@ test('0-team import mounts Class Setup; Edit → set count → Play returns with
   // Leaving Host for authoring persists an unfinished session; returning via
   // Play lands on recovery. Resume, then same-Game roster drift must ask the
   // teacher before replacing the Session (never silent confirmedReplace).
-  await page.getByTestId('home-resume-session').click({ timeout: 15_000 })
+  await page.getByRole('button', { name: /^resume class$/i }).click({ timeout: 15_000 })
 
   await expect(page.getByTestId('play-replace-confirm')).toBeVisible({ timeout: 15_000 })
   await page.getByRole('button', { name: /load this game and replace the current session/i }).click()
