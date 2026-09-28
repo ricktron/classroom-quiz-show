@@ -78,6 +78,15 @@ test('Ready with optionals unresolved keeps Start Game sole dominant then enters
   await expect(page.getByTestId('setup-ready-heading')).toBeVisible()
   await expect(page.getByTestId('setup-play')).toBeEnabled()
 
+  await page.getByTestId('readiness-display').click()
+  await expect(page.getByTestId('setup-display-task')).toBeVisible()
+  await expect(page.getByTestId('setup-ready-heading')).toBeVisible()
+  await expect(page.getByTestId('setup-play')).toBeEnabled()
+  await expect(page.getByTestId('setup-play')).toHaveClass(/classroom-setup__play--dominant/)
+  const expandedDisplay = page.getByTestId('setup-open-display')
+  await expect(expandedDisplay).toBeVisible()
+  await expect(expandedDisplay).toHaveClass(/btn--secondary/)
+
   await page.getByTestId('setup-skip-buzzers').click()
   await expect(page.getByTestId('readiness-sony')).toContainText(/skipped/i)
   await expect(page.getByTestId('setup-ready-heading')).toBeVisible()
@@ -87,4 +96,8 @@ test('Ready with optionals unresolved keeps Start Game sole dominant then enters
   await expect(page.getByTestId('classroom-setup')).toHaveCount(0)
   await expect(page.getByTestId('host-play-status')).toBeVisible()
   await expect(page.getByTestId('host-more')).not.toHaveAttribute('open', '')
+
+  const playStatus = await page.getByTestId('host-play-status').innerText()
+  expect(playStatus).toMatch(/Sound (muted|tested|not tested)/)
+  expect(playStatus).not.toMatch(/Sound ready|Sound not checked|Sound is ready/i)
 })

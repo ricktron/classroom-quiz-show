@@ -68,6 +68,8 @@ test('Start Game focuses Host; Back to setup returns; bare Host default stays pl
   await expect(page.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'play')
   await expect(page.getByTestId('classroom-setup')).toHaveCount(0)
   await expect(page.getByTestId('host-play-status')).toBeVisible()
+  await expect(page.getByTestId('host-play-status')).toContainText(/Sound (muted|tested|not tested)/)
+  await expect(page.getByTestId('host-play-status')).not.toContainText(/Sound ready|Sound not checked|Sound is ready/i)
   await expect(page.getByTestId('setup-play')).toHaveText(/back to setup/i)
   await expect(page.getByTestId('setup-play')).toBeEnabled()
 

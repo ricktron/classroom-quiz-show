@@ -43,6 +43,7 @@ import {
   canStartPlayFromGame,
   deriveHostPlayPosture,
 } from '../session/hostPlayPosture'
+import { soundFactLabel } from '../session/classroomReadiness'
 import { THEME_META, type ThemeId } from '../theme/themeRegistry'
 import './FoundationControls.css'
 
@@ -311,11 +312,10 @@ export function FoundationControls({
       sonyReady ? 'Buzzers ready' : 'Buzzers optional · keyboard works',
     )
     playStatusParts.push(
-      presentationAudio.status.muted
-        ? 'Sound muted'
-        : audioUnderstood || presentationAudio.status.activation === 'ready'
-          ? 'Sound ready'
-          : 'Sound not checked',
+      soundFactLabel({
+        audioUnderstood: audioUnderstood || presentationAudio.status.activation === 'ready',
+        audioMuted: presentationAudio.status.muted,
+      }),
     )
   }
 

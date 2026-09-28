@@ -472,4 +472,52 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('readiness-display')).toHaveTextContent(/optional/i)
     expect(screen.getByTestId('setup-row-display')).toHaveAttribute('data-emphasized', 'false')
   })
+
+  it('keeps Start Game sole dominant when Display is expanded while Ready', () => {
+    renderSetup({
+      initialSessionNames: { red: 'Comet Crew', blue: 'Ozone Owls' },
+      sonyReady: false,
+      displayOpen: false,
+      audioUnderstood: false,
+    })
+    expect(screen.getByTestId('setup-ready-heading')).toBeVisible()
+    expect(screen.getByTestId('setup-play')).not.toBeDisabled()
+    expect(screen.getByTestId('setup-play')).toHaveClass('classroom-setup__play--dominant')
+
+    fireEvent.click(screen.getByTestId('readiness-display'))
+    expect(screen.getByTestId('setup-display-task')).toBeVisible()
+    expect(screen.getByTestId('setup-ready-heading')).toBeVisible()
+    expect(screen.getByTestId('setup-play')).not.toBeDisabled()
+    expect(screen.getByTestId('setup-play')).toHaveClass('classroom-setup__play--dominant')
+
+    const openDisplay = screen.getByTestId('setup-open-display')
+    expect(openDisplay).toBeVisible()
+    expect(openDisplay).toHaveClass('btn--secondary')
+    expect(openDisplay).not.toHaveClass('classroom-setup__play--dominant')
+    expect(openDisplay.className.split(/\s+/)).not.toContain('btn--primary')
+  })
+
+  it('keeps eight-team Ready workspace usable without horizontal overflow of the outcome strip', () => {
+    const eight = createTeamDefinitions(
+      Array.from({ length: 8 }, (_, i) => ({
+        id: `t${i}`,
+        name: `Team ${i + 1}`,
+        accent: (['crimson', 'azure', 'emerald', 'amber', 'violet', 'teal', 'rose', 'slate'] as const)[i]!,
+      })),
+    )
+    const names = Object.fromEntries(eight.map((team, i) => [team.id, `Classroom Squad ${i + 1}`]))
+    renderSetup({
+      teams: eight,
+      initialSessionNames: names,
+      sonyReady: false,
+      displayOpen: false,
+      audioUnderstood: false,
+    })
+    expect(screen.getByTestId('setup-ready-heading')).toBeVisible()
+    expect(screen.getByTestId('setup-play')).not.toBeDisabled()
+    expect(screen.getByTestId('setup-play')).toHaveClass('classroom-setup__play--dominant')
+    expect(screen.getByTestId('setup-outcome-strip')).toBeVisible()
+    expect(screen.getByTestId('readiness-teams')).toHaveTextContent(/8 teams/i)
+    expect(screen.getByTestId('setup-names-summary')).toHaveTextContent(/Classroom Squad 8/)
+  })
 })

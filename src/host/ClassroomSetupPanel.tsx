@@ -485,7 +485,12 @@ export function ClassroomSetupPanel({
           <p className="host__note" data-testid="setup-display-fact">
             {displayOpen ? 'Window open.' : 'Window not open.'}
           </p>
-          <button type="button" className="btn" data-testid="setup-open-display" onClick={onOpenDisplay}>
+          <button
+            type="button"
+            className="btn btn--secondary"
+            data-testid="setup-open-display"
+            onClick={onOpenDisplay}
+          >
             {displayOpen ? 'Focus audience display' : 'Open audience display'}
           </button>
           <div data-testid="setup-display-preview" className="classroom-setup__preview-inline">
