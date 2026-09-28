@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 
 /**
  * MENUS Slice C/D — Home hierarchy + Import templates + board-first authoring.
@@ -80,4 +80,75 @@ test('sim125-ish viewport keeps Resume / empty / hero hierarchy readable', async
   await expect(page.getByTestId('home-new-game')).toBeVisible()
   await expect(page.getByTestId('home-import-game')).toBeVisible()
   await expect(page.getByTestId('home-open-display')).toBeVisible()
+})
+
+async function returnHomeFromAuthoring(page: Page): Promise<void> {
+  await page.getByTestId('authoring-home').click()
+  const discard = page.getByRole('button', { name: /discard unsaved changes/i })
+  if (await discard.isVisible().catch(() => false)) {
+    await discard.click()
+  }
+  await expect(page.getByRole('heading', { name: /^home$/i })).toBeVisible()
+}
+
+test('multi-entry Home: one featured playable, other playable + unfinished reachable once', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 })
+  await page.goto('./')
+
+  // Unfinished Game C (draft-only until playables exist).
+  await page.getByTestId('home-new-game').click()
+  await expect(page.getByRole('heading', { name: /edit game/i })).toBeVisible()
+  await returnHomeFromAuthoring(page)
+
+  // Playable A via demo import.
+  await page.getByTestId('home-import-game').click()
+  await page.getByTestId('home-import-demo').click()
+  await expect(page.getByTestId('home-status')).toContainText(/saved/i)
+
+  // Playable B via duplicate of the featured playable.
+  await page.getByTestId('home-hero-playable').locator('summary').click()
+  await page.getByTestId('home-hero-playable').getByRole('button', { name: /^duplicate$/i }).click()
+  await expect(page.getByTestId('home-status')).toContainText(/duplicated/i)
+
+  await expect(page.getByTestId('home-hero-playable')).toBeVisible()
+  await expect(page.getByTestId('home-hero-play')).toBeVisible()
+  await expect(page.getByTestId('home-hero-play')).not.toHaveClass(/btn--secondary/)
+  await expect(page.getByTestId('home-hero-edit')).toHaveClass(/btn--secondary/)
+  await expect(page.getByTestId('home-new-game')).toHaveClass(/btn--secondary/)
+  await expect(page.getByRole('heading', { name: /your games/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /recent games/i })).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: /^my games$/i })).toHaveCount(0)
+  // Featured once — only one hero block.
+  await expect(page.getByTestId('home-hero-playable')).toHaveCount(1)
+  // Other playable remains in Your Games with usable Play.
+  const library = page.locator('.home__library')
+  await expect(library.getByRole('button', { name: /^play$/i }).first()).toBeVisible()
+  // Unfinished C remains reachable (Edit, not fake Play).
+  await expect(library.getByText(/draft|needs content/i).first()).toBeVisible()
+  await expect(library.getByRole('button', { name: /^edit$/i }).first()).toBeVisible()
+  await expect(page.getByTestId('home-hero-playable').getByRole('button', { name: /^more$/i })).toBeVisible()
+})
+
+test('draft-only Home: featured unfinished once with Continue, no fake Play', async ({ page }) => {
+  await page.goto('./')
+  await page.getByTestId('home-new-game').click()
+  await expect(page.getByRole('heading', { name: /edit game/i })).toBeVisible()
+  await returnHomeFromAuthoring(page)
+
+  await page.getByTestId('home-new-game').click()
+  await expect(page.getByRole('heading', { name: /edit game/i })).toBeVisible()
+  await returnHomeFromAuthoring(page)
+
+  await expect(page.getByTestId('home-hero-unfinished')).toBeVisible()
+  await expect(page.getByTestId('home-hero-unfinished')).toHaveCount(1)
+  await expect(page.getByTestId('home-hero-edit')).toHaveText(/continue/i)
+  await expect(page.getByTestId('home-hero-edit')).not.toHaveClass(/btn--secondary/)
+  await expect(page.getByTestId('home-hero-play')).toHaveCount(0)
+  await expect(page.getByTestId('home-hero-playable')).toHaveCount(0)
+  await expect(page.getByTestId('home-new-game')).toHaveClass(/btn--secondary/)
+  await expect(page.getByRole('heading', { name: /your games/i })).toBeVisible()
+  await expect(page.locator('.home__library').getByRole('button', { name: /^edit$/i })).toBeVisible()
+  await expect(page.locator('.home__library').getByRole('button', { name: /^play$/i })).toHaveCount(0)
 })

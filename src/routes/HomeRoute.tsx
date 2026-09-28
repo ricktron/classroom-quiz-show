@@ -100,11 +100,15 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
   const recoveryDominant = canResume || hasInvalidRecovery
   const heroEntry = useMemo(() => {
     if (recoveryDominant) return null
-    return libraryByRecency.find((entry) => entry.playable) ?? null
+    const playable = libraryByRecency.find((entry) => entry.playable)
+    if (playable) return { entry: playable, kind: 'playable' as const }
+    const unfinished = libraryByRecency.find((entry) => !entry.playable)
+    if (unfinished) return { entry: unfinished, kind: 'unfinished' as const }
+    return null
   }, [libraryByRecency, recoveryDominant])
   const libraryEntries = useMemo(() => {
     if (!heroEntry) return libraryByRecency
-    return libraryByRecency.filter((entry) => entry.gameId !== heroEntry.gameId)
+    return libraryByRecency.filter((entry) => entry.gameId !== heroEntry.entry.gameId)
   }, [heroEntry, libraryByRecency])
   const recoveryContext = useMemo(() => {
     if (!canResume || !persistence.recovery) return null
@@ -620,7 +624,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
           <div className="home__actions">
             <button
               type="button"
-              className="btn btn--secondary"
+              className="btn"
               data-testid="home-discard-session"
               aria-label={startFreshArmed ? DISCARD_INVALID_CONFIRM_LABEL : DISCARD_INVALID_LABEL}
               onClick={() => void onStartFresh()}
@@ -671,19 +675,21 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
       {heroEntry ? (
         <section
           className="home__hero"
-          data-testid="home-hero-playable"
+          data-testid={heroEntry.kind === 'playable' ? 'home-hero-playable' : 'home-hero-unfinished'}
           aria-labelledby="home-hero-title"
         >
-          <p className="home__hero-kicker">Most recent playable</p>
-          <h2 id="home-hero-title">{heroEntry.title}</h2>
-          <p className="host__note">{libraryStatusLabel(heroEntry)}</p>
-          {renameId === heroEntry.gameId ? (
+          <p className="home__hero-kicker">
+            {heroEntry.kind === 'playable' ? 'Most recent playable' : 'Continue editing'}
+          </p>
+          <h2 id="home-hero-title">{heroEntry.entry.title}</h2>
+          <p className="host__note">{libraryStatusLabel(heroEntry.entry)}</p>
+          {renameId === heroEntry.entry.gameId ? (
             <div className="home__game-actions">
-              <label className="home__label" htmlFor={`rename-${heroEntry.gameId}`}>
+              <label className="home__label" htmlFor={`rename-${heroEntry.entry.gameId}`}>
                 New name
               </label>
               <input
-                id={`rename-${heroEntry.gameId}`}
+                id={`rename-${heroEntry.entry.gameId}`}
                 value={renameValue}
                 onChange={(event) => setRenameValue(event.target.value)}
               />
@@ -691,7 +697,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
                 type="button"
                 className="btn"
                 disabled={!ready}
-                onClick={() => void onRename(heroEntry.gameId)}
+                onClick={() => void onRename(heroEntry.entry.gameId)}
               >
                 Save name
               </button>
@@ -701,23 +707,25 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
             </div>
           ) : (
             <div className="home__actions home__game-actions">
+              {heroEntry.kind === 'playable' ? (
+                <button
+                  type="button"
+                  className="btn"
+                  data-testid="home-hero-play"
+                  disabled={!ready}
+                  onClick={() => void onPlay(heroEntry.entry)}
+                >
+                  Play
+                </button>
+              ) : null}
               <button
                 type="button"
-                className="btn"
-                data-testid="home-hero-play"
-                disabled={!ready}
-                onClick={() => void onPlay(heroEntry)}
-              >
-                Play
-              </button>
-              <button
-                type="button"
-                className="btn btn--secondary"
+                className={heroEntry.kind === 'playable' ? 'btn btn--secondary' : 'btn'}
                 data-testid="home-hero-edit"
                 disabled={!ready}
-                onClick={() => navigate(editPath(heroEntry.gameId))}
+                onClick={() => navigate(editPath(heroEntry.entry.gameId))}
               >
-                Edit
+                {heroEntry.kind === 'playable' ? 'Edit' : 'Continue'}
               </button>
               <details className="home__game-more">
                 <summary>More</summary>
@@ -726,7 +734,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
                     type="button"
                     className="btn btn--secondary"
                     disabled={!ready}
-                    onClick={() => void onDuplicate(heroEntry.gameId)}
+                    onClick={() => void onDuplicate(heroEntry.entry.gameId)}
                   >
                     Duplicate
                   </button>
@@ -735,8 +743,8 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
                     className="btn btn--secondary"
                     disabled={!ready}
                     onClick={() => {
-                      setRenameId(heroEntry.gameId)
-                      setRenameValue(heroEntry.title)
+                      setRenameId(heroEntry.entry.gameId)
+                      setRenameValue(heroEntry.entry.title)
                     }}
                   >
                     Rename
@@ -744,8 +752,8 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
                   <button
                     type="button"
                     className="btn btn--secondary"
-                    disabled={!ready}
-                    onClick={() => void onExport(heroEntry.gameId)}
+                    disabled={!ready || !heroEntry.entry.playable}
+                    onClick={() => void onExport(heroEntry.entry.gameId)}
                   >
                     Export
                   </button>
@@ -753,9 +761,9 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
                     type="button"
                     className="btn btn--secondary"
                     disabled={!ready}
-                    onClick={() => void onDelete(heroEntry.gameId)}
+                    onClick={() => void onDelete(heroEntry.entry.gameId)}
                   >
-                    {confirmDeleteId === heroEntry.gameId ? 'Confirm delete game' : 'Delete'}
+                    {confirmDeleteId === heroEntry.entry.gameId ? 'Confirm delete game' : 'Delete'}
                   </button>
                 </div>
               </details>
@@ -799,10 +807,11 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
           role="group"
           aria-label={libraryEmpty ? 'Start' : 'Add games'}
           data-testid="home-add-games"
+          data-recovery-subordinate={recoveryDominant ? 'true' : undefined}
         >
           <button
             type="button"
-            className={libraryEmpty && recoveryDominant ? 'btn' : 'btn btn--secondary'}
+            className="btn btn--secondary"
             data-testid="home-new-game"
             disabled={!ready || busy}
             onClick={() => void onNewGame()}
@@ -978,7 +987,11 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
       )}
 
       {libraryEntries.length > 0 ? (
-        <section className="home__library" aria-labelledby="your-games-title">
+        <section
+          className="home__library"
+          aria-labelledby="your-games-title"
+          data-recovery-subordinate={recoveryDominant ? 'true' : undefined}
+        >
           <h2 id="your-games-title">Your Games</h2>
           <GameList
             entries={libraryEntries}
@@ -986,6 +999,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
             renameId={renameId}
             renameValue={renameValue}
             disabled={!ready}
+            recoveryDominant={recoveryDominant}
             onPlay={(entry) => void onPlay(entry)}
             onEdit={(id) => navigate(editPath(id))}
             onDuplicate={(id) => void onDuplicate(id)}
@@ -1048,6 +1062,8 @@ interface GameListProps {
   readonly renameId: string | null
   readonly renameValue: string
   readonly disabled: boolean
+  /** When recovery owns Home, Play/Edit stay reachable but are never primary. */
+  readonly recoveryDominant: boolean
   readonly onPlay: (entry: SavedDefinitionSummary) => void
   readonly onEdit: (gameId: string) => void
   readonly onDuplicate: (gameId: string) => void
@@ -1073,6 +1089,7 @@ function GameList({
   renameId,
   renameValue,
   disabled,
+  recoveryDominant,
   onPlay,
   onEdit,
   onDuplicate,
@@ -1085,95 +1102,99 @@ function GameList({
 }: GameListProps) {
   return (
     <ul className="home__game-list" aria-label="Your Games">
-      {entries.map((entry) => (
-        <li key={entry.gameId} className="home__game">
-          <div>
-            <strong>{entry.title}</strong>
-            <p className="host__note">{libraryStatusLabel(entry)}</p>
-          </div>
-          {renameId === entry.gameId ? (
-            <div className="home__game-actions">
-              <label className="home__label" htmlFor={`rename-${entry.gameId}`}>
-                New name
-              </label>
-              <input
-                id={`rename-${entry.gameId}`}
-                value={renameValue}
-                onChange={(event) => onRenameChange(event.target.value)}
-              />
-              <button
-                type="button"
-                className="btn"
-                disabled={disabled}
-                onClick={() => onRenameConfirm(entry.gameId)}
-              >
-                Save name
-              </button>
-              <button type="button" className="btn btn--secondary" onClick={onRenameCancel}>
-                Cancel
-              </button>
+      {entries.map((entry) => {
+        const playPrimary = entry.playable && !recoveryDominant
+        const editPrimary = !entry.playable && !recoveryDominant
+        return (
+          <li key={entry.gameId} className="home__game">
+            <div>
+              <strong>{entry.title}</strong>
+              <p className="host__note">{libraryStatusLabel(entry)}</p>
             </div>
-          ) : (
-            <div className="home__game-actions">
-              {entry.playable ? (
+            {renameId === entry.gameId ? (
+              <div className="home__game-actions">
+                <label className="home__label" htmlFor={`rename-${entry.gameId}`}>
+                  New name
+                </label>
+                <input
+                  id={`rename-${entry.gameId}`}
+                  value={renameValue}
+                  onChange={(event) => onRenameChange(event.target.value)}
+                />
                 <button
                   type="button"
                   className="btn"
                   disabled={disabled}
-                  onClick={() => onPlay(entry)}
+                  onClick={() => onRenameConfirm(entry.gameId)}
                 >
-                  Play
+                  Save name
                 </button>
-              ) : null}
-              <button
-                type="button"
-                className={entry.playable ? 'btn btn--secondary' : 'btn'}
-                disabled={disabled}
-                onClick={() => onEdit(entry.gameId)}
-              >
-                Edit
-              </button>
-              <details className="home__game-more">
-                <summary>More</summary>
-                <div className="home__game-more-actions">
+                <button type="button" className="btn btn--secondary" onClick={onRenameCancel}>
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="home__game-actions">
+                {entry.playable ? (
                   <button
                     type="button"
-                    className="btn btn--secondary"
+                    className={playPrimary ? 'btn' : 'btn btn--secondary'}
                     disabled={disabled}
-                    onClick={() => onDuplicate(entry.gameId)}
+                    onClick={() => onPlay(entry)}
                   >
-                    Duplicate
+                    Play
                   </button>
-                  <button
-                    type="button"
-                    className="btn btn--secondary"
-                    disabled={disabled}
-                    onClick={() => onRenameStart(entry)}
-                  >
-                    Rename
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn--secondary"
-                    disabled={disabled || !entry.playable}
-                    onClick={() => onExport(entry.gameId)}
-                  >
-                    Export
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn--secondary"
-                    disabled={disabled}
-                    onClick={() => onDelete(entry.gameId)}
-                  >
-                    {confirmDeleteId === entry.gameId ? 'Confirm delete game' : 'Delete'}
-                  </button>
-                </div>
-              </details>
-            </div>
-          )}
-        </li>
-      ))}
+                ) : null}
+                <button
+                  type="button"
+                  className={editPrimary ? 'btn' : 'btn btn--secondary'}
+                  disabled={disabled}
+                  onClick={() => onEdit(entry.gameId)}
+                >
+                  Edit
+                </button>
+                <details className="home__game-more">
+                  <summary>More</summary>
+                  <div className="home__game-more-actions">
+                    <button
+                      type="button"
+                      className="btn btn--secondary"
+                      disabled={disabled}
+                      onClick={() => onDuplicate(entry.gameId)}
+                    >
+                      Duplicate
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--secondary"
+                      disabled={disabled}
+                      onClick={() => onRenameStart(entry)}
+                    >
+                      Rename
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--secondary"
+                      disabled={disabled || !entry.playable}
+                      onClick={() => onExport(entry.gameId)}
+                    >
+                      Export
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--secondary"
+                      disabled={disabled}
+                      onClick={() => onDelete(entry.gameId)}
+                    >
+                      {confirmDeleteId === entry.gameId ? 'Confirm delete game' : 'Delete'}
+                    </button>
+                  </div>
+                </details>
+              </div>
+            )}
+          </li>
+        )
+      })}
     </ul>
   )
 }

@@ -1,4 +1,10 @@
 import type { SessionEvent } from '../state/events'
+import { effectiveEvents } from '../state/reducer'
+import {
+  deriveHostPlayPosture,
+  effectiveHistoryAfterLatestInit,
+  latestEffectiveGameInitialized,
+} from '../session/hostPlayPosture'
 
 export interface RecoveryBannerContext {
   readonly gameTitle: string | null
@@ -9,13 +15,16 @@ export interface RecoveryBannerContext {
 /**
  * Derive teacher-facing recovery banner details from the unfinished session
  * payload. Presentation only — no new durable fields.
+ *
+ * Stage uses the same effective-history / latest-init cut as Host play posture
+ * (Slice A) so banner copy agrees with Resume landing.
  */
 export function describeRecoveryBanner(
   events: readonly SessionEvent[],
   savedAt: number,
   nowMs: number = Date.now(),
 ): RecoveryBannerContext {
-  const gameInit = [...events].reverse().find((event) => event.type === 'GAME_INITIALIZED')
+  const gameInit = latestEffectiveGameInitialized(events)
   const gameTitle =
     gameInit && gameInit.type === 'GAME_INITIALIZED'
       ? gameInit.definition.title.trim() || null
@@ -28,28 +37,22 @@ export function describeRecoveryBanner(
 }
 
 function deriveStageLabel(events: readonly SessionEvent[]): string | null {
-  if (events.some((event) => event.type === 'GAME_SESSION_ENDED')) {
+  const fx = effectiveEvents(events)
+  if (fx.length === 0) return null
+
+  const tail = effectiveHistoryAfterLatestInit(events)
+  if (tail.some((event) => event.type === 'GAME_SESSION_ENDED')) {
     return 'ended'
   }
-  const hasGame = events.some((event) => event.type === 'GAME_INITIALIZED')
+
+  const hasGame = latestEffectiveGameInitialized(events) !== null
   if (!hasGame) {
-    return events.some((event) => event.type === 'SESSION_INITIALIZED') ? 'before game loaded' : null
+    return fx.some((event) => event.type === 'SESSION_INITIALIZED')
+      ? 'before game loaded'
+      : null
   }
-  const inPlay = events.some((event) => {
-    switch (event.type) {
-      case 'CURRENT_ROUND_SELECTED':
-      case 'ROUND_ADVANCED':
-      case 'CATEGORY_BOARD_TILE_SELECTED':
-      case 'CATEGORY_BOARD_PROMPT_REVEALED':
-      case 'CATEGORY_BOARD_ANSWER_REVEALED':
-      case 'TEAM_BUZZED':
-      case 'RESPONSE_PHASE_ARMED':
-      case 'FINAL_WAGER_STARTED':
-        return true
-      default:
-        return false
-    }
-  })
+
+  const inPlay = deriveHostPlayPosture({ history: events, canStartPlay: false })
   return inPlay ? 'in play' : 'class setup'
 }
 
