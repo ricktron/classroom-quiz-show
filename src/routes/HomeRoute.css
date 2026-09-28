@@ -14,12 +14,96 @@
 
 .home__resume,
 .home__import,
-.home__library {
+.home__library,
+.home__empty,
+.home__hero {
   margin: var(--space-5) 0;
   padding: var(--space-4);
   border: 1px solid var(--border-panel);
   border-radius: var(--radius);
   background: var(--surface-base);
+}
+
+.home__resume--dominant {
+  border-color: var(--border-strong, var(--border-panel));
+  box-shadow: inset 0 0 0 1px var(--border-strong, var(--border-panel));
+}
+
+.home__empty {
+  border-style: dashed;
+}
+
+.home__hero-kicker {
+  margin: 0 0 var(--space-1);
+  color: var(--fg-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.home__actions--secondary {
+  margin-top: var(--space-3);
+}
+
+.home__utility {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: var(--space-4) 0;
+}
+
+.home__text-link {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--fg-muted);
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+}
+
+.home__text-link:hover,
+.home__text-link:focus-visible {
+  color: var(--fg);
+}
+
+.home__utility-sep {
+  color: var(--fg-muted);
+}
+
+.home__more {
+  margin: var(--space-5) 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius);
+  background: var(--surface-base);
+}
+
+.home__more > summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.home__game-more {
+  display: inline-block;
+}
+
+.home__game-more > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius);
+  background: var(--surface-raised, var(--surface-base));
+  font-weight: 600;
+}
+
+.home__game-more-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
 }
 
 .home__game-list {

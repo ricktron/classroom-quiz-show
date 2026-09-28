@@ -70,6 +70,9 @@ test('0-team import mounts Class Setup; Edit → set count → Play returns with
   await expect(namesCopy).toHaveCount(0)
 
   await page.getByTestId('setup-edit-game').click()
+  await expect(page.getByTestId('authoring-game-settings')).toBeVisible()
+  await expect(page.getByTestId('authoring-game-settings')).not.toHaveAttribute('open')
+  await page.getByTestId('authoring-game-settings').locator('summary').click()
   await expect(page.getByTestId('authoring-team-count')).toBeVisible()
   await expect(page.getByTestId('authoring-team-count')).toHaveValue('')
 
@@ -94,7 +97,7 @@ test('0-team import mounts Class Setup; Edit → set count → Play returns with
   // Leaving Host for authoring persists an unfinished session; returning via
   // Play lands on recovery. Resume, then same-Game roster drift must ask the
   // teacher before replacing the Session (never silent confirmedReplace).
-  await page.getByRole('button', { name: /^resume session$/i }).click({ timeout: 15_000 })
+  await page.getByTestId('home-resume-session').click({ timeout: 15_000 })
 
   await expect(page.getByTestId('play-replace-confirm')).toBeVisible({ timeout: 15_000 })
   await page.getByRole('button', { name: /load this game and replace the current session/i }).click()

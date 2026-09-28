@@ -13,7 +13,7 @@ export const INVALID_RECOVERY_HEADING = 'Unfinished class session could not be r
 export const INVALID_RECOVERY_BODY_SUFFIX =
   'Discard only that session to continue. Your saved games stay.'
 
-export const RESUME_SESSION_LABEL = 'Resume session'
+export const RESUME_SESSION_LABEL = 'Resume class'
 
 export const START_FRESH_LABEL = 'Start fresh'
 

@@ -95,3 +95,28 @@
   width: 100%;
   max-width: 40rem;
 }
+
+.authoring-settings {
+  margin: var(--space-4) 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius);
+  background: var(--surface-base);
+}
+
+.authoring-settings > summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.authoring-settings label {
+  display: block;
+  font-weight: 600;
+  margin-top: var(--space-3);
+}
+
+.authoring-settings textarea,
+.authoring-settings input {
+  width: 100%;
+  max-width: 40rem;
+}
