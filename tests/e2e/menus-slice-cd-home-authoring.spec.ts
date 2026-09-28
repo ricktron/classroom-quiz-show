@@ -23,7 +23,9 @@ test('empty Home: New Game dominant, Import adjacent, Display demoted, no dual l
   await expect(page.getByRole('heading', { name: /^my games$/i })).toHaveCount(0)
   await expect(page.getByRole('link', { name: /open classroom controls/i })).toHaveCount(0)
   await expect(page.getByTestId('home-more')).toBeVisible()
-  await expect(page.getByTestId('backup-restore')).toBeHidden()
+  await expect(page.getByTestId('home-more')).not.toHaveAttribute('open')
+  await expect(page.getByTestId('backup-restore')).toBeAttached()
+  await expect(page.getByTestId('backup-restore-privacy')).toBeHidden()
 })
 
 test('Import exposes Board+Final primary and Classic secondary templates', async ({ page }) => {

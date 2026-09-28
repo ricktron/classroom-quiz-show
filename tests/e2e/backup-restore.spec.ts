@@ -14,11 +14,15 @@ test.describe('S04C-H3 backup & restore foundations', () => {
     await page.goto('./')
     await expect(page.getByRole('heading', { name: /^home$/i })).toBeVisible()
 
+    const homeMore = page.getByTestId('home-more')
+    await expect(homeMore).toBeVisible()
+    await homeMore.locator(':scope > summary').click()
+
     const details = page.getByTestId('backup-restore')
     await expect(details).toBeVisible()
     await expect(details).not.toHaveAttribute('open', '')
 
-    await details.locator('summary').click()
+    await details.locator(':scope > summary').click()
     await expect(details).toHaveAttribute('open', '')
     await expect(page.getByTestId('backup-restore-privacy')).toContainText(/classroom content/i)
     await expect(page.getByTestId('backup-restore-privacy')).toContainText(

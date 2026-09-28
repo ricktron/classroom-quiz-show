@@ -20,7 +20,7 @@ From Home you can:
   paste a game file, import a completed workbook, or load the demo
 - open **Your Games**
 - **Play** a playable game, or **Edit** a draft
-- open **Display** as a small optional link for the projector
+- **Open Display** as a small optional link for the projector
 - reach Host via **Play** on a playable game (or open `#/host` for support /
   advanced paths — not an ordinary Home action)
 
