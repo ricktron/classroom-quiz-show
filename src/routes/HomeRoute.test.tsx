@@ -343,6 +343,33 @@ describe('teacher Home', () => {
     expect(writes.savedDefinitions).toBe(0)
   })
 
+  it('exposes Board + Final template download on Home Import without a second generator', async () => {
+    const downloads: string[] = []
+    const originalCreate = URL.createObjectURL
+    const originalRevoke = URL.revokeObjectURL
+    URL.createObjectURL = () => {
+      downloads.push('object-url')
+      return 'blob:test-template'
+    }
+    URL.revokeObjectURL = () => undefined
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined)
+    try {
+      await renderReadyHome()
+      await waitFor(() => expect(screen.getByTestId('home-import-game')).toBeEnabled())
+      fireEvent.click(screen.getByTestId('home-import-game'))
+      expect(screen.getByTestId('home-import-templates')).toBeInTheDocument()
+      expect(screen.getByTestId('home-download-board-plus-final')).toBeInTheDocument()
+      expect(screen.getByTestId('home-download-classic-board')).toBeInTheDocument()
+      fireEvent.click(screen.getByTestId('home-download-board-plus-final'))
+      expect(clickSpy).toHaveBeenCalled()
+      expect(downloads.length).toBeGreaterThan(0)
+    } finally {
+      clickSpy.mockRestore()
+      URL.createObjectURL = originalCreate
+      URL.revokeObjectURL = originalRevoke
+    }
+  })
+
   it('resumes from Home into Host without a second recovery prompt', async () => {
     const adapter = createMemoryPersistenceAdapter()
     const historyLength = await seedResumableSession(adapter)
