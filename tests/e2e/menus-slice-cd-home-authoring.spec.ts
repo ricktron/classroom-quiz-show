@@ -128,7 +128,7 @@ test('multi-entry Home: one featured playable, other playable + unfinished reach
   // Unfinished C remains reachable (Edit, not fake Play).
   await expect(library.getByText(/draft|needs content/i).first()).toBeVisible()
   await expect(library.getByRole('button', { name: /^edit$/i }).first()).toBeVisible()
-  await expect(page.getByTestId('home-hero-playable').getByRole('button', { name: /^more$/i })).toBeVisible()
+  await expect(page.getByTestId('home-hero-playable').locator('summary', { hasText: /^more$/i })).toBeVisible()
 })
 
 test('draft-only Home: featured unfinished once with Continue, no fake Play', async ({ page }) => {
