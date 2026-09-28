@@ -123,10 +123,17 @@ export function PersistenceControls({
       : variant === 'recovery'
         ? 'This class session'
         : 'Saved games and this class session'
+  // Unique heading ids when recovery + library are both mounted (Slice A split).
+  const titleId =
+    variant === 'library'
+      ? 'persistence-title-library'
+      : variant === 'recovery'
+        ? 'persistence-title-recovery'
+        : 'persistence-title'
 
   return (
-    <section className="persistence" aria-labelledby="persistence-title" data-variant={variant}>
-      <h3 id="persistence-title">{title}</h3>
+    <section className="persistence" aria-labelledby={titleId} data-variant={variant}>
+      <h3 id={titleId}>{title}</h3>
       {showStatusChrome && (
         <>
           <p

@@ -2,8 +2,9 @@ import type { Page } from '@playwright/test'
 
 /**
  * Expand Host More / Advanced so demoted power controls are visible.
- * Bare `#/host` with no game keeps More open by default; call this after a
- * game is loaded or when a prior step may have closed the disclosure.
+ * Ordinary `?play=` preparation keeps More closed; bare `#/host` may start
+ * open for harness. Call this after a game is loaded or when a prior step
+ * may have closed the disclosure.
  */
 export async function ensureHostMoreOpen(page: Page): Promise<void> {
   const more = page.getByTestId('host-more')

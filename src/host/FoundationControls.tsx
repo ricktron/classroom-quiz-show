@@ -80,7 +80,11 @@ export function FoundationControls({
   const [playReplaceArmed, setPlayReplaceArmed] = useState(false)
   const [resetArmed, setResetArmed] = useState(false)
   const [startSessionArmed, setStartSessionArmed] = useState(false)
-  const [moreOpen, setMoreOpen] = useState(true)
+  // Ordinary ?play= preparation keeps More closed. Bare #/host may start open
+  // so harness / power controls stay reachable without a prior Start.
+  const [moreOpen, setMoreOpen] = useState(
+    () => !playGameIdFromSearch(searchParams.toString()),
+  )
   const [playReady, setPlayReady] = useState(() => !playGameIdFromSearch(searchParams.toString()))
   const [teamNameBank, setTeamNameBank] = useState<readonly string[]>([])
   const [selectionObservationBatch, setSelectionObservationBatch] = useState<
@@ -267,8 +271,10 @@ export function FoundationControls({
   ])
 
   useEffect(() => {
-    if (!hasGame) setMoreOpen(true)
-  }, [hasGame])
+    // Do not reopen kitchen-sink More on ordinary ?play= load/unload. Bare
+    // #/host without a game may keep More open for harness reachability.
+    if (!hasGame && playGameId === null) setMoreOpen(true)
+  }, [hasGame, playGameId])
 
   const openDisplayTracked = () => {
     const opened = window.open(
