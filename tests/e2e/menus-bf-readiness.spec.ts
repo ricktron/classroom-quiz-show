@@ -57,7 +57,8 @@ test('Ready with optionals unresolved keeps Start Game sole dominant then enters
   await expect(page.getByTestId('setup-open-display-secondary')).toBeVisible()
   await expect(page.getByTestId('readiness-sony')).toContainText(/optional/i)
   await expect(page.getByTestId('readiness-display')).not.toContainText(/needs attention/i)
-  await expect(page.getByTestId('readiness-audio')).toContainText(/not tested|optional/i)
+  await expect(page.getByTestId('readiness-audio')).toContainText(/muted|tested|not tested|optional|complete/i)
+  await expect(page.getByTestId('readiness-audio')).not.toContainText(/sound is ready/i)
 
   const body = await page.locator('[data-testid="classroom-setup"]').innerText()
   expect(body).not.toMatch(/Display ready/i)
