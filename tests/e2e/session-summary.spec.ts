@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { ensureHostMoreOpen } from './helpers/hostMore'
 
 /**
  * Slice 15 — Session Summary Contract, host-only end-of-session surface.

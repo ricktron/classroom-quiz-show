@@ -192,10 +192,7 @@ describe('teacher Home', () => {
     expect(screen.getByRole('button', { name: /import game/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /recent games/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /my games/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /open classroom controls/i })).toHaveAttribute(
-      'href',
-      '/host',
-    )
+    expect(screen.queryByRole('link', { name: /open classroom controls/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: /choose a screen/i })).not.toBeInTheDocument()
     expect(document.body.textContent).not.toMatch(/slice 13/i)
     expect(document.body.textContent).not.toMatch(/indexeddb/i)

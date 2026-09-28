@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { ensureHostMoreOpen } from './helpers/hostMore'
 
 /**
  * Slice 22 — bounded presentation-audio lifecycle in a real browser.

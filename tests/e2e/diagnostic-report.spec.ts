@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { ensureHostMoreOpen } from './helpers/hostMore'
 
 /**
  * S04C-H2 — Copy Diagnostic Report Host flow.
@@ -22,10 +23,9 @@ test.describe('S04C-H2 sanitized diagnostic report', () => {
   test('teacher can expand, inspect, and copy a sanitized report', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write'])
 
-    await page.goto('./')
-    await expect(page.getByRole('heading', { name: /^home$/i })).toBeVisible()
-    await page.getByRole('link', { name: /open classroom controls/i }).click()
+    await page.goto('#/host')
     await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
+    await ensureHostMoreOpen(page)
 
     // Seed hostile markers into Host private UI paths that must not appear in
     // the diagnostic report text.
@@ -70,9 +70,9 @@ test.describe('S04C-H2 sanitized diagnostic report', () => {
   test('clipboard failure keeps selectable report and does not claim success', async ({
     page,
   }) => {
-    await page.goto('./')
-    await page.getByRole('link', { name: /open classroom controls/i }).click()
+    await page.goto('#/host')
     await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
+    await ensureHostMoreOpen(page)
 
     await page.getByTestId('diagnostic-report').locator('summary').click()
     // Force the complete copy chain to fail: Clipboard API reject AND

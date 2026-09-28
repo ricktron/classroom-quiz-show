@@ -20,8 +20,8 @@ From Home you can:
 - open **My Games** / **Recent Games**
 - **Play** a ready game, or **Edit** it
 - **Open Display** for the projector
-- **Open classroom controls** when you want the Host play surface without
-  choosing a game first
+- reach Host via **Play** on a ready game (or open `#/host` for support /
+  advanced paths — not an ordinary Home action)
 
 ## 2. Create or import a game
 
@@ -56,7 +56,8 @@ from Home:
 - If buzzers are connected, Yellow / Green / Orange / Blue choose a name.
   Red shows four more names for that team only.
 - Open the audience display and test or mute sound before you start.
-- **Mute all sounds** is always available.
+- **Mute all sounds** stays available in Host controls.
+- When setup is complete, choose **Start Game** to run the class.
 
 The product remains usable without controllers. A buzzer failure never
 strands the class.

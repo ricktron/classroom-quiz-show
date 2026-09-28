@@ -19,10 +19,10 @@ test('Home can import the demo game and open it for edit', async ({ page }) => {
   await expect(page.getByRole('button', { name: /preview board/i })).toBeVisible()
 })
 
-test('Host play surface remains reachable from Home', async ({ page }) => {
-  await page.goto('./')
-  await page.getByRole('link', { name: /open classroom controls/i }).click()
+test('Host play surface remains reachable via direct Host URL', async ({ page }) => {
+  await page.goto('#/host')
   await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
-  await expect(page.getByRole('heading', { name: /load a game/i })).toBeVisible()
+  await expect(page.getByTestId('host-more')).toBeVisible()
   await expect(page.getByRole('link', { name: /back to home/i })).toBeVisible()
+  await expect(page.getByRole('link', { name: /open classroom controls/i })).toHaveCount(0)
 })

@@ -11,15 +11,16 @@ test('root route loads teacher Home', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /^home$/i })).toBeVisible()
   await expect(page.getByRole('button', { name: /new game/i })).toBeVisible()
   await expect(page.getByRole('button', { name: /import game/i })).toBeVisible()
-  await expect(page.getByRole('link', { name: /open classroom controls/i })).toBeVisible()
+  await expect(page.getByRole('link', { name: /open classroom controls/i })).toHaveCount(0)
 })
 
 test('host route loads directly and warns it is private', async ({ page }) => {
   await page.goto('#/host')
   await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
-  await expect(page.getByText(/do not project this screen/i)).toBeVisible()
-  await expect(page.getByRole('heading', { name: /ready to run class/i })).toBeVisible()
+  await expect(page.getByText(/do not project this screen/i )).toBeVisible()
+  await expect(page.getByRole('heading', { name: /ready to run class/i })).toHaveCount(0)
   await expect(page.getByText(/arrive in a later slice/i)).toHaveCount(0)
+  await expect(page.getByTestId('host-chrome-mute')).toBeVisible()
 })
 
 test('display route loads directly with a safe waiting state', async ({ page }) => {
@@ -33,7 +34,7 @@ test('display route loads directly with a safe waiting state', async ({ page }) 
 test('host can open the display in a new window', async ({ page, context }) => {
   await page.goto('#/host')
   const popupPromise = context.waitForEvent('page')
-  await page.getByRole('button', { name: /open audience display/i }).click()
+  await page.getByTestId('host-chrome-display').click()
   const popup = await popupPromise
   await popup.waitForLoadState()
   expect(popup.url()).toContain('#/display')
@@ -88,11 +89,10 @@ test('refresh preserves display access', async ({ page }) => {
 test('mobile / narrow host route remains usable', async ({ page }) => {
   await page.goto('#/host')
   // Core host affordances must be visible and reachable at any viewport.
-  await expect(page.getByRole('heading', { name: /ready to run class/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /ready to run class/i })).toHaveCount(0)
   await expect(page.getByText(/arrive in a later slice/i)).toHaveCount(0)
-  await expect(
-    page.getByRole('button', { name: /open audience display/i }),
-  ).toBeVisible()
+  await expect(page.getByTestId('host-chrome-display')).toBeVisible()
 })
 
 test('projector display renders legibly (large headline)', async ({ page }) => {

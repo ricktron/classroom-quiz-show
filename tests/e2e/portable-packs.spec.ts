@@ -8,6 +8,7 @@ import {
   type Browser,
   type BrowserContext,
 } from '@playwright/test'
+import { ensureHostMoreOpen } from './helpers/hostMore'
 import { CANONICAL_GAME_FILE_FORMAT, SUPPORTED_SCHEMA_VERSION } from '../../src/import/canonicalFormat'
 
 /**

@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { ensureHostMoreOpen } from './helpers/hostMore'
 import { PERSISTENCE_WIRE_FORMAT } from '../../src/persistence/constants'
 import { FORBIDDEN_DISPLAY_LABELS } from '../../src/test/leakLabels'
 

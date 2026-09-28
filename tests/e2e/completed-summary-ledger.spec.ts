@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { ensureHostMoreOpen } from './helpers/hostMore'
 
 test.describe.configure({ mode: 'serial' })
 
