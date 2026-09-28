@@ -7,14 +7,6 @@ import { createSessionStore } from '../state/store'
 import { deriveHostPlayPosture } from '../session/hostPlayPosture'
 import { describeRecoveryBanner, formatRecoveryHeading } from './recoveryBannerContext'
 
-function titledGame(id: string, title: string) {
-  return createGameDefinition({
-    id,
-    title,
-    rounds: [placeholderRound(`${id}-r1`, 'Round 1')],
-  })
-}
-
 function base(type: SessionEvent['type'], overrides: Record<string, unknown> = {}): SessionEvent {
   return {
     id: `evt-${type}`,
@@ -24,6 +16,37 @@ function base(type: SessionEvent['type'], overrides: Record<string, unknown> = {
     reversible: false,
     ...overrides,
   } as SessionEvent
+}
+
+function titledGame(id: string, title: string) {
+  return createGameDefinition({
+    id,
+    title,
+    rounds: [placeholderRound(`${id}-r1`, 'Round 1')],
+  })
+}
+
+/** Game A play, then Game B init; optionally play Game B. */
+function historyGameAThenGameB(options: { readonly playGameB: boolean }): readonly SessionEvent[] {
+  const gameA = titledGame('game-a', 'Game A')
+  const gameB = titledGame('game-b', options.playGameB ? 'Game B Play' : 'Game B Setup')
+  const store = createSessionStore()
+  store.dispatch({ type: 'INIT_SESSION', issuedAt: 1, sessionId: 's1' })
+  store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: 2, definition: gameA })
+  store.dispatch({
+    type: 'SELECT_ROUND',
+    issuedAt: 3,
+    roundId: gameA.rounds[0]!.id,
+  })
+  store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: 4, definition: gameB })
+  if (options.playGameB) {
+    store.dispatch({
+      type: 'SELECT_ROUND',
+      issuedAt: 5,
+      roundId: gameB.rounds[0]!.id,
+    })
+  }
+  return store.getHistory()
 }
 
 describe('describeRecoveryBanner', () => {
@@ -56,18 +79,7 @@ describe('describeRecoveryBanner', () => {
   })
 
   it('uses latest-init cut: Game A play then Game B init is class setup', () => {
-    const gameA = titledGame('game-a', 'Game A')
-    const gameB = titledGame('game-b', 'Game B Setup')
-    const store = createSessionStore()
-    store.dispatch({ type: 'INIT_SESSION', issuedAt: 1, sessionId: 's1' })
-    store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: 2, definition: gameA })
-    store.dispatch({
-      type: 'SELECT_ROUND',
-      issuedAt: 3,
-      roundId: gameA.rounds[0]!.id,
-    })
-    store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: 4, definition: gameB })
-    const history = store.getHistory()
+    const history = historyGameAThenGameB({ playGameB: false })
     const context = describeRecoveryBanner(history, 1, 1)
     expect(context.gameTitle).toBe('Game B Setup')
     expect(context.stageLabel).toBe('class setup')
@@ -75,23 +87,7 @@ describe('describeRecoveryBanner', () => {
   })
 
   it('labels in play after Game B play following a prior Game A session', () => {
-    const gameA = titledGame('game-a-play', 'Game A')
-    const gameB = titledGame('game-b-play', 'Game B Play')
-    const store = createSessionStore()
-    store.dispatch({ type: 'INIT_SESSION', issuedAt: 1, sessionId: 's1' })
-    store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: 2, definition: gameA })
-    store.dispatch({
-      type: 'SELECT_ROUND',
-      issuedAt: 3,
-      roundId: gameA.rounds[0]!.id,
-    })
-    store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: 4, definition: gameB })
-    store.dispatch({
-      type: 'SELECT_ROUND',
-      issuedAt: 5,
-      roundId: gameB.rounds[0]!.id,
-    })
-    const history = store.getHistory()
+    const history = historyGameAThenGameB({ playGameB: true })
     const context = describeRecoveryBanner(history, 1, 1)
     expect(context.gameTitle).toBe('Game B Play')
     expect(context.stageLabel).toBe('in play')
