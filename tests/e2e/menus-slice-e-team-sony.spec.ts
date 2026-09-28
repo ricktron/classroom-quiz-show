@@ -91,7 +91,11 @@ test('0-team import mounts Class Setup; Edit → set count → Play returns with
   await expect(playBtn).toBeEnabled({ timeout: 15_000 })
   await playBtn.click()
 
-  await expect(page.getByTestId('classroom-setup')).toBeVisible()
+  // Leaving Host for authoring persists an unfinished session; returning via
+  // Play lands on recovery. Resume, then expect library team-roster refresh.
+  await page.getByRole('button', { name: /^resume session$/i }).click({ timeout: 15_000 })
+
+  await expect(page.getByTestId('classroom-setup')).toBeVisible({ timeout: 15_000 })
   await expect(page.getByTestId('readiness-teams')).toHaveAttribute('data-status', 'complete')
   await expect(page.getByTestId('setup-play')).toBeDisabled()
   await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
