@@ -223,6 +223,7 @@ export function FoundationControls({
   }, [game?.definition, persistenceAdapter, registry, persistenceStoreEpoch])
 
   storeEpochRef.current = persistence.storeEpoch
+  playReplaceArmedRef.current = playReplaceArmed
 
   const loadPlayRef = useRef<() => void>(() => {})
   loadPlayRef.current = () => {
@@ -291,7 +292,7 @@ export function FoundationControls({
             dispatch,
             getHistory: () => store.getHistory(),
             registry,
-            confirmedReplace: playReplaceArmed,
+            confirmedReplace: playReplaceArmedRef.current,
           })
           .then((result) => {
             if (attempt !== rosterRefreshAttemptRef.current) return
@@ -320,7 +321,7 @@ export function FoundationControls({
         dispatch,
         getHistory: () => store.getHistory(),
         registry,
-        confirmedReplace: playReplaceArmed,
+        confirmedReplace: playReplaceArmedRef.current,
       })
       .then((result) => {
         if (result.ok) {
