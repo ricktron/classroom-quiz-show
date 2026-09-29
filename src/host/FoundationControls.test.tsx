@@ -5,21 +5,14 @@ import { HostRoute } from '../routes/HostRoute'
 import { playPath, ROUTES } from '../routes/paths'
 import { ThemeProvider } from '../theme/ThemeProvider'
 import { createMemoryPersistenceAdapter } from '../persistence/memoryAdapter'
-import {
-  PersistenceWriteQueue,
-  saveDefinition,
-  writeActiveSession,
-} from '../persistence'
-import { createDefaultRegistry } from '../game/defaultRegistry'
-import { importGameFromJsonText } from '../import/importGame'
-import { createSessionStore } from '../state/store'
-import { gameFileText } from '../test/gameFileFixtures'
-import { teamBoardGameFileText } from '../test/teamFixtures'
-import { createManualClock } from '../time/clock'
 import type { UseHostPersistenceOptions } from './useHostPersistence'
 import { shouldResumeRecoveryFromNavigation } from './hostResumeNavigation'
-
-const AT = 1_000_000
+import {
+  hostPersistenceOptions,
+  seedResumableHostSession,
+  seedSavedPlayableGame,
+  stubHostMatchMedia,
+} from '../test/hostPersistenceTestFixtures'
 
 afterEach(() => {
   cleanup()
@@ -29,56 +22,13 @@ afterEach(() => {
 })
 
 beforeEach(() => {
-  vi.stubGlobal(
-    'matchMedia',
-    vi.fn().mockImplementation((query: string) => ({
-      matches: false,
-      media: query,
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-      onchange: null,
-    })),
-  )
+  stubHostMatchMedia(vi)
 })
 
-async function seedSavedPlayableGame(
-  adapter: ReturnType<typeof createMemoryPersistenceAdapter>,
-): Promise<string> {
-  // Must include teams so Class Setup lands on Names (not 0-team Blocked).
-  const imported = importGameFromJsonText(teamBoardGameFileText())
-  if (imported.status !== 'success') throw new Error('fixture import failed')
-  await adapter.open()
-  const saved = await saveDefinition(adapter, imported.definition, {
-    mode: 'save',
-    registry: createDefaultRegistry(),
-  })
-  if (!saved.ok) throw new Error(saved.message)
-  return imported.definition.id
-}
-
-async function seedResumableSession(
-  adapter: ReturnType<typeof createMemoryPersistenceAdapter>,
-): Promise<void> {
-  const imported = importGameFromJsonText(gameFileText())
-  if (imported.status !== 'success') throw new Error('fixture import failed')
-  const store = createSessionStore()
-  store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 'fc-session-1' })
-  store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT, definition: imported.definition })
-  await adapter.open()
-  const written = await writeActiveSession(
-    adapter,
-    store.getHistory(),
-    AT,
-    new PersistenceWriteQueue(),
-    createDefaultRegistry(),
-  )
-  if (!written.ok) throw new Error(written.message)
-}
-
-function renderHost(entry: string | { pathname: string; search?: string; state?: unknown }, options: UseHostPersistenceOptions) {
+function renderHost(
+  entry: string | { pathname: string; search?: string; state?: unknown },
+  options: UseHostPersistenceOptions,
+) {
   const initialEntries =
     typeof entry === 'string'
       ? [entry]
@@ -125,17 +75,11 @@ async function fillNamesAndStart(): Promise<void> {
 
 describe('FoundationControls thin semantic unit (MENUS H §5)', () => {
   it('shows Change game only in setup posture and hides it after Start', async () => {
-    const adapter = createMemoryPersistenceAdapter()
-    const gameId = await seedSavedPlayableGame(adapter)
-    const options: UseHostPersistenceOptions = {
-      createAdapter: () => adapter,
-      tabId: 'fc-change-game',
-      clock: createManualClock(AT),
-      leaseTtlMs: 60_000,
-      renewIntervalMs: 20_000,
-      broadcastChannel: null,
-    }
-    renderHost({ pathname: ROUTES.host, search: `?play=${encodeURIComponent(gameId)}` }, options)
+    const { adapter, gameId } = await seedSavedPlayableGame()
+    renderHost(
+      { pathname: ROUTES.host, search: `?play=${encodeURIComponent(gameId)}` },
+      hostPersistenceOptions(adapter, 'fc-change-game'),
+    )
 
     await waitFor(() => {
       expect(screen.getByTestId('classroom-setup')).toBeInTheDocument()
@@ -150,17 +94,11 @@ describe('FoundationControls thin semantic unit (MENUS H §5)', () => {
   })
 
   it('keeps lifecycle owners mounted under More after Start (not unmounted)', async () => {
-    const adapter = createMemoryPersistenceAdapter()
-    const gameId = await seedSavedPlayableGame(adapter)
-    const options: UseHostPersistenceOptions = {
-      createAdapter: () => adapter,
-      tabId: 'fc-lifecycle-mount',
-      clock: createManualClock(AT),
-      leaseTtlMs: 60_000,
-      renewIntervalMs: 20_000,
-      broadcastChannel: null,
-    }
-    renderHost({ pathname: ROUTES.host, search: `?play=${encodeURIComponent(gameId)}` }, options)
+    const { adapter, gameId } = await seedSavedPlayableGame()
+    renderHost(
+      { pathname: ROUTES.host, search: `?play=${encodeURIComponent(gameId)}` },
+      hostPersistenceOptions(adapter, 'fc-lifecycle-mount'),
+    )
     await fillNamesAndStart()
 
     expect(screen.queryByTestId('classroom-setup')).not.toBeInTheDocument()
@@ -178,20 +116,10 @@ describe('FoundationControls thin semantic unit (MENUS H §5)', () => {
     expect(shouldResumeRecoveryFromNavigation({ cqsResumeRecovery: true })).toBe(true)
     expect(shouldResumeRecoveryFromNavigation(null)).toBe(false)
 
-    const adapter = createMemoryPersistenceAdapter()
-    await seedResumableSession(adapter)
-    const options: UseHostPersistenceOptions = {
-      createAdapter: () => adapter,
-      tabId: 'fc-welcome-gate',
-      clock: createManualClock(AT),
-      leaseTtlMs: 60_000,
-      renewIntervalMs: 20_000,
-      broadcastChannel: null,
-    }
-
+    const { adapter } = await seedResumableHostSession(undefined, 'fc-session-1')
     renderHost(
       { pathname: ROUTES.host, state: { cqsResumeRecovery: true } },
-      options,
+      hostPersistenceOptions(adapter, 'fc-welcome-gate'),
     )
     await waitFor(() => {
       expect(screen.getByTestId('host-welcome-back')).toBeInTheDocument()
@@ -199,17 +127,8 @@ describe('FoundationControls thin semantic unit (MENUS H §5)', () => {
     expect(screen.getByTestId('host-welcome-back')).toHaveTextContent(/welcome back/i)
     cleanup()
 
-    const adapter2 = createMemoryPersistenceAdapter()
-    await seedResumableSession(adapter2)
-    const options2: UseHostPersistenceOptions = {
-      createAdapter: () => adapter2,
-      tabId: 'fc-welcome-no-home-intent',
-      clock: createManualClock(AT),
-      leaseTtlMs: 60_000,
-      renewIntervalMs: 20_000,
-      broadcastChannel: null,
-    }
-    renderHost(ROUTES.host, options2)
+    const { adapter: adapter2 } = await seedResumableHostSession(undefined, 'fc-session-2')
+    renderHost(ROUTES.host, hostPersistenceOptions(adapter2, 'fc-welcome-no-home-intent'))
     await waitFor(() => {
       expect(screen.getByTestId('persistence-recovery')).toBeInTheDocument()
     })
@@ -224,17 +143,8 @@ describe('FoundationControls thin semantic unit (MENUS H §5)', () => {
   })
 
   it('owns Start→playReady and Back→setup without dropping mounted owners', async () => {
-    const adapter = createMemoryPersistenceAdapter()
-    const gameId = await seedSavedPlayableGame(adapter)
-    const options: UseHostPersistenceOptions = {
-      createAdapter: () => adapter,
-      tabId: 'fc-start-back',
-      clock: createManualClock(AT),
-      leaseTtlMs: 60_000,
-      renewIntervalMs: 20_000,
-      broadcastChannel: null,
-    }
-    renderHost(playPath(gameId), options)
+    const { adapter, gameId } = await seedSavedPlayableGame()
+    renderHost(playPath(gameId), hostPersistenceOptions(adapter, 'fc-start-back'))
     await fillNamesAndStart()
     expect(screen.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'play')
     expect(screen.getByTestId('host-advanced')).toBeInTheDocument()
@@ -251,15 +161,7 @@ describe('FoundationControls thin semantic unit (MENUS H §5)', () => {
 
   it('keeps bare #/host default compatibility as play posture with More open', async () => {
     const adapter = createMemoryPersistenceAdapter()
-    const options: UseHostPersistenceOptions = {
-      createAdapter: () => adapter,
-      tabId: 'fc-bare-host',
-      clock: createManualClock(AT),
-      leaseTtlMs: 60_000,
-      renewIntervalMs: 20_000,
-      broadcastChannel: null,
-    }
-    renderHost(ROUTES.host, options)
+    renderHost(ROUTES.host, hostPersistenceOptions(adapter, 'fc-bare-host'))
     await waitFor(() => {
       expect(screen.getByTestId('host-foundation')).toBeInTheDocument()
     })

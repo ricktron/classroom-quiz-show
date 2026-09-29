@@ -1,5 +1,9 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { importDemoAndPlay } from './helpers/menusClassSetup'
+import {
+  installSimulatedSupportedWbuzz,
+  settleGamepadPolls,
+} from './helpers/simulatedGamepad'
 
 /**
  * MENUS Slice H — H8 Names / simulated supported-profile Gamepad via authentic ?play=.
@@ -9,61 +13,12 @@ import { importDemoAndPlay } from './helpers/menusClassSetup'
 
 test.describe.configure({ mode: 'serial' })
 
-/**
- * Install a Namtai Wbuzz wireless candidate (`054c:1000`, 20-button topology)
- * before app code runs. Mirrors gamepad-input.spec.ts instrumentation style.
- */
-async function installSimulatedSupportedWbuzz(page: Page) {
-  await page.addInitScript(() => {
-    const state = {
-      pads: [
-        {
-          index: 0,
-          connected: true,
-          mapping: 'standard',
-          id: 'Vendor: 054c Product: 1000',
-          buttons: Array.from({ length: 20 }, () => ({
-            pressed: false,
-            value: 0,
-            touched: false,
-          })),
-          axes: [0, 0] as number[],
-          timestamp: 0,
-        },
-      ],
-    }
-    ;(window as unknown as { __cqsFakeGamepads?: typeof state }).__cqsFakeGamepads = state
-
-    const nav = navigator as Navigator & { getGamepads?: () => readonly Gamepad[] | null[] }
-    nav.getGamepads = function patched() {
-      state.pads[0].timestamp = performance.now()
-      return state.pads as unknown as Gamepad[]
-    }
-  })
-}
-
-async function settleGamepadPolls(page: Page, frames = 12): Promise<void> {
-  await page.evaluate(
-    (count) =>
-      new Promise<void>((resolve) => {
-        let remaining = count
-        const tick = () => {
-          remaining -= 1
-          if (remaining <= 0) resolve()
-          else requestAnimationFrame(tick)
-        }
-        requestAnimationFrame(tick)
-      }),
-    frames,
-  )
-}
-
 test('H8 SIMULATED: ?play= Names shows colour wording with supported Wbuzz; keyboard remains; one detector', async ({
   page,
 }) => {
   await installSimulatedSupportedWbuzz(page)
   await importDemoAndPlay(page)
-  await settleGamepadPolls(page)
+  await settleGamepadPolls(page, 12)
 
   await expect(page.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'setup')
   await expect(page.getByTestId('classroom-setup')).toBeVisible()

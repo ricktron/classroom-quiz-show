@@ -1,18 +1,13 @@
 import { test, expect, type Page } from '@playwright/test'
 import { ensureHostMoreOpen } from './helpers/hostMore'
 import { fillAllTeamNames, importDemoAndPlay } from './helpers/menusClassSetup'
+import { waitForSessionSaved } from './helpers/menusSession'
 
 /**
  * MENUS Slice A — semantic Host posture coverage (not full H matrix).
  */
 
 test.describe.configure({ mode: 'serial' })
-
-async function waitForSessionSaved(page: Page): Promise<void> {
-  await expect(page.getByTestId('persistence-status')).toHaveText(
-    /saved on this device|ready to save|saved locally|ready/i,
-  )
-}
 
 async function resumeAfterReload(page: Page): Promise<void> {
   await page.reload()

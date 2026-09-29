@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { importMenusJsonAndPlay, menusBoardGameJson } from './helpers/menusGameJson'
 
 /**
  * MENUS Slice E — 0-team Class Setup mount + Edit → team count → return Play.
@@ -9,50 +10,17 @@ import { test, expect } from '@playwright/test'
 
 test.describe.configure({ mode: 'serial' })
 
-const ZERO_TEAM_GAME = JSON.stringify({
-  format: 'classroom-quiz-show/game',
-  schemaVersion: 1,
-  id: 'menus-slice-e-zero-team',
-  title: 'Slice E Zero-Team Board',
-  timer: { responseSeconds: 45 },
-  rounds: [
-    {
-      id: 'board-round',
-      type: 'category-board',
-      title: 'Board',
-      config: {
-        categories: [
-          {
-            id: 'e-cat',
-            title: 'Science',
-            tiles: [
-              { id: 'e-100', value: 100, prompt: 'What is water?', answer: 'H2O' },
-              { id: 'e-200', value: 200, prompt: 'What is ice?', answer: 'Solid water' },
-            ],
-          },
-          {
-            id: 'e-cat-2',
-            title: 'Math',
-            tiles: [
-              { id: 'e-m100', value: 100, prompt: '2+2?', answer: '4' },
-              { id: 'e-m200', value: 200, prompt: '3+3?', answer: '6' },
-            ],
-          },
-        ],
-      },
-    },
-  ],
-})
-
 test('0-team import mounts Class Setup; Edit → set count → Play returns with teams', async ({
   page,
 }) => {
-  await page.goto('./')
-  await page.getByTestId('home-import-game').click()
-  await page.locator('#home-import-json').fill(ZERO_TEAM_GAME)
-  await page.getByTestId('home-import-json').click()
-  await expect(page.getByTestId('import-quality-report')).toBeVisible()
-  await page.getByRole('button', { name: /^play$/i }).first().click()
+  await importMenusJsonAndPlay(
+    page,
+    menusBoardGameJson({
+      id: 'menus-slice-e-zero-team',
+      title: 'Slice E Zero-Team Board',
+      teamCount: 0,
+    }),
+  )
 
   await expect(page.getByTestId('classroom-setup')).toBeVisible()
   await expect(page.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'setup')

@@ -1,6 +1,7 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { ensureHostMoreOpen } from './helpers/hostMore'
 import { fillAllTeamNames, importDemoAndPlay } from './helpers/menusClassSetup'
+import { waitForSessionSaved } from './helpers/menusSession'
 
 /**
  * MENUS Slice G — Change game + different-Game replace + Resume Welcome-back.
@@ -9,12 +10,6 @@ import { fillAllTeamNames, importDemoAndPlay } from './helpers/menusClassSetup'
  */
 
 test.describe.configure({ mode: 'serial' })
-
-async function waitForSessionSaved(page: Page): Promise<void> {
-  await expect(page.getByTestId('persistence-status')).toHaveText(
-    /saved on this device|ready to save|saved locally|ready/i,
-  )
-}
 
 /** Two distinct playable library Games via demo + Duplicate. */
 async function seedTwoPlayableGames(page: Page): Promise<{ gameATitle: string; gameBTitle: string }> {
