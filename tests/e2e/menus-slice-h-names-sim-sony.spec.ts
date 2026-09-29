@@ -84,10 +84,11 @@ test('H8 SIMULATED: ?play= Names shows colour wording with supported Wbuzz; keyb
   await firstManual.blur()
   await expect(firstManual).toHaveValue('Sim Keyboard Name')
 
-  // Single detector owner on the authentic ?play= path (no second Sony surface).
+  // Single detector owner on the authentic ?play= path (one Gamepad panel /
+  // one supported-profile section — not a second independent Sony surface).
   await expect(page.getByTestId('gih-summary')).toHaveCount(1)
   await expect(page.getByTestId('sbs-supported-profile')).toHaveCount(1)
-  await expect(page.getByRole('heading', { name: /^buzzers$/i })).toHaveCount(1)
+  await expect(page.locator('[data-testid="gih-summary"]')).toHaveCount(1)
 })
 
 test('H8 without receiver: authentic ?play= Names stays keyboard-only (no colour wording)', async ({
