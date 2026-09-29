@@ -22,9 +22,7 @@ async function resumeAfterReload(page: Page): Promise<void> {
   await expect(page.getByTestId('persistence-recovery')).toHaveCount(0)
 }
 
-test('Start Game focuses Host; Back to setup returns; bare Host default stays play', async ({
-  page,
-}) => {
+test('Start Game focuses Host; Back to setup returns', async ({ page }) => {
   await importDemoAndPlay(page)
   await expect(page.getByTestId('setup-play')).toHaveText(/start game/i)
   await expect(page.getByTestId('host-chrome-mute')).toBeVisible()
@@ -57,6 +55,21 @@ test('Start Game focuses Host; Back to setup returns; bare Host default stays pl
   await expect(page.getByTestId('setup-play')).toHaveText(/start game/i)
   // Back to setup keeps More closed unless the teacher opened it.
   await expect(page.getByTestId('host-more')).not.toHaveAttribute('open', '')
+})
+
+test('H16 bare #/host default stays play with More open; Home does not advertise it', async ({
+  page,
+}) => {
+  await page.goto('./#/host')
+  await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
+  await expect(page.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'play')
+  await expect(page.getByTestId('host-more')).toHaveAttribute('open')
+  await expect(page.getByTestId('classroom-setup')).toHaveCount(0)
+
+  await page.goto('./')
+  await expect(page.getByRole('heading', { name: /^home$/i })).toBeVisible()
+  await expect(page.getByRole('link', { name: /open classroom controls/i })).toHaveCount(0)
+  await expect(page.locator('a[href*="#/host"]')).toHaveCount(0)
 })
 
 test('incomplete-name Back to setup stays enabled in play posture', async ({ page }) => {

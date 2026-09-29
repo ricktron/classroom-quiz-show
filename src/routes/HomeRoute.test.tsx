@@ -542,6 +542,28 @@ describe('teacher Home', () => {
     expect(screen.queryByTestId('home-hero-playable')).not.toBeInTheDocument()
   })
 
+  it('shows truthful recovery stage + title on the Home Resume banner (H4)', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await seedResumableSession(adapter)
+    await renderReadyHome({
+      createAdapter: () => adapter,
+      tabId: 'home-recovery-stage-title',
+      clock: createManualClock(AT),
+      leaseTtlMs: 60_000,
+      renewIntervalMs: 20_000,
+      broadcastChannel: null,
+    })
+    await waitFor(() => {
+      expect(screen.getByTestId('home-resume')).toBeInTheDocument()
+    })
+    const banner = screen.getByTestId('home-resume')
+    // seedResumableSession leaves a mid-setup Session (no Start / gameplay).
+    expect(banner).toHaveTextContent(/sample game/i)
+    expect(banner).toHaveTextContent(/class setup/i)
+    expect(banner).not.toHaveTextContent(/in play/i)
+    expect(screen.getByTestId('home-resume-session')).toHaveTextContent(/resume class/i)
+  })
+
   it('keeps Resume sole dominant when recovery and a populated library coexist', async () => {
     const adapter = createMemoryPersistenceAdapter()
     await seedSavedGame(adapter, 'Library During Recovery', 'lib-during-recovery')
