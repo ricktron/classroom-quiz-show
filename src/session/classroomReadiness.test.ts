@@ -440,5 +440,12 @@ describe('H6 honest Class Setup Sony readiness (UX-R1)', () => {
         sonyTeacherSummary: null,
       }),
     ).toBe(true)
+    expect(
+      classSetupMayOfferBuzzerSkip({
+        sonyReady: false,
+        wbuzzPresent: false,
+        sonyTeacherSummary: 'receiver-needs-attention',
+      }),
+    ).toBe(true)
   })
 })

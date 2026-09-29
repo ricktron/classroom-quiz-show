@@ -84,7 +84,9 @@ export interface ClassroomSetupGuidanceInput extends ClassroomReadinessInput {
 
 /**
  * True when Class Setup may truthfully claim supported buzzer hardware is in
- * play (receiver/summary path or lifted Wbuzz presence) — still optional for Start.
+ * play (receiver connected / controllers path or lifted Wbuzz presence) — still
+ * optional for Start. Does **not** treat unsupported/failed/disconnected as
+ * “present” (those still allow Skip).
  */
 export function classSetupBuzzerHardwarePresent(input: {
   readonly wbuzzPresent?: boolean
@@ -96,9 +98,7 @@ export function classSetupBuzzerHardwarePresent(input: {
   return (
     summary === 'receiver-waiting-for-controllers' ||
     summary === 'controllers-need-team-setup' ||
-    summary === 'sony-buzz-ready' ||
-    summary === 'receiver-needs-attention' ||
-    summary === 'receiver-paused'
+    summary === 'sony-buzz-ready'
   )
 }
 
