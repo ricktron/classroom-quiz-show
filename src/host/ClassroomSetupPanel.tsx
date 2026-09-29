@@ -11,7 +11,9 @@ import {
 import { canPersistMutations, type PersistLeadership } from './writeAuthority'
 import {
   canStartPlay,
+  classSetupBuzzerHardwarePresent,
   classSetupBuzzerTaskCopy,
+  classSetupMayOfferBuzzerSkip,
   compactReadinessItems,
   currentTaskTitle,
   dominantSetupTask,
@@ -57,8 +59,16 @@ export interface ClassroomSetupPanelProps {
   readonly onPanicMute: () => void
   readonly playReady: boolean
   readonly onPlay: () => void
-  /** Navigate to authoring for the active Game (0-team / team-count repair). */
-  readonly onEditGame?: () => void
+  /**
+   * Navigate to Game settings → Team count for the active Game
+   * (0-team / team-count repair). Does not move team count into Session.
+   */
+  readonly onFixTeamCount?: () => void
+  /**
+   * Reveal the existing Buzzers setup section (same Gamepad/Sony owner below).
+   * Class Setup must not mount a second detector or poller.
+   */
+  readonly onRevealBuzzersSetup?: () => void
   /**
    * Supported Namtai Wbuzz Gamepad detected (lifted from GamepadInputHostPanel).
    * Unknown/false → keyboard-honest Names copy; never invent colour-press claims.
@@ -115,7 +125,8 @@ export function ClassroomSetupPanel({
   onAudioTest,
   playReady,
   onPlay,
-  onEditGame,
+  onFixTeamCount,
+  onRevealBuzzersSetup,
   onSelectedIdentitiesChange,
   reducedMotion = false,
   grayscale = false,
@@ -226,6 +237,7 @@ export function ClassroomSetupPanel({
     namesUnique: unique,
     sonyReady,
     sonyTeacherSummary,
+    wbuzzPresent,
     keyboardFallbackAvailable: true,
     displayOpen,
     audioUnderstood,
@@ -234,6 +246,8 @@ export function ClassroomSetupPanel({
     buzzerSkipped: buzzerSkipped || sonyReady,
     repairActive: false,
   }
+  const buzzerHardwarePresent = classSetupBuzzerHardwarePresent(guidance)
+  const mayOfferBuzzerSkip = classSetupMayOfferBuzzerSkip(guidance)
   const playEnabled = canStartPlay(guidance)
   const playBlocker = playBlockerExplanation(guidance)
   const pureDominant = dominantSetupTask(guidance)
@@ -285,11 +299,12 @@ export function ClassroomSetupPanel({
     playReady || playEnabled ? null : pureDominant === 'play' ? null : pureDominant
 
   const toggleRow = (id: SetupTaskId) => {
-    setExpandOverride((current) => {
-      const effective = current === undefined ? defaultExpanded : current
-      if (effective === id) return null
-      return id
-    })
+    // I-REPAIR-1: row click selects/opens; re-click keeps open (no accidental hide).
+    setExpandOverride(id)
+  }
+
+  const collapseToReadyOverview = () => {
+    setExpandOverride(null)
   }
 
   const expandRow = (id: SetupTaskId) => {
@@ -331,7 +346,7 @@ export function ClassroomSetupPanel({
         </button>
       )
     }
-    if (item.id === 'buzzers' && !sonyReady && !buzzerSkipped) {
+    if (item.id === 'buzzers' && mayOfferBuzzerSkip) {
       return (
         <button
           type="button"
@@ -343,6 +358,22 @@ export function ClassroomSetupPanel({
           }}
         >
           Skip
+        </button>
+      )
+    }
+    if (item.id === 'buzzers' && buzzerHardwarePresent && onRevealBuzzersSetup) {
+      return (
+        <button
+          type="button"
+          className="btn btn--secondary classroom-setup__row-action"
+          data-testid="setup-reveal-buzzers"
+          onClick={(event) => {
+            event.stopPropagation()
+            expandRow('buzzers')
+            onRevealBuzzersSetup()
+          }}
+        >
+          Check buzzers
         </button>
       )
     }
@@ -415,22 +446,26 @@ export function ClassroomSetupPanel({
       const teamsOk = teams.length >= 1 && teams.length <= 8
       return (
         <div className="classroom-setup__task" data-testid="setup-teams-task">
-          <p className="host__note">
+          <p className="host__note" data-testid="setup-teams-copy">
             {teamsOk
-              ? `${teams.length} team${teams.length === 1 ? '' : 's'} in this game. Change the count in the game editor if needed.`
-              : 'This game still needs 1–8 teams before class names. Add teams in the game editor.'}
+              ? `${teams.length} team${teams.length === 1 ? '' : 's'} in this Game.${
+                  buzzerHardwarePresent
+                    ? ' Supported buzzers are detected; keyboard remains available for every team.'
+                    : ''
+                } Change the count in Game settings if needed. Controller count does not change the Game team limit (1–8).`
+              : 'This Game still needs 1–8 teams before class names. Fix team count in Game settings.'}
           </p>
-          {onEditGame && (
+          {onFixTeamCount && (
             <button
               type="button"
-              // Teams blocked → Edit may be the primary repair CTA.
-              // Teams valid (incl. Ready + Teams revisited) → Edit stays secondary
+              // Teams blocked → Fix team count is the primary repair CTA.
+              // Teams valid (incl. Ready + Teams revisited) → Fix stays secondary
               // so Start Game remains the sole dominant control when Ready.
               className={teamsOk ? 'btn btn--secondary' : 'btn'}
-              data-testid="setup-edit-game"
-              onClick={onEditGame}
+              data-testid="setup-fix-team-count"
+              onClick={onFixTeamCount}
             >
-              Edit this game
+              {teamsOk ? 'Open Game settings' : 'Fix team count'}
             </button>
           )}
         </div>
@@ -443,8 +478,19 @@ export function ClassroomSetupPanel({
         return (
           <div className="classroom-setup__task" data-testid="setup-names-task">
             <p className="host__note" data-testid="setup-names-blocked-copy">
-              Finish teams before choosing names.
+              Finish teams before choosing names. Team count is part of this Game — open Game
+              settings to set 1–8 teams.
             </p>
+            {onFixTeamCount && (
+              <button
+                type="button"
+                className="btn"
+                data-testid="setup-fix-team-count"
+                onClick={onFixTeamCount}
+              >
+                Fix team count
+              </button>
+            )}
           </div>
         )
       }
@@ -489,12 +535,27 @@ export function ClassroomSetupPanel({
             </p>
           )}
           <p className="host__note" data-testid="setup-buzzers-copy">
-            {classSetupBuzzerTaskCopy({ sonyReady, sonyTeacherSummary })}
+            {classSetupBuzzerTaskCopy({ sonyReady, sonyTeacherSummary, wbuzzPresent })}
           </p>
-          <p className="host__note">
-            Connect controllers in the Buzzers section below. This row does not remount that panel.
+          <p className="host__note" data-testid="setup-buzzers-owner-note">
+            Connect and check use the Buzzers section below — Class Setup does not remount that
+            panel.
           </p>
-          {!sonyReady && !buzzerSkipped && (
+          {onRevealBuzzersSetup && (
+            <button
+              type="button"
+              className={buzzerHardwarePresent || sonyReady ? 'btn' : 'btn btn--secondary'}
+              data-testid="setup-reveal-buzzers"
+              onClick={onRevealBuzzersSetup}
+            >
+              {sonyReady
+                ? 'Show buzzer setup'
+                : buzzerHardwarePresent
+                  ? 'Check buzzers'
+                  : 'Show buzzer setup'}
+            </button>
+          )}
+          {mayOfferBuzzerSkip && (
             <button
               type="button"
               className="btn btn--secondary"
@@ -502,6 +563,16 @@ export function ClassroomSetupPanel({
               onClick={() => setBuzzerSkipped(true)}
             >
               Skip buzzers
+            </button>
+          )}
+          {playEnabled && (
+            <button
+              type="button"
+              className="btn btn--secondary"
+              data-testid="setup-back-to-ready"
+              onClick={collapseToReadyOverview}
+            >
+              Back to Ready overview
             </button>
           )}
         </div>
@@ -535,6 +606,16 @@ export function ClassroomSetupPanel({
           <div data-testid="setup-display-preview" className="classroom-setup__preview-inline">
             <TeamScoreboard teams={previewTeams} layout={teams.length <= 4 ? 'column' : 'strip'} />
           </div>
+          {playEnabled && (
+            <button
+              type="button"
+              className="btn btn--secondary"
+              data-testid="setup-back-to-ready"
+              onClick={collapseToReadyOverview}
+            >
+              Back to Ready overview
+            </button>
+          )}
         </div>
       )
     }
@@ -562,6 +643,16 @@ export function ClassroomSetupPanel({
           >
             {audioUnderstood || audioMuted ? 'Test sound again' : 'Test sound'}
           </button>
+          {playEnabled && (
+            <button
+              type="button"
+              className="btn btn--secondary"
+              data-testid="setup-back-to-ready"
+              onClick={collapseToReadyOverview}
+            >
+              Back to Ready overview
+            </button>
+          )}
         </div>
       )
     }
@@ -596,13 +687,14 @@ export function ClassroomSetupPanel({
                 role="listitem"
                 className={[
                   'classroom-setup__row',
-                  expanded ? 'classroom-setup__row--expanded' : '',
-                  emphasized ? 'classroom-setup__row--emphasized' : '',
+                  expanded ? 'classroom-setup__row--selected' : '',
+                  emphasized && !expanded ? 'classroom-setup__row--needs-work' : '',
                 ]
                   .filter(Boolean)
                   .join(' ')}
                 data-testid={rowTestId(item.id)}
                 data-status={item.status}
+                data-selected={expanded ? 'true' : 'false'}
                 data-expanded={expanded ? 'true' : 'false'}
                 data-emphasized={emphasized ? 'true' : 'false'}
               >
@@ -613,6 +705,7 @@ export function ClassroomSetupPanel({
                     data-testid={readinessTestId(item.id)}
                     data-status={item.status}
                     aria-expanded={expanded}
+                    aria-current={expanded ? 'true' : undefined}
                     aria-controls={`setup-stage-${item.id}`}
                     onClick={() => toggleRow(item.id)}
                   >

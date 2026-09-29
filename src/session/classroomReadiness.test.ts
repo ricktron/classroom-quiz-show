@@ -3,6 +3,7 @@ import {
   canStartPlay,
   classSetupBuzzerTaskCopy,
   classSetupClaimsControllersResponding,
+  classSetupMayOfferBuzzerSkip,
   classroomReadinessItems,
   compactReadinessItems,
   currentTaskTitle,
@@ -405,5 +406,39 @@ describe('H6 honest Class Setup Sony readiness (UX-R1)', () => {
         }),
       ).toBe(false)
     }
+  })
+
+  it('orders compact readiness Buzzers → Teams → Names → Display → Sound', () => {
+    const compact = compactReadinessItems({
+      ...ready,
+      namesAssigned: false,
+      sonyReady: false,
+      displayOpen: false,
+      audioUnderstood: false,
+    })
+    expect(compact.map((item) => item.id)).toEqual([
+      'buzzers',
+      'teams',
+      'names',
+      'display',
+      'sound',
+    ])
+  })
+
+  it('keeps Skip inappropriate when supported hardware presence is claimed', () => {
+    expect(
+      classSetupMayOfferBuzzerSkip({
+        sonyReady: false,
+        wbuzzPresent: true,
+        sonyTeacherSummary: 'receiver-waiting-for-controllers',
+      }),
+    ).toBe(false)
+    expect(
+      classSetupMayOfferBuzzerSkip({
+        sonyReady: false,
+        wbuzzPresent: false,
+        sonyTeacherSummary: null,
+      }),
+    ).toBe(true)
   })
 })

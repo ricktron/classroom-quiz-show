@@ -13,7 +13,7 @@ test('Ready with optionals unresolved keeps Start Game sole dominant then enters
 }) => {
   await importDemoAndPlay(page)
 
-  for (const id of ['teams', 'names', 'buzzers', 'display', 'sound'] as const) {
+  for (const id of ['buzzers', 'teams', 'names', 'display', 'sound'] as const) {
     await expect(page.getByTestId(`setup-row-${id}`)).toBeVisible()
   }
   await expect(page.getByTestId('setup-play')).toBeDisabled()

@@ -186,7 +186,7 @@ test.describe('MENUS visual historian capture', () => {
             'data-status',
             'blocked',
           )
-          await expect(zero.page.getByTestId('setup-edit-game')).toBeVisible()
+          await expect(zero.page.getByTestId('setup-fix-team-count')).toBeVisible()
         },
         scrollTestId: 'classroom-setup',
         viewport: vp,

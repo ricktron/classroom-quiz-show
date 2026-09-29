@@ -603,8 +603,19 @@ export function FoundationControls({
             // Class Setup scroll position must not leave chrome above the fold.
             window.scrollTo(0, 0)
           }}
-          onEditGame={() => {
-            navigate(editPath(game.definition.id))
+          onFixTeamCount={() => {
+            navigate(editPath(game.definition.id), {
+              state: { authoringFocus: 'team-count' },
+            })
+          }}
+          onRevealBuzzersSetup={() => {
+            const target =
+              document.querySelector('[data-testid="sbs-supported-profile"]') ??
+              document.querySelector('[data-testid="gih"]')
+            if (target instanceof HTMLElement) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              target.focus({ preventScroll: true })
+            }
           }}
           onSelectedIdentitiesChange={(claimed) => {
             const issuedAt = now()

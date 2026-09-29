@@ -248,4 +248,45 @@ describe('in-app board authoring', () => {
     fireEvent.change(count, { target: { value: '0' } })
     expect(screen.getByTestId('authoring-team-count')).toHaveValue(1)
   })
+
+  it('opens Game settings Team count from Class Setup authoringFocus navigation state', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    const registry = createDefaultRegistry()
+    const created = await createNewLibraryGame(adapter, registry)
+    if (!created.ok) throw new Error(created.message)
+    const gameId = created.value.definition.id
+    const router = createMemoryRouter(
+      [
+        {
+          path: '/edit/:gameId',
+          element: (
+            <AuthoringRoute
+              persistenceOptions={{
+                createAdapter: () => adapter,
+                tabId: 'authoring-focus-test',
+                broadcastChannel: null,
+              }}
+            />
+          ),
+        },
+      ],
+      {
+        initialEntries: [
+          {
+            pathname: editPath(gameId),
+            state: { authoringFocus: 'team-count' },
+          },
+        ],
+      },
+    )
+    render(<RouterProvider router={router} />)
+    await waitFor(() => {
+      expect(screen.getByTestId('authoring-game-settings')).toHaveAttribute('open')
+    })
+    expect(screen.getByTestId('authoring-team-count')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(document.activeElement).toBe(screen.getByTestId('authoring-team-count'))
+    })
+  })
 })

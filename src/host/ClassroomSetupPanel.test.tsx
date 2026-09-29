@@ -489,7 +489,7 @@ describe('ClassroomSetupPanel', () => {
 
   it('keeps five readiness rows visible and expand survives without changing optional status', () => {
     renderSetup({ ...READY_OPTIONALS_UNRESOLVED })
-    for (const id of ['teams', 'names', 'buzzers', 'display', 'sound'] as const) {
+    for (const id of ['buzzers', 'teams', 'names', 'display', 'sound'] as const) {
       expect(screen.getByTestId(`setup-row-${id}`)).toBeInTheDocument()
     }
     fireEvent.click(screen.getByTestId('readiness-display'))
@@ -542,8 +542,8 @@ describe('ClassroomSetupPanel', () => {
   })
 
   it('keeps Start Game sole dominant when Teams is revisited while Ready', () => {
-    const onEditGame = vi.fn()
-    renderSetup({ ...READY_OPTIONALS_UNRESOLVED, onEditGame })
+    const onFixTeamCount = vi.fn()
+    renderSetup({ ...READY_OPTIONALS_UNRESOLVED, onFixTeamCount })
     expect(screen.getByTestId('setup-ready-heading')).toBeVisible()
     expect(screen.getByTestId('setup-play')).not.toBeDisabled()
     expect(screen.getByTestId('setup-play')).toHaveClass('classroom-setup__play--dominant')
@@ -554,34 +554,36 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('setup-play')).not.toBeDisabled()
     expect(screen.getByTestId('setup-play')).toHaveClass('classroom-setup__play--dominant')
 
-    const edit = screen.getByTestId('setup-edit-game')
+    const edit = screen.getByTestId('setup-fix-team-count')
     expect(edit).toBeVisible()
     expect(edit).toHaveClass('btn--secondary')
     expect(edit.className.split(/\s+/)).not.toContain('btn--primary')
     expect(edit).not.toHaveClass('classroom-setup__play--dominant')
   })
 
-  it('keeps Edit this game primary when Teams are blocked (0-team repair)', () => {
-    renderSetup({ teams: [], onEditGame: vi.fn() })
-    const edit = screen.getByTestId('setup-edit-game')
+  it('keeps Fix team count primary when Teams are blocked (0-team repair)', () => {
+    renderSetup({ teams: [], onFixTeamCount: vi.fn() })
+    const edit = screen.getByTestId('setup-fix-team-count')
     expect(edit).toBeVisible()
     expect(edit).toHaveClass('btn')
     expect(edit).not.toHaveClass('btn--secondary')
+    expect(edit).toHaveTextContent(/fix team count/i)
   })
 
-  it('keeps Edit this game secondary when Teams are valid but Names still required', () => {
-    renderSetup({ onEditGame: vi.fn(), initialSessionNames: {} })
+  it('keeps Open Game settings secondary when Teams are valid but Names still required', () => {
+    renderSetup({ onFixTeamCount: vi.fn(), initialSessionNames: {} })
     fireEvent.click(screen.getByTestId('readiness-teams'))
-    const edit = screen.getByTestId('setup-edit-game')
+    const edit = screen.getByTestId('setup-fix-team-count')
     expect(edit).toHaveClass('btn--secondary')
+    expect(edit).toHaveTextContent(/open game settings/i)
     expect(screen.getByTestId('setup-play')).toBeDisabled()
   })
 
-  it('mounts Class Setup for 0-team with Teams/Names blocked, Start disabled, and Edit CTA', () => {
-    const onEditGame = vi.fn()
-    renderSetup({ teams: [], onEditGame })
+  it('mounts Class Setup for 0-team with Teams/Names blocked, Start disabled, and Fix CTA', () => {
+    const onFixTeamCount = vi.fn()
+    renderSetup({ teams: [], onFixTeamCount })
     expect(screen.getByTestId('classroom-setup')).toBeVisible()
-    for (const id of ['teams', 'names', 'buzzers', 'display', 'sound'] as const) {
+    for (const id of ['buzzers', 'teams', 'names', 'display', 'sound'] as const) {
       expect(screen.getByTestId(`setup-row-${id}`)).toBeInTheDocument()
     }
     expect(screen.getByTestId('readiness-teams')).toHaveAttribute('data-status', 'blocked')
@@ -589,11 +591,94 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('setup-play')).toBeDisabled()
     expect(screen.getByTestId('setup-play-blocker')).toHaveTextContent(/still needs teams/i)
     expect(screen.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'teams')
-    expect(screen.getByTestId('setup-edit-game')).toBeVisible()
-    fireEvent.click(screen.getByTestId('setup-edit-game'))
-    expect(onEditGame).toHaveBeenCalledTimes(1)
+    expect(screen.getByTestId('setup-fix-team-count')).toBeVisible()
+    fireEvent.click(screen.getByTestId('setup-fix-team-count'))
+    expect(onFixTeamCount).toHaveBeenCalledTimes(1)
     expect(screen.queryByTestId('setup-ready-heading')).toBeNull()
     expect(screen.queryByTestId('tnsb-manual-red')).toBeNull()
+  })
+
+  it('selects Names when blocked and offers Fix team count without leaving selection on Teams', () => {
+    renderSetup({ teams: [], onFixTeamCount: vi.fn() })
+    fireEvent.click(screen.getByTestId('readiness-names'))
+    expect(screen.getByTestId('setup-row-names')).toHaveAttribute('data-selected', 'true')
+    expect(screen.getByTestId('setup-row-teams')).toHaveAttribute('data-selected', 'false')
+    expect(screen.getByTestId('setup-names-task')).toBeVisible()
+    expect(screen.getByTestId('setup-names-blocked-copy')).toHaveTextContent(/finish teams/i)
+    expect(screen.getByTestId('setup-fix-team-count')).toBeVisible()
+    expect(screen.queryByTestId('setup-sony-copy')).toBeNull()
+    expect(document.body.querySelectorAll('[data-testid^="tnsb-manual-"]')).toHaveLength(0)
+  })
+
+  it('keeps the selected row open on a second click', () => {
+    renderSetup({ teams: [] })
+    expect(screen.getByTestId('setup-teams-task')).toBeVisible()
+    fireEvent.click(screen.getByTestId('readiness-teams'))
+    expect(screen.getByTestId('setup-teams-task')).toBeVisible()
+    expect(screen.getByTestId('setup-row-teams')).toHaveAttribute('data-selected', 'true')
+  })
+
+  it('orders readiness rows Buzzers → Teams → Names → Display → Sound', () => {
+    renderSetup()
+    const rail = screen.getByTestId('classroom-readiness')
+    const rows = rail.querySelectorAll('[data-testid^="setup-row-"]')
+    expect([...rows].map((row) => row.getAttribute('data-testid'))).toEqual([
+      'setup-row-buzzers',
+      'setup-row-teams',
+      'setup-row-names',
+      'setup-row-display',
+      'setup-row-sound',
+    ])
+  })
+
+  it('offers Check buzzers instead of only Skip when supported hardware is present', () => {
+    const onRevealBuzzersSetup = vi.fn()
+    renderSetup({
+      wbuzzPresent: true,
+      sonyTeacherSummary: 'receiver-waiting-for-controllers',
+      onRevealBuzzersSetup,
+    })
+    fireEvent.click(screen.getByTestId('readiness-sony'))
+    expect(screen.getByTestId('setup-buzzers-task')).toBeVisible()
+    expect(screen.getByTestId('setup-reveal-buzzers')).toBeVisible()
+    expect(screen.queryByTestId('setup-skip-buzzers')).toBeNull()
+    expect(screen.getByTestId('setup-buzzers-copy')).toHaveTextContent(/waiting for buzzers|detected/i)
+    fireEvent.click(screen.getByTestId('setup-reveal-buzzers'))
+    expect(onRevealBuzzersSetup).toHaveBeenCalled()
+  })
+
+  it('still offers Skip when no supported hardware is present', () => {
+    renderSetup({
+      wbuzzPresent: false,
+      sonyTeacherSummary: null,
+      onRevealBuzzersSetup: vi.fn(),
+    })
+    fireEvent.click(screen.getByTestId('readiness-sony'))
+    expect(screen.getByTestId('setup-skip-buzzers')).toBeVisible()
+    expect(screen.getByTestId('setup-reveal-buzzers')).toBeVisible()
+  })
+
+  it('does not treat 5–8 Game teams as invalid when buzzers are present', () => {
+    const six = createTeamDefinitions(
+      Array.from({ length: 6 }, (_, i) => ({
+        id: `t${i}`,
+        name: `Team ${i + 1}`,
+        accent: TEAM_ACCENTS[i]!,
+      })),
+    )
+    renderSetup({
+      teams: six,
+      wbuzzPresent: true,
+      sonyTeacherSummary: 'receiver-waiting-for-controllers',
+      initialSessionNames: {},
+    })
+    expect(screen.getByTestId('readiness-teams')).toHaveAttribute('data-status', 'complete')
+    expect(screen.getByTestId('readiness-teams')).toHaveTextContent(/6 teams in this Game/i)
+    expect(screen.getByTestId('readiness-teams')).toHaveTextContent(/keyboard available/i)
+    expect(screen.getByTestId('readiness-teams').textContent).not.toMatch(/four-team|1–4 teams only/i)
+    fireEvent.click(screen.getByTestId('readiness-teams'))
+    expect(screen.getByTestId('setup-teams-copy')).toHaveTextContent(/1–8/i)
+    expect(screen.getByTestId('setup-teams-copy').textContent).not.toMatch(/maximum of 4 teams/i)
   })
 
   it('hides name controls when Names is expanded while teams are blocked', () => {
