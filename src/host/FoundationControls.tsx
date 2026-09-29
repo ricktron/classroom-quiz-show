@@ -553,6 +553,7 @@ export function FoundationControls({
               onClick={() => {
                 dismissWelcomeBack()
                 setPlayReady(false)
+                window.scrollTo(0, 0)
               }}
             >
               Back to setup
@@ -598,6 +599,9 @@ export function FoundationControls({
             dismissWelcomeBack()
             setPlayReady(true)
             setMoreOpen(false)
+            // H-REPAIR-1: Start must land on the focused Host first viewport.
+            // Class Setup scroll position must not leave chrome above the fold.
+            window.scrollTo(0, 0)
           }}
           onEditGame={() => {
             navigate(editPath(game.definition.id))

@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { ensureHostMoreOpen } from './helpers/hostMore'
 import { fillAllTeamNames, importDemoAndPlay } from './helpers/menusClassSetup'
 
 /**
@@ -138,7 +139,7 @@ test('lifecycle: Gamepad owner stays mounted across Start and Back; keyboard pat
 
   await expect(page.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'setup')
   // Setup Buzzers panel is mounted (selection mode).
-  await expect(page.getByRole('heading', { name: /^Buzzers$/i })).toBeVisible()
+  await expect(page.locator('#gih-title')).toHaveText(/^Buzzers$/i)
   await page.locator('.gih').first().evaluate((el) => {
     el.setAttribute('data-h-repair-lifecycle', 'mounted')
   })
@@ -147,7 +148,7 @@ test('lifecycle: Gamepad owner stays mounted across Start and Back; keyboard pat
   await expect(page.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'play')
   await expect(page.getByTestId('classroom-setup')).toHaveCount(0)
   await expect(page.getByTestId('host-gameplay')).toBeVisible()
-  await expect(page.getByRole('heading', { name: /^Controllers$/i })).toBeVisible()
+  await expect(page.locator('#gih-title')).toHaveText(/^Controllers$/i)
   await expect(page.getByTestId('gih-advanced-generic')).not.toHaveAttribute('open', '')
 
   // Same GIH section node (no remount from sibling-order flip).
@@ -156,18 +157,26 @@ test('lifecycle: Gamepad owner stays mounted across Start and Back; keyboard pat
     'GamepadInputHostPanel DOM node stable across Start',
   ).toHaveCount(1)
 
-  // Keyboard path remains in gameplay stack (LocalInputHostPanel mounted).
-  await expect(page.locator('[data-testid^="lih-"]').first()).toBeAttached()
-
   // Demoted lifecycle owners remain in DOM under closed More.
   await expect(page.getByTestId('host-more')).not.toHaveAttribute('open', '')
   await expect(page.getByTestId('host-advanced')).toBeAttached()
   await expect(page.getByTestId('persistence-library')).toBeAttached()
 
+  // Keyboard LocalInput mounts with an active board round (round advance lives
+  // under More; Controllers demotion must not unmount keyboard when round is live).
+  await ensureHostMoreOpen(page)
+  await page.getByRole('button', { name: /advance to next round/i }).click()
+  await expect(page.getByTestId('cbh-grid')).toBeVisible()
+  await expect(page.getByTestId('lih-summary')).toBeAttached()
+  await expect(
+    page.locator('.gih[data-h-repair-lifecycle="mounted"]'),
+    'Gamepad owner still mounted after round advance',
+  ).toHaveCount(1)
+
   await page.getByTestId('setup-play').click()
   await expect(page.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'setup')
   await expect(page.getByTestId('classroom-setup')).toBeVisible()
-  await expect(page.getByRole('heading', { name: /^Buzzers$/i })).toBeVisible()
+  await expect(page.locator('#gih-title')).toHaveText(/^Buzzers$/i)
   await expect(
     page.locator('.gih[data-h-repair-lifecycle="mounted"]'),
     'GamepadInputHostPanel DOM node stable across Back',
