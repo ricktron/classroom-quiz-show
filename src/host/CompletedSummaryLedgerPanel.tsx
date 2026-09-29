@@ -140,7 +140,7 @@ export function CompletedSummaryLedgerPanel({
 
   return (
     <section className="ledger" aria-labelledby="completed-ledger-title">
-      <div className="foundation__tag">Completed summary ledger (Slice 16) — host-only</div>
+      <div className="foundation__tag">Completed summary ledger — host-only</div>
       <h3 id="completed-ledger-title">Completed summary ledger</h3>
       <output className="host__note" data-testid="ledger-status">
         {persistence.ledgerMessage}

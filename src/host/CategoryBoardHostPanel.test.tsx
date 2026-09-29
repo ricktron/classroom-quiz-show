@@ -50,6 +50,12 @@ function renderPanel(store: SessionStore = boardStore()) {
 }
 
 describe('the board grid', () => {
+  it('omits Slice-number ordinary teacher copy', () => {
+    renderPanel()
+    expect(screen.queryByText(/Slices?\s+\d/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/Category board — host controls, private/i)).toBeInTheDocument()
+  })
+
   it('renders every category title and every tile value as a real button', () => {
     renderPanel()
     expect(screen.getByText('Alpha Category')).toBeInTheDocument()

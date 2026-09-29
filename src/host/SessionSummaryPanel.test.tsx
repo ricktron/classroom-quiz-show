@@ -49,6 +49,10 @@ describe('SessionSummaryPanel', () => {
 
     expect(screen.getByTestId('session-summary-panel')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Session summary' })).toBeInTheDocument()
+    expect(screen.queryByText(/Slices?\s+\d/i)).not.toBeInTheDocument()
+    expect(
+      screen.getByText(/Session summary — host-only, current session/i),
+    ).toBeInTheDocument()
     expect(screen.getByTestId('ssp-current-session-warning')).toHaveTextContent(
       /local save status is not yet available/i,
     )

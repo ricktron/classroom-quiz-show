@@ -154,7 +154,7 @@ export function TeamScoringPanel({
     return (
       <section className="tsp" aria-labelledby="tsp-title">
         <div className="foundation__tag foundation__tag--slice6">
-          Teams &amp; scoring (Slice 6) — host controls, private
+          Teams &amp; scoring — host controls, private
         </div>
         <h3 id="tsp-title">Teams &amp; scoring</h3>
         <p className="host__note" data-testid="tsp-no-teams">
@@ -255,7 +255,7 @@ export function TeamScoringPanel({
   return (
     <section className="tsp" aria-labelledby="tsp-title">
       <div className="foundation__tag foundation__tag--slice6">
-        Teams &amp; scoring (Slice 6) — host controls, private
+        Teams &amp; scoring — host controls, private
       </div>
       <h3 id="tsp-title">Teams &amp; scoring</h3>
 

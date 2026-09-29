@@ -97,6 +97,12 @@ function openTile(drive: (...commands: SessionCommand[]) => void, tileId = 'alph
 }
 
 describe('the team list', () => {
+  it('omits Slice-number ordinary teacher copy', () => {
+    renderPanel()
+    expect(screen.queryByText(/Slices?\s+\d/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/Teams & scoring — host controls, private/i)).toBeInTheDocument()
+  })
+
   it('renders every team with its current score, in authored order', () => {
     renderPanel()
     const board = screen.getByTestId('tsp-scoreboard')

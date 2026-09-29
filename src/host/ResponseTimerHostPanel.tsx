@@ -102,7 +102,7 @@ export function ResponseTimerHostPanel({
   return (
     <section className="rth" aria-labelledby="rth-title">
       <div className="foundation__tag foundation__tag--slice7">
-        Timers &amp; arming (Slice 7) — host controls, private
+        Timers &amp; arming — host controls, private
       </div>
       <h3 id="rth-title">Response window</h3>
 

@@ -69,6 +69,51 @@
   margin-bottom: var(--space-5);
 }
 
+/*
+ * H-REPAIR-1: ordinary play first viewport must land concrete gameplay
+ * (teams scoreboard / board) without Controllers preceding it — including
+ * sim125 (~1093×542). Trim play-posture spacing only; setup unchanged.
+ */
+.foundation--play {
+  padding: var(--space-3) var(--space-4);
+}
+
+.foundation--play .foundation__chrome {
+  margin-bottom: var(--space-2);
+  padding-bottom: var(--space-2);
+}
+
+.foundation--play .foundation__play-status {
+  margin-bottom: var(--space-2);
+}
+
+.foundation--play .foundation__gameplay {
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.foundation--play .foundation__gameplay .tsp {
+  margin-top: 0;
+  padding: var(--space-3);
+}
+
+.foundation--play .foundation__gameplay .tsp h3 {
+  margin-bottom: var(--space-2);
+}
+
+.foundation--play .foundation__gameplay .cbh {
+  margin-top: 0;
+  padding: var(--space-3);
+}
+
+.foundation--play .foundation__gameplay .cbh h3 {
+  margin-bottom: var(--space-2);
+}
+
+.foundation--play .foundation__gameplay .cbh__public {
+  margin-bottom: var(--space-2);
+}
+
 .foundation__more {
   margin-top: var(--space-5);
   padding: var(--space-3);

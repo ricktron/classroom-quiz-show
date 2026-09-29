@@ -350,6 +350,78 @@ describe('PersistenceControls', () => {
     expect(screen.getByTestId('persistence-recovery')).toHaveTextContent(/your saved games stay/i)
   })
 
+  it('compacts healthy recovery-variant status and keeps recovery/failure prominent', () => {
+    const registry = createDefaultRegistry()
+    const healthy = persistence({ bootPhase: 'ready', durabilityStatus: 'saved', leadership: 'leader' })
+    const { unmount } = render(
+      <PersistenceControls
+        variant="recovery"
+        persistence={healthy}
+        activeGame={null}
+        activeDefinition={definition()}
+        registry={registry}
+        dispatch={vi.fn()}
+        getHistory={() => []}
+      />,
+    )
+    const chrome = screen.getByTestId('persistence-recovery-chrome')
+    expect(chrome).toHaveAttribute('data-compact', 'true')
+    expect(chrome).toHaveClass('persistence--compact')
+    expect(screen.queryByTestId('persistence-recovery')).not.toBeInTheDocument()
+    expect(screen.getByTestId('persistence-status')).toHaveTextContent(/saved on this device/i)
+    unmount()
+
+    render(
+      <PersistenceControls
+        variant="recovery"
+        persistence={persistence({
+          bootPhase: 'recovery',
+          recovery: { events: [], savedAt: 1 },
+          durabilityStatus: 'saved',
+        })}
+        activeGame={null}
+        activeDefinition={definition()}
+        registry={registry}
+        dispatch={vi.fn()}
+        getHistory={() => []}
+      />,
+    )
+    expect(screen.getByTestId('persistence-recovery-chrome')).not.toHaveAttribute('data-compact', 'true')
+    expect(screen.getByTestId('persistence-recovery')).toBeInTheDocument()
+  })
+
+  it('keeps follower and durability failure recovery chrome prominent (not compact)', () => {
+    const registry = createDefaultRegistry()
+    const { unmount } = render(
+      <PersistenceControls
+        variant="recovery"
+        persistence={persistence({ leadership: 'follower', bootPhase: 'ready', durabilityStatus: 'saved' })}
+        activeGame={null}
+        activeDefinition={definition()}
+        registry={registry}
+        dispatch={vi.fn()}
+        getHistory={() => []}
+      />,
+    )
+    expect(screen.getByTestId('persistence-recovery-chrome')).not.toHaveAttribute('data-compact', 'true')
+    expect(screen.getByTestId('persistence-follower-notice')).toBeInTheDocument()
+    unmount()
+
+    render(
+      <PersistenceControls
+        variant="recovery"
+        persistence={persistence({ bootPhase: 'ready', durabilityStatus: 'failed' })}
+        activeGame={null}
+        activeDefinition={definition()}
+        registry={registry}
+        dispatch={vi.fn()}
+        getHistory={() => []}
+      />,
+    )
+    expect(screen.getByTestId('persistence-recovery-chrome')).not.toHaveAttribute('data-compact', 'true')
+    expect(screen.getByTestId('persistence-warning')).toBeInTheDocument()
+  })
+
   it('uses unique heading ids when recovery and library are both mounted', () => {
     const p = persistence({
       bootPhase: 'recovery',

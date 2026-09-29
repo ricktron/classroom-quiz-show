@@ -84,7 +84,7 @@ export function CategoryBoardHostPanel({
   return (
     <section className="cbh" aria-labelledby="cbh-title">
       <div className="foundation__tag foundation__tag--slice5">
-        Category board (Slice 5) — host controls, private
+        Category board — host controls, private
       </div>
       <h3 id="cbh-title">{round.title}</h3>
 

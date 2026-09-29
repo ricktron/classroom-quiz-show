@@ -553,6 +553,7 @@ export function FoundationControls({
               onClick={() => {
                 dismissWelcomeBack()
                 setPlayReady(false)
+                window.scrollTo(0, 0)
               }}
             >
               Back to setup
@@ -598,6 +599,9 @@ export function FoundationControls({
             dismissWelcomeBack()
             setPlayReady(true)
             setMoreOpen(false)
+            // H-REPAIR-1: Start must land on the focused Host first viewport.
+            // Class Setup scroll position must not leave chrome above the fold.
+            window.scrollTo(0, 0)
           }}
           onEditGame={() => {
             navigate(editPath(game.definition.id))
@@ -616,20 +620,6 @@ export function FoundationControls({
               })
             }
           }}
-        />
-      )}
-
-      {game && (
-        <GamepadInputHostPanel
-          dispatch={dispatch}
-          game={game}
-          clock={clock}
-          selectionMode={!playReady}
-          onSelectionBatch={setSelectionObservationBatch}
-          onSonyReadyChange={setSonyReady}
-          onSonyTeacherSummaryChange={setSonyTeacherSummary}
-          onWbuzzPresentChange={setWbuzzPresent}
-          onInputDiagnosticSignals={setInputDiagnosticSignals}
         />
       )}
 
@@ -688,6 +678,25 @@ export function FoundationControls({
           </div>
         )}
       </fieldset>
+
+      {/*
+        H-REPAIR-1: Gamepad poll owner stays mounted across Start/Back and always
+        sits AFTER the session fieldset so sibling index is posture-stable (no remount).
+        Controllers must not precede first-viewport gameplay after Start.
+      */}
+      {game && (
+        <GamepadInputHostPanel
+          dispatch={dispatch}
+          game={game}
+          clock={clock}
+          selectionMode={!playReady}
+          onSelectionBatch={setSelectionObservationBatch}
+          onSonyReadyChange={setSonyReady}
+          onSonyTeacherSummaryChange={setSonyTeacherSummary}
+          onWbuzzPresentChange={setWbuzzPresent}
+          onInputDiagnosticSignals={setInputDiagnosticSignals}
+        />
+      )}
 
         <details
           className="foundation__more"

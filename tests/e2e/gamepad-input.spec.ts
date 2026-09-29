@@ -206,6 +206,15 @@ async function openHost(page: Page) {
   await ensureHostMoreOpen(page)
 }
 
+/** Expand Controllers assignments (default-collapsed in play after H-REPAIR-1). */
+async function ensureControllersDetailOpen(page: Page): Promise<void> {
+  const detail = page.getByTestId('gih-advanced-generic')
+  if ((await detail.count()) === 0) return
+  if ((await detail.getAttribute('open')) !== null) return
+  await detail.locator(':scope > summary').click()
+  await expect(detail).toHaveAttribute('open', '')
+}
+
 async function openDisplay(page: Page) {
   await page.goto('#/display')
   await expect(page.getByRole('heading', { name: /game display ready/i })).toBeVisible()
@@ -235,6 +244,7 @@ test('the host reports no controller, calmly, and keyboard buzzing still works',
   await watchGamepadApi(host)
   await openHost(host)
   await startBoard(host)
+  await ensureControllersDetailOpen(host)
 
   // ── 1. The panel exists and reports the truth about this machine ──────────
   await expect(host.getByTestId('gih-count')).toHaveText('None detected')
@@ -273,6 +283,7 @@ test('the controller panel is operable from the keyboard and assigns nothing by 
   const host = await context.newPage()
   await openHost(host)
   await startBoard(host)
+  await ensureControllersDetailOpen(host)
 
   // Nothing is bound by default — there is no assumed "buzz button".
   await expect(host.getByTestId('gih-control-basalts')).toHaveText('Not assigned')
