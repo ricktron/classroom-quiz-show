@@ -10,56 +10,30 @@ import { fillAllTeamNames, importDemoAndPlay } from './helpers/menusClassSetup'
 
 test.describe.configure({ mode: 'serial' })
 
-const GAME_B = JSON.stringify({
-  format: 'classroom-quiz-show/game',
-  schemaVersion: 1,
-  id: 'menus-slice-g-game-b',
-  title: 'Slice G Game B Private',
-  timer: { responseSeconds: 45 },
-  teams: [
-    { id: 'g-b-1', name: 'Alpha', order: 1 },
-    { id: 'g-b-2', name: 'Beta', order: 2 },
-  ],
-  rounds: [
-    {
-      id: 'board-b',
-      type: 'category-board',
-      title: 'Board B',
-      config: {
-        categories: [
-          {
-            id: 'gb-cat',
-            title: 'Science',
-            tiles: [
-              { id: 'gb-100', value: 100, prompt: 'Water formula?', answer: 'H2O' },
-              { id: 'gb-200', value: 200, prompt: 'Ice state?', answer: 'Solid' },
-            ],
-          },
-          {
-            id: 'gb-cat-2',
-            title: 'Math',
-            tiles: [
-              { id: 'gb-m100', value: 100, prompt: '2+2?', answer: '4' },
-              { id: 'gb-m200', value: 200, prompt: '3+3?', answer: '6' },
-            ],
-          },
-        ],
-      },
-    },
-  ],
-})
-
 async function waitForSessionSaved(page: Page): Promise<void> {
   await expect(page.getByTestId('persistence-status')).toHaveText(
     /saved on this device|ready to save|saved locally|ready/i,
   )
 }
 
-async function importGameBFromHome(page: Page): Promise<void> {
+/** Two distinct playable library Games via demo + Duplicate. */
+async function seedTwoPlayableGames(page: Page): Promise<{ gameATitle: string; gameBTitle: string }> {
+  await page.goto('./')
   await page.getByTestId('home-import-game').click()
-  await page.locator('#home-import-json').fill(GAME_B)
-  await page.getByTestId('home-import-json').click()
-  await expect(page.getByTestId('import-quality-report')).toBeVisible()
+  await page.getByTestId('home-import-demo').click()
+  await expect(page.getByTestId('home-status')).toContainText(/saved/i)
+  await expect(page.getByTestId('home-hero-playable')).toBeVisible()
+  const gameATitle = (
+    await page.getByTestId('home-hero-playable').getByRole('heading', { level: 2 }).innerText()
+  ).trim()
+  const gameBTitle = `Copy of ${gameATitle}`
+
+  await page.getByTestId('home-hero-playable').locator('summary').click()
+  await page.getByTestId('home-hero-playable').getByRole('button', { name: /^duplicate$/i }).click()
+  await expect(page.getByTestId('home-status')).toContainText(/duplicated/i)
+  await expect(page.getByRole('heading', { name: gameBTitle })).toBeVisible({ timeout: 15_000 })
+
+  return { gameATitle, gameBTitle }
 }
 
 test('Change game is setup-only secondary and returns to Home without clobbering Session', async ({
@@ -83,48 +57,54 @@ test('Change game is setup-only secondary and returns to Home without clobbering
 test('different-Game Play keeps recovery then replace-confirm before INITIALIZE_GAME for B', async ({
   page,
 }) => {
-  await importDemoAndPlay(page)
-  await waitForSessionSaved(page)
-  const gameATitle = (await page.getByTestId('host-identity').locator('.foundation__identity-title').innerText()).trim()
+  const { gameATitle, gameBTitle } = await seedTwoPlayableGames(page)
   expect(gameATitle.length).toBeGreaterThan(0)
+  expect(gameATitle).not.toBe(gameBTitle)
+
+  // After duplicate, hero is usually the Copy. Play original A from Your Games.
+  // Exact title — "Copy of X" must not match filter(hasText: X).
+  const playByExactTitle = (title: string) =>
+    page
+      .locator('.home__library .home__game, [data-testid="home-hero-playable"]')
+      .filter({
+        has: page.locator(`:is(h2, strong)`).getByText(title, { exact: true }),
+      })
+      .getByRole('button', { name: /^play$/i })
+      .first()
+
+  await playByExactTitle(gameATitle).click()
+  await expect(page.getByTestId('classroom-setup')).toBeVisible()
+  await expect(
+    page.getByTestId('host-identity').locator('.foundation__identity-title'),
+  ).toHaveText(gameATitle)
+  await waitForSessionSaved(page)
 
   await page.getByTestId('host-change-game').click()
   await expect(page.getByTestId('home-resume')).toBeVisible({ timeout: 15_000 })
+  await expect(page.locator('strong').getByText(gameBTitle, { exact: true })).toBeVisible()
 
-  await importGameBFromHome(page)
-  // Prefer import-report Play for B when still visible; else library row Play.
-  const reportPlay = page.getByTestId('import-quality-report').getByRole('button', { name: /^play$/i })
-  if (await reportPlay.isVisible().catch(() => false)) {
-    await reportPlay.click()
-  } else {
-    await page
-      .getByRole('listitem')
-      .filter({ hasText: 'Slice G Game B Private' })
-      .getByRole('button', { name: /^play$/i })
-      .click()
-  }
+  // Play B while unfinished A Session still exists (recovery still dominant).
+  await playByExactTitle(gameBTitle).click()
 
-  await expect(page.getByTestId('play-after-recovery').or(page.getByTestId('persistence-recovery'))).toBeVisible({
-    timeout: 15_000,
-  })
+  await expect(page.getByTestId('play-after-recovery')).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByTestId('persistence-recovery')).toBeVisible()
   await expect(page.getByTestId('play-replace-confirm')).toHaveCount(0)
-  await expect(page.getByTestId('host-identity')).not.toContainText('Slice G Game B Private')
+  await expect(
+    page.getByTestId('host-identity').locator('.foundation__identity-title'),
+  ).not.toHaveText(gameBTitle)
 
   // Resume A first (recovery decision), then replace-confirm for B.
-  const homeStyleResume = page.getByRole('button', { name: /^resume class$/i })
-  if (await homeStyleResume.isVisible().catch(() => false)) {
-    await homeStyleResume.click()
-  } else {
-    await page.getByTestId('persistence-resume').click()
-  }
+  await page.getByTestId('persistence-resume').click()
 
   await expect(page.getByTestId('play-replace-confirm')).toBeVisible({ timeout: 15_000 })
-  await expect(page.getByTestId('host-identity')).toContainText(gameATitle)
+  await expect(
+    page.getByTestId('host-identity').locator('.foundation__identity-title'),
+  ).toHaveText(gameATitle)
   await page.getByRole('button', { name: /load this game and replace the current session/i }).click()
 
-  await expect(page.getByTestId('host-identity')).toContainText('Slice G Game B Private', {
-    timeout: 15_000,
-  })
+  await expect(
+    page.getByTestId('host-identity').locator('.foundation__identity-title'),
+  ).toHaveText(gameBTitle, { timeout: 15_000 })
   await expect(page.getByTestId('classroom-setup')).toBeVisible()
   await expect(page.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'setup')
 })
