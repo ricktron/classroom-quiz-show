@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { absoluteDisplayUrlWithTheme, editPath, playGameIdFromSearch } from '../routes/paths'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import {
+  absoluteDisplayUrlWithTheme,
+  editPath,
+  playGameIdFromSearch,
+  ROUTES,
+} from '../routes/paths'
 import { teamSetSignature } from '../input/sonyBuzzSupportedProfile'
 import { useOptionalTheme } from '../theme/ThemeProvider'
 import { loadLibraryRecord } from '../persistence/savedDefinitions'
@@ -47,6 +52,7 @@ import {
 import { soundFactLabel } from '../session/classroomReadiness'
 import { THEME_META, type ThemeId } from '../theme/themeRegistry'
 import { ownsSameGameRosterRefresh } from './sameGameRosterRefresh'
+import { hostResumeWelcomeCopy } from './hostResumeWelcome'
 import './FoundationControls.css'
 
 /**
@@ -85,6 +91,11 @@ export function FoundationControls({
   const storeEpochRef = useRef(0)
   const playReplaceArmedRef = useRef(false)
   const homeResumeHandledRef = useRef(false)
+  /** Epoch-tagged Home Resume Welcome-back latch (React-local; not durable). */
+  const [homeResumeWelcomePendingEpoch, setHomeResumeWelcomePendingEpoch] = useState<
+    number | null
+  >(null)
+  const [homeResumeWelcomeVisible, setHomeResumeWelcomeVisible] = useState(false)
   const [playReplaceNeeded, setPlayReplaceNeeded] = useState(false)
   const [playReplaceArmed, setPlayReplaceArmed] = useState(false)
   const [resetArmed, setResetArmed] = useState(false)
@@ -140,24 +151,52 @@ export function FoundationControls({
   // URL-seeded default (bare `#/host` → play; `?play=` → setup).
   // Read the live store — React history/game state can lag one tick behind a
   // storeEpoch remount after Resume.
+  // Welcome-back reveals only after this hydrate for a Home-Resume-armed epoch.
   const postureHydratedEpochRef = useRef<number | null>(null)
   useEffect(() => {
     if (persistence.bootPhase !== 'ready') return
-    if (postureHydratedEpochRef.current === persistence.storeEpoch) return
+    if (postureHydratedEpochRef.current === persistence.storeEpoch) {
+      // Pending latch may arrive after hydrate already marked this epoch
+      // (resume arm + epoch bump race). Promote if still armed for this epoch.
+      if (
+        homeResumeWelcomePendingEpoch !== null &&
+        homeResumeWelcomePendingEpoch === persistence.storeEpoch
+      ) {
+        setHomeResumeWelcomeVisible(true)
+        setHomeResumeWelcomePendingEpoch(null)
+      }
+      return
+    }
     const liveHistory = store.getHistory()
     const liveGame = store.getState().session?.game ?? null
     postureHydratedEpochRef.current = persistence.storeEpoch
-    if (liveHistory.length === 0) return
-    setPlayReady(
-      deriveHostPlayPosture({
-        history: liveHistory,
-        canStartPlay: canStartPlayFromGame(liveGame),
-      }),
-    )
-  }, [persistence.bootPhase, persistence.storeEpoch, history, game, store])
+    if (liveHistory.length > 0) {
+      setPlayReady(
+        deriveHostPlayPosture({
+          history: liveHistory,
+          canStartPlay: canStartPlayFromGame(liveGame),
+        }),
+      )
+    }
+    if (
+      homeResumeWelcomePendingEpoch !== null &&
+      homeResumeWelcomePendingEpoch === persistence.storeEpoch
+    ) {
+      setHomeResumeWelcomeVisible(true)
+      setHomeResumeWelcomePendingEpoch(null)
+    }
+  }, [
+    persistence.bootPhase,
+    persistence.storeEpoch,
+    history,
+    game,
+    store,
+    homeResumeWelcomePendingEpoch,
+  ])
 
   // Home Resume carries a one-shot navigation intent. Apply the same Host resume
   // path once recovery is readable, then clear the intent so refresh re-prompts.
+  // Arm Welcome-back only on the success path (not stale-intent clear-only).
   useEffect(() => {
     const wantsResume = shouldResumeRecoveryFromNavigation(location.state)
     if (!wantsResume) {
@@ -168,6 +207,8 @@ export function FoundationControls({
     if (persistence.bootPhase === 'loading') return
     if (persistence.bootPhase === 'recovery' && persistence.recovery) {
       homeResumeHandledRef.current = true
+      // resume() bumps storeEpoch by 1; latch that next epoch for hydrate reveal.
+      setHomeResumeWelcomePendingEpoch(persistence.storeEpoch + 1)
       persistence.resume()
       navigate('.', { replace: true, state: null })
       return
@@ -182,6 +223,7 @@ export function FoundationControls({
     persistence.bootPhase,
     persistence.recovery,
     persistence.resume,
+    persistence.storeEpoch,
   ])
 
   // The ONE scheduled clock read in the application. It turns a deadline into a
@@ -386,12 +428,21 @@ export function FoundationControls({
       ? `Round ${(game.currentRoundIndex ?? 0) + 1} of ${game.definition.rounds.length}`
       : null
   const identityTitle = game?.definition.title ?? 'Host'
+  const namesComplete = game
+    ? game.definition.teams.every((team) => sessionTeamNameFor(game, team.id) !== null)
+    : false
+  const welcomeBackCopy = homeResumeWelcomeVisible
+    ? hostResumeWelcomeCopy({
+        gameTitle: game?.definition.title ?? null,
+        playReady,
+        roundLabel,
+        namesComplete,
+      })
+    : null
+  const dismissWelcomeBack = () => setHomeResumeWelcomeVisible(false)
   const playStatusParts: string[] = []
   if (playReady && game) {
-    const named = game.definition.teams.every(
-      (team) => sessionTeamNameFor(game, team.id) !== null,
-    )
-    playStatusParts.push(named ? 'Names ready' : 'Names incomplete')
+    playStatusParts.push(namesComplete ? 'Names ready' : 'Names incomplete')
     playStatusParts.push(displayOpen ? 'Display open' : 'Display not open')
     playStatusParts.push(
       sonyReady ? 'Buzzers ready' : 'Buzzers optional · keyboard works',
@@ -447,6 +498,23 @@ export function FoundationControls({
           {playReady && roundLabel && (
             <p className="foundation__identity-round">{roundLabel}</p>
           )}
+          {welcomeBackCopy && (
+            <p
+              className="foundation__welcome-back"
+              data-testid="host-welcome-back"
+              role="status"
+            >
+              {welcomeBackCopy}
+              <button
+                type="button"
+                className="btn btn--secondary foundation__welcome-dismiss"
+                data-testid="host-welcome-dismiss"
+                onClick={dismissWelcomeBack}
+              >
+                Got it
+              </button>
+            </p>
+          )}
         </div>
         <div className="foundation__chrome-actions" role="group" aria-label="Host controls">
           <button
@@ -468,12 +536,24 @@ export function FoundationControls({
           >
             {displayOpen ? 'Focus display' : 'Open display'}
           </button>
+          {!playReady && (
+            <Link
+              className="btn btn--secondary"
+              to={ROUTES.root}
+              data-testid="host-change-game"
+            >
+              Change game
+            </Link>
+          )}
           {playReady && (
             <button
               type="button"
               className="btn btn--secondary"
               data-testid="setup-play"
-              onClick={() => setPlayReady(false)}
+              onClick={() => {
+                dismissWelcomeBack()
+                setPlayReady(false)
+              }}
             >
               Back to setup
             </button>
@@ -515,6 +595,7 @@ export function FoundationControls({
           }}
           playReady={false}
           onPlay={() => {
+            dismissWelcomeBack()
             setPlayReady(true)
             setMoreOpen(false)
           }}
