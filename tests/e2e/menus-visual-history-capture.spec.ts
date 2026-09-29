@@ -243,6 +243,7 @@ test.describe('MENUS visual historian capture', () => {
       })
 
       // Resume Welcome-back setup: leave mid-setup via Change → Home Resume.
+      // (Must happen before round-advance so residual Session is still setup.)
       await page.getByTestId('setup-play').click()
       await waitForMenusSetup(page)
       await waitForSessionSaved(page)
@@ -285,6 +286,52 @@ test.describe('MENUS visual historian capture', () => {
       })
     } finally {
       await close()
+    }
+
+    // Ordinary active board — fresh authentic Home→Play→names→Start path
+    // (no Welcome-back). Legitimate More → Advance → close More → natural frame.
+    const boardCtx = await newMenusPage(browser, info, vp)
+    try {
+      await importDemoToReady(boardCtx.page)
+      await boardCtx.page.getByTestId('setup-play').click()
+      await expect(boardCtx.page.getByTestId('host-foundation')).toHaveAttribute(
+        'data-posture',
+        'play',
+      )
+      await expect(boardCtx.page.getByTestId('host-welcome-back')).toHaveCount(0)
+      await ensureHostMoreOpen(boardCtx.page)
+      await boardCtx.page.getByRole('button', { name: /^advance to next round$/i }).click()
+      await expect(boardCtx.page.getByTestId('cbh-grid')).toBeVisible()
+      await expect(boardCtx.page.locator('[data-testid^="cbh-tile-"]').first()).toBeVisible()
+      const moreForBoard = boardCtx.page.getByTestId('host-more')
+      if ((await moreForBoard.getAttribute('open')) !== null) {
+        await moreForBoard.locator(':scope > summary').click()
+      }
+      await expect(boardCtx.page.getByTestId('host-more')).not.toHaveAttribute('open', '')
+      await expect(boardCtx.page.getByTestId('gih-advanced-generic')).not.toHaveAttribute(
+        'open',
+        '',
+      )
+      await boardCtx.page.evaluate(() => window.scrollTo(0, 0))
+      await captureMenusPage(boardCtx.page, {
+        folder: 'host',
+        basename: `menus-host-active-board-${vp.label}.png`,
+        waitFor: async () => {
+          await expect(boardCtx.page.getByTestId('host-foundation')).toHaveAttribute(
+            'data-posture',
+            'play',
+          )
+          await expect(boardCtx.page.getByTestId('cbh-grid')).toBeVisible()
+          await expect(boardCtx.page.getByTestId('host-more')).not.toHaveAttribute('open', '')
+          await expect(boardCtx.page.getByTestId('host-welcome-back')).toHaveCount(0)
+          await expect(boardCtx.page.locator('.cbh .foundation__tag')).toHaveText(
+            /Category board — host controls, private/i,
+          )
+        },
+        viewport: vp,
+      })
+    } finally {
+      await boardCtx.close()
     }
   })
 

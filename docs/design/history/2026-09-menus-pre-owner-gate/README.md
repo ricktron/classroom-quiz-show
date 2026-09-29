@@ -43,6 +43,13 @@ implementation SHA (product UI)
 8. Automated and human/local captures must be clearly distinguished.
 9. **Browser captures are not evidence** of Electron, Windows, projector,
    Sidecar, physical Sony, or physical audio behavior.
+10. **Post-merge freeze:** once this archive is merged, do **not** add, replace,
+    or relabel owner/native/physical screenshots inside it. Slice I may **use**
+    it as baseline; new owner/native/physical observations belong in a new
+    owner-gate receipt, post-owner milestone, or separately authorized location
+    (see [`OWNER-CAPTURE-CHECKLIST.md`](OWNER-CAPTURE-CHECKLIST.md)). Product
+    fixes after owner playthrough → new post-fix/post-owner visual milestone
+    per [`../HISTORIAN-WORKFLOW.md`](../HISTORIAN-WORKFLOW.md).
 
 ## Capture method
 
@@ -97,4 +104,5 @@ shot as a first-viewport claim.
 
 Slice I — Rick’s deliberate owner playthrough — remains **NOT AUTHORIZED** by
 this archive. See [`OWNER-CAPTURE-CHECKLIST.md`](OWNER-CAPTURE-CHECKLIST.md)
-for Electron / Sidecar / physical Sony slots.
+for Electron / Sidecar / physical Sony **NOT RUN** census slots. After merge,
+those captures must **not** be filed back into this frozen archive.

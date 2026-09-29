@@ -13,8 +13,8 @@
   "captureEnvGate": "CQS_MENUS_VISUAL_HISTORY_CAPTURE=1",
   "s05ArchiveUntouched": true,
   "counts": {
-    "surfacesInventoried": 26,
-    "automatedCapture": 20,
+    "surfacesInventoried": 27,
+    "automatedCapture": 21,
     "ownerOrLocalCapture": 3,
     "s06Deferred": 3
   },
@@ -329,6 +329,24 @@
       "components": ["FoundationControls"],
       "ownerInspectionRequired": true,
       "notes": "D04 Frame 9 analogue"
+    },
+    {
+      "id": "MENUS-HOST-ACTIVE-BOARD",
+      "title": "Ordinary active category board (post round-advance)",
+      "role": "Host",
+      "class": "normal",
+      "authority": "AUTOMATED-CAPTURE",
+      "folder": "host",
+      "basename": "menus-host-active-board-1280x720.png",
+      "path": "screenshots/host/menus-host-active-board-1280x720.png",
+      "viewport": "1280x720",
+      "route": "#/host?play=…",
+      "privacy": "host-private",
+      "purpose": "Ordinary play with real cbh-grid (categories/tiles) before Controllers; Controllers collapsed; no Welcome-back",
+      "trigger": "Home Play → Class Setup → names → Start → More → Advance round → close More → natural focused-Host framing",
+      "components": ["CategoryBoardHost", "FoundationControls", "TeamScorePanel"],
+      "ownerInspectionRequired": true,
+      "notes": "Legitimate round-advance only — no Start auto-select round; never substitute host-gameplay for cbh-grid. Synthetic demo data."
     },
     {
       "id": "MENUS-HOST-MORE",

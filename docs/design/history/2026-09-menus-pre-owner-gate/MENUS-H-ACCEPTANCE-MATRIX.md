@@ -40,7 +40,8 @@
 | --- | --- | --- |
 | Class Setup Ready | `screenshots/setup/menus-setup-ready-*.png` | historian-png |
 | Focused Host post-Start | `screenshots/host/menus-host-focused-*.png` | historian-png |
-| Additional MENUS census | see [`CAPTURE-MANIFEST.json`](CAPTURE-MANIFEST.json) (20 automated) | historian-png |
+| Ordinary active board (`cbh-grid`) | `screenshots/host/menus-host-active-board-1280x720.png` | historian-png |
+| Additional MENUS census | see [`CAPTURE-MANIFEST.json`](CAPTURE-MANIFEST.json) (21 automated) | historian-png |
 | Owner / physical | [`OWNER-CAPTURE-CHECKLIST.md`](OWNER-CAPTURE-CHECKLIST.md) | owner-gate / physical-NOT-RUN |
 
 ## Non-claims preserved

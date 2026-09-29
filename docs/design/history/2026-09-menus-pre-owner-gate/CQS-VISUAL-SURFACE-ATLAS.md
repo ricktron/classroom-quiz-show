@@ -10,6 +10,7 @@ launch → Home (empty | populated | Resume)
   → Import templates / New Game board-first
   → Play → Class Setup (Names → Ready; optional Buzzers/Display/Sound)
   → Start Game → focused Host
+  → Advance round → ordinary active board (cbh-grid)
   → (optional) More / Open display / Back to setup
   → Resume Welcome-back (setup | play)
 ```
@@ -109,6 +110,17 @@ launch → Home (empty | populated | Resume)
 ![Host no display](screenshots/host/menus-host-no-display-1280x720.png)
 
 - **Why:** Display never blocks Start / play.
+
+### MENUS-HOST-ACTIVE-BOARD — Ordinary active category board
+
+![Active board 1280](screenshots/host/menus-host-active-board-1280x720.png)
+
+- **Why:** Real `cbh-grid` with categories/tiles after legitimate More → Advance;
+  Controllers after board and collapsed; ordinary play (no Welcome-back);
+  Host/private category-board vocab; synthetic demo data.
+- **Capture:** Natural focused-Host framing after closing More (no `scrollIntoView`;
+  product scroll-to-top only). Not a `host-gameplay` substitute for the board.
+- **Not:** Start auto-select round; Resume Welcome-back play.
 
 ### MENUS-HOST-MORE — More tray
 
