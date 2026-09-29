@@ -452,7 +452,7 @@ export function GamepadInputHostPanel({
     >
       {!selectionMode && (
         <div className="foundation__tag foundation__tag--slice9">
-          Controller input (Slices 9–21) — host controls, private
+          Controller input — host controls, private
         </div>
       )}
       <h3 id="gih-title">{selectionMode ? 'Buzzers' : 'Controllers'}</h3>
@@ -495,8 +495,14 @@ export function GamepadInputHostPanel({
         />
       ) : null}
 
-      <details className="gih__generic" data-testid="gih-advanced-generic" open={!selectionMode}>
-        <summary className={selectionMode ? undefined : 'visually-hidden'}>
+      {/*
+        H-REPAIR-1: Controllers stay mounted (poll owner) but default-collapsed in
+        play so assignments do not precede first-viewport gameplay. Setup already
+        keeps this details closed. Play summary stays visible so teachers can open
+        assignments (was visually-hidden when details defaulted open).
+      */}
+      <details className="gih__generic" data-testid="gih-advanced-generic" open={false}>
+        <summary>
           {selectionMode ? 'Advanced controller diagnostics' : 'Controller assignments'}
         </summary>
 

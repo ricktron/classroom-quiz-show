@@ -619,20 +619,6 @@ export function FoundationControls({
         />
       )}
 
-      {game && (
-        <GamepadInputHostPanel
-          dispatch={dispatch}
-          game={game}
-          clock={clock}
-          selectionMode={!playReady}
-          onSelectionBatch={setSelectionObservationBatch}
-          onSonyReadyChange={setSonyReady}
-          onSonyTeacherSummaryChange={setSonyTeacherSummary}
-          onWbuzzPresentChange={setWbuzzPresent}
-          onInputDiagnosticSignals={setInputDiagnosticSignals}
-        />
-      )}
-
       <fieldset
         className="foundation__session-controls"
         disabled={!persistence.canDispatchSessionCommands}
@@ -688,6 +674,25 @@ export function FoundationControls({
           </div>
         )}
       </fieldset>
+
+      {/*
+        H-REPAIR-1: Gamepad poll owner stays mounted across Start/Back and always
+        sits AFTER the session fieldset so sibling index is posture-stable (no remount).
+        Controllers must not precede first-viewport gameplay after Start.
+      */}
+      {game && (
+        <GamepadInputHostPanel
+          dispatch={dispatch}
+          game={game}
+          clock={clock}
+          selectionMode={!playReady}
+          onSelectionBatch={setSelectionObservationBatch}
+          onSonyReadyChange={setSonyReady}
+          onSonyTeacherSummaryChange={setSonyTeacherSummary}
+          onWbuzzPresentChange={setWbuzzPresent}
+          onInputDiagnosticSignals={setInputDiagnosticSignals}
+        />
+      )}
 
         <details
           className="foundation__more"

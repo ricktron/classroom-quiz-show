@@ -186,6 +186,14 @@ describe('when no controller is available', () => {
     )
   })
 
+  it('omits Slices 9–21 ordinary teacher copy and defaults Controllers detail closed', () => {
+    renderPanel()
+    expect(screen.getByRole('heading', { name: /^Controllers$/i })).toBeInTheDocument()
+    expect(screen.queryByText(/Slices\s*9\s*[–-]\s*21/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/Controller input — host controls, private/i)).toBeInTheDocument()
+    expect(screen.getByTestId('gih-advanced-generic')).not.toHaveAttribute('open')
+  })
+
   it('reports an unsupported browser and disables the switch rather than hiding it', () => {
     const panel = renderPanel()
     panel.source.fail('unsupported')

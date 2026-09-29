@@ -6,6 +6,20 @@
   background: var(--surface-canvas);
 }
 
+/* H-REPAIR-1: healthy ready-leader status — compact so Mute/Display/Back stay immediate. */
+.persistence--compact {
+  margin: var(--space-2) 0;
+  padding: var(--space-2) var(--space-3);
+  border-color: var(--border-subtle, var(--border-panel));
+  background: transparent;
+}
+
+.persistence--compact .persistence__status {
+  margin: 0;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
 .persistence h3,
 .persistence h4 {
   margin-top: 0;

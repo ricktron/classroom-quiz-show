@@ -131,9 +131,27 @@ export function PersistenceControls({
         ? 'persistence-title-recovery'
         : 'persistence-title'
 
+  // H-REPAIR-1: healthy ready-leader status is compact; recovery / invalid /
+  // follower / failed / unavailable stay full prominent card.
+  const compactHealthy =
+    showStatusChrome &&
+    variant === 'recovery' &&
+    persistence.bootPhase === 'ready' &&
+    persistence.leadership !== 'follower' &&
+    persistence.durabilityStatus !== 'failed' &&
+    persistence.durabilityStatus !== 'unavailable'
+
   return (
-    <section className="persistence" aria-labelledby={titleId} data-variant={variant}>
-      <h3 id={titleId}>{title}</h3>
+    <section
+      className={`persistence${compactHealthy ? ' persistence--compact' : ''}`}
+      aria-labelledby={titleId}
+      data-variant={variant}
+      data-compact={compactHealthy ? 'true' : undefined}
+      data-testid={variant === 'recovery' ? 'persistence-recovery-chrome' : undefined}
+    >
+      <h3 id={titleId} className={compactHealthy ? 'visually-hidden' : undefined}>
+        {title}
+      </h3>
       {showStatusChrome && (
         <>
           <p
