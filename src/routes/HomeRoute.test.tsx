@@ -11,9 +11,7 @@ import type { PersistenceAdapter, PersistenceTx } from '../persistence/adapter'
 import {
   ACTIVE_SESSION_KEY,
   OBJECT_STORE_ACTIVE_SESSIONS,
-  PersistenceWriteQueue,
   saveDefinition,
-  writeActiveSession,
 } from '../persistence'
 import { CANONICAL_SAMPLE_CATEGORY_BOARD_FILE } from '../import/sampleGameFile'
 import { createManualClock, type ManualClock } from '../time/clock'
@@ -21,7 +19,6 @@ import type { UseHostPersistenceOptions } from '../host/useHostPersistence'
 import { FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE } from '../host/writeAuthority'
 import { createDefaultRegistry } from '../game/defaultRegistry'
 import { importGameFromJsonText } from '../import/importGame'
-import { createSessionStore } from '../state/store'
 import { gameFileText } from '../test/gameFileFixtures'
 import { boardGameFile, boardGameFileText } from '../test/categoryBoardFixtures'
 import { loadLibraryRecord } from '../persistence/savedDefinitions'
@@ -33,6 +30,7 @@ import { ThemeProvider } from '../theme/ThemeProvider'
 import { shouldResumeRecoveryFromNavigation } from '../host/hostResumeNavigation'
 import { createBlankAuthoringDraft } from '../authoring/createBlankDraft'
 import { createStubGameDefinition } from '../persistence/savedDefinitions'
+import { seedResumableHostSession } from '../test/hostPersistenceTestFixtures'
 
 function EditorProbe() {
   const params = useParams()
@@ -153,22 +151,8 @@ async function stealLeadership(adapter: PersistenceAdapter, clock: ManualClock):
 }
 
 async function seedResumableSession(adapter: PersistenceAdapter): Promise<number> {
-  const imported = importGameFromJsonText(gameFileText())
-  if (imported.status !== 'success') throw new Error('fixture import failed')
-  const store = createSessionStore()
-  store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 'session-1' })
-  store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT, definition: imported.definition })
-  const history = store.getHistory()
-  await adapter.open()
-  const written = await writeActiveSession(
-    adapter,
-    history,
-    AT,
-    new PersistenceWriteQueue(),
-    createDefaultRegistry(),
-  )
-  if (!written.ok) throw new Error(written.message)
-  return history.length
+  const { historyLength } = await seedResumableHostSession(adapter, 'session-1')
+  return historyLength
 }
 
 async function seedSavedGame(
@@ -540,6 +524,28 @@ describe('teacher Home', () => {
     expect(screen.getByTestId('home-resume')).toHaveTextContent(/sample game/i)
     expect(screen.getByTestId('home-resume-session')).toHaveTextContent(/resume class/i)
     expect(screen.queryByTestId('home-hero-playable')).not.toBeInTheDocument()
+  })
+
+  it('shows truthful recovery stage + title on the Home Resume banner (H4)', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await seedResumableSession(adapter)
+    await renderReadyHome({
+      createAdapter: () => adapter,
+      tabId: 'home-recovery-stage-title',
+      clock: createManualClock(AT),
+      leaseTtlMs: 60_000,
+      renewIntervalMs: 20_000,
+      broadcastChannel: null,
+    })
+    await waitFor(() => {
+      expect(screen.getByTestId('home-resume')).toBeInTheDocument()
+    })
+    const banner = screen.getByTestId('home-resume')
+    // seedResumableSession leaves a mid-setup Session (no Start / gameplay).
+    expect(banner).toHaveTextContent(/sample game/i)
+    expect(banner).toHaveTextContent(/class setup/i)
+    expect(banner).not.toHaveTextContent(/in play/i)
+    expect(screen.getByTestId('home-resume-session')).toHaveTextContent(/resume class/i)
   })
 
   it('keeps Resume sole dominant when recovery and a populated library coexist', async () => {

@@ -40,6 +40,13 @@ test('Import exposes Board+Final primary and Classic secondary templates', async
   await expect(boardFinal).toHaveClass(/btn/)
   await expect(classic).toHaveClass(/btn--secondary/)
   await expect(page.getByTestId('home-import')).toContainText(/formulas and macros/i)
+  // H6: spreadsheet + JSON paste + demo co-present; no live-AI implication.
+  await expect(page.getByTestId('home-import-spreadsheet')).toBeVisible()
+  await expect(page.getByTestId('home-import-json')).toBeVisible()
+  await expect(page.getByTestId('home-import-demo')).toBeVisible()
+  await expect(page.getByTestId('home-import')).toContainText(/external tool/i)
+  const importText = (await page.getByTestId('home-import').innerText()).toLowerCase()
+  expect(importText).not.toMatch(/chatgpt|live ai|generate with ai|openai|ask an ai/i)
 })
 
 test('populated Home: hero Play, demoted New/Import, Playable vocabulary', async ({ page }) => {
@@ -66,10 +73,27 @@ test('New Game lands board-first with Game settings closed; team count preserved
   await expect(page.getByTestId('tile-editor')).toBeVisible()
   await expect(page.getByTestId('authoring-game-settings')).not.toHaveAttribute('open')
   await expect(page.getByTestId('authoring-team-count')).toBeHidden()
+  // H5: selected first incomplete tile + Final before Game settings in DOM order.
+  const selected = page.locator('.authoring-board__tile--selected')
+  await expect(selected).toHaveCount(1)
+  await expect(selected).toHaveAttribute('aria-pressed', 'true')
+  await expect(selected).toHaveAttribute('aria-label', /incomplete/i)
+  const finalHeading = page.getByRole('heading', { name: /^final$/i })
+  await expect(finalHeading).toBeVisible()
+  const finalBeforeSettings = await finalHeading.evaluate((finalEl, settingsTestId) => {
+    const settings = document.querySelector(`[data-testid="${settingsTestId}"]`)
+    if (!settings) return false
+    return Boolean(
+      finalEl.compareDocumentPosition(settings) & Node.DOCUMENT_POSITION_FOLLOWING,
+    )
+  }, 'authoring-game-settings')
+  expect(finalBeforeSettings).toBe(true)
+  await expect(page.getByTestId('authoring-validation')).toContainText(
+    /missing questions or answers/i,
+  )
   await page.getByTestId('authoring-game-settings').locator('summary').click()
   await expect(page.getByTestId('authoring-team-count')).toBeVisible()
   await expect(page.getByTestId('authoring-team-count')).toHaveValue('2')
-  await expect(page.getByRole('heading', { name: /^final$/i })).toBeVisible()
 })
 
 test('sim125-ish viewport keeps Resume / empty / hero hierarchy readable', async ({ page }) => {
