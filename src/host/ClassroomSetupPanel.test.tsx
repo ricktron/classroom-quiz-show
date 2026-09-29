@@ -1,9 +1,13 @@
-import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { createTeamDefinitions } from '../game/teams/definition'
 import { TEAM_ACCENTS } from '../game/teams/accents'
 import { ClassroomSetupPanel } from './ClassroomSetupPanel'
 import { PRIMARY_BUZZ } from '../input/logicalAction'
+
+afterEach(() => {
+  cleanup()
+})
 
 const TEAMS = createTeamDefinitions([
   { id: 'red', name: 'Team 1', accent: 'crimson' },
@@ -443,6 +447,30 @@ describe('ClassroomSetupPanel', () => {
 
     fireEvent.click(screen.getByTestId('setup-play'))
     expect(onPlay).toHaveBeenCalled()
+  })
+
+  it('H9 UI cells: Ready + Start sole dominant across representative optional combinations', () => {
+    const cells = [
+      { sonyReady: false, displayOpen: false, audioUnderstood: false, audioMuted: false },
+      { sonyReady: true, displayOpen: false, audioUnderstood: false, audioMuted: false },
+      { sonyReady: false, displayOpen: true, audioUnderstood: false, audioMuted: false },
+      { sonyReady: false, displayOpen: false, audioUnderstood: true, audioMuted: false },
+      { sonyReady: false, displayOpen: false, audioUnderstood: false, audioMuted: true },
+      { sonyReady: true, displayOpen: true, audioUnderstood: true, audioMuted: false },
+    ] as const
+
+    for (const cell of cells) {
+      cleanup()
+      renderSetup({
+        ...READY_OPTIONALS_UNRESOLVED,
+        ...cell,
+      })
+      expect(screen.getByTestId('setup-ready-heading')).toBeVisible()
+      expect(screen.getByTestId('setup-play')).not.toBeDisabled()
+      expect(screen.getByTestId('setup-play')).toHaveClass('classroom-setup__play--dominant')
+      expect(screen.getByTestId('setup-play')).toHaveTextContent(/^start game$/i)
+      expect(document.body.textContent).not.toMatch(/Display ready|Sound is ready/i)
+    }
   })
 
   it('revokes Ready when a required name is cleared after Ready', () => {

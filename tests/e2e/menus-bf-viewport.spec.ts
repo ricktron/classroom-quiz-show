@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { fillAllTeamNames, importDemoToReady } from './helpers/menusClassSetup'
+import { importMenusJsonAndPlay, menusBoardGameJson } from './helpers/menusGameJson'
 
 /**
  * MENUS B+F — bounded viewport / stress evidence (browser automation).
@@ -11,46 +12,6 @@ import { fillAllTeamNames, importDemoToReady } from './helpers/menusClassSetup'
  */
 
 test.describe.configure({ mode: 'serial' })
-
-const TEAM_ACCENTS = [
-  'crimson',
-  'azure',
-  'emerald',
-  'amber',
-  'violet',
-  'teal',
-  'rose',
-  'slate',
-] as const
-
-const EIGHT_TEAM_GAME = JSON.stringify({
-  format: 'classroom-quiz-show/game',
-  schemaVersion: 1,
-  id: 'menus-bf-eight-team-stress',
-  title: 'B+F Eight-Team Stress Board',
-  teams: TEAM_ACCENTS.map((accent, i) => ({
-    id: `t${i}`,
-    name: `Team ${i + 1}`,
-    accent,
-  })),
-  timer: { responseSeconds: 45 },
-  rounds: [
-    {
-      id: 'board-round',
-      type: 'category-board',
-      title: 'Stress Board',
-      config: {
-        categories: [
-          {
-            id: 'stress-cat',
-            title: 'Stress',
-            tiles: [{ id: 'stress-100', value: 100, prompt: 'Stress prompt?', answer: 'Stress answer' }],
-          },
-        ],
-      },
-    },
-  ],
-})
 
 async function assertReadySetupFitsViewport(page: import('@playwright/test').Page): Promise<void> {
   const report = await page.evaluate(() => {
@@ -105,12 +66,15 @@ for (const vp of VIEWPORTS) {
 
 test('eight-team Class Setup via authentic Home import stays Ready-usable', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 })
-  await page.goto('./')
-  await page.getByTestId('home-import-game').click()
-  await page.locator('#home-import-json').fill(EIGHT_TEAM_GAME)
-  await page.getByTestId('home-import-json').click()
-  await expect(page.getByTestId('import-quality-report')).toBeVisible()
-  await page.getByRole('button', { name: /^play$/i }).first().click()
+  await importMenusJsonAndPlay(
+    page,
+    menusBoardGameJson({
+      id: 'menus-bf-eight-team-stress',
+      title: 'B+F Eight-Team Stress Board',
+      teamCount: 8,
+      teamIdStart: 0,
+    }),
+  )
   await expect(page.getByTestId('classroom-setup')).toBeVisible()
   await expect(page.getByTestId('readiness-teams')).toContainText(/8 teams/i)
   await fillAllTeamNames(page)

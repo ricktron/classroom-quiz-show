@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 import { ensureHostMoreOpen } from './helpers/hostMore'
 import { FORBIDDEN_DISPLAY_LABELS } from '../../src/test/leakLabels'
+import { installSimulatedGamepad, settleGamepadPolls } from './helpers/simulatedGamepad'
 
 /**
  * Slice 9–10 — controller adapter paths, end to end in a real browser.
@@ -80,60 +81,13 @@ const FORBIDDEN_PROJECTOR_GAMEPAD_LABELS = [
   'sbs-',
 ] as const
 
-/**
- * Install a simulated Sony Buzz! wired candidate BEFORE navigation.
- *
- * NOT physical compatibility evidence — browser-only simulation for workflow
- * coverage. The app reads only `navigator.getGamepads`.
- */
+/** Simulated Sony Buzz! wired candidate (`054c:0002`) — not physical evidence. */
 async function installSimulatedSonyBuzzCandidate(page: Page) {
-  await page.addInitScript(() => {
-    const state = {
-      pads: [
-        {
-          index: 0,
-          connected: true,
-          mapping: 'standard',
-          id: 'Vendor: 054c Product: 0002',
-          buttons: Array.from({ length: 12 }, () => ({
-            pressed: false,
-            value: 0,
-            touched: false,
-          })),
-          axes: [] as number[],
-          timestamp: 0,
-        },
-      ],
-    }
-    ;(window as unknown as { __cqsFakeGamepads?: typeof state }).__cqsFakeGamepads = state
-
-    const nav = navigator as Navigator & { getGamepads?: () => readonly Gamepad[] | null[] }
-    nav.getGamepads = function patched() {
-      state.pads[0].timestamp = performance.now()
-      return state.pads as unknown as Gamepad[]
-    }
+  await installSimulatedGamepad(page, {
+    id: 'Vendor: 054c Product: 0002',
+    buttonCount: 12,
+    axes: [],
   })
-}
-
-/**
- * Wait for several animation frames so the host Gamepad poll owner can observe
- * the current simulated pad state. Synchronizes on `requestAnimationFrame`
- * rather than a fixed wall-clock timeout.
- */
-async function settleGamepadPolls(page: Page, frames = 8): Promise<void> {
-  await page.evaluate(
-    (count) =>
-      new Promise<void>((resolve) => {
-        let remaining = count
-        const tick = () => {
-          remaining -= 1
-          if (remaining <= 0) resolve()
-          else requestAnimationFrame(tick)
-        }
-        requestAnimationFrame(tick)
-      }),
-    frames,
-  )
 }
 
 /** Press and release one simulated gamepad button; allows rAF polls to observe edges. */
