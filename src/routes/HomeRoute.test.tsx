@@ -429,6 +429,50 @@ describe('teacher Home', () => {
       expect(screen.getByTestId('game-title')).toBeInTheDocument()
     })
     expect(screen.getByTestId('event-history').querySelectorAll('li')).toHaveLength(historyLength)
+    // Slice G: Welcome-back after Home Resume + posture hydrate (setup residual).
+    await waitFor(() => {
+      expect(screen.getByTestId('host-welcome-back')).toBeInTheDocument()
+    })
+    expect(screen.getByTestId('host-welcome-back')).toHaveTextContent(/welcome back/i)
+    expect(screen.getByTestId('host-welcome-back')).toHaveTextContent(/finish team names|class setup/i)
+    expect(screen.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'setup')
+    expect(screen.getByTestId('host-change-game')).toBeInTheDocument()
+    expect(screen.getByTestId('host-change-game')).toHaveTextContent(/change game/i)
+    // Welcome-back is Host-private chrome — must not appear as Display copy.
+    expect(document.body.textContent).not.toMatch(/projector-forbidden/i)
+  })
+
+  it('does not arm Welcome-back for Host PersistenceControls Resume without Home intent', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await seedResumableSession(adapter)
+    const options: UseHostPersistenceOptions = {
+      createAdapter: () => adapter,
+      tabId: 'host-persistence-resume-no-welcome',
+      clock: createManualClock(AT),
+      leaseTtlMs: 60_000,
+      renewIntervalMs: 20_000,
+      broadcastChannel: null,
+    }
+    render(
+      <MemoryRouter initialEntries={[ROUTES.host]}>
+        <ThemeProvider>
+          <Routes>
+            <Route path={ROUTES.host} element={<HostRoute persistenceOptions={options} />} />
+          </Routes>
+        </ThemeProvider>
+      </MemoryRouter>,
+    )
+    await waitFor(() => {
+      expect(screen.getByTestId('persistence-recovery')).toBeInTheDocument()
+    })
+    fireEvent.click(screen.getByTestId('persistence-resume'))
+    await waitFor(() => {
+      expect(screen.queryByTestId('persistence-recovery')).not.toBeInTheDocument()
+    })
+    await waitFor(() => {
+      expect(screen.getByTestId('game-title')).toBeInTheDocument()
+    })
+    expect(screen.queryByTestId('host-welcome-back')).not.toBeInTheDocument()
   })
 
   it('exposes Board + Final template download on Home Import without a second generator', async () => {
