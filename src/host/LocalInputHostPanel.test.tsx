@@ -121,6 +121,16 @@ function queueOf(store: SessionStore) {
 }
 
 describe('what the panel states', () => {
+  it('omits Slice-number ordinary teacher copy', () => {
+    const store = boardStore()
+    openClue(store)
+    renderPanel(store)
+    expect(screen.queryByText(/Slices?\s+\d/i)).not.toBeInTheDocument()
+    expect(
+      screen.getByText(/Local input & buzz queue — host controls, private/i),
+    ).toBeInTheDocument()
+  })
+
   it('names whether input is on, whether the clue is open, and whether it is armed', () => {
     const store = boardStore()
     openClue(store)

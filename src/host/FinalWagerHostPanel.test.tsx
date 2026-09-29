@@ -66,6 +66,8 @@ describe('the panel renders only for a playable Final round', () => {
     expect(screen.getByRole('heading', { name: /final wager/i })).toBeInTheDocument()
     expect(screen.getByTestId('fwh-phase')).toHaveTextContent(/not started/i)
     expect(screen.getByTestId('fwh-begin')).toBeEnabled()
+    expect(screen.queryByText(/Slices?\s+\d/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/Final wager — host controls, private/i)).toBeInTheDocument()
   })
 })
 

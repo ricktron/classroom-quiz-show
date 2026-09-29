@@ -69,6 +69,14 @@ function openClue(store: SessionStore) {
 const button = (name: RegExp) => screen.getByRole('button', { name })
 
 describe('what the panel states', () => {
+  it('omits Slice-number ordinary teacher copy', () => {
+    const store = boardStore()
+    openClue(store)
+    renderPanel(store)
+    expect(screen.queryByText(/Slices?\s+\d/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/Timers & arming — host controls, private/i)).toBeInTheDocument()
+  })
+
   it('names the phase, the arming state, the timer status and the remaining time', () => {
     const store = boardStore()
     openClue(store)

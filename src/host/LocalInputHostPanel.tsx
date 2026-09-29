@@ -260,7 +260,7 @@ export function LocalInputHostPanel({
   return (
     <section className="lih" aria-labelledby="lih-title">
       <div className="foundation__tag foundation__tag--slice8">
-        Local input &amp; buzz queue (Slice 8) — host controls, private
+        Local input &amp; buzz queue — host controls, private
       </div>
       <h3 id="lih-title">Buzz-in</h3>
 

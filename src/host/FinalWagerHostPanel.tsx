@@ -154,7 +154,7 @@ export function FinalWagerHostPanel({
   return (
     <section className="fwh" aria-labelledby="fwh-title">
       <div className="foundation__tag foundation__tag--slice14">
-        Final wager (Slice 14) — host controls, private
+        Final wager — host controls, private
       </div>
       <h3 id="fwh-title">Final wager</h3>
 

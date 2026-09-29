@@ -57,7 +57,7 @@ export function SessionSummaryPanel({
     return (
       <section className="ssp" aria-labelledby="ssp-title" data-testid="session-summary-panel">
         <div className="foundation__tag foundation__tag--slice15">
-          Session summary (Slice 15) — host-only, current session
+          Session summary — host-only, current session
         </div>
         <h3 id="ssp-title">Session summary</h3>
         <p className="host__note" data-testid="ssp-unavailable">
@@ -71,7 +71,7 @@ export function SessionSummaryPanel({
   return (
     <section className="ssp ssp--primary" aria-labelledby="ssp-title" data-testid="session-summary-panel">
       <div className="foundation__tag foundation__tag--slice15">
-        Session summary (Slice 15) — host-only, current session
+        Session summary — host-only, current session
       </div>
       <h3 id="ssp-title">Session summary</h3>
 
