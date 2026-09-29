@@ -103,6 +103,18 @@ describe('in-app board authoring', () => {
     expect(screen.getByTestId('team-name-bank')).not.toBeVisible()
     expect(screen.getByTestId('authoring-team-count')).not.toBeVisible()
     expect(screen.getByTestId('authoring-goal')).toHaveTextContent(/fill the board first/i)
+    // H5: first incomplete clue is selected; Final precedes Game settings in DOM.
+    const selected = screen.getByRole('button', { pressed: true })
+    expect(selected).toHaveAccessibleName(/incomplete/i)
+    expect(selected).toHaveClass('authoring-board__tile--selected')
+    const finalHeading = screen.getByRole('heading', { name: /^final$/i })
+    const settings = screen.getByTestId('authoring-game-settings')
+    expect(
+      finalHeading.compareDocumentPosition(settings) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(screen.getByTestId('authoring-validation')).toHaveTextContent(
+      /missing questions or answers/i,
+    )
   })
 
   it('edits title, a tile, and Final without claiming a false Saved state', async () => {

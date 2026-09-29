@@ -28,14 +28,23 @@ That workflow defines:
 | Archive | Milestone |
 | --- | --- |
 | [`2026-09-s05-complete/`](2026-09-s05-complete/) | S05 presentation children complete / pre-owner-playthrough |
+| [`2026-09-menus-pre-owner-gate/`](2026-09-menus-pre-owner-gate/) | MENUS early-workflow complete / pre-owner-gate (implementation SHA `5915d46…`) |
 
-The current S05 archive is the first full precedent: 58 inventoried
+The S05 archive is the first full presentation-atlas precedent: 58 inventoried
 surfaces/states, 50 committed automated PNG captures, five owner/local capture
 slots, and three S06-deferred evidence slots.
 
+The MENUS pre-owner-gate archive records teacher early-workflow surfaces after
+Slices A–G (Home / setup Ready / focused Host / Resume Welcome-back). It does
+**not** overwrite S05. Owner playthrough (Slice I) remains NOT RUN.
+
 Regenerate automated captures for an archive only under that archive's own
-documented command (currently `npm run capture:visual-history` for the S05
-archive).
+documented command:
+
+- S05: `npm run capture:visual-history` (`CQS_VISUAL_HISTORY_CAPTURE=1`)
+- MENUS: `npm run capture:visual-history:menus` (`CQS_MENUS_VISUAL_HISTORY_CAPTURE=1`)
+
+Ordinary `npm run test:e2e` must not rewrite either archive.
 
 ## Historical integrity
 

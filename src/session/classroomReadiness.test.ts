@@ -191,6 +191,47 @@ describe('classroom readiness', () => {
     expect(unresolvedOptionalFacts({ ...input, buzzerSkipped: true }).join(' ')).toMatch(/skipped/i)
   })
 
+  it('H9 Ready optional matrix: every buzzer × display × sound cell keeps canStartPlay', () => {
+    type BuzzerCell = 'absent' | 'present' | 'skipped'
+    type DisplayCell = 'closed' | 'open'
+    type SoundCell = 'untested' | 'tested' | 'muted'
+    const buzzers: readonly BuzzerCell[] = ['absent', 'present', 'skipped']
+    const displays: readonly DisplayCell[] = ['closed', 'open']
+    const sounds: readonly SoundCell[] = ['untested', 'tested', 'muted']
+
+    for (const buzzer of buzzers) {
+      for (const display of displays) {
+        for (const sound of sounds) {
+          const input = {
+            ...ready,
+            sonyReady: buzzer === 'present',
+            buzzerSkipped: buzzer === 'skipped',
+            displayOpen: display === 'open',
+            audioUnderstood: sound === 'tested',
+            audioMuted: sound === 'muted',
+          }
+          const cell = `${buzzer}/${display}/${sound}`
+          expect(canStartPlay(input), cell).toBe(true)
+          expect(dominantSetupTask(input), cell).toBe('play')
+          expect(playBlockerExplanation(input), cell).toBeNull()
+          const facts = unresolvedOptionalFacts(input).join(' ').toLowerCase()
+          if (buzzer === 'absent') expect(facts, cell).toMatch(/buzzers/)
+          if (buzzer === 'skipped') expect(facts, cell).toMatch(/skipped/)
+          if (display === 'closed') expect(facts, cell).toMatch(/display|window/)
+          if (sound === 'untested') expect(facts, cell).toMatch(/sound/)
+          const soundLabel = soundFactLabel(input)
+          const displayLabel = displayFactLabel(input)
+          expect(soundLabel, cell).not.toMatch(/sound is ready/i)
+          expect(displayLabel, cell).not.toMatch(/display ready/i)
+          expect(soundLabel, cell).toMatch(
+            sound === 'muted' ? /muted/i : sound === 'tested' ? /tested/i : /not tested/i,
+          )
+          expect(displayLabel, cell).toMatch(display === 'open' ? /open/i : /not open/i)
+        }
+      }
+    }
+  })
+
   it('ignores focusOverride for Ready / status (expansion is UI-only)', () => {
     expect(
       dominantSetupTask({

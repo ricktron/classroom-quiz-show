@@ -1,6 +1,7 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { ensureHostMoreOpen } from './helpers/hostMore'
 import { fillAllTeamNames, importDemoAndPlay } from './helpers/menusClassSetup'
+import { waitForSessionSaved } from './helpers/menusSession'
 
 /**
  * MENUS Slice G — Change game + different-Game replace + Resume Welcome-back.
@@ -9,12 +10,6 @@ import { fillAllTeamNames, importDemoAndPlay } from './helpers/menusClassSetup'
  */
 
 test.describe.configure({ mode: 'serial' })
-
-async function waitForSessionSaved(page: Page): Promise<void> {
-  await expect(page.getByTestId('persistence-status')).toHaveText(
-    /saved on this device|ready to save|saved locally|ready/i,
-  )
-}
 
 /** Two distinct playable library Games via demo + Duplicate. */
 async function seedTwoPlayableGames(page: Page): Promise<{ gameATitle: string; gameBTitle: string }> {
@@ -111,10 +106,18 @@ test('different-Game Play keeps recovery then replace-confirm before INITIALIZE_
 
 test('Home Resume into setup shows Welcome-back after posture hydrate', async ({ page }) => {
   await importDemoAndPlay(page)
+  // H12: preserve at least one name + Game identity across Home Resume.
+  const gameTitle = (
+    await page.getByTestId('host-identity').locator('.foundation__identity-title').innerText()
+  ).trim()
+  expect(gameTitle.length).toBeGreaterThan(0)
+  await page.locator('[data-testid^="tnsb-manual-"]').first().fill('Preserved Alpha')
+  await page.locator('[data-testid^="tnsb-manual-"]').first().blur()
   await waitForSessionSaved(page)
   // Leave Host via Change game so Home Resume intent is the Slice G path.
   await page.getByTestId('host-change-game').click()
   await expect(page.getByTestId('home-resume')).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByTestId('home-resume')).toContainText(gameTitle)
   await page.getByRole('button', { name: /^resume class$/i }).click()
 
   await expect(page.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'setup', {
@@ -123,7 +126,12 @@ test('Home Resume into setup shows Welcome-back after posture hydrate', async ({
   await expect(page.getByTestId('host-welcome-back')).toBeVisible({ timeout: 15_000 })
   await expect(page.getByTestId('host-welcome-back')).toContainText(/welcome back/i)
   await expect(page.getByTestId('host-welcome-back')).toContainText(/finish team names|class setup/i)
+  await expect(page.getByTestId('host-welcome-back')).toContainText(gameTitle)
   await expect(page.getByTestId('classroom-setup')).toBeVisible()
+  await expect(
+    page.getByTestId('host-identity').locator('.foundation__identity-title'),
+  ).toHaveText(gameTitle)
+  await expect(page.locator('[data-testid^="tnsb-manual-"]').first()).toHaveValue('Preserved Alpha')
   await expect(page.getByTestId('host-change-game')).toBeVisible()
   // Play posture must not show Change game.
   await fillAllTeamNames(page)
@@ -135,6 +143,10 @@ test('Home Resume into setup shows Welcome-back after posture hydrate', async ({
 
 test('Home Resume into play shows Welcome-back with scores kept', async ({ page }) => {
   await importDemoAndPlay(page)
+  const gameTitle = (
+    await page.getByTestId('host-identity').locator('.foundation__identity-title').innerText()
+  ).trim()
+  expect(gameTitle.length).toBeGreaterThan(0)
   await fillAllTeamNames(page)
   await page.getByTestId('setup-play').click()
   await expect(page.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'play')
@@ -153,6 +165,14 @@ test('Home Resume into play shows Welcome-back with scores kept', async ({ page 
   await expect(page.getByTestId('host-welcome-back')).toBeVisible({ timeout: 15_000 })
   await expect(page.getByTestId('host-welcome-back')).toContainText(/welcome back/i)
   await expect(page.getByTestId('host-welcome-back')).toContainText(/scores kept/i)
+  // H13: Welcome carries Game + round orientation; runtime fact survives Home Resume.
+  await expect(page.getByTestId('host-welcome-back')).toContainText(gameTitle)
+  await expect(page.getByTestId('host-welcome-back')).toContainText(/round/i)
+  await expect(
+    page.getByTestId('host-identity').locator('.foundation__identity-title'),
+  ).toHaveText(gameTitle)
+  await ensureHostMoreOpen(page)
+  await expect(page.getByTestId('event-history')).toContainText('ROUND_ADVANCED')
   await expect(page.getByTestId('host-change-game')).toHaveCount(0)
   await expect(page.getByTestId('classroom-setup')).toHaveCount(0)
 })
