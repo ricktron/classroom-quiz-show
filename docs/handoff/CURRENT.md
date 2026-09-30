@@ -27,7 +27,7 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S04A–S04C, **S05-F1**, **S05 buzz / active-claim choreography**, **S05 board-outcome public authority**, and **S05 board-outcome presentation choreography** **TERMINALLY COMPLETE**. **S05 SCORE CHANGE: OWNER DECISION RESOLVED — PATH S-C**. **S05 board/round-flow presentation choreography:** **TERMINALLY COMPLETE**. S05 parent **OPEN / NOT TERMINAL**. **S05 Final + winner/completion presentation: TERMINALLY COMPLETE.** Deliberate whole-game owner playthrough: **NEXT / NOT RUN**. S04D and S06 **NOT AUTHORIZED**. REAL MVP is **not** complete. |
+| Current Program frontier | S04A–S04C, **S05-F1**, **S05 buzz / active-claim choreography**, **S05 board-outcome public authority**, and **S05 board-outcome presentation choreography** **TERMINALLY COMPLETE**. **S05 SCORE CHANGE: OWNER DECISION RESOLVED — PATH S-C**. **S05 board/round-flow presentation choreography:** **TERMINALLY COMPLETE**. S05 parent **OPEN / NOT TERMINAL**. **S05 Final + winner/completion presentation: TERMINALLY COMPLETE.** Prior MENUS Slice I playthrough: **NOT RUN** (as acceptance). Owner playthrough: **PAUSED / GATED** behind pre-owner Q0–Q6 ([`../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md)); **`OWNER-PLAYTHROUGH-ELIGIBLE` NOT ISSUED**. S04D and S06 **NOT AUTHORIZED**. REAL MVP is **not** complete. |
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
 | S04 canon | product direction **registered** |
@@ -47,7 +47,9 @@ also read
 | S05 board/round-flow presentation choreography | **TERMINALLY COMPLETE** |
 | S05 parent | **OPEN / NOT TERMINAL** |
 | S05 Final + winner/completion presentation | **TERMINALLY COMPLETE** |
-| S05 integrated owner playthrough | **NEXT / NOT RUN** |
+| S05 integrated owner playthrough | **PAUSED / GATED** (pre-owner Q0–Q6); **`OWNER-PLAYTHROUGH-ELIGIBLE` NOT ISSUED** |
+| Pre-owner functional qualification | **Q0 CONTRACT** — [`../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md); matrix [`../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md`](../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md). Q1–Q7 not started by Q0. |
+| Prior MENUS Slice I playthrough | **NOT RUN** (as acceptance; Scenario D was BLOCKED; I-REPAIR-1 merged; re-gate not authorized here) |
 | S04D / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
 
@@ -81,6 +83,10 @@ Desktop install/start (unsigned artifacts):
 
 Slice 23 qualification record:
 [`../qualification/SLICE-23-QUALIFICATION-PLAN.md`](../qualification/SLICE-23-QUALIFICATION-PLAN.md).
+
+Pre-owner functional qualification (current gate before owner playthrough):
+[`../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md);
+[`../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md`](../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md).
 
 ## What is complete
 
@@ -144,9 +150,11 @@ head `ba37f690…`; trees **EXACT MATCH** `7bb8d5a8…`). S05 parent remains
 `8e879b424d43a07a88e6ea7c1abd20b68add7c00` and PR #101 squash/main
 `2b1aaa7d13a82079b26a820b98bc68e864daed3d`; accepted and squash trees are
 **EXACT MATCH** `ad4cb531856353db71b77c975b0d4b2efb0676b7`. S05 parent remains
-**OPEN / NOT TERMINAL**. The deliberate whole-game S05 owner playthrough is
-**NEXT / NOT RUN**. S04D and S06 remain **NOT AUTHORIZED**. REAL MVP is **not**
-complete.
+**OPEN / NOT TERMINAL**. The deliberate whole-game S05 / MENUS owner
+playthrough is **PAUSED / GATED** behind pre-owner Q0–Q6;
+**`OWNER-PLAYTHROUGH-ELIGIBLE` is NOT ISSUED**. Prior MENUS Slice I
+playthrough is **NOT RUN** as acceptance. S04D and S06 remain **NOT
+AUTHORIZED**. REAL MVP is **not** complete.
 
 Those remain **existing qualified foundations** plus the S03 desktop
 foundation, S04 canon, and terminal S04A teacher-workflow foundation. Do
@@ -184,7 +192,8 @@ See the REAL MVP gap register in
 | teacher-simple progressive disclosure | **FOUNDATION IMPLEMENTED** — S04A teacher Home / authoring / save-trust workflow is terminal; S04B Class Setup extends it on `main` |
 | controller `F-UX-01` | **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** |
 | feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
-| flagship visual fidelity | **S05 PRESENTATION CHILDREN TERMINALLY COMPLETE / PARENT OPEN** — S05-F1, buzz / active-claim, board-outcome authority + presentation, board/round-flow, and Final + winner/completion are **TERMINALLY COMPLETE**; score-change Path S-C **RESOLVED**; deliberate whole-game owner playthrough **NEXT / NOT RUN** before parent terminalization |
+| flagship visual fidelity | **S05 PRESENTATION CHILDREN TERMINALLY COMPLETE / PARENT OPEN** — S05-F1, buzz / active-claim, board-outcome authority + presentation, board/round-flow, and Final + winner/completion are **TERMINALLY COMPLETE**; score-change Path S-C **RESOLVED**; deliberate whole-game owner playthrough **PAUSED / GATED** behind pre-owner Q0–Q6; **`OWNER-PLAYTHROUGH-ELIGIBLE` NOT ISSUED** |
+| pre-owner functional qualification | **Q0 CONTRACT** — do **not** route Rick to owner walkthrough; Q1–Q7 require later auth |
 | packaged offline/recovery and OS qualification | **PARTIAL** (H5 selection/hardware **PASS recorded 2026-09-11** and transferred; H6 readiness **PASS** on Namtai `054c:1000` + four handsets; Windows physical runtime **NOT RUN**) |
 | clean-room teacher qualification | **OPEN** |
 | **C-3** / **C-6** | **FOUNDATION IMPLEMENTED / UNSIGNED** |
@@ -209,6 +218,9 @@ Do **not**:
   release readiness;
 - begin S04D telemetry without a later bounded authorization;
 - begin additional S05 work without a fresh bounded authorization;
+- resume owner walkthrough / Slice I re-gate / S05 whole-game playthrough
+  before pre-owner Q0–Q6 complete and Q7 issues **`OWNER-PLAYTHROUGH-ELIGIBLE`**
+  (not issued);
 - begin S06 integrated release qualification without a later bounded
   authorization;
 - silently decide Apple/Windows signing, fee waiver, CPU/OS matrix, or
@@ -236,6 +248,16 @@ phones, no networked buzzers, no executable imported content) remain in
 [`../architecture/GAME-ENGINE-BOUNDARIES.md`](../architecture/GAME-ENGINE-BOUNDARIES.md).
 
 ## Next Program-level action
+
+**Do not send Rick to owner walkthrough.** Pre-owner functional qualification
+Q0 is the routing gate:
+[`../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md).
+Owner playthrough is **PAUSED / GATED** behind Q0–Q6;
+**`OWNER-PLAYTHROUGH-ELIGIBLE` is NOT ISSUED**. S05 parent remains **OPEN /
+NOT TERMINAL**. Prior MENUS Slice I playthrough is **NOT RUN** as acceptance.
+S04D / S06 remain **NOT AUTHORIZED**. REAL MVP is **not** complete. Q1
+known-escape repairs require a **separate** bounded authorization — Q0 does
+not start them.
 
 `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is
 **TERMINALLY COMPLETE**. `CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP`
@@ -368,9 +390,11 @@ and
 [`../CQS-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY.md`](../CQS-S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY.md)
 and
 [`../receipts/2026-09-24-cqs-real-mvp-s05-final-and-winner-presentation-choreography-terminal-post-merge-reconciliation.md`](../receipts/2026-09-24-cqs-real-mvp-s05-final-and-winner-presentation-choreography-terminal-post-merge-reconciliation.md).
-S05 parent remains **OPEN / NOT TERMINAL**. The next S05 evidence step is the
-deliberate whole-game owner playthrough; it is **NOT RUN** and does not itself
-grant parent terminalization. Do **not** start S04D or S06 from this handoff. REAL MVP is **not** complete.
+S05 parent remains **OPEN / NOT TERMINAL**. Deliberate whole-game / MENUS
+owner playthrough is **PAUSED / GATED** behind pre-owner Q0–Q6;
+**`OWNER-PLAYTHROUGH-ELIGIBLE` is NOT ISSUED**. It does not itself grant
+parent terminalization. Do **not** start S04D or S06 from this handoff. REAL
+MVP is **not** complete.
 Do **not** claim Windows physical qualification,
 projector/sleep physical qualification, Sony physical re-qualification,
 local hardware qualification for H2 (none required), local qualification
@@ -399,8 +423,12 @@ S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05 parent: OPEN / NOT TERMINAL
 S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
-S05 integrated owner playthrough: NEXT / NOT RUN
+S05 integrated owner playthrough: PAUSED / GATED (pre-owner Q0–Q6)
+OWNER-PLAYTHROUGH-ELIGIBLE: NOT ISSUED
+prior MENUS Slice I playthrough: NOT RUN (as acceptance)
+pre-owner Q0: docs/qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md
 S04D / S06: NOT AUTHORIZED
+REAL MVP: not complete
 ```
 
 S05 board-outcome presentation choreography terminal post-merge reconciliation
@@ -496,6 +524,7 @@ H6 durable interaction/evidence manifest (historical):
 [`qualification-runs/s04b-h6-2026-09-12.jsonl`](qualification-runs/s04b-h6-2026-09-12.jsonl).
 
 Do **not** begin S04D / additional S05 / S06 from this handoff. Do **not**
+resume owner walkthrough before **`OWNER-PLAYTHROUGH-ELIGIBLE`**. Do **not**
 reopen S04C without separate owner authorization.
 
 ## Architecture pointers
