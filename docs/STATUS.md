@@ -143,7 +143,7 @@ Teacher desktop notes:
 | controller `F-UX-01` (`CQS-Q23-LOW-01`) | **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** — ordinary Sony copy no longer requires WebHID / report-ID / profile jargon; Class Setup buzzer summary shares Sony teacher-summary layers; readiness honesty physically requalified on H6 identity (not re-run on squash/main) |
 | feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
 | flagship visual fidelity | **S05 PRESENTATION CHILDREN TERMINALLY COMPLETE / PARENT OPEN** — S05-F1, buzz / active-claim, board-outcome public authority + presentation, board/round-flow presentation, and Final + winner/completion presentation are **TERMINALLY COMPLETE**; score-change Path S-C is **RESOLVED**; deliberate whole-game owner playthrough is **PAUSED / GATED** behind [`qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md) (Q0–Q6 + PRE-Q7 eligibility); **`OWNER-PLAYTHROUGH-ELIGIBLE` NOT ISSUED**; S05 parent is **not** terminal |
-| pre-owner functional qualification | **Q0 CONTRACT** — [`qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md) + [`qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md`](qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md). Q1–Q7 **not** started by Q0. Do **not** route Rick to owner walkthrough yet. |
+| pre-owner functional qualification | **Q0 CONTRACT** — [`qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md) + [`qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md`](qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md). Q1–Q7 **not** started by Q0. Functional escapes / blockers require repair/verify through Q1–Q5 — **no** owner-waiver escape hatch through PRE-Q7. Do **not** route Rick to owner walkthrough yet. |
 | packaged offline/recovery equivalence | **FOUNDATION IMPLEMENTED** (Electron shell + IndexedDB identity; packaged macOS Host smoke observed) |
 | packaged macOS qualification | **PARTIAL** (H5 selection/hardware physical **PASS recorded 2026-09-11** and transferred; H6 readiness physical **PASS** on `9df9c42…` + Namtai `054c:1000` + four handsets for terminal S04B; Windows physical runtime **NOT RUN**; clean-room / signed release still open) |
 | packaged Windows qualification | **OPEN** (CI can produce the installer; physical Windows runtime **NOT RUN**) |
@@ -162,8 +162,11 @@ Teacher desktop notes:
 Do **not** begin S04D, additional S05 work, or S06 from this status.
 Do **not** resume owner walkthrough / Slice I re-gate / S05 whole-game
 playthrough until pre-owner Q0–Q6 are complete under later authorizations
-and DevPM PRE-Q7 issues **`OWNER-PLAYTHROUGH-ELIGIBLE`** (not issued; Q7
-does **not** issue eligibility). Naming a successor is **not** authority. Do **not** declare a teacher-trusted
+and DevPM PRE-Q7 **verdict** issues **`OWNER-PLAYTHROUGH-ELIGIBLE`** (not
+issued; PRE-Q7 is not a new numbered stage / separate owner auth; Q7 does
+**not** issue eligibility). Functional escapes / blockers may **not** be
+waived through PRE-Q7. Naming a successor is **not** authority. Do **not**
+declare a teacher-trusted
 signed release. Do **not** declare the teacher-adoptable product complete.
 Do **not** reopen completed Slices 1–23. Do **not** claim Windows physical
 runtime qualification, physical projector/sleep readiness, or a signed
@@ -372,7 +375,7 @@ S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05 integrated owner playthrough: PAUSED / GATED (pre-owner Q0–Q6 + PRE-Q7 eligibility)
-OWNER-PLAYTHROUGH-ELIGIBLE: NOT ISSUED (DevPM PRE-Q7 gate; Q7 does not issue)
+OWNER-PLAYTHROUGH-ELIGIBLE: NOT ISSUED (DevPM PRE-Q7 verdict after Q6; Q7 does not issue; no functional-waiver hatch)
 S05 parent: OPEN / NOT TERMINAL
 pre-owner Q0: docs/qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md
 S04D / S06: NOT AUTHORIZED
@@ -381,8 +384,10 @@ REAL MVP: not complete
 
 This status grants **no further S05 product implementation authority**. Do
 **not** treat owner playthrough as the immediate next action — it remains
-**PAUSED / GATED** until DevPM PRE-Q7 issues **`OWNER-PLAYTHROUGH-ELIGIBLE`**
-(Q7 does **not** issue eligibility). Owner playthrough does not by itself
+**PAUSED / GATED** until DevPM PRE-Q7 **verdict** issues
+**`OWNER-PLAYTHROUGH-ELIGIBLE`** (Q7 does **not** issue eligibility;
+functional escapes may **not** be waived through PRE-Q7). Owner playthrough
+does not by itself
 terminalize the S05 parent. This status
 grants **no** S04D / S06 implementation authority, **no** S05 parent
 terminalization, **no** signing/notarization decision, and **no** public

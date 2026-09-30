@@ -193,7 +193,7 @@ See the REAL MVP gap register in
 | controller `F-UX-01` | **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** |
 | feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
 | flagship visual fidelity | **S05 PRESENTATION CHILDREN TERMINALLY COMPLETE / PARENT OPEN** — S05-F1, buzz / active-claim, board-outcome authority + presentation, board/round-flow, and Final + winner/completion are **TERMINALLY COMPLETE**; score-change Path S-C **RESOLVED**; deliberate whole-game owner playthrough **PAUSED / GATED** behind pre-owner Q0–Q6 + PRE-Q7 eligibility; **`OWNER-PLAYTHROUGH-ELIGIBLE` NOT ISSUED** |
-| pre-owner functional qualification | **Q0 CONTRACT** — do **not** route Rick to owner walkthrough; Q1–Q7 require later auth |
+| pre-owner functional qualification | **Q0 CONTRACT** — do **not** route Rick to owner walkthrough; Q1–Q7 require later auth; functional escapes / blockers require repair/verify — **no** owner-waiver through PRE-Q7 |
 | packaged offline/recovery and OS qualification | **PARTIAL** (H5 selection/hardware **PASS recorded 2026-09-11** and transferred; H6 readiness **PASS** on Namtai `054c:1000` + four handsets; Windows physical runtime **NOT RUN**) |
 | clean-room teacher qualification | **OPEN** |
 | **C-3** / **C-6** | **FOUNDATION IMPLEMENTED / UNSIGNED** |
@@ -219,9 +219,10 @@ Do **not**:
 - begin S04D telemetry without a later bounded authorization;
 - begin additional S05 work without a fresh bounded authorization;
 - resume owner walkthrough / Slice I re-gate / S05 whole-game playthrough
-  before pre-owner Q0–Q6 complete and DevPM PRE-Q7 issues
-  **`OWNER-PLAYTHROUGH-ELIGIBLE`** (not issued; Q7 does **not** issue
-  eligibility);
+  before pre-owner Q0–Q6 complete and DevPM PRE-Q7 **verdict** issues
+  **`OWNER-PLAYTHROUGH-ELIGIBLE`** (not issued; PRE-Q7 is not a new
+  numbered stage / separate owner auth; Q7 does **not** issue eligibility;
+  functional escapes may **not** be waived through PRE-Q7);
 - begin S06 integrated release qualification without a later bounded
   authorization;
 - silently decide Apple/Windows signing, fee waiver, CPU/OS matrix, or
@@ -425,7 +426,7 @@ S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05 parent: OPEN / NOT TERMINAL
 S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05 integrated owner playthrough: PAUSED / GATED (pre-owner Q0–Q6 + PRE-Q7 eligibility)
-OWNER-PLAYTHROUGH-ELIGIBLE: NOT ISSUED (DevPM PRE-Q7 gate; Q7 does not issue)
+OWNER-PLAYTHROUGH-ELIGIBLE: NOT ISSUED (DevPM PRE-Q7 verdict after Q6; Q7 does not issue; no functional-waiver hatch)
 prior MENUS Slice I playthrough: NOT RUN (as acceptance)
 pre-owner Q0: docs/qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md
 S04D / S06: NOT AUTHORIZED
@@ -525,9 +526,10 @@ H6 durable interaction/evidence manifest (historical):
 [`qualification-runs/s04b-h6-2026-09-12.jsonl`](qualification-runs/s04b-h6-2026-09-12.jsonl).
 
 Do **not** begin S04D / additional S05 / S06 from this handoff. Do **not**
-resume owner walkthrough before DevPM PRE-Q7 **`OWNER-PLAYTHROUGH-ELIGIBLE`**
-(Q7 does **not** issue eligibility). Do **not** reopen S04C without separate
-owner authorization.
+resume owner walkthrough before DevPM PRE-Q7 **verdict**
+**`OWNER-PLAYTHROUGH-ELIGIBLE`** (Q7 does **not** issue eligibility;
+functional escapes may **not** be waived through PRE-Q7). Do **not** reopen
+S04C without separate owner authorization.
 
 ## Architecture pointers
 

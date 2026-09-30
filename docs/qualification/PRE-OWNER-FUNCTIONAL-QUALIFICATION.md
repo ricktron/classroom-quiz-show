@@ -88,14 +88,15 @@ not** issue eligibility.
 | **Q4** | Gameplay branch / failure matrix | **No** | Branch, recovery, and failure paths off the golden spine (not a second golden-path stage) |
 | **Q5** | Desktop / Electron integration | **No** | Electron shell integration distinct from browser e2e. Physical Sony / projector / audio / Windows are **not** silently Q5 PASS |
 | **Q6** | Court A + Court B | **No** | Adversarial / independent review. Material findings route back to Q1–Q5. No unresolved functional blocker before eligibility |
-| **PRE-Q7** | Eligibility gate (not a Q-stage number) | **No** | **DevPM** may issue **`OWNER-PLAYTHROUGH-ELIGIBLE`** / `candidate SHA:` **after Q0–Q6** and **before Q7**. Court B may **recommend** only |
-| **Q7** | Natural owner usability playthrough | **No** | Begins **only after** PRE-Q7 eligibility. Q7 is the playthrough itself — **Q7 does not issue eligibility** |
+| **PRE-Q7** | Eligibility gate (not a Q-stage number) | **No** | **DevPM eligibility review verdict** after Q0–Q6. May issue **`OWNER-PLAYTHROUGH-ELIGIBLE`** / `candidate SHA:` **before Q7**. **Not** a new numbered stage and **not** a separate owner-authorization stage. Court B may **recommend** only |
+| **Q7** | Natural owner usability playthrough | **No** | Begins **only after** PRE-Q7 eligibility verdict. Q7 is the playthrough itself — **Q7 does not issue eligibility** |
 
 ```text
 Q0 registers the ladder.
 Q1–Q6 execute under later bounded authorizations.
-PRE-Q7 (DevPM) alone may issue OWNER-PLAYTHROUGH-ELIGIBLE after Q0–Q6.
-Q7 = natural owner usability playthrough after eligibility.
+PRE-Q7 = DevPM eligibility verdict after Q0–Q6 (not a new Q-stage / not separate owner auth).
+PRE-Q7 alone may issue OWNER-PLAYTHROUGH-ELIGIBLE + candidate SHA:.
+Q7 = natural owner usability playthrough after that verdict.
 Q7 does not issue eligibility.
 ```
 
@@ -103,8 +104,10 @@ Semantic control and contextual repair are **not** Q2/Q3 stage names.
 Exact-head, served-build, transfer, and QA-escape rules are **cross-cutting**
 (§§7–8, §12); Desktop Electron integration claims land in **Q5**.
 
-Each stage after Q0 requires a **fresh** owner authorization packet. Completing
-Q0 does **not** start Q1.
+Each of **Q1–Q6** after Q0 requires a **fresh** owner authorization packet.
+**PRE-Q7** is the DevPM eligibility **verdict** after Q6 — not a new numbered
+stage and not a separate owner-authorization stage. Completing Q0 does
+**not** start Q1.
 
 ---
 
@@ -318,19 +321,19 @@ Q6 is **not** executed in Q0. Plan of record:
 
 | Item | Plan |
 | --- | --- |
-| Question | Does the journey matrix (§ companion) have semantic proof or an explicit PHYSICAL-ONLY / OWNER-ONLY / QA-escape row for every ordinary-path interaction required before owner playthrough? |
+| Question | Does the journey matrix (§ companion) have semantic proof or an explicit PHYSICAL-ONLY / OWNER-ONLY / accurately classified non-functional residual for every ordinary-path interaction required before owner playthrough? |
 | Inputs | Matrix dispositions; Q1–Q5 receipts; exact-head CI; served-build provenance; DevPM A–D closure status |
-| Forbidden | Equating CI green with Court PASS; inventing physical PASS from simulation; treating physical Sony/projector/audio/Windows as silent Q5 PASS |
+| Forbidden | Equating CI green with Court PASS; inventing physical PASS from simulation; treating physical Sony/projector/audio/Windows as silent Q5 PASS; advancing with an unresolved ordinary-path **functional** blocker |
 | Outcomes | **COMPLETE** / **GAPS REMAIN** (named rows) / **STOP — authority** |
-| Material findings | Route back to **Q1–Q5** for repair/proof; do not advance eligibility with unresolved functional blockers |
+| Material findings | Route back to **Q1–Q5** for repair/proof; do not advance eligibility with unresolved ordinary-path functional blockers (no owner-waiver escape hatch) |
 
 ### Court B — Eligibility recommendation (before PRE-Q7)
 
 | Item | Plan |
 | --- | --- |
-| Question | Given Court A COMPLETE, residual QA escapes, and transfer ledger, may DevPM issue **`OWNER-PLAYTHROUGH-ELIGIBLE`** / `candidate SHA:` at PRE-Q7? |
+| Question | Given Court A COMPLETE, residual **non-functional** items (§12), and transfer ledger, may DevPM issue **`OWNER-PLAYTHROUGH-ELIGIBLE`** / `candidate SHA:` at PRE-Q7? |
 | Inputs | Court A record; open escapes (§12); STATUS/CURRENT agreement; hard-ban audit (no S04D/S06/S05 terminalization smuggled) |
-| Forbidden | Issuing eligibility from Court B itself (Court B only **recommends**; **DevPM** issues at **PRE-Q7** after Q6, before Q7) |
+| Forbidden | Issuing eligibility from Court B itself (Court B only **recommends**; **DevPM** issues the PRE-Q7 **verdict** after Q6, before Q7); treating owner waiver as functional closure |
 | Outcomes | **RECOMMEND ELIGIBLE** / **RECOMMEND HOLD** / **REPAIR REQUIRED** |
 
 Seats and rigor may follow NightWatch / OpenClaw Court protocol when available
@@ -348,13 +351,18 @@ candidate SHA: <exact head>
 ```
 
 means: the owner may **resume** deliberate MENUS / S05 whole-game owner
-playthrough on a named exact head without the program falsely claiming that
-known functional escapes are already closed.
+playthrough on a named exact head because ordinary-path **functional**
+escapes / blockers were **repaired and verified**, and any remaining
+visible issues are accurately classified as usability/polish or honestly
+NOT-RUN physical — **not** known functional blockers.
 
 It is **not**: MENUS Complete, S05 parent terminal, REAL MVP complete, signed
 release, Windows physical PASS, or Slice I ACCEPT.
 
 **Issuer:** DevPM at the **PRE-Q7** gate **after Q0–Q6** and **before Q7**.
+PRE-Q7 is a **verdict**, not a new numbered stage and not a separate
+owner-authorization stage. After Q6, DevPM eligibility review issues
+**`OWNER-PLAYTHROUGH-ELIGIBLE`** and `candidate SHA:` — then Q7 may begin.
 Court B may **recommend** eligibility. **Q7 does not issue eligibility** —
 Q7 is the natural owner usability playthrough that begins only after this
 verdict.
@@ -362,16 +370,19 @@ verdict.
 ### 10.2 Issue conditions (all required)
 
 1. Q0 contract merged on `main` (this document + matrix + routing);
-2. Q1 authorized escapes closed **or** explicitly waived by owner as
-   non-blocking with named residual risk;
+2. Q1 authorized **functional** escapes **repaired and verified** —
+   functional escapes / blockers may **not** be waived through PRE-Q7;
 3. Q2–Q5 evidence recorded on exact heads with served-build provenance
    (MENUS workflows; golden paths; branch/failure; Desktop/Electron —
    physical classes labeled separately);
-4. Court A **COMPLETE**; Court B **RECOMMEND ELIGIBLE**;
-5. **DevPM PRE-Q7** authorization packet explicitly issues the string
+4. Court A **COMPLETE** (no unresolved ordinary-path functional blocker);
+   Court B **RECOMMEND ELIGIBLE**;
+5. **DevPM PRE-Q7** verdict explicitly issues the string
    **`OWNER-PLAYTHROUGH-ELIGIBLE`** and names `candidate SHA:`;
 6. [`../STATUS.md`](../STATUS.md) and [`../handoff/CURRENT.md`](../handoff/CURRENT.md)
-   agree.
+   agree;
+7. Remaining visible issues are **usability/polish** or honestly **NOT-RUN
+   physical** — **not** known ordinary-path functional blockers.
 
 ### 10.3 Q0 status
 
@@ -394,22 +405,31 @@ PRE-Q7 eligibility verdict.
 ## 12. QA escape protocol
 
 A **QA escape** is a known defect, coverage hole, or environmental limit that
-would otherwise block a stage.
+would otherwise block a stage. Classify each escape before Court / PRE-Q7:
+
+| Class | Meaning | Through PRE-Q7 |
+| --- | --- | --- |
+| **FUNCTIONAL ESCAPE / BLOCKER** | Ordinary-path functional defect or proof hole that leaves a known broken teacher workflow | **May not be waived** through PRE-Q7. Route to **Q1–Q5**; **repair and verify**. No owner waiver turns a functional blocker into an eligible residual |
+| **NON-FUNCTIONAL RESIDUAL** | Usability / polish; honestly **NOT-RUN** physical; accepted **OPEN / LOW** with evidence it is **not** an ordinary functional blocker | May remain visible at eligibility if accurately classified. Does **not** establish a general functional-defect waiver |
 
 Rules:
 
-1. Record escapes in the active stage receipt with id, evidence class, and
-   whether they **block** owner eligibility;
+1. Record escapes in the active stage receipt with id, evidence class,
+   **functional vs non-functional** class, and whether they **block** owner
+   eligibility;
 2. Escapes do **not** silently become PASS;
-3. Owner may waive an escape as non-blocking only in a named authorization;
-4. Waived escapes remain visible in STATUS/handoff until closed;
-5. Facilitator observation ≠ owner waiver;
-6. Q0 itself records A–D as escapes; closing them is **out of Q0 scope**;
-7. Accepted **OPEN / LOW** residuals (example: H4 salvage collapsed detail —
-   primary status honest; collapsed “More detail” may still deny save) are
-   **not** Q1 product escapes unless reclassified. They carry to **Q6 Court /
-   PRE-Q7 eligibility** and require **explicit owner authorization** to waive —
-   Q0 does **not** grant any waiver.
+3. **No waiver** may convert a functional blocker into an eligible residual;
+4. Facilitator observation ≠ evidence-backed reclassification;
+5. Q0 itself records A–D as **functional** escapes; closing them is **out of
+   Q0 scope**;
+6. H4 salvage collapsed detail (**OPEN / LOW**) may remain as an **OPEN /
+   LOW** residual **only** if kept under the non-functional / non-blocking
+   usability class (primary status honest; collapsed “More detail” may still
+   deny save). That residual must **not** establish a general
+   functional-defect waiver;
+7. At PRE-Q7 eligibility, remaining visible issues = usability/polish or
+   honestly NOT-RUN physical — **not** known ordinary-path functional
+   blockers.
 
 ---
 
@@ -476,10 +496,11 @@ This contract does **not** claim:
 ```text
 Q0: CONTRACT REGISTERED
 Q1–Q6: NOT STARTED BY THIS FILE
-PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE — NOT ISSUED (DevPM gate after Q6)
+PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE — NOT ISSUED (DevPM verdict after Q6; not a new Q-stage)
 Q7: natural owner usability playthrough — NOT BEGUN (requires PRE-Q7)
 S05 parent: OPEN / NOT TERMINAL
 owner playthrough: PAUSED / GATED (Q0–Q6 + PRE-Q7 eligibility)
+functional escapes: repair/verify required — no owner-waiver through PRE-Q7
 S04D / S06: NOT AUTHORIZED
 REAL MVP: not complete
 ```

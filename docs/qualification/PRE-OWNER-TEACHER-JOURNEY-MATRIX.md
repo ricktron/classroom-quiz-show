@@ -16,6 +16,8 @@ Semantic control and contextual return are requirements inside Q1/Q2 —
 not separate stages. Golden paths = Q3; branch/failure = Q4; Electron = Q5;
 owner feel = Q7; physical evidence is separate (not silent Q5 PASS).
 PRE-Q7 (DevPM) issues eligibility after Q0–Q6; Q7 does not.
+Functional escapes / blockers may not be waived through PRE-Q7.
+PRE-Q7 is a DevPM verdict, not a new numbered stage / separate owner auth.
 ```
 
 ---
@@ -44,7 +46,8 @@ Disposition meanings (one primary per row; do **not** compound tags in the Dispo
 | **PHYSICAL-ONLY** | Cannot close in CI; needs named hardware |
 | **OWNER-ONLY** | Requires owner walkthrough judgment (feel/terminology/fit) |
 
-Secondary needs (extra STRENGTHEN, sim vs physical, Q1 path targets, carry/waive rules) go in **Evidence class**, **Q stage**, or **Gap / note** only.
+Secondary needs (extra STRENGTHEN, sim vs physical, Q1 path targets, residual
+classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 
 ---
 
@@ -55,7 +58,7 @@ Secondary needs (extra STRENGTHEN, sim vs physical, Q1 path targets, carry/waive
 | HL-01 | Cold launch → Home | Private Home visible; no silent session auto-resume | `routes`, `teacher-first-run`, desktop `shell` Resume | AUTOMATED E2E / DESKTOP E2E | RETAIN | Q2/Q5 | Shell ≠ full teacher path |
 | HL-02 | New Game | Creates draft/game → authoring | `menus-slice-cd-home-authoring`, `teacher-home-authoring` | AUTOMATED E2E | STRENGTHEN | Q2 | Empty-library dominance OWNER-ONLY polish |
 | HL-03 | Import Game (demo / paste / xlsx) | Valid save to library; fail-closed on bad input | `import-pipeline`, Home authoring e2e, H4 unit | AUTOMATED E2E / UNIT | STRENGTHEN | Q2 | Template download still Host-split (#110 harvest separate) |
-| HL-04 | Import Quality / salvage Keep | Primary status honest; salvage usable | H4 e2e/unit; LOW collapsed-detail escape OPEN | AUTOMATED E2E | RETAIN | Q6 / PRE-Q7 | Accepted **OPEN / LOW** residual (collapsed **More detail about this file** after Keep may still deny save). Primary status line is the durable outcome. **Not** a Q1 product escape unless reclassified. Carry/waive through `OWNER-PLAYTHROUGH-ELIGIBLE` requires **explicit owner authorization** — no waiver granted |
+| HL-04 | Import Quality / salvage Keep | Primary status honest; salvage usable | H4 e2e/unit; LOW collapsed-detail escape OPEN | AUTOMATED E2E | RETAIN | Q6 / PRE-Q7 | Accepted **OPEN / LOW** **NON-FUNCTIONAL** residual (collapsed **More detail about this file** after Keep may still deny save). Primary status line is the durable outcome. **Not** a Q1 product escape / ordinary functional blocker unless reclassified. May remain visible at eligibility under that class only — does **not** establish a general functional-defect waiver |
 | HL-05 | My Games / Recent Play | `playable` only; lands `?play=` → Class Setup | `classroom-setup`, menus helpers | AUTOMATED E2E | STRENGTHEN | Q2 | `HomeRoute.test` weak on Play button |
 | HL-06 | Edit / Duplicate / Export / Delete / Rename | Library ops preserve Game/Session isolation | portable/export + library unit; partial e2e | MIXED | STRENGTHEN | Q2 | Multi-game confusion scenario weak |
 | HL-07 | Resume class / Start fresh | One Host gate; Start fresh keeps library | `persistence-recovery`, desktop shell | AUTOMATED E2E / DESKTOP | RETAIN | Q2 | Mid-setup abandon ≠ session recovery |
@@ -181,19 +184,27 @@ Secondary needs (extra STRENGTHEN, sim vs physical, Q1 path targets, carry/waive
 Before recommending eligibility, Court A walks **every row in §§2–6** and verifies one of:
 
 1. Disposition **RETAIN** with cited exact-head proof still valid; or
-2. **STRENGTHEN/REPLACE/NEW** closed by later Q1–Q5 receipt; or
-3. Explicit **PHYSICAL-ONLY** / **OWNER-ONLY** / QA-escape with owner-visible residual.
+2. **STRENGTHEN/REPLACE/NEW** closed by later Q1–Q5 repair/proof receipt; or
+3. Explicit **PHYSICAL-ONLY** / **OWNER-ONLY** / accurately classified
+   **NON-FUNCTIONAL RESIDUAL** (usability/polish or honestly NOT-RUN physical)
+   with owner-visible residual — **not** an unresolved ordinary-path functional
+   blocker.
 
-Fail closed if any ordinary-path **blocking** row is still open without waiver.
+Fail closed if any ordinary-path **functional** blocker remains unresolved.
+Functional blockers may **not** be waived through PRE-Q7.
 
 ### Court B — Eligibility recommendation checklist
 
-1. Court A COMPLETE;
-2. Findings A–D closed or owner-waived;
+1. Court A COMPLETE (no unresolved ordinary-path functional blocker);
+2. Findings A–D **closed by repair/proof** **or** evidence-backed
+   reclassification as non-functional / non-blocking — **no** owner waiver for
+   functional closure;
 3. No smuggled S04D/S06/S05-terminal claims;
 4. STATUS/CURRENT agree with contract;
-5. Output **RECOMMEND ELIGIBLE** or **HOLD** — never self-issue
-   `OWNER-PLAYTHROUGH-ELIGIBLE` (**DevPM PRE-Q7** issues after Q6; **Q7
+5. Remaining visible issues = usability/polish or honestly NOT-RUN physical —
+   **not** known functional blockers;
+6. Output **RECOMMEND ELIGIBLE** or **HOLD** — never self-issue
+   `OWNER-PLAYTHROUGH-ELIGIBLE` (**DevPM PRE-Q7 verdict** after Q6; **Q7
    does not**).
 
 ---
@@ -212,7 +223,8 @@ This matrix does **not**:
 ```text
 Q0 MATRIX REGISTERED
 owner playthrough: PAUSED / GATED (Q0–Q6 + PRE-Q7 eligibility)
-Findings A–D: recorded escapes — not repaired
-PRE-Q7 OWNER-PLAYTHROUGH-ELIGIBLE: NOT ISSUED
+Findings A–D: recorded functional escapes — not repaired; not waivable through PRE-Q7
+PRE-Q7 OWNER-PLAYTHROUGH-ELIGIBLE: NOT ISSUED (DevPM verdict after Q6)
 Q7 does not issue eligibility
+functional blockers: no owner-waiver escape hatch through PRE-Q7
 ```
