@@ -3,9 +3,10 @@
  * second Resume gate. Intent is route-state only (lost on hard refresh), which
  * preserves ADR-013 explicit recovery on cold boot.
  *
- * Q1 also reuses this substrate for contextual Fix team count → Save → direct
- * Class Setup return: auto-resume + auto-confirm same-Game roster replace so
- * the teacher is not forced through Home / Play / Resume / replace theater.
+ * Q1 contextual Fix team count → Save → Class Setup: navigation state asks Host
+ * to discard the interrupted unfinished Session and load the saved Game into a
+ * fresh Class Setup (Names when interrupted). No Home / Play / Resume / replace
+ * theater. No new Session event types — uses existing discardRecovery + loadSaved.
  */
 export const HOST_RESUME_RECOVERY_STATE = 'cqsResumeRecovery' as const
 export const HOST_CONTEXTUAL_TEAM_COUNT_RETURN = 'cqsContextualTeamCountReturn' as const
@@ -17,7 +18,7 @@ export type HostResumeRecoveryState = {
   readonly [HOST_RESUME_RECOVERY_STATE]?: true
 }
 
-export type ContextualTeamCountReturnState = HostResumeRecoveryState & {
+export type ContextualTeamCountReturnState = {
   readonly [HOST_CONTEXTUAL_TEAM_COUNT_RETURN]?: true
   readonly [HOST_SETUP_FOCUS]?: HostSetupFocusTask
 }
@@ -31,7 +32,6 @@ export function contextualTeamCountReturnState(
   options: { readonly setupFocus?: HostSetupFocusTask } = {},
 ): ContextualTeamCountReturnState {
   return {
-    [HOST_RESUME_RECOVERY_STATE]: true,
     [HOST_CONTEXTUAL_TEAM_COUNT_RETURN]: true,
     ...(options.setupFocus ? { [HOST_SETUP_FOCUS]: options.setupFocus } : {}),
   }

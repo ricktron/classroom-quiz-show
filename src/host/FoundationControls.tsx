@@ -205,19 +205,45 @@ export function FoundationControls({
   ])
 
   // Home Resume / Q1 contextual Fix-return: one-shot navigation intent.
-  // Apply Host resume once recovery is readable, then clear the intent so
-  // refresh re-prompts. Welcome-back is only for ordinary Home Resume — not
-  // the team-count contextual return (that path auto-arms roster replace).
+  // Home Resume applies Host resume once recovery is readable, then clears
+  // intent so refresh re-prompts. Contextual Fix-return discards the interrupted
+  // unfinished Session and lets ?play= load the saved Game into fresh Class Setup
+  // (no Resume / replace theater). Always preserve search (`?play=`) when clearing state.
   useEffect(() => {
+    const clearNavState = () => {
+      navigate(
+        { pathname: location.pathname, search: location.search },
+        { replace: true, state: null },
+      )
+    }
+
     if (isContextualTeamCountReturn(location.state)) {
       contextualReturnLatchedRef.current = true
-      setPlayReplaceArmed(true)
       const focus = setupFocusFromNavigation(location.state)
       if (focus) setSetupFocusOnce(focus)
+      clearNavState()
     }
+
+    if (
+      contextualReturnLatchedRef.current &&
+      persistence.bootPhase === 'recovery' &&
+      persistence.recovery
+    ) {
+      if (homeResumeHandledRef.current) return
+      homeResumeHandledRef.current = true
+      void persistence.discardRecovery().then((result) => {
+        if (!result.ok) {
+          homeResumeHandledRef.current = false
+        }
+      })
+      return
+    }
+
     const wantsResume = shouldResumeRecoveryFromNavigation(location.state)
     if (!wantsResume) {
-      homeResumeHandledRef.current = false
+      if (!contextualReturnLatchedRef.current) {
+        homeResumeHandledRef.current = false
+      }
       return
     }
     if (homeResumeHandledRef.current) return
@@ -225,24 +251,24 @@ export function FoundationControls({
     if (persistence.bootPhase === 'recovery' && persistence.recovery) {
       homeResumeHandledRef.current = true
       // resume() bumps storeEpoch by 1; latch that next epoch for hydrate reveal.
-      // Contextual Fix return skips Welcome-back (not a Home Resume).
-      if (!contextualReturnLatchedRef.current) {
-        setHomeResumeWelcomePendingEpoch(persistence.storeEpoch + 1)
-      }
+      setHomeResumeWelcomePendingEpoch(persistence.storeEpoch + 1)
       persistence.resume()
-      navigate('.', { replace: true, state: null })
+      clearNavState()
       return
     }
     // Stale intent (already discarded / no recovery): clear without claiming success.
     homeResumeHandledRef.current = true
-    navigate('.', { replace: true, state: null })
+    clearNavState()
   }, [
     location.state,
+    location.pathname,
+    location.search,
     navigate,
     persistence,
     persistence.bootPhase,
     persistence.recovery,
     persistence.resume,
+    persistence.discardRecovery,
     persistence.storeEpoch,
   ])
 
@@ -390,6 +416,7 @@ export function FoundationControls({
           playLoadedRef.current = playGameId
           setPlayReplaceNeeded(false)
           setPlayReplaceArmed(false)
+          contextualReturnLatchedRef.current = false
           return
         }
         if ('needsConfirmation' in result && result.needsConfirmation) {

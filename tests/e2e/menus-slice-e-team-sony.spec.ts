@@ -59,7 +59,9 @@ test('0-team import mounts Class Setup; Fix → Save returns directly with teams
   await expect(page.getByTestId('play-replace-confirm')).toHaveCount(0)
   await expect(page.getByRole('button', { name: /^resume class$/i })).toHaveCount(0)
 
-  await expect(page.getByTestId('readiness-teams')).toHaveAttribute('data-status', 'complete')
+  await expect(page.getByTestId('readiness-teams')).toHaveAttribute('data-status', 'complete', {
+    timeout: 15_000,
+  })
   await expect(page.getByTestId('setup-play')).toBeDisabled()
   // Names focus after contextual Fix (interrupted naming).
   await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')

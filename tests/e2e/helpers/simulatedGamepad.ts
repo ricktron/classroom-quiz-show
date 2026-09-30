@@ -99,7 +99,7 @@ export async function pressSimulatedGamepadButton(
         __cqsFakeGamepads?: { pads: { buttons: { pressed: boolean; value: number }[] }[] }
       }
     ).__cqsFakeGamepads
-    if (!state?.pads[0]?.buttons[idx]) return
+    if (!state) throw new Error('fake gamepads not installed')
     state.pads[0].buttons[idx].pressed = true
     state.pads[0].buttons[idx].value = 1
   }, buttonIndex)
@@ -110,7 +110,7 @@ export async function pressSimulatedGamepadButton(
         __cqsFakeGamepads?: { pads: { buttons: { pressed: boolean; value: number }[] }[] }
       }
     ).__cqsFakeGamepads
-    if (!state?.pads[0]?.buttons[idx]) return
+    if (!state) throw new Error('fake gamepads not installed')
     state.pads[0].buttons[idx].pressed = false
     state.pads[0].buttons[idx].value = 0
   }, buttonIndex)

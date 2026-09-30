@@ -14,14 +14,14 @@ describe('hostResumeNavigation', () => {
     expect(shouldResumeRecoveryFromNavigation({})).toBe(false)
   })
 
-  it('builds contextual Fix team count return with auto-resume + Names focus', () => {
+  it('builds contextual Fix team count return with Names focus (no Home Resume flag)', () => {
     const state = contextualTeamCountReturnState({ setupFocus: 'names' })
-    expect(shouldResumeRecoveryFromNavigation(state)).toBe(true)
+    expect(shouldResumeRecoveryFromNavigation(state)).toBe(false)
     expect(isContextualTeamCountReturn(state)).toBe(true)
     expect(setupFocusFromNavigation(state)).toBe('names')
   })
 
-  it('rejects non-contextual resume as team-count return', () => {
+  it('rejects ordinary Home Resume as team-count return', () => {
     expect(isContextualTeamCountReturn(hostResumeRecoveryState())).toBe(false)
     expect(setupFocusFromNavigation(hostResumeRecoveryState())).toBeNull()
   })

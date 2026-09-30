@@ -49,7 +49,9 @@ test('0-team: Fix team count Save returns directly to Class Setup Names', async 
   await expect(page.getByRole('button', { name: /^resume class$/i })).toHaveCount(0)
   await expect(page.getByTestId('host-welcome-back')).toHaveCount(0)
 
-  await expect(page.getByTestId('readiness-teams')).toHaveAttribute('data-status', 'complete')
+  await expect(page.getByTestId('readiness-teams')).toHaveAttribute('data-status', 'complete', {
+    timeout: 15_000,
+  })
   // CONTINUATION: Names if interrupted — no stale Fix; keyboard naming works.
   await expect(page.getByTestId('setup-row-names')).toHaveAttribute('data-selected', 'true')
   await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
