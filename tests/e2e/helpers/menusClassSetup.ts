@@ -16,11 +16,14 @@ export async function importDemoAndPlay(page: Page): Promise<void> {
 }
 
 export async function fillAllTeamNames(page: Page): Promise<void> {
-  await page
-    .locator('[data-testid^="tnsb-manual-"]')
-    .first()
-    .waitFor({ state: 'visible' })
   const manuals = page.locator('[data-testid^="tnsb-manual-"]')
+  // I-REPAIR-1: ordinary Class Setup may open Buzzers first; open Names when needed.
+  if ((await manuals.count()) === 0) {
+    await page.getByTestId('readiness-names').click()
+  } else if (!(await manuals.first().isVisible())) {
+    await page.getByTestId('readiness-names').click()
+  }
+  await manuals.first().waitFor({ state: 'visible' })
   const count = await manuals.count()
   expect(count).toBeGreaterThan(0)
   for (let i = 0; i < count; i += 1) {

@@ -111,6 +111,7 @@ test('Home Resume into setup shows Welcome-back after posture hydrate', async ({
     await page.getByTestId('host-identity').locator('.foundation__identity-title').innerText()
   ).trim()
   expect(gameTitle.length).toBeGreaterThan(0)
+  await page.getByTestId('readiness-names').click()
   await page.locator('[data-testid^="tnsb-manual-"]').first().fill('Preserved Alpha')
   await page.locator('[data-testid^="tnsb-manual-"]').first().blur()
   await waitForSessionSaved(page)
@@ -131,6 +132,7 @@ test('Home Resume into setup shows Welcome-back after posture hydrate', async ({
   await expect(
     page.getByTestId('host-identity').locator('.foundation__identity-title'),
   ).toHaveText(gameTitle)
+  await page.getByTestId('readiness-names').click()
   await expect(page.locator('[data-testid^="tnsb-manual-"]').first()).toHaveValue('Preserved Alpha')
   await expect(page.getByTestId('host-change-game')).toBeVisible()
   // Play posture must not show Change game.

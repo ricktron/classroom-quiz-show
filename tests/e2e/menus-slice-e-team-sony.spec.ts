@@ -24,23 +24,26 @@ test('0-team import mounts Class Setup; Edit → set count → Play returns with
 
   await expect(page.getByTestId('classroom-setup')).toBeVisible()
   await expect(page.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'setup')
-  for (const id of ['teams', 'names', 'buzzers', 'display', 'sound'] as const) {
+  for (const id of ['buzzers', 'teams', 'names', 'display', 'sound'] as const) {
     await expect(page.getByTestId(`setup-row-${id}`)).toBeVisible()
   }
   await expect(page.getByTestId('readiness-teams')).toHaveAttribute('data-status', 'blocked')
   await expect(page.getByTestId('readiness-names')).toHaveAttribute('data-status', 'blocked')
   await expect(page.getByTestId('setup-play')).toBeDisabled()
   await expect(page.getByTestId('setup-play-blocker')).toContainText(/still needs teams/i)
+  // Workflow opens Buzzers first; Teams remains the required readiness cue.
+  await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'buzzers')
+  await expect(page.getByTestId('setup-row-teams')).toHaveAttribute('data-emphasized', 'true')
+  await page.getByTestId('readiness-teams').click()
   await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'teams')
-  await expect(page.getByTestId('setup-edit-game')).toBeVisible()
+  await expect(page.getByTestId('setup-fix-team-count')).toBeVisible()
 
   const namesCopy = page.getByTestId('setup-sony-copy')
   await expect(namesCopy).toHaveCount(0)
 
-  await page.getByTestId('setup-edit-game').click()
+  await page.getByTestId('setup-fix-team-count').click()
   await expect(page.getByTestId('authoring-game-settings')).toBeVisible()
-  await expect(page.getByTestId('authoring-game-settings')).not.toHaveAttribute('open')
-  await page.getByTestId('authoring-game-settings').locator('summary').click()
+  await expect(page.getByTestId('authoring-game-settings')).toHaveAttribute('open')
   await expect(page.getByTestId('authoring-team-count')).toBeVisible()
   await expect(page.getByTestId('authoring-team-count')).toHaveValue('')
 
@@ -73,6 +76,10 @@ test('0-team import mounts Class Setup; Edit → set count → Play returns with
   await expect(page.getByTestId('classroom-setup')).toBeVisible({ timeout: 15_000 })
   await expect(page.getByTestId('readiness-teams')).toHaveAttribute('data-status', 'complete')
   await expect(page.getByTestId('setup-play')).toBeDisabled()
+  // Buzzers still unresolved → workflow default stays Buzzers; Names remains Start blocker.
+  await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'buzzers')
+  await expect(page.getByTestId('setup-row-names')).toHaveAttribute('data-emphasized', 'true')
+  await page.getByTestId('readiness-names').click()
   await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
   await expect(page.getByTestId('setup-sony-copy')).toBeVisible()
   await expect(page.getByTestId('setup-sony-copy')).toContainText(/type a name/i)

@@ -448,6 +448,8 @@ export function GamepadInputHostPanel({
     <section
       className="gih"
       aria-labelledby="gih-title"
+      data-testid="gih"
+      tabIndex={-1}
       data-setup-mode={selectionMode ? 'true' : 'false'}
     >
       {!selectionMode && (

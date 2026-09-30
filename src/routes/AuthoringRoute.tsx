@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useBlocker, useNavigate, useParams } from 'react-router-dom'
+import { Link, useBlocker, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   applyDraftCorrection,
   canRedoAuthoring,
@@ -55,6 +55,7 @@ function clueValueLabel(clue: DraftClue): string {
 export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {}) {
   const { gameId } = useParams<{ gameId?: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const persistence = useHostPersistence(persistenceOptions)
   const registry = useMemo(() => createDefaultRegistry(), [])
   const [draft, setDraft] = useState<AuthoringDraft | null>(null)
@@ -64,9 +65,13 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
   const [cursor, setCursor] = useState<TileCursor | null>(null)
   const [preview, setPreview] = useState(false)
   const [draftWarning, setDraftWarning] = useState<string | null>(null)
+  const [gameSettingsOpen, setGameSettingsOpen] = useState(false)
+  const [pendingTeamCountFocus, setPendingTeamCountFocus] = useState(false)
   const writeGateRef = useRef(createGenerationWriteGate())
   const leadershipRef = useRef(persistence.leadership)
   const cursorSeededForGameRef = useRef<string | null>(null)
+  const teamCountFocusConsumedRef = useRef<string | null>(null)
+  const teamCountInputRef = useRef<HTMLInputElement | null>(null)
   leadershipRef.current = persistence.leadership
   const blocker = useBlocker(saveTrust.dirty || saveTrust.phase === 'saving')
 
@@ -90,6 +95,9 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
       setDraft(loaded.value.draft)
       setCursor(null)
       cursorSeededForGameRef.current = null
+      teamCountFocusConsumedRef.current = null
+      setGameSettingsOpen(false)
+      setPendingTeamCountFocus(false)
       setDraftWarning(
         loaded.value.draftUnreadable
           ? 'The saved editor draft could not be read. You are seeing the last playable game. Extra editor notes may be missing.'
@@ -106,6 +114,13 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
   useEffect(() => {
     if (!draft || !gameId) return
     if (cursorSeededForGameRef.current === gameId) return
+    // I-REPAIR-1: Class Setup Fix team count skips clue seeding so Game settings stay primary.
+    const focus =
+      location.state &&
+      typeof location.state === 'object' &&
+      'authoringFocus' in location.state &&
+      (location.state as { authoringFocus?: unknown }).authoringFocus === 'team-count'
+    if (focus) return
     cursorSeededForGameRef.current = gameId
     const tiles = flattenTiles(draft)
     const firstIncomplete =
@@ -114,7 +129,36 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
         return clue !== null && clueNeedsTeacher(clue)
       }) ?? null
     setCursor(firstIncomplete ?? tiles[0] ?? null)
-  }, [draft, gameId])
+  }, [draft, gameId, location.state])
+
+  // One-shot Class Setup → Game settings Team count (no schema; navigation state only).
+  // Consume via refs — do not navigate-replace to clear state (that remounts and wipes draft).
+  useEffect(() => {
+    if (!draft || !gameId) return
+    const focus =
+      location.state &&
+      typeof location.state === 'object' &&
+      'authoringFocus' in location.state
+        ? (location.state as { authoringFocus?: unknown }).authoringFocus
+        : null
+    if (focus !== 'team-count') return
+    if (teamCountFocusConsumedRef.current === gameId) return
+    teamCountFocusConsumedRef.current = gameId
+    setGameSettingsOpen(true)
+    setPendingTeamCountFocus(true)
+    cursorSeededForGameRef.current = gameId
+  }, [draft, gameId, location.state])
+
+  useEffect(() => {
+    if (!pendingTeamCountFocus || !gameSettingsOpen) return
+    const input = teamCountInputRef.current
+    if (!input) return
+    input.focus()
+    if (typeof input.scrollIntoView === 'function') {
+      input.scrollIntoView({ block: 'center' })
+    }
+    setPendingTeamCountFocus(false)
+  }, [pendingTeamCountFocus, gameSettingsOpen, draft])
 
   useEffect(() => {
     function onBeforeUnload(event: BeforeUnloadEvent): void {
@@ -437,7 +481,12 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
           </section>
         )}
 
-        <details className="authoring-settings" data-testid="authoring-game-settings">
+        <details
+          className="authoring-settings"
+          data-testid="authoring-game-settings"
+          open={gameSettingsOpen}
+          onToggle={(event) => setGameSettingsOpen(event.currentTarget.open)}
+        >
           <summary>Game settings — teams, default names, and class name bank</summary>
           <p className="host__note">
             These names are part of the reusable game. Class scores and controller assignments stay
@@ -447,6 +496,7 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
             Number of teams
             <input
               id="authoring-team-count"
+              ref={teamCountInputRef}
               data-testid="authoring-team-count"
               type="number"
               min={MIN_TEAMS}

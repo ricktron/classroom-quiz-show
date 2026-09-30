@@ -47,15 +47,28 @@
   background: var(--surface-base);
 }
 
-.classroom-setup__row--emphasized {
+.classroom-setup__row--selected {
   border-color: var(--border-selected);
   border-left-width: 3px;
   border-left-color: var(--state-structural, var(--border-selected));
   background: var(--surface-raised);
 }
 
+/* Readiness cue only — must not look stronger than the selected/navigation row. */
+.classroom-setup__row--needs-work {
+  border-color: var(--border-subtle);
+  box-shadow: inset 3px 0 0 var(--state-warning, var(--border-selected));
+}
+
 .classroom-setup__row--expanded {
   border-color: var(--border-standard);
+}
+
+.classroom-setup__row--emphasized {
+  border-color: var(--border-selected);
+  border-left-width: 3px;
+  border-left-color: var(--state-structural, var(--border-selected));
+  background: var(--surface-raised);
 }
 
 .classroom-setup__row-line {

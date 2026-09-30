@@ -71,10 +71,47 @@ export interface ClassroomSetupGuidanceInput extends ClassroomReadinessInput {
   readonly buzzerSkipped?: boolean
   readonly repairActive?: boolean
   /**
+   * Supported Namtai Wbuzz Gamepad detected (lifted from GamepadInputHostPanel).
+   * Presence only — never alone “buzzers ready.”
+   */
+  readonly wbuzzPresent?: boolean
+  /**
    * @deprecated B+F: expansion is UI-only. Ignored by readiness status /
    * dominant Ready selector. Kept optional for call-site compatibility.
    */
   readonly focusOverride?: SetupTaskId | null
+}
+
+/**
+ * True when Class Setup may truthfully claim supported buzzer hardware is in
+ * play (receiver connected / controllers path or lifted Wbuzz presence) — still
+ * optional for Start. Does **not** treat unsupported/failed/disconnected as
+ * “present” (those still allow Skip).
+ */
+export function classSetupBuzzerHardwarePresent(input: {
+  readonly wbuzzPresent?: boolean
+  readonly sonyTeacherSummary?: SonyBuzzTeacherSummary | null
+}): boolean {
+  if (input.wbuzzPresent) return true
+  const summary = input.sonyTeacherSummary
+  if (summary == null) return false
+  return (
+    summary === 'receiver-waiting-for-controllers' ||
+    summary === 'controllers-need-team-setup' ||
+    summary === 'sony-buzz-ready'
+  )
+}
+
+/** Skip remains available only when no supported hardware presence is claimed. */
+export function classSetupMayOfferBuzzerSkip(input: {
+  readonly sonyReady: boolean
+  readonly buzzerSkipped?: boolean
+  readonly wbuzzPresent?: boolean
+  readonly sonyTeacherSummary?: SonyBuzzTeacherSummary | null
+}): boolean {
+  if (resolvedSonyFullyReady(input)) return false
+  if (input.buzzerSkipped) return false
+  return !classSetupBuzzerHardwarePresent(input)
 }
 
 function resolvedSonyFullyReady(input: {
@@ -236,9 +273,30 @@ export function playBlockerExplanation(input: ClassroomSetupGuidanceInput): stri
  * Required-task emphasis for the setup workspace.
  * Returns `'play'` (Ready) whenever {@link canStartPlay} — optionals never gate Ready.
  * Does not consult focusOverride / teacher expand state.
+ * Does **not** choose the initial Class Setup row — use
+ * {@link defaultSetupWorkflowTask} for ordinary workflow selection.
  */
 export function dominantSetupTask(input: ClassroomSetupGuidanceInput): SetupTaskId | 'play' {
   if (canStartPlay(input)) return 'play'
+  if (!teamsAreReady(input)) return 'teams'
+  if (!namesAreReady(input)) return 'names'
+  return 'play'
+}
+
+/**
+ * Ordinary Class Setup initial / next workflow selection (expansion default).
+ *
+ * Prefer Buzzers when that optional step is still open (not ready, not skipped),
+ * then Teams, then Names. Separate from {@link dominantSetupTask} / Start
+ * readiness — Buzzers never gate {@link canStartPlay}. Returns `'play'` when
+ * required work is complete (Ready overview; no default expansion).
+ */
+export function defaultSetupWorkflowTask(
+  input: ClassroomSetupGuidanceInput,
+): SetupTaskId | 'play' {
+  if (canStartPlay(input)) return 'play'
+  const sonyReady = resolvedSonyFullyReady(input)
+  if (!sonyReady && !input.buzzerSkipped) return 'buzzers'
   if (!teamsAreReady(input)) return 'teams'
   if (!namesAreReady(input)) return 'names'
   return 'play'
@@ -324,7 +382,21 @@ function buzzersDetail(input: ClassroomSetupGuidanceInput): string {
   if (input.sonyTeacherSummary != null) {
     return teacherSummaryLabel(input.sonyTeacherSummary)
   }
+  if (input.wbuzzPresent) {
+    return 'Supported buzzers detected. Check them below — keyboard still works.'
+  }
   return 'Optional. Keyboard controls still work.'
+}
+
+function teamsDetail(input: ClassroomSetupGuidanceInput): string {
+  if (!teamsAreReady(input)) {
+    return 'Needs 1–8 teams in Game settings'
+  }
+  const count = `${input.teamCount} team${input.teamCount === 1 ? '' : 's'} in this Game`
+  if (classSetupBuzzerHardwarePresent(input)) {
+    return `${count} · buzzers detected · keyboard available`
+  }
+  return count
 }
 
 export function compactReadinessItems(
@@ -346,17 +418,11 @@ export function compactReadinessItems(
   const displayStatus: CompactReadinessStatus = input.displayOpen ? 'complete' : 'optional'
   const soundStatus: CompactReadinessStatus = soundIsReady(input) ? 'complete' : 'optional'
 
+  // I-REPAIR-1: Buzzers before Names (preferred: Buzzers → Teams → Names → Display → Sound).
   const items: readonly (readonly [SetupTaskId, string, CompactReadinessStatus, string])[] = [
-    [
-      'teams',
-      'Teams',
-      teamsStatus,
-      teamsAreReady(input)
-        ? `${input.teamCount} team${input.teamCount === 1 ? '' : 's'}`
-        : 'Needs 1–8 teams in the game editor',
-    ],
-    ['names', 'Names', namesStatus, namesDetail(input)],
     ['buzzers', 'Buzzers', buzzerStatus, buzzersDetail(input)],
+    ['teams', 'Teams', teamsStatus, teamsDetail(input)],
+    ['names', 'Names', namesStatus, namesDetail(input)],
     ['display', 'Display', displayStatus, displayFactLabel(input)],
     ['sound', 'Sound', soundStatus, soundFactLabel(input)],
   ]
@@ -391,6 +457,7 @@ export function currentTaskTitle(task: SetupTaskId | 'play'): string {
 export function classSetupBuzzerTaskCopy(input: {
   readonly sonyReady: boolean
   readonly sonyTeacherSummary?: SonyBuzzTeacherSummary | null
+  readonly wbuzzPresent?: boolean
 }): string {
   if (resolvedSonyFullyReady(input)) {
     return 'Buzzers are ready. You can check them below, or play.'
@@ -400,7 +467,10 @@ export function classSetupBuzzerTaskCopy(input: {
     if (classSetupSonyBuzzClaimsResponding(input.sonyTeacherSummary)) {
       return `${summary} Keyboard controls still work.`
     }
-    return `${summary} Connect them below if you want them, or keep setting up with the keyboard.`
+    return `${summary} Use Check buzzers below if you want them, or keep setting up with the keyboard.`
+  }
+  if (input.wbuzzPresent) {
+    return 'Supported buzzers are detected. Check them below to confirm each handset — keyboard controls still work.'
   }
   return 'Buzzers are optional. Connect them below if you want them, or keep setting up with the keyboard.'
 }
