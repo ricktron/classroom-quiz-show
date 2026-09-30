@@ -32,13 +32,18 @@ BLOCKED-then-repaired history are **not** that trust by themselves.
 
 This contract defines:
 
-1. the **Q0→Q7** pre-owner functional qualification ladder;
+1. the **Q0→Q7** pre-owner functional qualification ladder (with a
+   **PRE-Q7** eligibility gate between Q6 and Q7);
 2. the **evidence taxonomy** and what each class may and may not claim;
-3. **semantic interactive-control proof** (presence ≠ success);
-4. **contextual repair** return-path rules;
-5. **exact-head** and **served-build** binding;
+3. **semantic interactive-control proof** (presence ≠ success) as a
+   **requirement inside Q1/Q2**, not a separate stage;
+4. **contextual repair** return-path rules as a **requirement inside
+   Q1/Q2**, not a separate stage;
+5. **exact-head** and **served-build** binding (cross-cutting; Desktop
+   Electron integration is **Q5**);
 6. **transfer** rules for prior physical / historical evidence;
-7. the sole gate that may issue **`OWNER-PLAYTHROUGH-ELIGIBLE`**;
+7. the **PRE-Q7 DevPM gate** that alone may issue
+   **`OWNER-PLAYTHROUGH-ELIGIBLE`** / `candidate SHA:` after Q0–Q6;
 8. how **QA escapes** are recorded without bypassing the gate.
 
 CQS remains authoritative. NightWatch / chat / Notion / Obsidian may
@@ -67,7 +72,8 @@ Q0 (this contract) **must not**:
 
 Owner playthrough (S05 whole-game and MENUS Slice I re-run) is
 **PAUSED / GATED** until Q0–Q6 are complete under later authorizations and
-the gate in §10 is explicitly issued.
+the **PRE-Q7** eligibility verdict in §10 is explicitly issued. **Q7 does
+not** issue eligibility.
 
 ---
 
@@ -75,20 +81,27 @@ the gate in §10 is explicitly issued.
 
 | Stage | Name | Authorized by this file? | Purpose |
 | --- | --- | --- | --- |
-| **Q0** | Qualification contract | **Yes (this docs slice)** | Register purpose, taxonomy, matrix, routing, gaps A–D, gate rules |
-| **Q1** | Known-escape product repair | **No** | Close recorded functional escapes that block semantic proof (see §11 DevPM A–D + residual Slice I defects). Separate owner auth required |
-| **Q2** | Semantic interactive-control automation | **No** | Strengthen / add e2e+unit so matrix rows claim **task success**, not selector presence |
-| **Q3** | Contextual-repair path proof | **No** | Prove Fix / Edit / recover / return paths land the teacher back in the interrupted job without false recovery theater where Q1 target forbids it |
-| **Q4** | Integrated golden-path automation | **No** | One (or explicitly composed) automated proof: Home → Class Setup → Play → board gameplay → Final → completion / summary, on a proven served build |
-| **Q5** | Desktop / served-build exact-head binding | **No** | Bind Electron shell + web served-build provenance to the candidate head; distinguish shell lifecycle from teacher golden path |
-| **Q6** | Court A + Court B | **No** | Adversarial / independent review Courts before eligibility (plan in §9) |
-| **Q7** | Owner playthrough eligibility | **No** | Sole stage that may issue **`OWNER-PLAYTHROUGH-ELIGIBLE`** after Q0–Q6 evidence |
+| **Q0** | Qualification contract | **Yes (this docs slice)** | Contract + matrix + evidence taxonomy + QA-escape protocol; register gaps A–D; routing |
+| **Q1** | Known Scenario-D / escape repair | **No** | Known Scenario-D repair + escape hardening: buzzer effect confirmation, team-count contextual repair, Names-state honesty, sibling audit, regression. Separate owner auth required |
+| **Q2** | MENUS workflow functional qualification | **No** | Full early teacher journeys (Home / library / authoring / Class Setup / Start). **Semantic interactive-control** and **contextual-return** are **requirements inside Q1/Q2**, not separate stages |
+| **Q3** | Core gameplay golden paths | **No** | Keyboard path, meaningful sim Sony where applicable, Host/Display, board → … → Final → completion on a proven served build |
+| **Q4** | Gameplay branch / failure matrix | **No** | Branch, recovery, and failure paths off the golden spine (not a second golden-path stage) |
+| **Q5** | Desktop / Electron integration | **No** | Electron shell integration distinct from browser e2e. Physical Sony / projector / audio / Windows are **not** silently Q5 PASS |
+| **Q6** | Court A + Court B | **No** | Adversarial / independent review. Material findings route back to Q1–Q5. No unresolved functional blocker before eligibility |
+| **PRE-Q7** | Eligibility gate (not a Q-stage number) | **No** | **DevPM** may issue **`OWNER-PLAYTHROUGH-ELIGIBLE`** / `candidate SHA:` **after Q0–Q6** and **before Q7**. Court B may **recommend** only |
+| **Q7** | Natural owner usability playthrough | **No** | Begins **only after** PRE-Q7 eligibility. Q7 is the playthrough itself — **Q7 does not issue eligibility** |
 
 ```text
 Q0 registers the ladder.
 Q1–Q6 execute under later bounded authorizations.
-Q7 alone may issue OWNER-PLAYTHROUGH-ELIGIBLE.
+PRE-Q7 (DevPM) alone may issue OWNER-PLAYTHROUGH-ELIGIBLE after Q0–Q6.
+Q7 = natural owner usability playthrough after eligibility.
+Q7 does not issue eligibility.
 ```
+
+Semantic control and contextual repair are **not** Q2/Q3 stage names.
+Exact-head, served-build, transfer, and QA-escape rules are **cross-cutting**
+(§§7–8, §12); Desktop Electron integration claims land in **Q5**.
 
 Each stage after Q0 requires a **fresh** owner authorization packet. Completing
 Q0 does **not** start Q1.
@@ -128,7 +141,7 @@ An unrun check must **never** be reported as passing.
 
 ---
 
-## 5. Semantic interactive-control proof
+## 5. Semantic interactive-control proof (requirement inside Q1/Q2)
 
 ### 5.1 Definition
 
@@ -143,6 +156,9 @@ owner evidence) shows:
    is present; no false “ready”).
 
 Asserting `getByTestId('…').toBeVisible()` alone is **reach**, not success.
+
+This is a **qualification requirement inside Q1 (escape hardening) and Q2
+(MENUS workflow)**, not a separate ladder stage.
 
 ### 5.2 Interactive-control families (pre-owner)
 
@@ -181,7 +197,7 @@ Asserting `getByTestId('…').toBeVisible()` alone is **reach**, not success.
 
 ---
 
-## 6. Contextual repair
+## 6. Contextual repair (requirement inside Q1/Q2)
 
 ### 6.1 Rule
 
@@ -194,6 +210,9 @@ When Class Setup (or Home) offers a Fix / Edit / recover control:
 3. Game vs Session boundaries remain intact (team count stays Game-owned);
 4. recovery confirms remain when Session safety truly requires them.
 
+Contextual return is a **requirement inside Q1 (product path) and Q2 (MENUS
+workflow proof)**, not a separate ladder stage.
+
 ### 6.2 Finding B — team-count return path (CONFIRMED)
 
 | Item | Observed on `67ba2c0…` |
@@ -203,12 +222,14 @@ When Class Setup (or Home) offers a Fix / Edit / recover control:
 | Q1 target (contract intent) | **Direct return to Class Setup** after Fix team count / save, without forcing the teacher through Resume + replace as the ordinary contextual-repair path |
 | Q0 disposition | Gap recorded; **no product repair in Q0** |
 
-Q3 later proves whatever path Q1 authorizes. Until Q1 lands, automation that
-documents the **current** path is honest regression, not Q1-target proof.
+Q2 later proves the MENUS contextual-return path Q1 authorizes (semantic
+control + contextual return as Q1/Q2 requirements). Until Q1 lands,
+automation that documents the **current** path is honest regression, not
+Q1-target proof.
 
 ---
 
-## 7. Exact-head and served-build
+## 7. Exact-head and served-build (cross-cutting; Desktop = Q5)
 
 ### 7.1 Exact-head
 
@@ -237,6 +258,11 @@ Playwright / browser claims require a **proven served build** for that head:
 - desktop claims use that head’s desktop build identity where practical
   (`desktop-build-identity.json` / equivalent).
 
+Exact-head and served-build binding apply across Q1–Q6. **Q5** is the stage
+for **Desktop / Electron integration** claims (distinct from browser e2e).
+Physical Sony / projector / audio / Windows runtime are **separate** evidence
+classes — they are **not** silently Q5 PASS.
+
 ### 7.3 Finding D — `tests/desktop/shell.spec.ts` (CONFIRMED)
 
 What it **actually proves** on Electron:
@@ -256,8 +282,9 @@ What it **does not** prove:
 - physical Sony / Windows classroom runtime;
 - teacher-adoptable signed release.
 
-**Q0 disposition:** classify as **DESKTOP E2E / RETAIN** for shell lifecycle;
-**STRENGTHEN or NEW** separate packs for teacher golden path (Q4/Q5).
+**Q0 disposition:** classify as **DESKTOP E2E / RETAIN** for shell lifecycle
+(**Q5** family); **STRENGTHEN or NEW** separate packs for teacher golden path
+(**Q3**) and gameplay branch/failure (**Q4**). Do not cite shell as golden path.
 
 ---
 
@@ -279,7 +306,7 @@ Prior evidence may be **TRANSFERRED** only when all hold:
    overwrite merged PNGs.
 
 Slice 23 terminal evidence transfers as **foundation** only. It does not clear
-Q1–Q7 on the MENUS / S05 owner-playthrough frontier.
+Q1–Q6, PRE-Q7 eligibility, or Q7 on the MENUS / S05 owner-playthrough frontier.
 
 ---
 
@@ -293,16 +320,17 @@ Q6 is **not** executed in Q0. Plan of record:
 | --- | --- |
 | Question | Does the journey matrix (§ companion) have semantic proof or an explicit PHYSICAL-ONLY / OWNER-ONLY / QA-escape row for every ordinary-path interaction required before owner playthrough? |
 | Inputs | Matrix dispositions; Q1–Q5 receipts; exact-head CI; served-build provenance; DevPM A–D closure status |
-| Forbidden | Equating CI green with Court PASS; inventing physical PASS from simulation |
+| Forbidden | Equating CI green with Court PASS; inventing physical PASS from simulation; treating physical Sony/projector/audio/Windows as silent Q5 PASS |
 | Outcomes | **COMPLETE** / **GAPS REMAIN** (named rows) / **STOP — authority** |
+| Material findings | Route back to **Q1–Q5** for repair/proof; do not advance eligibility with unresolved functional blockers |
 
-### Court B — Eligibility recommendation (pre-Q7)
+### Court B — Eligibility recommendation (before PRE-Q7)
 
 | Item | Plan |
 | --- | --- |
-| Question | Given Court A COMPLETE, residual QA escapes, and transfer ledger, may Q7 issue **`OWNER-PLAYTHROUGH-ELIGIBLE`**? |
+| Question | Given Court A COMPLETE, residual QA escapes, and transfer ledger, may DevPM issue **`OWNER-PLAYTHROUGH-ELIGIBLE`** / `candidate SHA:` at PRE-Q7? |
 | Inputs | Court A record; open escapes (§12); STATUS/CURRENT agreement; hard-ban audit (no S04D/S06/S05 terminalization smuggled) |
-| Forbidden | Issuing eligibility from Court B itself (Court B only **recommends**; Q7 issues) |
+| Forbidden | Issuing eligibility from Court B itself (Court B only **recommends**; **DevPM** issues at **PRE-Q7** after Q6, before Q7) |
 | Outcomes | **RECOMMEND ELIGIBLE** / **RECOMMEND HOLD** / **REPAIR REQUIRED** |
 
 Seats and rigor may follow NightWatch / OpenClaw Court protocol when available
@@ -310,12 +338,13 @@ as **read-only supplemental**. CQS docs and observed Git remain authoritative.
 
 ---
 
-## 10. `OWNER-PLAYTHROUGH-ELIGIBLE` gate
+## 10. `OWNER-PLAYTHROUGH-ELIGIBLE` gate (PRE-Q7 — not Q7)
 
 ### 10.1 Meaning
 
 ```text
 OWNER-PLAYTHROUGH-ELIGIBLE
+candidate SHA: <exact head>
 ```
 
 means: the owner may **resume** deliberate MENUS / S05 whole-game owner
@@ -325,21 +354,29 @@ known functional escapes are already closed.
 It is **not**: MENUS Complete, S05 parent terminal, REAL MVP complete, signed
 release, Windows physical PASS, or Slice I ACCEPT.
 
+**Issuer:** DevPM at the **PRE-Q7** gate **after Q0–Q6** and **before Q7**.
+Court B may **recommend** eligibility. **Q7 does not issue eligibility** —
+Q7 is the natural owner usability playthrough that begins only after this
+verdict.
+
 ### 10.2 Issue conditions (all required)
 
 1. Q0 contract merged on `main` (this document + matrix + routing);
 2. Q1 authorized escapes closed **or** explicitly waived by owner as
    non-blocking with named residual risk;
-3. Q2–Q5 evidence recorded on exact heads with served-build provenance;
+3. Q2–Q5 evidence recorded on exact heads with served-build provenance
+   (MENUS workflows; golden paths; branch/failure; Desktop/Electron —
+   physical classes labeled separately);
 4. Court A **COMPLETE**; Court B **RECOMMEND ELIGIBLE**;
-5. Q7 authorization packet explicitly issues the string
-   **`OWNER-PLAYTHROUGH-ELIGIBLE`** and names the eligible head;
+5. **DevPM PRE-Q7** authorization packet explicitly issues the string
+   **`OWNER-PLAYTHROUGH-ELIGIBLE`** and names `candidate SHA:`;
 6. [`../STATUS.md`](../STATUS.md) and [`../handoff/CURRENT.md`](../handoff/CURRENT.md)
    agree.
 
 ### 10.3 Q0 status
 
-**Not issued.** Owner playthrough remains **PAUSED / GATED**.
+**Not issued.** Owner playthrough remains **PAUSED / GATED** behind Q0–Q6 +
+PRE-Q7 eligibility verdict.
 
 ---
 
@@ -348,9 +385,9 @@ release, Windows physical PASS, or Slice I ACCEPT.
 | ID | Finding | Q0 verification | Disposition |
 | --- | --- | --- | --- |
 | **A** | Scenario D buzzer-action proof gap | CONFIRMED — Check scrolls/focuses GIH/Sony profile; no connect/press/UI confirmation proof in Scenario D e2e or `onRevealBuzzersSetup` | **Q1/Q2 escape** |
-| **B** | Team-count contextual repair path vs Q1 target | CONFIRMED — current = authoring → Play → Resume → replace → setup; target = direct Class Setup return | **Q1/Q3 escape** |
-| **C** | Integrated golden-path gap | CONFIRMED — suites cover fragments (`teacher-home-authoring`, `classroom-setup`, `menus-*`, `final-wager`, `session-summary`, S05 choreography) but **no** single Home→gameplay→Final→completion integrated pack | **Q4 NEW** |
-| **D** | Electron `shell.spec.ts` scope | CONFIRMED — shell/security/persistence/API presence/diagnostics; not teacher golden path | **RETAIN shell; do not overclaim** |
+| **B** | Team-count contextual repair path vs Q1 target | CONFIRMED — current = authoring → Play → Resume → replace → setup; target = direct Class Setup return | **Q1/Q2 escape** |
+| **C** | Integrated golden-path gap | CONFIRMED — suites cover fragments (`teacher-home-authoring`, `classroom-setup`, `menus-*`, `final-wager`, `session-summary`, S05 choreography) but **no** single Home→gameplay→Final→completion integrated pack | **Q3 NEW** |
+| **D** | Electron `shell.spec.ts` scope | CONFIRMED — shell/security/persistence/API presence/diagnostics; not teacher golden path | **RETAIN shell (Q5); do not overclaim** |
 
 ---
 
@@ -371,21 +408,21 @@ Rules:
 7. Accepted **OPEN / LOW** residuals (example: H4 salvage collapsed detail —
    primary status honest; collapsed “More detail” may still deny save) are
    **not** Q1 product escapes unless reclassified. They carry to **Q6 Court /
-   Q7 eligibility** and require **explicit owner authorization** to waive —
+   PRE-Q7 eligibility** and require **explicit owner authorization** to waive —
    Q0 does **not** grant any waiver.
 
 ---
 
 ## 13. Routing impact (minimal)
 
-While this contract is active and Q7 has not issued eligibility:
+While this contract is active and PRE-Q7 has not issued eligibility:
 
 | Topic | Required routing |
 | --- | --- |
 | Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough |
 | S05 parent | **OPEN / NOT TERMINAL** |
 | Prior MENUS Slice I playthrough | **NOT RUN** as acceptance (Scenario D was BLOCKED; I-REPAIR-1 merged; re-gate **not** authorized here) |
-| Owner playthrough | **PAUSED / GATED** behind Q0–Q6 + Q7 eligibility |
+| Owner playthrough | **PAUSED / GATED** behind Q0–Q6 + PRE-Q7 eligibility verdict |
 | S04D / S06 | **NOT AUTHORIZED** |
 | REAL MVP | **not** complete |
 | PR #110 / #118 | Observe only; do not mutate from this contract |
@@ -439,9 +476,10 @@ This contract does **not** claim:
 ```text
 Q0: CONTRACT REGISTERED
 Q1–Q6: NOT STARTED BY THIS FILE
-Q7: OWNER-PLAYTHROUGH-ELIGIBLE — NOT ISSUED
+PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE — NOT ISSUED (DevPM gate after Q6)
+Q7: natural owner usability playthrough — NOT BEGUN (requires PRE-Q7)
 S05 parent: OPEN / NOT TERMINAL
-owner playthrough: PAUSED / GATED
+owner playthrough: PAUSED / GATED (Q0–Q6 + PRE-Q7 eligibility)
 S04D / S06: NOT AUTHORIZED
 REAL MVP: not complete
 ```
