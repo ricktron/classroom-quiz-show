@@ -32,7 +32,12 @@ import { useResponseTimerExpiry } from './useResponseTimerExpiry'
 import { useFinalWagerExpiry } from './useFinalWagerExpiry'
 import { systemClock, type Clock } from '../time/clock'
 import { useHostPersistence, type UseHostPersistenceOptions } from './useHostPersistence'
-import { shouldResumeRecoveryFromNavigation } from './hostResumeNavigation'
+import {
+  isContextualTeamCountReturn,
+  setupFocusFromNavigation,
+  shouldResumeRecoveryFromNavigation,
+  type HostSetupFocusTask,
+} from './hostResumeNavigation'
 import {
   enqueueActivePackResourceScopePublish,
   hydratePackMediaForDefinition,
@@ -98,6 +103,11 @@ export function FoundationControls({
   const [homeResumeWelcomeVisible, setHomeResumeWelcomeVisible] = useState(false)
   const [playReplaceNeeded, setPlayReplaceNeeded] = useState(false)
   const [playReplaceArmed, setPlayReplaceArmed] = useState(false)
+  /** Class Setup Check/Show → existing SBS Buzzer Check (one-shot). */
+  const [enterBuzzerCheck, setEnterBuzzerCheck] = useState(false)
+  /** Q1 contextual Fix return: open Names (or named task) once setup remounts. */
+  const [setupFocusOnce, setSetupFocusOnce] = useState<HostSetupFocusTask | null>(null)
+  const contextualReturnLatchedRef = useRef(false)
   const [resetArmed, setResetArmed] = useState(false)
   const [startSessionArmed, setStartSessionArmed] = useState(false)
   // Ordinary ?play= preparation keeps More closed. Bare #/host may start open
@@ -194,10 +204,17 @@ export function FoundationControls({
     homeResumeWelcomePendingEpoch,
   ])
 
-  // Home Resume carries a one-shot navigation intent. Apply the same Host resume
-  // path once recovery is readable, then clear the intent so refresh re-prompts.
-  // Arm Welcome-back only on the success path (not stale-intent clear-only).
+  // Home Resume / Q1 contextual Fix-return: one-shot navigation intent.
+  // Apply Host resume once recovery is readable, then clear the intent so
+  // refresh re-prompts. Welcome-back is only for ordinary Home Resume — not
+  // the team-count contextual return (that path auto-arms roster replace).
   useEffect(() => {
+    if (isContextualTeamCountReturn(location.state)) {
+      contextualReturnLatchedRef.current = true
+      setPlayReplaceArmed(true)
+      const focus = setupFocusFromNavigation(location.state)
+      if (focus) setSetupFocusOnce(focus)
+    }
     const wantsResume = shouldResumeRecoveryFromNavigation(location.state)
     if (!wantsResume) {
       homeResumeHandledRef.current = false
@@ -208,7 +225,10 @@ export function FoundationControls({
     if (persistence.bootPhase === 'recovery' && persistence.recovery) {
       homeResumeHandledRef.current = true
       // resume() bumps storeEpoch by 1; latch that next epoch for hydrate reveal.
-      setHomeResumeWelcomePendingEpoch(persistence.storeEpoch + 1)
+      // Contextual Fix return skips Welcome-back (not a Home Resume).
+      if (!contextualReturnLatchedRef.current) {
+        setHomeResumeWelcomePendingEpoch(persistence.storeEpoch + 1)
+      }
       persistence.resume()
       navigate('.', { replace: true, state: null })
       return
@@ -595,6 +615,8 @@ export function FoundationControls({
             setAudioUnderstood(true)
           }}
           playReady={false}
+          initialSelectedTask={setupFocusOnce}
+          onInitialSelectedTaskConsumed={() => setSetupFocusOnce(null)}
           onPlay={() => {
             dismissWelcomeBack()
             setPlayReady(true)
@@ -604,11 +626,18 @@ export function FoundationControls({
             window.scrollTo(0, 0)
           }}
           onFixTeamCount={() => {
+            // Q1: Fix team count carries return-to-Class-Setup intent (Names).
             navigate(editPath(game.definition.id), {
-              state: { authoringFocus: 'team-count' },
+              state: {
+                authoringFocus: 'team-count',
+                returnToClassSetup: true,
+                setupFocus: 'names',
+              },
             })
           }}
           onRevealBuzzersSetup={() => {
+            // Q1-A: Check/Show enters existing SBS Buzzer Check, then reveals it.
+            setEnterBuzzerCheck(true)
             const target =
               document.querySelector('[data-testid="sbs-supported-profile"]') ??
               document.querySelector('[data-testid="gih"]')
@@ -701,6 +730,8 @@ export function FoundationControls({
           game={game}
           clock={clock}
           selectionMode={!playReady}
+          enterBuzzerCheck={enterBuzzerCheck}
+          onEnterBuzzerCheckConsumed={() => setEnterBuzzerCheck(false)}
           onSelectionBatch={setSelectionObservationBatch}
           onSonyReadyChange={setSonyReady}
           onSonyTeacherSummaryChange={setSonyTeacherSummary}

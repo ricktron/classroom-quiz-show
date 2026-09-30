@@ -677,6 +677,18 @@ describe('ClassroomSetupPanel', () => {
     ])
   })
 
+  it('opens Names when initialSelectedTask is provided (contextual Fix return)', () => {
+    const onConsumed = vi.fn()
+    renderSetup({
+      initialSelectedTask: 'names',
+      onInitialSelectedTaskConsumed: onConsumed,
+    })
+    expect(screen.getByTestId('setup-row-names')).toHaveAttribute('data-selected', 'true')
+    expect(screen.getByTestId('setup-names-task')).toBeVisible()
+    expect(screen.queryByTestId('setup-fix-team-count')).toBeNull()
+    expect(onConsumed).toHaveBeenCalled()
+  })
+
   it('offers Check buzzers instead of only Skip when supported hardware is present', () => {
     const onRevealBuzzersSetup = vi.fn()
     renderSetup({

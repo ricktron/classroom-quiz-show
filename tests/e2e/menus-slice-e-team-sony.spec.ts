@@ -2,15 +2,16 @@ import { test, expect } from '@playwright/test'
 import { importMenusJsonAndPlay, menusBoardGameJson } from './helpers/menusGameJson'
 
 /**
- * MENUS Slice E — 0-team Class Setup mount + Edit → team count → return Play.
+ * MENUS Slice E / Q1 sibling — 0-team Class Setup mount + Fix team count → direct return.
  *
- * Uses authentic Home import of a board-only game with omitted teams (valid;
- * playable by rounds). Does not claim physical Sony / Windows.
+ * Same contextual-return invariant as menus-i-repair-1-zero-team-fix (Finding B).
+ * Uses authentic Home import of a board-only game with omitted teams.
+ * Does not claim physical Sony / Windows.
  */
 
 test.describe.configure({ mode: 'serial' })
 
-test('0-team import mounts Class Setup; Edit → set count → Play returns with teams', async ({
+test('0-team import mounts Class Setup; Fix → Save returns directly with teams', async ({
   page,
 }) => {
   await importMenusJsonAndPlay(
@@ -51,37 +52,18 @@ test('0-team import mounts Class Setup; Edit → set count → Play returns with
   await expect(page.getByLabel(/^team 1$/i)).toBeVisible()
   await expect(page.getByLabel(/^team 2$/i)).toBeVisible()
 
-  // Board-only draft with teams should become playable after save once content is complete.
-  // Fill minimal clues if still blocked, then save and Play.
-  const validation = page.getByTestId('authoring-validation')
-  const playBtn = page.getByRole('button', { name: /^play$/i })
-  if (await validation.textContent().then((t) => /missing/i.test(t ?? ''))) {
-    // Imported board should already be complete; if not, do not invent content here.
-  }
   await page.getByTestId('authoring-save').click()
-  await expect(page.getByTestId('authoring-save-status')).toContainText(/^saved$/i, {
-    timeout: 15_000,
-  })
-  await expect(playBtn).toBeEnabled({ timeout: 15_000 })
-  await playBtn.click()
 
-  // Leaving Host for authoring persists an unfinished session; returning via
-  // Play lands on recovery. Resume, then same-Game roster drift must ask the
-  // teacher before replacing the Session (never silent confirmedReplace).
-  await page.getByRole('button', { name: /^resume class$/i }).click({ timeout: 15_000 })
+  // Q1 sibling: direct Class Setup return (no Play / Resume / replace clicks).
+  await expect(page.getByTestId('classroom-setup')).toBeVisible({ timeout: 20_000 })
+  await expect(page.getByTestId('play-replace-confirm')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /^resume class$/i })).toHaveCount(0)
 
-  await expect(page.getByTestId('play-replace-confirm')).toBeVisible({ timeout: 15_000 })
-  await page.getByRole('button', { name: /load this game and replace the current session/i }).click()
-
-  await expect(page.getByTestId('classroom-setup')).toBeVisible({ timeout: 15_000 })
   await expect(page.getByTestId('readiness-teams')).toHaveAttribute('data-status', 'complete')
   await expect(page.getByTestId('setup-play')).toBeDisabled()
-  // Buzzers still unresolved → workflow default stays Buzzers; Names remains Start blocker.
-  await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'buzzers')
-  await expect(page.getByTestId('setup-row-names')).toHaveAttribute('data-emphasized', 'true')
-  await page.getByTestId('readiness-names').click()
+  // Names focus after contextual Fix (interrupted naming).
   await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
   await expect(page.getByTestId('setup-sony-copy')).toBeVisible()
   await expect(page.getByTestId('setup-sony-copy')).toContainText(/type a name/i)
-  await expect(page.getByTestId('setup-sony-copy')).not.toContainText(/Blue, Orange/)
+  await expect(page.getByTestId('setup-fix-team-count')).toHaveCount(0)
 })
