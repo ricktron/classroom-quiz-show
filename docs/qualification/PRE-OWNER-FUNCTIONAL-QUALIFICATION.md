@@ -153,7 +153,7 @@ Asserting `getByTestId('…').toBeVisible()` alone is **reach**, not success.
 | Class Setup row selection | Selected row follows click; readiness cue ≠ selection |
 | Buzzers Check / Skip | Check reveals **live** setup machinery and teacher-visible confirmation path; Skip only when honest |
 | Teams Fix team count | Opens Game settings team-count; after save, returns to **Class Setup** per Q1 target (see §6) |
-| Names fill / claim | Unique Session names; Start enablement |
+| Names fill / claim | Unique Session names; Start enablement. Simulated Sony suite (`menus-slice-h-names-sim-sony`) proves **colour guidance + keyboard/manual fill** only — not colour-press team-name claim |
 | Display Open | Audience window without Host-private leak |
 | Sound Test | Audible/teacher-confirmed test without Start gate lie |
 | Start / Play (setup→play) | Posture → focused Host; Class Setup unmounted |
@@ -367,7 +367,12 @@ Rules:
 3. Owner may waive an escape as non-blocking only in a named authorization;
 4. Waived escapes remain visible in STATUS/handoff until closed;
 5. Facilitator observation ≠ owner waiver;
-6. Q0 itself records A–D as escapes; closing them is **out of Q0 scope**.
+6. Q0 itself records A–D as escapes; closing them is **out of Q0 scope**;
+7. Accepted **OPEN / LOW** residuals (example: H4 salvage collapsed detail —
+   primary status honest; collapsed “More detail” may still deny save) are
+   **not** Q1 product escapes unless reclassified. They carry to **Q6 Court /
+   Q7 eligibility** and require **explicit owner authorization** to waive —
+   Q0 does **not** grant any waiver.
 
 ---
 

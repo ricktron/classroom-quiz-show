@@ -25,11 +25,11 @@ Dispositions guide later Q1–Q7 work; they do not start it.
 | **Success (semantic)** | What “worked” means (not mere visibility) |
 | **Current proof** | Best existing automated or physical evidence on tip |
 | **Evidence class** | Per contract taxonomy |
-| **Disposition** | `RETAIN` / `STRENGTHEN` / `REPLACE` / `NEW` / `PHYSICAL-ONLY` / `OWNER-ONLY` |
-| **Q stage** | Earliest stage that must address the row |
-| **Gap / note** | Escape or limit |
+| **Disposition** | Exactly **one** primary tag: `RETAIN` / `STRENGTHEN` / `REPLACE` / `NEW` / `PHYSICAL-ONLY` / `OWNER-ONLY` |
+| **Q stage** | Earliest stage that must address the row (may list secondary stages) |
+| **Gap / note** | Escape, limit, or secondary need (never a second Disposition tag) |
 
-Disposition meanings:
+Disposition meanings (one primary per row; do **not** compound tags in the Disposition cell):
 
 | Tag | Meaning |
 | --- | --- |
@@ -40,6 +40,8 @@ Disposition meanings:
 | **PHYSICAL-ONLY** | Cannot close in CI; needs named hardware |
 | **OWNER-ONLY** | Requires owner walkthrough judgment (feel/terminology/fit) |
 
+Secondary needs (extra STRENGTHEN, sim vs physical, Q1 path targets, carry/waive rules) go in **Evidence class**, **Q stage**, or **Gap / note** only.
+
 ---
 
 ## 2. HOME / LIBRARY
@@ -49,7 +51,7 @@ Disposition meanings:
 | HL-01 | Cold launch → Home | Private Home visible; no silent session auto-resume | `routes`, `teacher-first-run`, desktop `shell` Resume | AUTOMATED E2E / DESKTOP E2E | RETAIN | Q2/Q5 | Shell ≠ full teacher path |
 | HL-02 | New Game | Creates draft/game → authoring | `menus-slice-cd-home-authoring`, `teacher-home-authoring` | AUTOMATED E2E | STRENGTHEN | Q2 | Empty-library dominance OWNER-ONLY polish |
 | HL-03 | Import Game (demo / paste / xlsx) | Valid save to library; fail-closed on bad input | `import-pipeline`, Home authoring e2e, H4 unit | AUTOMATED E2E / UNIT | STRENGTHEN | Q2 | Template download still Host-split (#110 harvest separate) |
-| HL-04 | Import Quality / salvage Keep | Primary status honest; salvage usable | H4 e2e/unit; LOW collapsed-detail escape OPEN | AUTOMATED E2E | RETAIN | Q1 waiver OK | H4 collapsed detail LOW — QA escape |
+| HL-04 | Import Quality / salvage Keep | Primary status honest; salvage usable | H4 e2e/unit; LOW collapsed-detail escape OPEN | AUTOMATED E2E | RETAIN | Q6/Q7 | Accepted **OPEN / LOW** residual (collapsed **More detail about this file** after Keep may still deny save). Primary status line is the durable outcome. **Not** a Q1 product escape unless reclassified. Carry/waive through `OWNER-PLAYTHROUGH-ELIGIBLE` requires **explicit owner authorization** — no waiver granted |
 | HL-05 | My Games / Recent Play | `playable` only; lands `?play=` → Class Setup | `classroom-setup`, menus helpers | AUTOMATED E2E | STRENGTHEN | Q2 | `HomeRoute.test` weak on Play button |
 | HL-06 | Edit / Duplicate / Export / Delete / Rename | Library ops preserve Game/Session isolation | portable/export + library unit; partial e2e | MIXED | STRENGTHEN | Q2 | Multi-game confusion scenario weak |
 | HL-07 | Resume class / Start fresh | One Host gate; Start fresh keeps library | `persistence-recovery`, desktop shell | AUTOMATED E2E / DESKTOP | RETAIN | Q2 | Mid-setup abandon ≠ session recovery |
@@ -57,7 +59,7 @@ Disposition meanings:
 | HL-09 | Open classroom controls → bare `#/host` | Power path; must not be marketed as ordinary | `menus-slice-a-host-posture` | AUTOMATED E2E | RETAIN | Q2 | Ordinary funnel uses `?play=` |
 | HL-10 | Backup & restore | Export/import backup without content loss | `backup-restore`, `backup-idb-atomicity` | AUTOMATED E2E | RETAIN | Q5 | Not cold-launch primary |
 | HL-11 | Multi-game + draft confusion | Teacher distinguishes ready vs draft | Fragmentary Home tests | AUTOMATED E2E | NEW | Q2 | Slice H intent; still weak integrated |
-| HL-12 | Empty library next action | One clear next action | Partial CD e2e | AUTOMATED E2E | OWNER-ONLY + STRENGTHEN | Q2/Q7 | Feel/IA |
+| HL-12 | Empty library next action | One clear next action | Partial CD e2e | AUTOMATED E2E | OWNER-ONLY | Q7 | Feel/IA owner judgment. Secondary: STRENGTHEN partial CD automation at Q2 |
 
 ---
 
@@ -82,13 +84,13 @@ Disposition meanings:
 | CS-01 | Enter via Home Play | Setup posture; five rows Buzzers→…→Sound | Scenario D, B+F, classroom-setup | AUTOMATED E2E | RETAIN | Q2 | Order fixed by I-REPAIR-1 |
 | CS-02 | Row selection grammar | Click selects; re-click keeps open; readiness ≠ selection | Scenario D + panel unit | AUTOMATED E2E / UNIT | RETAIN | Q2 | Owner D was BLOCKED pre-repair |
 | CS-03 | Buzzers Skip (no hardware) | Skip advances; Start not gated by Buzzers | Scenario D / B+F / readiness unit | AUTOMATED E2E / UNIT | RETAIN | Q2 | |
-| CS-04 | Buzzers Check (hardware present) | Not Skip-only; Check reveals live setup; **teacher-visible connect/press confirmation** | Scenario D clicks Check + profile visible; unit calls callback | AUTOMATED E2E / UNIT | **STRENGTHEN → Q1/Q2** | Q1/Q2 | **Finding A** — scroll/focus ≠ confirmation |
-| CS-05 | Sony physical connect / names via buzzers | Handsets claim names; UI confirms | H5/H6 PHYSICAL TRANSFERRED (older identity); sim Sony e2e | PHYSICAL / SIM E2E | PHYSICAL-ONLY + STRENGTHEN sim | Q1/Q2/Q5 | Sim ≠ physical; re-qual if posture changed |
+| CS-04 | Buzzers Check (hardware present) | Not Skip-only; Check reveals live setup; **teacher-visible connect/press confirmation** | Scenario D clicks Check + profile visible; unit calls callback | AUTOMATED E2E / UNIT | STRENGTHEN | Q1/Q2 | **Finding A** — scroll/focus ≠ confirmation |
+| CS-05 | Sony physical connect / names via buzzers | Handsets claim names; UI confirms | H5/H6 PHYSICAL TRANSFERRED (older identity); sim Sony e2e | PHYSICAL / SIM E2E | PHYSICAL-ONLY | Q5 | Sim ≠ physical; re-qual if posture changed. Secondary: STRENGTHEN sim colour-press naming (CS-10) at Q2 |
 | CS-06 | Teams blocked (0-team) | Teams+Names blocked; Fix team count visible | zero-team fix + Slice E | AUTOMATED E2E | RETAIN | Q2 | |
-| CS-07 | Fix team count contextual return | After save, **direct Class Setup return** (Q1 target) | Current proves Resume+replace path | AUTOMATED E2E | **REPLACE path after Q1** | Q1/Q3 | **Finding B** |
+| CS-07 | Fix team count contextual return | After save, **direct Class Setup return** (Q1 target) | Current proves Resume+replace path | AUTOMATED E2E | REPLACE | Q1/Q3 | **Finding B** — current Resume+replace is honest regression until Q1 lands direct return |
 | CS-08 | Controller count ≠ team count | Copy distinguishes 1–8 Game teams vs buzzers | Scenario D / panel unit | AUTOMATED E2E / UNIT | RETAIN | Q2 | Do not change 1–8→1–4 |
-| CS-09 | Names keyboard fill | Unique names → Ready/Start enabled | Scenario D, H names sim, panel unit | AUTOMATED E2E | STRENGTHEN | Q2 | Full keyboard-only class still weak |
-| CS-10 | Names via simulated Sony | Color-press claim works in sim | `menus-slice-h-names-sim-sony` | AUTOMATED E2E | RETAIN | Q2 | Not physical |
+| CS-09 | Names keyboard fill | Unique names → Ready/Start enabled | Scenario D, H names sim (keyboard path), panel unit | AUTOMATED E2E | STRENGTHEN | Q2 | Full keyboard-only class still weak; H names sim proves keyboard fill, not colour-press claim |
+| CS-10 | Names via simulated Sony | Colour-button **guidance** visible with supported sim profile; keyboard/manual fill remains operable | `menus-slice-h-names-sim-sony` | AUTOMATED E2E | STRENGTHEN | Q2 | Suite proves guidance copy + keyboard/manual fill only — **not** simulated colour-button team-name claim. Gap: colour-press naming unproven |
 | CS-11 | Display Open from setup | Display opens; optional for Start | Scenario D / B+F | AUTOMATED E2E | RETAIN | Q2 | |
 | CS-12 | Sound Test | Test works; optional for Start | Scenario D / presentation-audio fragments | AUTOMATED E2E | STRENGTHEN | Q2 | |
 | CS-13 | Start / Play → focused Host | Setup unmounts; focused Host first viewport | Scenario D, H-REPAIR-1 focused host | AUTOMATED E2E | RETAIN | Q2 | |
@@ -141,14 +143,14 @@ Disposition meanings:
 | Suite | Disposition | Notes |
 | --- | --- | --- |
 | `menus-i-repair-1-scenario-d.spec.ts` | **STRENGTHEN** | Row order / Skip honesty / Check visibility — not buzzer-action confirmation (Finding A) |
-| `menus-i-repair-1-zero-team-fix.spec.ts` | **REPLACE path after Q1** | Documents current Resume+replace return (Finding B) |
+| `menus-i-repair-1-zero-team-fix.spec.ts` | **REPLACE** | Documents current Resume+replace return (Finding B); Q1 target = direct Class Setup return |
 | `menus-slice-e-team-sony.spec.ts` | **STRENGTHEN** | Complements zero-team; same return-path limit |
 | `menus-bf-readiness.spec.ts` | **RETAIN** | Ready/optional matrix |
 | `menus-bf-viewport.spec.ts` | **RETAIN** | Fit stress |
 | `menus-slice-a-host-posture.spec.ts` | **RETAIN** | Posture / bare Host |
 | `menus-slice-cd-home-authoring.spec.ts` | **STRENGTHEN** | Home/authoring |
 | `menus-slice-g-change-game.spec.ts` | **RETAIN** | Change Game |
-| `menus-slice-h-names-sim-sony.spec.ts` | **RETAIN** | Sim Sony names — not physical |
+| `menus-slice-h-names-sim-sony.spec.ts` | **STRENGTHEN** | Guidance + keyboard/manual fill on sim supported profile — not colour-press naming; not physical |
 | `menus-h-repair-1-focused-host.spec.ts` | **RETAIN** | Start → focused Host |
 | `menus-historian-gate.spec.ts` | **RETAIN** | Gate only; not acceptance |
 | `menus-visual-history-capture.spec.ts` | **RETAIN** | Capture when authorized; immutable |
