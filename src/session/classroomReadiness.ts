@@ -273,9 +273,30 @@ export function playBlockerExplanation(input: ClassroomSetupGuidanceInput): stri
  * Required-task emphasis for the setup workspace.
  * Returns `'play'` (Ready) whenever {@link canStartPlay} — optionals never gate Ready.
  * Does not consult focusOverride / teacher expand state.
+ * Does **not** choose the initial Class Setup row — use
+ * {@link defaultSetupWorkflowTask} for ordinary workflow selection.
  */
 export function dominantSetupTask(input: ClassroomSetupGuidanceInput): SetupTaskId | 'play' {
   if (canStartPlay(input)) return 'play'
+  if (!teamsAreReady(input)) return 'teams'
+  if (!namesAreReady(input)) return 'names'
+  return 'play'
+}
+
+/**
+ * Ordinary Class Setup initial / next workflow selection (expansion default).
+ *
+ * Prefer Buzzers when that optional step is still open (not ready, not skipped),
+ * then Teams, then Names. Separate from {@link dominantSetupTask} / Start
+ * readiness — Buzzers never gate {@link canStartPlay}. Returns `'play'` when
+ * required work is complete (Ready overview; no default expansion).
+ */
+export function defaultSetupWorkflowTask(
+  input: ClassroomSetupGuidanceInput,
+): SetupTaskId | 'play' {
+  if (canStartPlay(input)) return 'play'
+  const sonyReady = resolvedSonyFullyReady(input)
+  if (!sonyReady && !input.buzzerSkipped) return 'buzzers'
   if (!teamsAreReady(input)) return 'teams'
   if (!namesAreReady(input)) return 'names'
   return 'play'

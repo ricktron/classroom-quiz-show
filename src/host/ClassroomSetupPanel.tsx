@@ -16,6 +16,7 @@ import {
   classSetupMayOfferBuzzerSkip,
   compactReadinessItems,
   currentTaskTitle,
+  defaultSetupWorkflowTask,
   dominantSetupTask,
   playBlockerExplanation,
   unresolvedOptionalFacts,
@@ -64,13 +65,10 @@ export interface ClassroomSetupPanelProps {
    * (0-team / team-count repair). Does not move team count into Session.
    */
   readonly onFixTeamCount?: () => void
-  /**
-   * Reveal the existing Buzzers setup section (same Gamepad/Sony owner below).
-   * Class Setup must not mount a second detector or poller.
-   */
+  /** Scroll/reveal the existing Buzzers setup section below Class Setup. */
   readonly onRevealBuzzersSetup?: () => void
   /**
-   * Supported Namtai Wbuzz Gamepad detected (lifted from GamepadInputHostPanel).
+   * Supported buzzers detected (lifted presence only).
    * Unknown/false → keyboard-honest Names copy; never invent colour-press claims.
    */
   readonly wbuzzPresent?: boolean
@@ -251,6 +249,7 @@ export function ClassroomSetupPanel({
   const playEnabled = canStartPlay(guidance)
   const playBlocker = playBlockerExplanation(guidance)
   const pureDominant = dominantSetupTask(guidance)
+  const workflowDefault = defaultSetupWorkflowTask(guidance)
   const classReady = playEnabled && !playReady
   const summary = compactReadinessItems(guidance)
   const optionalFacts = unresolvedOptionalFacts(guidance)
@@ -290,11 +289,13 @@ export function ClassroomSetupPanel({
     }
   }, [playEnabled, pureDominant])
 
+  // Workflow selection (Buzzers-first) is separate from required readiness emphasis.
   const defaultExpanded: SetupTaskId | null =
-    playReady || playEnabled ? null : pureDominant === 'play' ? null : pureDominant
+    playReady || playEnabled ? null : workflowDefault === 'play' ? null : workflowDefault
   const expandedTask: SetupTaskId | null =
     expandOverride === undefined ? defaultExpanded : expandOverride
 
+  // Required-readiness cue only — must not masquerade as row selection.
   const emphasizedTask: SetupTaskId | null =
     playReady || playEnabled ? null : pureDominant === 'play' ? null : pureDominant
 
@@ -323,11 +324,17 @@ export function ClassroomSetupPanel({
 
   const stageTitle = playReady
     ? 'In play'
-    : playEnabled
-      ? expandedTask
-        ? currentTaskTitle(expandedTask)
-        : 'Ready'
-      : currentTaskTitle(pureDominant === 'play' ? 'names' : pureDominant)
+    : playEnabled && !expandedTask
+      ? 'Ready'
+      : currentTaskTitle(
+          expandedTask ?? (pureDominant === 'play' ? 'names' : pureDominant),
+        )
+
+  const skipBuzzers = () => {
+    setBuzzerSkipped(true)
+    // Leave Buzzers and resume ordinary workflow default (Teams/Names next).
+    setExpandOverride(undefined)
+  }
 
   const renderCollapsedSecondary = (item: CompactReadinessItem) => {
     if (expandedTask === item.id) return null
@@ -354,7 +361,7 @@ export function ClassroomSetupPanel({
           data-testid="setup-skip-buzzers"
           onClick={(event) => {
             event.stopPropagation()
-            setBuzzerSkipped(true)
+            skipBuzzers()
           }}
         >
           Skip
@@ -537,9 +544,8 @@ export function ClassroomSetupPanel({
           <p className="host__note" data-testid="setup-buzzers-copy">
             {classSetupBuzzerTaskCopy({ sonyReady, sonyTeacherSummary, wbuzzPresent })}
           </p>
-          <p className="host__note" data-testid="setup-buzzers-owner-note">
-            Connect and check use the Buzzers section below — Class Setup does not remount that
-            panel.
+          <p className="host__note" data-testid="setup-buzzers-section-note">
+            Connect and check buzzers in the Buzzers section below when you want them.
           </p>
           {onRevealBuzzersSetup && (
             <button
@@ -560,7 +566,7 @@ export function ClassroomSetupPanel({
               type="button"
               className="btn btn--secondary"
               data-testid="setup-skip-buzzers"
-              onClick={() => setBuzzerSkipped(true)}
+              onClick={skipBuzzers}
             >
               Skip buzzers
             </button>

@@ -57,8 +57,11 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('setup-play')).toBeDisabled()
     expect(screen.getByTestId('setup-play-blocker')).toHaveTextContent(/still need names/i)
     expect(screen.getByTestId('readiness-names')).toHaveTextContent(/needs attention/i)
+    // Workflow opens Buzzers first; required readiness cue stays on Names.
+    expect(screen.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'buzzers')
+    expect(screen.getByTestId('setup-row-buzzers')).toHaveAttribute('data-selected', 'true')
     expect(screen.getByTestId('setup-row-names')).toHaveAttribute('data-emphasized', 'true')
-    expect(screen.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
+    expect(screen.getByTestId('setup-row-names')).toHaveAttribute('data-selected', 'false')
     expect(screen.getByTestId('setup-row-teams')).toBeInTheDocument()
     expect(screen.getByTestId('setup-row-buzzers')).toBeInTheDocument()
     expect(screen.getByTestId('setup-row-display')).toBeInTheDocument()
@@ -66,21 +69,54 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.queryByTestId('setup-ready-heading')).toBeNull()
   })
 
-  it('lets a teacher finish with typed names when Sony is disconnected', () => {
-    const { onPlay } = renderSetup({ sonyReady: false })
-    expect(screen.getByTestId('readiness-sony')).toHaveTextContent(/optional/i)
+  it('separates Buzzers workflow selection from Names Start readiness', () => {
+    renderSetup({ onRevealBuzzersSetup: vi.fn() })
+    expect(screen.getByTestId('setup-buzzers-task')).toBeVisible()
+    expect(screen.getByTestId('setup-play')).toBeDisabled()
+    expect(screen.getByTestId('setup-play-blocker')).toHaveTextContent(/still need names/i)
+    expect(screen.getByTestId('setup-buzzers-section-note').textContent).not.toMatch(
+      /remount|component|Gamepad|detector|poller|architecture/i,
+    )
+
+    // Explicit selection overrides the Buzzers workflow default.
+    fireEvent.click(screen.getByTestId('readiness-display'))
+    expect(screen.getByTestId('setup-row-display')).toHaveAttribute('data-selected', 'true')
+    expect(screen.getByTestId('setup-display-task')).toBeVisible()
+    expect(screen.getByTestId('setup-play')).toBeDisabled()
+
+    fireEvent.click(screen.getByTestId('readiness-sony'))
+    fireEvent.click(screen.getByTestId('setup-skip-buzzers'))
+    expect(screen.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
+    expect(screen.getByTestId('setup-names-task')).toBeVisible()
+    expect(screen.getByTestId('setup-play')).toBeDisabled()
+    expect(screen.getByTestId('readiness-sony')).toHaveTextContent(/skipped/i)
+
     fireEvent.change(screen.getByTestId('tnsb-manual-red'), { target: { value: 'Comet Crew' } })
     fireEvent.blur(screen.getByTestId('tnsb-manual-red'))
     fireEvent.change(screen.getByTestId('tnsb-manual-blue'), { target: { value: 'Ozone Owls' } })
     fireEvent.blur(screen.getByTestId('tnsb-manual-blue'))
     expect(screen.getByTestId('setup-play')).not.toBeDisabled()
-    expect(screen.getByTestId('setup-ready-heading')).toHaveTextContent(/ready/i)
+    expect(screen.getByTestId('setup-ready-heading')).toBeVisible()
+  })
+
+  it('enables Start after Names while Buzzers remain unresolved', () => {
+    const { onPlay } = renderSetup({ sonyReady: false })
+    expect(screen.getByTestId('setup-buzzers-task')).toBeVisible()
+    fireEvent.click(screen.getByTestId('readiness-names'))
+    fireEvent.change(screen.getByTestId('tnsb-manual-red'), { target: { value: 'Comet Crew' } })
+    fireEvent.blur(screen.getByTestId('tnsb-manual-red'))
+    fireEvent.change(screen.getByTestId('tnsb-manual-blue'), { target: { value: 'Ozone Owls' } })
+    fireEvent.blur(screen.getByTestId('tnsb-manual-blue'))
+    expect(screen.getByTestId('setup-play')).not.toBeDisabled()
+    expect(screen.getByTestId('setup-ready-heading')).toBeVisible()
+    expect(screen.getByTestId('readiness-sony')).toHaveTextContent(/optional/i)
     fireEvent.click(screen.getByTestId('setup-play'))
     expect(onPlay).toHaveBeenCalled()
   })
 
   it('does not publish selected identities from a follower window', () => {
     const { onSelectedIdentitiesChange } = renderSetup({ leadership: 'follower' })
+    fireEvent.click(screen.getByTestId('readiness-names'))
     fireEvent.change(screen.getByTestId('tnsb-manual-red'), { target: { value: 'Comet Crew' } })
     fireEvent.blur(screen.getByTestId('tnsb-manual-red'))
     expect(onSelectedIdentitiesChange).not.toHaveBeenCalled()
@@ -88,6 +124,7 @@ describe('ClassroomSetupPanel', () => {
 
   it('keeps Sony copy free of WebHID and profile identifiers', () => {
     renderSetup()
+    fireEvent.click(screen.getByTestId('readiness-names'))
     expect(screen.getByTestId('setup-sony-copy').textContent).not.toMatch(/WebHID|054c|report id|cqs\.sony/i)
   })
 
@@ -95,7 +132,7 @@ describe('ClassroomSetupPanel', () => {
     renderSetup()
     expect(screen.queryByTestId('setup-panic-mute')).toBeNull()
     expect(screen.getByTestId('setup-current-task').textContent).not.toMatch(
-      /WebHID|IndexedDB|054c|keepalive/i,
+      /WebHID|IndexedDB|054c|keepalive|remount|Gamepad|detector|poller/i,
     )
   })
 
@@ -374,6 +411,7 @@ describe('ClassroomSetupPanel', () => {
     renderSetup({ sonyReady: false })
     expect(screen.getByTestId('setup-play')).toBeDisabled()
     expect(screen.getByTestId('setup-play-blocker').textContent).not.toMatch(/buzzer|sony|webhid/i)
+    fireEvent.click(screen.getByTestId('readiness-names'))
     fireEvent.change(screen.getByTestId('tnsb-manual-red'), { target: { value: 'Comet Crew' } })
     fireEvent.blur(screen.getByTestId('tnsb-manual-red'))
     expect(screen.getByTestId('setup-play-blocker')).toHaveTextContent(/Team 2 still needs a name/i)
@@ -396,10 +434,12 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('team-name-selection-board')).toBeVisible()
   })
 
-  it('keeps Class setup focused on names without requiring Mute as the current task', () => {
+  it('opens Buzzers first without making Mute or Sound the current task', () => {
     renderSetup()
+    expect(screen.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'buzzers')
+    expect(screen.getByTestId('setup-current-task')).toHaveTextContent(/check buzzers/i)
     expect(screen.getByTestId('setup-current-task')).not.toHaveAttribute('data-task', 'sound')
-    expect(screen.getByTestId('setup-current-task')).toHaveTextContent(/choose team names/i)
+    expect(screen.queryByTestId('setup-panic-mute')).toBeNull()
   })
 
   it('never disables Back to setup when names are incomplete (L0)', () => {
@@ -563,6 +603,7 @@ describe('ClassroomSetupPanel', () => {
 
   it('keeps Fix team count primary when Teams are blocked (0-team repair)', () => {
     renderSetup({ teams: [], onFixTeamCount: vi.fn() })
+    fireEvent.click(screen.getByTestId('readiness-teams'))
     const edit = screen.getByTestId('setup-fix-team-count')
     expect(edit).toBeVisible()
     expect(edit).toHaveClass('btn')
@@ -590,6 +631,10 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('readiness-names')).toHaveAttribute('data-status', 'blocked')
     expect(screen.getByTestId('setup-play')).toBeDisabled()
     expect(screen.getByTestId('setup-play-blocker')).toHaveTextContent(/still needs teams/i)
+    // Workflow opens Buzzers first; Teams remains the required readiness cue.
+    expect(screen.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'buzzers')
+    expect(screen.getByTestId('setup-row-teams')).toHaveAttribute('data-emphasized', 'true')
+    fireEvent.click(screen.getByTestId('readiness-teams'))
     expect(screen.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'teams')
     expect(screen.getByTestId('setup-fix-team-count')).toBeVisible()
     fireEvent.click(screen.getByTestId('setup-fix-team-count'))
@@ -612,6 +657,7 @@ describe('ClassroomSetupPanel', () => {
 
   it('keeps the selected row open on a second click', () => {
     renderSetup({ teams: [] })
+    fireEvent.click(screen.getByTestId('readiness-teams'))
     expect(screen.getByTestId('setup-teams-task')).toBeVisible()
     fireEvent.click(screen.getByTestId('readiness-teams'))
     expect(screen.getByTestId('setup-teams-task')).toBeVisible()
@@ -692,6 +738,7 @@ describe('ClassroomSetupPanel', () => {
 
   it('uses keyboard-honest Names copy when wbuzzPresent is false', () => {
     renderSetup({ wbuzzPresent: false })
+    fireEvent.click(screen.getByTestId('readiness-names'))
     const copy = screen.getByTestId('setup-sony-copy').textContent ?? ''
     expect(copy).toMatch(/type a name/i)
     expect(copy).toMatch(/keyboard always works/i)
@@ -700,6 +747,7 @@ describe('ClassroomSetupPanel', () => {
 
   it('allows colour-press Names guidance only when wbuzzPresent is true', () => {
     renderSetup({ wbuzzPresent: true })
+    fireEvent.click(screen.getByTestId('readiness-names'))
     const copy = screen.getByTestId('setup-sony-copy').textContent ?? ''
     expect(copy).toMatch(/Blue, Orange, Green, or Yellow/)
     expect(copy).toMatch(/type a name/i)
@@ -726,6 +774,7 @@ describe('ClassroomSetupPanel', () => {
         onSelectedIdentitiesChange={onSelectedIdentitiesChange}
       />,
     )
+    fireEvent.click(screen.getByTestId('readiness-names'))
     fireEvent.change(screen.getByTestId('tnsb-manual-red'), { target: { value: 'Comet Crew' } })
     fireEvent.blur(screen.getByTestId('tnsb-manual-red'))
     expect(onSelectedIdentitiesChange).toHaveBeenCalled()

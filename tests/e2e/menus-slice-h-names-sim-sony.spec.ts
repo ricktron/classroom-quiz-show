@@ -24,6 +24,8 @@ test('H8 SIMULATED: ?play= Names shows colour wording with supported Wbuzz; keyb
   await expect(page.getByTestId('classroom-setup')).toBeVisible()
   await expect(page).toHaveURL(/[?&]play=/)
 
+  await page.getByTestId('readiness-names').click()
+
   // Colour-button guidance appears only when supported profile is present.
   await expect(page.getByTestId('setup-sony-copy')).toBeVisible({ timeout: 15_000 })
   await expect(page.getByTestId('setup-sony-copy')).toContainText(
@@ -50,6 +52,7 @@ test('H8 without receiver: authentic ?play= Names stays keyboard-only (no colour
   page,
 }) => {
   await importDemoAndPlay(page)
+  await page.getByTestId('readiness-names').click()
   await expect(page.getByTestId('setup-sony-copy')).toBeVisible()
   await expect(page.getByTestId('setup-sony-copy')).toContainText(/type a name/i)
   await expect(page.getByTestId('setup-sony-copy')).not.toContainText(/Blue, Orange/)

@@ -52,6 +52,8 @@ test('0-team: Names selects when blocked; Fix team count opens Game settings', a
 
   await expect(page.getByTestId('classroom-setup')).toBeVisible({ timeout: 15_000 })
   await expect(page.getByTestId('readiness-teams')).toHaveAttribute('data-status', 'complete')
+  await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'buzzers')
+  await page.getByTestId('readiness-names').click()
   await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
   await expect(page.getByTestId('setup-sony-copy')).toBeVisible()
   await expect(page.locator('[data-testid^="tnsb-manual-"]').first()).toBeVisible()

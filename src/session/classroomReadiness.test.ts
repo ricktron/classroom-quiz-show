@@ -7,6 +7,7 @@ import {
   classroomReadinessItems,
   compactReadinessItems,
   currentTaskTitle,
+  defaultSetupWorkflowTask,
   displayFactLabel,
   dominantSetupTask,
   optionalSetupChore,
@@ -93,22 +94,68 @@ describe('classroom readiness', () => {
     )
   })
 
-  it('makes names the dominant task until required identity is complete', () => {
-    expect(dominantSetupTask({ ...ready, namesAssigned: false })).toBe('names')
-    expect(currentTaskTitle('names')).toMatch(/choose team names/i)
-    const compact = compactReadinessItems({
+  it('keeps required readiness on Names while workflow default opens Buzzers first', () => {
+    const unmet = {
       ...ready,
       namesAssigned: false,
       sonyReady: false,
+      buzzerSkipped: false,
       displayOpen: false,
       unnamedTeamLabels: ['Team 1', 'Team 2', 'Team 3', 'Team 4'],
-    })
+    }
+    expect(canStartPlay(unmet)).toBe(false)
+    expect(dominantSetupTask(unmet)).toBe('names')
+    expect(defaultSetupWorkflowTask(unmet)).toBe('buzzers')
+    expect(playBlockerExplanation(unmet)).toMatch(/still need names/i)
+    expect(currentTaskTitle('names')).toMatch(/choose team names/i)
+    expect(currentTaskTitle('buzzers')).toMatch(/check buzzers/i)
+    const compact = compactReadinessItems(unmet)
     expect(compact.find((item) => item.id === 'names')?.status).toBe('needs-attention')
     expect(compact.find((item) => item.id === 'names')?.statusWord).toMatch(/needs attention/i)
     expect(compact.find((item) => item.id === 'buzzers')?.status).toBe('optional')
     expect(compact.find((item) => item.id === 'display')?.status).toBe('optional')
     expect(compact.find((item) => item.id === 'buzzers')?.statusWord).not.toMatch(/needs attention/i)
     expect(compact.find((item) => item.id === 'display')?.statusWord).not.toMatch(/needs attention/i)
+  })
+
+  it('advances workflow default past Buzzers once skipped or ready without changing Start gate', () => {
+    expect(
+      defaultSetupWorkflowTask({
+        ...ready,
+        namesAssigned: false,
+        sonyReady: false,
+        buzzerSkipped: true,
+      }),
+    ).toBe('names')
+    expect(
+      defaultSetupWorkflowTask({
+        ...ready,
+        namesAssigned: false,
+        teamCount: 0,
+        sonyReady: false,
+        buzzerSkipped: true,
+      }),
+    ).toBe('teams')
+    expect(
+      defaultSetupWorkflowTask({
+        ...ready,
+        namesAssigned: false,
+        sonyReady: true,
+        buzzerSkipped: false,
+      }),
+    ).toBe('names')
+    expect(
+      dominantSetupTask({
+        ...ready,
+        namesAssigned: false,
+        sonyReady: false,
+        buzzerSkipped: false,
+      }),
+    ).toBe('names')
+    expect(canStartPlay({ ...ready, sonyReady: false })).toBe(true)
+    expect(defaultSetupWorkflowTask({ ...ready, sonyReady: false, buzzerSkipped: false })).toBe(
+      'play',
+    )
   })
 
   it('returns Ready (play) when required met even if optionals unresolved', () => {

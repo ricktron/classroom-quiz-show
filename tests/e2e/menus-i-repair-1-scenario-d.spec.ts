@@ -33,19 +33,20 @@ test('Scenario D: Buzzers→Teams→Names order, selection grammar, Wbuzz check,
     'setup-row-sound',
   ])
 
-  // First required work remains Names when teams are valid (Buzzers optional).
-  await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
-  await expect(page.getByTestId('setup-play')).toBeDisabled()
-
-  await page.getByTestId('readiness-sony').click()
+  // Workflow initially opens Buzzers; required Start blocker remains Names.
+  await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'buzzers')
   await expect(page.getByTestId('setup-row-buzzers')).toHaveAttribute('data-selected', 'true')
-  await expect(page.getByTestId('setup-row-names')).toHaveAttribute('data-selected', 'false')
+  await expect(page.getByTestId('setup-row-names')).toHaveAttribute('data-emphasized', 'true')
+  await expect(page.getByTestId('setup-play')).toBeDisabled()
+  await expect(page.getByTestId('setup-play-blocker')).toContainText(/name/i)
   await expect(page.getByTestId('setup-buzzers-task')).toBeVisible()
   await expect(page.getByTestId('setup-reveal-buzzers')).toBeVisible()
   // Supported hardware present → Skip must not be the only / primary affordance.
   await expect(page.getByTestId('setup-skip-buzzers')).toHaveCount(0)
   await expect(page.getByTestId('sbs-supported-profile')).toHaveCount(1)
   await expect(page.getByTestId('gih')).toHaveCount(1)
+  const buzzersBody = await page.getByTestId('setup-buzzers-task').innerText()
+  expect(buzzersBody).not.toMatch(/remount|component|Gamepad|detector|poller|architecture/i)
 
   // Re-click keeps body open (no disappearing selected body).
   await page.getByTestId('readiness-sony').click()
@@ -71,6 +72,7 @@ test('Scenario D: Buzzers→Teams→Names order, selection grammar, Wbuzz check,
   await fillAllTeamNames(page)
   await expect(page.getByTestId('setup-ready-heading')).toBeVisible()
   await expect(page.getByTestId('setup-play')).toBeEnabled()
+  // Names complete → Start enables while Buzzers remain optional/unresolved for Start.
   await expect(page.getByTestId('readiness-sony')).toContainText(/optional|complete|skipped/i)
 
   // Buzzers remain optional for Start.

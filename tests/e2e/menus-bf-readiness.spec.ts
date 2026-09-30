@@ -17,8 +17,10 @@ test('Ready with optionals unresolved keeps Start Game sole dominant then enters
     await expect(page.getByTestId(`setup-row-${id}`)).toBeVisible()
   }
   await expect(page.getByTestId('setup-play')).toBeDisabled()
-  await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
+  await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'buzzers')
+  await expect(page.getByTestId('setup-row-buzzers')).toHaveAttribute('data-selected', 'true')
   await expect(page.getByTestId('readiness-names')).toContainText(/needs attention/i)
+  await expect(page.getByTestId('setup-play-blocker')).toContainText(/name/i)
 
   await fillAllTeamNames(page)
 

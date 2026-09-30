@@ -54,9 +54,11 @@ function renderHost(
 async function fillNamesAndStart(): Promise<void> {
   await waitFor(() => {
     expect(screen.getByTestId('classroom-setup')).toBeInTheDocument()
-    expect(screen.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
   })
+  // Workflow may open Buzzers first; Names is still required for Start.
+  fireEvent.click(screen.getByTestId('readiness-names'))
   await waitFor(() => {
+    expect(screen.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
     expect(screen.getAllByTestId(/^tnsb-manual-/).length).toBeGreaterThan(0)
   })
   const manuals = screen.getAllByTestId(/^tnsb-manual-/)
