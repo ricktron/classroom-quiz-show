@@ -32,7 +32,13 @@ import { useResponseTimerExpiry } from './useResponseTimerExpiry'
 import { useFinalWagerExpiry } from './useFinalWagerExpiry'
 import { systemClock, type Clock } from '../time/clock'
 import { useHostPersistence, type UseHostPersistenceOptions } from './useHostPersistence'
-import { shouldResumeRecoveryFromNavigation } from './hostResumeNavigation'
+import {
+  isContextualTeamCountReturn,
+  setupFocusFromNavigation,
+  shouldResumeRecoveryFromNavigation,
+  type HostSetupFocusTask,
+} from './hostResumeNavigation'
+import { isDisposableContextualTeamCountSession } from './disposableContextualTeamCountSession'
 import {
   enqueueActivePackResourceScopePublish,
   hydratePackMediaForDefinition,
@@ -98,6 +104,11 @@ export function FoundationControls({
   const [homeResumeWelcomeVisible, setHomeResumeWelcomeVisible] = useState(false)
   const [playReplaceNeeded, setPlayReplaceNeeded] = useState(false)
   const [playReplaceArmed, setPlayReplaceArmed] = useState(false)
+  /** Class Setup Check/Show → existing SBS Buzzer Check (one-shot). */
+  const [enterBuzzerCheck, setEnterBuzzerCheck] = useState(false)
+  /** Q1 contextual Fix return: open Names (or named task) once setup remounts. */
+  const [setupFocusOnce, setSetupFocusOnce] = useState<HostSetupFocusTask | null>(null)
+  const contextualReturnLatchedRef = useRef(false)
   const [resetArmed, setResetArmed] = useState(false)
   const [startSessionArmed, setStartSessionArmed] = useState(false)
   // Ordinary ?play= preparation keeps More closed. Bare #/host may start open
@@ -194,13 +205,62 @@ export function FoundationControls({
     homeResumeWelcomePendingEpoch,
   ])
 
-  // Home Resume carries a one-shot navigation intent. Apply the same Host resume
-  // path once recovery is readable, then clear the intent so refresh re-prompts.
-  // Arm Welcome-back only on the success path (not stale-intent clear-only).
+  // Home Resume / Q1 contextual Fix-return: one-shot navigation intent.
+  // Home Resume applies Host resume once recovery is readable, then clears
+  // intent so refresh re-prompts. Contextual Fix-return may discardRecovery
+  // ONLY when the interrupted Session is provably disposable; otherwise fail
+  // closed (keep recoverability, clear latch, no false success / no spin).
+  // Always preserve search (`?play=`) when clearing state.
   useEffect(() => {
+    const clearNavState = () => {
+      navigate(
+        { pathname: location.pathname, search: location.search },
+        { replace: true, state: null },
+      )
+    }
+
+    if (isContextualTeamCountReturn(location.state)) {
+      contextualReturnLatchedRef.current = true
+      const focus = setupFocusFromNavigation(location.state)
+      if (focus) setSetupFocusOnce(focus)
+      clearNavState()
+    }
+
+    if (
+      contextualReturnLatchedRef.current &&
+      persistence.bootPhase === 'recovery' &&
+      persistence.recovery
+    ) {
+      if (homeResumeHandledRef.current) return
+      homeResumeHandledRef.current = true
+      const disposable = isDisposableContextualTeamCountSession({
+        history: persistence.recovery.events,
+        expectedPlayGameId: playGameId,
+      })
+      if (!disposable) {
+        // Meaningful Session: never silent discard. Clear latch so the effect
+        // does not spin; recovery UI remains for Resume / explicit replace.
+        contextualReturnLatchedRef.current = false
+        homeResumeHandledRef.current = false
+        setSetupFocusOnce(null)
+        return
+      }
+      void persistence.discardRecovery().then((result) => {
+        if (!result.ok) {
+          // Discard failed — Session still on device; clear latch, no success claim.
+          contextualReturnLatchedRef.current = false
+          homeResumeHandledRef.current = false
+          setSetupFocusOnce(null)
+        }
+      })
+      return
+    }
+
     const wantsResume = shouldResumeRecoveryFromNavigation(location.state)
     if (!wantsResume) {
-      homeResumeHandledRef.current = false
+      if (!contextualReturnLatchedRef.current) {
+        homeResumeHandledRef.current = false
+      }
       return
     }
     if (homeResumeHandledRef.current) return
@@ -210,20 +270,24 @@ export function FoundationControls({
       // resume() bumps storeEpoch by 1; latch that next epoch for hydrate reveal.
       setHomeResumeWelcomePendingEpoch(persistence.storeEpoch + 1)
       persistence.resume()
-      navigate('.', { replace: true, state: null })
+      clearNavState()
       return
     }
     // Stale intent (already discarded / no recovery): clear without claiming success.
     homeResumeHandledRef.current = true
-    navigate('.', { replace: true, state: null })
+    clearNavState()
   }, [
     location.state,
+    location.pathname,
+    location.search,
     navigate,
     persistence,
     persistence.bootPhase,
     persistence.recovery,
     persistence.resume,
+    persistence.discardRecovery,
     persistence.storeEpoch,
+    playGameId,
   ])
 
   // The ONE scheduled clock read in the application. It turns a deadline into a
@@ -370,6 +434,7 @@ export function FoundationControls({
           playLoadedRef.current = playGameId
           setPlayReplaceNeeded(false)
           setPlayReplaceArmed(false)
+          contextualReturnLatchedRef.current = false
           return
         }
         if ('needsConfirmation' in result && result.needsConfirmation) {
@@ -595,6 +660,8 @@ export function FoundationControls({
             setAudioUnderstood(true)
           }}
           playReady={false}
+          initialSelectedTask={setupFocusOnce}
+          onInitialSelectedTaskConsumed={() => setSetupFocusOnce(null)}
           onPlay={() => {
             dismissWelcomeBack()
             setPlayReady(true)
@@ -604,11 +671,23 @@ export function FoundationControls({
             window.scrollTo(0, 0)
           }}
           onFixTeamCount={() => {
+            // Q1-C: only blocked team-count repair carries destructive-eligible
+            // contextual return. Valid Teams "Open Game settings" opens authoring
+            // without discard/return intent (Save must not silently wipe Session).
+            const teamCount = game.definition.teams.length
+            const teamsBlocked = teamCount < 1 || teamCount > 8
             navigate(editPath(game.definition.id), {
-              state: { authoringFocus: 'team-count' },
+              state: {
+                authoringFocus: 'team-count',
+                ...(teamsBlocked
+                  ? { returnToClassSetup: true, setupFocus: 'names' as const }
+                  : {}),
+              },
             })
           }}
           onRevealBuzzersSetup={() => {
+            // Q1-A: Check/Show enters existing SBS Buzzer Check, then reveals it.
+            setEnterBuzzerCheck(true)
             const target =
               document.querySelector('[data-testid="sbs-supported-profile"]') ??
               document.querySelector('[data-testid="gih"]')
@@ -701,6 +780,8 @@ export function FoundationControls({
           game={game}
           clock={clock}
           selectionMode={!playReady}
+          enterBuzzerCheck={enterBuzzerCheck}
+          onEnterBuzzerCheckConsumed={() => setEnterBuzzerCheck(false)}
           onSelectionBatch={setSelectionObservationBatch}
           onSonyReadyChange={setSonyReady}
           onSonyTeacherSummaryChange={setSonyTeacherSummary}

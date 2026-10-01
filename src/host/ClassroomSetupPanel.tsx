@@ -68,6 +68,12 @@ export interface ClassroomSetupPanelProps {
   /** Scroll/reveal the existing Buzzers setup section below Class Setup. */
   readonly onRevealBuzzersSetup?: () => void
   /**
+   * One-shot expand after contextual Fix return (Q1). Parent clears via
+   * `onInitialSelectedTaskConsumed` once applied.
+   */
+  readonly initialSelectedTask?: SetupTaskId | null
+  readonly onInitialSelectedTaskConsumed?: () => void
+  /**
    * Supported buzzers detected (lifted presence only).
    * Unknown/false → keyboard-honest Names copy; never invent colour-press claims.
    */
@@ -125,6 +131,8 @@ export function ClassroomSetupPanel({
   onPlay,
   onFixTeamCount,
   onRevealBuzzersSetup,
+  initialSelectedTask = null,
+  onInitialSelectedTaskConsumed,
   onSelectedIdentitiesChange,
   reducedMotion = false,
   grayscale = false,
@@ -151,6 +159,13 @@ export function ClassroomSetupPanel({
   const lastBatchKey = useRef<string>('')
   const prevClassReady = useRef<boolean | null>(null)
   const prevPureDominant = useRef<SetupTaskId | 'play' | null>(null)
+
+  // Q1 contextual Fix return: open Names (or named task) once without sticky pin.
+  useEffect(() => {
+    if (!initialSelectedTask) return
+    setExpandOverride(initialSelectedTask)
+    onInitialSelectedTaskConsumed?.()
+  }, [initialSelectedTask, onInitialSelectedTaskConsumed])
 
   useEffect(() => {
     setSelection(seedSelection(teamNameBank, teamIds, initialNamesRef.current))

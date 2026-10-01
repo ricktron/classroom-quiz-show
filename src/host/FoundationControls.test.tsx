@@ -6,7 +6,7 @@ import { playPath, ROUTES } from '../routes/paths'
 import { ThemeProvider } from '../theme/ThemeProvider'
 import { createMemoryPersistenceAdapter } from '../persistence/memoryAdapter'
 import type { UseHostPersistenceOptions } from './useHostPersistence'
-import { shouldResumeRecoveryFromNavigation } from './hostResumeNavigation'
+import { shouldResumeRecoveryFromNavigation, isContextualTeamCountReturn } from './hostResumeNavigation'
 import {
   hostPersistenceOptions,
   seedResumableHostSession,
@@ -117,6 +117,7 @@ describe('FoundationControls thin semantic unit (MENUS H §5)', () => {
   it('arms Welcome-back only after Home-Resume hydrate, not bare Host Persistence Resume', async () => {
     expect(shouldResumeRecoveryFromNavigation({ cqsResumeRecovery: true })).toBe(true)
     expect(shouldResumeRecoveryFromNavigation(null)).toBe(false)
+    expect(isContextualTeamCountReturn({ cqsContextualTeamCountReturn: true })).toBe(true)
 
     const { adapter } = await seedResumableHostSession(undefined, 'fc-session-1')
     renderHost(

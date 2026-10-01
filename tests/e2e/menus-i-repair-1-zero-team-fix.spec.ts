@@ -2,18 +2,24 @@ import { test, expect } from '@playwright/test'
 import { importMenusJsonAndPlay, menusBoardGameJson } from './helpers/menusGameJson'
 
 /**
- * I-REPAIR-1 — 0-team contextual Fix team count → Game settings → return setup.
- * Complements Slice E; asserts open Game settings / team-count landing.
+ * Q1 — 0-team contextual Fix team count → Game settings → direct Class Setup.
+ *
+ * Target path (Finding B): Save returns directly to Class Setup (Names), without
+ * Home / Play / Resume / replace theater as teacher-facing steps.
+ *
+ * Eligibility: this unfinished Session is init-only + invalid team-count for the
+ * same Game — disposable under `isDisposableContextualTeamCountSession`. Host
+ * may discardRecovery only then; meaningful Sessions must not take this path.
  */
 
 test.describe.configure({ mode: 'serial' })
 
-test('0-team: Names selects when blocked; Fix team count opens Game settings', async ({ page }) => {
+test('0-team: Fix team count Save returns directly to Class Setup Names', async ({ page }) => {
   await importMenusJsonAndPlay(
     page,
     menusBoardGameJson({
-      id: 'menus-i-repair-1-zero-team',
-      title: 'I-REPAIR-1 Zero-Team Board',
+      id: 'menus-q1-zero-team-fix',
+      title: 'Q1 Zero-Team Board',
       teamCount: 0,
     }),
   )
@@ -23,12 +29,15 @@ test('0-team: Names selects when blocked; Fix team count opens Game settings', a
   await expect(page.getByTestId('readiness-names')).toHaveAttribute('data-status', 'blocked')
   await expect(page.getByTestId('setup-play')).toBeDisabled()
 
+  // BEFORE: Names selects when blocked; Fix is the repair CTA.
   await page.getByTestId('readiness-names').click()
   await expect(page.getByTestId('setup-row-names')).toHaveAttribute('data-selected', 'true')
   await expect(page.getByTestId('setup-row-teams')).toHaveAttribute('data-selected', 'false')
   await expect(page.getByTestId('setup-names-blocked-copy')).toBeVisible()
   await expect(page.getByTestId('setup-fix-team-count')).toBeVisible()
+  await expect(page.getByTestId('setup-fix-team-count')).toHaveText(/fix team count/i)
 
+  // INTENT/ACTION: Fix team count → focused Game settings team-count.
   await page.getByTestId('setup-fix-team-count').click()
   await expect(page.getByTestId('authoring-game-settings')).toHaveAttribute('open')
   await expect(page.getByTestId('authoring-team-count')).toBeVisible()
@@ -38,23 +47,24 @@ test('0-team: Names selects when blocked; Fix team count opens Game settings', a
   await expect(page.getByLabel(/^team 1$/i)).toBeVisible()
   await expect(page.getByLabel(/^team 2$/i)).toBeVisible()
 
+  // EFFECT: Save → direct Class Setup (no Home / Play / Resume / replace clicks).
+  // Disposable eligibility proof (e2e): recovery discarded, no replace theater,
+  // fresh Class Setup Names for the repaired Game (unit predicate covers history).
   await page.getByTestId('authoring-save').click()
-  await expect(page.getByTestId('authoring-save-status')).toContainText(/^saved$/i, {
+  await expect(page.getByTestId('classroom-setup')).toBeVisible({ timeout: 20_000 })
+  await expect(page.getByTestId('persistence-recovery')).toHaveCount(0)
+  await expect(page.getByTestId('play-replace-confirm')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /^resume class$/i })).toHaveCount(0)
+  await expect(page.getByTestId('host-welcome-back')).toHaveCount(0)
+
+  await expect(page.getByTestId('readiness-teams')).toHaveAttribute('data-status', 'complete', {
     timeout: 15_000,
   })
-  const playBtn = page.getByRole('button', { name: /^play$/i })
-  await expect(playBtn).toBeEnabled({ timeout: 15_000 })
-  await playBtn.click()
-
-  await page.getByRole('button', { name: /^resume class$/i }).click({ timeout: 15_000 })
-  await expect(page.getByTestId('play-replace-confirm')).toBeVisible({ timeout: 15_000 })
-  await page.getByRole('button', { name: /load this game and replace the current session/i }).click()
-
-  await expect(page.getByTestId('classroom-setup')).toBeVisible({ timeout: 15_000 })
-  await expect(page.getByTestId('readiness-teams')).toHaveAttribute('data-status', 'complete')
-  await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'buzzers')
-  await page.getByTestId('readiness-names').click()
+  // CONTINUATION: Names if interrupted — no stale Fix; keyboard naming works.
+  await expect(page.getByTestId('setup-row-names')).toHaveAttribute('data-selected', 'true')
   await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
+  await expect(page.getByTestId('setup-names-blocked-copy')).toHaveCount(0)
+  await expect(page.getByTestId('setup-fix-team-count')).toHaveCount(0)
   await expect(page.getByTestId('setup-sony-copy')).toBeVisible()
   await expect(page.locator('[data-testid^="tnsb-manual-"]').first()).toBeVisible()
 })

@@ -83,3 +83,36 @@ export async function settleGamepadPolls(page: Page, frames = 8): Promise<void> 
     frames,
   )
 }
+
+/**
+ * Press and release one simulated gamepad button via the authentic
+ * `__cqsFakeGamepads` hook (same path as `gamepad-input.spec.ts`).
+ * Application code never reads that hook — Playwright-only instrumentation.
+ */
+export async function pressSimulatedGamepadButton(
+  page: Page,
+  buttonIndex: number,
+): Promise<void> {
+  await page.evaluate((idx) => {
+    const state = (
+      window as unknown as {
+        __cqsFakeGamepads?: { pads: { buttons: { pressed: boolean; value: number }[] }[] }
+      }
+    ).__cqsFakeGamepads
+    if (!state) throw new Error('fake gamepads not installed')
+    state.pads[0].buttons[idx].pressed = true
+    state.pads[0].buttons[idx].value = 1
+  }, buttonIndex)
+  await settleGamepadPolls(page)
+  await page.evaluate((idx) => {
+    const state = (
+      window as unknown as {
+        __cqsFakeGamepads?: { pads: { buttons: { pressed: boolean; value: number }[] }[] }
+      }
+    ).__cqsFakeGamepads
+    if (!state) throw new Error('fake gamepads not installed')
+    state.pads[0].buttons[idx].pressed = false
+    state.pads[0].buttons[idx].value = 0
+  }, buttonIndex)
+  await settleGamepadPolls(page, 4)
+}

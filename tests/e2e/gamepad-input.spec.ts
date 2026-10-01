@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 import { ensureHostMoreOpen } from './helpers/hostMore'
 import { FORBIDDEN_DISPLAY_LABELS } from '../../src/test/leakLabels'
-import { installSimulatedGamepad, settleGamepadPolls } from './helpers/simulatedGamepad'
+import { installSimulatedGamepad, pressSimulatedGamepadButton, settleGamepadPolls } from './helpers/simulatedGamepad'
 
 /**
  * Slice 9–10 — controller adapter paths, end to end in a real browser.
@@ -88,32 +88,6 @@ async function installSimulatedSonyBuzzCandidate(page: Page) {
     buttonCount: 12,
     axes: [],
   })
-}
-
-/** Press and release one simulated gamepad button; allows rAF polls to observe edges. */
-async function pressSimulatedGamepadButton(page: Page, buttonIndex: number) {
-  await page.evaluate((idx) => {
-    const state = (
-      window as unknown as {
-        __cqsFakeGamepads?: { pads: { buttons: { pressed: boolean; value: number }[] }[] }
-      }
-    ).__cqsFakeGamepads
-    if (!state) throw new Error('fake gamepads not installed')
-    state.pads[0].buttons[idx].pressed = true
-    state.pads[0].buttons[idx].value = 1
-  }, buttonIndex)
-  await settleGamepadPolls(page)
-  await page.evaluate((idx) => {
-    const state = (
-      window as unknown as {
-        __cqsFakeGamepads?: { pads: { buttons: { pressed: boolean; value: number }[] }[] }
-      }
-    ).__cqsFakeGamepads
-    if (!state) throw new Error('fake gamepads not installed')
-    state.pads[0].buttons[idx].pressed = false
-    state.pads[0].buttons[idx].value = 0
-  }, buttonIndex)
-  await settleGamepadPolls(page, 4)
 }
 
 /**

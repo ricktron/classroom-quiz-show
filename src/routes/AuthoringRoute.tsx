@@ -28,6 +28,7 @@ import { openLibraryGame, saveAuthoringDraftToLibrary } from '../library/gameLib
 import { persistenceErr } from '../persistence/results'
 import { ROUTES, playPath } from './paths'
 import { MAX_TEAMS, MIN_TEAMS } from '../game/teams/limits'
+import { contextualTeamCountReturnState } from '../host/hostResumeNavigation'
 import './HostRoute.css'
 import './AuthoringRoute.css'
 
@@ -72,8 +73,25 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
   const cursorSeededForGameRef = useRef<string | null>(null)
   const teamCountFocusConsumedRef = useRef<string | null>(null)
   const teamCountInputRef = useRef<HTMLInputElement | null>(null)
+  /** Q1: blocked Fix team count only — Save may request Class Setup return. */
+  const returnToClassSetupRef = useRef(false)
+  const returnSetupFocusRef = useRef<'names' | 'teams' | 'buzzers'>('names')
   leadershipRef.current = persistence.leadership
   const blocker = useBlocker(saveTrust.dirty || saveTrust.phase === 'saving')
+
+  // Capture contextual return intent once from navigation state (not schema).
+  useEffect(() => {
+    const state = location.state
+    if (state === null || typeof state !== 'object') return
+    if (!('returnToClassSetup' in state) || (state as { returnToClassSetup?: unknown }).returnToClassSetup !== true) {
+      return
+    }
+    returnToClassSetupRef.current = true
+    const focus = (state as { setupFocus?: unknown }).setupFocus
+    if (focus === 'names' || focus === 'teams' || focus === 'buzzers') {
+      returnSetupFocusRef.current = focus
+    }
+  }, [location.state])
 
   useEffect(() => {
     if (persistence.bootPhase === 'loading') return
@@ -240,6 +258,16 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
       )
       if (outcome.value.ok && writeGateRef.current.latest() === generation) {
         await persistence.refreshLibrary()
+        // Q1: blocked Fix Save → Host Class Setup return intent (Host decides
+        // discard only when Session is disposable; never auto confirmedReplace).
+        if (returnToClassSetupRef.current) {
+          returnToClassSetupRef.current = false
+          navigate(playPath(snapshot.game.gameCanonicalId), {
+            state: contextualTeamCountReturnState({
+              setupFocus: returnSetupFocusRef.current,
+            }),
+          })
+        }
       }
     } catch {
       setSaveTrust((current) =>

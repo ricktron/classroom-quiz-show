@@ -98,6 +98,12 @@ export interface GamepadInputHostPanelProps {
   readonly webHidTransport?: WebHidTransport
   /** When true, controller edges are reported for team-name selection, not scored. */
   readonly selectionMode?: boolean
+  /**
+   * Class Setup Check/Show one-shot: enter the existing SBS Buzzer Check
+   * (same `testMode` owner). Not a second detector.
+   */
+  readonly enterBuzzerCheck?: boolean
+  readonly onEnterBuzzerCheckConsumed?: () => void
   readonly onSelectionObservation?: (observation: SonyBuzzTestObservation & { readonly at: number }) => void
   readonly onSelectionBatch?: (
     observations: readonly (SonyBuzzTestObservation & { readonly at: number })[],
@@ -160,6 +166,8 @@ export function GamepadInputHostPanel({
   persistenceAdapter,
   webHidTransport,
   selectionMode = false,
+  enterBuzzerCheck = false,
+  onEnterBuzzerCheckConsumed,
   onSelectionObservation,
   onSelectionBatch,
   onSonyReadyChange,
@@ -415,6 +423,14 @@ export function GamepadInputHostPanel({
     if (next) setCapture({ mode: 'idle' })
     if (!next) setLastTestObservation(null)
   }, [])
+
+  // Class Setup Check/Show → existing SBS Buzzer Check (one detector owner).
+  useEffect(() => {
+    if (!enterBuzzerCheck) return
+    setTestMode(true)
+    setCapture({ mode: 'idle' })
+    onEnterBuzzerCheckConsumed?.()
+  }, [enterBuzzerCheck, onEnterBuzzerCheckConsumed])
 
   const onSonyPendingCaptureConsumed = useCallback(() => {
     setSonyPendingCapture(null)

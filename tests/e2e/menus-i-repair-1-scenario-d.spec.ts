@@ -2,17 +2,20 @@ import { test, expect } from '@playwright/test'
 import { fillAllTeamNames, importDemoAndPlay } from './helpers/menusClassSetup'
 import {
   installSimulatedSupportedWbuzz,
+  pressSimulatedGamepadButton,
   settleGamepadPolls,
 } from './helpers/simulatedGamepad'
 
 /**
- * I-REPAIR-1 — Scenario D Class Setup functional convergence (semantic e2e).
+ * Q1 Scenario D escape hardening — Class Setup semantic e2e.
  * SIMULATED Wbuzz only. Not physical Sony / owner acceptance / Slice I gate.
+ *
+ * Proof shape: BEFORE → INTENT → ACTION → EFFECT → CONTINUATION.
  */
 
 test.describe.configure({ mode: 'serial' })
 
-test('Scenario D: Buzzers→Teams→Names order, selection grammar, Wbuzz check, Ready', async ({
+test('Scenario D: Buzzers→Teams→Names order, Check effect, Wbuzz press confirm, Ready', async ({
   page,
 }) => {
   await installSimulatedSupportedWbuzz(page)
@@ -48,13 +51,33 @@ test('Scenario D: Buzzers→Teams→Names order, selection grammar, Wbuzz check,
   const buzzersBody = await page.getByTestId('setup-buzzers-task').innerText()
   expect(buzzersBody).not.toMatch(/remount|component|Gamepad|detector|poller|architecture/i)
 
+  // Q1-A BEFORE: Buzzer Check is off — no teacher press confirmation yet.
+  await expect(page.getByTestId('sbs-test-outcome')).toContainText(/Buzzer Check is off/i)
+  await expect(page.getByTestId('sbs-test-mode')).toHaveAttribute('aria-pressed', 'false')
+
   // Re-click keeps body open (no disappearing selected body).
   await page.getByTestId('readiness-sony').click()
   await expect(page.getByTestId('setup-buzzers-task')).toBeVisible()
   await expect(page.getByTestId('setup-row-buzzers')).toHaveAttribute('data-selected', 'true')
 
+  // Q1-A INTENT/ACTION: Class Setup Check buzzers (not a surrogate).
   await page.getByTestId('setup-reveal-buzzers').click()
   await expect(page.getByTestId('sbs-supported-profile')).toBeVisible()
+  // EFFECT: existing SBS Buzzer Check is on (same owner — not a second detector).
+  await expect(page.getByTestId('sbs-test-mode')).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByTestId('sbs-test-outcome')).toContainText(/Buzzer Check is on/i)
+
+  // CONTINUATION: simulated supported press → teacher-visible confirmation.
+  await settleGamepadPolls(page)
+  // Slot 1 red (button 0) — advances controllers-responding via existing owner.
+  await pressSimulatedGamepadButton(page, 0)
+  await expect(page.getByTestId('sbs-test-outcome')).toContainText(/Buzzer Check:/i, {
+    timeout: 10_000,
+  })
+  await expect(page.getByTestId('sbs-controller-layer')).toContainText(/responding/i)
+  // Single detector owner still.
+  await expect(page.getByTestId('gih')).toHaveCount(1)
+  await expect(page.getByTestId('sbs-supported-profile')).toHaveCount(1)
 
   await page.getByTestId('readiness-teams').click()
   await expect(page.getByTestId('setup-row-teams')).toHaveAttribute('data-selected', 'true')
@@ -67,7 +90,9 @@ test('Scenario D: Buzzers→Teams→Names order, selection grammar, Wbuzz check,
   await expect(page.getByTestId('setup-row-teams')).toHaveAttribute('data-selected', 'false')
   await expect(page.getByTestId('setup-names-task')).toBeVisible()
   await expect(page.getByTestId('setup-sony-copy')).toBeVisible()
+  // Q1-C: valid teams → no stale Fix on Names.
   await expect(page.getByTestId('setup-names-blocked-copy')).toHaveCount(0)
+  await expect(page.getByTestId('setup-fix-team-count')).toHaveCount(0)
 
   await fillAllTeamNames(page)
   await expect(page.getByTestId('setup-ready-heading')).toBeVisible()
