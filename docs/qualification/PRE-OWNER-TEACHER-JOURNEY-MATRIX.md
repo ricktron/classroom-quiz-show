@@ -8,7 +8,8 @@
   (docs reconciliation only — not Q1 product auth)
 - **Kind:** teacher-journey interaction matrix for pre-owner functional qualification
 - **Status:** **ACTIVE / Q0 LANDED; Q1 LANDED / VERIFIED ON MAIN** @
-  `9d8246e9811eec19a34a9f8d44b2287b8635a741`
+  `9d8246e9811eec19a34a9f8d44b2287b8635a741`; **Q2 MENUS candidate on branch**
+  (PR #125) — **not** LANDED ON MAIN
 - **Contract:** [`PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](PRE-OWNER-FUNCTIONAL-QUALIFICATION.md)
 - **Q0 observation base:** `origin/main`
   `67ba2c0027f7e2439bd39bd963a7321be0ab6801`
@@ -17,17 +18,20 @@
 - **Q1 squash/main:** `9d8246e9811eec19a34a9f8d44b2287b8635a741`
 - **Q1 tree identity:** `8e59759af585a3b7764adb318a4cdb4bb6300690`
   (tip and squash trees identical — transfer justified)
+- **Q2 authorization:**
+  `AUTHORIZE-CQS-PRE-OWNER-Q2-MENUS-WORKFLOW-FUNCTIONAL-QUALIFICATION-1`
 
 ```text
 Documentation / qualification matrix. Q1 product escape hardening is
-LANDED on main @ 9d8246e… — this reconciliation updates dispositions only.
-Does not start Q2. Does not claim Q2 PASS. PHYSICAL SONY NOT RUN.
-Semantic control and contextual return are requirements inside Q1/Q2 —
-not separate stages. Golden paths = Q3; branch/failure = Q4; Electron = Q5;
-owner feel = Q7; physical evidence is separate (not silent Q5 PASS).
-PRE-Q7 (DevPM) issues eligibility after Q0–Q6; Q7 does not.
-Functional escapes / blockers may not be waived through PRE-Q7.
-PRE-Q7 is a DevPM verdict, not a new numbered stage / separate owner auth.
+LANDED on main @ 9d8246e…. Q2 MENUS workflow candidate is on the delivery
+branch (PR #125) — not LANDED ON MAIN. Does not claim Q3 PASS.
+PHYSICAL SONY NOT RUN. Semantic control and contextual return are
+requirements inside Q1/Q2 — not separate stages. Golden paths = Q3;
+branch/failure = Q4; Electron = Q5; owner feel = Q7; physical evidence is
+separate (not silent Q5 PASS). PRE-Q7 (DevPM) issues eligibility after
+Q0–Q6; Q7 does not. Functional escapes / blockers may not be waived
+through PRE-Q7. PRE-Q7 is a DevPM verdict, not a new numbered stage /
+separate owner auth.
 ```
 
 ---
@@ -66,16 +70,16 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 | ID | Interaction | Success (semantic) | Current proof | Evidence class | Disposition | Q stage | Gap / note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | HL-01 | Cold launch → Home | Private Home visible; no silent session auto-resume | `routes`, `teacher-first-run`, desktop `shell` Resume | AUTOMATED E2E / DESKTOP E2E | RETAIN | Q2/Q5 | Shell ≠ full teacher path |
-| HL-02 | New Game | Creates draft/game → authoring | `menus-slice-cd-home-authoring`, `teacher-home-authoring` | AUTOMATED E2E | STRENGTHEN | Q2 | Empty-library dominance OWNER-ONLY polish |
-| HL-03 | Import Game (demo / paste / xlsx) | Valid save to library; fail-closed on bad input | `import-pipeline`, Home authoring e2e, H4 unit | AUTOMATED E2E / UNIT | STRENGTHEN | Q2 | Template download still Host-split (#110 harvest separate) |
+| HL-02 | New Game | Creates draft/game → authoring | `menus-q2-a-new-game-play-setup` (+ CD board-first) | AUTOMATED E2E | RETAIN | Q2 candidate | Q2-A closes New Game→usable→Play→Class Setup on candidate branch; empty-library feel OWNER-ONLY |
+| HL-03 | Import Game (demo / paste / xlsx) | Valid save to library; fail-closed on bad input | `menus-q2-b-home-import` (+ Host `import-pipeline`) | AUTOMATED E2E / UNIT | RETAIN | Q2 candidate | Home valid JSON + fail-closed; #110 harvest still separate |
 | HL-04 | Import Quality / salvage Keep | Primary status honest; salvage usable | H4 e2e/unit; LOW collapsed-detail escape OPEN | AUTOMATED E2E | RETAIN | Q6 / PRE-Q7 | Accepted **OPEN / LOW** **NON-FUNCTIONAL** residual (collapsed **More detail about this file** after Keep may still deny save). Primary status line is the durable outcome. **Not** a Q1 product escape / ordinary functional blocker unless reclassified. May remain visible at eligibility under that class only — does **not** establish a general functional-defect waiver |
-| HL-05 | My Games / Recent Play | `playable` only; lands `?play=` → Class Setup | `classroom-setup`, menus helpers | AUTOMATED E2E | STRENGTHEN | Q2 | `HomeRoute.test` weak on Play button |
-| HL-06 | Edit / Duplicate / Export / Delete / Rename | Library ops preserve Game/Session isolation | portable/export + library unit; partial e2e | MIXED | STRENGTHEN | Q2 | Multi-game confusion scenario weak |
+| HL-05 | My Games / Recent Play | `playable` only; lands `?play=` → Class Setup | `classroom-setup`, `menus-q2-a` / `menus-q2-b` | AUTOMATED E2E | RETAIN | Q2 candidate | `?play=` + Ready strengthen on classroom-setup |
+| HL-06 | Edit / Duplicate / Export / Delete / Rename | Library ops preserve Game/Session isolation | portable/export + library unit; `menus-q2-c` Duplicate | MIXED | RETAIN | Q2 candidate | Q2-C Duplicate + draft coexistence; Rename/Delete residual thin |
 | HL-07 | Resume class / Start fresh | One Host gate; Start fresh keeps library | `persistence-recovery`, desktop shell | AUTOMATED E2E / DESKTOP | RETAIN | Q2 | Mid-setup abandon ≠ session recovery |
-| HL-08 | Open Display (Home) | Audience opens; no Host-private leak | `audience-display`, projector-safety fragments | AUTOMATED E2E | RETAIN | Q2 | Ordinary path prefers setup Display |
+| HL-08 | Open Display (Home) | Audience opens; no Host-private leak | `menus-q2-p-home-display` (+ projector-safety) | AUTOMATED E2E | RETAIN | Q2 candidate | Web same-tab Display privacy proved |
 | HL-09 | Open classroom controls → bare `#/host` | Power path; must not be marketed as ordinary | `menus-slice-a-host-posture` | AUTOMATED E2E | RETAIN | Q2 | Ordinary funnel uses `?play=` |
 | HL-10 | Backup & restore | Export/import backup without content loss | `backup-restore`, `backup-idb-atomicity` | AUTOMATED E2E | RETAIN | Q5 | Not cold-launch primary |
-| HL-11 | Multi-game + draft confusion | Teacher distinguishes ready vs draft | Fragmentary Home tests | AUTOMATED E2E | NEW | Q2 | Slice H intent; still weak integrated |
+| HL-11 | Multi-game + draft confusion | Teacher distinguishes ready vs draft | `menus-q2-c-multi-game-draft` | AUTOMATED E2E | RETAIN | Q2 candidate | Resume vs Play vs Continue under recovery |
 | HL-12 | Empty library next action | One clear next action | Partial CD e2e | AUTOMATED E2E | OWNER-ONLY | Q7 | Feel/IA owner judgment. Secondary: STRENGTHEN partial CD automation at Q2 |
 
 ---
@@ -89,7 +93,7 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 | AI-03 | Clue / Final authoring | Completes playable Game | `spreadsheet-authoring`, teacher-home | AUTOMATED E2E | RETAIN | Q2 | |
 | AI-04 | Spreadsheet templates | Download+import from intended surface | Host spreadsheet panel e2e | AUTOMATED E2E | STRENGTHEN | Q2 | #110 draft harvest — do not mutate #110 in Q0 |
 | AI-05 | Portable pack round-trip | Export/import preserves playable Game | `portable-packs`, `portable-export` | AUTOMATED E2E | RETAIN | Q2 | |
-| AI-06 | Play from authoring | `?play=` → Class Setup for playable Game | Slice E / zero-team fix path | AUTOMATED E2E | STRENGTHEN | Q2 | Authoring→Play is MENUS Q2; couples to Q1/Q2 contextual return |
+| AI-06 | Play from authoring | `?play=` → Class Setup for playable Game | `menus-q2-a-new-game-play-setup` | AUTOMATED E2E | RETAIN | Q2 candidate | Authoring Play → `?play=` Class Setup closed on candidate |
 | AI-07 | Validation / save status | Honest Saved / blocked playable | authoring e2e + unit | AUTOMATED E2E | RETAIN | Q2 | |
 
 ---
@@ -106,14 +110,14 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 | CS-06 | Teams blocked (0-team) | Teams+Names blocked; Fix team count visible | zero-team fix + Slice E | AUTOMATED E2E | RETAIN | Q2 | |
 | CS-07 | Fix team count contextual return | After save, **direct Class Setup return** when disposable; meaningful Session fail-closed; Open settings non-destructive; roster-drift replace confirm | Q1: disposable Fix → direct Class Setup (zero-team / Slice E); Open settings + 2→3 roster-drift replace confirm (`menus-q1-open-settings-names-preserve`) | AUTOMATED E2E | RETAIN | Q1 closed / Q2 residual | **Finding B CLOSED BY Q1** on main @ `9d8246e…` (disposable gate + direct return + meaningful Session + 2→3 replace). Broader MENUS contextual-return coverage remains Q2 — **not** Q2 PASS |
 | CS-08 | Controller count ≠ team count | Copy distinguishes 1–8 Game teams vs buzzers | Scenario D / panel unit | AUTOMATED E2E / UNIT | RETAIN | Q2 | Do not change 1–8→1–4 |
-| CS-09 | Names keyboard fill | Unique names → Ready/Start enabled | Scenario D, H names sim (keyboard path), panel unit | AUTOMATED E2E | STRENGTHEN | Q2 | Full keyboard-only class still a genuine Q2 strengthen if needed; H names sim proves keyboard fill and (separately) colour-press claim |
+| CS-09 | Names keyboard fill | Unique names → Ready/Start enabled | `menus-q2-h-keyboard-class` (+ Scenario D / H keyboard) | AUTOMATED E2E | RETAIN | Q2 candidate | Keyboard-only class → Ready → Start (no Sony path) |
 | CS-10 | Names via simulated Sony | Colour-button **claim** (and guidance) with supported sim profile; keyboard/manual fill remains operable | `menus-slice-h-names-sim-sony` — authentic `pressSimulatedGamepadButton` + `buttonIndexForSlotColor` colour-press **claim** (SIMULATED) | AUTOMATED E2E (SIMULATED) | RETAIN | Q1 closed / Q2 residual | **Actual colour-claim SIMULATED** on main @ `9d8246e…`. Guidance + keyboard retained. **PHYSICAL SONY NOT RUN.** Not Q2 PASS |
 | CS-11 | Display Open from setup | Display opens; optional for Start | Scenario D / B+F | AUTOMATED E2E | RETAIN | Q2 | |
-| CS-12 | Sound Test | Test works; optional for Start | Scenario D / presentation-audio fragments | AUTOMATED E2E | STRENGTHEN | Q2 | |
+| CS-12 | Sound Test | Test works; optional for Start | `menus-q2-i-sound-test` | AUTOMATED E2E | RETAIN | Q2 candidate | Class Setup Test sound → Sound tested; Start remains enabled |
 | CS-13 | Start / Play → focused Host | Setup unmounts; focused Host first viewport | Scenario D, H-REPAIR-1 focused host | AUTOMATED E2E | RETAIN | Q2 | |
 | CS-14 | Ready + optionals matrix | Start sole dominant when required met; optionals don’t revoke | B+F readiness | AUTOMATED E2E | RETAIN | Q2 | |
 | CS-15 | Viewport / eight-team fit | Ready usable without destructive overflow | `menus-bf-viewport` | AUTOMATED E2E | RETAIN | Q2 | Laptop feel OWNER-ONLY |
-| CS-16 | Mid-setup refresh / abandon | Honest restore of partial setup | **Missing** | — | NEW | Q2 | Session recovery ≠ setup draft; MENUS workflow |
+| CS-16 | Mid-setup refresh / abandon | Honest restore of partial setup | `menus-q2-m-mid-setup-refresh` | AUTOMATED E2E | RETAIN | Q2 candidate | Incomplete names → refresh → Resume → setup; Skip ephemeral OK |
 | CS-17 | Class Setup owner feel / terminology | Ordinary teacher language; no remount jargon | I-REPAIR-1 copy cleanup; Slice I A–C polish | OWNER-OBSERVED | OWNER-ONLY | Q7 | Re-gate after PRE-Q7 eligibility |
 
 ---
@@ -123,7 +127,7 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 | ID | Interaction | Success (semantic) | Current proof | Evidence class | Disposition | Q stage | Gap / note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | HG-01 | Focused Host after Start | Board/timer/local input authority without setup chrome | H-REPAIR-1 focused host; Slice A posture | AUTOMATED E2E | STRENGTHEN | Q2/Q3 | Hook into Q3 golden path |
-| HG-02 | Back to setup | Returns Class Setup; no invented Session events | menus A / G fragments | AUTOMATED E2E | STRENGTHEN | Q2 | |
+| HG-02 | Back to setup | Returns Class Setup; no invented Session events | `menus-q2-l-back-start-again` (+ Slice A) | AUTOMATED E2E | RETAIN | Q2 candidate | Back → Start again → focused Host |
 | HG-03 | Change Game | Identity clear; replace confirms when required | `menus-slice-g-change-game` | AUTOMATED E2E | RETAIN | Q2 | |
 | HG-04 | Category-board select / reveal | Host private; Display public boardOutcome | category-board, S05 board packs | AUTOMATED E2E | RETAIN | Q3 | Compose into golden path |
 | HG-05 | Buzz / active claim | Choreography + privacy | S05 buzz e2e | AUTOMATED E2E | RETAIN | Q3 | Physical buzz PHYSICAL-ONLY (not silent Q5) |
@@ -171,14 +175,22 @@ closures / residuals** — **not** Q2 PASS.
 | `menus-bf-readiness.spec.ts` | **RETAIN** | Ready/optional matrix |
 | `menus-bf-viewport.spec.ts` | **RETAIN** | Fit stress |
 | `menus-slice-a-host-posture.spec.ts` | **RETAIN** | Posture / bare Host |
-| `menus-slice-cd-home-authoring.spec.ts` | **STRENGTHEN** | Home/authoring — Q2 residual |
+| `menus-slice-cd-home-authoring.spec.ts` | **RETAIN** | Home/authoring; Q2-A/B/C sibling packs close STRENGTHEN residuals |
 | `menus-slice-g-change-game.spec.ts` | **RETAIN** | Change Game |
 | `menus-h-repair-1-focused-host.spec.ts` | **RETAIN** | Start → focused Host |
 | `menus-historian-gate.spec.ts` | **RETAIN** | Gate only; not acceptance |
 | `menus-visual-history-capture.spec.ts` | **RETAIN** | Capture when authorized; immutable |
-| `classroom-setup.spec.ts` | **STRENGTHEN** | Align with Buzzers-first workflow — Q2 residual |
-| `teacher-home-authoring.spec.ts` / `teacher-first-run.spec.ts` / `routes.spec.ts` | **STRENGTHEN** | Home reachability — Q2 residual |
+| `classroom-setup.spec.ts` | **RETAIN** | Home Play → setup + keyboard Ready (Q2 strengthen closed) |
+| `teacher-home-authoring.spec.ts` / `teacher-first-run.spec.ts` / `routes.spec.ts` | **RETAIN** | Home reachability — Q2 residual packs cover Play funnel |
 | `persistence-recovery.spec.ts` | **RETAIN** | Session recovery |
+| `menus-q2-a-new-game-play-setup.spec.ts` | **RETAIN** (Q2 candidate) | Q2-A New Game → usable → Play → Class Setup |
+| `menus-q2-b-home-import.spec.ts` | **RETAIN** (Q2 candidate) | Q2-B Home import valid + fail-closed |
+| `menus-q2-c-multi-game-draft.spec.ts` | **RETAIN** (Q2 candidate) | Q2-C multi-game / draft / recovery |
+| `menus-q2-h-keyboard-class.spec.ts` | **RETAIN** (Q2 candidate) | Q2-H keyboard-only Names class |
+| `menus-q2-i-sound-test.spec.ts` | **RETAIN** (Q2 candidate) | Q2-I Sound Test semantic |
+| `menus-q2-l-back-start-again.spec.ts` | **RETAIN** (Q2 candidate) | Q2-L Back → Start again |
+| `menus-q2-m-mid-setup-refresh.spec.ts` | **RETAIN** (Q2 candidate) | Q2-M / CS-16 mid-setup refresh |
+| `menus-q2-p-home-display.spec.ts` | **RETAIN** (Q2 candidate) | Q2-P Home Open Display privacy |
 | `gamepad-input.spec.ts` | **RETAIN** | Sim only; label PHYSICAL-ONLY for real hardware; Q1 shared helper reuse |
 | `final-wager.spec.ts` / `session-summary.spec.ts` / `completed-summary-ledger.spec.ts` | **RETAIN** | Fragments for Q3 golden compose |
 | S05 `s05-*-*.spec.ts` (F1, buzz, board, final, visual) | **RETAIN** | Presentation children; not integrated golden |

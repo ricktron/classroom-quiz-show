@@ -48,7 +48,7 @@ also read
 | S05 parent | **OPEN / NOT TERMINAL** |
 | S05 Final + winner/completion presentation | **TERMINALLY COMPLETE** |
 | S05 integrated owner playthrough | **PAUSED / GATED** (pre-owner Q0–Q6 + PRE-Q7 eligibility); **`OWNER-PLAYTHROUGH-ELIGIBLE` NOT ISSUED** |
-| Pre-owner functional qualification | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123) — [`../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md); matrix [`../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md`](../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md). **Q2 NEXT / NOT AUTHORIZED**. Q3–Q6 not started. Q1 physical Sony **NOT RUN**. |
+| Pre-owner functional qualification | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123) — [`../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md); matrix [`../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md`](../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md). **Q2 MENUS candidate on branch (PR #125) — not LANDED ON MAIN**. Q3–Q6 not started. Q1/Q2 physical Sony **NOT RUN**. |
 | Prior MENUS Slice I playthrough | **NOT RUN** (as acceptance; Scenario D was BLOCKED; I-REPAIR-1 merged; re-gate not authorized here) |
 | S04D / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
@@ -256,13 +256,16 @@ routing:
 [`../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md).
 **Completed:** **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** at
 `9d8246e9811eec19a34a9f8d44b2287b8635a741` (PR #123; Q1 physical Sony
-**NOT RUN**). **Next:** **Q2** MENUS workflow functional qualification —
-**requires a fresh bounded authorization** (not authorized by this handoff).
-Owner playthrough is **PAUSED / GATED** behind Q0–Q6 + PRE-Q7 eligibility
-verdict; **`OWNER-PLAYTHROUGH-ELIGIBLE` is NOT ISSUED**. S05 parent remains
-**OPEN / NOT TERMINAL**. Prior MENUS Slice I playthrough is **NOT RUN** as
-acceptance. S04D / S06 remain **NOT AUTHORIZED**. REAL MVP is **not**
-complete.
+**NOT RUN**). **Q2 MENUS workflow functional qualification:** candidate on
+delivery branch under
+`AUTHORIZE-CQS-PRE-OWNER-Q2-MENUS-WORKFLOW-FUNCTIONAL-QUALIFICATION-1`
+(PR #125) — **candidate-complete / review-ready on branch; not LANDED ON
+MAIN**. **Next after Q2 merge:** **Q3** gameplay golden path — requires a
+fresh bounded authorization. Owner playthrough is **PAUSED / GATED** behind
+Q0–Q6 + PRE-Q7 eligibility verdict; **`OWNER-PLAYTHROUGH-ELIGIBLE` is NOT
+ISSUED**. S05 parent remains **OPEN / NOT TERMINAL**. Prior MENUS Slice I
+playthrough is **NOT RUN** as acceptance. S04D / S06 remain **NOT
+AUTHORIZED**. REAL MVP is **not** complete.
 
 `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is
 **TERMINALLY COMPLETE**. `CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP`
