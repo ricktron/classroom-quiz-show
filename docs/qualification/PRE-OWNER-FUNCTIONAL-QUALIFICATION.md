@@ -3,22 +3,31 @@
 - **Document id:** `PRE-OWNER-FUNCTIONAL-QUALIFICATION`
 - **Program:** `CQS-REAL-MVP-1`
 - **Authorization:** `AUTHORIZE-CQS-PRE-OWNER-Q0-QUALIFICATION-CONTRACT-1`
+  (Q0 registration); Q1 product escape hardening landed under separate
+  authorization via PR #123; this docs reconciliation:
+  `AUTHORIZE-CQS-PRE-OWNER-Q1-POST-MERGE-DOC-RECONCILIATION-1`
 - **Kind:** durable pre-owner functional qualification contract
-- **Status:** **ACTIVE / Q0 CONTRACT REGISTERED**
+- **Status:** **ACTIVE / Q0 LANDED; Q1 LANDED / VERIFIED ON MAIN** @
+  `9d8246e9811eec19a34a9f8d44b2287b8635a741`
 - **Companion:** [`PRE-OWNER-TEACHER-JOURNEY-MATRIX.md`](PRE-OWNER-TEACHER-JOURNEY-MATRIX.md)
-- **Observation base (registration):** `origin/main`
+- **Observation base (Q0 registration):** `origin/main`
   `67ba2c0027f7e2439bd39bd963a7321be0ab6801` (PR #121 squash merge of
   I-REPAIR-1 Class Setup functional convergence)
+- **Q1 verified on main:** `9d8246e9811eec19a34a9f8d44b2287b8635a741`
+  (PR #123 squash of tip `f5eeab3…`; Scenario-D escape hardening)
 
 ```text
-This file is documentation / qualification contract only.
-It authorizes no product mutation, no Q1 escape repair, no S05 parent
-terminalization, no S04D / S06, no merge, and no OWNER-PLAYTHROUGH-ELIGIBLE.
+This file is documentation / qualification contract.
+Q0 registered the ladder only (no product mutation).
+Q1 product escape hardening is LANDED / VERIFIED ON MAIN @ 9d8246e…
+(PR #123). This post-merge docs reconciliation authorizes no Q2 / product /
+tests / playthrough / eligibility / S05 terminalization / S04D / S06.
 ```
 
 ```text
 routing ≠ authority
-naming Q1–Q7 does not start them
+naming Q2–Q7 does not start them
+Q0 observation history ≠ Q1 closure
 ```
 
 ---
@@ -179,9 +188,10 @@ This is a **qualification requirement inside Q1 (escape hardening) and Q2
 | Back to setup | Returns setup without inventing Session events |
 | Board / Final / completion | Gameplay authority through completion summary |
 
-### 5.3 Known automation gap (recorded, not repaired in Q0)
+### 5.3 Finding A — Scenario D buzzer-action proof gap (Q0 observation)
 
-**Finding A — Scenario D buzzer-action proof gap (CONFIRMED).**
+**Q0 observation (CONFIRMED on `67ba2c0…`; historical — do not rewrite as if
+Q1 already existed):**
 
 - Suite: `tests/e2e/menus-i-repair-1-scenario-d.spec.ts`
 - Product: `ClassroomSetupPanel` `setup-reveal-buzzers` →
@@ -196,7 +206,14 @@ This is a **qualification requirement inside Q1 (escape hardening) and Q2
 - Owner Slice I mid-D: hardware light flash observed with **no UI confirmation**
   — residual escape for Q1/Q2, not closed by I-REPAIR-1 presence/Skip honesty.
 
-**Q0 disposition:** record gap; **do not repair**.
+**Q0 disposition (historical):** record gap; **do not repair**.
+
+**Q1 closure — CLOSED / VERIFIED ON MAIN @ `9d8246e…` (PR #123):** Check /
+Show enters existing SBS Buzzer Check (`testMode` on sole Gamepad owner) plus
+scroll/focus; simulated supported press yields teacher-visible
+`sbs-test-outcome` / responding controller-layer confirmation in Scenario D
+e2e. Evidence class: **AUTOMATED E2E (SIMULATED)**. **PHYSICAL SONY — NOT
+RUN.** Does **not** claim Q2 MENUS workflow PASS.
 
 ---
 
@@ -216,19 +233,34 @@ When Class Setup (or Home) offers a Fix / Edit / recover control:
 Contextual return is a **requirement inside Q1 (product path) and Q2 (MENUS
 workflow proof)**, not a separate ladder stage.
 
-### 6.2 Finding B — team-count return path (CONFIRMED)
+### 6.2 Finding B — team-count return path (Q0 observation → Q1 closure)
 
-| Item | Observed on `67ba2c0…` |
+| Item | Q0 observation on `67ba2c0…` (historical) |
 | --- | --- |
-| Current path | `setup-fix-team-count` → authoring Game settings (`authoringFocus: 'team-count'`) → save → Home/authoring **Play** → **Resume class** → **replace Session confirm** → Class Setup |
-| Evidence | `menus-i-repair-1-zero-team-fix.spec.ts`, `menus-slice-e-team-sony.spec.ts` |
+| Current path (Q0) | `setup-fix-team-count` → authoring Game settings (`authoringFocus: 'team-count'`) → save → Home/authoring **Play** → **Resume class** → **replace Session confirm** → Class Setup |
+| Evidence (Q0) | `menus-i-repair-1-zero-team-fix.spec.ts`, `menus-slice-e-team-sony.spec.ts` |
 | Q1 target (contract intent) | **Direct return to Class Setup** after Fix team count / save, without forcing the teacher through Resume + replace as the ordinary contextual-repair path |
-| Q0 disposition | Gap recorded; **no product repair in Q0** |
+| Q0 disposition (historical) | Gap recorded; **no product repair in Q0** |
 
-Q2 later proves the MENUS contextual-return path Q1 authorizes (semantic
-control + contextual return as Q1/Q2 requirements). Until Q1 lands,
-automation that documents the **current** path is honest regression, not
-Q1-target proof.
+**Q1 closure — CLOSED / VERIFIED ON MAIN @ `9d8246e…` (PR #123):**
+
+- **Disposable Fix path:** fail-closed
+  `isDisposableContextualTeamCountSession` gate; disposable zero-team /
+  invalid-count interrupted Session may discard + direct `?play=` Class Setup
+  return (Names focus). Proven by zero-team + Slice E e2e — no Home / Play /
+  Resume / replace theater.
+- **Meaningful Session fail-closed:** named / scored / round / unknown /
+  valid-teams Sessions are **not** silently discarded; recovery preserved; no
+  auto `confirmedReplace`.
+- **Open Game settings (valid Teams):** no destructive `returnToClassSetup`
+  latch; Save stays on authoring; Session recoverability intact
+  (`menus-q1-open-settings-names-preserve`).
+- **Roster-drift replace confirm:** meaningful 2-team named Session → Open
+  settings → change **2 → 3** → Save → Play → Resume → `play-replace-confirm`
+  visible; Session not silently discarded (do not auto-click replace).
+
+Q2 later proves broader MENUS contextual-return / workflow coverage. Q1
+closure is **not** Q2 PASS. **PHYSICAL SONY — NOT RUN.**
 
 ---
 
@@ -384,21 +416,25 @@ verdict.
 7. Remaining visible issues are **usability/polish** or honestly **NOT-RUN
    physical** — **not** known ordinary-path functional blockers.
 
-### 10.3 Q0 status
+### 10.3 Current status
 
 **Not issued.** Owner playthrough remains **PAUSED / GATED** behind Q0–Q6 +
-PRE-Q7 eligibility verdict.
+PRE-Q7 eligibility verdict. Q0 and Q1 are landed on main; Q2–Q6 are **not**
+started.
 
 ---
 
-## 11. DevPM findings A–D (Q0 verification — no repair)
+## 11. DevPM findings A–D (Q0 observation + Q1 closure status)
 
-| ID | Finding | Q0 verification | Disposition |
+Q0 verified A–D as functional escapes on `67ba2c0…` **without repair**. Q1
+product escape hardening (PR #123) closed A/B on main; C/D remain as staged.
+
+| ID | Finding | Q0 verification (historical) | Current disposition |
 | --- | --- | --- | --- |
-| **A** | Scenario D buzzer-action proof gap | CONFIRMED — Check scrolls/focuses GIH/Sony profile; no connect/press/UI confirmation proof in Scenario D e2e or `onRevealBuzzersSetup` | **Q1/Q2 escape** |
-| **B** | Team-count contextual repair path vs Q1 target | CONFIRMED — current = authoring → Play → Resume → replace → setup; target = direct Class Setup return | **Q1/Q2 escape** |
-| **C** | Integrated golden-path gap | CONFIRMED — suites cover fragments (`teacher-home-authoring`, `classroom-setup`, `menus-*`, `final-wager`, `session-summary`, S05 choreography) but **no** single Home→gameplay→Final→completion integrated pack | **Q3 NEW** |
-| **D** | Electron `shell.spec.ts` scope | CONFIRMED — shell/security/persistence/API presence/diagnostics; not teacher golden path | **RETAIN shell (Q5); do not overclaim** |
+| **A** | Scenario D buzzer-action proof gap | CONFIRMED — Check scrolls/focuses GIH/Sony profile; no connect/press/UI confirmation proof in Scenario D e2e or `onRevealBuzzersSetup` | **CLOSED BY Q1** — VERIFIED ON MAIN @ `9d8246e…` (SIMULATED e2e Check → SBS testMode → press confirmation). **PHYSICAL SONY NOT RUN.** |
+| **B** | Team-count contextual repair path vs Q1 target | CONFIRMED — current = authoring → Play → Resume → replace → setup; target = direct Class Setup return | **CLOSED BY Q1** — VERIFIED ON MAIN @ `9d8246e…` (disposable direct return; meaningful Session fail-closed; Open settings non-destructive; 2→3 roster-drift replace confirm). |
+| **C** | Integrated golden-path gap | CONFIRMED — suites cover fragments (`teacher-home-authoring`, `classroom-setup`, `menus-*`, `final-wager`, `session-summary`, S05 choreography) but **no** single Home→gameplay→Final→completion integrated pack | **OPEN / Q3 NEW** |
+| **D** | Electron `shell.spec.ts` scope | CONFIRMED — shell/security/persistence/API presence/diagnostics; not teacher golden path | **RETAIN / Q5** — do not overclaim |
 
 ---
 
@@ -420,8 +456,9 @@ Rules:
 2. Escapes do **not** silently become PASS;
 3. **No waiver** may convert a functional blocker into an eligible residual;
 4. Facilitator observation ≠ evidence-backed reclassification;
-5. Q0 itself records A–D as **functional** escapes; closing them is **out of
-   Q0 scope**;
+5. Q0 itself recorded A–D as **functional** escapes on `67ba2c0…`; Q1 closed
+   A/B on main @ `9d8246e…`; C remains **OPEN / Q3**; D remains **RETAIN /
+   Q5**;
 6. H4 salvage collapsed detail (**OPEN / LOW**) may remain as an **OPEN /
    LOW** residual **only** if kept under the non-functional / non-blocking
    usability class (primary status honest; collapsed “More detail” may still
@@ -439,32 +476,36 @@ While this contract is active and PRE-Q7 has not issued eligibility:
 
 | Topic | Required routing |
 | --- | --- |
-| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough |
+| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q2 NEXT / NOT AUTHORIZED** without fresh bounded auth |
+| Completed | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123) |
 | S05 parent | **OPEN / NOT TERMINAL** |
-| Prior MENUS Slice I playthrough | **NOT RUN** as acceptance (Scenario D was BLOCKED; I-REPAIR-1 merged; re-gate **not** authorized here) |
+| Prior MENUS Slice I playthrough | **NOT RUN** as acceptance (Scenario D was BLOCKED; I-REPAIR-1 merged; Q1 closed Scenario-D escapes on main; re-gate **not** authorized here) |
 | Owner playthrough | **PAUSED / GATED** behind Q0–Q6 + PRE-Q7 eligibility verdict |
 | S04D / S06 | **NOT AUTHORIZED** |
 | REAL MVP | **not** complete |
 | PR #110 / #118 | Observe only; do not mutate from this contract |
+| Q1 physical Sony | **NOT RUN** |
 
 Canonical status/handoff must link this file. See STATUS / CURRENT updates in
 the Q0 delivery PR.
 
 ---
 
-## 14. Open PRs observed at Q0 registration (read-only)
+## 14. Open / related PRs (read-only observation)
 
 | PR | State | Note |
 | --- | --- | --- |
-| [#121](https://github.com/ricktron/classroom-quiz-show/pull/121) | **MERGED** | Squash/main `67ba2c0…` — I-REPAIR-1 Class Setup |
-| [#110](https://github.com/ricktron/classroom-quiz-show/pull/110) | OPEN **draft**, conflicting | Untouched by Q0 |
-| [#118](https://github.com/ricktron/classroom-quiz-show/pull/118) | OPEN stale @ `f01a06f…`, conflicting | Untouched by Q0 |
+| [#121](https://github.com/ricktron/classroom-quiz-show/pull/121) | **MERGED** | Squash/main `67ba2c0…` — I-REPAIR-1 Class Setup (Q0 observation base) |
+| [#122](https://github.com/ricktron/classroom-quiz-show/pull/122) | **MERGED** | Squash/main `b1379b8…` — Q0 qualification contract |
+| [#123](https://github.com/ricktron/classroom-quiz-show/pull/123) | **MERGED** | Squash/main `9d8246e…` — Q1 Scenario-D escape hardening (tip `f5eeab3…`) |
+| [#110](https://github.com/ricktron/classroom-quiz-show/pull/110) | OPEN **draft**, conflicting | Untouched |
+| [#118](https://github.com/ricktron/classroom-quiz-show/pull/118) | OPEN stale @ `f01a06f…`, conflicting | Untouched |
 
 ---
 
 ## 15. Verification for this docs slice
 
-Required for Q0 delivery:
+Required for Q1 post-merge docs reconciliation:
 
 ```bash
 git diff --check
@@ -472,7 +513,10 @@ git diff --check
 
 Optional docs-only hygiene if present in packet. Do **not** claim
 `npm run verify`, Playwright, Desktop, or CI product PASS unless those
-commands were actually run for this head.
+commands were actually run for this head. Q1 product verification evidence
+lives on PR #123 / squash `9d8246e…` (pre-merge CI SUCCESS on tip
+`f5eeab3…`); this docs reconciliation does not re-run product suites as
+ceremony.
 
 ---
 
@@ -480,22 +524,25 @@ commands were actually run for this head.
 
 This contract does **not** claim:
 
-- Q1–Q7 execution or PASS;
+- Q2–Q7 execution or PASS;
 - OWNER-PLAYTHROUGH-ELIGIBLE;
 - MENUS Complete / Slice I ACCEPT;
 - S05 parent terminalization;
-- closure of DevPM A–D product gaps;
-- Windows physical runtime; Sony physical re-qual on `67ba2c0…`;
+- Q1 physical Sony / Windows / projector / audio PASS;
 - signed / notarized teacher release;
 - REAL MVP complete.
+
+Q1 closed DevPM Findings **A** and **B** on main (SIMULATED where noted).
+Findings **C** and **D** remain staged (**OPEN / Q3**; **RETAIN / Q5**).
 
 ---
 
 ## 17. Authority footer
 
 ```text
-Q0: CONTRACT REGISTERED
-Q1–Q6: NOT STARTED BY THIS FILE
+Q0: LANDED (contract + matrix registered on main)
+Q1: LANDED / VERIFIED ON MAIN @ 9d8246e… (PR #123); PHYSICAL SONY NOT RUN
+Q2–Q6: NOT STARTED
 PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE — NOT ISSUED (DevPM verdict after Q6; not a new Q-stage)
 Q7: natural owner usability playthrough — NOT BEGUN (requires PRE-Q7)
 S05 parent: OPEN / NOT TERMINAL
