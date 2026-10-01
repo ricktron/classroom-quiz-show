@@ -71,7 +71,7 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | HL-01 | Cold launch → Home | Private Home visible; no silent session auto-resume | `routes`, `teacher-first-run`, desktop `shell` Resume | AUTOMATED E2E / DESKTOP E2E | RETAIN | Q2/Q5 | Shell ≠ full teacher path |
 | HL-02 | New Game | Creates draft/game → authoring | `menus-q2-a-new-game-play-setup` (+ CD board-first) | AUTOMATED E2E | RETAIN | Q2 candidate | Q2-A closes New Game→usable→Play→Class Setup on candidate branch; empty-library feel OWNER-ONLY |
-| HL-03 | Import Game (demo / paste / xlsx) | Valid save to library; fail-closed on bad input | `menus-q2-b-home-import` (+ Host `import-pipeline`) | AUTOMATED E2E / UNIT | RETAIN | Q2 candidate | Home valid JSON + fail-closed; #110 harvest still separate |
+| HL-03 | Import Game (demo / paste / xlsx) | Valid save to library; fail-closed on bad input | `menus-q2-b-home-import` + `menus-q2-ai04-home-spreadsheet` (+ Host `import-pipeline`) | AUTOMATED E2E / UNIT | RETAIN | Q2 candidate | Home JSON + Home spreadsheet ordinary path; #110 untouched |
 | HL-04 | Import Quality / salvage Keep | Primary status honest; salvage usable | H4 e2e/unit; LOW collapsed-detail escape OPEN | AUTOMATED E2E | RETAIN | Q6 / PRE-Q7 | Accepted **OPEN / LOW** **NON-FUNCTIONAL** residual (collapsed **More detail about this file** after Keep may still deny save). Primary status line is the durable outcome. **Not** a Q1 product escape / ordinary functional blocker unless reclassified. May remain visible at eligibility under that class only — does **not** establish a general functional-defect waiver |
 | HL-05 | My Games / Recent Play | `playable` only; lands `?play=` → Class Setup | `classroom-setup`, `menus-q2-a` / `menus-q2-b` | AUTOMATED E2E | RETAIN | Q2 candidate | `?play=` + Ready strengthen on classroom-setup |
 | HL-06 | Edit / Duplicate / Export / Delete / Rename | Library ops preserve Game/Session isolation | portable/export + library unit; `menus-q2-c` Duplicate | MIXED | RETAIN | Q2 candidate | Q2-C Duplicate + draft coexistence; Rename/Delete residual thin |
@@ -91,7 +91,7 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 | AI-01 | Board-first New Game | Lands content work; Game settings closed | `menus-slice-cd-home-authoring` | AUTOMATED E2E | RETAIN | Q2 | |
 | AI-02 | Game settings team count | Set 1–8; add/remove teams; save trust | Slice E / I-REPAIR zero-team; authoring unit; Q1 disposable Fix return | AUTOMATED E2E / UNIT | RETAIN | Q1 closed / Q2 residual | Finding B closed by Q1; broader MENUS return coverage remains Q2 — not Q2 PASS |
 | AI-03 | Clue / Final authoring | Completes playable Game | `spreadsheet-authoring`, teacher-home | AUTOMATED E2E | RETAIN | Q2 | |
-| AI-04 | Spreadsheet templates | Download+import from intended surface | Host spreadsheet panel e2e | AUTOMATED E2E | STRENGTHEN | Q2 | #110 draft harvest — do not mutate #110 in Q0 |
+| AI-04 | Spreadsheet templates | Download+import from intended surface | `menus-q2-ai04-home-spreadsheet` (+ Host panel RETAIN) | AUTOMATED E2E | RETAIN | Q2 candidate | Home Board+Final download + completed workbook import → Play → Class Setup; blank template not playable; #110 untouched |
 | AI-05 | Portable pack round-trip | Export/import preserves playable Game | `portable-packs`, `portable-export` | AUTOMATED E2E | RETAIN | Q2 | |
 | AI-06 | Play from authoring | `?play=` → Class Setup for playable Game | `menus-q2-a-new-game-play-setup` | AUTOMATED E2E | RETAIN | Q2 candidate | Authoring Play → `?play=` Class Setup closed on candidate |
 | AI-07 | Validation / save status | Honest Saved / blocked playable | authoring e2e + unit | AUTOMATED E2E | RETAIN | Q2 | |
@@ -126,7 +126,7 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 
 | ID | Interaction | Success (semantic) | Current proof | Evidence class | Disposition | Q stage | Gap / note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| HG-01 | Focused Host after Start | Board/timer/local input authority without setup chrome | H-REPAIR-1 focused host; Slice A posture | AUTOMATED E2E | STRENGTHEN | Q2/Q3 | Hook into Q3 golden path |
+| HG-01 | Focused Host after Start | Board/timer/local input authority without setup chrome | `menus-h-repair-1-focused-host` (+ Q2 H/L setup→Start) | AUTOMATED E2E | RETAIN | Q2 candidate / Q3 | Q2 Start→focused Host boundary closed/RETAIN on candidate; board→Final→completion remains **Q3** golden path — not pulled into Q2 |
 | HG-02 | Back to setup | Returns Class Setup; no invented Session events | `menus-q2-setup-host-journeys` (+ Slice A) | AUTOMATED E2E | RETAIN | Q2 candidate | Back → Start again → focused Host |
 | HG-03 | Change Game | Identity clear; replace confirms when required | `menus-slice-g-change-game` | AUTOMATED E2E | RETAIN | Q2 | |
 | HG-04 | Category-board select / reveal | Host private; Display public boardOutcome | category-board, S05 board packs | AUTOMATED E2E | RETAIN | Q3 | Compose into golden path |
@@ -185,6 +185,7 @@ closures / residuals** — **not** Q2 PASS.
 | `persistence-recovery.spec.ts` | **RETAIN** | Session recovery |
 | `menus-q2-a-new-game-play-setup.spec.ts` | **RETAIN** (Q2 candidate) | Q2-A New Game → usable → Play → Class Setup |
 | `menus-q2-b-home-import.spec.ts` | **RETAIN** (Q2 candidate) | Q2-B Home import valid + fail-closed |
+| `menus-q2-ai04-home-spreadsheet.spec.ts` | **RETAIN** (Q2 candidate) | AI-04 Home Board+Final download + completed workbook → Play → setup |
 | `menus-q2-c-multi-game-draft.spec.ts` | **RETAIN** (Q2 candidate) | Q2-C multi-game / draft / recovery |
 | `menus-q2-setup-host-journeys.spec.ts` | **RETAIN** (Q2 candidate) | Q2-H keyboard Names + Q2-I Sound Test + Q2-L Back→Start |
 | `menus-q2-m-mid-setup-refresh.spec.ts` | **RETAIN** (Q2 candidate) | Q2-M / CS-16 mid-setup refresh |
@@ -239,7 +240,7 @@ Functional blockers may **not** be waived through PRE-Q7.
 
 This matrix does **not**:
 
-- authorize Q2 product repair or claim Q2 PASS;
+- claim Q2 LANDED ON MAIN or Q2 PASS (candidate on PR #125 only);
 - issue `OWNER-PLAYTHROUGH-ELIGIBLE`;
 - mark S05 terminal or REAL MVP complete;
 - claim Q1 physical Sony PASS on `9d8246e…`;
@@ -249,7 +250,8 @@ This matrix does **not**:
 ```text
 Q0 MATRIX LANDED
 Q1 LANDED / VERIFIED ON MAIN @ 9d8246e… (PR #123); PHYSICAL SONY NOT RUN
-Q2–Q6: NOT STARTED — not Q2 PASS
+Q2 AUTHORIZED / CANDIDATE on branch (PR #125) — not LANDED ON MAIN; not Q2 PASS
+Q3–Q6: NOT STARTED / NOT AUTHORIZED
 owner playthrough: PAUSED / GATED (Q0–Q6 + PRE-Q7 eligibility)
 Findings A/B: CLOSED BY Q1 (SIMULATED where labeled)
 Finding C: OPEN / Q3; Finding D: RETAIN / Q5
