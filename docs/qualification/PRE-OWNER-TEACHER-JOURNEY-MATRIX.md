@@ -3,15 +3,25 @@
 - **Document id:** `PRE-OWNER-TEACHER-JOURNEY-MATRIX`
 - **Program:** `CQS-REAL-MVP-1`
 - **Authorization:** `AUTHORIZE-CQS-PRE-OWNER-Q0-QUALIFICATION-CONTRACT-1`
+  (matrix registration); Q1 post-merge docs reconciliation:
+  `AUTHORIZE-CQS-Q1-POST-MERGE-STARTUP-TRUTH-RECONCILIATION-1`
+  (docs reconciliation only — not Q1 product auth)
 - **Kind:** teacher-journey interaction matrix for pre-owner functional qualification
-- **Status:** **ACTIVE / Q0 MATRIX REGISTERED**
+- **Status:** **ACTIVE / Q0 LANDED; Q1 LANDED / VERIFIED ON MAIN** @
+  `9d8246e9811eec19a34a9f8d44b2287b8635a741`
 - **Contract:** [`PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](PRE-OWNER-FUNCTIONAL-QUALIFICATION.md)
-- **Observation base:** `origin/main`
+- **Q0 observation base:** `origin/main`
   `67ba2c0027f7e2439bd39bd963a7321be0ab6801`
+- **Q1 verified PR tip:** `f5eeab30d525d175b9d615f966551a19f178ff4a`
+  (exact-head CI bound here; PR #123)
+- **Q1 squash/main:** `9d8246e9811eec19a34a9f8d44b2287b8635a741`
+- **Q1 tree identity:** `8e59759af585a3b7764adb318a4cdb4bb6300690`
+  (tip and squash trees identical — transfer justified)
 
 ```text
-Documentation only. No product/test mutation authorized.
-Dispositions guide later Q1–Q7 / PRE-Q7 work; they do not start it.
+Documentation / qualification matrix. Q1 product escape hardening is
+LANDED on main @ 9d8246e… — this reconciliation updates dispositions only.
+Does not start Q2. Does not claim Q2 PASS. PHYSICAL SONY NOT RUN.
 Semantic control and contextual return are requirements inside Q1/Q2 —
 not separate stages. Golden paths = Q3; branch/failure = Q4; Electron = Q5;
 owner feel = Q7; physical evidence is separate (not silent Q5 PASS).
@@ -75,7 +85,7 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 | ID | Interaction | Success (semantic) | Current proof | Evidence class | Disposition | Q stage | Gap / note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | AI-01 | Board-first New Game | Lands content work; Game settings closed | `menus-slice-cd-home-authoring` | AUTOMATED E2E | RETAIN | Q2 | |
-| AI-02 | Game settings team count | Set 1–8; add/remove teams; save trust | Slice E / I-REPAIR zero-team; authoring unit | AUTOMATED E2E / UNIT | STRENGTHEN | Q1/Q2 | Return path = Finding B (team-count = Q1+Q2, not Q3) |
+| AI-02 | Game settings team count | Set 1–8; add/remove teams; save trust | Slice E / I-REPAIR zero-team; authoring unit; Q1 disposable Fix return | AUTOMATED E2E / UNIT | RETAIN | Q1 closed / Q2 residual | Finding B closed by Q1; broader MENUS return coverage remains Q2 — not Q2 PASS |
 | AI-03 | Clue / Final authoring | Completes playable Game | `spreadsheet-authoring`, teacher-home | AUTOMATED E2E | RETAIN | Q2 | |
 | AI-04 | Spreadsheet templates | Download+import from intended surface | Host spreadsheet panel e2e | AUTOMATED E2E | STRENGTHEN | Q2 | #110 draft harvest — do not mutate #110 in Q0 |
 | AI-05 | Portable pack round-trip | Export/import preserves playable Game | `portable-packs`, `portable-export` | AUTOMATED E2E | RETAIN | Q2 | |
@@ -91,13 +101,13 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 | CS-01 | Enter via Home Play | Setup posture; five rows Buzzers→…→Sound | Scenario D, B+F, classroom-setup | AUTOMATED E2E | RETAIN | Q2 | Order fixed by I-REPAIR-1 |
 | CS-02 | Row selection grammar | Click selects; re-click keeps open; readiness ≠ selection | Scenario D + panel unit | AUTOMATED E2E / UNIT | RETAIN | Q2 | Owner D was BLOCKED pre-repair |
 | CS-03 | Buzzers Skip (no hardware) | Skip advances; Start not gated by Buzzers | Scenario D / B+F / readiness unit | AUTOMATED E2E / UNIT | RETAIN | Q2 | |
-| CS-04 | Buzzers Check (hardware present) | Not Skip-only; Check reveals live setup; **teacher-visible connect/press confirmation** | Scenario D clicks Check + profile visible; unit calls callback | AUTOMATED E2E / UNIT | STRENGTHEN | Q1/Q2 | **Finding A** — scroll/focus ≠ confirmation |
-| CS-05 | Sony physical connect / names via buzzers | Handsets claim names; UI confirms | H5/H6 PHYSICAL TRANSFERRED (older identity); sim Sony e2e | PHYSICAL / SIM E2E | PHYSICAL-ONLY | PHYSICAL (not Q5) | Physical ≠ Electron Q5 PASS. Sim ≠ physical; re-qual if posture changed. Secondary: STRENGTHEN sim colour-press naming (CS-10) at Q2 |
+| CS-04 | Buzzers Check (hardware present) | Not Skip-only; Check reveals live setup; **teacher-visible connect/press confirmation** | Q1 Scenario D e2e: Check → SBS `testMode` + sim press → `sbs-test-outcome` / responding layer (SIMULATED) | AUTOMATED E2E (SIMULATED) | RETAIN | Q1 closed / Q2 residual | **Finding A CLOSED BY Q1** on main @ `9d8246e…`. **PHYSICAL SONY NOT RUN.** Not Q2 PASS |
+| CS-05 | Sony physical connect / names via buzzers | Handsets claim names; UI confirms | H5/H6 PHYSICAL TRANSFERRED (older identity); sim Sony e2e | PHYSICAL / SIM E2E | PHYSICAL-ONLY | PHYSICAL (not Q5) | Physical ≠ Electron Q5 PASS. Sim ≠ physical; re-qual if posture changed. Secondary: CS-10 sim colour-press naming at Q1 closed (SIMULATED) |
 | CS-06 | Teams blocked (0-team) | Teams+Names blocked; Fix team count visible | zero-team fix + Slice E | AUTOMATED E2E | RETAIN | Q2 | |
-| CS-07 | Fix team count contextual return | After save, **direct Class Setup return** (Q1 target) | Current proves Resume+replace path | AUTOMATED E2E | REPLACE | Q1/Q2 | **Finding B** — current Resume+replace is honest regression until Q1 lands direct return; Q2 proves MENUS contextual return |
+| CS-07 | Fix team count contextual return | After save, **direct Class Setup return** when disposable; meaningful Session fail-closed; Open settings non-destructive; roster-drift replace confirm | Q1: disposable Fix → direct Class Setup (zero-team / Slice E); Open settings + 2→3 roster-drift replace confirm (`menus-q1-open-settings-names-preserve`) | AUTOMATED E2E | RETAIN | Q1 closed / Q2 residual | **Finding B CLOSED BY Q1** on main @ `9d8246e…` (disposable gate + direct return + meaningful Session + 2→3 replace). Broader MENUS contextual-return coverage remains Q2 — **not** Q2 PASS |
 | CS-08 | Controller count ≠ team count | Copy distinguishes 1–8 Game teams vs buzzers | Scenario D / panel unit | AUTOMATED E2E / UNIT | RETAIN | Q2 | Do not change 1–8→1–4 |
-| CS-09 | Names keyboard fill | Unique names → Ready/Start enabled | Scenario D, H names sim (keyboard path), panel unit | AUTOMATED E2E | STRENGTHEN | Q2 | Full keyboard-only class still weak; H names sim proves keyboard fill, not colour-press claim |
-| CS-10 | Names via simulated Sony | Colour-button **guidance** visible with supported sim profile; keyboard/manual fill remains operable | `menus-slice-h-names-sim-sony` | AUTOMATED E2E | STRENGTHEN | Q2 | Suite proves guidance copy + keyboard/manual fill only — **not** simulated colour-button team-name claim. Gap: colour-press naming unproven |
+| CS-09 | Names keyboard fill | Unique names → Ready/Start enabled | Scenario D, H names sim (keyboard path), panel unit | AUTOMATED E2E | STRENGTHEN | Q2 | Full keyboard-only class still a genuine Q2 strengthen if needed; H names sim proves keyboard fill and (separately) colour-press claim |
+| CS-10 | Names via simulated Sony | Colour-button **claim** (and guidance) with supported sim profile; keyboard/manual fill remains operable | `menus-slice-h-names-sim-sony` — authentic `pressSimulatedGamepadButton` + `buttonIndexForSlotColor` colour-press **claim** (SIMULATED) | AUTOMATED E2E (SIMULATED) | RETAIN | Q1 closed / Q2 residual | **Actual colour-claim SIMULATED** on main @ `9d8246e…`. Guidance + keyboard retained. **PHYSICAL SONY NOT RUN.** Not Q2 PASS |
 | CS-11 | Display Open from setup | Display opens; optional for Start | Scenario D / B+F | AUTOMATED E2E | RETAIN | Q2 | |
 | CS-12 | Sound Test | Test works; optional for Start | Scenario D / presentation-audio fragments | AUTOMATED E2E | STRENGTHEN | Q2 | |
 | CS-13 | Start / Play → focused Host | Setup unmounts; focused Host first viewport | Scenario D, H-REPAIR-1 focused host | AUTOMATED E2E | RETAIN | Q2 | |
@@ -145,33 +155,38 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 
 ---
 
-## 7. Suite disposition register (tip `67ba2c0…`)
+## 7. Suite disposition register (squash/main `9d8246e…` after Q1)
+
+Q0 registered dispositions against `67ba2c0…`. Q1 (PR #123) changed product
++ e2e for Scenario-D escapes. Dispositions below are **controlled Q1
+closures / residuals** — **not** Q2 PASS.
 
 | Suite | Disposition | Notes |
 | --- | --- | --- |
-| `menus-i-repair-1-scenario-d.spec.ts` | **STRENGTHEN** | Row order / Skip honesty / Check visibility — not buzzer-action confirmation (Finding A) |
-| `menus-i-repair-1-zero-team-fix.spec.ts` | **REPLACE** | Documents current Resume+replace return (Finding B); Q1 target = direct Class Setup return |
-| `menus-slice-e-team-sony.spec.ts` | **STRENGTHEN** | Complements zero-team; same return-path limit |
+| `menus-i-repair-1-scenario-d.spec.ts` | **RETAIN** (Q1 closed) | Check → SBS testMode + sim press confirmation (Finding A). **PHYSICAL SONY NOT RUN.** Not Q2 PASS |
+| `menus-i-repair-1-zero-team-fix.spec.ts` | **RETAIN** (Q1 closed) | Disposable Fix → direct Class Setup return (Finding B). Not Q2 PASS |
+| `menus-slice-e-team-sony.spec.ts` | **RETAIN** (Q1 closed) | Same Fix-return invariant as zero-team sibling. Not Q2 PASS |
+| `menus-slice-h-names-sim-sony.spec.ts` | **RETAIN** (Q1 closed) | Colour-press **claim** SIMULATED + keyboard/manual fill; not physical. Not Q2 PASS |
+| `menus-q1-open-settings-names-preserve.spec.ts` | **RETAIN** (Q1 closed) | Open settings non-destructive; meaningful Session preserve; 2→3 roster-drift replace confirm. Not Q2 PASS |
 | `menus-bf-readiness.spec.ts` | **RETAIN** | Ready/optional matrix |
 | `menus-bf-viewport.spec.ts` | **RETAIN** | Fit stress |
 | `menus-slice-a-host-posture.spec.ts` | **RETAIN** | Posture / bare Host |
-| `menus-slice-cd-home-authoring.spec.ts` | **STRENGTHEN** | Home/authoring |
+| `menus-slice-cd-home-authoring.spec.ts` | **STRENGTHEN** | Home/authoring — Q2 residual |
 | `menus-slice-g-change-game.spec.ts` | **RETAIN** | Change Game |
-| `menus-slice-h-names-sim-sony.spec.ts` | **STRENGTHEN** | Guidance + keyboard/manual fill on sim supported profile — not colour-press naming; not physical |
 | `menus-h-repair-1-focused-host.spec.ts` | **RETAIN** | Start → focused Host |
 | `menus-historian-gate.spec.ts` | **RETAIN** | Gate only; not acceptance |
 | `menus-visual-history-capture.spec.ts` | **RETAIN** | Capture when authorized; immutable |
-| `classroom-setup.spec.ts` | **STRENGTHEN** | Align with Buzzers-first workflow |
-| `teacher-home-authoring.spec.ts` / `teacher-first-run.spec.ts` / `routes.spec.ts` | **STRENGTHEN** | Home reachability |
+| `classroom-setup.spec.ts` | **STRENGTHEN** | Align with Buzzers-first workflow — Q2 residual |
+| `teacher-home-authoring.spec.ts` / `teacher-first-run.spec.ts` / `routes.spec.ts` | **STRENGTHEN** | Home reachability — Q2 residual |
 | `persistence-recovery.spec.ts` | **RETAIN** | Session recovery |
-| `gamepad-input.spec.ts` | **RETAIN** | Sim only; label PHYSICAL-ONLY for real hardware |
+| `gamepad-input.spec.ts` | **RETAIN** | Sim only; label PHYSICAL-ONLY for real hardware; Q1 shared helper reuse |
 | `final-wager.spec.ts` / `session-summary.spec.ts` / `completed-summary-ledger.spec.ts` | **RETAIN** | Fragments for Q3 golden compose |
 | S05 `s05-*-*.spec.ts` (F1, buzz, board, final, visual) | **RETAIN** | Presentation children; not integrated golden |
 | `audience-display.spec.ts` / `projector-safety.spec.ts` / display-visual-* | **RETAIN** | Display privacy/choreography |
 | `tests/desktop/shell.spec.ts` | **RETAIN** | Shell only — Finding D / Q5; do not cite as golden path |
 | `buzz-in` / `category-board` / `teams-scoring` / `timers-arming` / `presentation-audio` / `theme-system` / `sync` / `media-contract` / `import-pipeline` / portable / backup / diagnostic / pwa / aggregate-reset / spreadsheet | **RETAIN** | Foundation regression |
 | Integrated Home→…→completion pack | **NEW** | Finding C — Q3 |
-| Physical Sony re-qual on `67ba2c0…` | **PHYSICAL-ONLY** | H5/H6 transferred under older identity; not re-run here; **not** silent Q5 PASS |
+| Physical Sony re-qual on `9d8246e…` | **PHYSICAL-ONLY** | Q1 **NOT RUN**; H5/H6 transferred under older identity; **not** silent Q5 PASS |
 | Windows physical runtime | **PHYSICAL-ONLY** | S06; **NOT AUTHORIZED**; **not** silent Q5 PASS |
 | Owner MENUS / S05 playthrough | **OWNER-ONLY** | **PAUSED / GATED** — PRE-Q7 eligibility not issued; Q7 does not issue it |
 
@@ -196,9 +211,10 @@ Functional blockers may **not** be waived through PRE-Q7.
 ### Court B — Eligibility recommendation checklist
 
 1. Court A COMPLETE (no unresolved ordinary-path functional blocker);
-2. Findings A–D **closed by repair/proof** **or** evidence-backed
-   reclassification as non-functional / non-blocking — **no** owner waiver for
-   functional closure;
+2. Findings A–B **closed by Q1 repair/proof** on main @ `9d8246e…`
+   (SIMULATED where labeled; physical Sony **NOT RUN**); Finding C **OPEN /
+   Q3**; Finding D **RETAIN / Q5**; remaining functional items need
+   evidence-backed closure — **no** owner waiver for functional closure;
 3. No smuggled S04D/S06/S05-terminal claims;
 4. STATUS/CURRENT agree with contract;
 5. Remaining visible issues = usability/polish or honestly NOT-RUN physical —
@@ -213,17 +229,20 @@ Functional blockers may **not** be waived through PRE-Q7.
 
 This matrix does **not**:
 
-- authorize Q1 product repair or test mutation;
+- authorize Q2 product repair or claim Q2 PASS;
 - issue `OWNER-PLAYTHROUGH-ELIGIBLE`;
 - mark S05 terminal or REAL MVP complete;
-- transfer H5/H6 physical PASS to `67ba2c0…` for Class Setup Buzzers confirmation;
+- claim Q1 physical Sony PASS on `9d8246e…`;
 - treat `shell.spec.ts` as teacher golden-path proof;
 - mutate PR #110 / #118.
 
 ```text
-Q0 MATRIX REGISTERED
+Q0 MATRIX LANDED
+Q1 LANDED / VERIFIED ON MAIN @ 9d8246e… (PR #123); PHYSICAL SONY NOT RUN
+Q2–Q6: NOT STARTED — not Q2 PASS
 owner playthrough: PAUSED / GATED (Q0–Q6 + PRE-Q7 eligibility)
-Findings A–D: recorded functional escapes — not repaired; not waivable through PRE-Q7
+Findings A/B: CLOSED BY Q1 (SIMULATED where labeled)
+Finding C: OPEN / Q3; Finding D: RETAIN / Q5
 PRE-Q7 OWNER-PLAYTHROUGH-ELIGIBLE: NOT ISSUED (DevPM verdict after Q6)
 Q7 does not issue eligibility
 functional blockers: no owner-waiver escape hatch through PRE-Q7
