@@ -110,10 +110,10 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 | CS-06 | Teams blocked (0-team) | Teams+Names blocked; Fix team count visible | zero-team fix + Slice E | AUTOMATED E2E | RETAIN | Q2 | |
 | CS-07 | Fix team count contextual return | After save, **direct Class Setup return** when disposable; meaningful Session fail-closed; Open settings non-destructive; roster-drift replace confirm | Q1: disposable Fix → direct Class Setup (zero-team / Slice E); Open settings + 2→3 roster-drift replace confirm (`menus-q1-open-settings-names-preserve`) | AUTOMATED E2E | RETAIN | Q1 closed / Q2 residual | **Finding B CLOSED BY Q1** on main @ `9d8246e…` (disposable gate + direct return + meaningful Session + 2→3 replace). Broader MENUS contextual-return coverage remains Q2 — **not** Q2 PASS |
 | CS-08 | Controller count ≠ team count | Copy distinguishes 1–8 Game teams vs buzzers | Scenario D / panel unit | AUTOMATED E2E / UNIT | RETAIN | Q2 | Do not change 1–8→1–4 |
-| CS-09 | Names keyboard fill | Unique names → Ready/Start enabled | `menus-q2-h-keyboard-class` (+ Scenario D / H keyboard) | AUTOMATED E2E | RETAIN | Q2 candidate | Keyboard-only class → Ready → Start (no Sony path) |
+| CS-09 | Names keyboard fill | Unique names → Ready/Start enabled | `menus-q2-setup-host-journeys` (+ Scenario D / H keyboard) | AUTOMATED E2E | RETAIN | Q2 candidate | Keyboard-only class → Ready → Start (no Sony path) |
 | CS-10 | Names via simulated Sony | Colour-button **claim** (and guidance) with supported sim profile; keyboard/manual fill remains operable | `menus-slice-h-names-sim-sony` — authentic `pressSimulatedGamepadButton` + `buttonIndexForSlotColor` colour-press **claim** (SIMULATED) | AUTOMATED E2E (SIMULATED) | RETAIN | Q1 closed / Q2 residual | **Actual colour-claim SIMULATED** on main @ `9d8246e…`. Guidance + keyboard retained. **PHYSICAL SONY NOT RUN.** Not Q2 PASS |
 | CS-11 | Display Open from setup | Display opens; optional for Start | Scenario D / B+F | AUTOMATED E2E | RETAIN | Q2 | |
-| CS-12 | Sound Test | Test works; optional for Start | `menus-q2-i-sound-test` | AUTOMATED E2E | RETAIN | Q2 candidate | Class Setup Test sound → Sound tested; Start remains enabled |
+| CS-12 | Sound Test | Test works; optional for Start | `menus-q2-setup-host-journeys` | AUTOMATED E2E | RETAIN | Q2 candidate | Class Setup Test sound → Sound tested; Start remains enabled |
 | CS-13 | Start / Play → focused Host | Setup unmounts; focused Host first viewport | Scenario D, H-REPAIR-1 focused host | AUTOMATED E2E | RETAIN | Q2 | |
 | CS-14 | Ready + optionals matrix | Start sole dominant when required met; optionals don’t revoke | B+F readiness | AUTOMATED E2E | RETAIN | Q2 | |
 | CS-15 | Viewport / eight-team fit | Ready usable without destructive overflow | `menus-bf-viewport` | AUTOMATED E2E | RETAIN | Q2 | Laptop feel OWNER-ONLY |
@@ -127,7 +127,7 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 | ID | Interaction | Success (semantic) | Current proof | Evidence class | Disposition | Q stage | Gap / note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | HG-01 | Focused Host after Start | Board/timer/local input authority without setup chrome | H-REPAIR-1 focused host; Slice A posture | AUTOMATED E2E | STRENGTHEN | Q2/Q3 | Hook into Q3 golden path |
-| HG-02 | Back to setup | Returns Class Setup; no invented Session events | `menus-q2-l-back-start-again` (+ Slice A) | AUTOMATED E2E | RETAIN | Q2 candidate | Back → Start again → focused Host |
+| HG-02 | Back to setup | Returns Class Setup; no invented Session events | `menus-q2-setup-host-journeys` (+ Slice A) | AUTOMATED E2E | RETAIN | Q2 candidate | Back → Start again → focused Host |
 | HG-03 | Change Game | Identity clear; replace confirms when required | `menus-slice-g-change-game` | AUTOMATED E2E | RETAIN | Q2 | |
 | HG-04 | Category-board select / reveal | Host private; Display public boardOutcome | category-board, S05 board packs | AUTOMATED E2E | RETAIN | Q3 | Compose into golden path |
 | HG-05 | Buzz / active claim | Choreography + privacy | S05 buzz e2e | AUTOMATED E2E | RETAIN | Q3 | Physical buzz PHYSICAL-ONLY (not silent Q5) |
@@ -186,9 +186,7 @@ closures / residuals** — **not** Q2 PASS.
 | `menus-q2-a-new-game-play-setup.spec.ts` | **RETAIN** (Q2 candidate) | Q2-A New Game → usable → Play → Class Setup |
 | `menus-q2-b-home-import.spec.ts` | **RETAIN** (Q2 candidate) | Q2-B Home import valid + fail-closed |
 | `menus-q2-c-multi-game-draft.spec.ts` | **RETAIN** (Q2 candidate) | Q2-C multi-game / draft / recovery |
-| `menus-q2-h-keyboard-class.spec.ts` | **RETAIN** (Q2 candidate) | Q2-H keyboard-only Names class |
-| `menus-q2-i-sound-test.spec.ts` | **RETAIN** (Q2 candidate) | Q2-I Sound Test semantic |
-| `menus-q2-l-back-start-again.spec.ts` | **RETAIN** (Q2 candidate) | Q2-L Back → Start again |
+| `menus-q2-setup-host-journeys.spec.ts` | **RETAIN** (Q2 candidate) | Q2-H keyboard Names + Q2-I Sound Test + Q2-L Back→Start |
 | `menus-q2-m-mid-setup-refresh.spec.ts` | **RETAIN** (Q2 candidate) | Q2-M / CS-16 mid-setup refresh |
 | `menus-q2-p-home-display.spec.ts` | **RETAIN** (Q2 candidate) | Q2-P Home Open Display privacy |
 | `gamepad-input.spec.ts` | **RETAIN** | Sim only; label PHYSICAL-ONLY for real hardware; Q1 shared helper reuse |

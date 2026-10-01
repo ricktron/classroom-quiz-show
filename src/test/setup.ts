@@ -4,10 +4,8 @@ import { cleanup } from '@testing-library/react'
 
 /**
  * Vitest/jsdom + Node 22 native BroadcastChannel can throw
- * ERR_INVALID_ARG_TYPE on same-process MessageEvent delivery
- * (`MessageEvent` vs environment `Event`). Replace with an in-memory
- * hub that mirrors BroadcastChannel peer semantics for unit tests.
- * Browser / Playwright e2e still exercise the real channel.
+ * ERR_INVALID_ARG_TYPE on same-process MessageEvent delivery.
+ * Replace with an in-memory hub for unit tests; Playwright e2e uses real BC.
  */
 function installVitestBroadcastChannelPolyfill(): void {
   type Handler = (event: { data: unknown }) => void
@@ -29,6 +27,12 @@ function installVitestBroadcastChannelPolyfill(): void {
       peers.add(this)
     }
 
+    private toHandler(listener: EventListenerOrEventListenerObject): Handler {
+      return typeof listener === 'function'
+        ? (listener as unknown as Handler)
+        : (event) => listener.handleEvent(event as unknown as Event)
+    }
+
     postMessage(data: unknown): void {
       if (this.closed) return
       const peers = hubs.get(this.channelName)
@@ -42,21 +46,11 @@ function installVitestBroadcastChannelPolyfill(): void {
     }
 
     addEventListener(type: string, listener: EventListenerOrEventListenerObject): void {
-      if (type !== 'message' || this.closed) return
-      const handler: Handler =
-        typeof listener === 'function'
-          ? (listener as unknown as Handler)
-          : (event) => listener.handleEvent(event as unknown as Event)
-      this.listeners.add(handler)
+      if (type === 'message' && !this.closed) this.listeners.add(this.toHandler(listener))
     }
 
     removeEventListener(type: string, listener: EventListenerOrEventListenerObject): void {
-      if (type !== 'message') return
-      const handler: Handler =
-        typeof listener === 'function'
-          ? (listener as unknown as Handler)
-          : (event) => listener.handleEvent(event as unknown as Event)
-      this.listeners.delete(handler)
+      if (type === 'message') this.listeners.delete(this.toHandler(listener))
     }
 
     close(): void {

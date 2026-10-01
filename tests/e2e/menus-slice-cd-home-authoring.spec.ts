@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
+import { returnHomeFromAuthoring } from './helpers/menusQ2'
 
 /**
  * MENUS Slice C/D — Home hierarchy + Import templates + board-first authoring.
@@ -105,15 +106,6 @@ test('sim125-ish viewport keeps Resume / empty / hero hierarchy readable', async
   await expect(page.getByTestId('home-import-game')).toBeVisible()
   await expect(page.getByTestId('home-open-display')).toBeVisible()
 })
-
-async function returnHomeFromAuthoring(page: Page): Promise<void> {
-  await page.getByTestId('authoring-home').click()
-  const discard = page.getByRole('button', { name: /discard unsaved changes/i })
-  if (await discard.isVisible().catch(() => false)) {
-    await discard.click()
-  }
-  await expect(page.getByRole('heading', { name: /^home$/i })).toBeVisible()
-}
 
 test('multi-entry Home: one featured playable, other playable + unfinished reachable once', async ({
   page,
