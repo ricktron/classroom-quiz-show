@@ -38,6 +38,7 @@ test('0-team import mounts Class Setup; Fix → Save returns directly with teams
   await page.getByTestId('readiness-teams').click()
   await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'teams')
   await expect(page.getByTestId('setup-fix-team-count')).toBeVisible()
+  await expect(page.getByTestId('setup-fix-team-count')).toHaveText(/fix team count/i)
 
   const namesCopy = page.getByTestId('setup-sony-copy')
   await expect(namesCopy).toHaveCount(0)

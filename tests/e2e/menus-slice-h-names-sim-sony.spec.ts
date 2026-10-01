@@ -38,6 +38,13 @@ test('H8 SIMULATED: colour-button naming via authentic Gamepad; keyboard remains
     ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf', 'Hotel'].join('\n'),
   )
   await page.getByTestId('authoring-save').click()
+  await expect(page.getByTestId('authoring-save-status')).toContainText(/^saved$/i, {
+    timeout: 15_000,
+  })
+  // Open Game settings does not discard Session — Play → Resume returns to Class Setup.
+  await page.getByRole('button', { name: /^play$/i }).click()
+  await expect(page.getByTestId('persistence-recovery')).toBeVisible({ timeout: 20_000 })
+  await page.getByTestId('persistence-resume').click()
   await expect(page.getByTestId('classroom-setup')).toBeVisible({ timeout: 20_000 })
 
   await page.getByTestId('readiness-names').click()

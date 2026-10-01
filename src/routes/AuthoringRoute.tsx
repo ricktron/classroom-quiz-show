@@ -73,7 +73,7 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
   const cursorSeededForGameRef = useRef<string | null>(null)
   const teamCountFocusConsumedRef = useRef<string | null>(null)
   const teamCountInputRef = useRef<HTMLInputElement | null>(null)
-  /** Q1: Class Setup Fix team count → Save returns directly to Class Setup. */
+  /** Q1: blocked Fix team count only — Save may request Class Setup return. */
   const returnToClassSetupRef = useRef(false)
   const returnSetupFocusRef = useRef<'names' | 'teams' | 'buzzers'>('names')
   leadershipRef.current = persistence.leadership
@@ -258,7 +258,8 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
       )
       if (outcome.value.ok && writeGateRef.current.latest() === generation) {
         await persistence.refreshLibrary()
-        // Q1: Fix team count Save → direct Class Setup (no Home/Play click).
+        // Q1: blocked Fix Save → Host Class Setup return intent (Host decides
+        // discard only when Session is disposable; never auto confirmedReplace).
         if (returnToClassSetupRef.current) {
           returnToClassSetupRef.current = false
           navigate(playPath(snapshot.game.gameCanonicalId), {

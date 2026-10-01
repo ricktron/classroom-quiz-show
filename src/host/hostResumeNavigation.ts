@@ -4,9 +4,11 @@
  * preserves ADR-013 explicit recovery on cold boot.
  *
  * Q1 contextual Fix team count → Save → Class Setup: navigation state asks Host
- * to discard the interrupted unfinished Session and load the saved Game into a
- * fresh Class Setup (Names when interrupted). No Home / Play / Resume / replace
- * theater. No new Session event types — uses existing discardRecovery + loadSaved.
+ * to consider a direct Class Setup reload. Host may `discardRecovery` only when
+ * `isDisposableContextualTeamCountSession` proves the interrupted Session is
+ * disposable (fail closed). Meaningful Sessions keep recoverability — never
+ * silent discard / never auto `confirmedReplace`. Open Game settings must not
+ * carry this destructive-eligible intent. No new Session event types.
  */
 export const HOST_RESUME_RECOVERY_STATE = 'cqsResumeRecovery' as const
 export const HOST_CONTEXTUAL_TEAM_COUNT_RETURN = 'cqsContextualTeamCountReturn' as const

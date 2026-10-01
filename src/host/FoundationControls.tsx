@@ -38,6 +38,7 @@ import {
   shouldResumeRecoveryFromNavigation,
   type HostSetupFocusTask,
 } from './hostResumeNavigation'
+import { isDisposableContextualTeamCountSession } from './disposableContextualTeamCountSession'
 import {
   enqueueActivePackResourceScopePublish,
   hydratePackMediaForDefinition,
@@ -206,9 +207,10 @@ export function FoundationControls({
 
   // Home Resume / Q1 contextual Fix-return: one-shot navigation intent.
   // Home Resume applies Host resume once recovery is readable, then clears
-  // intent so refresh re-prompts. Contextual Fix-return discards the interrupted
-  // unfinished Session and lets ?play= load the saved Game into fresh Class Setup
-  // (no Resume / replace theater). Always preserve search (`?play=`) when clearing state.
+  // intent so refresh re-prompts. Contextual Fix-return may discardRecovery
+  // ONLY when the interrupted Session is provably disposable; otherwise fail
+  // closed (keep recoverability, clear latch, no false success / no spin).
+  // Always preserve search (`?play=`) when clearing state.
   useEffect(() => {
     const clearNavState = () => {
       navigate(
@@ -231,9 +233,24 @@ export function FoundationControls({
     ) {
       if (homeResumeHandledRef.current) return
       homeResumeHandledRef.current = true
+      const disposable = isDisposableContextualTeamCountSession({
+        history: persistence.recovery.events,
+        expectedPlayGameId: playGameId,
+      })
+      if (!disposable) {
+        // Meaningful Session: never silent discard. Clear latch so the effect
+        // does not spin; recovery UI remains for Resume / explicit replace.
+        contextualReturnLatchedRef.current = false
+        homeResumeHandledRef.current = false
+        setSetupFocusOnce(null)
+        return
+      }
       void persistence.discardRecovery().then((result) => {
         if (!result.ok) {
+          // Discard failed — Session still on device; clear latch, no success claim.
+          contextualReturnLatchedRef.current = false
           homeResumeHandledRef.current = false
+          setSetupFocusOnce(null)
         }
       })
       return
@@ -270,6 +287,7 @@ export function FoundationControls({
     persistence.resume,
     persistence.discardRecovery,
     persistence.storeEpoch,
+    playGameId,
   ])
 
   // The ONE scheduled clock read in the application. It turns a deadline into a
@@ -653,12 +671,17 @@ export function FoundationControls({
             window.scrollTo(0, 0)
           }}
           onFixTeamCount={() => {
-            // Q1: Fix team count carries return-to-Class-Setup intent (Names).
+            // Q1-C: only blocked team-count repair carries destructive-eligible
+            // contextual return. Valid Teams "Open Game settings" opens authoring
+            // without discard/return intent (Save must not silently wipe Session).
+            const teamCount = game.definition.teams.length
+            const teamsBlocked = teamCount < 1 || teamCount > 8
             navigate(editPath(game.definition.id), {
               state: {
                 authoringFocus: 'team-count',
-                returnToClassSetup: true,
-                setupFocus: 'names',
+                ...(teamsBlocked
+                  ? { returnToClassSetup: true, setupFocus: 'names' as const }
+                  : {}),
               },
             })
           }}
