@@ -16,17 +16,19 @@ test('Q2-I: Class Setup Test sound → Sound tested fact; Start remains enabled'
   await expect(page.getByTestId('setup-ready-heading')).toBeVisible()
   await expect(page.getByTestId('setup-play')).toBeEnabled()
 
-  // BEFORE: Sound optional / not tested.
+  // BEFORE: Sound optional (starts muted until Test sound activates audio).
   await page.getByTestId('readiness-audio').click()
   await expect(page.getByTestId('setup-sound-task')).toBeVisible()
-  await expect(page.getByTestId('setup-sound-fact')).toContainText(/not tested/i)
+  await expect(page.getByTestId('setup-sound-fact')).toContainText(/not tested|muted/i)
   await expect(page.getByTestId('setup-play')).toBeEnabled()
 
-  // INTENT/ACTION: Test sound.
+  // INTENT/ACTION: Test sound (activates + unmutes via enableSound).
   await page.getByTestId('setup-audio-test').click()
 
-  // EFFECT: teacher-visible Sound tested.
-  await expect(page.getByTestId('setup-sound-fact')).toContainText(/tested/i)
+  // EFFECT: teacher-visible Sound tested (after activation clears mute priority).
+  await expect(page.getByTestId('setup-sound-fact')).toContainText(/Sound tested/i, {
+    timeout: 15_000,
+  })
   await expect(page.getByTestId('setup-play')).toBeEnabled()
 
   // CONTINUATION: back to Ready → Start → focused Host shows tested.

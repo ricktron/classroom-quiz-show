@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { q2MinimalPlayableJson } from './helpers/menusQ2'
+import { openHomeImport, q2MinimalPlayableJson } from './helpers/menusQ2'
 import { importMenusJsonAndPlay } from './helpers/menusGameJson'
 
 /**
@@ -31,14 +31,20 @@ test('Q2-B: Home invalid JSON fail-closed — library unchanged', async ({ page 
   const heroTitle = (await page.getByTestId('home-hero-playable').innerText()).trim()
 
   // INTENT/ACTION: paste malformed JSON on Home Import.
-  await page.getByTestId('home-import-game').click()
+  await openHomeImport(page)
   await page.locator('#home-import-json').fill('{ not-valid-json')
   await page.getByTestId('home-import-json').click()
 
   // EFFECT: fail-closed salvage; no second playable invent.
   await expect(page.getByTestId('import-salvage')).toBeVisible({ timeout: 15_000 })
   await expect(page.getByTestId('import-salvage')).toContainText(/could not|failed|not|invalid|nothing/i)
-  await page.getByTestId('import-salvage-dismiss').click()
+  // Prefer dismiss when present; otherwise discard correction salvage.
+  const dismiss = page.getByTestId('import-salvage-dismiss')
+  if ((await dismiss.count()) > 0) {
+    await dismiss.click()
+  } else {
+    await page.getByTestId('import-salvage-discard').click()
+  }
   await expect(page.getByTestId('import-salvage')).toHaveCount(0)
 
   // CONTINUATION: prior library game still Play-able.

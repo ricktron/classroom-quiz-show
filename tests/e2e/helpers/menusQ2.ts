@@ -55,3 +55,13 @@ export async function resumeAfterHostReload(page: Page): Promise<void> {
   await page.getByTestId('persistence-resume').click()
   await expect(page.getByTestId('persistence-recovery')).toHaveCount(0)
 }
+
+/** Open Home Import panel without toggling it closed when already open. */
+export async function openHomeImport(page: Page): Promise<void> {
+  if ((await page.getByTestId('home-import').count()) > 0) {
+    await expect(page.getByTestId('home-import')).toBeVisible()
+    return
+  }
+  await page.getByTestId('home-import-game').click()
+  await expect(page.getByTestId('home-import')).toBeVisible()
+}
