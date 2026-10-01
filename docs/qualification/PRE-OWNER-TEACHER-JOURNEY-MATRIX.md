@@ -88,7 +88,7 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 | HL-09 | Open classroom controls → bare `#/host` | Power path; must not be marketed as ordinary | `menus-slice-a-host-posture` | AUTOMATED E2E | RETAIN | Q2 | Ordinary funnel uses `?play=` |
 | HL-10 | Backup & restore | Export/import backup without content loss | `backup-restore`, `backup-idb-atomicity` | AUTOMATED E2E | RETAIN | Q5 | Not cold-launch primary |
 | HL-11 | Multi-game + draft confusion | Teacher distinguishes ready vs draft | `menus-q2-c-multi-game-draft` | AUTOMATED E2E | RETAIN | Q2 | Resume vs Play vs Continue under recovery closed on main |
-| HL-12 | Empty library next action | One clear next action | Partial CD e2e | AUTOMATED E2E | OWNER-ONLY | Q7 | Feel/IA owner judgment. Secondary: STRENGTHEN partial CD automation at Q2 |
+| HL-12 | Empty library next action | One clear next action | Partial CD e2e | AUTOMATED E2E | OWNER-ONLY | Q7 | Feel/IA judgment remains OWNER-ONLY / Q7; partial empty-Home/CD automation was retained through landed Q2 and is not an unresolved Q2 strengthen item |
 
 ---
 
