@@ -4,14 +4,19 @@
 - **Program:** `CQS-REAL-MVP-1`
 - **Authorization:** `AUTHORIZE-CQS-PRE-OWNER-Q0-QUALIFICATION-CONTRACT-1`
   (matrix registration); Q1 post-merge docs reconciliation:
-  `AUTHORIZE-CQS-PRE-OWNER-Q1-POST-MERGE-DOC-RECONCILIATION-1`
+  `AUTHORIZE-CQS-Q1-POST-MERGE-STARTUP-TRUTH-RECONCILIATION-1`
+  (docs reconciliation only — not Q1 product auth)
 - **Kind:** teacher-journey interaction matrix for pre-owner functional qualification
 - **Status:** **ACTIVE / Q0 LANDED; Q1 LANDED / VERIFIED ON MAIN** @
   `9d8246e9811eec19a34a9f8d44b2287b8635a741`
 - **Contract:** [`PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](PRE-OWNER-FUNCTIONAL-QUALIFICATION.md)
 - **Q0 observation base:** `origin/main`
   `67ba2c0027f7e2439bd39bd963a7321be0ab6801`
-- **Q1 verified tip:** `9d8246e9811eec19a34a9f8d44b2287b8635a741` (PR #123)
+- **Q1 verified PR tip:** `f5eeab30d525d175b9d615f966551a19f178ff4a`
+  (exact-head CI bound here; PR #123)
+- **Q1 squash/main:** `9d8246e9811eec19a34a9f8d44b2287b8635a741`
+- **Q1 tree identity:** `8e59759af585a3b7764adb318a4cdb4bb6300690`
+  (tip and squash trees identical — transfer justified)
 
 ```text
 Documentation / qualification matrix. Q1 product escape hardening is
@@ -150,7 +155,7 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 
 ---
 
-## 7. Suite disposition register (tip `9d8246e…` after Q1)
+## 7. Suite disposition register (squash/main `9d8246e…` after Q1)
 
 Q0 registered dispositions against `67ba2c0…`. Q1 (PR #123) changed product
 + e2e for Scenario-D escapes. Dispositions below are **controlled Q1

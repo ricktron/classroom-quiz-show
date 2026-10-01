@@ -5,7 +5,8 @@
 - **Authorization:** `AUTHORIZE-CQS-PRE-OWNER-Q0-QUALIFICATION-CONTRACT-1`
   (Q0 registration); Q1 product escape hardening landed under separate
   authorization via PR #123; this docs reconciliation:
-  `AUTHORIZE-CQS-PRE-OWNER-Q1-POST-MERGE-DOC-RECONCILIATION-1`
+  `AUTHORIZE-CQS-Q1-POST-MERGE-STARTUP-TRUTH-RECONCILIATION-1`
+  (docs reconciliation only — not Q1 product auth)
 - **Kind:** durable pre-owner functional qualification contract
 - **Status:** **ACTIVE / Q0 LANDED; Q1 LANDED / VERIFIED ON MAIN** @
   `9d8246e9811eec19a34a9f8d44b2287b8635a741`
@@ -13,8 +14,14 @@
 - **Observation base (Q0 registration):** `origin/main`
   `67ba2c0027f7e2439bd39bd963a7321be0ab6801` (PR #121 squash merge of
   I-REPAIR-1 Class Setup functional convergence)
-- **Q1 verified on main:** `9d8246e9811eec19a34a9f8d44b2287b8635a741`
-  (PR #123 squash of tip `f5eeab3…`; Scenario-D escape hardening)
+- **Q1 verified PR tip:** `f5eeab30d525d175b9d615f966551a19f178ff4a`
+  (exact-head CI bound here)
+- **Q1 squash/main:** `9d8246e9811eec19a34a9f8d44b2287b8635a741`
+  (PR #123; Scenario-D escape hardening)
+- **Q1 tree identity:** `8e59759af585a3b7764adb318a4cdb4bb6300690`
+  (tip and squash trees identical — transfer justified; do not call the
+  squash the tip; do not claim CI ran on the squash unless separately
+  evidenced)
 
 ```text
 This file is documentation / qualification contract.
@@ -497,7 +504,7 @@ the Q0 delivery PR.
 | --- | --- | --- |
 | [#121](https://github.com/ricktron/classroom-quiz-show/pull/121) | **MERGED** | Squash/main `67ba2c0…` — I-REPAIR-1 Class Setup (Q0 observation base) |
 | [#122](https://github.com/ricktron/classroom-quiz-show/pull/122) | **MERGED** | Squash/main `b1379b8…` — Q0 qualification contract |
-| [#123](https://github.com/ricktron/classroom-quiz-show/pull/123) | **MERGED** | Squash/main `9d8246e…` — Q1 Scenario-D escape hardening (tip `f5eeab3…`) |
+| [#123](https://github.com/ricktron/classroom-quiz-show/pull/123) | **MERGED** | Squash/main `9d8246e…` — Q1 Scenario-D escape hardening (verified PR tip `f5eeab3…`; identical tree `8e59759…`) |
 | [#110](https://github.com/ricktron/classroom-quiz-show/pull/110) | OPEN **draft**, conflicting | Untouched |
 | [#118](https://github.com/ricktron/classroom-quiz-show/pull/118) | OPEN stale @ `f01a06f…`, conflicting | Untouched |
 
@@ -514,8 +521,10 @@ git diff --check
 Optional docs-only hygiene if present in packet. Do **not** claim
 `npm run verify`, Playwright, Desktop, or CI product PASS unless those
 commands were actually run for this head. Q1 product verification evidence
-lives on PR #123 / squash `9d8246e…` (pre-merge CI SUCCESS on tip
-`f5eeab3…`); this docs reconciliation does not re-run product suites as
+lives on PR #123 verified tip `f5eeab3…` (pre-merge exact-head CI SUCCESS
+bound there); squash/main `9d8246e…` shares identical tree `8e59759…`
+(transfer justified). Do not claim CI ran on the squash unless separately
+evidenced. This docs reconciliation does not re-run product suites as
 ceremony.
 
 ---
