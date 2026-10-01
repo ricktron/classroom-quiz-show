@@ -483,8 +483,8 @@ While this contract is active and PRE-Q7 has not issued eligibility:
 
 | Topic | Required routing |
 | --- | --- |
-| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q2 NEXT / NOT AUTHORIZED** without fresh bounded auth |
-| Completed | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123) |
+| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q2 AUTHORIZED / CANDIDATE on branch (PR #125) — not LANDED ON MAIN.** Q3 requires fresh bounded auth after Q2 merge |
+| Completed | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123); **Q2 AUTHORIZED / CANDIDATE on branch** under `AUTHORIZE-CQS-PRE-OWNER-Q2-MENUS-WORKFLOW-FUNCTIONAL-QUALIFICATION-1` |
 | S05 parent | **OPEN / NOT TERMINAL** |
 | Prior MENUS Slice I playthrough | **NOT RUN** as acceptance (Scenario D was BLOCKED; I-REPAIR-1 merged; Q1 closed Scenario-D escapes on main; re-gate **not** authorized here) |
 | Owner playthrough | **PAUSED / GATED** behind Q0–Q6 + PRE-Q7 eligibility verdict |
@@ -533,7 +533,7 @@ ceremony.
 
 This contract does **not** claim:
 
-- Q2–Q7 execution or PASS;
+- Q2 LANDED ON MAIN / Q2 PASS, or Q3–Q7 execution or PASS;
 - OWNER-PLAYTHROUGH-ELIGIBLE;
 - MENUS Complete / Slice I ACCEPT;
 - S05 parent terminalization;
@@ -551,7 +551,8 @@ Findings **C** and **D** remain staged (**OPEN / Q3**; **RETAIN / Q5**).
 ```text
 Q0: LANDED (contract + matrix registered on main)
 Q1: LANDED / VERIFIED ON MAIN @ 9d8246e… (PR #123); PHYSICAL SONY NOT RUN
-Q2–Q6: NOT STARTED
+Q2: AUTHORIZED / CANDIDATE on branch (PR #125) — not LANDED ON MAIN; PHYSICAL SONY NOT RUN
+Q3–Q6: NOT STARTED / NOT AUTHORIZED
 PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE — NOT ISSUED (DevPM verdict after Q6; not a new Q-stage)
 Q7: natural owner usability playthrough — NOT BEGUN (requires PRE-Q7)
 S05 parent: OPEN / NOT TERMINAL

@@ -6,6 +6,7 @@ test('Home Play reaches class setup with keyboard name completion', async ({ pag
   await page.getByTestId('home-import-demo').click()
   await expect(page.getByTestId('import-quality-report')).toBeVisible()
   await page.getByRole('button', { name: /^play$/i }).first().click()
+  await expect(page).toHaveURL(/[?&]play=/)
   await expect(page.getByTestId('classroom-setup')).toBeVisible()
   // Ordinary workflow opens Buzzers first; Names remains the Start readiness blocker.
   await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'buzzers')
@@ -16,6 +17,16 @@ test('Home Play reaches class setup with keyboard name completion', async ({ pag
   await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
   await expect(page.getByTestId('setup-sony-copy')).not.toContainText(/WebHID|054c|cqs\.sony/i)
   await expect(page.getByTestId('team-name-selection-board')).toBeVisible()
+  const manuals = page.locator('[data-testid^="tnsb-manual-"]')
+  await manuals.first().waitFor({ state: 'visible' })
+  const count = await manuals.count()
+  for (let i = 0; i < count; i += 1) {
+    const input = manuals.nth(i)
+    await input.fill(`Team ${i + 1}`)
+    await input.blur()
+  }
+  await expect(page.getByTestId('setup-ready-heading')).toBeVisible()
+  await expect(page.getByTestId('setup-play')).toBeEnabled()
   const viewport = page.viewportSize()
   const box = await page.getByTestId('classroom-setup').boundingBox()
   expect(viewport).toBeTruthy()
