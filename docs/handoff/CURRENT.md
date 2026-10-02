@@ -263,7 +263,10 @@ tree `229e8a013ab6b1880650f9a98e8e2857c4aa1cf1` — transfer justified; do
 not call the squash the tip) under
 `AUTHORIZE-CQS-PRE-OWNER-Q2-MENUS-WORKFLOW-FUNCTIONAL-QUALIFICATION-1`.
 **Q2 physical Sony NOT RUN.** **Q3** gameplay golden path: **AUTHORIZED / CANDIDATE-COMPLETE on branch (PR #127) — not
-LANDED ON MAIN** under `AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1`.
+LANDED ON MAIN** under `AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1`
+(semantic repair tip `0c91147276dead9c50968bdbab98f753187ff7bf` — Session names
+on Host via `publicTeamDisplayName`; real `lih-correct` adjudication; Finding C
+CLOSED ON Q3 CANDIDATE).
 **Next:** **Q4** gameplay branch/failure matrix — **NEXT / NOT AUTHORIZED**.
 Owner playthrough is **PAUSED / GATED** behind
 Q0–Q6 + PRE-Q7 eligibility verdict; **`OWNER-PLAYTHROUGH-ELIGIBLE` is NOT
