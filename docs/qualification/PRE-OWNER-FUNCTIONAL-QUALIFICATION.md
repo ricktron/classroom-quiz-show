@@ -38,8 +38,10 @@
 - **Q3 candidate branch:** `cursor/cqs-q3-core-gameplay-golden-paths-ba9f`
 - **Q3 product repair tip:** `0c91147276dead9c50968bdbab98f753187ff7bf`
   (Session-name Host propagation + real `lih-correct` adjudication; R1–R6)
-- **Q3 candidate HEAD:** `0c91147276dead9c50968bdbab98f753187ff7bf`
-  (verified product tip on PR #127 — Session-name Host + lih-correct; not LANDED ON MAIN; docs tip may be ahead)
+- **Q3 summary-contract / matrix repair:** ADR-016 durable Summary V1 keeps
+  authored `teamName`; Session names at current-session Host panel presentation
+  only; matrix HG-04…HG-12 + DP-04/05 → RETAIN (R7–R11)
+- **Q3 candidate HEAD:** tip of PR #127 branch after R7–R11 (not LANDED ON MAIN)
 
 ```text
 This file is documentation / qualification contract.
