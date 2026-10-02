@@ -36,13 +36,12 @@
 - **Q3 authorization:**
   `AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1`
 - **Q3 candidate branch:** `cursor/cqs-q3-core-gameplay-golden-paths-ba9f`
-- **Q3 candidate HEAD:** `de165dadc8299bcf99c9d3bc0840a1f69b8fdee0`
-  (delivery tip on branch — not LANDED ON MAIN)
+- **Q3 candidate HEAD:** *(bound to delivery tip after this docs sync — not LANDED ON MAIN)*
 
 ```text
 This file is documentation / qualification contract.
 Q0/Q1/Q2 are LANDED on main. Q3 core gameplay golden paths are
-AUTHORIZED / CANDIDATE-COMPLETE on branch under
+AUTHORIZED / CANDIDATE-COMPLETE on branch (PR #127) under
 AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1 — not LANDED ON
 MAIN. Finding C CLOSED ON Q3 CANDIDATE. Q4 is NEXT / NOT AUTHORIZED.
 No owner playthrough / eligibility / S05 terminalization / S04D / S06.
@@ -501,7 +500,7 @@ While this contract is active and PRE-Q7 has not issued eligibility:
 
 | Topic | Required routing |
 | --- | --- |
-| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q3 AUTHORIZED / CANDIDATE-COMPLETE on branch — not LANDED ON MAIN.** **Q4 NEXT / NOT AUTHORIZED** — requires fresh bounded authorization after Q3 merge |
+| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q3 AUTHORIZED / CANDIDATE-COMPLETE on branch (PR #127) — not LANDED ON MAIN.** **Q4 NEXT / NOT AUTHORIZED** — requires fresh bounded authorization after Q3 merge |
 | Completed | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123); **Q2 LANDED / VERIFIED ON MAIN** @ `2dc918f…` (PR #125); **Q3 AUTHORIZED / CANDIDATE-COMPLETE on branch** under `AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1` |
 | S05 parent | **OPEN / NOT TERMINAL** |
 | Prior MENUS Slice I playthrough | **NOT RUN** as acceptance (Scenario D was BLOCKED; I-REPAIR-1 merged; Q1 closed Scenario-D escapes on main; re-gate **not** authorized here) |
@@ -510,7 +509,7 @@ While this contract is active and PRE-Q7 has not issued eligibility:
 | REAL MVP | **not** complete |
 | PR #110 / #118 | Observe only; do not mutate from this contract |
 | Q1 / Q2 / Q3 physical Sony | **NOT RUN** |
-| Q3 | **AUTHORIZED / CANDIDATE-COMPLETE on branch — not LANDED ON MAIN** |
+| Q3 | **AUTHORIZED / CANDIDATE-COMPLETE on branch (PR #127) — not LANDED ON MAIN** |
 | Q4 | **NEXT / NOT AUTHORIZED** |
 
 Canonical status/handoff must link this file. See STATUS / CURRENT updates in
@@ -527,7 +526,7 @@ the Q0 delivery PR.
 | [#123](https://github.com/ricktron/classroom-quiz-show/pull/123) | **MERGED** | Squash/main `9d8246e…` — Q1 Scenario-D escape hardening (verified PR tip `f5eeab3…`; identical tree `8e59759…`) |
 | [#124](https://github.com/ricktron/classroom-quiz-show/pull/124) | **MERGED** | Squash/main `1276c33…` — Q1 post-merge startup-truth docs reconciliation |
 | [#125](https://github.com/ricktron/classroom-quiz-show/pull/125) | **MERGED** | Squash/main `2dc918f…` — Q2 MENUS workflow functional qualification (verified PR tip `aa3c18f…`; identical tree `229e8a0…`) |
-| Q3 delivery branch | **OPEN candidate** | `cursor/cqs-q3-core-gameplay-golden-paths-ba9f` — not LANDED ON MAIN |
+| [#127](https://github.com/ricktron/classroom-quiz-show/pull/127) | **OPEN draft** candidate | Q3 golden paths — not LANDED ON MAIN |
 | [#110](https://github.com/ricktron/classroom-quiz-show/pull/110) | OPEN **draft**, conflicting | Untouched |
 | [#118](https://github.com/ricktron/classroom-quiz-show/pull/118) | OPEN stale @ `f01a06f…`, conflicting | Untouched |
 
@@ -577,7 +576,7 @@ not LANDED ON MAIN). Finding **D** remains **RETAIN / Q5**.
 Q0: LANDED (contract + matrix registered on main)
 Q1: LANDED / VERIFIED ON MAIN @ 9d8246e… (PR #123); PHYSICAL SONY NOT RUN
 Q2: LANDED / VERIFIED ON MAIN @ 2dc918f… (PR #125); tip aa3c18f…; tree 229e8a0…; PHYSICAL SONY NOT RUN
-Q3: AUTHORIZED / CANDIDATE-COMPLETE on branch — not LANDED ON MAIN; PHYSICAL SONY NOT RUN
+Q3: AUTHORIZED / CANDIDATE-COMPLETE on branch (PR #127) — not LANDED ON MAIN; PHYSICAL SONY NOT RUN
 Q4: NEXT / NOT AUTHORIZED
 Q5–Q6: NOT STARTED / NOT AUTHORIZED
 PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE — NOT ISSUED (DevPM verdict after Q6; not a new Q-stage)

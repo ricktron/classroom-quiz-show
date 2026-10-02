@@ -27,7 +27,7 @@ also read
 | Slice 23 classroom qualification | **TERMINALLY COMPLETE** |
 | Guidance Polish S01 | **TERMINALLY COMPLETE** |
 | `CQS-REAL-MVP-1` | **ACTIVE / CANONICALLY REGISTERED** |
-| Current Program frontier | S04A–S04C, **S05-F1**, **S05 buzz / active-claim choreography**, **S05 board-outcome public authority**, and **S05 board-outcome presentation choreography** **TERMINALLY COMPLETE**. **S05 SCORE CHANGE: OWNER DECISION RESOLVED — PATH S-C**. **S05 board/round-flow presentation choreography:** **TERMINALLY COMPLETE**. S05 parent **OPEN / NOT TERMINAL**. **S05 Final + winner/completion presentation: TERMINALLY COMPLETE.** Prior MENUS Slice I playthrough: **NOT RUN** (as acceptance). **Pre-owner Q0 LANDED; Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123). **Q2 LANDED / VERIFIED ON MAIN** @ `2dc918f…` (PR #125; tip `aa3c18f…`; tree `229e8a0…`). **Q3 AUTHORIZED / CANDIDATE-COMPLETE on branch — not LANDED ON MAIN.** **Q4 NEXT / NOT AUTHORIZED.** Owner playthrough: **PAUSED / GATED** behind pre-owner Q0–Q6 + PRE-Q7 eligibility ([`../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md)); **`OWNER-PLAYTHROUGH-ELIGIBLE` NOT ISSUED**. S04D and S06 **NOT AUTHORIZED**. REAL MVP is **not** complete. |
+| Current Program frontier | S04A–S04C, **S05-F1**, **S05 buzz / active-claim choreography**, **S05 board-outcome public authority**, and **S05 board-outcome presentation choreography** **TERMINALLY COMPLETE**. **S05 SCORE CHANGE: OWNER DECISION RESOLVED — PATH S-C**. **S05 board/round-flow presentation choreography:** **TERMINALLY COMPLETE**. S05 parent **OPEN / NOT TERMINAL**. **S05 Final + winner/completion presentation: TERMINALLY COMPLETE.** Prior MENUS Slice I playthrough: **NOT RUN** (as acceptance). **Pre-owner Q0 LANDED; Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123). **Q2 LANDED / VERIFIED ON MAIN** @ `2dc918f…` (PR #125; tip `aa3c18f…`; tree `229e8a0…`). **Q3 AUTHORIZED / CANDIDATE-COMPLETE on branch (PR #127) — not LANDED ON MAIN.** **Q4 NEXT / NOT AUTHORIZED.** Owner playthrough: **PAUSED / GATED** behind pre-owner Q0–Q6 + PRE-Q7 eligibility ([`../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md)); **`OWNER-PLAYTHROUGH-ELIGIBLE` NOT ISSUED**. S04D and S06 **NOT AUTHORIZED**. REAL MVP is **not** complete. |
 | S02 | Electron selected (**ADR-021 Accepted**) |
 | S03 | production Electron thin shell + unsigned packaging path **implemented** |
 | S04 canon | product direction **registered** |
@@ -48,7 +48,7 @@ also read
 | S05 parent | **OPEN / NOT TERMINAL** |
 | S05 Final + winner/completion presentation | **TERMINALLY COMPLETE** |
 | S05 integrated owner playthrough | **PAUSED / GATED** (pre-owner Q0–Q6 + PRE-Q7 eligibility); **`OWNER-PLAYTHROUGH-ELIGIBLE` NOT ISSUED** |
-| Pre-owner functional qualification | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123) — [`../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md); matrix [`../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md`](../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md). **Q2 LANDED / VERIFIED ON MAIN** @ `2dc918f…` (PR #125). **Q3 AUTHORIZED / CANDIDATE-COMPLETE on branch — not LANDED ON MAIN**. **Q4 NEXT / NOT AUTHORIZED**. Q5–Q6 not started. Q1/Q2/Q3 physical Sony **NOT RUN**. |
+| Pre-owner functional qualification | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123) — [`../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md); matrix [`../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md`](../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md). **Q2 LANDED / VERIFIED ON MAIN** @ `2dc918f…` (PR #125). **Q3 AUTHORIZED / CANDIDATE-COMPLETE on branch (PR #127) — not LANDED ON MAIN**. **Q4 NEXT / NOT AUTHORIZED**. Q5–Q6 not started. Q1/Q2/Q3 physical Sony **NOT RUN**. |
 | Prior MENUS Slice I playthrough | **NOT RUN** (as acceptance; Scenario D was BLOCKED; I-REPAIR-1 merged; re-gate not authorized here) |
 | S04D / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
@@ -193,7 +193,7 @@ See the REAL MVP gap register in
 | controller `F-UX-01` | **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** |
 | feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
 | flagship visual fidelity | **S05 PRESENTATION CHILDREN TERMINALLY COMPLETE / PARENT OPEN** — S05-F1, buzz / active-claim, board-outcome authority + presentation, board/round-flow, and Final + winner/completion are **TERMINALLY COMPLETE**; score-change Path S-C **RESOLVED**; deliberate whole-game owner playthrough **PAUSED / GATED** behind pre-owner Q0–Q6 + PRE-Q7 eligibility; **`OWNER-PLAYTHROUGH-ELIGIBLE` NOT ISSUED** |
-| pre-owner functional qualification | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123); **Q2 LANDED / VERIFIED ON MAIN** @ `2dc918f…` (PR #125) — do **not** route Rick to owner walkthrough; **Q3 AUTHORIZED / CANDIDATE-COMPLETE on branch — not LANDED ON MAIN**; **Q4 NEXT / NOT AUTHORIZED**; Q5–Q6 / PRE-Q7 / Q7 not started; functional escapes / blockers require repair/verify — **no** owner-waiver through PRE-Q7; Q1/Q2/Q3 physical Sony **NOT RUN** |
+| pre-owner functional qualification | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123); **Q2 LANDED / VERIFIED ON MAIN** @ `2dc918f…` (PR #125) — do **not** route Rick to owner walkthrough; **Q3 AUTHORIZED / CANDIDATE-COMPLETE on branch (PR #127) — not LANDED ON MAIN**; **Q4 NEXT / NOT AUTHORIZED**; Q5–Q6 / PRE-Q7 / Q7 not started; functional escapes / blockers require repair/verify — **no** owner-waiver through PRE-Q7; Q1/Q2/Q3 physical Sony **NOT RUN** |
 | packaged offline/recovery and OS qualification | **PARTIAL** (H5 selection/hardware **PASS recorded 2026-09-11** and transferred; H6 readiness **PASS** on Namtai `054c:1000` + four handsets; Windows physical runtime **NOT RUN**) |
 | clean-room teacher qualification | **OPEN** |
 | **C-3** / **C-6** | **FOUNDATION IMPLEMENTED / UNSIGNED** |
@@ -262,7 +262,7 @@ squash; reviewed tip `aa3c18f7621c0d399730ad67045410168fbb2257`; identical
 tree `229e8a013ab6b1880650f9a98e8e2857c4aa1cf1` — transfer justified; do
 not call the squash the tip) under
 `AUTHORIZE-CQS-PRE-OWNER-Q2-MENUS-WORKFLOW-FUNCTIONAL-QUALIFICATION-1`.
-**Q2 physical Sony NOT RUN.** **Q3** gameplay golden path: **AUTHORIZED / CANDIDATE-COMPLETE on branch — not
+**Q2 physical Sony NOT RUN.** **Q3** gameplay golden path: **AUTHORIZED / CANDIDATE-COMPLETE on branch (PR #127) — not
 LANDED ON MAIN** under `AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1`.
 **Next:** **Q4** gameplay branch/failure matrix — **NEXT / NOT AUTHORIZED**.
 Owner playthrough is **PAUSED / GATED** behind
@@ -441,7 +441,7 @@ prior MENUS Slice I playthrough: NOT RUN (as acceptance)
 pre-owner Q0: LANDED
 pre-owner Q1: LANDED / VERIFIED ON MAIN @ 9d8246e… (PR #123); physical Sony NOT RUN
 pre-owner Q2: LANDED / VERIFIED ON MAIN @ 2dc918f… (PR #125); tip aa3c18f…; tree 229e8a0…; physical Sony NOT RUN
-pre-owner Q3: AUTHORIZED / CANDIDATE-COMPLETE on branch — not LANDED ON MAIN
+pre-owner Q3: AUTHORIZED / CANDIDATE-COMPLETE on branch (PR #127) — not LANDED ON MAIN
 pre-owner Q4: NEXT / NOT AUTHORIZED
 pre-owner Q5–Q6: NOT STARTED
 S04D / S06: NOT AUTHORIZED
