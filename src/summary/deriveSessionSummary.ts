@@ -14,7 +14,6 @@ import {
   categoryBoardStateFor,
   effectiveEvents,
   finalWagerStateFor,
-  publicTeamDisplayName,
   replay,
   responsePhaseFor,
   teamScoreFor,
@@ -217,7 +216,9 @@ function buildScoreActivity(
     const finalScore = teamScoreFor(game, team.id)
     return {
       teamId: team.id,
-      teamName: publicTeamDisplayName(game, team.id, team.name),
+      // Durable Summary V1 stores authored Game copy only (ADR-016 aggregation).
+      // Current-session Host presentation may overlay Session names elsewhere.
+      teamName: team.name,
       scoreChangeCount: row.scoreChangeCount,
       netDelta: row.netDelta,
       finalScore,
@@ -244,7 +245,7 @@ function buildStandings(
 ): readonly SessionSummaryStandingV1[] {
   const scored = teams.map((team, authoredIndex) => ({
     teamId: team.id,
-    teamName: publicTeamDisplayName(game, team.id, team.name),
+    teamName: team.name,
     finalScore: teamScoreFor(game, team.id),
     authoredIndex,
   }))

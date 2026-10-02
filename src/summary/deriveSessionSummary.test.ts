@@ -202,7 +202,7 @@ describe('deriveSessionSummaryV1 — scoring and standings', () => {
     expect(standings.every((row) => row.rank === 1 && row.tied)).toBe(true)
   })
 
-  it('uses Session team names in standings when chosen, else authored fallback', () => {
+  it('persists authored Game teamName even when Session names are chosen (ADR-016)', () => {
     const store = boardStore()
     store.dispatch({
       type: 'SET_SESSION_TEAM_NAME',
@@ -226,32 +226,22 @@ describe('deriveSessionSummaryV1 — scoring and standings', () => {
     })
     endGame(store)
     const summary = available(store)
+    // Durable Summary V1 must keep authored copy for completed-summary aggregation.
     expect(summary.scoreActivity.derived.standings[0]).toMatchObject({
       teamId: 'red',
-      teamName: 'Team 1',
+      teamName: 'Red Team',
       finalScore: 150,
     })
     expect(summary.scoreActivity.derived.standings[1]).toMatchObject({
       teamId: 'blue',
-      teamName: 'Team 2',
+      teamName: 'Blue Team',
       finalScore: 0,
     })
     expect(summary.scoreActivity.observed.perTeam.find((t) => t.teamId === 'red')?.teamName).toBe(
-      'Team 1',
+      'Red Team',
     )
-
-    const authoredOnly = boardStore()
-    authoredOnly.dispatch({
-      type: 'ADJUST_TEAM_SCORE',
-      issuedAt: BOARD_AT,
-      teamId: 'red',
-      delta: 50,
-      mode: 'manual-correction',
-      source: { kind: 'manual' },
-    })
-    endGame(authoredOnly)
-    const authoredSummary = available(authoredOnly)
-    expect(authoredSummary.scoreActivity.derived.standings[0]?.teamName).toBe('Red Team')
+    expect(JSON.stringify(summary)).not.toContain('Team 1')
+    expect(JSON.stringify(summary)).not.toContain('Team 2')
   })
 
   it('counts a consumed tile with no score event', () => {

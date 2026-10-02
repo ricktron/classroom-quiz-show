@@ -10,6 +10,7 @@ import type {
 } from '../summary/contract'
 import type { SessionEvent } from '../state/events'
 import type { PrivateGameState } from '../state/privateState'
+import { publicTeamDisplayName } from '../state/reducer'
 import './SessionSummaryPanel.css'
 
 /**
@@ -18,6 +19,10 @@ import './SessionSummaryPanel.css'
  * Visible only when the replayed game lifecycle is `ended`. Derivation stays in
  * `src/summary/` — this panel only presents the typed result. No export,
  * download, saved history, comparison, projector controls, or analytics.
+ *
+ * Durable Summary V1 `teamName` remains authored Game copy (ADR-016). This
+ * current-session panel may overlay Session-selected names at presentation
+ * only; saved ledger views keep authored labels from the persisted summary.
  */
 
 export interface SessionSummaryPanelProps {
@@ -31,6 +36,11 @@ export interface SessionSummaryPanelProps {
 
 export interface SessionSummaryViewProps {
   readonly summary: SessionSummaryV1
+  /**
+   * Optional Host presentation overlay for team labels. When omitted (saved
+   * ledger), row.teamName from durable Summary V1 is shown unchanged.
+   */
+  readonly teamDisplayName?: (teamId: string, authoredName: string) => string
 }
 
 const TERMINAL_PATH_LABEL: Readonly<Record<SessionSummaryTerminalPathV1, string>> = {
@@ -68,6 +78,8 @@ export function SessionSummaryPanel({
   }
 
   const { summary } = result
+  const teamDisplayName = (teamId: string, authoredName: string) =>
+    publicTeamDisplayName(game, teamId, authoredName)
   return (
     <section className="ssp ssp--primary" aria-labelledby="ssp-title" data-testid="session-summary-panel">
       <div className="foundation__tag foundation__tag--slice15">
@@ -89,17 +101,20 @@ export function SessionSummaryPanel({
         </button>
       )}
 
-      <SessionSummaryView summary={summary} />
+      <SessionSummaryView summary={summary} teamDisplayName={teamDisplayName} />
     </section>
   )
 }
 
-export function SessionSummaryView({ summary }: SessionSummaryViewProps) {
+export function SessionSummaryView({ summary, teamDisplayName }: SessionSummaryViewProps) {
   return (
     <>
       <CompletionSection summary={summary} />
-      <StandingsSection standings={summary.scoreActivity.derived.standings} />
-      <ScoringSection summary={summary} />
+      <StandingsSection
+        standings={summary.scoreActivity.derived.standings}
+        teamDisplayName={teamDisplayName}
+      />
+      <ScoringSection summary={summary} teamDisplayName={teamDisplayName} />
       <CategoryBoardsSection summary={summary} />
       <UnavailableRoundsSection rounds={summary.unavailableRounds} />
       <TimerBuzzSection summary={summary} />
@@ -160,8 +175,10 @@ function CompletionSection({ summary }: { readonly summary: SessionSummaryV1 }) 
 
 function StandingsSection({
   standings,
+  teamDisplayName,
 }: {
   readonly standings: readonly SessionSummaryStandingV1[]
+  readonly teamDisplayName?: (teamId: string, authoredName: string) => string
 }) {
   return (
     <section className="ssp__block" aria-label="Final standings">
@@ -184,7 +201,7 @@ function StandingsSection({
             {standings.map((row) => (
               <tr key={row.teamId}>
                 <td>{placementLabel(row)}</td>
-                <td>{row.teamName}</td>
+                <td>{teamDisplayName?.(row.teamId, row.teamName) ?? row.teamName}</td>
                 <td>{formatSigned(row.finalScore)}</td>
               </tr>
             ))}
@@ -195,7 +212,13 @@ function StandingsSection({
   )
 }
 
-function ScoringSection({ summary }: { readonly summary: SessionSummaryV1 }) {
+function ScoringSection({
+  summary,
+  teamDisplayName,
+}: {
+  readonly summary: SessionSummaryV1
+  readonly teamDisplayName?: (teamId: string, authoredName: string) => string
+}) {
   const observed = summary.scoreActivity.observed
   return (
     <section className="ssp__block" aria-label="Scoring summary">
@@ -228,7 +251,7 @@ function ScoringSection({ summary }: { readonly summary: SessionSummaryV1 }) {
           <tbody>
             {observed.perTeam.map((row) => (
               <tr key={row.teamId}>
-                <td>{row.teamName}</td>
+                <td>{teamDisplayName?.(row.teamId, row.teamName) ?? row.teamName}</td>
                 <td>{row.scoreChangeCount}</td>
                 <td>{formatSigned(row.netDelta)}</td>
                 <td>{formatSigned(row.finalScore)}</td>

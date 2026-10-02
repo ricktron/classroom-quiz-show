@@ -167,6 +167,9 @@ export async function adjudicateAlphaFullHundred(
   await expect(display.getByTestId('display-scores')).toContainText('100')
   await expect(display.getByTestId('display-scores')).toContainText('0')
   await host.getByTestId('cbh-return').click()
+  // Tile consumed after return (Used) before Final.
+  await expect(host.getByTestId('cbh-tile-science-100')).toBeDisabled()
+  await expect(host.getByTestId('cbh-tile-science-100')).toContainText(/Used/i)
 }
 
 /** Classic Final for the sole positive-score team → correct +50 → complete. */

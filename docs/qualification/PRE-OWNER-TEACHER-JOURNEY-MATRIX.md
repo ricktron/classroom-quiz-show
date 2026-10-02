@@ -141,15 +141,15 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 | HG-01 | Focused Host after Start | Board/timer/local input authority without setup chrome | `menus-h-repair-1-focused-host` (+ Q2 H/L; Q3 golden entry) | AUTOMATED E2E | RETAIN | Q2 / Q3 | Q2 Start→focused Host RETAIN on main; Q3 composes board→Final→completion after authentic Start |
 | HG-02 | Back to setup | Returns Class Setup; no invented Session events | `menus-q2-setup-host-journeys` (+ Slice A) | AUTOMATED E2E | RETAIN | Q2 | Back → Start again → focused Host closed on main |
 | HG-03 | Change Game | Identity clear; replace confirms when required | `menus-slice-g-change-game` | AUTOMATED E2E | RETAIN | Q2 | |
-| HG-04 | Category-board select / reveal | Host private; Display public boardOutcome | category-board, S05 board packs + `menus-q3-core-gameplay-golden-paths` | AUTOMATED E2E | STRENGTHEN | Q3 candidate | Composed into Q3 golden pack on branch |
-| HG-05 | Buzz / active claim | Choreography + privacy | S05 buzz e2e + Q3 golden (keyboard + SIMULATED Sony) | AUTOMATED E2E | STRENGTHEN | Q3 candidate | Physical buzz PHYSICAL-ONLY (not silent Q5); Q3 SIMULATED claim labeled |
-| HG-06 | Correct / incorrect / score | Path S-C static authoritative scores | S05 outcome packs; teams-scoring + Q3 golden exact scores | AUTOMATED E2E | STRENGTHEN | Q3 candidate | Exact 100→150 scores on golden Session |
-| HG-07 | Timers / arming | Arm/transition honesty | `timers-arming` + Q3 golden | AUTOMATED E2E | STRENGTHEN | Q3 candidate | Arm + timer on authentic Session |
-| HG-08 | Keyboard buzz fallback | Usable without controllers | `buzz-in` + Q3 keyboard golden | AUTOMATED E2E | STRENGTHEN | Q3 candidate | Keyboard path on Home→… Session |
-| HG-09 | Final wager lifecycle | Wager → reveal → settlement | `final-wager` + Q3 golden | AUTOMATED E2E | STRENGTHEN | Q3 candidate | Classic Final on authentic Session |
-| HG-10 | Completion / winner / tie | Completion-only winner; remount-safe | audience-display final tests + Q3 golden | AUTOMATED E2E | STRENGTHEN | Q3 candidate | Winner only after explicit complete |
-| HG-11 | Session summary | Host summary; Display sanitized | `session-summary` + Q3 golden | AUTOMATED E2E | STRENGTHEN | Q3 candidate | Summary Host-only after completion |
-| HG-12 | **Integrated golden path** | Home→setup→Play→board→Final→completion on one served build; Session names Host+Display; real `lih-correct` | `menus-q3-core-gameplay-golden-paths` | AUTOMATED E2E | **CLOSED ON Q3 CANDIDATE** | **Q3 candidate** | **Finding C CLOSED ON Q3 CANDIDATE** after R1–R6 semantic repair — not LANDED ON MAIN |
+| HG-04 | Category-board select / reveal | Host private; Display public boardOutcome | category-board, S05 board packs + `menus-q3-core-gameplay-golden-paths` | AUTOMATED E2E | RETAIN | Q3 candidate | Q3 composition proves select/reveal + public Correct on authentic Session |
+| HG-05 | Buzz / active claim | Choreography + privacy | S05 buzz e2e + Q3 golden (keyboard + SIMULATED Sony) | AUTOMATED E2E | RETAIN | Q3 candidate | Physical buzz PHYSICAL-ONLY (not silent Q5); Q3 SIMULATED claim labeled |
+| HG-06 | Correct / incorrect / score | Path S-C static authoritative scores | S05 outcome packs; teams-scoring + Q3 golden exact scores | AUTOMATED E2E | RETAIN | Q3 candidate | Exact 100→150 scores on golden Session |
+| HG-07 | Timers / arming | Arm/transition honesty | `timers-arming` + Q3 golden | AUTOMATED E2E | RETAIN | Q3 candidate | Arm + timer on authentic Session |
+| HG-08 | Keyboard buzz fallback | Usable without controllers | `buzz-in` + Q3 keyboard golden | AUTOMATED E2E | RETAIN | Q3 candidate | Keyboard path on Home→… Session |
+| HG-09 | Final wager lifecycle | Wager → reveal → settlement | `final-wager` + Q3 golden | AUTOMATED E2E | RETAIN | Q3 candidate | Classic Final on authentic Session |
+| HG-10 | Completion / winner / tie | Completion-only winner; remount-safe | audience-display final tests + Q3 golden | AUTOMATED E2E | RETAIN | Q3 candidate | Winner only after explicit complete |
+| HG-11 | Session summary | Host summary; Display sanitized | `session-summary` + Q3 golden | AUTOMATED E2E | RETAIN | Q3 candidate | Summary Host-only after completion; durable Summary V1 keeps authored teamName (ADR-016); Session names at current-session panel presentation only |
+| HG-12 | **Integrated golden path** | Home→setup→Play→board→Final→completion on one served build; Session names Host+Display; real `lih-correct` | `menus-q3-core-gameplay-golden-paths` | AUTOMATED E2E | RETAIN | Q3 candidate | Finding C CLOSED ON Q3 CANDIDATE — not LANDED ON MAIN |
 | HG-13 | Undo / recovery mid-game | Safe resume without private leak | persistence-recovery fragments | AUTOMATED E2E | STRENGTHEN | Q4 | Branch / failure matrix |
 | HG-14 | More / diagnostics / mute | Sanitized diagnostics; panic mute | diagnostic-report; classroom-setup mute | AUTOMATED E2E / DESKTOP | RETAIN | Q5 | Electron/desktop family |
 | HG-15 | Whole-game owner playthrough | Classroom feel across full game | STATUS: **NOT RUN**; **PAUSED/GATED** | OWNER-ONLY | OWNER-ONLY | Q7 | Requires PRE-Q7 eligibility; Q7 does not issue it |
@@ -163,8 +163,8 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 | DP-01 | Open / reopen Display | Second window/tab; `cqs://app#/display` or web `#/display` | shell + audience-display | DESKTOP / E2E | RETAIN | Q5 | |
 | DP-02 | Fail closed / projector safety | No Host-private answers/notes | `projector-safety`, sync | AUTOMATED E2E | RETAIN | Q2/Q5 | |
 | DP-03 | Board / clue readability | F1 stress foundations | S05-F1 e2e (+ Q3 Display board stage) | AUTOMATED E2E | RETAIN | Q3 candidate | Physical projector PHYSICAL-ONLY (not silent Q5) |
-| DP-04 | Buzz / outcome choreography | Public authority only | S05 presentation packs + Q3 golden | AUTOMATED E2E | STRENGTHEN | Q3 candidate | Real Host→Display publish (no injectPublicState) |
-| DP-05 | Final / winner public | Completion-only; no private wager leak | S05 final + audience + Q3 golden | AUTOMATED E2E | STRENGTHEN | Q3 candidate | Privacy checkpoints through Final/complete |
+| DP-04 | Buzz / outcome choreography | Public authority only | S05 presentation packs + Q3 golden | AUTOMATED E2E | RETAIN | Q3 candidate | Q3 integrated Host→Display publish (no injectPublicState) |
+| DP-05 | Final / winner public | Completion-only; no private wager leak | S05 final + audience + Q3 golden | AUTOMATED E2E | RETAIN | Q3 candidate | Q3 privacy checkpoints through Final/complete |
 | DP-06 | Visual convergence / historian | Archive appearance at milestone SHA | visual-history suites; historian gate | HISTORICAL / E2E | RETAIN | — | Immutable archives; not acceptance |
 | DP-07 | Physical projector / sleep | Placement + wake recovery | S04C foundation; physical **NOT RUN** broadly | PHYSICAL PROJECTOR | PHYSICAL-ONLY | S06 later | Not authorized now |
 | DP-08 | Owner Display feel | Theatrical vs Host restrained | OWNER-ONLY | OWNER-ONLY | OWNER-ONLY | Q7 | |
@@ -209,8 +209,8 @@ closed MENUS workflow packs on main. Q3 candidate composes HG-12 on branch —
 | `audience-display.spec.ts` / `projector-safety.spec.ts` / display-visual-* | **RETAIN** | Display privacy/choreography |
 | `tests/desktop/shell.spec.ts` | **RETAIN** | Shell only — Finding D / Q5; do not cite as golden path |
 | `buzz-in` / `category-board` / `teams-scoring` / `timers-arming` / `presentation-audio` / `theme-system` / `sync` / `media-contract` / `import-pipeline` / portable / backup / diagnostic / pwa / aggregate-reset / spreadsheet | **RETAIN** | Foundation regression |
-| `menus-q3-core-gameplay-golden-paths.spec.ts` | **CLOSED ON Q3 CANDIDATE** | Finding C — keyboard + SIMULATED Sony + Host/Display; not LANDED ON MAIN |
-| Integrated Home→…→completion pack | **CLOSED ON Q3 CANDIDATE** | Finding C composed |
+| `menus-q3-core-gameplay-golden-paths.spec.ts` | **RETAIN** | Finding C CLOSED ON Q3 CANDIDATE — keyboard + SIMULATED Sony + Host/Display; not LANDED ON MAIN |
+| Integrated Home→…→completion pack | **RETAIN** | Finding C CLOSED ON Q3 CANDIDATE — composed on branch |
 | Physical Sony re-qual on `2dc918f…` | **PHYSICAL-ONLY** | Q1/Q2 **NOT RUN**; H5/H6 transferred under older identity; **not** silent Q5 PASS |
 | Windows physical runtime | **PHYSICAL-ONLY** | S06; **NOT AUTHORIZED**; **not** silent Q5 PASS |
 | Owner MENUS / S05 playthrough | **OWNER-ONLY** | **PAUSED / GATED** — PRE-Q7 eligibility not issued; Q7 does not issue it |
