@@ -3,13 +3,17 @@
 - **Document id:** `PRE-OWNER-FUNCTIONAL-QUALIFICATION`
 - **Program:** `CQS-REAL-MVP-1`
 - **Authorization:** `AUTHORIZE-CQS-PRE-OWNER-Q0-QUALIFICATION-CONTRACT-1`
-  (Q0 registration); Q1 product escape hardening landed under separate
-  authorization via PR #123; this docs reconciliation:
-  `AUTHORIZE-CQS-Q1-POST-MERGE-STARTUP-TRUTH-RECONCILIATION-1`
-  (docs reconciliation only — not Q1 product auth)
+  (Q0 registration); Q1 product escape hardening via PR #123; Q2 MENUS
+  workflow functional qualification via PR #125 under
+  `AUTHORIZE-CQS-PRE-OWNER-Q2-MENUS-WORKFLOW-FUNCTIONAL-QUALIFICATION-1`;
+  this docs reconciliation:
+  `AUTHORIZE-CQS-Q2-POST-MERGE-STARTUP-TRUTH-RECONCILIATION-1`
+  (docs reconciliation only — not Q2 product auth)
 - **Kind:** durable pre-owner functional qualification contract
 - **Status:** **ACTIVE / Q0 LANDED; Q1 LANDED / VERIFIED ON MAIN** @
-  `9d8246e9811eec19a34a9f8d44b2287b8635a741`
+  `9d8246e9811eec19a34a9f8d44b2287b8635a741`; **Q2 LANDED / VERIFIED ON
+  MAIN** @ `2dc918f934836c3fa6a0f4d554f4757f4668c691`; **Q3 NEXT / NOT
+  AUTHORIZED**
 - **Companion:** [`PRE-OWNER-TEACHER-JOURNEY-MATRIX.md`](PRE-OWNER-TEACHER-JOURNEY-MATRIX.md)
 - **Observation base (Q0 registration):** `origin/main`
   `67ba2c0027f7e2439bd39bd963a7321be0ab6801` (PR #121 squash merge of
@@ -19,6 +23,12 @@
 - **Q1 squash/main:** `9d8246e9811eec19a34a9f8d44b2287b8635a741`
   (PR #123; Scenario-D escape hardening)
 - **Q1 tree identity:** `8e59759af585a3b7764adb318a4cdb4bb6300690`
+  (tip and squash trees identical — transfer justified)
+- **Q2 verified PR tip:** `aa3c18f7621c0d399730ad67045410168fbb2257`
+  (exact-head CI bound here; PR #125)
+- **Q2 squash/main:** `2dc918f934836c3fa6a0f4d554f4757f4668c691`
+  (PR #125; MENUS workflow functional qualification)
+- **Q2 tree identity:** `229e8a013ab6b1880650f9a98e8e2857c4aa1cf1`
   (tip and squash trees identical — transfer justified; do not call the
   squash the tip; do not claim CI ran on the squash unless separately
   evidenced)
@@ -27,14 +37,17 @@
 This file is documentation / qualification contract.
 Q0 registered the ladder only (no product mutation).
 Q1 product escape hardening is LANDED / VERIFIED ON MAIN @ 9d8246e…
-(PR #123). This post-merge docs reconciliation authorizes no Q2 / product /
-tests / playthrough / eligibility / S05 terminalization / S04D / S06.
+(PR #123). Q2 MENUS workflow functional qualification is LANDED /
+VERIFIED ON MAIN @ 2dc918f… (PR #125). This post-merge docs
+reconciliation authorizes no Q3 / product / tests / playthrough /
+eligibility / S05 terminalization / S04D / S06.
 ```
 
 ```text
 routing ≠ authority
-naming Q2–Q7 does not start them
+naming Q3–Q7 does not start them
 Q0 observation history ≠ Q1 closure
+Q2 candidate-time wording ≠ Q2 landed routing
 ```
 
 ---
@@ -426,7 +439,7 @@ verdict.
 ### 10.3 Current status
 
 **Not issued.** Owner playthrough remains **PAUSED / GATED** behind Q0–Q6 +
-PRE-Q7 eligibility verdict. Q0 and Q1 are landed on main; Q2–Q6 are **not**
+PRE-Q7 eligibility verdict. Q0, Q1, and Q2 are landed on main; Q3–Q6 are **not**
 started.
 
 ---
@@ -483,15 +496,16 @@ While this contract is active and PRE-Q7 has not issued eligibility:
 
 | Topic | Required routing |
 | --- | --- |
-| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q2 AUTHORIZED / CANDIDATE on branch (PR #125) — not LANDED ON MAIN.** Q3 requires fresh bounded auth after Q2 merge |
-| Completed | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123); **Q2 AUTHORIZED / CANDIDATE on branch** under `AUTHORIZE-CQS-PRE-OWNER-Q2-MENUS-WORKFLOW-FUNCTIONAL-QUALIFICATION-1` |
+| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q2 LANDED / VERIFIED ON MAIN** @ `2dc918f…` (PR #125). **Q3 NEXT / NOT AUTHORIZED** — requires fresh bounded authorization |
+| Completed | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123); **Q2 LANDED / VERIFIED ON MAIN** @ `2dc918f…` (PR #125; tip `aa3c18f…`; tree `229e8a0…`) under `AUTHORIZE-CQS-PRE-OWNER-Q2-MENUS-WORKFLOW-FUNCTIONAL-QUALIFICATION-1` |
 | S05 parent | **OPEN / NOT TERMINAL** |
 | Prior MENUS Slice I playthrough | **NOT RUN** as acceptance (Scenario D was BLOCKED; I-REPAIR-1 merged; Q1 closed Scenario-D escapes on main; re-gate **not** authorized here) |
 | Owner playthrough | **PAUSED / GATED** behind Q0–Q6 + PRE-Q7 eligibility verdict |
 | S04D / S06 | **NOT AUTHORIZED** |
 | REAL MVP | **not** complete |
 | PR #110 / #118 | Observe only; do not mutate from this contract |
-| Q1 physical Sony | **NOT RUN** |
+| Q1 / Q2 physical Sony | **NOT RUN** |
+| Q3 | **NEXT / NOT AUTHORIZED** |
 
 Canonical status/handoff must link this file. See STATUS / CURRENT updates in
 the Q0 delivery PR.
@@ -505,6 +519,8 @@ the Q0 delivery PR.
 | [#121](https://github.com/ricktron/classroom-quiz-show/pull/121) | **MERGED** | Squash/main `67ba2c0…` — I-REPAIR-1 Class Setup (Q0 observation base) |
 | [#122](https://github.com/ricktron/classroom-quiz-show/pull/122) | **MERGED** | Squash/main `b1379b8…` — Q0 qualification contract |
 | [#123](https://github.com/ricktron/classroom-quiz-show/pull/123) | **MERGED** | Squash/main `9d8246e…` — Q1 Scenario-D escape hardening (verified PR tip `f5eeab3…`; identical tree `8e59759…`) |
+| [#124](https://github.com/ricktron/classroom-quiz-show/pull/124) | **MERGED** | Squash/main `1276c33…` — Q1 post-merge startup-truth docs reconciliation |
+| [#125](https://github.com/ricktron/classroom-quiz-show/pull/125) | **MERGED** | Squash/main `2dc918f…` — Q2 MENUS workflow functional qualification (verified PR tip `aa3c18f…`; identical tree `229e8a0…`) |
 | [#110](https://github.com/ricktron/classroom-quiz-show/pull/110) | OPEN **draft**, conflicting | Untouched |
 | [#118](https://github.com/ricktron/classroom-quiz-show/pull/118) | OPEN stale @ `f01a06f…`, conflicting | Untouched |
 
@@ -512,7 +528,7 @@ the Q0 delivery PR.
 
 ## 15. Verification for this docs slice
 
-Required for Q1 post-merge docs reconciliation:
+Required for Q2 post-merge docs reconciliation:
 
 ```bash
 git diff --check
@@ -520,9 +536,9 @@ git diff --check
 
 Optional docs-only hygiene if present in packet. Do **not** claim
 `npm run verify`, Playwright, Desktop, or CI product PASS unless those
-commands were actually run for this head. Q1 product verification evidence
-lives on PR #123 verified tip `f5eeab3…` (pre-merge exact-head CI SUCCESS
-bound there); squash/main `9d8246e…` shares identical tree `8e59759…`
+commands were actually run for this head. Q2 product verification evidence
+lives on PR #125 verified tip `aa3c18f…` (pre-merge exact-head CI SUCCESS
+bound there); squash/main `2dc918f…` shares identical tree `229e8a0…`
 (transfer justified). Do not claim CI ran on the squash unless separately
 evidenced. This docs reconciliation does not re-run product suites as
 ceremony.
@@ -533,16 +549,19 @@ ceremony.
 
 This contract does **not** claim:
 
-- Q2 LANDED ON MAIN / Q2 PASS, or Q3–Q7 execution or PASS;
+- Q3–Q7 execution or PASS;
 - OWNER-PLAYTHROUGH-ELIGIBLE;
 - MENUS Complete / Slice I ACCEPT;
 - S05 parent terminalization;
-- Q1 physical Sony / Windows / projector / audio PASS;
+- Q1/Q2 physical Sony / Windows / projector / audio PASS;
 - signed / notarized teacher release;
-- REAL MVP complete.
+- REAL MVP complete;
+- that Q2 proved the integrated gameplay golden path (that is **Q3**).
 
 Q1 closed DevPM Findings **A** and **B** on main (SIMULATED where noted).
-Findings **C** and **D** remain staged (**OPEN / Q3**; **RETAIN / Q5**).
+Finding **C** remains **OPEN / Q3**. Finding **D** remains **RETAIN / Q5**.
+Q2 closed the MENUS early-teacher workflow family on main; it did **not**
+close Finding C.
 
 ---
 
@@ -551,12 +570,14 @@ Findings **C** and **D** remain staged (**OPEN / Q3**; **RETAIN / Q5**).
 ```text
 Q0: LANDED (contract + matrix registered on main)
 Q1: LANDED / VERIFIED ON MAIN @ 9d8246e… (PR #123); PHYSICAL SONY NOT RUN
-Q2: AUTHORIZED / CANDIDATE on branch (PR #125) — not LANDED ON MAIN; PHYSICAL SONY NOT RUN
-Q3–Q6: NOT STARTED / NOT AUTHORIZED
+Q2: LANDED / VERIFIED ON MAIN @ 2dc918f… (PR #125); tip aa3c18f…; tree 229e8a0…; PHYSICAL SONY NOT RUN
+Q3: NEXT / NOT AUTHORIZED
+Q4–Q6: NOT STARTED / NOT AUTHORIZED
 PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE — NOT ISSUED (DevPM verdict after Q6; not a new Q-stage)
 Q7: natural owner usability playthrough — NOT BEGUN (requires PRE-Q7)
 S05 parent: OPEN / NOT TERMINAL
 owner playthrough: PAUSED / GATED (Q0–Q6 + PRE-Q7 eligibility)
+Finding C: OPEN / Q3; Finding D: RETAIN / Q5
 functional escapes: repair/verify required — no owner-waiver through PRE-Q7
 S04D / S06: NOT AUTHORIZED
 REAL MVP: not complete
