@@ -38,8 +38,8 @@
 - **Q3 candidate branch:** `cursor/cqs-q3-core-gameplay-golden-paths-ba9f`
 - **Q3 product repair tip:** `0c91147276dead9c50968bdbab98f753187ff7bf`
   (Session-name Host propagation + real `lih-correct` adjudication; R1–R6)
-- **Q3 candidate HEAD:** `0df78ed9d4e4d6af719ee4195e58f1d535d89ba7`
-  (repaired tip on PR #127 — not LANDED ON MAIN; docs tip may follow)
+- **Q3 candidate HEAD:** `0c91147276dead9c50968bdbab98f753187ff7bf`
+  (verified product tip on PR #127 — Session-name Host + lih-correct; not LANDED ON MAIN; docs tip may be ahead)
 
 ```text
 This file is documentation / qualification contract.
