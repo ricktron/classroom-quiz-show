@@ -69,6 +69,63 @@ export function menusBoardGameJson(options: {
   return JSON.stringify(doc)
 }
 
+/**
+ * Smallest complete playable Game for Q3 golden paths: one board tile + Final.
+ * Travels Home import → canonical validation/registry (not a privileged seed).
+ */
+export function menusBoardPlusFinalGameJson(options: {
+  readonly id: string
+  readonly title: string
+}): string {
+  return JSON.stringify({
+    format: 'classroom-quiz-show/game',
+    schemaVersion: 1,
+    id: options.id,
+    title: options.title,
+    timer: { responseSeconds: 45 },
+    teams: [
+      { id: 'alpha', name: 'Alpha Rockets', accent: 'crimson' },
+      { id: 'bravo', name: 'Bravo Comets', accent: 'azure' },
+    ],
+    rounds: [
+      {
+        id: 'board-round',
+        type: 'category-board',
+        title: 'Board',
+        config: {
+          categories: [
+            {
+              id: 'science',
+              title: 'Science',
+              tiles: [
+                {
+                  id: 'science-100',
+                  value: 100,
+                  prompt: 'Q3 golden prompt: what is H2O?',
+                  answer: 'Water',
+                  alternates: ['H2O liquid'],
+                  notes: 'Q3 host-only teaching note — never project',
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        id: 'final-round',
+        type: 'final-wager',
+        title: 'Final Wager',
+        config: {
+          prompt: 'Q3 final prompt: name the process that moves heat in the mantle.',
+          answer: 'Mantle convection',
+          alternates: ['Convection currents'],
+          notes: 'Q3 final host-only note — never project',
+        },
+      },
+    ],
+  })
+}
+
 /** Home import JSON → quality report → first Play. */
 export async function importMenusJsonAndPlay(page: Page, gameJson: string): Promise<void> {
   await page.goto('./')
