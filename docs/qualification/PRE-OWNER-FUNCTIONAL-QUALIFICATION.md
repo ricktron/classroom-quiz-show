@@ -36,7 +36,8 @@
 - **Q3 authorization:**
   `AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1`
 - **Q3 candidate branch:** `cursor/cqs-q3-core-gameplay-golden-paths-ba9f`
-- **Q3 candidate HEAD:** *(bound to delivery tip after this docs sync — not LANDED ON MAIN)*
+- **Q3 candidate HEAD:** 
+  (delivery tip on branch / PR #127 — not LANDED ON MAIN)
 
 ```text
 This file is documentation / qualification contract.
