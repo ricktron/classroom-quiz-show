@@ -18,6 +18,7 @@ import {
   Q3_AUTHORED_NAME_ALPHA,
   Q3_PRIVATE_CONTENT,
   Q3_SESSION_NAME_ALPHA,
+  Q3_SESSION_NAME_BRAVO,
   Q3_TEAM_ALPHA,
   runClassicFinalToCompletion,
 } from './helpers/menusQ3'
@@ -26,6 +27,7 @@ import {
  * Pre-owner Q3 — Core gameplay golden paths (Finding C / HG-12).
  *
  * Authorization: AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1
+ * Semantic repair: Q3-R1…R6 (Session names + real adjudication).
  *
  * Composes Home → Class Setup → Start → board → Final → completion on one
  * proven served build (Playwright webServer = build + preview). Not Q4.
@@ -44,6 +46,8 @@ test('Q3-A…F: keyboard golden path Home→board→Final→completion with Host
 
   const display = await openAudienceFromHost(context, host)
   await expectDisplayPrivate(display)
+  await expect(display.getByTestId('display-scores')).toContainText(Q3_SESSION_NAME_ALPHA)
+  await expect(display.getByTestId('display-scores')).toContainText(Q3_SESSION_NAME_BRAVO)
 
   // Q3-B: real round advance via teacher UI (no roundIndex injection).
   await advanceToBoard(host)
@@ -63,15 +67,14 @@ test('Q3-A…F: keyboard golden path Home→board→Final→completion with Host
   await expect(display.getByTestId('signal-rail-status')).toHaveText('Waiting for a buzz')
   await expect(display.getByTestId('rtd')).toHaveAttribute('data-status', 'running')
   await host.keyboard.press('Digit1')
-  // Host local-input labels use authored Game names; Display uses session names.
-  await expect(host.getByTestId('lih-active')).toHaveText(Q3_AUTHORED_NAME_ALPHA)
+  // R1/R4: Host and Display both use Session names — no authored-name tolerance.
+  await expect(host.getByTestId('lih-active')).toHaveText(Q3_SESSION_NAME_ALPHA)
   await expect(display.getByTestId('bqd-active')).toHaveText(Q3_SESSION_NAME_ALPHA)
+  await expect(host.getByTestId('lih-active')).not.toHaveText(Q3_AUTHORED_NAME_ALPHA)
   await expect(display.getByTestId('rtd')).toHaveAttribute('data-status', 'interrupted')
 
-  // HG-06: exact scores after adjudicate.
-  await adjudicateAlphaFullHundred(host)
-  await expect(display.getByTestId('display-scores')).toContainText('100')
-  await expect(display.getByTestId('display-scores')).toContainText('0')
+  // R2: real lih-correct adjudication before Team Scoring +100.
+  await adjudicateAlphaFullHundred(host, display)
   await expectDisplayPrivate(display)
 
   // Q3-C / Q3-D / DP-05: Final lifecycle + completion-only winner.
@@ -80,11 +83,21 @@ test('Q3-A…F: keyboard golden path Home→board→Final→completion with Host
   await expectDisplayPrivate(display, Q3_PRIVATE_CONTENT)
   await runClassicFinalToCompletion(host, display)
 
-  // Q3-E: Host session summary; Display sanitized.
+  // R5: Host session summary with Session standings; Display sanitized.
   await expect(host.getByTestId('session-summary-panel')).toBeVisible()
   await expect(host.getByRole('heading', { name: 'Session summary' })).toBeVisible()
   await expect(host.getByRole('heading', { name: 'Final standings' })).toBeVisible()
+  await expect(host.getByTestId('ssp-game-title')).toContainText(/Q3 Golden Path keyboard/i)
   await expect(host.getByTestId('ssp-current-session-warning')).toContainText(/saved locally/i)
+  const standings = host.getByTestId('ssp-standings')
+  await expect(standings).toContainText(Q3_SESSION_NAME_ALPHA)
+  await expect(standings).toContainText('150')
+  await expect(standings).toContainText(Q3_SESSION_NAME_BRAVO)
+  await expect(standings).toContainText('0')
+  await expect(standings).not.toContainText(Q3_AUTHORED_NAME_ALPHA)
+  // Unique-winner Final path evidence on Host summary.
+  await expect(host.getByTestId('ssp-terminal-path')).toContainText(/Final unique-winner/i)
+
   const displayText = (await display.locator('body').innerText()).toLowerCase()
   expect(displayText).not.toContain('session summary')
   expect(displayText).not.toContain('current-session-only')
@@ -120,11 +133,13 @@ test('Q3-G: SIMULATED supported-Sony gameplay claim on authentic Session (PHYSIC
   await expect(host.getByTestId('gih-enabled')).toHaveText('On')
   // Supported-profile materialization binds slot→team (red = primary buzz).
   await expect(host.getByTestId(`gih-control-${Q3_TEAM_ALPHA}`)).toContainText(/button/i)
+  await expect(host.getByTestId('gih-bindings')).toContainText(Q3_SESSION_NAME_ALPHA)
 
   await settleGamepadPolls(host, 12)
   await pressSimulatedGamepadButton(host, buttonIndexForSlotColor(1, 'red'))
 
-  await expect(host.getByTestId('lih-active')).toHaveText(Q3_AUTHORED_NAME_ALPHA, {
+  // R3: Sony buzz → Team 1 active on Host + Display → real adjudication.
+  await expect(host.getByTestId('lih-active')).toHaveText(Q3_SESSION_NAME_ALPHA, {
     timeout: 10_000,
   })
   await expect(display.getByTestId('bqd-active')).toHaveText(Q3_SESSION_NAME_ALPHA)
@@ -138,8 +153,8 @@ test('Q3-G: SIMULATED supported-Sony gameplay claim on authentic Session (PHYSIC
   }
   await expectDisplayPrivate(display)
 
-  // Continue to scores so this is a gameplay claim, not Names-only.
-  await adjudicateAlphaFullHundred(host)
+  // R3 continues: real adjudication UI → public board outcome → score.
+  await adjudicateAlphaFullHundred(host, display)
   await expect(host.getByTestId(`tsp-score-${Q3_TEAM_ALPHA}`)).toHaveText('100')
   await expect(display.getByTestId('display-scores')).toContainText('100')
 

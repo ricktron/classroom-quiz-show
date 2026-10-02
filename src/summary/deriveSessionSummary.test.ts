@@ -202,6 +202,58 @@ describe('deriveSessionSummaryV1 — scoring and standings', () => {
     expect(standings.every((row) => row.rank === 1 && row.tied)).toBe(true)
   })
 
+  it('uses Session team names in standings when chosen, else authored fallback', () => {
+    const store = boardStore()
+    store.dispatch({
+      type: 'SET_SESSION_TEAM_NAME',
+      issuedAt: BOARD_AT,
+      teamId: 'red',
+      name: 'Team 1',
+    })
+    store.dispatch({
+      type: 'SET_SESSION_TEAM_NAME',
+      issuedAt: BOARD_AT,
+      teamId: 'blue',
+      name: 'Team 2',
+    })
+    store.dispatch({
+      type: 'ADJUST_TEAM_SCORE',
+      issuedAt: BOARD_AT,
+      teamId: 'red',
+      delta: 150,
+      mode: 'manual-correction',
+      source: { kind: 'manual' },
+    })
+    endGame(store)
+    const summary = available(store)
+    expect(summary.scoreActivity.derived.standings[0]).toMatchObject({
+      teamId: 'red',
+      teamName: 'Team 1',
+      finalScore: 150,
+    })
+    expect(summary.scoreActivity.derived.standings[1]).toMatchObject({
+      teamId: 'blue',
+      teamName: 'Team 2',
+      finalScore: 0,
+    })
+    expect(summary.scoreActivity.observed.perTeam.find((t) => t.teamId === 'red')?.teamName).toBe(
+      'Team 1',
+    )
+
+    const authoredOnly = boardStore()
+    authoredOnly.dispatch({
+      type: 'ADJUST_TEAM_SCORE',
+      issuedAt: BOARD_AT,
+      teamId: 'red',
+      delta: 50,
+      mode: 'manual-correction',
+      source: { kind: 'manual' },
+    })
+    endGame(authoredOnly)
+    const authoredSummary = available(authoredOnly)
+    expect(authoredSummary.scoreActivity.derived.standings[0]?.teamName).toBe('Red Team')
+  })
+
   it('counts a consumed tile with no score event', () => {
     const store = boardStore()
     openToAnswer(store, 'alpha-100')

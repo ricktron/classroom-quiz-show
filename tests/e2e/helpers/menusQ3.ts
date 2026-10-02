@@ -19,7 +19,7 @@ export const Q3_PRIVATE_CONTENT = [
 
 export const Q3_TEAM_ALPHA = 'alpha'
 export const Q3_TEAM_BRAVO = 'bravo'
-/** Authored Game names (Host local-input / scoring labels use these). */
+/** Authored Game names — fallback only when Session names are not chosen. */
 export const Q3_AUTHORED_NAME_ALPHA = 'Alpha Rockets'
 export const Q3_AUTHORED_NAME_BRAVO = 'Bravo Comets'
 /** Session names after Class Setup keyboard fill (`fillAllTeamNames`). */
@@ -56,6 +56,11 @@ export async function keyboardNamesReadyStart(page: Page): Promise<void> {
   await expect(page.getByTestId('tsp-scoreboard')).toBeVisible()
   // Authentic Play Session (Host with ?play=) — not a bare harness seed.
   await expect(page).toHaveURL(/[?&]play=/)
+  // R1: Session names must already appear on Host Team Scoring after Start.
+  await expect(page.getByTestId(`tsp-team-${Q3_TEAM_ALPHA}`)).toContainText(Q3_SESSION_NAME_ALPHA)
+  await expect(page.getByTestId(`tsp-team-${Q3_TEAM_BRAVO}`)).toContainText(Q3_SESSION_NAME_BRAVO)
+  await expect(page.getByTestId('tsp-scoreboard')).not.toContainText(Q3_AUTHORED_NAME_ALPHA)
+  await expect(page.getByTestId('tsp-scoreboard')).not.toContainText(Q3_AUTHORED_NAME_BRAVO)
 }
 
 /**
@@ -131,13 +136,36 @@ export async function armAndStartTimer(host: Page): Promise<void> {
   await host.getByTestId('rth-start').click()
 }
 
-/** Award full 100 to alpha after answer reveal (exact score path). */
-export async function adjudicateAlphaFullHundred(host: Page): Promise<void> {
+/**
+ * Real board adjudication: Mark correct via Host UI, assert public board outcome,
+ * then Team Scoring +100 (OG-6 deferred — scoring stays separate).
+ * Never injects RESOLVE_ACTIVE_RESPONSE.
+ */
+export async function adjudicateAlphaFullHundred(
+  host: Page,
+  display: Page,
+): Promise<void> {
+  // Mark correct while still at prompt stage (answer reveal closes resolve controls).
+  await expect(host.getByTestId('lih-correct')).toBeEnabled()
+  await host.getByTestId('lih-correct').click()
+  await expect(host.getByTestId('lih-board-outcome')).toContainText(
+    `${Q3_SESSION_NAME_ALPHA} — Correct`,
+  )
+  await expect(host.getByTestId('lih-active')).toContainText(
+    `Closed — ${Q3_SESSION_NAME_ALPHA} marked correct`,
+  )
+  await expect(display.getByTestId('board-outcome')).toContainText(/Correct/i)
+  await expect(display.getByTestId('board-outcome')).toContainText(Q3_SESSION_NAME_ALPHA)
+
+  // Reveal answer after adjudication when appropriate; scoring stays separate (OG-6).
   await host.getByTestId('cbh-reveal-answer').click()
   await host.getByTestId(`tsp-target-${Q3_TEAM_ALPHA}`).click()
+  await expect(host.getByTestId('tsp-selected-team')).toContainText(Q3_SESSION_NAME_ALPHA)
   await host.getByTestId('tsp-award-full').click()
   await expect(host.getByTestId(`tsp-score-${Q3_TEAM_ALPHA}`)).toHaveText('100')
   await expect(host.getByTestId(`tsp-score-${Q3_TEAM_BRAVO}`)).toHaveText('0')
+  await expect(display.getByTestId('display-scores')).toContainText('100')
+  await expect(display.getByTestId('display-scores')).toContainText('0')
   await host.getByTestId('cbh-return').click()
 }
 
@@ -151,6 +179,9 @@ export async function runClassicFinalToCompletion(
   await expect(display.getByTestId('fwd-wager-entry')).toBeVisible()
   await expect(host.getByTestId(`fwh-cap-${Q3_TEAM_ALPHA}`)).toBeVisible()
   await expect(host.getByTestId(`fwh-cap-${Q3_TEAM_BRAVO}`)).toHaveCount(0)
+  // R1: Final Host uses Session names.
+  await expect(host.locator('.fwh__team-name').first()).toContainText(Q3_SESSION_NAME_ALPHA)
+  await expect(host.locator('.fwh')).not.toContainText(Q3_AUTHORED_NAME_ALPHA)
 
   await host.getByTestId(`fwh-wager-input-${Q3_TEAM_ALPHA}`).fill('50')
   await host.getByTestId(`fwh-save-wager-${Q3_TEAM_ALPHA}`).click()
@@ -177,6 +208,10 @@ export async function runClassicFinalToCompletion(
   await host.getByTestId(`fwh-reveal-${Q3_TEAM_ALPHA}`).click()
   await expect(display.getByTestId('fwd-reveal-wager')).toContainText('50')
   await expect(display.getByTestId('fwd-reveal-outcome')).toHaveCount(0)
+  await expect(host.getByTestId('fwh-active-reveal')).toContainText(Q3_SESSION_NAME_ALPHA)
+
+  // R6: before completion — no winner yet.
+  await expect(display.getByTestId('fwd-winner')).toHaveCount(0)
 
   await host.getByTestId('fwh-settle-correct').click()
   await expect(display.getByTestId('fwd-reveal-outcome')).toContainText(/correct/i)
@@ -189,9 +224,9 @@ export async function runClassicFinalToCompletion(
   await host.getByTestId('fwh-complete-confirm').click()
   await expect(display.getByTestId('fwd-complete')).toBeVisible()
   await expect(display.getByTestId('fwd-winner')).toBeVisible()
-  // Display projects session names when chosen; fall back matches authored.
-  await expect(display.getByTestId('fwd-winner')).toContainText(
-    new RegExp(`${Q3_SESSION_NAME_ALPHA}|${Q3_AUTHORED_NAME_ALPHA}`, 'i'),
-  )
+  // R4/R6: winner must be Session name + 150 — no authored-name tolerance.
+  await expect(display.getByTestId('fwd-winner')).toContainText(Q3_SESSION_NAME_ALPHA)
+  await expect(display.getByTestId('fwd-winner-score')).toHaveText('150')
+  await expect(display.getByTestId('fwd-winner')).not.toContainText(Q3_AUTHORED_NAME_ALPHA)
   await expectDisplayPrivate(display)
 }

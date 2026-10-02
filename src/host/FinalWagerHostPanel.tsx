@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { SessionCommand } from '../state/commands'
 import type { PrivateGameState } from '../state/privateState'
 import type { DispatchResult } from '../state/store'
-import { finalWagerStateFor, teamScoreFor } from '../state/reducer'
+import { finalWagerStateFor, publicTeamDisplayName, teamScoreFor } from '../state/reducer'
 import { readFinalWagerDefinition } from '../game/finalWager/definition'
 import {
   DEFAULT_FINAL_ELIGIBILITY_MODE,
@@ -207,12 +207,11 @@ export function FinalWagerHostPanel({
 
           <div className="fwh__teams" role="group" aria-label="Team wagers">
             {(final.snapshot?.teams ?? []).map((eligible) => {
-              const team = findTeamById(game.definition.teams, eligible.teamId)
               const committed = committedWager(final, eligible.teamId)
               const draft = wagerDrafts[eligible.teamId] ?? ''
               return (
                 <div className="fwh__team" key={eligible.teamId}>
-                  <p className="fwh__team-name">{team?.name ?? eligible.teamId}</p>
+                  <p className="fwh__team-name">{hostTeamLabel(game, eligible.teamId)}</p>
                   <p className="fwh__team-meta">
                     Score before Final: {eligible.preFinalScore} · Maximum wager:{' '}
                     <strong data-testid={`fwh-cap-${eligible.teamId}`}>
@@ -391,12 +390,11 @@ export function FinalWagerHostPanel({
 
           <div className="fwh__teams" role="group" aria-label="Team responses">
             {(final.snapshot?.teams ?? []).map((eligible) => {
-              const team = findTeamById(game.definition.teams, eligible.teamId)
               const committed = committedResponse(final, eligible.teamId)
               const draft = responseDrafts[eligible.teamId] ?? ''
               return (
                 <div className="fwh__team" key={eligible.teamId}>
-                  <p className="fwh__team-name">{team?.name ?? eligible.teamId}</p>
+                  <p className="fwh__team-name">{hostTeamLabel(game, eligible.teamId)}</p>
                   {final.captureMode === 'exact-text' && (
                     <label
                       className="fwh__field"
@@ -584,12 +582,20 @@ export function FinalWagerHostPanel({
   )
 }
 
-/** The public names of every team currently sharing the lead. */
+/** Host-facing names of every team currently sharing the lead. */
 function leaderNames(game: PrivateGameState): string {
   const leaders = finalLeaders(game.definition.teams, (teamId) => teamScoreFor(game, teamId))
   return leaders
-    .map((teamId) => findTeamById(game.definition.teams, teamId)?.name ?? teamId)
+    .map((teamId) => {
+      const authored = findTeamById(game.definition.teams, teamId)?.name ?? teamId
+      return publicTeamDisplayName(game, teamId, authored)
+    })
     .join(', ')
+}
+
+function hostTeamLabel(game: PrivateGameState, teamId: string): string {
+  const authored = findTeamById(game.definition.teams, teamId)?.name ?? teamId
+  return publicTeamDisplayName(game, teamId, authored)
 }
 
 function SetupSection({
@@ -781,8 +787,7 @@ function RevealSection({
 }) {
   const activeTeamId = currentRevealTeamId(final)
   const nextDefault = nextDefaultRevealTeamId(final)
-  const nameOf = (teamId: string) =>
-    findTeamById(game.definition.teams, teamId)?.name ?? teamId
+  const nameOf = (teamId: string) => hostTeamLabel(game, teamId)
 
   if (activeTeamId !== null) {
     const response = committedResponse(final, activeTeamId)

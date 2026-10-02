@@ -2,7 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { SessionCommand } from '../state/commands'
 import type { PrivateGameState } from '../state/privateState'
 import type { DispatchResult } from '../state/store'
-import { categoryBoardStateFor, responsePhaseFor } from '../state/reducer'
+import {
+  categoryBoardStateFor,
+  publicTeamDisplayName,
+  responsePhaseFor,
+} from '../state/reducer'
 import { readCategoryBoardDefinition } from '../game/categoryBoard/definition'
 import { findTeamById } from '../game/teams/definition'
 import {
@@ -221,7 +225,10 @@ export function LocalInputHostPanel({
   const activeTeamId = queue === null ? null : activeRespondent(queue)
   const waitingIds = queue === null ? [] : waitingRespondents(queue)
   const armed = phase?.armed ?? false
-  const nameOf = (id: string) => findTeamById(teams, id)?.name ?? id
+  const nameOf = (id: string) => {
+    const authored = findTeamById(teams, id)?.name ?? id
+    return publicTeamDisplayName(game, id, authored)
+  }
 
   const send = (command: SessionCommand) => dispatch(command)
   const canResolve = open && tileId !== null && activeTeamId !== null
@@ -308,9 +315,10 @@ export function LocalInputHostPanel({
         {teams.map((team) => {
           const code = primaryKeyForTeam(mapping, team.id)
           const isCapturing = capturingTeamId === team.id
+          const teamLabel = nameOf(team.id)
           return (
             <li key={team.id} className="lih__key-row">
-              <span className="lih__key-team">{team.name}</span>
+              <span className="lih__key-team">{teamLabel}</span>
               <span className="lih__key-code" data-testid={`lih-key-${team.id}`}>
                 {isCapturing
                   ? 'Press a key…'
@@ -324,8 +332,8 @@ export function LocalInputHostPanel({
                 data-testid={`lih-capture-${team.id}`}
                 aria-label={
                   isCapturing
-                    ? `Cancel changing the buzz key for ${team.name}`
-                    : `Change the buzz key for ${team.name}`
+                    ? `Cancel changing the buzz key for ${teamLabel}`
+                    : `Change the buzz key for ${teamLabel}`
                 }
                 onClick={() => {
                   if (isCapturing) {
@@ -335,7 +343,7 @@ export function LocalInputHostPanel({
                   }
                   setCapture({ mode: 'capturing', teamId: team.id })
                   setCaptureMessage(
-                    `Press the key ${team.name} should use to buzz. Press Escape to cancel.`,
+                    `Press the key ${teamLabel} should use to buzz. Press Escape to cancel.`,
                   )
                 }}
               >
@@ -345,11 +353,11 @@ export function LocalInputHostPanel({
                 type="button"
                 className="btn btn--secondary"
                 data-testid={`lih-clear-${team.id}`}
-                aria-label={`Clear the buzz key for ${team.name}`}
+                aria-label={`Clear the buzz key for ${teamLabel}`}
                 disabled={code === null}
                 onClick={() => {
                   applyMapping(withPrimaryKeyForTeam(mapping, team.id, null))
-                  setCaptureMessage(`Buzz key cleared for ${team.name}.`)
+                  setCaptureMessage(`Buzz key cleared for ${teamLabel}.`)
                 }}
               >
                 Clear
