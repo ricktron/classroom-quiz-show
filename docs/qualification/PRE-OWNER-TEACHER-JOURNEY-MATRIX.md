@@ -32,16 +32,18 @@
 - **Q3 authorization:**
   `AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1`
 - **Q3 candidate branch:** `cursor/cqs-q3-core-gameplay-golden-paths-ba9f`
+- **Q3 product repair tip:** `0c91147276dead9c50968bdbab98f753187ff7bf`
+  (R1–R6 Session-name Host propagation + real `lih-correct` adjudication)
 
 ```text
 Documentation / qualification matrix. Q0/Q1/Q2 LANDED on main. Q3 core
 gameplay golden paths are AUTHORIZED / CANDIDATE-COMPLETE on branch —
-not LANDED ON MAIN. Finding C CLOSED ON Q3 CANDIDATE (HG-12 composed).
-Does not claim Q3 LANDED ON MAIN. Q4 is NEXT / NOT AUTHORIZED.
-PHYSICAL SONY NOT RUN. Golden paths = Q3; branch/failure = Q4; Electron
-= Q5; owner feel = Q7. PRE-Q7 (DevPM) issues eligibility after Q0–Q6;
-Q7 does not. Functional escapes / blockers may not be waived through
-PRE-Q7.
+not LANDED ON MAIN. Finding C CLOSED ON Q3 CANDIDATE (HG-12 composed;
+Session names on Host/Display; real board adjudication). Does not claim
+Q3 LANDED ON MAIN. Q4 is NEXT / NOT AUTHORIZED. PHYSICAL SONY NOT RUN.
+Golden paths = Q3; branch/failure = Q4; Electron = Q5; owner feel = Q7.
+PRE-Q7 (DevPM) issues eligibility after Q0–Q6; Q7 does not. Functional
+escapes / blockers may not be waived through PRE-Q7.
 ```
 
 ---
@@ -147,7 +149,7 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 | HG-09 | Final wager lifecycle | Wager → reveal → settlement | `final-wager` + Q3 golden | AUTOMATED E2E | STRENGTHEN | Q3 candidate | Classic Final on authentic Session |
 | HG-10 | Completion / winner / tie | Completion-only winner; remount-safe | audience-display final tests + Q3 golden | AUTOMATED E2E | STRENGTHEN | Q3 candidate | Winner only after explicit complete |
 | HG-11 | Session summary | Host summary; Display sanitized | `session-summary` + Q3 golden | AUTOMATED E2E | STRENGTHEN | Q3 candidate | Summary Host-only after completion |
-| HG-12 | **Integrated golden path** | Home→setup→Play→board→Final→completion on one served build | `menus-q3-core-gameplay-golden-paths` | AUTOMATED E2E | **CLOSED ON Q3 CANDIDATE** | **Q3 candidate** | **Finding C CLOSED ON Q3 CANDIDATE** — not LANDED ON MAIN |
+| HG-12 | **Integrated golden path** | Home→setup→Play→board→Final→completion on one served build; Session names Host+Display; real `lih-correct` | `menus-q3-core-gameplay-golden-paths` | AUTOMATED E2E | **CLOSED ON Q3 CANDIDATE** | **Q3 candidate** | **Finding C CLOSED ON Q3 CANDIDATE** after R1–R6 semantic repair — not LANDED ON MAIN |
 | HG-13 | Undo / recovery mid-game | Safe resume without private leak | persistence-recovery fragments | AUTOMATED E2E | STRENGTHEN | Q4 | Branch / failure matrix |
 | HG-14 | More / diagnostics / mute | Sanitized diagnostics; panic mute | diagnostic-report; classroom-setup mute | AUTOMATED E2E / DESKTOP | RETAIN | Q5 | Electron/desktop family |
 | HG-15 | Whole-game owner playthrough | Classroom feel across full game | STATUS: **NOT RUN**; **PAUSED/GATED** | OWNER-ONLY | OWNER-ONLY | Q7 | Requires PRE-Q7 eligibility; Q7 does not issue it |

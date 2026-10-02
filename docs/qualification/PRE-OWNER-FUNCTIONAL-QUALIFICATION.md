@@ -36,8 +36,10 @@
 - **Q3 authorization:**
   `AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1`
 - **Q3 candidate branch:** `cursor/cqs-q3-core-gameplay-golden-paths-ba9f`
-- **Q3 candidate HEAD:** `91d925585c095fa0ecd28716932fa59b60af152c`
-  (prior tip; final tip is this docs-fix commit on PR #127 — not LANDED ON MAIN)
+- **Q3 product repair tip:** `0c91147276dead9c50968bdbab98f753187ff7bf`
+  (Session-name Host propagation + real `lih-correct` adjudication; R1–R6)
+- **Q3 candidate HEAD:** `0c91147276dead9c50968bdbab98f753187ff7bf`
+  (repaired tip on PR #127 — not LANDED ON MAIN; docs tip may follow)
 
 ```text
 This file is documentation / qualification contract.
@@ -527,7 +529,7 @@ the Q0 delivery PR.
 | [#123](https://github.com/ricktron/classroom-quiz-show/pull/123) | **MERGED** | Squash/main `9d8246e…` — Q1 Scenario-D escape hardening (verified PR tip `f5eeab3…`; identical tree `8e59759…`) |
 | [#124](https://github.com/ricktron/classroom-quiz-show/pull/124) | **MERGED** | Squash/main `1276c33…` — Q1 post-merge startup-truth docs reconciliation |
 | [#125](https://github.com/ricktron/classroom-quiz-show/pull/125) | **MERGED** | Squash/main `2dc918f…` — Q2 MENUS workflow functional qualification (verified PR tip `aa3c18f…`; identical tree `229e8a0…`) |
-| [#127](https://github.com/ricktron/classroom-quiz-show/pull/127) | **OPEN draft** candidate | Q3 golden paths — not LANDED ON MAIN |
+| [#127](https://github.com/ricktron/classroom-quiz-show/pull/127) | **OPEN draft** candidate | Q3 golden paths + semantic repair (R1–R6) — not LANDED ON MAIN |
 | [#110](https://github.com/ricktron/classroom-quiz-show/pull/110) | OPEN **draft**, conflicting | Untouched |
 | [#118](https://github.com/ricktron/classroom-quiz-show/pull/118) | OPEN stale @ `f01a06f…`, conflicting | Untouched |
 

@@ -166,9 +166,11 @@ Teacher desktop notes:
 | Post-MVP arcs | **INACTIVE** |
 
 Do **not** begin S04D, additional S05 work, or S06 from this status.
-Do **not** start Q3–Q6 from this status without a separate bounded
-authorization. Q2 is **LANDED / VERIFIED ON MAIN**; Q3 is **NEXT / NOT
-AUTHORIZED** until a fresh bounded authorization. Do **not** resume owner walkthrough / Slice I re-gate / S05
+Do **not** start Q4–Q6 from this status without a separate bounded
+authorization. Q2 is **LANDED / VERIFIED ON MAIN**; Q3 is **AUTHORIZED /
+CANDIDATE-COMPLETE on branch (PR #127) — not LANDED ON MAIN** under
+`AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1` (semantic repair
+tip `0c91147…`); Q4 is **NEXT / NOT AUTHORIZED**. Do **not** resume owner walkthrough / Slice I re-gate / S05
 whole-game playthrough until pre-owner Q0–Q6 are complete under later
 authorizations and DevPM PRE-Q7 **verdict** issues
 **`OWNER-PLAYTHROUGH-ELIGIBLE`** (not issued; PRE-Q7 is not a new numbered
