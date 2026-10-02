@@ -113,6 +113,20 @@ describe('the team list', () => {
     expect(screen.getByTestId('tsp-score-red')).toHaveTextContent('0')
   })
 
+  it('prefers Session team names on the scoreboard and scoring targets', () => {
+    const store = storeWithTeams()
+    store.dispatch({ type: 'SET_SESSION_TEAM_NAME', issuedAt: AT, teamId: 'red', name: 'Team 1' })
+    store.dispatch({ type: 'SET_SESSION_TEAM_NAME', issuedAt: AT, teamId: 'blue', name: 'Team 2' })
+    renderPanel(store)
+    const board = screen.getByTestId('tsp-scoreboard')
+    expect(board).toHaveTextContent('Team 1')
+    expect(board).toHaveTextContent('Team 2')
+    expect(board).not.toHaveTextContent('Red Team')
+    expect(board).not.toHaveTextContent('Blue Team')
+    expect(screen.getByTestId('tsp-target-red').closest('label')).toHaveTextContent('Team 1')
+    expect(screen.getByTestId('tsp-target-blue').closest('label')).toHaveTextContent('Team 2')
+  })
+
   it('says so plainly when the game configures no teams', () => {
     const result = importGameFromUnknown(boardGameFile(richBoardConfig()))
     if (result.status !== 'success') throw new Error('fixture failed')

@@ -450,6 +450,31 @@ describe('running the queue', () => {
     expect(queueOf(store).order).toEqual([])
   })
 
+  it('prefers Session team names over authored Game names in queue copy', () => {
+    const store = boardStore()
+    store.dispatch({ type: 'SET_SESSION_TEAM_NAME', issuedAt: AT, teamId: 'red', name: 'Team 1' })
+    store.dispatch({ type: 'SET_SESSION_TEAM_NAME', issuedAt: AT, teamId: 'blue', name: 'Team 2' })
+    openClue(store)
+    arm(store)
+    renderPanel(store)
+    press('Digit1')
+    expect(screen.getByTestId('lih-active')).toHaveTextContent('Team 1')
+    expect(screen.getByTestId('lih-active')).not.toHaveTextContent('Red Team')
+    expect(screen.getByTestId('lih-keys')).toHaveTextContent('Team 1')
+    fireEvent.click(screen.getByRole('button', { name: /mark correct/i }))
+    expect(screen.getByTestId('lih-board-outcome')).toHaveTextContent('Team 1 — Correct')
+    expect(screen.getByTestId('lih-active')).toHaveTextContent('Closed — Team 1 marked correct')
+  })
+
+  it('falls back to authored Game names when no Session name is chosen', () => {
+    const store = boardStore()
+    openClue(store)
+    arm(store)
+    renderPanel(store)
+    press('Digit1')
+    expect(screen.getByTestId('lih-active')).toHaveTextContent('Red Team')
+  })
+
   it('keeps durable incorrect and passed adjudication visible after promotion / exhaust', () => {
     const { store } = queuedPanel()
     fireEvent.click(screen.getByRole('button', { name: /mark incorrect and advance/i }))

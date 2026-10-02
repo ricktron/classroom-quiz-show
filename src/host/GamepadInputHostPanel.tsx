@@ -3,6 +3,7 @@ import type { SessionCommand } from '../state/commands'
 import type { PrivateGameState } from '../state/privateState'
 import type { DispatchResult } from '../state/store'
 import { findTeamById } from '../game/teams/definition'
+import { publicTeamDisplayName } from '../state/reducer'
 import {
   describeGamepadControl,
   EMPTY_GAMEPAD_MAPPING,
@@ -457,7 +458,10 @@ export function GamepadInputHostPanel({
   const supported = diagnostics.status !== 'unsupported'
   const readable = diagnostics.status === 'ok'
   const controllers = diagnostics.controllers
-  const nameOf = (id: string) => findTeamById(teams, id)?.name ?? id
+  const nameOf = (id: string) => {
+    const authored = findTeamById(teams, id)?.name ?? id
+    return publicTeamDisplayName(game, id, authored)
+  }
   const pendingAction = actionFromKey(pendingActionKey)
 
   return (
@@ -478,6 +482,7 @@ export function GamepadInputHostPanel({
       {selectionMode ? (
         <SonyBuzzSetupSection
           teams={teams}
+          displayNameForTeam={nameOf}
           controllers={controllers}
           diagnosticsStatus={diagnostics.status}
           activeMapping={mapping}
@@ -628,9 +633,10 @@ export function GamepadInputHostPanel({
           const control = gamepadControlForTeamAction(mapping, team.id, pendingAction)
           const isCapturing =
             capture.mode === 'capturing' && capture.teamId === team.id
+          const teamLabel = nameOf(team.id)
           return (
             <li key={team.id} className="gih__binding-row">
-              <span className="gih__binding-team">{team.name}</span>
+              <span className="gih__binding-team">{teamLabel}</span>
               <span className="gih__binding-control" data-testid={`gih-control-${team.id}`}>
                 {isCapturing
                   ? 'Press a button…'
@@ -650,8 +656,8 @@ export function GamepadInputHostPanel({
                 }
                 aria-label={
                   isCapturing
-                    ? `Cancel assigning a controller button for ${team.name}`
-                    : `Assign a controller button for ${team.name}, ${actionLabel(pendingAction)}`
+                    ? `Cancel assigning a controller button for ${teamLabel}`
+                    : `Assign a controller button for ${teamLabel}, ${actionLabel(pendingAction)}`
                 }
                 onClick={() => {
                   if (isCapturing) {
@@ -661,7 +667,7 @@ export function GamepadInputHostPanel({
                   }
                   setCapture({ mode: 'capturing', teamId: team.id, action: pendingAction })
                   setCaptureMessage(
-                    `Press the controller button ${team.name} should use. Use the Cancel button to stop.`,
+                    `Press the controller button ${teamLabel} should use. Use the Cancel button to stop.`,
                   )
                 }}
               >
@@ -671,13 +677,13 @@ export function GamepadInputHostPanel({
                 type="button"
                 className="btn btn--secondary"
                 data-testid={`gih-clear-${team.id}`}
-                aria-label={`Clear the controller button for ${team.name}`}
+                aria-label={`Clear the controller button for ${teamLabel}`}
                 disabled={control === null}
                 onClick={() => {
                   applyMapping(
                     withGamepadControlForTeamAction(mapping, team.id, pendingAction, null),
                   )
-                  setCaptureMessage(`Controller button cleared for ${team.name}.`)
+                  setCaptureMessage(`Controller button cleared for ${teamLabel}.`)
                 }}
               >
                 Clear

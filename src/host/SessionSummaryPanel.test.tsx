@@ -6,6 +6,7 @@ import { createSessionStore } from '../state/store'
 import { teamBoardGameFile, twoTeams } from '../test/teamFixtures'
 import { richBoardConfig } from '../test/categoryBoardFixtures'
 import { SessionSummaryPanel } from './SessionSummaryPanel'
+import { deriveSessionSummaryV1 } from '../summary/deriveSessionSummary'
 
 const AT = 1_000
 
@@ -91,6 +92,47 @@ describe('SessionSummaryPanel', () => {
     )
     fireEvent.click(screen.getByRole('button', { name: /retry saving summary/i }))
     expect(retry).toHaveBeenCalledOnce()
+  })
+
+  it('shows Session team names on current-session standings while durable summary stays authored', () => {
+    const imported = importGameFromUnknown(teamBoardGameFile(twoTeams(), richBoardConfig()))
+    if (imported.status !== 'success') throw new Error('import failed')
+    const store = createSessionStore()
+    store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 'session-names' })
+    store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT, definition: imported.definition })
+    store.dispatch({ type: 'SET_SESSION_TEAM_NAME', issuedAt: AT, teamId: 'red', name: 'Team 1' })
+    store.dispatch({ type: 'SET_SESSION_TEAM_NAME', issuedAt: AT, teamId: 'blue', name: 'Team 2' })
+    store.dispatch({
+      type: 'ADJUST_TEAM_SCORE',
+      issuedAt: AT,
+      teamId: 'red',
+      delta: 150,
+      mode: 'manual-correction',
+      source: { kind: 'manual' },
+    })
+    store.dispatch({ type: 'END_GAME_SESSION', issuedAt: AT + 9 })
+    const game = store.getState().session!.game!
+    render(<SessionSummaryPanel game={game} history={store.getHistory()} />)
+
+    const standings = screen.getByTestId('ssp-standings')
+    expect(standings).toHaveTextContent('Team 1')
+    expect(standings).toHaveTextContent('150')
+    expect(standings).toHaveTextContent('Team 2')
+    expect(standings).not.toHaveTextContent('Red Team')
+    expect(screen.getByTestId('ssp-scoring-teams')).toHaveTextContent('Team 1')
+
+    const durable = deriveSessionSummaryV1(store.getHistory())
+    expect(durable.status).toBe('available')
+    if (durable.status !== 'available') throw new Error('expected available')
+    expect(durable.summary.scoreActivity.derived.standings[0]?.teamName).toBe('Red Team')
+  })
+
+  it('falls back to authored Game names when no Session name is chosen', () => {
+    const store = endedStore()
+    const game = store.getState().session!.game!
+    render(<SessionSummaryPanel game={game} history={store.getHistory()} />)
+    expect(screen.getByTestId('ssp-standings')).toHaveTextContent('Red Team')
+    expect(screen.getByTestId('ssp-standings')).not.toHaveTextContent('Team 1')
   })
 
   it('presents unsupported authored rounds in words without fabricated metrics', () => {

@@ -216,6 +216,8 @@ function buildScoreActivity(
     const finalScore = teamScoreFor(game, team.id)
     return {
       teamId: team.id,
+      // Durable Summary V1 stores authored Game copy only (ADR-016 aggregation).
+      // Current-session Host presentation may overlay Session names elsewhere.
       teamName: team.name,
       scoreChangeCount: row.scoreChangeCount,
       netDelta: row.netDelta,

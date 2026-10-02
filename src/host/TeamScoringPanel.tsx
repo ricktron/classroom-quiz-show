@@ -7,6 +7,7 @@ import {
   categoryBoardStateFor,
   effectiveEvents,
   findUndoTarget,
+  publicTeamDisplayName,
   teamScoreFor,
 } from '../state/reducer'
 import { readCategoryBoardDefinition, findTileLocation } from '../game/categoryBoard/definition'
@@ -134,6 +135,10 @@ export function TeamScoringPanel({
   clock = systemClock,
 }: TeamScoringPanelProps) {
   const teams = game.definition.teams
+  const displayName = (teamId: string) => {
+    const authored = teams.find((team) => team.id === teamId)?.name ?? teamId
+    return publicTeamDisplayName(game, teamId, authored)
+  }
   const [targetId, setTargetId] = useState<string | null>(null)
   const [partialText, setPartialText] = useState('')
   const [manualText, setManualText] = useState('')
@@ -266,8 +271,8 @@ export function TeamScoringPanel({
               className={`tsp__swatch ${teamAccentClass(team.accent)}`}
               aria-hidden="true"
             />
-            {/* The NAME identifies the team; the swatch is decoration only. */}
-            <span className="tsp__team-name">{team.name}</span>
+            {/* Session name when chosen; authored Game name otherwise. */}
+            <span className="tsp__team-name">{displayName(team.id)}</span>
             <span className="tsp__team-score" data-testid={`tsp-score-${team.id}`}>
               {teamScoreFor(game, team.id)}
             </span>
@@ -291,7 +296,7 @@ export function TeamScoringPanel({
               }}
             />
             <span>
-              {team.name} ({teamScoreFor(game, team.id)})
+              {displayName(team.id)} ({teamScoreFor(game, team.id)})
             </span>
           </label>
         ))}
@@ -309,7 +314,7 @@ export function TeamScoringPanel({
         </p>
       ) : (
         <p className="tsp__selected-team" data-testid="tsp-selected-team">
-          Selected: <strong>{target.name}</strong> — currently {targetScore} points.
+          Selected: <strong>{displayName(target.id)}</strong> — currently {targetScore} points.
         </p>
       )}
 
@@ -319,6 +324,7 @@ export function TeamScoringPanel({
             testId="tsp-award-full"
             label={`Award full value (${formatSignedDelta(fullCreditDelta(liveTile.effectiveValue))})`}
             team={target}
+            teamLabel={target === null ? null : displayName(target.id)}
             delta={fullCreditDelta(liveTile.effectiveValue)}
             mode="full-credit"
             disabled={
@@ -334,6 +340,7 @@ export function TeamScoringPanel({
             testId="tsp-deduct-full"
             label={`Deduct full value (${formatSignedDelta(fullDeductionDelta(liveTile.effectiveValue))})`}
             team={target}
+            teamLabel={target === null ? null : displayName(target.id)}
             delta={fullDeductionDelta(liveTile.effectiveValue)}
             mode="deduction"
             disabled={
@@ -377,7 +384,7 @@ export function TeamScoringPanel({
               aria-label={
                 target === null
                   ? 'Apply partial credit'
-                  : `Apply partial credit of ${partialText || '0'} points to ${target.name}`
+                  : `Apply partial credit of ${partialText || '0'} points to ${displayName(target.id)}`
               }
               onClick={applyPartialCredit}
             >
@@ -386,7 +393,7 @@ export function TeamScoringPanel({
           </div>
           {target !== null && partialAmount !== null && targetScore !== null && (
             <p className="tsp__preview" data-testid="tsp-partial-preview">
-              {target.name}: {targetScore} → {targetScore + partialAmount}
+              {displayName(target.id)}: {targetScore} → {targetScore + partialAmount}
             </p>
           )}
         </div>
@@ -421,7 +428,7 @@ export function TeamScoringPanel({
             aria-label={
               target === null
                 ? 'Apply manual correction'
-                : `Apply manual correction of ${manualText || '0'} points to ${target.name}`
+                : `Apply manual correction of ${manualText || '0'} points to ${displayName(target.id)}`
             }
             onClick={applyManualCorrection}
           >
@@ -444,7 +451,7 @@ export function TeamScoringPanel({
         )}
         {target !== null && manualAmount !== null && targetScore !== null && (
           <p className="tsp__preview" data-testid="tsp-manual-preview">
-            {target.name}: {targetScore} → {targetScore + manualAmount}
+            {displayName(target.id)}: {targetScore} → {targetScore + manualAmount}
           </p>
         )}
       </div>
@@ -459,7 +466,7 @@ export function TeamScoringPanel({
         <p className="tsp__last" data-testid="tsp-last-change" aria-live="polite">
           {lastChange === null
             ? 'No score change yet.'
-            : `Last score change: ${nameOf(teams, lastChange.teamId)} ${formatSignedDelta(
+            : `Last score change: ${displayName(lastChange.teamId)} ${formatSignedDelta(
                 lastChange.delta,
               )} (${SCORE_ADJUSTMENT_MODE_LABEL[lastChange.mode]}).`}
         </p>
@@ -482,11 +489,6 @@ export function TeamScoringPanel({
   )
 }
 
-/** Resolve a team's display name for host copy; falls back to the raw id. */
-function nameOf(teams: readonly TeamDefinition[], teamId: string): string {
-  return teams.find((team) => team.id === teamId)?.name ?? teamId
-}
-
 /**
  * One tile preset. The accessible name always states the team AND the amount, so
  * a screen-reader user is never asked to infer either from surrounding layout.
@@ -495,6 +497,7 @@ function TilePresetButton({
   testId,
   label,
   team,
+  teamLabel,
   delta,
   mode,
   disabled,
@@ -504,6 +507,7 @@ function TilePresetButton({
   readonly testId: string
   readonly label: string
   readonly team: TeamDefinition | null
+  readonly teamLabel: string | null
   readonly delta: number
   readonly mode: ScoreAdjustmentMode
   readonly disabled: boolean
@@ -512,9 +516,9 @@ function TilePresetButton({
 }) {
   const amount = formatSignedDelta(delta)
   const accessibleName =
-    team === null
+    team === null || teamLabel === null
       ? `${SCORE_ADJUSTMENT_MODE_LABEL[mode]}, ${amount} points`
-      : `${SCORE_ADJUSTMENT_MODE_LABEL[mode]}, ${amount} points, to ${team.name}${
+      : `${SCORE_ADJUSTMENT_MODE_LABEL[mode]}, ${amount} points, to ${teamLabel}${
           resultingScore === null ? '' : `, giving ${resultingScore}`
         }`
   return (

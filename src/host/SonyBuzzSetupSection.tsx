@@ -66,6 +66,11 @@ import './SonyBuzzSetupSection.css'
 
 export interface SonyBuzzSetupSectionProps {
   readonly teams: readonly TeamDefinition[]
+  /**
+   * Session name when chosen, else authored Game name. Parent supplies
+   * `publicTeamDisplayName` so setup copy stays consistent with Host play.
+   */
+  readonly displayNameForTeam?: (teamId: string) => string
   readonly controllers: readonly GamepadControllerInfo[]
   readonly diagnosticsStatus: 'ok' | 'unsupported' | 'unreadable'
   readonly activeMapping: GamepadMapping
@@ -138,6 +143,7 @@ function mappingWords(mapping: GamepadReportedMapping): string {
 
 function SupportedProfileBlock({
   teams,
+  displayNameForTeam,
   supportedProfile,
   testMode,
   onTestModeChange,
@@ -149,6 +155,7 @@ function SupportedProfileBlock({
   onInputDiagnosticSignals,
 }: {
   teams: readonly TeamDefinition[]
+  displayNameForTeam: (teamId: string) => string
   supportedProfile: SonyBuzzSupportedProfileSectionProps
   testMode: boolean
   onTestModeChange: (testMode: boolean) => void
@@ -489,7 +496,7 @@ function SupportedProfileBlock({
                     <option value="">Unassigned</option>
                     {teams.map((team) => (
                       <option key={team.id} value={team.id}>
-                        {team.name}
+                        {displayNameForTeam(team.id)}
                       </option>
                     ))}
                   </select>
@@ -590,6 +597,7 @@ function SupportedProfileBlock({
 
 export function SonyBuzzSetupSection({
   teams,
+  displayNameForTeam,
   controllers,
   diagnosticsStatus,
   activeMapping,
@@ -671,7 +679,8 @@ export function SonyBuzzSetupSection({
   }, [pendingCapture, onPendingCaptureConsumed, onCapturingChange])
 
   const progress = useMemo(() => sonyBuzzStagedProgress(staged), [staged])
-  const nameOf = (id: string) => teams.find((team) => team.id === id)?.name ?? id
+  const nameOf = (id: string) =>
+    displayNameForTeam?.(id) ?? teams.find((team) => team.id === id)?.name ?? id
   const surfaceState = describeSurfaceState(diagnosticsStatus, controllers)
 
   return (
@@ -688,6 +697,7 @@ export function SonyBuzzSetupSection({
       {supportedProfile ? (
         <SupportedProfileBlock
           teams={teams}
+          displayNameForTeam={nameOf}
           supportedProfile={supportedProfile}
           testMode={testMode}
           onTestModeChange={onTestModeChange}
@@ -742,7 +752,7 @@ export function SonyBuzzSetupSection({
         >
           {teams.map((team) => (
             <option key={team.id} value={team.id}>
-              {team.name}
+              {nameOf(team.id)}
             </option>
           ))}
         </select>

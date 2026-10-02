@@ -122,6 +122,18 @@ describe('wager entry distinguishes a draft from a committed value', () => {
     expect(screen.getByTestId('fwh-cap-blue')).toHaveTextContent('100')
   })
 
+  it('prefers Session team names over authored Game names in wager copy', () => {
+    const store = finalStore({ scores: { red: 300, blue: 100 } })
+    store.dispatch({ type: 'SET_SESSION_TEAM_NAME', issuedAt: AT, teamId: 'red', name: 'Team 1' })
+    store.dispatch({ type: 'SET_SESSION_TEAM_NAME', issuedAt: AT, teamId: 'blue', name: 'Team 2' })
+    store.dispatch({ type: 'BEGIN_FINAL_WAGER', issuedAt: AT, roundId: ROUND, mode: 'classic' })
+    renderPanel(store)
+    const names = screen.getAllByText(/Team [12]/)
+    expect(names.length).toBeGreaterThanOrEqual(2)
+    expect(screen.queryByText('Red Team')).not.toBeInTheDocument()
+    expect(screen.queryByText('Blue Team')).not.toBeInTheDocument()
+  })
+
   it('says a typed number is NOT saved until the host saves it', () => {
     const store = wagerStore()
     const { dispatch } = renderPanel(store)

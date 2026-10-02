@@ -71,6 +71,96 @@ describe('completed summary aggregation', () => {
     })
   })
 
+  it('keeps authored team labels stable across sessions (ADR-016; Host Session names stay out of Summary V1)', () => {
+    // Two class sessions may have shown "Team 1" / "Comet Crew" on Host UI, but
+    // durable Summary V1 stores the authored Game copy for both.
+    const sessionA = recordFixture({
+      recordId: 'session-a',
+      savedAt: 10,
+      summary: summaryFixture({
+        sessionId: 'session-a',
+        scoreActivity: {
+          observed: {
+            scoreChangeCount: 1,
+            tileLinkedAdjustmentCount: 0,
+            manualAdjustmentCount: 1,
+            finalSettlementCount: 0,
+            perTeam: [
+              {
+                teamId: 'red',
+                teamName: 'Red Team',
+                scoreChangeCount: 1,
+                netDelta: 100,
+                finalScore: 100,
+              },
+              {
+                teamId: 'blue',
+                teamName: 'Blue Team',
+                scoreChangeCount: 0,
+                netDelta: 0,
+                finalScore: 0,
+              },
+            ],
+          },
+          derived: {
+            standings: [
+              { rank: 1, teamId: 'red', teamName: 'Red Team', finalScore: 100, tied: false },
+              { rank: 2, teamId: 'blue', teamName: 'Blue Team', finalScore: 0, tied: false },
+            ],
+          },
+        },
+      }),
+    })
+    const sessionB = recordFixture({
+      recordId: 'session-b',
+      savedAt: 20,
+      summary: summaryFixture({
+        sessionId: 'session-b',
+        scoreActivity: {
+          observed: {
+            scoreChangeCount: 1,
+            tileLinkedAdjustmentCount: 0,
+            manualAdjustmentCount: 1,
+            finalSettlementCount: 0,
+            perTeam: [
+              {
+                teamId: 'red',
+                teamName: 'Red Team',
+                scoreChangeCount: 1,
+                netDelta: 50,
+                finalScore: 50,
+              },
+              {
+                teamId: 'blue',
+                teamName: 'Blue Team',
+                scoreChangeCount: 0,
+                netDelta: 0,
+                finalScore: 0,
+              },
+            ],
+          },
+          derived: {
+            standings: [
+              { rank: 1, teamId: 'red', teamName: 'Red Team', finalScore: 50, tied: false },
+              { rank: 2, teamId: 'blue', teamName: 'Blue Team', finalScore: 0, tied: false },
+            ],
+          },
+        },
+      }),
+    })
+    const rollup = aggregateByTeam([sessionA, sessionB])
+    expect(rollup).toHaveLength(2)
+    expect(rollup[0]).toEqual({
+      teamId: 'red',
+      teamName: 'Red Team',
+      sessionCount: 2,
+      totalFinalScore: 150,
+      averageFinalScorePerSession: 75,
+      totalScoreChangeCount: 2,
+    })
+    expect(rollup.every((row) => !row.teamName.startsWith('Team '))).toBe(true)
+  })
+
   it('filters exact class labels before aggregating', () => {
     const rows = aggregateForClassLabel(
       [recordFixture({ classLabel: 'Period 2' }), second],
