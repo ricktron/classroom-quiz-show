@@ -584,3 +584,72 @@ Canonical product references:
 
 - [`../PROJECT.md`](../PROJECT.md)
 - [`../architecture/GAME-ENGINE-BOUNDARIES.md`](../architecture/GAME-ENGINE-BOUNDARIES.md)
+
+
+---
+
+## 15. Development journal and reusable learning
+
+CQS preserves implementation truth, evidence, and reflective learning on
+different surfaces.
+
+The reflective surfaces are:
+
+- [`../dev-journal/CQS-DEVELOPMENT-JOURNAL.md`](../dev-journal/CQS-DEVELOPMENT-JOURNAL.md)
+  — chronological development/qualification learning;
+- [`../dev-journal/PRODUCT-TO-MVP-LESSONS.md`](../dev-journal/PRODUCT-TO-MVP-LESSONS.md)
+  — reusable candidate lessons distilled from repeated evidence.
+
+These files are **not implementation authority**. They do not override code,
+tests, STATUS, Product Contract, ADRs, plans, or handoff.
+
+For substantial delivery, review, repair, qualification, Court, PRE-Q7,
+owner-playthrough, and post-playthrough polish work, update the development
+journal when the work creates meaningful new learning.
+
+Capture, when relevant:
+
+1. objective / expected behavior;
+2. what actually happened;
+3. defect, escape, or proof gap;
+4. why prior evidence missed it;
+5. repair / decision;
+6. owner effort or friction;
+7. what worked;
+8. what caused churn;
+9. preventive control for next time;
+10. candidate reusable lesson;
+11. traceable evidence (PR, SHA, ADR, matrix row, receipt).
+
+Keep **observation**, **interpretation**, and **candidate reusable lesson**
+distinct.
+
+### Owner-attention principle
+
+Owner attention is a scarce development resource.
+
+When the owner must repeatedly translate developer concepts, manually prove
+machine-observable behavior, repeat avoidable qualification, or carry context
+that the repository should have carried, treat that as process friction worth
+recording.
+
+For recurring friction, identify:
+
+```text
+friction
+→ root cause
+→ preventive control
+```
+
+Prefer turning repeated friction into deterministic product UX, automation,
+qualification tooling, templates, or durable guidance rather than leaving it in
+chat memory.
+
+### Reusable-lesson promotion
+
+The lessons register is intentionally conservative.
+
+Do not promote one CQS-specific incident into generic canon automatically.
+Promote a candidate only when it is evidence-backed, plausibly general, reduces
+future defect/owner burden, and does not add ceremony without corresponding risk
+reduction.
