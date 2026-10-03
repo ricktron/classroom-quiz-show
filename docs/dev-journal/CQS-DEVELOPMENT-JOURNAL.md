@@ -306,6 +306,103 @@ The goal is to make those cycles cheaper and earlier on the next product.
 
 ---
 
+## Q4 — Gameplay branch / failure qualification
+
+**Date:** 2026-10-02  
+**Authorization:** `AUTHORIZE-CQS-PRE-OWNER-Q4-GAMEPLAY-BRANCH-FAILURE-MATRIX-1`  
+**PR:** #129  
+**Qualification proof head:** `541718e1ad2788265678bb8178d043781718194a`
+
+### Objective
+
+Qualify material gameplay branches, recovery, and failure behavior off the
+landed Q3 golden spine without turning Q4 into a second golden-path suite.
+
+### Expected model
+
+The existing domain suites already strongly covered queue semantics, undo,
+timers, stale callbacks, persistence, Final recovery, summary privacy, and
+Host/Display synchronization. Q4 should therefore need only a small amount of
+authentic started-Session composition proof unless that composition exposed a
+real product defect.
+
+### Observation
+
+A three-scenario authentic-session pack was enough to cover the material Q4
+families:
+
+1. incorrect claim → queue promotion → undo → explicit Resume → Host/Display
+   reconvergence and privacy → continued adjudication;
+2. response-timer reset / clue close → stale expiry rejected on a real started
+   Session;
+3. mid-Final explicit Resume → incorrect settlement → tied-Final branch →
+   explicit completion with Host-only Session summary.
+
+### Escape / defect / proof gap
+
+HG-13 had previously relied on persistence/recovery fragments rather than one
+composed mid-game proof. Q4 closed that proof gap.
+
+No functional product defect was exposed by the new composition.
+
+### Why prior evidence missed it
+
+The underlying invariants were already well covered, but they lived in separate
+domain suites. Q3 deliberately proved the golden spine, not off-spine recovery
+and divergence. HG-13 therefore remained a composition gap rather than a known
+broken behavior.
+
+### Repair / decision
+
+No product-code repair was required. Existing Game/Session, event/replay,
+persistence, PublicState, privacy, scoring, Final, and summary contracts were
+preserved unchanged.
+
+The Q4 decision was to add one bounded composition pack and retain the stronger
+domain suites instead of cloning their permutations into a large new matrix.
+
+### Verification
+
+At qualification proof head `541718e1…`, PR #129 CI passed lint, typecheck,
+unit tests, production build, and the full Playwright e2e suite against the
+production build served by `vite preview`.
+
+The ChatGPT execution environment could not check out the repository locally,
+so the literal local wrappers `git diff --check`, `npm run verify`, and
+`npm run verify:all` were not run and are not claimed. The PR CI command set
+covers the substantive lint/typecheck/unit/build/e2e components of
+`verify:all`.
+
+### Owner effort / friction
+
+None. The owner did not have to perform a manual playthrough or discover a Q4
+defect. That is the intended purpose of the pre-owner qualification ladder.
+
+### Preventive control
+
+After a golden-path stage, build a small branch/failure composition matrix from
+the existing invariant suites. Add only the cross-lifecycle combinations that
+fragment tests cannot prove, especially recovery, undo/replay, stale async
+effects, public/private reconvergence, and terminal-state divergence.
+
+### Candidate reusable lesson
+
+**Branch/failure qualification should compose invariants, not duplicate their
+permutations.** A few authentic-session tests can prove the dangerous seams while
+the mature domain suites remain the detailed regression authority.
+
+### Evidence
+
+- PR #129
+- qualification proof head `541718e1ad2788265678bb8178d043781718194a`
+- matrix row HG-13
+- `tests/e2e/menus-q4-gameplay-branch-failure-matrix.spec.ts`
+- retained suites: `persistence-recovery`, `buzz-in`, `timers-arming`,
+  `final-wager`, `sync`, `session-summary`
+- no new receipt created solely for journaling
+
+---
+
 ## Standing entry template — Q4 onward
 
 For each meaningful lane/repair:
