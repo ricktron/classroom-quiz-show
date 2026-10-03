@@ -645,6 +645,35 @@ Prefer turning repeated friction into deterministic product UX, automation,
 qualification tooling, templates, or durable guidance rather than leaving it in
 chat memory.
 
+### Evidence linkage rule
+
+When a journal entry makes a claim about repository behavior, qualification,
+repair, or product state, it must link to at least one durable evidence source.
+
+Prefer, in order of relevance:
+
+- the applicable run receipt, when that lane already produced one;
+- PR / exact reviewed SHA / merge SHA;
+- ADR or owner decision;
+- qualification matrix row;
+- Court record;
+- playthrough record;
+- other durable repo evidence.
+
+Do **not** duplicate receipt contents in journal prose. Summarize the lesson and
+link to the evidence.
+
+Do **not** create a new run receipt solely because a journal entry is required.
+The journal must consume the strongest evidence that already exists for the work;
+it must not create ceremony merely to justify itself.
+
+Owner/process observations that are not implementation claims may cite the
+relevant PR, Court record, playthrough record, matrix row, or other durable
+source rather than manufacturing a technical receipt.
+
+The journal is never itself evidence that a test, qualification stage, or
+product behavior passed.
+
 ### Closeout journal disposition
 
 For every substantial lane covered by this section, the terminal handoff must
