@@ -645,6 +645,29 @@ Prefer turning repeated friction into deterministic product UX, automation,
 qualification tooling, templates, or durable guidance rather than leaving it in
 chat memory.
 
+### Closeout journal disposition
+
+For every substantial lane covered by this section, the terminal handoff must
+include exactly one journal disposition:
+
+```text
+DEV_JOURNAL: ENTRY ADDED — <entry title/date>
+DEV_JOURNAL: NO ENTRY — <why this work created no meaningful new learning>
+```
+
+Do not omit the disposition silently.
+
+This is **automatic routing**, not autonomous authorship. Agents are required to
+decide the journal route at closeout; they must not fabricate a reflective entry
+merely to satisfy the field.
+
+Prefer linking to existing receipts, PRs, ADRs, matrix rows, and exact SHAs over
+duplicating evidence in journal prose. The journal remains curated synthesis.
+
+A future read-only helper may draft candidate entries from receipts/PR metadata,
+but any such helper must default to **draft-only** and must never auto-append,
+auto-promote lessons, or change product authority.
+
 ### Reusable-lesson promotion
 
 The lessons register is intentionally conservative.
