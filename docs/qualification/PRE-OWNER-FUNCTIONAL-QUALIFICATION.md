@@ -7,7 +7,7 @@
   `AUTHORIZE-CQS-PRE-OWNER-Q2-MENUS-WORKFLOW-FUNCTIONAL-QUALIFICATION-1`;
   Q2 post-merge docs:
   `AUTHORIZE-CQS-Q2-POST-MERGE-STARTUP-TRUTH-RECONCILIATION-1`;
-  this Q3 candidate under
+  Q3 delivery under
   `AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1`
 - **Kind:** durable pre-owner functional qualification contract
 - **Status:** **ACTIVE / Q0 LANDED; Q1 LANDED / VERIFIED ON MAIN** @
@@ -47,8 +47,9 @@
 This file is documentation / qualification contract.
 Q0/Q1/Q2 are LANDED on main. Q3 core gameplay golden paths are
 AUTHORIZED / CANDIDATE-COMPLETE on branch (PR #127) under
-AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1 — not LANDED ON
-MAIN. Finding C CLOSED ON MAIN BY Q3 @ `85bb951…`. Q4 is NEXT / NOT AUTHORIZED.
+AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1. Q3 is LANDED /
+VERIFIED ON MAIN @ `85bb951…`. Finding C CLOSED ON MAIN BY Q3. Q4 is NEXT /
+NOT AUTHORIZED.
 No owner playthrough / eligibility / S05 terminalization / S04D / S06.
 ```
 
@@ -461,7 +462,7 @@ product escape hardening (PR #123) closed A/B on main; C/D remain as staged.
 | --- | --- | --- | --- |
 | **A** | Scenario D buzzer-action proof gap | CONFIRMED — Check scrolls/focuses GIH/Sony profile; no connect/press/UI confirmation proof in Scenario D e2e or `onRevealBuzzersSetup` | **CLOSED BY Q1** — VERIFIED ON MAIN @ `9d8246e…` (SIMULATED e2e Check → SBS testMode → press confirmation). **PHYSICAL SONY NOT RUN.** |
 | **B** | Team-count contextual repair path vs Q1 target | CONFIRMED — current = authoring → Play → Resume → replace → setup; target = direct Class Setup return | **CLOSED BY Q1** — VERIFIED ON MAIN @ `9d8246e…` (disposable direct return; meaningful Session fail-closed; Open settings non-destructive; 2→3 roster-drift replace confirm). |
-| **C** | Integrated golden-path gap | CONFIRMED — suites cover fragments (`teacher-home-authoring`, `classroom-setup`, `menus-*`, `final-wager`, `session-summary`, S05 choreography) but **no** single Home→gameplay→Final→completion integrated pack | **CLOSED ON MAIN BY Q3 @ `85bb951…`** — `menus-q3-core-gameplay-golden-paths.spec.ts` on branch (not LANDED ON MAIN). **PHYSICAL SONY NOT RUN.** |
+| **C** | Integrated golden-path gap | CONFIRMED — suites cover fragments (`teacher-home-authoring`, `classroom-setup`, `menus-*`, `final-wager`, `session-summary`, S05 choreography) but **no** single Home→gameplay→Final→completion integrated pack | **CLOSED ON MAIN BY Q3 @ `85bb951…`** — `menus-q3-core-gameplay-golden-paths.spec.ts` landed via PR #127. **PHYSICAL SONY NOT RUN.** |
 | **D** | Electron `shell.spec.ts` scope | CONFIRMED — shell/security/persistence/API presence/diagnostics; not teacher golden path | **RETAIN / Q5** — do not overclaim |
 
 ---
@@ -485,8 +486,7 @@ Rules:
 3. **No waiver** may convert a functional blocker into an eligible residual;
 4. Facilitator observation ≠ evidence-backed reclassification;
 5. Q0 itself recorded A–D as **functional** escapes on `67ba2c0…`; Q1 closed
-   A/B on main @ `9d8246e…`; C is **CLOSED ON MAIN BY Q3 @ `85bb951…`** (not LANDED
-   ON MAIN); D remains **RETAIN / Q5**;
+   A/B on main @ `9d8246e…`; C is **CLOSED ON MAIN BY Q3 @ `85bb951…`**; D remains **RETAIN / Q5**;
 6. H4 salvage collapsed detail (**OPEN / LOW**) may remain as an **OPEN /
    LOW** residual **only** if kept under the non-functional / non-blocking
    usability class (primary status honest; collapsed “More detail” may still
@@ -530,7 +530,7 @@ the Q0 delivery PR.
 | [#123](https://github.com/ricktron/classroom-quiz-show/pull/123) | **MERGED** | Squash/main `9d8246e…` — Q1 Scenario-D escape hardening (verified PR tip `f5eeab3…`; identical tree `8e59759…`) |
 | [#124](https://github.com/ricktron/classroom-quiz-show/pull/124) | **MERGED** | Squash/main `1276c33…` — Q1 post-merge startup-truth docs reconciliation |
 | [#125](https://github.com/ricktron/classroom-quiz-show/pull/125) | **MERGED** | Squash/main `2dc918f…` — Q2 MENUS workflow functional qualification (verified PR tip `aa3c18f…`; identical tree `229e8a0…`) |
-| [#127](https://github.com/ricktron/classroom-quiz-show/pull/127) | **OPEN draft** candidate | Q3 golden paths + semantic repair (R1–R6) — not LANDED ON MAIN |
+| [#127](https://github.com/ricktron/classroom-quiz-show/pull/127) | **MERGED** | Squash/main `85bb951…` — Q3 golden paths + semantic repair; reviewed tip `cf207ca…` |
 | [#110](https://github.com/ricktron/classroom-quiz-show/pull/110) | OPEN **draft**, conflicting | Untouched |
 | [#118](https://github.com/ricktron/classroom-quiz-show/pull/118) | OPEN stale @ `f01a06f…`, conflicting | Untouched |
 
@@ -559,7 +559,6 @@ ceremony.
 
 This contract does **not** claim:
 
-- Q3 LANDED ON MAIN / Q3 PASS on main;
 - Q4–Q7 execution or PASS;
 - OWNER-PLAYTHROUGH-ELIGIBLE;
 - MENUS Complete / Slice I ACCEPT;
