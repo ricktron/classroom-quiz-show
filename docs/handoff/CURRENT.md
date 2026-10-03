@@ -266,7 +266,7 @@ not call the squash the tip) under
 (semantic repair tip `0c91147276dead9c50968bdbab98f753187ff7bf` — Session names
 on Host via `publicTeamDisplayName`; real `lih-correct` adjudication; Finding C
 CLOSED ON MAIN BY Q3 @ `85bb951…`).
-**Next:** **Q4** gameplay branch/failure matrix — **CANDIDATE-COMPLETE / VERIFIED ON PR #129 @ `541718e1…`; NOT LANDED**. **Q5 is NEXT / NOT AUTHORIZED**.
+**Current qualification candidate:** **Q4** gameplay branch/failure matrix — **CANDIDATE-COMPLETE / VERIFIED ON PR #129 @ `541718e1…`; NOT LANDED**. **Q5 is NEXT / NOT AUTHORIZED**.
 Owner playthrough is **PAUSED / GATED** behind
 Q0–Q6 + PRE-Q7 eligibility verdict; **`OWNER-PLAYTHROUGH-ELIGIBLE` is NOT
 ISSUED**. S05 parent remains **OPEN / NOT TERMINAL**. Prior MENUS Slice I
