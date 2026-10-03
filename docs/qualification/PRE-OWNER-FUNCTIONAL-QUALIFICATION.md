@@ -8,12 +8,15 @@
   Q2 post-merge docs:
   `AUTHORIZE-CQS-Q2-POST-MERGE-STARTUP-TRUTH-RECONCILIATION-1`;
   Q3 delivery under
-  `AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1`
+  `AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1`;
+  Q4 delivery under
+  `AUTHORIZE-CQS-PRE-OWNER-Q4-GAMEPLAY-BRANCH-FAILURE-MATRIX-1`
 - **Kind:** durable pre-owner functional qualification contract
 - **Status:** **ACTIVE / Q0 LANDED; Q1 LANDED / VERIFIED ON MAIN** @
   `9d8246e9811eec19a34a9f8d44b2287b8635a741`; **Q2 LANDED / VERIFIED ON
-  MAIN** @ `2dc918f934836c3fa6a0f4d554f4757f4668c691`; **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951ead3ea7ed99a7f404f60bbebcb0d68cb7` (PR #127; reviewed tip `cf207cac7dd722a903f901cd885e35583439ed02`); **Q4 NEXT / NOT
-  AUTHORIZED**
+  MAIN** @ `2dc918f934836c3fa6a0f4d554f4757f4668c691`; **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951ead3ea7ed99a7f404f60bbebcb0d68cb7` (PR #127; reviewed tip `cf207cac7dd722a903f901cd885e35583439ed02`); **Q4 CANDIDATE-COMPLETE / VERIFIED ON PR #129** (qualification proof head
+  `541718e1ad2788265678bb8178d043781718194a`; **NOT LANDED**); **Q5 NEXT /
+  NOT AUTHORIZED**
 - **Companion:** [`PRE-OWNER-TEACHER-JOURNEY-MATRIX.md`](PRE-OWNER-TEACHER-JOURNEY-MATRIX.md)
 - **Observation base (Q0 registration):** `origin/main`
   `67ba2c0027f7e2439bd39bd963a7321be0ab6801` (PR #121 squash merge of
@@ -42,13 +45,17 @@
   only; matrix HG-04…HG-12 + DP-04/05 → RETAIN (R7–R11)
 - **Q3 verified PR tip:** `cf207cac7dd722a903f901cd885e35583439ed02`
 - **Q3 squash/main:** `85bb951ead3ea7ed99a7f404f60bbebcb0d68cb7`
+- **Q4 authorization:**
+  `AUTHORIZE-CQS-PRE-OWNER-Q4-GAMEPLAY-BRANCH-FAILURE-MATRIX-1`
+- **Q4 delivery branch:** `cursor/cqs-q4-gameplay-branch-failure-matrix-1`
+- **Q4 qualification proof head:** `541718e1ad2788265678bb8178d043781718194a`
+  (PR #129; full CI SUCCESS; no product repair exposed)
 
 ```text
 This file is documentation / qualification contract.
-Q0/Q1/Q2 are LANDED on main. Q3 core gameplay golden paths are
-AUTHORIZED / CANDIDATE-COMPLETE on branch (PR #127) under
-AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1. Q3 is LANDED /
-VERIFIED ON MAIN @ `85bb951…`. Finding C CLOSED ON MAIN BY Q3. Q4 is NEXT /
+Q0/Q1/Q2/Q3 are LANDED on main. Q4 gameplay branch/failure qualification is
+CANDIDATE-COMPLETE / VERIFIED ON PR #129 at qualification proof head
+`541718e1ad2788265678bb8178d043781718194a`; Q4 is NOT LANDED. Q5 is NEXT /
 NOT AUTHORIZED.
 No owner playthrough / eligibility / S05 terminalization / S04D / S06.
 ```
@@ -449,7 +456,7 @@ verdict.
 ### 10.3 Current status
 
 **Not issued.** Owner playthrough remains **PAUSED / GATED** behind Q0–Q6 +
-PRE-Q7 eligibility verdict. Q0, Q1, and Q2 are landed on main; Q3 is **LANDED / VERIFIED ON MAIN** @ `85bb951…`; Q4–Q6 are **not** started.
+PRE-Q7 eligibility verdict. Q0–Q3 are landed on main. Q4 is **CANDIDATE-COMPLETE / VERIFIED ON PR #129** at qualification proof head `541718e1…`, but **NOT LANDED**. Q5–Q6 are **NOT STARTED / NOT AUTHORIZED**.
 
 ---
 
@@ -504,8 +511,8 @@ While this contract is active and PRE-Q7 has not issued eligibility:
 
 | Topic | Required routing |
 | --- | --- |
-| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951…` (PR #127; reviewed tip `cf207ca…`). **Q4 NEXT / NOT AUTHORIZED** — requires fresh bounded authorization after Q3 merge |
-| Completed | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123); **Q2 LANDED / VERIFIED ON MAIN** @ `2dc918f…` (PR #125); **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951…` under `AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1` |
+| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q4 CANDIDATE-COMPLETE / VERIFIED ON PR #129** at qualification proof head `541718e1…`; **NOT LANDED**. **Q5 NEXT / NOT AUTHORIZED** and requires fresh bounded authorization after Q4 lands |
+| Completed | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123); **Q2 LANDED / VERIFIED ON MAIN** @ `2dc918f…` (PR #125); **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951…`. **Q4 qualification is candidate-complete on PR #129** under `AUTHORIZE-CQS-PRE-OWNER-Q4-GAMEPLAY-BRANCH-FAILURE-MATRIX-1`; not landed |
 | S05 parent | **OPEN / NOT TERMINAL** |
 | Prior MENUS Slice I playthrough | **NOT RUN** as acceptance (Scenario D was BLOCKED; I-REPAIR-1 merged; Q1 closed Scenario-D escapes on main; re-gate **not** authorized here) |
 | Owner playthrough | **PAUSED / GATED** behind Q0–Q6 + PRE-Q7 eligibility verdict |
@@ -514,7 +521,7 @@ While this contract is active and PRE-Q7 has not issued eligibility:
 | PR #110 / #118 | Observe only; do not mutate from this contract |
 | Q1 / Q2 / Q3 physical Sony | **NOT RUN** |
 | Q3 | **LANDED / VERIFIED ON MAIN** @ `85bb951…` (PR #127; reviewed tip `cf207ca…`) |
-| Q4 | **NEXT / NOT AUTHORIZED** |
+| Q4 | **CANDIDATE-COMPLETE / VERIFIED ON PR #129 @ `541718e1…`; NOT LANDED** |
 
 Canonical status/handoff must link this file. See STATUS / CURRENT updates in
 the Q0 delivery PR.
@@ -531,27 +538,33 @@ the Q0 delivery PR.
 | [#124](https://github.com/ricktron/classroom-quiz-show/pull/124) | **MERGED** | Squash/main `1276c33…` — Q1 post-merge startup-truth docs reconciliation |
 | [#125](https://github.com/ricktron/classroom-quiz-show/pull/125) | **MERGED** | Squash/main `2dc918f…` — Q2 MENUS workflow functional qualification (verified PR tip `aa3c18f…`; identical tree `229e8a0…`) |
 | [#127](https://github.com/ricktron/classroom-quiz-show/pull/127) | **MERGED** | Squash/main `85bb951…` — Q3 golden paths + semantic repair; reviewed tip `cf207ca…` |
+| [#129](https://github.com/ricktron/classroom-quiz-show/pull/129) | OPEN **draft** | Q4 gameplay branch/failure matrix; qualification proof head `541718e1…` full CI SUCCESS; no product repair exposed; no merge authority |
 | [#110](https://github.com/ricktron/classroom-quiz-show/pull/110) | OPEN **draft**, conflicting | Untouched |
 | [#118](https://github.com/ricktron/classroom-quiz-show/pull/118) | OPEN stale @ `f01a06f…`, conflicting | Untouched |
 
 ---
 
-## 15. Verification for this docs slice
+## 15. Verification for the Q4 candidate
 
-Required for Q2 post-merge docs reconciliation:
+Q4 qualification proof head `541718e1ad2788265678bb8178d043781718194a`
+(PR #129) passed the repository CI lanes that run:
 
-```bash
-git diff --check
-```
+- lint;
+- typecheck;
+- unit tests;
+- production build;
+- the full Playwright e2e suite against the built app served by `vite preview`.
 
-Optional docs-only hygiene if present in packet. Do **not** claim
-`npm run verify`, Playwright, Desktop, or CI product PASS unless those
-commands were actually run for this head. Q2 product verification evidence
-lives on PR #125 verified tip `aa3c18f…` (pre-merge exact-head CI SUCCESS
-bound there); squash/main `2dc918f…` shares identical tree `229e8a0…`
-(transfer justified). Do not claim CI ran on the squash unless separately
-evidenced. This docs reconciliation does not re-run product suites as
-ceremony.
+That head therefore establishes the new Q4 branch/failure proof on a proven
+served production build. No functional defect was exposed, so Q4 required no
+product-code repair.
+
+The ChatGPT execution environment for this lane could not check out the
+repository locally. Therefore the literal wrapper commands `git diff --check`,
+`npm run verify`, and `npm run verify:all` were **not run locally** and must
+not be reported as such. PR CI exercised the component command set underlying
+`verify:all`; final candidate review must separately inspect the PR diff for
+whitespace / scope and bind any later CI claim to the immutable final head.
 
 ---
 
@@ -559,7 +572,7 @@ ceremony.
 
 This contract does **not** claim:
 
-- Q4–Q7 execution or PASS;
+- Q4 **LANDED**; Q5–Q7 execution or PASS;
 - OWNER-PLAYTHROUGH-ELIGIBLE;
 - MENUS Complete / Slice I ACCEPT;
 - S05 parent terminalization;
@@ -579,7 +592,7 @@ Q0: LANDED (contract + matrix registered on main)
 Q1: LANDED / VERIFIED ON MAIN @ 9d8246e… (PR #123); PHYSICAL SONY NOT RUN
 Q2: LANDED / VERIFIED ON MAIN @ 2dc918f… (PR #125); tip aa3c18f…; tree 229e8a0…; PHYSICAL SONY NOT RUN
 Q3: LANDED / VERIFIED ON MAIN @ 85bb951… (PR #127; reviewed tip cf207ca…); PHYSICAL SONY NOT RUN
-Q4: NEXT / NOT AUTHORIZED
+Q4: CANDIDATE-COMPLETE / VERIFIED ON PR #129 @ 541718e1…; NOT LANDED
 Q5–Q6: NOT STARTED / NOT AUTHORIZED
 PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE — NOT ISSUED (DevPM verdict after Q6; not a new Q-stage)
 Q7: natural owner usability playthrough — NOT BEGUN (requires PRE-Q7)
