@@ -584,3 +584,124 @@ Canonical product references:
 
 - [`../PROJECT.md`](../PROJECT.md)
 - [`../architecture/GAME-ENGINE-BOUNDARIES.md`](../architecture/GAME-ENGINE-BOUNDARIES.md)
+
+
+---
+
+## 15. Development journal and reusable learning
+
+CQS preserves implementation truth, evidence, and reflective learning on
+different surfaces.
+
+The reflective surfaces are:
+
+- [`../dev-journal/CQS-DEVELOPMENT-JOURNAL.md`](../dev-journal/CQS-DEVELOPMENT-JOURNAL.md)
+  — chronological development/qualification learning;
+- [`../dev-journal/PRODUCT-TO-MVP-LESSONS.md`](../dev-journal/PRODUCT-TO-MVP-LESSONS.md)
+  — reusable candidate lessons distilled from repeated evidence.
+
+These files are **not implementation authority**. They do not override code,
+tests, STATUS, Product Contract, ADRs, plans, or handoff.
+
+For substantial delivery, review, repair, qualification, Court, PRE-Q7,
+owner-playthrough, and post-playthrough polish work, update the development
+journal when the work creates meaningful new learning.
+
+Capture, when relevant:
+
+1. objective / expected behavior;
+2. what actually happened;
+3. defect, escape, or proof gap;
+4. why prior evidence missed it;
+5. repair / decision;
+6. owner effort or friction;
+7. what worked;
+8. what caused churn;
+9. preventive control for next time;
+10. candidate reusable lesson;
+11. traceable evidence (PR, SHA, ADR, matrix row, receipt).
+
+Keep **observation**, **interpretation**, and **candidate reusable lesson**
+distinct.
+
+### Owner-attention principle
+
+Owner attention is a scarce development resource.
+
+When the owner must repeatedly translate developer concepts, manually prove
+machine-observable behavior, repeat avoidable qualification, or carry context
+that the repository should have carried, treat that as process friction worth
+recording.
+
+For recurring friction, identify:
+
+```text
+friction
+→ root cause
+→ preventive control
+```
+
+Prefer turning repeated friction into deterministic product UX, automation,
+qualification tooling, templates, or durable guidance rather than leaving it in
+chat memory.
+
+### Evidence linkage rule
+
+When a journal entry makes a claim about repository behavior, qualification,
+repair, or product state, it must link to at least one durable evidence source.
+
+Prefer, in order of relevance:
+
+- the applicable run receipt, when that lane already produced one;
+- PR / exact reviewed SHA / merge SHA;
+- ADR or owner decision;
+- qualification matrix row;
+- Court record;
+- playthrough record;
+- other durable repo evidence.
+
+Do **not** duplicate receipt contents in journal prose. Summarize the lesson and
+link to the evidence.
+
+Do **not** create a new run receipt solely because a journal entry is required.
+The journal must consume the strongest evidence that already exists for the work;
+it must not create ceremony merely to justify itself.
+
+Owner/process observations that are not implementation claims may cite the
+relevant PR, Court record, playthrough record, matrix row, or other durable
+source rather than manufacturing a technical receipt.
+
+The journal is never itself evidence that a test, qualification stage, or
+product behavior passed.
+
+### Closeout journal disposition
+
+For every substantial lane covered by this section, the terminal handoff must
+include exactly one journal disposition:
+
+```text
+DEV_JOURNAL: ENTRY ADDED — <entry title/date>
+DEV_JOURNAL: NO ENTRY — <why this work created no meaningful new learning>
+```
+
+Do not omit the disposition silently.
+
+This is **automatic routing**, not autonomous authorship. Agents are required to
+decide the journal route at closeout; they must not fabricate a reflective entry
+merely to satisfy the field.
+
+Prefer linking to existing receipts, PRs, ADRs, matrix rows, and exact SHAs over
+duplicating evidence in journal prose. The journal remains curated synthesis.
+
+A future read-only helper may draft candidate entries from receipts/PR metadata,
+but any such helper must default to **draft-only** and must never auto-append,
+auto-promote lessons, or change product authority.
+
+### Reusable-lesson promotion
+
+The lessons register is intentionally conservative.
+
+Do not promote one CQS-specific incident into generic canon automatically.
+Promote a candidate only when it is evidence-backed, plausibly general, reduces
+future defect/owner burden, and does not add ceremony without corresponding risk
+reduction.
