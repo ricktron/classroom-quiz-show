@@ -55,6 +55,161 @@ For delivery, repair, review, qualification, and release work, also read
 [`docs/governance/EXECUTION-GUIDANCE.md`](docs/governance/EXECUTION-GUIDANCE.md).
 That file is the canonical detailed execution guide. Do not copy it here.
 
+## Owner MacBook Air local checkout
+
+This is a convenience hint for Rick's primary macOS development machine. It
+does **not** override Git/repository identity and must be verified before any
+mutation.
+
+- **Machine:** Rick's MacBook Air. The shell host may appear as `ricks`;
+  historical receipts also record `Ricks-MacBook-Air.local`.
+- **User:** `macdaddy`
+- **Verified CQS checkout:**
+  `/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show`
+
+When a local command is needed and the shell starts in `~`, go directly to
+the known checkout instead of searching for the repository again:
+
+```bash
+cd "/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show"
+```
+
+Then verify identity before mutation:
+
+```bash
+git rev-parse --show-toplevel
+git remote get-url origin
+git status --short --branch
+```
+
+Expected repository root is the path above and `origin` must resolve to
+`ricktron/classroom-quiz-show`. If the path no longer exists or Git identity
+does not match, stop and re-discover rather than assuming the machine layout is
+unchanged.
+
+### MacBook Air worktree-aware testing
+
+Rick's preferred steady state is intentionally simple:
+
+- exactly **one persistent CQS worktree**, the canonical checkout at
+  `/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show`;
+- that persistent checkout should normally be on `main`;
+- every non-`main` branch/worktree must correspond to active, unmerged work;
+- after a PR is merged and the lane is truthfully closed, its local worktree,
+  local branch, and remote head branch should be retired after fresh
+  verification;
+- merged or closed worktrees are not historical evidence and should not be
+  retained merely for posterity.
+
+Before any branch switch, testing run, or cleanup, inspect topology first:
+
+```bash
+git status --short --branch
+git worktree list --porcelain
+```
+
+If untracked or modified files are present, preserve them before changing
+branches. For a temporary safety snapshot that includes untracked files:
+
+```bash
+git stash push -u -m "pre-sync local leftovers"
+```
+
+Do not automatically re-apply an old stash onto current `main`. Inspect it
+later with `git stash list` / `git stash show --stat` and reconcile only if
+its contents are still needed. Never delete or overwrite unexplained local
+files merely to make a checkout clean.
+
+If `main` is checked out in another worktree, do **not** force-switch it or
+delete that worktree merely to unblock a command. First classify every
+registered worktree from fresh local Git state and current GitHub PR state.
+
+For owner testing, prefer the permanent canonical checkout on current clean
+`main`. If an isolated detached test worktree is exceptionally needed, treat
+it as ephemeral and retire it immediately after its evidence is captured; do
+not keep a permanent owner-test worktree.
+
+### Worktree and branch lifecycle
+
+A worktree is a temporary execution/testing/review surface, not durable
+evidence. Durable evidence belongs in commits, PRs, receipts, and repository
+documentation.
+
+The target steady state after completed work is:
+
+```text
+/Users/macdaddy/Documents/Coding/Cursor Projects/classroom-quiz-show
+  -> main
+```
+
+with no other CQS worktree unless it represents active unmerged work.
+
+For each merged lane, closeout should:
+
+1. verify the worktree is clean;
+2. verify the GitHub PR is currently merged;
+3. verify the local worktree HEAD is the expected PR head, merge-verification
+   commit, or another explicitly documented reviewed target;
+4. remove the linked worktree with `git worktree remove`;
+5. delete the local feature/docs/fix branch after its merged representation is
+   established;
+6. delete the remote head branch if it still exists;
+7. prune stale remote refs and dead worktree registrations;
+8. re-run `git worktree list --porcelain` and branch inspection to prove the
+   intended topology remains.
+
+Because CQS commonly uses squash merge, `git branch -d` may reject a branch
+whose PR was correctly merged. A forced local branch delete is acceptable only
+after exact PR/HEAD verification establishes that the branch has no unique
+unmerged work. Never use `git branch -D` as generic cleanup.
+
+The repository preference is to enable GitHub's automatic deletion of merged
+PR head branches. Until that repository setting is enabled, remote branch
+retirement remains an explicit closeout step.
+
+Cleanup is never inferred from age, branch names, `[gone]`, or folder names.
+Use `git worktree list --porcelain` as the authoritative local topology check
+and current GitHub PR state as merge evidence. If deletion evidence is
+ambiguous, retain the worktree/branch and classify it as blocked until resolved.
+
+### Local owner-test provenance
+
+For any owner acceptance / physical local test, record enough evidence to
+reproduce what was actually tested. At minimum capture:
+
+- host and user;
+- repository/worktree path;
+- remote identity;
+- exact tested commit SHA;
+- branch or detached-HEAD state;
+- whether the worktree was clean before the run;
+- launch method (for example `npm run desktop` versus a packaged artifact);
+- OS version when platform behavior matters;
+- display topology (for example MacBook Host + iPad Sidecar Audience);
+- attached physical hardware when relevant.
+
+A compact preflight is:
+
+```bash
+hostname
+whoami
+pwd
+git rev-parse --show-toplevel
+git remote get-url origin
+git status --short --branch
+git rev-parse HEAD
+git worktree list --porcelain
+sw_vers
+```
+
+For source-run testing, the Git SHA is the primary tested-code identity. For a
+packaged artifact, record the artifact/provenance SHA as well; a local checkout
+SHA alone does not prove which package was launched.
+
+Do not call a later test equivalent merely because it ran on the same MacBook.
+Commit, package, OS, display topology, and attached hardware are separate
+evidence dimensions.
+
 ## Working discipline
 
 - One branch and one bounded slice or reconciliation objective.
