@@ -5,7 +5,7 @@
 - **Authorization:** `AUTHORIZE-CQS-PRE-OWNER-Q0-QUALIFICATION-CONTRACT-1`
   (matrix registration); Q2 post-merge docs reconciliation:
   `AUTHORIZE-CQS-Q2-POST-MERGE-STARTUP-TRUTH-RECONCILIATION-1`;
-  Q3 candidate:
+  Q3 delivery:
   `AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1`
 - **Kind:** teacher-journey interaction matrix for pre-owner functional qualification
 - **Status:** **ACTIVE / Q0 LANDED; Q1 LANDED / VERIFIED ON MAIN** @
@@ -270,7 +270,7 @@ Q4: NEXT / NOT AUTHORIZED
 Q5–Q6: NOT STARTED / NOT AUTHORIZED
 owner playthrough: PAUSED / GATED (Q0–Q6 + PRE-Q7 eligibility)
 Findings A/B: CLOSED BY Q1 (SIMULATED where labeled); individual Q1 ≠ Q2 PASS
-Finding C: CLOSED ON Q3 CANDIDATE (HG-12); Finding D: RETAIN / Q5
+Finding C: CLOSED ON MAIN BY Q3 @ 85bb951… (HG-12); Finding D: RETAIN / Q5
 PRE-Q7 OWNER-PLAYTHROUGH-ELIGIBLE: NOT ISSUED (DevPM verdict after Q6)
 Q7 does not issue eligibility
 functional blockers: no owner-waiver escape hatch through PRE-Q7
