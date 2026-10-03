@@ -568,8 +568,7 @@ This contract does **not** claim:
 - REAL MVP complete.
 
 Q1 closed DevPM Findings **A** and **B** on main (SIMULATED where noted).
-Finding **C** is **CLOSED ON MAIN BY Q3 @ `85bb951…`** (integrated pack on branch —
-not LANDED ON MAIN). Finding **D** remains **RETAIN / Q5**.
+Finding **C** is **CLOSED ON MAIN BY Q3 @ `85bb951…`** (integrated pack landed via PR #127). Finding **D** remains **RETAIN / Q5**.
 
 ---
 
