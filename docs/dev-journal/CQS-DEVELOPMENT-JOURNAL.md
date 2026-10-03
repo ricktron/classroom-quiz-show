@@ -308,9 +308,9 @@ The goal is to make those cycles cheaper and earlier on the next product.
 
 ## Q4 — Gameplay branch / failure qualification
 
-**Date:** 2026-10-02  
-**Authorization:** `AUTHORIZE-CQS-PRE-OWNER-Q4-GAMEPLAY-BRANCH-FAILURE-MATRIX-1`  
-**PR:** #129  
+**Date:** 2026-10-02
+**Authorization:** `AUTHORIZE-CQS-PRE-OWNER-Q4-GAMEPLAY-BRANCH-FAILURE-MATRIX-1`
+**PR:** #129
 **Qualification proof head:** `541718e1ad2788265678bb8178d043781718194a`
 
 ### Objective
