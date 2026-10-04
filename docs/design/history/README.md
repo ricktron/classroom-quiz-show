@@ -29,6 +29,7 @@ That workflow defines:
 | --- | --- |
 | [`2026-09-s05-complete/`](2026-09-s05-complete/) | S05 presentation children complete / pre-owner-playthrough |
 | [`2026-09-menus-pre-owner-gate/`](2026-09-menus-pre-owner-gate/) | MENUS early-workflow complete / pre-owner-gate (implementation SHA `1404b51…`, includes merged H-REPAIR-1) |
+| [`2026-10-pre-owner-q6-rp2/`](2026-10-pre-owner-q6-rp2/) | Pre-owner Q6-RP-2 ordinary live path (implementation SHA `9410b629…`; G1/G2/G3 + live Undo) |
 
 The S05 archive is the first full presentation-atlas precedent: 58 inventoried
 surfaces/states, 50 committed automated PNG captures, five owner/local capture
@@ -44,21 +45,28 @@ checkout**, never current `main`.
 
 - S05 is bound to `4368cc9eeb7dbf3ef342926e1d0fba7ba4c10f9b`.
 - MENUS is bound to `1404b517921a5182a57291b3d7df36d464245ee5`.
+- Pre-owner Q6-RP-2 is bound to `9410b6290a6dcb2f971e66da8173c3b44a6f785a`.
 
 On current code, `npm run capture:visual-history` and
 `npm run capture:visual-history:menus` intentionally **fail closed** with a
 provenance message. The current-main copies of the legacy capture specs are
 also disabled so direct Playwright invocation cannot bypass that guard.
 
-If forensic regeneration is required, use an isolated checkout/worktree at the
-archive's bound implementation SHA and run the command recorded by that
-checkout. Never point later code at an older archive directory.
+The current pre-owner milestone uses a **new** capture target:
 
-A future pre-owner milestone must get a **new archive directory and capture
-target** after its implementation SHA is frozen. No current pre-owner milestone
-is frozen while Q6 G1/G2 remain unresolved.
+```bash
+npm run capture:visual-history:pre-owner
+```
 
-Ordinary `npm run test:e2e` must not rewrite either historical archive.
+(`CQS_PRE_OWNER_VISUAL_HISTORY_CAPTURE=1`; writes only under
+`2026-10-pre-owner-q6-rp2/screenshots/`.)
+
+If forensic regeneration of an older archive is required, use an isolated
+checkout/worktree at that archive's bound implementation SHA and run the
+command recorded by that checkout. Never point later code at an older archive
+directory.
+
+Ordinary `npm run test:e2e` must not rewrite historical archives.
 
 ## Historical integrity
 
