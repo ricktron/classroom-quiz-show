@@ -17,7 +17,8 @@
   `AUTHORIZE-CQS-Q5-DESKTOP-ELECTRON-INTEGRATION-QUALIFICATION`;
   Q6 Court review under `AUTHORIZE-CQS-Q6-INDEPENDENT-COURT-REVIEW-1`;
   Q6 landing + Q6-RP-1 repair/re-review under
-  `AUTHORIZE-CQS-Q6-COURT-LANDING-AND-RP1-REPAIR-1`
+  `AUTHORIZE-CQS-Q6-COURT-LANDING-AND-RP1-REPAIR-1`; RP-1 landing + Q6-RP-2 under
+  `AUTHORIZE-CQS-Q6-RP1-MERGE-AND-RP2-UNDO-REPAIR-1`
 - **Kind:** durable pre-owner functional qualification contract
 - **Status:** **ACTIVE / Q0 LANDED; Q1 LANDED / VERIFIED ON MAIN** @
   `9d8246e9811eec19a34a9f8d44b2287b8635a741`; **Q2 LANDED / VERIFIED ON
@@ -78,8 +79,9 @@ LANDED / VERIFIED ON MAIN @ c7e41a4… (PR #131; proof 455c4cf…; reviewed tip 
 Q6 Court review executed on d921b07…: COURT-A GAPS REMAIN (G1 round progression only in
 Advanced diagnostics; G2 stale public Display status). Court B NOT RUN.
 Eligibility path STOPPED pending repair packet Q6-RP-1 (Q3 family).
-Q6-RP-1 candidate repairs G1/G2 (not landed). Court A re-review: GAPS REMAIN (G3:
-general Undo only via Advanced diagnostics; HG-13). Court B NOT RUN.
+Q6-RP-1 (G1/G2) LANDED on main @ b1392391… (PR #135). Its re-review found G3 (general Undo
+only via Advanced diagnostics; HG-13). Q6-RP-2 live-Undo repair is a CANDIDATE (not landed);
+Court A / Court B on that candidate: see the RP-2 receipt.
 No owner playthrough / eligibility / S05 terminalization / S04D / S06.
 ```
 
@@ -492,7 +494,7 @@ PRE-Q7 eligibility verdict. Q0–Q5 are landed on main. Q6 Court review was
 executed on candidate `d921b07…`: **Court A: GAPS REMAIN** (G1, G2);
 **Court B: NOT RUN**. Q6 is **not passed**; the eligibility path is stopped
 until repair packet **Q6-RP-1** (Q3 family) is repaired, verified, landed, and
-Court A is re-reviewed. Record: [`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md). **Q6-RP-1 update:** a G1/G2 repair candidate exists (not landed); its Court A re-review found **G3** (general Undo reachable only under Advanced diagnostics; HG-13) and remains **GAPS REMAIN**; Court B **NOT RUN** — [`../receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md`](../receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md).
+Court A is re-reviewed. Record: [`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md). **Q6-RP-1 update:** G1/G2 repair **LANDED / VERIFIED ON MAIN** @ `b1392391…` (PR #135); its Court A re-review found **G3** (general Undo reachable only under Advanced diagnostics; HG-13). **Q6-RP-2** (live Undo) is a **candidate** (not landed) — [`../receipts/2026-10-04-cqs-q6-rp2-live-undo-and-court-a-b.md`](../receipts/2026-10-04-cqs-q6-rp2-live-undo-and-court-a-b.md); prior RP-1 record — [`../receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md`](../receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md).
 
 ---
 
@@ -505,7 +507,7 @@ product escape hardening (PR #123) closed A/B on main; C/D remain as staged.
 | --- | --- | --- | --- |
 | **A** | Scenario D buzzer-action proof gap | CONFIRMED — Check scrolls/focuses GIH/Sony profile; no connect/press/UI confirmation proof in Scenario D e2e or `onRevealBuzzersSetup` | **CLOSED BY Q1** — VERIFIED ON MAIN @ `9d8246e…` (SIMULATED e2e Check → SBS testMode → press confirmation). **PHYSICAL SONY NOT RUN.** |
 | **B** | Team-count contextual repair path vs Q1 target | CONFIRMED — current = authoring → Play → Resume → replace → setup; target = direct Class Setup return | **CLOSED BY Q1** — VERIFIED ON MAIN @ `9d8246e…` (disposable direct return; meaningful Session fail-closed; Open settings non-destructive; 2→3 roster-drift replace confirm). |
-| **C** | Integrated golden-path gap | CONFIRMED — suites cover fragments (`teacher-home-authoring`, `classroom-setup`, `menus-*`, `final-wager`, `session-summary`, S05 choreography) but **no** single Home→gameplay→Final→completion integrated pack | **CLOSED ON MAIN BY Q3 @ `85bb951…`** — `menus-q3-core-gameplay-golden-paths.spec.ts` landed via PR #127. **PHYSICAL SONY NOT RUN.** **Q6 qualifier:** engine integration evidence-backed; the *ordinary teacher-control* claim is **REOPENED by Q6 G1** (board entry and Final entry reached only via Advanced diagnostics); **re-proved on the Q6-RP-1 candidate** (ordinary `rph-*` controls; More never opened) — closure on main only once landed. |
+| **C** | Integrated golden-path gap | CONFIRMED — suites cover fragments (`teacher-home-authoring`, `classroom-setup`, `menus-*`, `final-wager`, `session-summary`, S05 choreography) but **no** single Home→gameplay→Final→completion integrated pack | **CLOSED ON MAIN BY Q3 @ `85bb951…`** — `menus-q3-core-gameplay-golden-paths.spec.ts` landed via PR #127. **PHYSICAL SONY NOT RUN.** **Q6 qualifier:** engine integration evidence-backed; the *ordinary teacher-control* claim is **REOPENED by Q6 G1** (board entry and Final entry reached only via Advanced diagnostics); **re-proved by Q6-RP-1, LANDED on main @ `b1392391…`** (ordinary `rph-*` controls; More never opened). |
 | **D** | Electron `shell.spec.ts` scope | CONFIRMED — shell/security/persistence/API presence/diagnostics; not teacher golden path | **CLOSED ON MAIN BY Q5** @ `c7e41a4…` — shell **RETAIN**; authentic Session quit/relaunch + Display privacy/hash-lock + build `sourceSha` binding in `q5-session-lifecycle.spec.ts`. Still not teacher golden path / physical Sony. |
 
 ---
@@ -548,7 +550,7 @@ While this contract is active and PRE-Q7 has not issued eligibility:
 
 | Topic | Required routing |
 | --- | --- |
-| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q6 Court A: GAPS REMAIN** (G1, G2); **Court B: NOT RUN**. **Q6-RP-1** G1/G2 repair candidate exists (owner decision on its PR); Court A re-review found **G3** (HG-13) → proposed **Q6-RP-2** (Q4 family) needs a fresh bounded authorization. Not authorized by this file |
+| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q6 Court A: GAPS REMAIN** (G1, G2); **Court B: NOT RUN**. **Q6-RP-1** G1/G2 **LANDED** @ `b1392391…` (PR #135). **Q6-RP-2** (G3 live Undo) candidate awaits owner decision on its PR; PRE-Q7 is a separate DevPM verdict. Not authorized by this file |
 | Completed | **Q0–Q5 LANDED** on main (Q5 @ `c7e41a4…` PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`) under `AUTHORIZE-CQS-Q5-DESKTOP-ELECTRON-INTEGRATION-QUALIFICATION` |
 | S05 parent | **OPEN / NOT TERMINAL** |
 | Prior MENUS Slice I playthrough | **NOT RUN** as acceptance (Scenario D was BLOCKED; I-REPAIR-1 merged; Q1 closed Scenario-D escapes on main; re-gate **not** authorized here) |
@@ -635,7 +637,8 @@ Q3: LANDED / VERIFIED ON MAIN @ 85bb951… (PR #127; reviewed tip cf207ca…); P
 Q4: LANDED / VERIFIED ON MAIN @ c32b72c… (PR #129; proof 541718e1…; reviewed tip 28d611e…); reconciliation PR #130 @ 28ff239…
 Q5: LANDED / VERIFIED ON MAIN @ c7e41a4… (PR #131; proof 455c4cf…; reviewed tip f1d4535…)
 Q6: EXECUTED on d921b07… — COURT-A GAPS REMAIN (G1, G2); COURT-B NOT RUN; repair packet Q6-RP-1 (Q3) required
-Q6-RP-1: G1/G2 repair CANDIDATE (not landed); Court A re-review GAPS REMAIN (G3 / HG-13; route Q4); COURT-B NOT RUN
+Q6-RP-1: LANDED / VERIFIED ON MAIN @ b1392391… (PR #135; tip 5764fa3…; trees EXACT MATCH) — G1/G2
+Q6-RP-2: live Undo (G3 / HG-13) repair CANDIDATE (not landed) — Court A / Court B per RP-2 receipt
 PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE — NOT ISSUED (DevPM verdict after Q6; not a new Q-stage)
 Q7: natural owner usability playthrough — NOT BEGUN (requires PRE-Q7)
 S05 parent: OPEN / NOT TERMINAL
