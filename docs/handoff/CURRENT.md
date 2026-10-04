@@ -48,7 +48,7 @@ also read
 | S05 parent | **OPEN / NOT TERMINAL** |
 | S05 Final + winner/completion presentation | **TERMINALLY COMPLETE** |
 | S05 integrated owner playthrough | **PAUSED / GATED** (pre-owner Q0–Q6 + PRE-Q7 eligibility); **`OWNER-PLAYTHROUGH-ELIGIBLE` NOT ISSUED** |
-| Pre-owner functional qualification | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123) — [`../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md); matrix [`../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md`](../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md). **Q2 LANDED / VERIFIED ON MAIN** @ `2dc918f…` (PR #125). **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951…` (PR #127; reviewed tip `cf207ca…`). **Q4 LANDED / VERIFIED ON MAIN** @ `c32b72c35f33e4188793e223ad9749c4a226b806` (PR #129 squash; proof `541718e1…`; reviewed tip `28d611e…`). **Q5 LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`). Q6 not started. Q1–Q5 physical Sony **NOT RUN**. |
+| Pre-owner functional qualification | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123) — [`../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md); matrix [`../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md`](../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md). **Q2 LANDED / VERIFIED ON MAIN** @ `2dc918f…` (PR #125). **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951…` (PR #127; reviewed tip `cf207ca…`). **Q4 LANDED / VERIFIED ON MAIN** @ `c32b72c35f33e4188793e223ad9749c4a226b806` (PR #129 squash; proof `541718e1…`; reviewed tip `28d611e…`). **Q5 LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`). **Q6 executed on `d921b07…` — Court A: GAPS REMAIN (G1, G2); Court B: NOT RUN** ([`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md)). Q1–Q5 physical Sony **NOT RUN**. |
 | Prior MENUS Slice I playthrough | **NOT RUN** (as acceptance; Scenario D was BLOCKED; I-REPAIR-1 merged; re-gate not authorized here) |
 | S04D / S06 | **NOT AUTHORIZED** |
 | Post-MVP arcs | **INACTIVE** |
@@ -193,7 +193,7 @@ See the REAL MVP gap register in
 | controller `F-UX-01` | **ADDRESSED ON MAIN / H6 PHYSICAL READINESS PASS / UX-R1 CLOSED** |
 | feedback/support path | **OPEN** — S04D direction registered; implementation not begun |
 | flagship visual fidelity | **S05 PRESENTATION CHILDREN TERMINALLY COMPLETE / PARENT OPEN** — S05-F1, buzz / active-claim, board-outcome authority + presentation, board/round-flow, and Final + winner/completion are **TERMINALLY COMPLETE**; score-change Path S-C **RESOLVED**; deliberate whole-game owner playthrough **PAUSED / GATED** behind pre-owner Q0–Q6 + PRE-Q7 eligibility; **`OWNER-PLAYTHROUGH-ELIGIBLE` NOT ISSUED** |
-| pre-owner functional qualification | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123); **Q2 LANDED / VERIFIED ON MAIN** @ `2dc918f…` (PR #125) — do **not** route Rick to owner walkthrough; **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951…` (PR #127; reviewed tip `cf207ca…`); **Q4 LANDED / VERIFIED ON MAIN** @ `c32b72c35f33e4188793e223ad9749c4a226b806` (PR #129; proof `541718e1…`; reviewed tip `28d611e…`). **Q5 LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`); Q6 / PRE-Q7 / Q7 not started; functional escapes / blockers require repair/verify — **no** owner-waiver through PRE-Q7; Q1–Q5 physical Sony **NOT RUN** |
+| pre-owner functional qualification | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123); **Q2 LANDED / VERIFIED ON MAIN** @ `2dc918f…` (PR #125) — do **not** route Rick to owner walkthrough; **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951…` (PR #127; reviewed tip `cf207ca…`); **Q4 LANDED / VERIFIED ON MAIN** @ `c32b72c35f33e4188793e223ad9749c4a226b806` (PR #129; proof `541718e1…`; reviewed tip `28d611e…`). **Q5 LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`); Q6 **executed — Court A: GAPS REMAIN** (G1, G2); Court B **NOT RUN**; PRE-Q7 / Q7 not started; functional escapes / blockers require repair/verify — **no** owner-waiver through PRE-Q7; Q1–Q5 physical Sony **NOT RUN** |
 | packaged offline/recovery and OS qualification | **PARTIAL** (H5 selection/hardware **PASS recorded 2026-09-11** and transferred; H6 readiness **PASS** on Namtai `054c:1000` + four handsets; Windows physical runtime **NOT RUN**) |
 | clean-room teacher qualification | **OPEN** |
 | **C-3** / **C-6** | **FOUNDATION IMPLEMENTED / UNSIGNED** |
@@ -266,7 +266,7 @@ not call the squash the tip) under
 (semantic repair tip `0c91147276dead9c50968bdbab98f753187ff7bf` — Session names
 on Host via `publicTeamDisplayName`; real `lih-correct` adjudication; Finding C
 CLOSED ON MAIN BY Q3 @ `85bb951…`).
-**Completed qualification:** **Q5** Desktop/Electron integration — **LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`; trees EXACT MATCH `8bb6c528…`). **Q6 NEXT / NOT AUTHORIZED**.
+**Completed qualification:** **Q5** Desktop/Electron integration — **LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`; trees EXACT MATCH `8bb6c528…`). **Q6 Court review executed** on candidate `d921b07…` under `AUTHORIZE-CQS-Q6-INDEPENDENT-COURT-REVIEW-1`: **Court A: GAPS REMAIN** — G1: starting Round 1 and entering Final are reachable only through More → Advanced diagnostics; G2: the projected Display status reads “Waiting for the first round.” through play and completion. **Court B: NOT RUN.** Next action is an owner decision on repair packet **Q6-RP-1** (Q3 family; product repair + re-proof), which is **not** authorized here. Record: [`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md).
 Owner playthrough is **PAUSED / GATED** behind
 Q0–Q6 + PRE-Q7 eligibility verdict; **`OWNER-PLAYTHROUGH-ELIGIBLE` is NOT
 ISSUED**. S05 parent remains **OPEN / NOT TERMINAL**. Prior MENUS Slice I
@@ -446,7 +446,7 @@ pre-owner Q2: LANDED / VERIFIED ON MAIN @ 2dc918f… (PR #125); tip aa3c18f…; 
 pre-owner Q3: LANDED / VERIFIED ON MAIN @ 85bb951… (PR #127; reviewed tip cf207ca…)
 pre-owner Q4: LANDED / VERIFIED ON MAIN @ c32b72c… (PR #129; proof 541718e1…; reviewed tip 28d611e…)
 pre-owner Q5: LANDED / VERIFIED ON MAIN @ c7e41a4… (PR #131; proof 455c4cf…; reviewed tip f1d4535…)
-pre-owner Q6: NOT STARTED
+pre-owner Q6: EXECUTED on d921b07… — COURT-A GAPS REMAIN (G1, G2); COURT-B NOT RUN
 S04D / S06: NOT AUTHORIZED
 REAL MVP: not complete
 ```

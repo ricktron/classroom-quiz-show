@@ -14,11 +14,12 @@
   Q4 post-merge docs:
   `AUTHORIZE-CQS-Q4-POST-MERGE-STARTUP-TRUTH-RECONCILIATION` (PR #130);
   Q5 delivery under
-  `AUTHORIZE-CQS-Q5-DESKTOP-ELECTRON-INTEGRATION-QUALIFICATION`
+  `AUTHORIZE-CQS-Q5-DESKTOP-ELECTRON-INTEGRATION-QUALIFICATION`;
+  Q6 Court review under `AUTHORIZE-CQS-Q6-INDEPENDENT-COURT-REVIEW-1`
 - **Kind:** durable pre-owner functional qualification contract
 - **Status:** **ACTIVE / Q0 LANDED; Q1 LANDED / VERIFIED ON MAIN** @
   `9d8246e9811eec19a34a9f8d44b2287b8635a741`; **Q2 LANDED / VERIFIED ON
-  MAIN** @ `2dc918f934836c3fa6a0f4d554f4757f4668c691`; **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951ead3ea7ed99a7f404f60bbebcb0d68cb7` (PR #127; reviewed tip `cf207cac7dd722a903f901cd885e35583439ed02`); **Q4 LANDED / VERIFIED ON MAIN** @ `c32b72c35f33e4188793e223ad9749c4a226b806` (PR #129; proof `541718e1…`; reviewed tip `28d611e…`; post-merge reconciliation PR #130 @ `28ff239…`); **Q5 LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`)
+  MAIN** @ `2dc918f934836c3fa6a0f4d554f4757f4668c691`; **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951ead3ea7ed99a7f404f60bbebcb0d68cb7` (PR #127; reviewed tip `cf207cac7dd722a903f901cd885e35583439ed02`); **Q4 LANDED / VERIFIED ON MAIN** @ `c32b72c35f33e4188793e223ad9749c4a226b806` (PR #129; proof `541718e1…`; reviewed tip `28d611e…`; post-merge reconciliation PR #130 @ `28ff239…`); **Q5 LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`); **Q6 EXECUTED on candidate `d921b07…` — Court A: GAPS REMAIN (G1, G2); Court B: NOT RUN** — [`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md)
 - **Companion:** [`PRE-OWNER-TEACHER-JOURNEY-MATRIX.md`](PRE-OWNER-TEACHER-JOURNEY-MATRIX.md)
 - **Observation base (Q0 registration):** `origin/main`
   `67ba2c0027f7e2439bd39bd963a7321be0ab6801` (PR #121 squash merge of
@@ -72,7 +73,9 @@
 This file is documentation / qualification contract.
 Q0–Q4 are LANDED on main. Q5 Desktop/Electron integration qualification is
 LANDED / VERIFIED ON MAIN @ c7e41a4… (PR #131; proof 455c4cf…; reviewed tip f1d4535…).
-Q6 is NEXT / NOT AUTHORIZED.
+Q6 Court review executed on d921b07…: COURT-A GAPS REMAIN (G1 round progression only in
+Advanced diagnostics; G2 stale public Display status). Court B NOT RUN.
+Eligibility path STOPPED pending repair packet Q6-RP-1 (Q3 family).
 No owner playthrough / eligibility / S05 terminalization / S04D / S06.
 ```
 
@@ -481,8 +484,11 @@ verdict.
 ### 10.3 Current status
 
 **Not issued.** Owner playthrough remains **PAUSED / GATED** behind Q0–Q6 +
-PRE-Q7 eligibility verdict. Q0–Q5 are landed on main. Q6 is
-**NOT STARTED / NOT AUTHORIZED**.
+PRE-Q7 eligibility verdict. Q0–Q5 are landed on main. Q6 Court review was
+executed on candidate `d921b07…`: **Court A: GAPS REMAIN** (G1, G2);
+**Court B: NOT RUN**. Q6 is **not passed**; the eligibility path is stopped
+until repair packet **Q6-RP-1** (Q3 family) is repaired, verified, landed, and
+Court A is re-reviewed. Record: [`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md).
 
 ---
 
@@ -495,7 +501,7 @@ product escape hardening (PR #123) closed A/B on main; C/D remain as staged.
 | --- | --- | --- | --- |
 | **A** | Scenario D buzzer-action proof gap | CONFIRMED — Check scrolls/focuses GIH/Sony profile; no connect/press/UI confirmation proof in Scenario D e2e or `onRevealBuzzersSetup` | **CLOSED BY Q1** — VERIFIED ON MAIN @ `9d8246e…` (SIMULATED e2e Check → SBS testMode → press confirmation). **PHYSICAL SONY NOT RUN.** |
 | **B** | Team-count contextual repair path vs Q1 target | CONFIRMED — current = authoring → Play → Resume → replace → setup; target = direct Class Setup return | **CLOSED BY Q1** — VERIFIED ON MAIN @ `9d8246e…` (disposable direct return; meaningful Session fail-closed; Open settings non-destructive; 2→3 roster-drift replace confirm). |
-| **C** | Integrated golden-path gap | CONFIRMED — suites cover fragments (`teacher-home-authoring`, `classroom-setup`, `menus-*`, `final-wager`, `session-summary`, S05 choreography) but **no** single Home→gameplay→Final→completion integrated pack | **CLOSED ON MAIN BY Q3 @ `85bb951…`** — `menus-q3-core-gameplay-golden-paths.spec.ts` landed via PR #127. **PHYSICAL SONY NOT RUN.** |
+| **C** | Integrated golden-path gap | CONFIRMED — suites cover fragments (`teacher-home-authoring`, `classroom-setup`, `menus-*`, `final-wager`, `session-summary`, S05 choreography) but **no** single Home→gameplay→Final→completion integrated pack | **CLOSED ON MAIN BY Q3 @ `85bb951…`** — `menus-q3-core-gameplay-golden-paths.spec.ts` landed via PR #127. **PHYSICAL SONY NOT RUN.** **Q6 qualifier:** engine integration evidence-backed; the *ordinary teacher-control* claim is **REOPENED by Q6 G1** (board entry and Final entry reached only via Advanced diagnostics). |
 | **D** | Electron `shell.spec.ts` scope | CONFIRMED — shell/security/persistence/API presence/diagnostics; not teacher golden path | **CLOSED ON MAIN BY Q5** @ `c7e41a4…` — shell **RETAIN**; authentic Session quit/relaunch + Display privacy/hash-lock + build `sourceSha` binding in `q5-session-lifecycle.spec.ts`. Still not teacher golden path / physical Sony. |
 
 ---
@@ -538,7 +544,7 @@ While this contract is active and PRE-Q7 has not issued eligibility:
 
 | Topic | Required routing |
 | --- | --- |
-| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q5 LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`). **Q6 NEXT / NOT AUTHORIZED** and requires a fresh bounded authorization |
+| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q6 Court A: GAPS REMAIN** (G1, G2); **Court B: NOT RUN**. Next: owner decision on repair packet **Q6-RP-1** (Q3 family; product repair + re-proof) under a fresh bounded authorization, then Court A re-review of the affected rows. Not authorized by this file |
 | Completed | **Q0–Q5 LANDED** on main (Q5 @ `c7e41a4…` PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`) under `AUTHORIZE-CQS-Q5-DESKTOP-ELECTRON-INTEGRATION-QUALIFICATION` |
 | S05 parent | **OPEN / NOT TERMINAL** |
 | Prior MENUS Slice I playthrough | **NOT RUN** as acceptance (Scenario D was BLOCKED; I-REPAIR-1 merged; Q1 closed Scenario-D escapes on main; re-gate **not** authorized here) |
@@ -590,7 +596,7 @@ No functional Electron defect was exposed; Q5 required **no product-code
 repair**. Browser Q1–Q4 packs remain **RETAIN**. Physical Sony / projector /
 audio / Windows / signed-release claims remain **NOT RUN / NOT CLAIMED**.
 
-Exact-head CI on reviewed tip `f1d4535…`: Lint/unit/build SUCCESS; Playwright SUCCESS; Desktop unit + Electron shell SUCCESS (Q5-A–D + shell, 8 passed); unsigned macOS/Windows package SUCCESS. SonarCloud Quality Gate FAILED on tip (MINOR PATH hotspot + async smell in test helper only; not a functional Electron defect). Squash/main SHA is recorded above.
+Exact-head CI on reviewed tip `f1d4535…`: Lint/unit/build SUCCESS; Playwright SUCCESS; Desktop unit + Electron shell SUCCESS (Q5-A–D + shell, 8 passed); unsigned macOS/Windows package SUCCESS. SonarCloud Quality Gate FAILED on tip (MINOR PATH hotspot + async smell in test helper only; not a functional Electron defect). Squash/main SHA is recorded above. **Q6 correction:** a hotspot alone does not lower the Security Rating; repository precedent (S03 receipt) shows `execFileSync('git')` PATH taint is a gate-driving security finding. Q6 classifies it as a NON-FUNCTIONAL RESIDUAL (test helper not packaged; does not invalidate Q5 evidence) with a recommended `.git/HEAD` read fix — see [`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md) §8.
 
 ---
 
@@ -598,7 +604,7 @@ Exact-head CI on reviewed tip `f1d4535…`: Lint/unit/build SUCCESS; Playwright 
 
 This contract does **not** claim:
 
-- Q5 **LANDED**; Q6–Q7 execution or PASS;
+- Q6 PASS (Q6 executed with Court A GAPS REMAIN); Q7 execution or PASS;
 - OWNER-PLAYTHROUGH-ELIGIBLE;
 - MENUS Complete / Slice I ACCEPT;
 - S05 parent terminalization;
@@ -624,7 +630,7 @@ Q2: LANDED / VERIFIED ON MAIN @ 2dc918f… (PR #125); tip aa3c18f…; tree 229e8
 Q3: LANDED / VERIFIED ON MAIN @ 85bb951… (PR #127; reviewed tip cf207ca…); PHYSICAL SONY NOT RUN
 Q4: LANDED / VERIFIED ON MAIN @ c32b72c… (PR #129; proof 541718e1…; reviewed tip 28d611e…); reconciliation PR #130 @ 28ff239…
 Q5: LANDED / VERIFIED ON MAIN @ c7e41a4… (PR #131; proof 455c4cf…; reviewed tip f1d4535…)
-Q6: NOT STARTED / NOT AUTHORIZED
+Q6: EXECUTED on d921b07… — COURT-A GAPS REMAIN (G1, G2); COURT-B NOT RUN; repair packet Q6-RP-1 (Q3) required
 PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE — NOT ISSUED (DevPM verdict after Q6; not a new Q-stage)
 Q7: natural owner usability playthrough — NOT BEGUN (requires PRE-Q7)
 S05 parent: OPEN / NOT TERMINAL
