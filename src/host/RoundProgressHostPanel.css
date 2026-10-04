@@ -1,0 +1,47 @@
+/*
+ * Ordinary Host round progression (Q6-RP-1 / G1).
+ *
+ * Host-side, private, restrained: one status line and one action. Reuses the
+ * shared tokens and button styles. The pre-round state is the only time this
+ * panel leads with a primary action, because starting the first round is the
+ * one required next step after Start Game (that button lives in the Host
+ * chrome — see RoundStartButton).
+ */
+
+.rph {
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius);
+}
+
+.rph__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.rph__status {
+  margin: 0;
+  color: var(--fg-muted);
+}
+
+.rph__note {
+  margin: var(--space-2) 0;
+  color: var(--fg-muted);
+}
+
+.rph__confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.rph__confirm .rph__note {
+  flex-basis: 100%;
+}

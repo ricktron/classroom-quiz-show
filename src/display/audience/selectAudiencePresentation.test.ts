@@ -175,6 +175,23 @@ describe('selectAudiencePresentation', () => {
     // Round ordinal must not repeat the stage status in the Nexus Core.
     expect(endedComplete.nexus.roundLabel).toBeNull()
     expect(endedComplete.nexus.detail).toBeNull()
+
+    // Q6-RP-1 (G2): the Host now derives "Game complete" at completion — the
+    // Nexus must not print it twice.
+    const endedDerived = selectAudiencePresentation(
+      baseState({
+        detail: 'Game complete',
+        game: {
+          status: 'ended',
+          roundCount: 1,
+          currentRound: 1,
+          roundAvailability: 'available',
+        },
+        round: null,
+      }),
+    )
+    expect(endedDerived.nexus.stageLabel).toBe('Game complete')
+    expect(endedDerived.nexus.detail).toBeNull()
   })
 
   it('exhaustively maps category-board stages', () => {

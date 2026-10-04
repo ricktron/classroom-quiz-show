@@ -25,6 +25,7 @@ import { TeamScoringPanel } from './TeamScoringPanel'
 import { SessionSummaryPanel } from './SessionSummaryPanel'
 import { ResponseTimerHostPanel } from './ResponseTimerHostPanel'
 import { FinalWagerHostPanel } from './FinalWagerHostPanel'
+import { RoundProgressHostPanel, RoundStartButton } from './RoundProgressHostPanel'
 import { LocalInputHostPanel } from './LocalInputHostPanel'
 import { GamepadInputHostPanel } from './GamepadInputHostPanel'
 import type { SonyBuzzTeacherSummary } from '../input/sonyBuzzTeacherReadiness'
@@ -628,9 +629,20 @@ export function FoundationControls({
       </header>
 
       {playReady && (
-        <p className="host__note foundation__play-status" data-testid="host-play-status" role="status">
-          {playStatusParts.join(' · ')}
-        </p>
+        <div className="foundation__play-row">
+          <p className="host__note foundation__play-status" data-testid="host-play-status" role="status">
+            {playStatusParts.join(' · ')}
+          </p>
+          {/* Q6-RP-1 (G1): the required next action after Start Game — ordinary, never under More. */}
+          {game && (
+            <RoundStartButton
+              dispatch={dispatch}
+              game={game}
+              clock={clock}
+              disabled={!persistence.canDispatchSessionCommands}
+            />
+          )}
+        </div>
       )}
 
       {!playReady && game && state.session && (
@@ -722,6 +734,8 @@ export function FoundationControls({
 
         {game && playReady && (
           <div className="foundation__gameplay" data-testid="host-gameplay">
+            {/* Q6-RP-1 (G1): ordinary round progression — never via Advanced diagnostics. */}
+            <RoundProgressHostPanel dispatch={dispatch} game={game} clock={clock} />
             <CategoryBoardHostPanel dispatch={dispatch} game={game} clock={clock} />
             <ResponseTimerHostPanel dispatch={dispatch} game={game} clock={clock} />
             <FinalWagerHostPanel

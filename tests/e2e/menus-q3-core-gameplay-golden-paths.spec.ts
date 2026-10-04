@@ -10,6 +10,7 @@ import {
   advanceToBoard,
   advanceToFinal,
   armAndStartTimer,
+  expectAdvancedDiagnosticsUnused,
   expectDisplayPrivate,
   importQ3GameToClassSetup,
   keyboardNamesReadyStart,
@@ -61,6 +62,9 @@ test('Q3-A…F: keyboard golden path Home→board→Final→completion with Host
   await expect(display.getByTestId('cbd-answer')).toHaveCount(0)
   expect((await display.content()).toLowerCase()).not.toContain('water')
   await expectDisplayPrivate(display)
+  // Q6-RP-1 (G2): public status is truthful mid-round (real Host publish).
+  await expect(display.getByTestId('nexus-detail')).toHaveText('Playing')
+  await expect(display.locator('body')).not.toContainText('Waiting for the first round')
 
   // HG-07 / HG-08: arm + timer + keyboard buzz (usable without controllers).
   await armAndStartTimer(host)
@@ -82,6 +86,10 @@ test('Q3-A…F: keyboard golden path Home→board→Final→completion with Host
   await expect(display.getByTestId('fwd-setup')).toBeVisible()
   await expectDisplayPrivate(display, Q3_PRIVATE_CONTENT)
   await runClassicFinalToCompletion(host, display)
+  // Q6-RP-1 (G2): completion status is truthful; G1: no Advanced diagnostics used.
+  await expect(display.getByTestId('nexus-stage')).toHaveText('Game complete')
+  await expect(display.locator('body')).not.toContainText('Waiting for the first round')
+  await expectAdvancedDiagnosticsUnused(host)
 
   // R5: Host session summary with Session standings; Display sanitized.
   await expect(host.getByTestId('session-summary-panel')).toBeVisible()

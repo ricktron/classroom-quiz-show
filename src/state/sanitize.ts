@@ -27,7 +27,7 @@ import {
   type PublicTeam,
   type PublicTeamsState,
 } from './publicState'
-import { PUBLIC_STATUS_COPY, PUBLIC_STATUS_PHASE } from './status'
+import { PUBLIC_STATUS_PHASE, resolvePublicStatusCopy, type PublicStatusLifecycle } from './status'
 import {
   categoryBoardStateFor,
   finalWagerStateFor,
@@ -633,6 +633,18 @@ function projectCurrentRound(game: PrivateGameState | null): RoundProjection {
 }
 
 /**
+ * Coarse lifecycle for the public status detail (Q6-RP-1 / G2), read from the
+ * authoritative game: no game or no current round yet → before the first round;
+ * ended → ended; otherwise a round is in progress. Nothing private is read.
+ */
+function publicStatusLifecycle(game: PrivateGameState | null): PublicStatusLifecycle {
+  if (game === null) return 'before-first-round'
+  if (game.gameLifecycle === 'ended') return 'ended'
+  if (game.currentRoundIndex === null) return 'before-first-round'
+  return 'in-round'
+}
+
+/**
  * The private → public boundary (permanent invariant — GAME-ENGINE-BOUNDARIES §4).
  *
  * This sanitizer is ALLOW-LIST based. It constructs a fresh `PublicState` by
@@ -670,7 +682,7 @@ export function toPublicState(state: PrivateState): PublicState {
     }
   }
 
-  const copy = PUBLIC_STATUS_COPY[session.publicStatusCode]
+  const copy = resolvePublicStatusCopy(session.publicStatusCode, publicStatusLifecycle(session.game))
   const phase: PublicPhase = PUBLIC_STATUS_PHASE[session.publicStatusCode]
   const projection = projectCurrentRound(session.game)
 

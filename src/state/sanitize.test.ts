@@ -200,3 +200,58 @@ describe('safeToPublicState — projection failure fails closed', () => {
     expect(Object.keys(result).sort()).toEqual(ALLOWED_KEYS)
   })
 })
+
+describe('toPublicState — truthful lifecycle status detail (Q6-RP-1 / G2)', () => {
+  const init = (definition = createSampleGame()): SessionEvent[] => [
+    sessionInit,
+    { id: 'evt-1', type: 'GAME_INITIALIZED', seq: 1, occurredAt: AT, reversible: false, definition },
+  ]
+
+  it('says "Waiting for the first round." only before any round is current', () => {
+    expect(toPublicState(replay(init()))).toMatchObject({
+      phase: 'ready',
+      headline: 'Session ready',
+      detail: 'Waiting for the first round.',
+    })
+  })
+
+  it('says "Playing" once a round is current (ordinary advance, no status command)', () => {
+    const state = replay([
+      ...init(),
+      { id: 'evt-2', type: 'ROUND_ADVANCED', seq: 2, occurredAt: AT, reversible: true, roundIndex: 0, roundId: 'round-1', support: 'supported' },
+    ])
+    expect(toPublicState(state)).toMatchObject({ headline: 'Session ready', detail: 'Playing' })
+  })
+
+  it('returns to the pre-round copy when the round advance is undone (replay-derived)', () => {
+    const state = replay([
+      ...init(),
+      { id: 'evt-2', type: 'ROUND_ADVANCED', seq: 2, occurredAt: AT, reversible: true, roundIndex: 0, roundId: 'round-1', support: 'supported' },
+      { id: 'evt-3', type: 'EVENT_UNDONE', seq: 3, occurredAt: AT, reversible: false, targetEventId: 'evt-2' },
+    ])
+    expect(state.session?.game?.currentRoundIndex).toBeNull()
+    expect(toPublicState(state).detail).toBe('Waiting for the first round.')
+  })
+
+  it('says "Game complete" once the game has ended', () => {
+    const state = replay([
+      ...init(),
+      { id: 'evt-2', type: 'ROUND_ADVANCED', seq: 2, occurredAt: AT, reversible: true, roundIndex: 0, roundId: 'round-1', support: 'supported' },
+      { id: 'evt-3', type: 'GAME_SESSION_ENDED', seq: 3, occurredAt: AT, reversible: false },
+    ])
+    expect(toPublicState(state)).toMatchObject({ headline: 'Session ready', detail: 'Game complete' })
+  })
+
+  it('keeps an explicit diagnostics status override verbatim (not lifecycle-derived)', () => {
+    const state = replay([
+      ...init(),
+      { id: 'evt-2', type: 'ROUND_ADVANCED', seq: 2, occurredAt: AT, reversible: true, roundIndex: 0, roundId: 'round-1', support: 'supported' },
+      { id: 'evt-3', type: 'WAITING_MARKED', seq: 3, occurredAt: AT, reversible: true },
+    ])
+    expect(toPublicState(state)).toMatchObject({
+      phase: 'waiting',
+      headline: 'Waiting for the host',
+      detail: 'No active round.',
+    })
+  })
+})
