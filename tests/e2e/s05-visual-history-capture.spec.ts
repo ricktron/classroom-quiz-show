@@ -72,7 +72,7 @@ const ENABLED = false
 test.describe.configure({ mode: 'serial' })
 
 test.describe('S05 visual historian capture', () => {
-  test.skip(!ENABLED, 'Set CQS_VISUAL_HISTORY_CAPTURE=1 to regenerate historical screenshots')
+  test.skip(!ENABLED, 'Historical S05 capture is frozen on current code; use the archive-bound implementation checkout')
 
   test('audience Display surfaces (1080p + selected stress)', async ({ page }, info) => {
     test.skip(info.project.name !== 'desktop-1080p', '1080p historian primary viewport')
