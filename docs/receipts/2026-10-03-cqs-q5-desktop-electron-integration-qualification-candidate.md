@@ -1,8 +1,11 @@
-# Receipt — Q5 Desktop/Electron integration qualification candidate
+# Receipt — Q5 Desktop/Electron integration qualification (landed)
 
 - **Date:** 2026-10-03
 - **Authorization:** `AUTHORIZE-CQS-Q5-DESKTOP-ELECTRON-INTEGRATION-QUALIFICATION`
-- **Kind:** qualification evidence receipt (candidate; not post-merge terminal)
+- **Kind:** qualification evidence receipt (post-merge landed)
+- **Squash/main:** `c7e41a42cb41c112419492f9922578a3dc147269` (PR #131)
+- **Reviewed tip:** `f1d45351dc2ec984cf92d43ca476f6aeebe31d6f`
+- **Trees:** tip and squash **EXACT MATCH** `8bb6c5285e54a9068f195bf7eb245e3e501e9143`
 - **Base:** `origin/main` `28ff23993183710c9eea9e524667bad45d0448fd`
 - **Branch:** `cursor/cqs-q5-desktop-electron-integration-qualification-1`
 - **Qualification proof head:** `455c4cf7136b92f44a613a33f43fc26a7a88832f`
@@ -39,4 +42,4 @@ closed on this candidate by shell RETAIN + lifecycle strengthen.
 - `npm run verify:all` — pass (662 Playwright browser e2e)
 - `npm run test:desktop` — pass (8 desktop tests)
 
-Bind later CI claims to the immutable final PR tip. Do not predict squash SHA.
+Landed on main via squash merge PR #131. Squash/main SHA recorded above. Do not start Q6 from this receipt.
