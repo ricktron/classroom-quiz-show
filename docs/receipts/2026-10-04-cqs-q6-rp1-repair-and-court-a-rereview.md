@@ -199,7 +199,22 @@ Environment caveat: `npm ci` cannot reach `cdn.sheetjs.com` here (403,
 `xlsx@0.18.5` substituted; tracked `package.json` / lockfile restored unchanged.
 Exact-dependency verification is CI on the PR head.
 
-VERIFICATION_RESULTS_PLACEHOLDER
+All runs were against repair commit `2ec81d8a055379a078d12732e211a98b676b3cb0`
+(code identical to the delivery head; later commits on this branch change docs
+only).
+
+| Check | Result |
+| --- | --- |
+| `git diff --check` | clean |
+| `npm run verify` | **pass**: lint 0 errors, 3 warnings (pre-existing `react-refresh` in `src/theme/ThemeProvider.tsx`); typecheck; unit **196 files / 2927 passed**, 2 skipped |
+| `npm run build` | **pass** (production web build) |
+| Full Playwright (`CI=1`, served production build, 4 workers, CI retries) | **663 passed, 106 skipped, 0 failed, 5 flaky**. The flaky tests are `gamepad-input.spec.ts:318` × 3 projects and `portable-packs.spec.ts` × 2 |
+| Flake triage, 1 worker, 0 retries | `portable-packs`: **pass**. `gamepad-input.spec.ts:318` (simulated Sony setup capture, bare `#/host`): **fails identically on base main `08f39e1…`** in this container: `settleGamepadPolls` rAF wait never resolves on this Chromium build. **Pre-existing, environment-specific, not caused by this repair.** PR CI is authoritative |
+| Targeted packs (3 projects, 0 retries) | `menus-q6-rp1-round-progression`, `menus-h-repair-1-focused-host`, `menus-q3-core-gameplay-golden-paths`, `menus-q4-gameplay-branch-failure-matrix`: **pass** |
+| `npm run test:desktop` (`xvfb-run`, `ELECTRON_DISABLE_SANDBOX=1`) | **8 passed**: `shell.spec.ts` + `q5-session-lifecycle.spec.ts`; Q5-C now enters the board via `rph-start` under Electron; Q5-A `sourceSha` bound to the head |
+
+Not run locally: packaged macOS / Windows artifacts (CI only), SonarCloud (CI
+only), physical Sony / projector / audio / Windows.
 
 ---
 
