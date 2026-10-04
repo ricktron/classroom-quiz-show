@@ -14,7 +14,7 @@
 - **Kind:** teacher-journey interaction matrix for pre-owner functional qualification
 - **Status:** **ACTIVE / Q0 LANDED; Q1 LANDED / VERIFIED ON MAIN** @
   `9d8246e9811eec19a34a9f8d44b2287b8635a741`; **Q2 LANDED / VERIFIED ON
-  MAIN** @ `2dc918f934836c3fa6a0f4d554f4757f4668c691`; **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951ead3ea7ed99a7f404f60bbebcb0d68cb7` (PR #127; reviewed tip `cf207cac7dd722a903f901cd885e35583439ed02`); **Q4 LANDED / VERIFIED ON MAIN** @ `c32b72c35f33e4188793e223ad9749c4a226b806` (PR #129; proof `541718e1…`; reviewed tip `28d611e…`; reconciliation PR #130 @ `28ff239…`); **Q5 CANDIDATE-COMPLETE / NOT LANDED** on `cursor/cqs-q5-desktop-electron-integration-qualification-1`
+  MAIN** @ `2dc918f934836c3fa6a0f4d554f4757f4668c691`; **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951ead3ea7ed99a7f404f60bbebcb0d68cb7` (PR #127; reviewed tip `cf207cac7dd722a903f901cd885e35583439ed02`); **Q4 LANDED / VERIFIED ON MAIN** @ `c32b72c35f33e4188793e223ad9749c4a226b806` (PR #129; proof `541718e1…`; reviewed tip `28d611e…`; reconciliation PR #130 @ `28ff239…`); **Q5 LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`)
 - **Contract:** [`PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](PRE-OWNER-FUNCTIONAL-QUALIFICATION.md)
 - **Q0 observation base:** `origin/main`
   `67ba2c0027f7e2439bd39bd963a7321be0ab6801`
@@ -43,14 +43,17 @@
 - **Q4 squash/main:** `c32b72c35f33e4188793e223ad9749c4a226b806` (PR #129)
 - **Q5 authorization:**
   `AUTHORIZE-CQS-Q5-DESKTOP-ELECTRON-INTEGRATION-QUALIFICATION`
-- **Q5 delivery branch:** `cursor/cqs-q5-desktop-electron-integration-qualification-1`
+- **Q5 delivery branch (historical):** `cursor/cqs-q5-desktop-electron-integration-qualification-1`
+- **Q5 squash/main:** `c7e41a42cb41c112419492f9922578a3dc147269` (PR #131)
+- **Q5 reviewed tip:** `f1d45351dc2ec984cf92d43ca476f6aeebe31d6f`
+- **Q5 tree identity:** `8bb6c5285e54a9068f195bf7eb245e3e501e9143`
 - **Q5 observation base:** `28ff23993183710c9eea9e524667bad45d0448fd`
 - **Q5 qualification proof head:** `455c4cf7136b92f44a613a33f43fc26a7a88832f`
 
 ```text
 Documentation / qualification matrix. Q0–Q4 are LANDED on main. HG-13 is
-closed by Q4. Q5 Desktop/Electron integration is CANDIDATE-COMPLETE / NOT
-LANDED. Finding D CLOSED ON Q5 CANDIDATE. Q6 NEXT / NOT AUTHORIZED.
+closed by Q4. Q5 Desktop/Electron integration is LANDED / VERIFIED ON MAIN
+@ c7e41a4… (PR #131). Finding D CLOSED ON MAIN BY Q5. Q6 NEXT / NOT AUTHORIZED.
 PHYSICAL SONY NOT RUN. Golden paths = Q3; branch/failure = Q4; Electron = Q5;
 owner feel = Q7. PRE-Q7 (DevPM) issues eligibility after Q0–Q6; Q7 does not.
 Functional escapes / blockers may not be waived through PRE-Q7.
@@ -184,7 +187,7 @@ classification) go in **Evidence class**, **Q stage**, or **Gap / note** only.
 ## 7. Suite disposition register (authoritative main `28ff239…` + Q5 candidate)
 
 Q0 registered dispositions against `67ba2c0…`. Q1–Q4 are LANDED on main (Q4 @
-`c32b72c…`; reconciliation @ `28ff239…`). Q5 candidate strengthens Desktop/
+`c32b72c…`; reconciliation @ `28ff239…`). Q5 landed on main @ `c7e41a4…` strengthens Desktop/
 Electron seams without reopening browser Q1–Q4 packs.
 
 | Suite | Disposition | Notes |
@@ -221,7 +224,7 @@ Electron seams without reopening browser Q1–Q4 packs.
 | `menus-q3-core-gameplay-golden-paths.spec.ts` | **RETAIN** | Finding C CLOSED ON MAIN BY Q3 @ `85bb951…` — keyboard + SIMULATED Sony + Host/Display |
 | Integrated Home→…→completion pack | **RETAIN** | Finding C CLOSED ON MAIN BY Q3 @ `85bb951…` |
 | `menus-q4-gameplay-branch-failure-matrix.spec.ts` | **RETAIN** (Q4 landed) | HG-13 closed on main @ `c32b72c…`; no product repair exposed |
-| `tests/desktop/q5-session-lifecycle.spec.ts` | **RETAIN** (Q5 candidate) | Authentic Session quit/relaunch; explicit Resume; Display privacy/hash-lock; `sourceSha` bind; protocol 404 |
+| `tests/desktop/q5-session-lifecycle.spec.ts` | **RETAIN** (Q5 landed) | Authentic Session quit/relaunch; explicit Resume; Display privacy/hash-lock; `sourceSha` bind; protocol 404 |
 | Physical Sony re-qual on tip | **PHYSICAL-ONLY** | Q1–Q5 **NOT RUN**; H5/H6 transferred under older identity; **not** silent Q5 PASS |
 | Windows physical runtime | **PHYSICAL-ONLY** | S06; **NOT AUTHORIZED**; **not** silent Q5 PASS |
 | Owner MENUS / S05 playthrough | **OWNER-ONLY** | **PAUSED / GATED** — PRE-Q7 eligibility not issued; Q7 does not issue it |
@@ -249,7 +252,7 @@ Functional blockers may **not** be waived through PRE-Q7.
 1. Court A COMPLETE (no unresolved ordinary-path functional blocker);
 2. Findings A–B **closed by Q1 repair/proof** on main @ `9d8246e…`
    (SIMULATED where labeled; physical Sony **NOT RUN**); Finding C **CLOSED ON
-   MAIN BY Q3**; Finding D **CLOSED ON Q5 CANDIDATE**; remaining functional
+   MAIN BY Q3**; Finding D **CLOSED ON MAIN BY Q5**; remaining functional
    items need evidence-backed closure — **no** owner waiver for functional
    closure;
 3. No smuggled S04D/S06/S05-terminal claims;
@@ -266,7 +269,7 @@ Functional blockers may **not** be waived through PRE-Q7.
 
 This matrix does **not**:
 
-- claim Q5 **LANDED** or Q6–Q7 execution / PASS;
+- claim Q6–Q7 execution or PASS;
 - issue `OWNER-PLAYTHROUGH-ELIGIBLE`;
 - mark S05 terminal or REAL MVP complete;
 - claim Q1–Q5 physical Sony PASS;
@@ -281,12 +284,12 @@ Q1 LANDED / VERIFIED ON MAIN @ 9d8246e… (PR #123); PHYSICAL SONY NOT RUN
 Q2 LANDED / VERIFIED ON MAIN @ 2dc918f… (PR #125); tip aa3c18f…; tree 229e8a0…; PHYSICAL SONY NOT RUN
 Q3 LANDED / VERIFIED ON MAIN @ 85bb951… (PR #127; reviewed tip cf207ca…); PHYSICAL SONY NOT RUN
 Q4 LANDED / VERIFIED ON MAIN @ c32b72c… (PR #129); reconciliation PR #130 @ 28ff239…
-Q5: CANDIDATE-COMPLETE / NOT LANDED (Desktop/Electron integration)
+Q5: LANDED / VERIFIED ON MAIN @ c7e41a4… (PR #131; proof 455c4cf…; reviewed tip f1d4535…)
 Q6: NOT STARTED / NOT AUTHORIZED
 owner playthrough: PAUSED / GATED (Q0–Q6 + PRE-Q7 eligibility)
 Findings A/B: CLOSED BY Q1 (SIMULATED where labeled); individual Q1 ≠ Q2 PASS
 Finding C: CLOSED ON MAIN BY Q3 @ 85bb951… (HG-12)
-Finding D: CLOSED ON Q5 CANDIDATE (shell RETAIN + q5-session-lifecycle)
+Finding D: CLOSED ON MAIN BY Q5 @ c7e41a4… (shell RETAIN + q5-session-lifecycle)
 PRE-Q7 OWNER-PLAYTHROUGH-ELIGIBLE: NOT ISSUED (DevPM verdict after Q6)
 Q7 does not issue eligibility
 functional blockers: no owner-waiver escape hatch through PRE-Q7
