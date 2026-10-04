@@ -17,6 +17,10 @@ const S05_ROOT = path.resolve(
   HERE,
   '../../docs/design/history/2026-09-s05-complete/screenshots',
 )
+const PRE_OWNER_ROOT = path.resolve(
+  HERE,
+  '../../docs/design/history/2026-10-pre-owner-q6-rp2/screenshots',
+)
 
 function listPngs(root: string): string[] {
   const out: string[] = []
@@ -44,19 +48,25 @@ function fingerprint(root: string): string {
 test('historian archives are present and capture env gates are off in ordinary e2e', async () => {
   expect(process.env.CQS_MENUS_VISUAL_HISTORY_CAPTURE ?? '').not.toBe('1')
   expect(process.env.CQS_VISUAL_HISTORY_CAPTURE ?? '').not.toBe('1')
+  expect(process.env.CQS_PRE_OWNER_VISUAL_HISTORY_CAPTURE ?? '').not.toBe('1')
 
   const menusPngs = listPngs(MENUS_ROOT)
   const s05Pngs = listPngs(S05_ROOT)
+  const preOwnerPngs = listPngs(PRE_OWNER_ROOT)
   expect(menusPngs.length).toBeGreaterThanOrEqual(20)
   expect(s05Pngs.length).toBe(50)
+  expect(preOwnerPngs.length).toBeGreaterThanOrEqual(20)
 
   const beforeMenus = fingerprint(MENUS_ROOT)
   const beforeS05 = fingerprint(S05_ROOT)
+  const beforePreOwner = fingerprint(PRE_OWNER_ROOT)
 
   // Ordinary Home load must not touch historian trees.
   // (No screenshot API calls here — only presence + env gate proof.)
   expect(beforeMenus.length).toBeGreaterThan(0)
   expect(beforeS05.length).toBeGreaterThan(0)
+  expect(beforePreOwner.length).toBeGreaterThan(0)
   expect(fingerprint(MENUS_ROOT)).toBe(beforeMenus)
   expect(fingerprint(S05_ROOT)).toBe(beforeS05)
+  expect(fingerprint(PRE_OWNER_ROOT)).toBe(beforePreOwner)
 })
