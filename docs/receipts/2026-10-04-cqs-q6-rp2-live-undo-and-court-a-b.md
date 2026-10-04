@@ -4,8 +4,8 @@
 - **Authorization:** `AUTHORIZE-CQS-Q6-RP1-MERGE-AND-RP2-UNDO-REPAIR-1`
   (Court work under the existing Q6 authority)
 - **Kind:** RP-1 landing record + bounded product repair candidate (G3) +
-  Court A re-review + Court B. **RP-2 is not landed by this record.** This
-  file does not predict its delivery PR's merge state or squash SHA.
+  Court A re-review + Court B. **RP-2 LANDED / VERIFIED ON MAIN** @ `9410b6290a6dcb2f971e66da8173c3b44a6f785a` (PR #136).
+  Reviewed tip `825bda101aa2f226ac6b9101700e026edcdeb8a0`; product tip `ad115a2289b71324fb6e4c859a021569edf073a7`; trees EXACT MATCH `0b8036ded5362faf708367a048c12360950d2be6`.
 - **RP-2 base (fresh main after RP-1):** `b1392391278f65ac516a1363c72fe1bfd9adf790`
 - **RP-2 branch:** `claude/cqs-q6-court-review-9wdi7i` (restarted from fresh
   main after PR #135 landed)
@@ -170,7 +170,7 @@ Q4-B and Q4-C are unchanged and still pass.
 
 | Row | Prior | Re-review | Evidence |
 | --- | --- | --- | --- |
-| HG-13 | FUNCTIONAL GAP (G3) | **CLOSED BY Q6-RP-2 (candidate)** | Q4-A ordinary path (above); units |
+| HG-13 | FUNCTIONAL GAP (G3) | **CLOSED ON MAIN BY Q6-RP-2** @ `9410b62…` | Q4-A ordinary path (above); units |
 | HG-06 (adjudication / score) | CLOSED BY Q1-Q5 | unchanged (RETAIN) | Score-only undo untouched; adjudication undo now ordinary |
 | HG-01 / CS-13 | CLOSED BY Q6-RP-1 (landed) | unchanged | Live Undo absent pre-round, so the H-REPAIR-1 viewport proofs pass unchanged |
 | HG-12 / Finding C | CLOSED (RP-1 landed) | unchanged | RP-2 does not touch golden-path claims; Q3 golden pack passes |
@@ -190,7 +190,7 @@ Q4-B and Q4-C are unchanged and still pass.
   PHYSICAL-ONLY, OWNER-ONLY, or NON-FUNCTIONAL RESIDUAL (first Q6 receipt §9
   and the residual list below).
 
-**Court A outcome (RP-2 candidate):** **COURT-A: COMPLETE.** No ordinary-path functional blocker remains on the
+**Court A outcome (RP-2 landed):** **COURT-A: COMPLETE.** No ordinary-path functional blocker remains on the
 RP-2 candidate. Every row in matrix §§2-6 is RETAIN / CLOSED, PHYSICAL-ONLY,
 OWNER-ONLY, or an accurately classified NON-FUNCTIONAL RESIDUAL. This is
 main truth only once RP-2 lands.
@@ -205,7 +205,7 @@ challenges completeness independently; it does not summarize Court A.
 | Audit | Result |
 | --- | --- |
 | **Findings A-D** | A and B hold (Q1; simulated press / disposable gate re-read). C: ordinary-control golden path re-proven and landed (RP-1 @ `b1392391…`); Q3 golden passes on RP-2 code. D holds (Q5 shell + lifecycle; desktop 8/8 on RP-2 code, including Q5-C via `rph-start`). |
-| **Startup truth** | On this branch, STATUS / CURRENT / contract / matrix agree: RP-1 landed, RP-2 candidate, G3 repaired on candidate. **Main still carries stale "RP-1 candidate" text until this PR lands.** That is a landing condition, not a functional gap. |
+| **Startup truth** | After landing, STATUS / CURRENT / contract / matrix must record RP-2 LANDED / VERIFIED ON MAIN @ `9410b629…` with Court A COMPLETE / Court B RECOMMEND ELIGIBLE; eligibility still NOT ISSUED. |
 | **Hard bans** | No S05 terminalization, S04D, S06, physical PASS claim, signed-release claim, simulation-as-physical, owner playthrough, REAL MVP claim, or historian archive. The visual review granted no design authority. Diagnostics controls still exist but are not needed on the ordinary path. |
 | **Evidence transfer** | Every browser and desktop suite was re-executed on RP-2 code (`ad115a2`): Playwright 664 passed, 0 failed; desktop 8 passed. The Q4-A via-More undo evidence is superseded. H5/H6 physical Sony is **not** transferred (historical @ `9df9c42…`). |
 | **Candidate identity** | Code tree of RP-2 repair commit `ad115a2289b71324fb6e4c859a021569edf073a7` on base `b1392391…`. The eligible identity for PRE-Q7 should be the **landed squash** of this PR, with tree identity to the reviewed head recorded at landing. |

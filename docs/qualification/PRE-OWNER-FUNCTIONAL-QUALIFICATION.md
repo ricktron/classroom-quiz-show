@@ -80,7 +80,7 @@ Q6 Court review executed on d921b07…: COURT-A GAPS REMAIN (G1 round progressio
 Advanced diagnostics; G2 stale public Display status). Court B NOT RUN.
 Eligibility path STOPPED pending repair packet Q6-RP-1 (Q3 family).
 Q6-RP-1 (G1/G2) LANDED on main @ b1392391… (PR #135). Its re-review found G3 (general Undo
-only via Advanced diagnostics; HG-13). Q6-RP-2 live-Undo repair is a CANDIDATE (not landed);
+only via Advanced diagnostics; HG-13). **Q6-RP-2 LANDED / VERIFIED ON MAIN** @ `9410b62…` (PR #136; product tip `ad115a2…`; reviewed tip `825bda1…`; trees EXACT MATCH `0b8036de…`);
 On that candidate: COURT-A COMPLETE; COURT-B RECOMMEND ELIGIBLE (recommendation only;
 OWNER-PLAYTHROUGH-ELIGIBLE NOT ISSUED — DevPM PRE-Q7 verdict after RP-2 lands).
 No owner playthrough / eligibility / S05 terminalization / S04D / S06.
@@ -495,7 +495,7 @@ PRE-Q7 eligibility verdict. Q0–Q5 are landed on main. Q6 Court review was
 executed on candidate `d921b07…`: **Court A: GAPS REMAIN** (G1, G2);
 **Court B: NOT RUN**. Q6 is **not passed**; the eligibility path is stopped
 until repair packet **Q6-RP-1** (Q3 family) is repaired, verified, landed, and
-Court A is re-reviewed. Record: [`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md). **Q6-RP-1 update:** G1/G2 repair **LANDED / VERIFIED ON MAIN** @ `b1392391…` (PR #135); its Court A re-review found **G3** (general Undo reachable only under Advanced diagnostics; HG-13). **Q6-RP-2** (live Undo) is a **candidate** (not landed); on it **Court A: COMPLETE**, **Court B: RECOMMEND ELIGIBLE** (recommendation only; eligibility **NOT ISSUED**) — [`../receipts/2026-10-04-cqs-q6-rp2-live-undo-and-court-a-b.md`](../receipts/2026-10-04-cqs-q6-rp2-live-undo-and-court-a-b.md); prior RP-1 record — [`../receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md`](../receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md).
+Court A is re-reviewed. Record: [`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md). **Q6-RP-1 update:** G1/G2 repair **LANDED / VERIFIED ON MAIN** @ `b1392391…` (PR #135); its Court A re-review found **G3** (general Undo reachable only under Advanced diagnostics; HG-13). **Q6-RP-2 LANDED / VERIFIED ON MAIN** @ `9410b62…` (PR #136; product tip `ad115a2…`; reviewed tip `825bda1…`; trees EXACT MATCH `0b8036de…`); **Court A: COMPLETE**; **Court B: RECOMMEND ELIGIBLE** (recommendation only; eligibility **NOT ISSUED**) — [`../receipts/2026-10-04-cqs-q6-rp2-live-undo-and-court-a-b.md`](../receipts/2026-10-04-cqs-q6-rp2-live-undo-and-court-a-b.md); prior RP-1 record — [`../receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md`](../receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md).
 
 ---
 
@@ -551,7 +551,7 @@ While this contract is active and PRE-Q7 has not issued eligibility:
 
 | Topic | Required routing |
 | --- | --- |
-| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q6 Court A: GAPS REMAIN** (G1, G2); **Court B: NOT RUN**. **Q6-RP-1** G1/G2 **LANDED** @ `b1392391…` (PR #135). **Q6-RP-2** (G3 live Undo) candidate awaits owner decision on its PR; PRE-Q7 is a separate DevPM verdict. Not authorized by this file |
+| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q6-RP-1** and **Q6-RP-2** are **LANDED** (RP-2 @ `9410b62…` PR #136). **Court A: COMPLETE**; **Court B: RECOMMEND ELIGIBLE** (recommendation only). **`OWNER-PLAYTHROUGH-ELIGIBLE` NOT ISSUED** — PRE-Q7 is a separate DevPM verdict. Not authorized by this file |
 | Completed | **Q0–Q5 LANDED** on main (Q5 @ `c7e41a4…` PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`) under `AUTHORIZE-CQS-Q5-DESKTOP-ELECTRON-INTEGRATION-QUALIFICATION` |
 | S05 parent | **OPEN / NOT TERMINAL** |
 | Prior MENUS Slice I playthrough | **NOT RUN** as acceptance (Scenario D was BLOCKED; I-REPAIR-1 merged; Q1 closed Scenario-D escapes on main; re-gate **not** authorized here) |
@@ -639,7 +639,7 @@ Q4: LANDED / VERIFIED ON MAIN @ c32b72c… (PR #129; proof 541718e1…; reviewed
 Q5: LANDED / VERIFIED ON MAIN @ c7e41a4… (PR #131; proof 455c4cf…; reviewed tip f1d4535…)
 Q6: EXECUTED on d921b07… — COURT-A GAPS REMAIN (G1, G2); COURT-B NOT RUN; repair packet Q6-RP-1 (Q3) required
 Q6-RP-1: LANDED / VERIFIED ON MAIN @ b1392391… (PR #135; tip 5764fa3…; trees EXACT MATCH) — G1/G2
-Q6-RP-2: live Undo (G3 / HG-13) repair CANDIDATE (not landed) — COURT-A COMPLETE; COURT-B RECOMMEND ELIGIBLE (recommendation only); OWNER-PLAYTHROUGH-ELIGIBLE NOT ISSUED
+Q6-RP-2: LANDED / VERIFIED ON MAIN @ 9410b62… (PR #136) — COURT-A COMPLETE; COURT-B RECOMMEND ELIGIBLE (recommendation only); OWNER-PLAYTHROUGH-ELIGIBLE NOT ISSUED
 PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE — NOT ISSUED (DevPM verdict after Q6; not a new Q-stage)
 Q7: natural owner usability playthrough — NOT BEGUN (requires PRE-Q7)
 S05 parent: OPEN / NOT TERMINAL
