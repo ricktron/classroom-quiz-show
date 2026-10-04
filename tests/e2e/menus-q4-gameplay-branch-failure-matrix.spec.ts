@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test'
-import { ensureHostMoreOpen } from './helpers/hostMore'
 import {
   advanceToBoard,
   advanceToFinal,
   armAndStartTimer,
+  expectAdvancedDiagnosticsUnused,
   expectDisplayPrivate,
   importQ3GameToClassSetup,
   keyboardNamesReadyStart,
@@ -25,8 +25,9 @@ import { waitForSessionSaved } from './helpers/menusSession'
  * This is intentionally not a second golden-path pack. It composes only the
  * material off-spine branches that existing domain suites prove in isolation:
  *
- * Q4-A incorrect claim -> queue promotion -> undo -> explicit mid-game Resume
- *      -> Host/Display reconvergence + privacy -> continued adjudication.
+ * Q4-A incorrect claim -> queue promotion -> ORDINARY live Undo (Q6-RP-2; More
+ *      closed) -> explicit mid-game Resume -> Host/Display reconvergence +
+ *      privacy -> continued adjudication -> Final -> safe completion.
  * Q4-B an authentic Session rejects a stale timer expiry after the teacher
  *      resets/closes the response opportunity.
  * Q4-C mid-Final explicit Resume -> incorrect settlement -> tied Final branch
@@ -61,16 +62,22 @@ test('Q4-A: incorrect queue branch survives undo + explicit Resume and reconverg
   await expect(host.getByTestId('lih-active')).toHaveText(Q3_SESSION_NAME_BRAVO)
   await expect(display.getByTestId('bqd-active')).toHaveText(Q3_SESSION_NAME_BRAVO)
 
-  // Undo is replay-derived: it restores the prior claimant and queue exactly.
-  // Q6 re-review G3: general (non-score) Undo is reachable ONLY under More →
-  // Advanced diagnostics on this candidate. Opened explicitly here so this pack
-  // keeps proving replay/Resume semantics; it is NOT ordinary-path evidence.
-  await ensureHostMoreOpen(host)
-  await host.getByRole('button', { name: /undo last reversible/i }).click()
+  // Q6-RP-2 (G3): the ORDINARY live Undo names what it will reverse and is
+  // reachable with More / Advanced diagnostics closed. It dispatches the
+  // canonical UNDO, so replay restores the prior claimant and queue exactly.
+  await expectAdvancedDiagnosticsUnused(host)
+  const undo = host.getByTestId('host-undo')
+  await expect(undo).toBeVisible()
+  await expect(undo).toHaveText(`Undo Incorrect (${Q3_SESSION_NAME_ALPHA})`)
+  await undo.click()
   await expect(host.getByTestId('lih-active')).toHaveText(Q3_SESSION_NAME_ALPHA)
   await expect(host.getByTestId('lih-waiting')).toHaveText(`1. ${Q3_SESSION_NAME_BRAVO}`)
   await expect(display.getByTestId('bqd-active')).toHaveText(Q3_SESSION_NAME_ALPHA)
   await expect(display.getByTestId('bqd-waiting')).toHaveText('1 team waiting')
+  // The next undo target is now the earlier buzz — the undone Incorrect is gone.
+  await expect(undo).toHaveText(`Undo buzz-in (${Q3_SESSION_NAME_BRAVO})`)
+  await expectDisplayPrivate(display)
+  await expectAdvancedDiagnosticsUnused(host)
 
   await waitForSessionSaved(host, { timeout: 15_000 })
   await host.reload()
@@ -80,18 +87,22 @@ test('Q4-A: incorrect queue branch survives undo + explicit Resume and reconverg
   await expect(host.getByTestId('classroom-setup')).toHaveCount(0)
   await host.getByTestId('persistence-resume').click()
 
-  // The resumed Host and still-open Display reconverge on the replayed branch.
+  // The resumed Host and still-open Display reconverge on the replayed branch:
+  // the Incorrect stays undone (the persisted tail includes the undo marker).
   await expect(host.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'play')
   await expect(host.getByTestId('lih-active')).toHaveText(Q3_SESSION_NAME_ALPHA)
   await expect(host.getByTestId('lih-waiting')).toHaveText(`1. ${Q3_SESSION_NAME_BRAVO}`)
+  await expect(host.getByTestId('host-undo')).toHaveText(`Undo buzz-in (${Q3_SESSION_NAME_BRAVO})`)
   await expect(display.getByTestId('bqd-active')).toHaveText(Q3_SESSION_NAME_ALPHA)
   await expect(display.getByTestId('bqd-waiting')).toHaveText('1 team waiting')
   await expectDisplayPrivate(display)
 
-  // The teacher can continue from the recovered branch without replacing the
-  // Session. Passing promotes Team 2; adjudication remains authoritative.
+  // The teacher continues from the recovered branch without replacing the
+  // Session. Passing promotes Team 2; adjudication remains authoritative and
+  // publishes live to the Display.
   await host.getByTestId('lih-pass').click()
   await expect(host.getByTestId('lih-active')).toHaveText(Q3_SESSION_NAME_BRAVO)
+  await expect(display.getByTestId('bqd-active')).toHaveText(Q3_SESSION_NAME_BRAVO)
   await host.getByTestId('lih-correct').click()
   await expect(host.getByTestId('lih-board-outcome')).toContainText(
     `${Q3_SESSION_NAME_BRAVO} — Correct`,
@@ -106,6 +117,28 @@ test('Q4-A: incorrect queue branch survives undo + explicit Resume and reconverg
   await host.getByTestId('cbh-return').click()
   await expect(host.getByTestId('cbh-tile-science-100')).toBeDisabled()
   await expectDisplayPrivate(display)
+
+  // Safe completion remains possible on the recovered Session, ordinary path only.
+  await advanceToFinal(host)
+  await host.getByTestId('fwh-begin').click()
+  await host.getByTestId(`fwh-wager-input-${Q3_TEAM_BRAVO}`).fill('50')
+  await host.getByTestId(`fwh-save-wager-${Q3_TEAM_BRAVO}`).click()
+  await host.getByTestId('fwh-lock-wagers').click()
+  await host.getByTestId('fwh-start-response').click()
+  await host.getByTestId(`fwh-save-responded-${Q3_TEAM_BRAVO}`).click()
+  await host.getByTestId('fwh-lock-responses').click()
+  await host.getByTestId('fwh-reveal-answer').click()
+  await host.getByTestId(`fwh-reveal-${Q3_TEAM_BRAVO}`).click()
+  await host.getByTestId('fwh-settle-correct').click()
+  await host.getByTestId('fwh-complete').click()
+  await host.getByTestId('fwh-complete-confirm').click()
+  await expect(display.getByTestId('fwd-complete')).toBeVisible()
+  await expect(display.getByTestId('fwd-winner')).toContainText(Q3_SESSION_NAME_BRAVO)
+  await expect(host.getByTestId('session-summary-panel')).toBeVisible()
+  // Completed game: the planner refuses undo, so the ordinary control is gone.
+  await expect(host.getByTestId('host-undo')).toHaveCount(0)
+  await expectDisplayPrivate(display)
+  await expectAdvancedDiagnosticsUnused(host)
 
   await host.close()
   await display.close()
