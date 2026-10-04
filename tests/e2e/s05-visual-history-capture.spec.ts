@@ -59,14 +59,15 @@ function shot(
  * S05 visual historian — deterministic browser captures into
  * docs/design/history/2026-09-s05-complete/screenshots/.
  *
- * Gated by CQS_VISUAL_HISTORY_CAPTURE=1 so ordinary `npm run test:e2e` does not
- * rewrite historical PNGs. Regenerate with:
- *   npm run capture:visual-history
+ * This current-main copy is provenance-frozen. The S05 archive is bound to
+ * implementation SHA 4368cc9eeb7dbf3ef342926e1d0fba7ba4c10f9b and must never
+ * be regenerated from later code. For forensic regeneration, use an isolated
+ * checkout at that SHA and that checkout's recorded capture command.
  *
  * Browser captures are not Electron / Windows / projector / Sidecar evidence.
  */
 
-const ENABLED = process.env.CQS_VISUAL_HISTORY_CAPTURE === '1'
+const ENABLED = false
 
 test.describe.configure({ mode: 'serial' })
 
