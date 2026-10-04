@@ -457,3 +457,78 @@ After Q7 and post-playthrough polish, synthesize this journal into:
 
 Do not promote these candidates into generic organizational canon merely because
 they worked once. Promote repeated, evidence-backed lessons deliberately.
+
+
+---
+
+## 2026-10-04 — Historian archive commands needed executable provenance guards
+
+### Objective
+
+Repair the visual-historian capture workflow after Q6 showed that the S05 and
+MENUS archive-specific capture specs had drifted relative to current main.
+
+### Expected model
+
+The historian workflow already declared merged milestone archives immutable, so
+the old package commands were assumed to be harmless historical regeneration
+entrypoints.
+
+### Observation
+
+The commands still attempted to run old selectors against current product code.
+They failed on current main, even though the correct historian behavior is not
+to run those archive-specific specs there at all.
+
+### Escape / defect / proof gap
+
+Documentation protected the old PNGs conceptually, but executable tooling did
+not enforce the provenance boundary.
+
+### Why prior evidence missed it
+
+The capture specs are skip-by-default and outside ordinary CI mutation paths.
+They therefore aged quietly until Q6 deliberately attempted current rendered
+capture work.
+
+### Repair / decision
+
+Current code now fail-closes the old package commands with the archive's exact
+bound implementation SHA, and the current-main copies of the legacy capture
+specs are disabled. Historical checkouts retain their original executable
+capture harnesses.
+
+A new pre-owner archive will get a new capture target only after its exact
+post-repair implementation SHA is frozen.
+
+### Verification
+
+Exact-head CI is required for the package/test changes. Local repository
+wrappers were not available in the ChatGPT execution environment and are not
+claimed.
+
+### Owner effort / friction
+
+Without this repair, a future maintainer or owner could spend time debugging
+stale selectors when the actual error was using a historical capture harness
+against the wrong product identity.
+
+### Preventive control
+
+Treat immutable evidence provenance as an executable invariant: old milestone
+capture commands on later code should fail with the bound SHA and recovery
+instruction rather than attempting regeneration.
+
+### Candidate reusable lesson
+
+**Immutable evidence needs executable provenance guards.** Documentation saying
+"do not regenerate this from later code" is weaker than tooling that refuses to
+do so and explains the correct historical checkout.
+
+### Evidence
+
+- authorization `AUTHORIZE-CQS-PRE-OWNER-HISTORIAN-CAPTURE-REFRESH-1`
+- receipt `docs/receipts/2026-10-04-cqs-pre-owner-historian-capture-refresh.md`
+- `scripts/historian-archive-guard.mjs`
+- S05 implementation SHA `4368cc9e…`
+- MENUS implementation SHA `1404b517…`
