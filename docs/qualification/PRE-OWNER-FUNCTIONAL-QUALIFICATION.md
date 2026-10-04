@@ -10,13 +10,15 @@
   Q3 delivery under
   `AUTHORIZE-CQS-PRE-OWNER-Q3-CORE-GAMEPLAY-GOLDEN-PATHS-1`;
   Q4 delivery under
-  `AUTHORIZE-CQS-PRE-OWNER-Q4-GAMEPLAY-BRANCH-FAILURE-MATRIX-1`
+  `AUTHORIZE-CQS-PRE-OWNER-Q4-GAMEPLAY-BRANCH-FAILURE-MATRIX-1`;
+  Q4 post-merge docs:
+  `AUTHORIZE-CQS-Q4-POST-MERGE-STARTUP-TRUTH-RECONCILIATION` (PR #130);
+  Q5 delivery under
+  `AUTHORIZE-CQS-Q5-DESKTOP-ELECTRON-INTEGRATION-QUALIFICATION`
 - **Kind:** durable pre-owner functional qualification contract
 - **Status:** **ACTIVE / Q0 LANDED; Q1 LANDED / VERIFIED ON MAIN** @
   `9d8246e9811eec19a34a9f8d44b2287b8635a741`; **Q2 LANDED / VERIFIED ON
-  MAIN** @ `2dc918f934836c3fa6a0f4d554f4757f4668c691`; **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951ead3ea7ed99a7f404f60bbebcb0d68cb7` (PR #127; reviewed tip `cf207cac7dd722a903f901cd885e35583439ed02`); **Q4 CANDIDATE-COMPLETE / VERIFIED ON PR #129** (qualification proof head
-  `541718e1ad2788265678bb8178d043781718194a`; **NOT LANDED**); **Q5 NEXT /
-  NOT AUTHORIZED**
+  MAIN** @ `2dc918f934836c3fa6a0f4d554f4757f4668c691`; **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951ead3ea7ed99a7f404f60bbebcb0d68cb7` (PR #127; reviewed tip `cf207cac7dd722a903f901cd885e35583439ed02`); **Q4 LANDED / VERIFIED ON MAIN** @ `c32b72c35f33e4188793e223ad9749c4a226b806` (PR #129; proof `541718e1…`; reviewed tip `28d611e…`; post-merge reconciliation PR #130 @ `28ff239…`); **Q5 CANDIDATE-COMPLETE / NOT LANDED** on branch `cursor/cqs-q5-desktop-electron-integration-qualification-1` (base `28ff239…`; qualification-only; no product repair)
 - **Companion:** [`PRE-OWNER-TEACHER-JOURNEY-MATRIX.md`](PRE-OWNER-TEACHER-JOURNEY-MATRIX.md)
 - **Observation base (Q0 registration):** `origin/main`
   `67ba2c0027f7e2439bd39bd963a7321be0ab6801` (PR #121 squash merge of
@@ -47,16 +49,25 @@
 - **Q3 squash/main:** `85bb951ead3ea7ed99a7f404f60bbebcb0d68cb7`
 - **Q4 authorization:**
   `AUTHORIZE-CQS-PRE-OWNER-Q4-GAMEPLAY-BRANCH-FAILURE-MATRIX-1`
-- **Q4 delivery branch:** `cursor/cqs-q4-gameplay-branch-failure-matrix-1`
+- **Q4 delivery branch (historical):** `cursor/cqs-q4-gameplay-branch-failure-matrix-1`
 - **Q4 qualification proof head:** `541718e1ad2788265678bb8178d043781718194a`
-  (PR #129; full CI SUCCESS; no product repair exposed)
+- **Q4 squash/main:** `c32b72c35f33e4188793e223ad9749c4a226b806` (PR #129)
+- **Q4 post-merge reconciliation:** PR #130 @ `28ff23993183710c9eea9e524667bad45d0448fd`
+- **Q5 authorization:**
+  `AUTHORIZE-CQS-Q5-DESKTOP-ELECTRON-INTEGRATION-QUALIFICATION`
+- **Q5 delivery branch:** `cursor/cqs-q5-desktop-electron-integration-qualification-1`
+- **Q5 observation base:** `origin/main`
+  `28ff23993183710c9eea9e524667bad45d0448fd`
+- **Q5 evidence:** `tests/desktop/shell.spec.ts` (**RETAIN**) +
+  `tests/desktop/q5-session-lifecycle.spec.ts` (**NEW**); desktop unit
+  `desktop/shell.invariants.test.ts` (**RETAIN**)
 
 ```text
 This file is documentation / qualification contract.
-Q0/Q1/Q2/Q3 are LANDED on main. Q4 gameplay branch/failure qualification is
-CANDIDATE-COMPLETE / VERIFIED ON PR #129 at qualification proof head
-`541718e1ad2788265678bb8178d043781718194a`; Q4 is NOT LANDED. Q5 is NEXT /
-NOT AUTHORIZED.
+Q0–Q4 are LANDED on main. Q5 Desktop/Electron integration qualification is
+CANDIDATE-COMPLETE / NOT LANDED on branch
+cursor/cqs-q5-desktop-electron-integration-qualification-1 (base 28ff239…).
+Q6 is NEXT / NOT AUTHORIZED until Q5 lands.
 No owner playthrough / eligibility / S05 terminalization / S04D / S06.
 ```
 
@@ -354,9 +365,18 @@ What it **does not** prove:
 - physical Sony / Windows classroom runtime;
 - teacher-adoptable signed release.
 
-**Q0 disposition:** classify as **DESKTOP E2E / RETAIN** for shell lifecycle
-(**Q5** family); **STRENGTHEN or NEW** separate packs for teacher golden path
-(**Q3**) and gameplay branch/failure (**Q4**). Do not cite shell as golden path.
+**Q0 disposition (historical):** classify as **DESKTOP E2E / RETAIN** for shell
+lifecycle (**Q5** family); **STRENGTHEN or NEW** separate packs for teacher
+golden path (**Q3**) and gameplay branch/failure (**Q4**). Do not cite shell as
+golden path.
+
+**Q5 closure — CLOSED ON Q5 CANDIDATE:** `shell.spec.ts` remains **RETAIN** for
+cold Host/Display/security/API/offline/diagnostics. Material Electron gaps
+(authentic started-Session quit/relaunch, explicit Home Resume, Host/Display
+reconvergence + privacy, Display hash-lock runtime, `sourceSha` build binding,
+protocol 404 fail-closed) are proven by
+`tests/desktop/q5-session-lifecycle.spec.ts`. Still **not** teacher golden path
+or physical Sony/Windows/projector.
 
 ---
 
@@ -456,7 +476,9 @@ verdict.
 ### 10.3 Current status
 
 **Not issued.** Owner playthrough remains **PAUSED / GATED** behind Q0–Q6 +
-PRE-Q7 eligibility verdict. Q0–Q3 are landed on main. Q4 is **CANDIDATE-COMPLETE / VERIFIED ON PR #129** at qualification proof head `541718e1…`, but **NOT LANDED**. Q5–Q6 are **NOT STARTED / NOT AUTHORIZED**.
+PRE-Q7 eligibility verdict. Q0–Q4 are landed on main. Q5 is
+**CANDIDATE-COMPLETE / NOT LANDED** on the Q5 delivery branch. Q6 is
+**NOT STARTED / NOT AUTHORIZED**.
 
 ---
 
@@ -470,7 +492,7 @@ product escape hardening (PR #123) closed A/B on main; C/D remain as staged.
 | **A** | Scenario D buzzer-action proof gap | CONFIRMED — Check scrolls/focuses GIH/Sony profile; no connect/press/UI confirmation proof in Scenario D e2e or `onRevealBuzzersSetup` | **CLOSED BY Q1** — VERIFIED ON MAIN @ `9d8246e…` (SIMULATED e2e Check → SBS testMode → press confirmation). **PHYSICAL SONY NOT RUN.** |
 | **B** | Team-count contextual repair path vs Q1 target | CONFIRMED — current = authoring → Play → Resume → replace → setup; target = direct Class Setup return | **CLOSED BY Q1** — VERIFIED ON MAIN @ `9d8246e…` (disposable direct return; meaningful Session fail-closed; Open settings non-destructive; 2→3 roster-drift replace confirm). |
 | **C** | Integrated golden-path gap | CONFIRMED — suites cover fragments (`teacher-home-authoring`, `classroom-setup`, `menus-*`, `final-wager`, `session-summary`, S05 choreography) but **no** single Home→gameplay→Final→completion integrated pack | **CLOSED ON MAIN BY Q3 @ `85bb951…`** — `menus-q3-core-gameplay-golden-paths.spec.ts` landed via PR #127. **PHYSICAL SONY NOT RUN.** |
-| **D** | Electron `shell.spec.ts` scope | CONFIRMED — shell/security/persistence/API presence/diagnostics; not teacher golden path | **RETAIN / Q5** — do not overclaim |
+| **D** | Electron `shell.spec.ts` scope | CONFIRMED — shell/security/persistence/API presence/diagnostics; not teacher golden path | **CLOSED ON Q5 CANDIDATE** — shell **RETAIN**; authentic Session quit/relaunch + Display privacy/hash-lock + build `sourceSha` binding in `q5-session-lifecycle.spec.ts`. Still not teacher golden path / physical Sony. |
 
 ---
 
@@ -493,7 +515,8 @@ Rules:
 3. **No waiver** may convert a functional blocker into an eligible residual;
 4. Facilitator observation ≠ evidence-backed reclassification;
 5. Q0 itself recorded A–D as **functional** escapes on `67ba2c0…`; Q1 closed
-   A/B on main @ `9d8246e…`; C is **CLOSED ON MAIN BY Q3 @ `85bb951…`**; D remains **RETAIN / Q5**;
+   A/B on main @ `9d8246e…`; C is **CLOSED ON MAIN BY Q3 @ `85bb951…`**; D is
+   **CLOSED ON Q5 CANDIDATE** (shell RETAIN + lifecycle strengthen);
 6. H4 salvage collapsed detail (**OPEN / LOW**) may remain as an **OPEN /
    LOW** residual **only** if kept under the non-functional / non-blocking
    usability class (primary status honest; collapsed “More detail” may still
@@ -511,8 +534,8 @@ While this contract is active and PRE-Q7 has not issued eligibility:
 
 | Topic | Required routing |
 | --- | --- |
-| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q4 CANDIDATE-COMPLETE / VERIFIED ON PR #129** at qualification proof head `541718e1…`; **NOT LANDED**. **Q5 NEXT / NOT AUTHORIZED** and requires fresh bounded authorization after Q4 lands |
-| Completed | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123); **Q2 LANDED / VERIFIED ON MAIN** @ `2dc918f…` (PR #125); **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951…`. **Q4 qualification is candidate-complete on PR #129** under `AUTHORIZE-CQS-PRE-OWNER-Q4-GAMEPLAY-BRANCH-FAILURE-MATRIX-1`; not landed |
+| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q5 CANDIDATE-COMPLETE / NOT LANDED** on `cursor/cqs-q5-desktop-electron-integration-qualification-1`. **Q6 NEXT / NOT AUTHORIZED** until Q5 lands under a fresh bounded authorization |
+| Completed | **Q0–Q4 LANDED** on main (Q4 @ `c32b72c…` PR #129; reconciliation PR #130 @ `28ff239…`). **Q5 qualification candidate** under `AUTHORIZE-CQS-Q5-DESKTOP-ELECTRON-INTEGRATION-QUALIFICATION` |
 | S05 parent | **OPEN / NOT TERMINAL** |
 | Prior MENUS Slice I playthrough | **NOT RUN** as acceptance (Scenario D was BLOCKED; I-REPAIR-1 merged; Q1 closed Scenario-D escapes on main; re-gate **not** authorized here) |
 | Owner playthrough | **PAUSED / GATED** behind Q0–Q6 + PRE-Q7 eligibility verdict |
@@ -521,7 +544,8 @@ While this contract is active and PRE-Q7 has not issued eligibility:
 | PR #110 / #118 | Observe only; do not mutate from this contract |
 | Q1 / Q2 / Q3 physical Sony | **NOT RUN** |
 | Q3 | **LANDED / VERIFIED ON MAIN** @ `85bb951…` (PR #127; reviewed tip `cf207ca…`) |
-| Q4 | **CANDIDATE-COMPLETE / VERIFIED ON PR #129 @ `541718e1…`; NOT LANDED** |
+| Q4 | **LANDED / VERIFIED ON MAIN** @ `c32b72c…` (PR #129; proof `541718e1…`; reviewed tip `28d611e…`) |
+| Q5 | **CANDIDATE-COMPLETE / NOT LANDED** — Desktop/Electron integration on delivery branch |
 
 Canonical status/handoff must link this file. See STATUS / CURRENT updates in
 the Q0 delivery PR.
@@ -538,33 +562,32 @@ the Q0 delivery PR.
 | [#124](https://github.com/ricktron/classroom-quiz-show/pull/124) | **MERGED** | Squash/main `1276c33…` — Q1 post-merge startup-truth docs reconciliation |
 | [#125](https://github.com/ricktron/classroom-quiz-show/pull/125) | **MERGED** | Squash/main `2dc918f…` — Q2 MENUS workflow functional qualification (verified PR tip `aa3c18f…`; identical tree `229e8a0…`) |
 | [#127](https://github.com/ricktron/classroom-quiz-show/pull/127) | **MERGED** | Squash/main `85bb951…` — Q3 golden paths + semantic repair; reviewed tip `cf207ca…` |
-| [#129](https://github.com/ricktron/classroom-quiz-show/pull/129) | OPEN **draft** | Q4 gameplay branch/failure matrix; qualification proof head `541718e1…` full CI SUCCESS; no product repair exposed; no merge authority |
+| [#129](https://github.com/ricktron/classroom-quiz-show/pull/129) | **MERGED** | Squash/main `c32b72c…` — Q4 gameplay branch/failure matrix |
+| [#130](https://github.com/ricktron/classroom-quiz-show/pull/130) | **MERGED** | Squash/main `28ff239…` — Q4 post-merge startup-truth reconciliation |
 | [#110](https://github.com/ricktron/classroom-quiz-show/pull/110) | OPEN **draft**, conflicting | Untouched |
 | [#118](https://github.com/ricktron/classroom-quiz-show/pull/118) | OPEN stale @ `f01a06f…`, conflicting | Untouched |
 
 ---
 
-## 15. Verification for the Q4 candidate
+## 15. Verification for the Q5 candidate
 
-Q4 qualification proof head `541718e1ad2788265678bb8178d043781718194a`
-(PR #129) passed the repository CI lanes that run:
+Q5 delivery branch `cursor/cqs-q5-desktop-electron-integration-qualification-1`
+(base `28ff239…`) ran locally:
 
-- lint;
-- typecheck;
-- unit tests;
-- production build;
-- the full Playwright e2e suite against the built app served by `vite preview`.
+- `git diff --check` — clean;
+- `npm run verify` — lint (pre-existing react-refresh warnings only) +
+  typecheck + unit (**2914 passed**, 2 skipped);
+- `npm run verify:all` — production web build + full Playwright browser e2e
+  (**662 passed**, 106 skipped);
+- `npm run test:desktop` — `build:desktop` + desktop Playwright
+  (`shell.spec.ts` + `q5-session-lifecycle.spec.ts`; **8 passed**).
 
-That head therefore establishes the new Q4 branch/failure proof on a proven
-served production build. No functional defect was exposed, so Q4 required no
-product-code repair.
+No functional Electron defect was exposed; Q5 required **no product-code
+repair**. Browser Q1–Q4 packs remain **RETAIN**. Physical Sony / projector /
+audio / Windows / signed-release claims remain **NOT RUN / NOT CLAIMED**.
 
-The ChatGPT execution environment for this lane could not check out the
-repository locally. Therefore the literal wrapper commands `git diff --check`,
-`npm run verify`, and `npm run verify:all` were **not run locally** and must
-not be reported as such. PR CI exercised the component command set underlying
-`verify:all`; final candidate review must separately inspect the PR diff for
-whitespace / scope and bind any later CI claim to the immutable final head.
+Bind any later CI claim to the immutable final PR tip. Do not predict this
+delivery PR’s eventual squash SHA.
 
 ---
 
@@ -572,16 +595,20 @@ whitespace / scope and bind any later CI claim to the immutable final head.
 
 This contract does **not** claim:
 
-- Q4 **LANDED**; Q5–Q7 execution or PASS;
+- Q5 **LANDED**; Q6–Q7 execution or PASS;
 - OWNER-PLAYTHROUGH-ELIGIBLE;
 - MENUS Complete / Slice I ACCEPT;
 - S05 parent terminalization;
-- Q1/Q2/Q3 physical Sony / Windows / projector / audio PASS;
+- Q1–Q5 physical Sony / Windows / projector / audio PASS;
 - signed / notarized teacher release;
-- REAL MVP complete.
+- REAL MVP complete;
+- teacher usability from Desktop e2e;
+- release readiness from successful packaging/build.
 
 Q1 closed DevPM Findings **A** and **B** on main (SIMULATED where noted).
-Finding **C** is **CLOSED ON MAIN BY Q3 @ `85bb951…`** (integrated pack landed via PR #127). Finding **D** remains **RETAIN / Q5**.
+Finding **C** is **CLOSED ON MAIN BY Q3 @ `85bb951…`**. Finding **D** is
+**CLOSED ON Q5 CANDIDATE** (shell RETAIN + lifecycle strengthen; still not
+golden path / physical).
 
 ---
 
@@ -592,13 +619,14 @@ Q0: LANDED (contract + matrix registered on main)
 Q1: LANDED / VERIFIED ON MAIN @ 9d8246e… (PR #123); PHYSICAL SONY NOT RUN
 Q2: LANDED / VERIFIED ON MAIN @ 2dc918f… (PR #125); tip aa3c18f…; tree 229e8a0…; PHYSICAL SONY NOT RUN
 Q3: LANDED / VERIFIED ON MAIN @ 85bb951… (PR #127; reviewed tip cf207ca…); PHYSICAL SONY NOT RUN
-Q4: CANDIDATE-COMPLETE / VERIFIED ON PR #129 @ 541718e1…; NOT LANDED
-Q5–Q6: NOT STARTED / NOT AUTHORIZED
+Q4: LANDED / VERIFIED ON MAIN @ c32b72c… (PR #129; proof 541718e1…; reviewed tip 28d611e…); reconciliation PR #130 @ 28ff239…
+Q5: CANDIDATE-COMPLETE / NOT LANDED (Desktop/Electron integration; qualification-only)
+Q6: NOT STARTED / NOT AUTHORIZED
 PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE — NOT ISSUED (DevPM verdict after Q6; not a new Q-stage)
 Q7: natural owner usability playthrough — NOT BEGUN (requires PRE-Q7)
 S05 parent: OPEN / NOT TERMINAL
 owner playthrough: PAUSED / GATED (Q0–Q6 + PRE-Q7 eligibility)
-Finding C: CLOSED ON MAIN BY Q3 @ `85bb951…`; Finding D: RETAIN / Q5
+Finding C: CLOSED ON MAIN BY Q3 @ 85bb951…; Finding D: CLOSED ON Q5 CANDIDATE
 functional escapes: repair/verify required — no owner-waiver through PRE-Q7
 S04D / S06: NOT AUTHORIZED
 REAL MVP: not complete
