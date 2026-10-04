@@ -51,7 +51,7 @@ pre-owner Q4: LANDED / VERIFIED ON MAIN @ c32b72c… (PR #129; proof 541718e1…
 pre-owner Q5: LANDED / VERIFIED ON MAIN @ c7e41a4… (PR #131; proof 455c4cf…; reviewed tip f1d4535…)
 pre-owner Q6: EXECUTED on d921b07… — COURT-A GAPS REMAIN (G1, G2); COURT-B NOT RUN; repair packet Q6-RP-1 (Q3) required
 pre-owner Q6-RP-1: LANDED / VERIFIED ON MAIN @ b1392391… (PR #135; tip 5764fa3…; tree match) — G1/G2 repaired
-pre-owner Q6-RP-2: live Undo (G3 / HG-13) repair CANDIDATE (not landed) — Court A / Court B per RP-2 receipt
+pre-owner Q6-RP-2: live Undo (G3 / HG-13) repair CANDIDATE (not landed) — on that candidate COURT-A COMPLETE; COURT-B RECOMMEND ELIGIBLE (recommendation only; OWNER-PLAYTHROUGH-ELIGIBLE NOT ISSUED — DevPM PRE-Q7 verdict, after landing)
 owner playthrough: PAUSED / GATED (Q0–Q6 + PRE-Q7 eligibility); OWNER-PLAYTHROUGH-ELIGIBLE NOT ISSUED
 prior MENUS Slice I playthrough: NOT RUN (as acceptance)
 S05 parent: OPEN / NOT TERMINAL
@@ -173,7 +173,7 @@ Q6 Court review was executed under
 `AUTHORIZE-CQS-Q6-INDEPENDENT-COURT-REVIEW-1` with **Court A: GAPS REMAIN**
 and **Court B: NOT RUN**; do **not** begin repair packet Q6-RP-1 without a
 separate bounded authorization. Q5 is **LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131) under
-`AUTHORIZE-CQS-Q5-DESKTOP-ELECTRON-INTEGRATION-QUALIFICATION`. Q6 Court A **GAPS REMAIN** (G1, G2); Q6-RP-1 (G1/G2) **LANDED / VERIFIED ON MAIN** @ `b1392391…` (PR #135; tip `5764fa3…`; trees EXACT MATCH); its re-review found G3 (general Undo only via Advanced diagnostics; HG-13); **Q6-RP-2** live-Undo repair is a **candidate** (not landed) — Court A / Court B results in [`receipts/2026-10-04-cqs-q6-rp2-live-undo-and-court-a-b.md`](receipts/2026-10-04-cqs-q6-rp2-live-undo-and-court-a-b.md) ([`receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md`](receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md)). Do **not** resume owner walkthrough / Slice I re-gate / S05
+`AUTHORIZE-CQS-Q5-DESKTOP-ELECTRON-INTEGRATION-QUALIFICATION`. Q6 Court A **GAPS REMAIN** (G1, G2); Q6-RP-1 (G1/G2) **LANDED / VERIFIED ON MAIN** @ `b1392391…` (PR #135; tip `5764fa3…`; trees EXACT MATCH); its re-review found G3 (general Undo only via Advanced diagnostics; HG-13); **Q6-RP-2** live-Undo repair is a **candidate** (not landed); on it **Court A: COMPLETE** and **Court B: RECOMMEND ELIGIBLE** (recommendation only — **`OWNER-PLAYTHROUGH-ELIGIBLE` NOT ISSUED**; DevPM PRE-Q7 verdict follows landing) — [`receipts/2026-10-04-cqs-q6-rp2-live-undo-and-court-a-b.md`](receipts/2026-10-04-cqs-q6-rp2-live-undo-and-court-a-b.md) ([`receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md`](receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md)). Do **not** resume owner walkthrough / Slice I re-gate / S05
 whole-game playthrough until pre-owner Q0–Q6 are complete under later
 authorizations and DevPM PRE-Q7 **verdict** issues
 **`OWNER-PLAYTHROUGH-ELIGIBLE`** (not issued; PRE-Q7 is not a new numbered
@@ -406,7 +406,7 @@ pre-owner Q4: LANDED / VERIFIED ON MAIN @ c32b72c… (PR #129; proof 541718e1…
 pre-owner Q5: LANDED / VERIFIED ON MAIN @ c7e41a4… (PR #131; proof 455c4cf…; reviewed tip f1d4535…)
 pre-owner Q6: EXECUTED on d921b07… — COURT-A GAPS REMAIN (G1, G2); COURT-B NOT RUN
 pre-owner Q6-RP-1: LANDED @ b1392391… (PR #135)
-pre-owner Q6-RP-2: G3 live Undo repair CANDIDATE (not landed)
+pre-owner Q6-RP-2: G3 live Undo repair CANDIDATE (not landed); Court A COMPLETE / Court B RECOMMEND ELIGIBLE on candidate; eligibility NOT ISSUED
 S04D / S06: NOT AUTHORIZED
 REAL MVP: not complete
 ```

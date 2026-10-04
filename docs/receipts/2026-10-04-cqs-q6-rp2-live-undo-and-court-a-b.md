@@ -190,19 +190,64 @@ Q4-B and Q4-C are unchanged and still pass.
   PHYSICAL-ONLY, OWNER-ONLY, or NON-FUNCTIONAL RESIDUAL (first Q6 receipt §9
   and the residual list below).
 
-**Court A outcome (RP-2 candidate):** COURT_A_PLACEHOLDER
+**Court A outcome (RP-2 candidate):** **COURT-A: COMPLETE.** No ordinary-path functional blocker remains on the
+RP-2 candidate. Every row in matrix §§2-6 is RETAIN / CLOSED, PHYSICAL-ONLY,
+OWNER-ONLY, or an accurately classified NON-FUNCTIONAL RESIDUAL. This is
+main truth only once RP-2 lands.
 
 ---
 
 ## Court B
 
-COURT_B_PLACEHOLDER
+Run under the Q6 contract (§9) because Court A is COMPLETE. Court B
+challenges completeness independently; it does not summarize Court A.
+
+| Audit | Result |
+| --- | --- |
+| **Findings A-D** | A and B hold (Q1; simulated press / disposable gate re-read). C: ordinary-control golden path re-proven and landed (RP-1 @ `b1392391…`); Q3 golden passes on RP-2 code. D holds (Q5 shell + lifecycle; desktop 8/8 on RP-2 code, including Q5-C via `rph-start`). |
+| **Startup truth** | On this branch, STATUS / CURRENT / contract / matrix agree: RP-1 landed, RP-2 candidate, G3 repaired on candidate. **Main still carries stale "RP-1 candidate" text until this PR lands.** That is a landing condition, not a functional gap. |
+| **Hard bans** | No S05 terminalization, S04D, S06, physical PASS claim, signed-release claim, simulation-as-physical, owner playthrough, REAL MVP claim, or historian archive. The visual review granted no design authority. Diagnostics controls still exist but are not needed on the ordinary path. |
+| **Evidence transfer** | Every browser and desktop suite was re-executed on RP-2 code (`ad115a2`): Playwright 664 passed, 0 failed; desktop 8 passed. The Q4-A via-More undo evidence is superseded. H5/H6 physical Sony is **not** transferred (historical @ `9df9c42…`). |
+| **Candidate identity** | Code tree of RP-2 repair commit `ad115a2289b71324fb6e4c859a021569edf073a7` on base `b1392391…`. The eligible identity for PRE-Q7 should be the **landed squash** of this PR, with tree identity to the reviewed head recorded at landing. |
+| **Residuals** | All classified non-blocking (table below). None is a known ordinary-path functional blocker. |
+| **Visual / UX** | No functional visual failure, blocking usability failure, or identity failure remains. G1 / G2 / G3 were the only blocking findings and are repaired. Host polish items stay POLISH. |
+| **Adversarial challenges considered** | (1) An Undo misclick is itself irreversible (no redo, by design). The label states the exact effect and the teacher can re-take the action, consistent with doctrine §7. (2) CS-13 sim125 trade-off (scoreboard ~9px below the fold pre-round) is documented and non-blocking. (3) Sony on the current identity is physically NOT RUN, so Q7 with buzzers would be their first physical exercise on this build. Recorded as a Q7 condition, not a functional blocker; keyboard path proven. (4) Local `gamepad-input:318` failure reproduces on base and passes in CI, so it is environmental. |
+
+**COURT-B: RECOMMEND ELIGIBLE**, recommendation only. The DevPM PRE-Q7
+verdict alone may issue `OWNER-PLAYTHROUGH-ELIGIBLE`. Conditions attached to
+the recommendation:
+
+1. The RP-2 PR lands with green exact-head CI (CI, Playwright, Desktop,
+   packages) and a passing Sonar gate. These are observed on the PR, not
+   predicted here.
+2. The landed squash tree matches the reviewed head, and startup-canonical
+   docs on main then agree.
+3. The candidate SHA named at PRE-Q7 is that landed squash.
+4. Q7 treats physical Sony / projector / audio as first physical exercise on
+   this identity (keyboard-first fallback available), not as prior PASS.
+
+**`OWNER-PLAYTHROUGH-ELIGIBLE` is NOT ISSUED by this record.**
 
 ---
 
 ## Verification
 
-VERIFICATION_PLACEHOLDER
+Local, on RP-2 repair commit `ad115a2` (later commits docs only). Environment
+caveat: `cdn.sheetjs.com` 403, so local `node_modules` used `xlsx@0.18.5`;
+tracked package files unchanged.
+
+| Check | Result |
+| --- | --- |
+| `git diff --check` | clean |
+| `npm run verify` | **pass**: lint 0 errors / 3 pre-existing `react-refresh` warnings (`ThemeProvider.tsx`); typecheck; unit **197 files / 2934 passed**, 2 skipped |
+| Targeted (3 projects, 0 retries) | Q4, H-REPAIR-1, RP-1 progression, Q3 golden: **48 passed** |
+| Full Playwright (`CI=1`, served production build, 4 workers, CI retries) | **664 passed, 106 skipped, 0 failed, 4 flaky**: `gamepad-input.spec.ts:318` × 3 (reproduces identically on base `08f39e1` here; passes in CI) and `portable-packs.spec.ts:222` mobile-host (passes at 1 worker) |
+| `npm run test:desktop` (`xvfb-run`) | **8 passed** |
+| Production build | **pass** (Playwright webServer build) |
+| Exact-head CI / Sonar on the RP-2 PR | observed on the PR; not predicted by this file |
+
+Not run: packaged artifacts (CI only), physical Sony / projector / audio /
+Windows.
 
 ---
 
