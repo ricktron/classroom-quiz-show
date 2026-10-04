@@ -295,13 +295,25 @@ Instead:
 5. keep normal `npm run test:e2e` from mutating archives;
 6. make regeneration an explicit historian action.
 
-Current S05 command:
+The historical S05 and MENUS capture commands belong only to their bound
+implementation checkouts. On current code they are provenance guards:
 
 ```bash
 npm run capture:visual-history
+npm run capture:visual-history:menus
 ```
 
-That command belongs to the S05 archive. Future milestone archives may use a different command or parameterized command and must document it locally.
+Both intentionally fail closed rather than running stale selectors against
+later code or writing into immutable archive directories.
+
+For forensic regeneration, use an isolated checkout/worktree at the exact
+implementation SHA recorded by the archive and run that checkout's documented
+capture command. The current-main copies of the old capture specs are disabled
+for the same reason.
+
+Future milestone archives must use a new or parameterized capture target that
+writes only to the new archive. Do not create that target's committed milestone
+identity until the implementation SHA being archived is frozen.
 
 ## 10. Atlas requirements
 
