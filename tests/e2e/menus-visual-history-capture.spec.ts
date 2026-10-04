@@ -29,7 +29,7 @@ const ENABLED = false
 test.describe.configure({ mode: 'serial' })
 
 test.describe('MENUS visual historian capture', () => {
-  test.skip(!ENABLED, 'Set CQS_MENUS_VISUAL_HISTORY_CAPTURE=1 to regenerate MENUS historical screenshots')
+  test.skip(!ENABLED, 'Historical MENUS capture is frozen on current code; use the archive-bound implementation checkout')
 
   test('Home empty / populated / recovery + Import + board-first (1280)', async ({
     browser,
