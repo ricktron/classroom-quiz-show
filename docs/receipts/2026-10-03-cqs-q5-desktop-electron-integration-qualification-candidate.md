@@ -5,6 +5,7 @@
 - **Kind:** qualification evidence receipt (candidate; not post-merge terminal)
 - **Base:** `origin/main` `28ff23993183710c9eea9e524667bad45d0448fd`
 - **Branch:** `cursor/cqs-q5-desktop-electron-integration-qualification-1`
+- **Qualification proof head:** `455c4cf7136b92f44a613a33f43fc26a7a88832f`
 - **Product repair:** none
 
 ## What was proven (DESKTOP E2E)

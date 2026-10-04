@@ -45,6 +45,7 @@
   `AUTHORIZE-CQS-Q5-DESKTOP-ELECTRON-INTEGRATION-QUALIFICATION`
 - **Q5 delivery branch:** `cursor/cqs-q5-desktop-electron-integration-qualification-1`
 - **Q5 observation base:** `28ff23993183710c9eea9e524667bad45d0448fd`
+- **Q5 qualification proof head:** `455c4cf7136b92f44a613a33f43fc26a7a88832f`
 
 ```text
 Documentation / qualification matrix. Q0–Q4 are LANDED on main. HG-13 is

@@ -58,6 +58,8 @@
 - **Q5 delivery branch:** `cursor/cqs-q5-desktop-electron-integration-qualification-1`
 - **Q5 observation base:** `origin/main`
   `28ff23993183710c9eea9e524667bad45d0448fd`
+- **Q5 qualification proof head:** `455c4cf7136b92f44a613a33f43fc26a7a88832f`
+  (desktop lifecycle pack + Q4-landed / Q5-candidate docs; qualification-only)
 - **Q5 evidence:** `tests/desktop/shell.spec.ts` (**RETAIN**) +
   `tests/desktop/q5-session-lifecycle.spec.ts` (**NEW**); desktop unit
   `desktop/shell.invariants.test.ts` (**RETAIN**)
