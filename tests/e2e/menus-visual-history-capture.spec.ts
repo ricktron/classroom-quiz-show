@@ -15,23 +15,21 @@ import { waitForSessionSaved } from './helpers/menusSession'
  * MENUS pre-owner-gate visual historian — deterministic browser captures into
  * docs/design/history/2026-09-menus-pre-owner-gate/screenshots/.
  *
- * Gated by CQS_MENUS_VISUAL_HISTORY_CAPTURE=1 so ordinary `npm run test:e2e`
- * does not rewrite historical PNGs. Regenerate with:
- *   npm run capture:visual-history:menus
+ * This current-main copy is provenance-frozen. The MENUS archive is bound to
+ * implementation SHA 1404b517921a5182a57291b3d7df36d464245ee5 and must never
+ * be regenerated from later code. For forensic regeneration, use an isolated
+ * checkout at that SHA and that checkout's recorded capture command.
  *
- * Distinct from S05 (`CQS_VISUAL_HISTORY_CAPTURE` / capture:visual-history).
- * Browser captures are not Electron / Windows / projector / Sidecar evidence.
- *
- * Implementation SHA under qualification (product UI):
- *   1404b517921a5182a57291b3d7df36d464245ee5
+ * Distinct from the S05 archive. Browser captures are not Electron / Windows /
+ * projector / Sidecar evidence.
  */
 
-const ENABLED = process.env.CQS_MENUS_VISUAL_HISTORY_CAPTURE === '1'
+const ENABLED = false
 
 test.describe.configure({ mode: 'serial' })
 
 test.describe('MENUS visual historian capture', () => {
-  test.skip(!ENABLED, 'Set CQS_MENUS_VISUAL_HISTORY_CAPTURE=1 to regenerate MENUS historical screenshots')
+  test.skip(!ENABLED, 'Historical MENUS capture is frozen on current code; use the archive-bound implementation checkout')
 
   test('Home empty / populated / recovery + Import + board-first (1280)', async ({
     browser,

@@ -39,13 +39,26 @@ Slices A–G plus merged H-REPAIR-1 focused Host (Home / setup Ready / focused
 Host / Resume Welcome-back). It does **not** overwrite S05. Owner playthrough
 (Slice I) remains NOT RUN.
 
-Regenerate automated captures for an archive only under that archive's own
-documented command:
+Historical regeneration belongs to the archive's **bound implementation
+checkout**, never current `main`.
 
-- S05: `npm run capture:visual-history` (`CQS_VISUAL_HISTORY_CAPTURE=1`)
-- MENUS: `npm run capture:visual-history:menus` (`CQS_MENUS_VISUAL_HISTORY_CAPTURE=1`)
+- S05 is bound to `4368cc9eeb7dbf3ef342926e1d0fba7ba4c10f9b`.
+- MENUS is bound to `1404b517921a5182a57291b3d7df36d464245ee5`.
 
-Ordinary `npm run test:e2e` must not rewrite either archive.
+On current code, `npm run capture:visual-history` and
+`npm run capture:visual-history:menus` intentionally **fail closed** with a
+provenance message. The current-main copies of the legacy capture specs are
+also disabled so direct Playwright invocation cannot bypass that guard.
+
+If forensic regeneration is required, use an isolated checkout/worktree at the
+archive's bound implementation SHA and run the command recorded by that
+checkout. Never point later code at an older archive directory.
+
+A future pre-owner milestone must get a **new archive directory and capture
+target** after its implementation SHA is frozen. No current pre-owner milestone
+is frozen while Q6 G1/G2 remain unresolved.
+
+Ordinary `npm run test:e2e` must not rewrite either historical archive.
 
 ## Historical integrity
 
