@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { ensureHostMoreOpen } from './helpers/hostMore'
 import {
   advanceToBoard,
   advanceToFinal,
@@ -61,6 +62,10 @@ test('Q4-A: incorrect queue branch survives undo + explicit Resume and reconverg
   await expect(display.getByTestId('bqd-active')).toHaveText(Q3_SESSION_NAME_BRAVO)
 
   // Undo is replay-derived: it restores the prior claimant and queue exactly.
+  // Q6 re-review G3: general (non-score) Undo is reachable ONLY under More →
+  // Advanced diagnostics on this candidate. Opened explicitly here so this pack
+  // keeps proving replay/Resume semantics; it is NOT ordinary-path evidence.
+  await ensureHostMoreOpen(host)
   await host.getByRole('button', { name: /undo last reversible/i }).click()
   await expect(host.getByTestId('lih-active')).toHaveText(Q3_SESSION_NAME_ALPHA)
   await expect(host.getByTestId('lih-waiting')).toHaveText(`1. ${Q3_SESSION_NAME_BRAVO}`)

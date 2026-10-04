@@ -371,10 +371,13 @@ function nexusFor(
   // game → "Game complete" would otherwise appear twice in the Nexus Core).
   // Also drop a stale generic "Playing" detail once the stage already says the
   // game is complete — host/fixture detail can lag the ended transition.
+  // Q6-RP-1 (G2): the host now derives "Game complete" at completion — never
+  // print the same words twice in the Nexus Core.
+  const normalizedDetail = detail === null ? null : detail.trim().replace(/\.$/, '').toLowerCase()
   const cleanedDetail =
     detail !== null &&
-    stageLabel === 'Game complete' &&
-    /^playing$/i.test(detail.trim())
+    ((stageLabel === 'Game complete' && normalizedDetail === 'playing') ||
+      normalizedDetail === stageLabel.toLowerCase())
       ? null
       : detail
   return {

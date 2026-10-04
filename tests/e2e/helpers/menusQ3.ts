@@ -5,7 +5,6 @@
 
 import { expect, type BrowserContext, type Page } from '@playwright/test'
 import { fillAllTeamNames } from './menusClassSetup'
-import { ensureHostMoreOpen } from './hostMore'
 import { importMenusJsonAndPlay, menusBoardPlusFinalGameJson } from './menusGameJson'
 import { FORBIDDEN_DISPLAY_LABELS } from '../../../src/test/leakLabels'
 
@@ -87,19 +86,42 @@ export async function openAudienceFromHost(
   return display
 }
 
-/** Teacher Advance only — never mutate roundIndex. */
+/**
+ * Q6-RP-1 (G1): ordinary round progression must never depend on More →
+ * Advanced diagnostics. Asserts the diagnostics disclosure stayed closed.
+ */
+export async function expectAdvancedDiagnosticsUnused(host: Page): Promise<void> {
+  await expect(host.getByTestId('host-more')).not.toHaveAttribute('open', '')
+  await expect(host.getByTestId('host-advanced')).toBeHidden()
+}
+
+/**
+ * Teacher Advance through the ORDINARY Host control (`rph-*`) — never via
+ * Advanced diagnostics, never by mutating roundIndex. Confirms when the
+ * product asks (clues still unplayed).
+ */
 export async function advanceToNextRound(host: Page): Promise<void> {
-  await ensureHostMoreOpen(host)
-  await host.getByRole('button', { name: /advance to next round/i }).click()
+  await expectAdvancedDiagnosticsUnused(host)
+  const start = host.getByTestId('rph-start')
+  if (await start.isVisible().catch(() => false)) {
+    await start.click()
+  } else {
+    await host.getByTestId('rph-next').click()
+    const confirm = host.getByTestId('rph-next-confirm')
+    if (await confirm.isVisible().catch(() => false)) await confirm.click()
+  }
+  await expectAdvancedDiagnosticsUnused(host)
 }
 
 export async function advanceToBoard(host: Page): Promise<void> {
+  await expect(host.getByTestId('rph-start')).toBeVisible()
   await advanceToNextRound(host)
   await expect(host.getByTestId('cbh-grid')).toBeVisible()
   await expect(host.getByTestId('cbh-tile-science-100')).toBeVisible()
 }
 
 export async function advanceToFinal(host: Page): Promise<void> {
+  await expect(host.getByTestId('rph-next')).toBeVisible()
   await advanceToNextRound(host)
   await expect(host.getByRole('heading', { name: /^final wager$/i })).toBeVisible()
 }

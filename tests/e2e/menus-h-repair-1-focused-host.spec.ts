@@ -1,5 +1,4 @@
 import { test, expect, type Page } from '@playwright/test'
-import { ensureHostMoreOpen } from './helpers/hostMore'
 import { fillAllTeamNames, importDemoAndPlay } from './helpers/menusClassSetup'
 
 /**
@@ -27,6 +26,7 @@ type PostStartReport = {
   setupCount: number
   gameplay: Box | null
   scoreboard: Box | null
+  roundStart: Box | null
   boardGridCount: number
   controllersDetailOpen: boolean | null
   controllersTop: number | null
@@ -80,6 +80,7 @@ async function measurePostStartViewport(page: Page): Promise<PostStartReport> {
       setupCount: document.querySelectorAll('[data-testid="classroom-setup"]').length,
       gameplay: box(gameplay),
       scoreboard: box(scoreboard),
+      roundStart: box(document.querySelector('[data-testid="rph-start"]')),
       boardGridCount: document.querySelectorAll('[data-testid="cbh-grid"]').length,
       controllersDetailOpen: controllersDetail
         ? (controllersDetail as HTMLDetailsElement).open
@@ -137,12 +138,30 @@ function assertPostStartViewport(report: PostStartReport, label: string): void {
   // Concrete gameplay — scoreboard, not merely host-gameplay shell.
   expect(report.scoreboard, `${label} tsp-scoreboard present`).not.toBeNull()
   expect(report.scoreboard!.height, `${label} tsp-scoreboard has height`).toBeGreaterThan(8)
-  expect(report.scoreboard!.top, `${label} tsp-scoreboard intersects viewport top`).toBeLessThan(
-    report.viewportHeight,
-  )
-  expect(report.scoreboard!.bottom, `${label} tsp-scoreboard intersects viewport bottom`).toBeGreaterThan(
-    0,
-  )
+  if (report.roundStart !== null) {
+    // Q6-RP-1 (G1) re-proof of CS-13: before the first round, the concrete
+    // gameplay action is the ordinary Start Round 1 control. It must be fully
+    // in the first viewport, and the gameplay region (Teams & scoring) must
+    // begin there too. (Pre-G1 this proxy was the scoreboard rows only, because
+    // no ordinary round start existed; at sim125 the 48px Start control moves
+    // the rows ~9px below the fold — measured and recorded in the Q6 receipt.)
+    expect(report.roundStart.top, `${label} Start Round 1 top in viewport`).toBeGreaterThanOrEqual(0)
+    expect(report.roundStart.bottom, `${label} Start Round 1 fully in viewport`).toBeLessThanOrEqual(
+      report.viewportHeight,
+    )
+    expect(report.gameplay, `${label} host-gameplay present`).not.toBeNull()
+    expect(report.gameplay!.top, `${label} gameplay region begins in viewport`).toBeLessThan(
+      report.viewportHeight,
+    )
+  } else {
+    expect(report.scoreboard!.top, `${label} tsp-scoreboard intersects viewport top`).toBeLessThan(
+      report.viewportHeight,
+    )
+    expect(
+      report.scoreboard!.bottom,
+      `${label} tsp-scoreboard intersects viewport bottom`,
+    ).toBeGreaterThan(0)
+  }
 
   expect(report.controllersDetailOpen, `${label} Controllers detail collapsed`).toBe(false)
   expect(report.controllersTop, `${label} Controllers mounted`).not.toBeNull()
@@ -195,6 +214,14 @@ for (const vp of VIEWPORTS) {
     // Intentionally no page.mouse.wheel / scrollIntoView before measure.
     const report = await measurePostStartViewport(page)
     assertPostStartViewport(report, vp.label)
+    // Q6-RP-1 (G1): the required next action (start Round 1) is ordinary,
+    // in the first viewport, and outside More / Advanced diagnostics.
+    const start = page.getByTestId('rph-start')
+    await expect(start).toBeVisible()
+    const startBox = await start.boundingBox()
+    expect(startBox, `${vp.label} Start Round 1 has box`).not.toBeNull()
+    expect(startBox!.y, `${vp.label} Start Round 1 in first viewport`).toBeLessThan(vp.height)
+    await expect(page.getByTestId('host-more')).not.toHaveAttribute('open', '')
   })
 }
 
@@ -205,15 +232,9 @@ for (const vp of VIEWPORTS) {
     await page.setViewportSize({ width: vp.width, height: vp.height })
     await startAuthenticPlay(page)
 
-    // Legitimate round-advance path (More → Advance). Do not auto-select a round.
-    await ensureHostMoreOpen(page)
-    await page.getByRole('button', { name: /advance to next round/i }).click()
+    // Q6-RP-1 (G1): ordinary round start on the focused Host — More stays closed.
+    await page.getByTestId('rph-start').click()
     await expect(page.getByTestId('cbh-grid')).toBeVisible()
-    // Close More so ordinary focused Host is the measured surface again.
-    const more = page.getByTestId('host-more')
-    if ((await more.getAttribute('open')) !== null) {
-      await more.locator(':scope > summary').click()
-    }
     await expect(page.getByTestId('host-more')).not.toHaveAttribute('open', '')
     await page.evaluate(() => window.scrollTo(0, 0))
 
@@ -261,10 +282,9 @@ test('lifecycle: Gamepad owner stays mounted across Start and Back; keyboard pat
   await expect(page.getByTestId('host-advanced')).toBeAttached()
   await expect(page.getByTestId('persistence-library')).toBeAttached()
 
-  // Keyboard LocalInput mounts with an active board round (round advance lives
-  // under More; Controllers demotion must not unmount keyboard when round is live).
-  await ensureHostMoreOpen(page)
-  await page.getByRole('button', { name: /advance to next round/i }).click()
+  // Keyboard LocalInput mounts with an active board round (Q6-RP-1: ordinary
+  // round start; Controllers demotion must not unmount keyboard when round is live).
+  await page.getByTestId('rph-start').click()
   await expect(page.getByTestId('cbh-grid')).toBeVisible()
   await expect(page.getByTestId('lih-summary')).toBeAttached()
   await expect(
@@ -310,13 +330,8 @@ test('ordinary play DOM has no teacher-visible Slice-number labels', async ({ pa
   expect(postStart.sliceNumberCopy, 'post-Start ordinary play Slice-number copy').toBe(false)
   expect(postStart.scoreboard, 'post-Start concrete scoreboard').not.toBeNull()
 
-  await ensureHostMoreOpen(page)
-  await page.getByRole('button', { name: /advance to next round/i }).click()
+  await page.getByTestId('rph-start').click()
   await expect(page.getByTestId('cbh-grid')).toBeVisible()
-  const more = page.getByTestId('host-more')
-  if ((await more.getAttribute('open')) !== null) {
-    await more.locator(':scope > summary').click()
-  }
   await expect(page.getByTestId('host-more')).not.toHaveAttribute('open', '')
 
   const boardReport = await measureCategoryBoardViewport(page)

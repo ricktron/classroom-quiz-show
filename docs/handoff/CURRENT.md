@@ -266,7 +266,7 @@ not call the squash the tip) under
 (semantic repair tip `0c91147276dead9c50968bdbab98f753187ff7bf` — Session names
 on Host via `publicTeamDisplayName`; real `lih-correct` adjudication; Finding C
 CLOSED ON MAIN BY Q3 @ `85bb951…`).
-**Completed qualification:** **Q5** Desktop/Electron integration — **LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`; trees EXACT MATCH `8bb6c528…`). **Q6 Court review executed** on candidate `d921b07…` under `AUTHORIZE-CQS-Q6-INDEPENDENT-COURT-REVIEW-1`: **Court A: GAPS REMAIN** — G1: starting Round 1 and entering Final are reachable only through More → Advanced diagnostics; G2: the projected Display status reads “Waiting for the first round.” through play and completion. **Court B: NOT RUN.** Next action is an owner decision on repair packet **Q6-RP-1** (Q3 family; product repair + re-proof), which is **not** authorized here. Record: [`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md).
+**Completed qualification:** **Q5** Desktop/Electron integration — **LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`; trees EXACT MATCH `8bb6c528…`). **Q6 Court review executed** on candidate `d921b07…` under `AUTHORIZE-CQS-Q6-INDEPENDENT-COURT-REVIEW-1`: **Court A: GAPS REMAIN** — G1: starting Round 1 and entering Final are reachable only through More → Advanced diagnostics; G2: the projected Display status reads “Waiting for the first round.” through play and completion. **Court B: NOT RUN.** **Q6-RP-1** G1/G2 repair candidate now exists under `AUTHORIZE-CQS-Q6-COURT-LANDING-AND-RP1-REPAIR-1` (not landed; owner decision on its PR). Its Court A re-review found **G3** — general (non-score) Undo reachable only under Advanced diagnostics (HG-13) — so Court A remains **GAPS REMAIN** and Court B **NOT RUN**; proposed **Q6-RP-2** (Q4 family) needs a fresh bounded authorization ([`../receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md`](../receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md)). Record: [`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md).
 Owner playthrough is **PAUSED / GATED** behind
 Q0–Q6 + PRE-Q7 eligibility verdict; **`OWNER-PLAYTHROUGH-ELIGIBLE` is NOT
 ISSUED**. S05 parent remains **OPEN / NOT TERMINAL**. Prior MENUS Slice I
@@ -447,6 +447,7 @@ pre-owner Q3: LANDED / VERIFIED ON MAIN @ 85bb951… (PR #127; reviewed tip cf20
 pre-owner Q4: LANDED / VERIFIED ON MAIN @ c32b72c… (PR #129; proof 541718e1…; reviewed tip 28d611e…)
 pre-owner Q5: LANDED / VERIFIED ON MAIN @ c7e41a4… (PR #131; proof 455c4cf…; reviewed tip f1d4535…)
 pre-owner Q6: EXECUTED on d921b07… — COURT-A GAPS REMAIN (G1, G2); COURT-B NOT RUN
+pre-owner Q6-RP-1: G1/G2 repair CANDIDATE (not landed); re-review GAPS REMAIN (G3); COURT-B NOT RUN
 S04D / S06: NOT AUTHORIZED
 REAL MVP: not complete
 ```
