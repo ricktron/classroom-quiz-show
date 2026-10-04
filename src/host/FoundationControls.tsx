@@ -26,6 +26,7 @@ import { SessionSummaryPanel } from './SessionSummaryPanel'
 import { ResponseTimerHostPanel } from './ResponseTimerHostPanel'
 import { FinalWagerHostPanel } from './FinalWagerHostPanel'
 import { RoundProgressHostPanel, RoundStartButton } from './RoundProgressHostPanel'
+import { LiveUndoControl } from './LiveUndoControl'
 import { LocalInputHostPanel } from './LocalInputHostPanel'
 import { GamepadInputHostPanel } from './GamepadInputHostPanel'
 import type { SonyBuzzTeacherSummary } from '../input/sonyBuzzTeacherReadiness'
@@ -635,12 +636,22 @@ export function FoundationControls({
           </p>
           {/* Q6-RP-1 (G1): the required next action after Start Game — ordinary, never under More. */}
           {game && (
-            <RoundStartButton
-              dispatch={dispatch}
-              game={game}
-              clock={clock}
-              disabled={!persistence.canDispatchSessionCommands}
-            />
+            <div className="foundation__play-actions" role="group" aria-label="Live game actions">
+              <RoundStartButton
+                dispatch={dispatch}
+                game={game}
+                clock={clock}
+                disabled={!persistence.canDispatchSessionCommands}
+              />
+              {/* Q6-RP-2 (G3): ordinary live Undo — the canonical UNDO, never via diagnostics. */}
+              <LiveUndoControl
+                dispatch={dispatch}
+                game={game}
+                history={history}
+                clock={clock}
+                disabled={!persistence.canDispatchSessionCommands}
+              />
+            </div>
           )}
         </div>
       )}
