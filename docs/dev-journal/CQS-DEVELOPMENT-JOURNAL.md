@@ -532,3 +532,423 @@ do so and explains the correct historical checkout.
 - `scripts/historian-archive-guard.mjs`
 - S05 implementation SHA `4368cc9e…`
 - MENUS implementation SHA `1404b517…`
+
+
+---
+
+## 2026-10-04 — Q6 exposed why green automation is not the same as a real teacher path
+
+### Objective
+
+Use the pre-owner Q6 Court to decide whether the product was genuinely ready
+for a natural owner playthrough, not merely whether the implementation and
+automated suites were internally green.
+
+The owner requirement sharpened during this work:
+
+- Courts should be **ruthless**, not deferential to prior PASS claims;
+- tests and Court evidence should follow the pathways a real teacher will
+  actually take;
+- error handling, reversibility, recovery, and failure paths are part of the
+  user journey, not secondary engineering concerns;
+- apparent smoothness should itself be treated as something to audit when it
+  could result from helpers, fixtures, stale assumptions, or weak evidence
+  transfer.
+
+### Expected model
+
+Before Q6, the repository had strong evidence:
+
+- Q3 had a complete integrated game path;
+- Q4 had branch/failure coverage;
+- Q5 had Desktop/Electron lifecycle evidence;
+- CI, Playwright, packaging, and other automated checks were green.
+
+The working assumption was that the remaining pre-owner task would mainly be
+evidence reconciliation and eligibility review.
+
+### Observation
+
+The independent Q6 Court disproved that assumption.
+
+It found three ordinary-path failures across two repair cycles:
+
+1. **G1 — ordinary round progression was missing.**
+   The game engine could progress through rounds and Final, but the only controls
+   available to do so were inside Advanced diagnostics.
+
+2. **G2 — the real Display lifecycle status was false.**
+   The real Host published a status that left the Display saying
+   "Waiting for the first round." through active play and completion.
+
+3. **G3 — general live Undo was not available on the ordinary Host path.**
+   The engine supported canonical undo, but a teacher who made a non-score
+   mistake such as marking the wrong team Incorrect had to enter Advanced
+   diagnostics to reverse it.
+
+The final RP-2 candidate repaired G3 with one ordinary Host Undo control backed
+by the canonical undo planner, then re-proved the authentic Q4-A path with More
+closed.
+
+After RP-2 landed:
+
+- Court A became **COMPLETE**;
+- Court B became **RECOMMEND ELIGIBLE**;
+- the new historian captured 31 ordinary-path browser frames against the landed
+  RP-2 product identity;
+- no new ordinary-path functional blocker was found during historian review.
+
+### Escape / defect / proof gap
+
+The most important lesson is that these were not obscure engine defects.
+
+They were failures of **journey fidelity** and **evidence interpretation**.
+
+#### Failure mode 1 — test helpers can accidentally create privileged paths
+
+The Q3/Q4 path looked complete because helpers left UI state open that a normal
+teacher would not have.
+
+That made controls reachable in tests even though they were not discoverable in
+the ordinary product posture.
+
+This is a critical distinction:
+
+> "The test can click it" is not evidence that "the teacher can reach it."
+
+#### Failure mode 2 — fixtures can make false product state look correct
+
+S05 visual fixtures injected a truthful-looking "Playing" status.
+
+The real Host-to-Display flow did not.
+
+The visual evidence therefore looked correct while the integrated product state
+was wrong.
+
+Fixture evidence is useful, but it cannot silently stand in for authentic state
+propagation.
+
+#### Failure mode 3 — evidence transfer can inherit accidental preconditions
+
+HG-13 was previously treated as closed because Q4-A successfully used Undo.
+
+Q6-RP-1 re-review showed that this success depended on an incidental condition:
+the earlier helper had already left More open.
+
+The Court therefore invalidated its own earlier evidence transfer.
+
+That is a strong sign the review process is working, but it also shows why
+transfer claims must include the interaction posture and user-reachable
+preconditions, not only the final assertion.
+
+#### Failure mode 4 — broad green automation can still miss user-path defects
+
+Unit tests, component tests, E2E suites, Desktop tests, packaging, and CI can all
+be correct within their own evidence classes while still missing:
+
+- discoverability;
+- ordinary navigation;
+- error recovery;
+- the exact control a teacher reaches for after a mistake;
+- mismatches between fixture state and real state;
+- incidental helper state;
+- cross-surface truth.
+
+The Court must therefore remain semantically independent from the test suite it
+is evaluating.
+
+### Why prior evidence missed it
+
+The prior evidence was not worthless. Most of it was technically valid.
+
+The problem was that some claims were broader than the evidence justified.
+
+Specific causes:
+
+1. **Fragment correctness exceeded journey correctness.**
+   Individual reducers, commands, panels, persistence paths, and Display
+   selectors worked, but the real composed path was not always ordinary.
+
+2. **Helpers optimized for getting to the state under test.**
+   That is often reasonable for regression testing, but dangerous when the same
+   helper is later cited as proof of user-reachable behavior.
+
+3. **Visual fixtures optimized for deterministic presentation.**
+   They demonstrated rendering quality but hid an integration defect in the
+   actual public status source.
+
+4. **The earlier Q4 closure inspected outcome semantics more than interaction
+   posture.**
+   Undo worked, but only under a UI state a teacher should not need.
+
+5. **Green CI naturally encourages confirmation bias.**
+   Once a suite is mature and consistently green, it becomes easier to assume it
+   proves the intended user claim rather than re-asking exactly what path it
+   exercised.
+
+### Repair / decision
+
+The Q6 process adopted and demonstrated a stronger model:
+
+- use the engine and state architecture already present;
+- repair the ordinary teacher pathway rather than adding alternate engines or
+  parallel state;
+- make tests traverse the same controls a teacher should use;
+- explicitly assert that Advanced diagnostics remains closed during ordinary
+  gameplay;
+- derive Display truth from authoritative game state;
+- expose canonical undo through ordinary Host UI rather than inventing a second
+  history mechanism;
+- after each repair, audit the semantic sibling family instead of checking only
+  the named defect;
+- allow Court re-review to invalidate earlier evidence transfer when a hidden
+  dependency is discovered.
+
+### Verification
+
+Q6 and its repair sequence were supported by:
+
+- Q6 Court record:
+  `docs/receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`
+- RP-1 record:
+  `docs/receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md`
+- RP-2 record:
+  `docs/receipts/2026-10-04-cqs-q6-rp2-live-undo-and-court-a-b.md`
+- historian milestone:
+  `docs/design/history/2026-10-pre-owner-q6-rp2/`
+- PR #133 — Q6 failing Court record
+- PR #135 — G1/G2 repair
+- PR #136 — G3 / HG-13 repair
+- PR #138 — fresh pre-owner historian milestone
+
+The important evidence progression was:
+
+```text
+green Q1-Q5
+    ↓
+Q6 Court rejects readiness (G1, G2)
+    ↓
+RP-1 repairs G1/G2
+    ↓
+Court re-review rejects readiness again (G3)
+    ↓
+RP-2 repairs G3
+    ↓
+Court A COMPLETE
+    ↓
+Court B RECOMMEND ELIGIBLE
+    ↓
+fresh historian on the repaired ordinary path
+```
+
+This progression is more informative than a simple sequence of green CI runs
+because the review system repeatedly found reasons not to advance.
+
+### Owner effort / friction
+
+The owner did not have to discover G1, G2, or G3 during a natural classroom
+playthrough.
+
+That is a major success.
+
+However, the process still required repeated owner authorization and manual
+interpretation of long technical reports. Future implementations should aim to
+preserve the same rigor while reducing:
+
+- repeated prompt reconstruction;
+- uncertainty over which evidence remains valid after repair;
+- duplicated status prose;
+- ambiguity over whether a Court actually tested an ordinary user pathway.
+
+### Preventive controls
+
+For future CQS work and candidate reusable process design:
+
+#### 1. Courts must be adversarial by default
+
+A Court should actively try to falsify the readiness claim.
+
+It should not ask:
+
+> "What evidence supports PASS?"
+
+until after asking:
+
+> "What realistic user behavior, failure, interruption, or hidden dependency
+> would make this claim false?"
+
+A green test suite is an input to the Court, not the Court verdict.
+
+#### 2. Every user-path claim needs a path-fidelity check
+
+For any ordinary-path assertion, record:
+
+- starting posture;
+- controls used;
+- whether any hidden/advanced/debug surface was opened;
+- whether helpers changed UI posture;
+- whether state was injected directly;
+- whether the same action is discoverable from the real user surface;
+- whether recovery/error handling stays on the same ordinary path.
+
+If a test reaches a state by a shortcut the user would not take, it may still be
+a valid regression test but must not be cited as ordinary-path evidence.
+
+#### 3. Error handling belongs inside the primary journey matrix
+
+For each material workflow, include representative:
+
+- wrong choice;
+- incorrect adjudication;
+- failed or malformed input;
+- stale/late action;
+- interruption;
+- reload/recovery;
+- undo or correction;
+- cancellation/back-out where supported;
+- terminal-state behavior.
+
+Do not treat these only as isolated unit cases when the teacher must interact
+with them through the product.
+
+#### 4. Fixture evidence must declare what it bypasses
+
+Any visual or E2E fixture that injects product state should state:
+
+- which authoritative producer is bypassed;
+- what integration claim therefore cannot be made;
+- what separate authentic-path evidence covers that seam.
+
+Fixture-driven rendering evidence must never silently inherit authentic-state
+claims.
+
+#### 5. Evidence transfer must include preconditions, not just outcomes
+
+When transferring prior evidence to a later stage, verify:
+
+- same relevant product semantics;
+- same reachable user posture;
+- same lifecycle ownership;
+- same state source;
+- same privacy boundary;
+- no incidental helper condition was required.
+
+If any of those differ or are unknown, classify the transfer as qualified or
+invalid until re-proven.
+
+#### 6. Repairs trigger sibling-path review
+
+When one defect is found, ask what else shares:
+
+- the same hidden control surface;
+- the same state derivation;
+- the same helper;
+- the same fixture;
+- the same persistence/recovery seam;
+- the same lifecycle boundary.
+
+Q6-RP-1 found G3 because the audit asked what other ordinary teacher jobs were
+still trapped in diagnostics. That pattern should be standard.
+
+#### 7. Apparent smoothness is itself an audit signal
+
+A long run of green results may mean the product is mature.
+
+It may also mean:
+
+- tests are following the same assumptions;
+- helpers are hiding awkward paths;
+- fixtures are normalizing incorrect state;
+- review is no longer independent;
+- assertions have become too structural.
+
+When qualification appears unusually smooth, deliberately run at least one
+fresh-context adversarial review that tries to break the user journey rather
+than confirm existing tests.
+
+### Ruthless Court checklist
+
+Before a Court recommends readiness, it should be able to answer **yes** to all
+applicable questions:
+
+1. Did we follow the path a real user would take from the real starting
+   posture?
+2. Did we avoid Advanced/debug/diagnostic controls unless the user journey
+   explicitly calls for them?
+3. Did we avoid direct state injection for claims about integrated behavior?
+4. Did we test at least one realistic mistake or error path for each critical
+   workflow?
+5. Did we test recovery after interruption/reload where persistence matters?
+6. Did we verify the visible UI state, not only underlying state transitions?
+7. Did we verify Host/private versus Display/public boundaries after both
+   success and failure?
+8. Did we inspect helper side effects and inherited UI posture?
+9. Did we challenge fixture assumptions against authentic product state?
+10. Did we validate any transferred evidence against current preconditions?
+11. Did we inspect semantic siblings after finding a defect?
+12. Did an independent reviewer try to falsify the claim after the repair?
+13. If the result was unexpectedly smooth, did we deliberately look for why?
+14. Are remaining issues honestly classified as functional, usability/polish,
+    physical-not-run, environmental, or evidence-strengthening?
+15. Would we be comfortable letting a teacher discover the remaining issues
+    naturally during Q7?
+
+A "no" does not always mean product failure, but it must be explained before a
+Court can recommend advancement.
+
+### Process health assessment after Q6
+
+Evidence that the process is working:
+
+- Q6 rejected a green Q1-Q5 stack.
+- RP-1 re-review found a new blocker instead of declaring victory.
+- the Court corrected an earlier HG-13 transfer.
+- physical evidence remained NOT RUN rather than being inferred.
+- Court B stayed blocked until Court A was complete.
+- the historian was rebuilt on the repaired ordinary path rather than reusing
+  stale S05/MENUS evidence.
+- the new historian preserved a visible non-blocking clipping concern instead
+  of treating visual inspection as automatic PASS.
+
+Evidence that still deserves skepticism:
+
+- several implementation and review steps occurred in the same Claude execution
+  lineage, which weakens reviewer independence;
+- Sonar details were sometimes inaccessible and required indirect
+  classification;
+- some startup/status documentation required follow-up reconciliation after
+  merges;
+- the development journal lagged behind the richest Q6 lessons until this
+  entry;
+- browser historian evidence still does not establish physical projector,
+  audio, screen-reader, Sony, or Windows runtime behavior.
+
+These are not reasons to reject the current Court result. They are reasons to
+make PRE-Q7 and Q7 fresh-context, evidence-bound reviews rather than ceremonial
+continuations.
+
+### Candidate reusable lessons
+
+1. **Green tests are not user-path proof.**
+2. **A helper can accidentally become a hidden product dependency.**
+3. **Fixture truth is not integration truth.**
+4. **Evidence transfer must preserve interaction preconditions.**
+5. **Error recovery belongs in the user journey, not only in domain tests.**
+6. **A repair is incomplete until its semantic siblings are challenged.**
+7. **A strong Court must be willing to overturn its own prior closure.**
+8. **Smooth qualification should trigger skepticism, not complacency.**
+9. **The best owner playthrough is one where automation has already found the
+   defects automation is capable of finding.**
+
+### Evidence
+
+- Q6 Court: PR #133, squash `448ae147…`
+- historian provenance guard: PR #134, squash `08f39e17…`
+- Q6-RP-1: PR #135, squash `b1392391…`
+- Q6-RP-2: PR #136, squash `9410b629…`
+- RP-2 reconciliation: PR #137, squash `df596f27…`
+- fresh pre-owner historian: PR #138, squash `dc71823d…`
+- Q6 Court receipt
+- Q6-RP-1 receipt
+- Q6-RP-2 receipt
+- pre-owner historian receipt and archive
