@@ -948,7 +948,48 @@ continuations.
 - Q6-RP-2: PR #136, squash `9410b629…`
 - RP-2 reconciliation: PR #137, squash `df596f27…`
 - fresh pre-owner historian: PR #138, squash `dc71823d…`
+- Q6 journal lessons: PR #139, squash `67351077…`
 - Q6 Court receipt
 - Q6-RP-1 receipt
 - Q6-RP-2 receipt
 - pre-owner historian receipt and archive
+
+---
+
+## 2026-10-04 — PRE-Q7 ruthless eligibility verdict
+
+### Objective
+
+Issue the DevPM PRE-Q7 verdict after a fresh-context adversarial review that
+tried to falsify readiness rather than confirm Court B.
+
+### Observation
+
+Product candidate `9410b629…` (Q6-RP-2) remains the gameplay identity:
+`src/` and `desktop/` trees are unchanged through evidence/docs main
+`6735107…` (journal + historian + reconciliation only).
+
+The ruthless review:
+
+- re-audited ordinary teacher pathways and error/recovery paths;
+- inspected helper/fixture/transfer classes that produced G1/G2/G3;
+- reclassified residuals;
+- answered the 15-item ruthless Court checklist.
+
+No ordinary-path functional blocker remained. Physical Sony / projector /
+audio / Windows / screen reader stay honestly NOT RUN.
+
+### Result
+
+```text
+OWNER-PLAYTHROUGH-ELIGIBLE
+candidate SHA: 9410b6290a6dcb2f971e66da8173c3b44a6f785a
+```
+
+Q7 is **eligible but not begun**. This does not PASS physical qualification,
+terminalize S05, authorize S04D/S06, or declare REAL MVP complete.
+
+### Evidence
+
+- PRE-Q7 receipt: `docs/receipts/2026-10-04-cqs-pre-q7-eligibility-verdict.md`
+- Authorization: `AUTHORIZE-CQS-JOURNAL-LANDING-AND-RUTHLESS-PRE-Q7-1`
