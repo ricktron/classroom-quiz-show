@@ -51,8 +51,9 @@ pre-owner Q4: LANDED / VERIFIED ON MAIN @ c32b72c… (PR #129; proof 541718e1…
 pre-owner Q5: LANDED / VERIFIED ON MAIN @ c7e41a4… (PR #131; proof 455c4cf…; reviewed tip f1d4535…)
 pre-owner Q6: EXECUTED on d921b07… — COURT-A GAPS REMAIN (G1, G2); COURT-B NOT RUN; repair packet Q6-RP-1 (Q3) required
 pre-owner Q6-RP-1: LANDED / VERIFIED ON MAIN @ b1392391… (PR #135; tip 5764fa3…; tree match) — G1/G2 repaired
-pre-owner Q6-RP-2: LANDED / VERIFIED ON MAIN @ 9410b62… (PR #136; product tip ad115a2…; reviewed tip 825bda1…; tree match) — G3/HG-13 repaired; COURT-A COMPLETE; COURT-B RECOMMEND ELIGIBLE (recommendation only; OWNER-PLAYTHROUGH-ELIGIBLE NOT ISSUED — DevPM PRE-Q7 verdict)
-owner playthrough: PAUSED / GATED (Q0–Q6 + PRE-Q7 eligibility); OWNER-PLAYTHROUGH-ELIGIBLE NOT ISSUED
+pre-owner Q6-RP-2: LANDED / VERIFIED ON MAIN @ 9410b62… (PR #136; product tip ad115a2…; reviewed tip 825bda1…; tree match) — G3/HG-13 repaired; COURT-A COMPLETE; COURT-B RECOMMEND ELIGIBLE
+PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE ISSUED — candidate SHA 9410b6290a6dcb2f971e66da8173c3b44a6f785a (evidence/docs main at review 6735107…); Q7 NOT BEGUN
+owner playthrough: ELIGIBLE FOR Q7 (not begun); physical Sony/projector/audio/Windows remain NOT RUN
 prior MENUS Slice I playthrough: NOT RUN (as acceptance)
 S05 parent: OPEN / NOT TERMINAL
 S04D / S06: NOT AUTHORIZED
@@ -395,8 +396,10 @@ S05-SCORE-CHANGE: RESOLVED — PATH S-C
 S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
-S05 integrated owner playthrough: PAUSED / GATED (pre-owner Q0–Q6 + PRE-Q7 eligibility)
-OWNER-PLAYTHROUGH-ELIGIBLE: NOT ISSUED (DevPM PRE-Q7 verdict after Q6; Q7 does not issue; no functional-waiver hatch)
+S05 integrated owner playthrough: ELIGIBLE FOR Q7 (not begun); requires separate owner/facilitator start
+OWNER-PLAYTHROUGH-ELIGIBLE: ISSUED — candidate SHA 9410b6290a6dcb2f971e66da8173c3b44a6f785a (PRE-Q7 DevPM verdict; Q7 does not issue; not Q7 PASS)
+product candidate SHA: 9410b6290a6dcb2f971e66da8173c3b44a6f785a (Q6-RP-2 squash; gameplay src/desktop unchanged since)
+evidence/docs main at PRE-Q7 review: 6735107713aaafedb96b06b60b012f63e7e60a96 (journal #139; historian #138; RP-2 docs #137)
 S05 parent: OPEN / NOT TERMINAL
 pre-owner Q0: LANDED
 pre-owner Q1: LANDED / VERIFIED ON MAIN @ 9d8246e… (PR #123); physical Sony NOT RUN
@@ -404,21 +407,21 @@ pre-owner Q2: LANDED / VERIFIED ON MAIN @ 2dc918f… (PR #125); tip aa3c18f…; 
 pre-owner Q3: LANDED / VERIFIED ON MAIN @ 85bb951… (PR #127; reviewed tip cf207ca…)
 pre-owner Q4: LANDED / VERIFIED ON MAIN @ c32b72c… (PR #129; proof 541718e1…; reviewed tip 28d611e…)
 pre-owner Q5: LANDED / VERIFIED ON MAIN @ c7e41a4… (PR #131; proof 455c4cf…; reviewed tip f1d4535…)
-pre-owner Q6: EXECUTED on d921b07… — COURT-A GAPS REMAIN (G1, G2); COURT-B NOT RUN
+pre-owner Q6: EXECUTED on d921b07… — COURT-A GAPS REMAIN (G1, G2); COURT-B NOT RUN (historical)
 pre-owner Q6-RP-1: LANDED @ b1392391… (PR #135)
-pre-owner Q6-RP-2: LANDED / VERIFIED ON MAIN @ 9410b62… (PR #136); Court A COMPLETE / Court B RECOMMEND ELIGIBLE; OWNER-PLAYTHROUGH-ELIGIBLE NOT ISSUED
+pre-owner Q6-RP-2: LANDED / VERIFIED ON MAIN @ 9410b62… (PR #136); Court A COMPLETE / Court B RECOMMEND ELIGIBLE
+PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE ISSUED @ candidate 9410b629… — receipt 2026-10-04-cqs-pre-q7-eligibility-verdict.md
+Q7: natural owner usability playthrough — NOT BEGUN
 S04D / S06: NOT AUTHORIZED
 REAL MVP: not complete
 ```
 
-This status grants **no further S05 product implementation authority**. Do
-**not** treat owner playthrough as the immediate next action — it remains
-**PAUSED / GATED** until DevPM PRE-Q7 **verdict** issues
-**`OWNER-PLAYTHROUGH-ELIGIBLE`** (Q7 does **not** issue eligibility;
-functional escapes may **not** be waived through PRE-Q7). Owner playthrough
-does not by itself
-terminalize the S05 parent. This status
-grants **no** S04D / S06 implementation authority, **no** S05 parent
+This status grants **no further S05 product implementation authority**.
+**`OWNER-PLAYTHROUGH-ELIGIBLE` is ISSUED** for product candidate
+`9410b629…` (PRE-Q7). **Q7 is NOT BEGUN** by this status — a separate
+owner/facilitator start is required. Q7 does **not** issue eligibility and
+does **not** by itself terminalize the S05 parent. This status grants
+**no** S04D / S06 implementation authority, **no** S05 parent
 terminalization, **no** signing/notarization decision, and **no** public
 teacher-release publication. It does **not** claim Windows physical
 runtime qualification, Sony physical re-qualification, physical

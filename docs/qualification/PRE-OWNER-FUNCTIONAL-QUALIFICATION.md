@@ -81,9 +81,10 @@ Advanced diagnostics; G2 stale public Display status). Court B NOT RUN.
 Eligibility path STOPPED pending repair packet Q6-RP-1 (Q3 family).
 Q6-RP-1 (G1/G2) LANDED on main @ b1392391… (PR #135). Its re-review found G3 (general Undo
 only via Advanced diagnostics; HG-13). **Q6-RP-2 LANDED / VERIFIED ON MAIN** @ `9410b62…` (PR #136; product tip `ad115a2…`; reviewed tip `825bda1…`; trees EXACT MATCH `0b8036de…`);
-On that candidate: COURT-A COMPLETE; COURT-B RECOMMEND ELIGIBLE (recommendation only;
-OWNER-PLAYTHROUGH-ELIGIBLE NOT ISSUED — DevPM PRE-Q7 verdict after RP-2 lands).
-No owner playthrough / eligibility / S05 terminalization / S04D / S06.
+On that candidate: COURT-A COMPLETE; COURT-B RECOMMEND ELIGIBLE (recommendation only).
+**PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE ISSUED** — candidate SHA
+`9410b6290a6dcb2f971e66da8173c3b44a6f785a` (evidence/docs main at review
+`6735107…`); Q7 NOT BEGUN; S05 terminalization / S04D / S06 still unauthorized.
 ```
 
 ```text
@@ -490,12 +491,24 @@ verdict.
 
 ### 10.3 Current status
 
-**Not issued.** Owner playthrough remains **PAUSED / GATED** behind Q0–Q6 +
-PRE-Q7 eligibility verdict. Q0–Q5 are landed on main. Q6 Court review was
-executed on candidate `d921b07…`: **Court A: GAPS REMAIN** (G1, G2);
-**Court B: NOT RUN**. Q6 is **not passed**; the eligibility path is stopped
-until repair packet **Q6-RP-1** (Q3 family) is repaired, verified, landed, and
-Court A is re-reviewed. Record: [`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md). **Q6-RP-1 update:** G1/G2 repair **LANDED / VERIFIED ON MAIN** @ `b1392391…` (PR #135); its Court A re-review found **G3** (general Undo reachable only under Advanced diagnostics; HG-13). **Q6-RP-2 LANDED / VERIFIED ON MAIN** @ `9410b62…` (PR #136; product tip `ad115a2…`; reviewed tip `825bda1…`; trees EXACT MATCH `0b8036de…`); **Court A: COMPLETE**; **Court B: RECOMMEND ELIGIBLE** (recommendation only; eligibility **NOT ISSUED**) — [`../receipts/2026-10-04-cqs-q6-rp2-live-undo-and-court-a-b.md`](../receipts/2026-10-04-cqs-q6-rp2-live-undo-and-court-a-b.md); prior RP-1 record — [`../receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md`](../receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md).
+**Issued.** Under `AUTHORIZE-CQS-JOURNAL-LANDING-AND-RUTHLESS-PRE-Q7-1`, DevPM
+PRE-Q7 issued:
+
+```text
+OWNER-PLAYTHROUGH-ELIGIBLE
+candidate SHA: 9410b6290a6dcb2f971e66da8173c3b44a6f785a
+```
+
+Receipt: [`../receipts/2026-10-04-cqs-pre-q7-eligibility-verdict.md`](../receipts/2026-10-04-cqs-pre-q7-eligibility-verdict.md).
+Evidence/docs main at review: `6735107713aaafedb96b06b60b012f63e7e60a96`
+(product `src/`/`desktop/` trees unchanged since the candidate). **Q7 is NOT
+BEGUN.** Physical Sony / projector / audio / Windows remain **NOT RUN**. S05
+parent remains **OPEN / NOT TERMINAL**. S04D / S06 remain **NOT AUTHORIZED**.
+
+Historical ladder: Q0–Q5 landed; Q6 Courts + RP-1/RP-2 landings recorded in
+[`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md),
+[`../receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md`](../receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md),
+[`../receipts/2026-10-04-cqs-q6-rp2-live-undo-and-court-a-b.md`](../receipts/2026-10-04-cqs-q6-rp2-live-undo-and-court-a-b.md).
 
 ---
 
@@ -547,15 +560,15 @@ Rules:
 
 ## 13. Routing impact (minimal)
 
-While this contract is active and PRE-Q7 has not issued eligibility:
+While this contract is active after PRE-Q7 eligibility:
 
 | Topic | Required routing |
 | --- | --- |
-| Next contributor action | Do **not** send Rick to owner walkthrough / Slice I re-gate / S05 whole-game playthrough. **Q6-RP-1** and **Q6-RP-2** are **LANDED** (RP-2 @ `9410b62…` PR #136). **Court A: COMPLETE**; **Court B: RECOMMEND ELIGIBLE** (recommendation only). **`OWNER-PLAYTHROUGH-ELIGIBLE` NOT ISSUED** — PRE-Q7 is a separate DevPM verdict. Not authorized by this file |
-| Completed | **Q0–Q5 LANDED** on main (Q5 @ `c7e41a4…` PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`) under `AUTHORIZE-CQS-Q5-DESKTOP-ELECTRON-INTEGRATION-QUALIFICATION` |
+| Next contributor action | **`OWNER-PLAYTHROUGH-ELIGIBLE` ISSUED** @ candidate `9410b629…`. **Q7 may begin** only as a separate owner/facilitator natural playthrough — **not** auto-started by docs. Do **not** begin S04D / S06 / S05 terminalization / signed release from this file |
+| Completed | **Q0–Q6 + PRE-Q7** on main (product candidate `9410b629…`; PRE-Q7 receipt `2026-10-04-cqs-pre-q7-eligibility-verdict.md`) |
 | S05 parent | **OPEN / NOT TERMINAL** |
 | Prior MENUS Slice I playthrough | **NOT RUN** as acceptance (Scenario D was BLOCKED; I-REPAIR-1 merged; Q1 closed Scenario-D escapes on main; re-gate **not** authorized here) |
-| Owner playthrough | **PAUSED / GATED** behind Q0–Q6 + PRE-Q7 eligibility verdict |
+| Owner playthrough / Q7 | **ELIGIBLE / NOT BEGUN** — natural usability playthrough on candidate `9410b629…`; physical NOT RUN remain first exercise |
 | S04D / S06 | **NOT AUTHORIZED** |
 | REAL MVP | **not** complete |
 | PR #110 / #118 | Observe only; do not mutate from this contract |
@@ -639,11 +652,11 @@ Q4: LANDED / VERIFIED ON MAIN @ c32b72c… (PR #129; proof 541718e1…; reviewed
 Q5: LANDED / VERIFIED ON MAIN @ c7e41a4… (PR #131; proof 455c4cf…; reviewed tip f1d4535…)
 Q6: EXECUTED on d921b07… — COURT-A GAPS REMAIN (G1, G2); COURT-B NOT RUN; repair packet Q6-RP-1 (Q3) required
 Q6-RP-1: LANDED / VERIFIED ON MAIN @ b1392391… (PR #135; tip 5764fa3…; trees EXACT MATCH) — G1/G2
-Q6-RP-2: LANDED / VERIFIED ON MAIN @ 9410b62… (PR #136) — COURT-A COMPLETE; COURT-B RECOMMEND ELIGIBLE (recommendation only); OWNER-PLAYTHROUGH-ELIGIBLE NOT ISSUED
-PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE — NOT ISSUED (DevPM verdict after Q6; not a new Q-stage)
-Q7: natural owner usability playthrough — NOT BEGUN (requires PRE-Q7)
+Q6-RP-2: LANDED / VERIFIED ON MAIN @ 9410b62… (PR #136) — COURT-A COMPLETE; COURT-B RECOMMEND ELIGIBLE (recommendation only)
+PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE ISSUED — candidate SHA 9410b6290a6dcb2f971e66da8173c3b44a6f785a (DevPM verdict; not a new Q-stage)
+Q7: natural owner usability playthrough — NOT BEGUN (eligible; separate start required)
 S05 parent: OPEN / NOT TERMINAL
-owner playthrough: PAUSED / GATED (Q0–Q6 + PRE-Q7 eligibility)
+owner playthrough: ELIGIBLE FOR Q7 (not begun); physical Sony/projector/audio/Windows NOT RUN
 Finding C: CLOSED ON MAIN BY Q3 @ 85bb951…; Finding D: CLOSED ON MAIN BY Q5 @ c7e41a4…
 functional escapes: repair/verify required — no owner-waiver through PRE-Q7
 S04D / S06: NOT AUTHORIZED

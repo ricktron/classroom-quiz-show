@@ -61,10 +61,11 @@ only once landed). Q6 re-review found G3 (general Undo only via Advanced diagnos
 Court A re-review: GAPS REMAIN (G3). Court B NOT RUN.
 Q6-RP-1 LANDED on main @ b1392391… (PR #135; tip 5764fa3…; trees EXACT MATCH 2f69879…).
 Q6-RP-2 LANDED / VERIFIED ON MAIN @ 9410b62… (PR #136) repairs G3 / HG-13.
-Court A COMPLETE; Court B RECOMMEND ELIGIBLE (recommendation only;
-OWNER-PLAYTHROUGH-ELIGIBLE NOT ISSUED).
-PHYSICAL SONY NOT RUN. Golden paths = Q3; branch/failure = Q4; Electron = Q5;
-owner feel = Q7. PRE-Q7 (DevPM) issues eligibility after Q0–Q6; Q7 does not.
+Court A COMPLETE; Court B RECOMMEND ELIGIBLE (recommendation only).
+PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE ISSUED — candidate SHA
+9410b6290a6dcb2f971e66da8173c3b44a6f785a (evidence/docs main at review 6735107…).
+Q7 NOT BEGUN. PHYSICAL SONY / projector / audio / Windows NOT RUN.
+Golden paths = Q3; branch/failure = Q4; Electron = Q5; owner feel = Q7.
 Functional escapes / blockers may not be waived through PRE-Q7.
 ```
 
