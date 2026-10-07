@@ -993,3 +993,113 @@ terminalize S05, authorize S04D/S06, or declare REAL MVP complete.
 
 - PRE-Q7 receipt: `docs/receipts/2026-10-04-cqs-pre-q7-eligibility-verdict.md`
 - Authorization: `AUTHORIZE-CQS-JOURNAL-LANDING-AND-RUTHLESS-PRE-Q7-1`
+
+---
+
+## 2026-10-07 — Q7 HOLD: natural owner playthrough + hardware investigation gate
+
+### Authorization
+
+`AUTHORIZE-CQS-Q7-HOLD-HARDWARE-INVESTIGATION-AND-JOURNAL-1`
+
+Scope: Q7 evidence/journal/governance reconciliation; Sony/Namtai Wbuzz
+hardware-path research; bounded diagnostic/experiment plan. **Not** product
+behavior repair, Show-buzzer-setup repair, WebHID/Gamepad lifecycle changes,
+keep-alive changes, Electron upgrade, S04D/S06/S05 terminalization, signing,
+release, or Q7 resume.
+
+### Natural owner path (preserved)
+
+Environment: owner MacBook; exact product candidate
+`9410b6290a6dcb2f971e66da8173c3b44a6f785a`; Namtai/Sony wireless Wbuzz
+receiver + four handsets actually exercised; natural, uncoached playthrough.
+
+1. Open CQS.
+2. Resume the unfinished Fifth Grade Geography session.
+3. Reach Class Setup.
+4. Naturally choose the optional buzzer path.
+5. Click **Show buzzer setup**.
+6. Owner perceives **no observable effect** from that control.
+7. Power on four controllers.
+8. Exercise receiver/controller pairing.
+9. Hardware LEDs react at the receiver/controller layer.
+10. Press controller buttons.
+11. No usable CQS controller response appears.
+12. Owner waits because connection delay appears plausible.
+13. Controllers cease responding / power down.
+14. Owner terminates playthrough as a blocker.
+
+### Findings (keep separate)
+
+**Q7-F01.** Show buzzer setup did not produce an understandable observable
+result in natural owner use.
+
+**Q7-F02.** On the actual MacBook + Wbuzz receiver + four-handset
+configuration exercised, the physical buzzer path never became usable CQS
+input. **Root cause remains UNESTABLISHED.**
+
+Do not collapse F01 and F02 into one assumed cause.
+
+### Verdict
+
+```text
+Q7: HOLD — REPAIR REQUIRED
+```
+
+### PRE-Q7 predictions that held
+
+- Resume was understandable.
+- Class Setup was reachable naturally.
+- The optional buzzer path was understandable / discoverable.
+
+### What PRE-Q7 / Court missed
+
+- **Black-box interaction fidelity** — automation and Court evidence followed
+  correctly labeled classes, but did not force a natural UI-only discovery of
+  ordinary control effects before eligibility.
+- The owner became the **first current-candidate detector** of an ordinary
+  control failure (Show buzzer setup).
+- The current-build physical supported-hardware path had been allowed through
+  as **PHYSICAL-ONLY** because keyboard fallback existed — evidence labels were
+  honest; the eligibility rule was too permissive.
+
+### Analysis (not root cause)
+
+Repository inspection of the candidate shows Show/Check routes through
+`FoundationControls.onRevealBuzzersSetup`, which enters Buzzer Check and
+scrolls/focuses the buzzer surface but **does not** call the supported-profile
+WebHID connect lifecycle. Keep-alive remains exact `054c:1000`, reportId 0,
+seven zero bytes, immediate send on successful startTimer/connect, nominal
+2000 ms cadence. Mount restore uses `tryRestoreGranted`; the transport
+subscribes to HID **disconnect**, not connect/addition — late attach after
+mount is a lifecycle gap.
+
+Current evidence **points toward** activation/lifecycle timing and affordance
+clarity as leading investigation directions. It does **not** yet establish root
+cause. RF LED activity must not be mistaken for CQS input readiness.
+
+### Decisions
+
+1. Research HID / WebHID / pairing (and keep a subordinate research shelf)
+   **before** product repair.
+2. Add a required **BLACK-BOX TEACHER RUN** to Court B before any future
+   **RECOMMEND ELIGIBLE** / PRE-Q7 eligibility recommendation.
+3. Add an explicit supported-hardware rule: keyboard fallback alone cannot make
+   an advertised current-build physical path non-blocking.
+4. Execute the physical experiment matrix under later authority; do not invent
+   results now.
+
+Research shelf:
+[`docs/research/hardware/sony-buzz/`](../research/hardware/sony-buzz/).
+
+### Owner preference — coding agents vs DevPM
+
+All subsequent **product coding** is to be performed by coding agents from
+explicit DevPM prompts. ChatGPT acts as DevPM / architect / reviewer rather
+than directly editing product code.
+
+### Explicit Q7 state
+
+```text
+Q7: HOLD — REPAIR REQUIRED
+```
