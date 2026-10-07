@@ -47,7 +47,7 @@ also read
 | S05 board/round-flow presentation choreography | **TERMINALLY COMPLETE** |
 | S05 parent | **OPEN / NOT TERMINAL** |
 | S05 Final + winner/completion presentation | **TERMINALLY COMPLETE** |
-| S05 integrated owner playthrough | **ELIGIBLE FOR Q7** (not begun); **`OWNER-PLAYTHROUGH-ELIGIBLE` ISSUED** @ candidate `9410b629…` (PRE-Q7) |
+| S05 integrated owner playthrough | **Q7: HOLD — REPAIR REQUIRED** (Q7-F01 / Q7-F02; root cause UNESTABLISHED); PRE-Q7 eligibility was historical @ `9410b629…` |
 | Pre-owner functional qualification | **Q0 LANDED**; **Q1 LANDED / VERIFIED ON MAIN** @ `9d8246e…` (PR #123) — [`../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](../qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md); matrix [`../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md`](../qualification/PRE-OWNER-TEACHER-JOURNEY-MATRIX.md). **Q2 LANDED / VERIFIED ON MAIN** @ `2dc918f…` (PR #125). **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951…` (PR #127; reviewed tip `cf207ca…`). **Q4 LANDED / VERIFIED ON MAIN** @ `c32b72c35f33e4188793e223ad9749c4a226b806` (PR #129 squash; proof `541718e1…`; reviewed tip `28d611e…`). **Q5 LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`). **Q6 executed on `d921b07…` — Court A: GAPS REMAIN (G1, G2); Court B: NOT RUN** ([`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md)). Q1–Q5 physical Sony **NOT RUN**. |
 | Prior MENUS Slice I playthrough | **NOT RUN** (as acceptance; Scenario D was BLOCKED; I-REPAIR-1 merged; re-gate not authorized here) |
 | S04D / S06 | **NOT AUTHORIZED** |
@@ -267,11 +267,17 @@ not call the squash the tip) under
 on Host via `publicTeamDisplayName`; real `lih-correct` adjudication; Finding C
 CLOSED ON MAIN BY Q3 @ `85bb951…`).
 **Completed qualification:** **Q5** Desktop/Electron integration — **LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`; trees EXACT MATCH `8bb6c528…`). **Q6 Court review executed** on candidate `d921b07…` under `AUTHORIZE-CQS-Q6-INDEPENDENT-COURT-REVIEW-1`: **Court A: GAPS REMAIN** — G1: starting Round 1 and entering Final are reachable only through More → Advanced diagnostics; G2: the projected Display status reads “Waiting for the first round.” through play and completion. **Court B: NOT RUN.** **Q6-RP-1** G1/G2 repair is **LANDED / VERIFIED ON MAIN** @ `b1392391…` (PR #135; tip `5764fa3…`; trees EXACT MATCH) under `AUTHORIZE-CQS-Q6-RP1-MERGE-AND-RP2-UNDO-REPAIR-1`. Its Court A re-review found **G3** — general (non-score) Undo reachable only under Advanced diagnostics (HG-13) — so Court A remains **GAPS REMAIN** and Court B **NOT RUN**; **Q6-RP-2 LANDED / VERIFIED ON MAIN** @ `9410b62…` (PR #136; product tip `ad115a2…`; reviewed tip `825bda1…`; trees EXACT MATCH `0b8036de…`); **Court A: COMPLETE**; **Court B: RECOMMEND ELIGIBLE** (recommendation only; **`OWNER-PLAYTHROUGH-ELIGIBLE` NOT ISSUED** — DevPM PRE-Q7 verdict) — [`../receipts/2026-10-04-cqs-q6-rp2-live-undo-and-court-a-b.md`](../receipts/2026-10-04-cqs-q6-rp2-live-undo-and-court-a-b.md) ([`../receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md`](../receipts/2026-10-04-cqs-q6-rp1-repair-and-court-a-rereview.md)). Record: [`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md).
-**PRE-Q7 issued `OWNER-PLAYTHROUGH-ELIGIBLE`** for product candidate
-`9410b629…` ([`../receipts/2026-10-04-cqs-pre-q7-eligibility-verdict.md`](../receipts/2026-10-04-cqs-pre-q7-eligibility-verdict.md)).
-**Q7 is NOT BEGUN.** S05 parent remains **OPEN / NOT TERMINAL**. Prior MENUS Slice I
-playthrough is **NOT RUN** as acceptance. S04D / S06 remain **NOT
-AUTHORIZED**. REAL MVP is **not** complete.
+**PRE-Q7 historically issued `OWNER-PLAYTHROUGH-ELIGIBLE`** for product
+candidate `9410b629…`
+([`../receipts/2026-10-04-cqs-pre-q7-eligibility-verdict.md`](../receipts/2026-10-04-cqs-pre-q7-eligibility-verdict.md)).
+Natural Q7 owner playthrough on that candidate is now **`Q7: HOLD — REPAIR
+REQUIRED`** (Q7-F01 / Q7-F02; root cause UNESTABLISHED). Hardware research
+shelf (no product repair):
+[`../research/hardware/sony-buzz/`](../research/hardware/sony-buzz/). Do
+**not** resume Q7 or repair product behavior without new authority. S05
+parent remains **OPEN / NOT TERMINAL**. Prior MENUS Slice I playthrough is
+**NOT RUN** as acceptance. S04D / S06 remain **NOT AUTHORIZED**. REAL MVP is
+**not** complete.
 
 `CQS-REAL-MVP-S04A-TEACHER-WORKFLOW-AUTHORING-AND-SESSION-MODEL` is
 **TERMINALLY COMPLETE**. `CQS-REAL-MVP-S04B-SONY-TEAM-SELECTION-AND-CLASSROOM-SETUP`
@@ -437,8 +443,8 @@ S05-BOARD-OUTCOME-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05-BOARD-ROUND-FLOW-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
 S05 parent: OPEN / NOT TERMINAL
 S05-FINAL-AND-WINNER-PRESENTATION-CHOREOGRAPHY: TERMINALLY COMPLETE
-S05 integrated owner playthrough: ELIGIBLE FOR Q7 (not begun); requires separate owner/facilitator start
-OWNER-PLAYTHROUGH-ELIGIBLE: ISSUED — candidate SHA 9410b6290a6dcb2f971e66da8173c3b44a6f785a (PRE-Q7 DevPM verdict; Q7 does not issue; not Q7 PASS)
+S05 integrated owner playthrough: Q7 HOLD — REPAIR REQUIRED
+OWNER-PLAYTHROUGH-ELIGIBLE: ISSUED historically — candidate SHA 9410b6290a6dcb2f971e66da8173c3b44a6f785a (PRE-Q7); Q7 HOLD supersedes playthrough readiness
 product candidate SHA: 9410b6290a6dcb2f971e66da8173c3b44a6f785a (Q6-RP-2 squash; gameplay src/desktop unchanged since)
 evidence/docs main at PRE-Q7 review: 6735107713aaafedb96b06b60b012f63e7e60a96
 prior MENUS Slice I playthrough: NOT RUN (as acceptance)
@@ -451,8 +457,8 @@ pre-owner Q5: LANDED / VERIFIED ON MAIN @ c7e41a4… (PR #131; proof 455c4cf…;
 pre-owner Q6: EXECUTED on d921b07… — COURT-A GAPS REMAIN (G1, G2); COURT-B NOT RUN (historical)
 pre-owner Q6-RP-1: LANDED @ b1392391… (PR #135)
 pre-owner Q6-RP-2: LANDED / VERIFIED ON MAIN @ 9410b62… (PR #136); Court A COMPLETE / Court B RECOMMEND ELIGIBLE
-PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE ISSUED @ candidate 9410b629… — receipt 2026-10-04-cqs-pre-q7-eligibility-verdict.md
-Q7: natural owner usability playthrough — NOT BEGUN
+PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE ISSUED (historical) @ candidate 9410b629… — receipt 2026-10-04-cqs-pre-q7-eligibility-verdict.md
+Q7: HOLD — REPAIR REQUIRED (Q7-F01 / Q7-F02; root cause UNESTABLISHED); research shelf docs/research/hardware/sony-buzz/
 S04D / S06: NOT AUTHORIZED
 REAL MVP: not complete
 ```

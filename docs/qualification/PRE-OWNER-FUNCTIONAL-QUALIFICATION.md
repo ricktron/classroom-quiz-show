@@ -82,9 +82,12 @@ Eligibility path STOPPED pending repair packet Q6-RP-1 (Q3 family).
 Q6-RP-1 (G1/G2) LANDED on main @ b1392391… (PR #135). Its re-review found G3 (general Undo
 only via Advanced diagnostics; HG-13). **Q6-RP-2 LANDED / VERIFIED ON MAIN** @ `9410b62…` (PR #136; product tip `ad115a2…`; reviewed tip `825bda1…`; trees EXACT MATCH `0b8036de…`);
 On that candidate: COURT-A COMPLETE; COURT-B RECOMMEND ELIGIBLE (recommendation only).
-**PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE ISSUED** — candidate SHA
+**PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE ISSUED** (historical) — candidate SHA
 `9410b6290a6dcb2f971e66da8173c3b44a6f785a` (evidence/docs main at review
-`6735107…`); Q7 NOT BEGUN; S05 terminalization / S04D / S06 still unauthorized.
+`6735107…`). **Q7: HOLD — REPAIR REQUIRED** (Q7-F01 / Q7-F02; root cause
+UNESTABLISHED). Court B now requires BLACK-BOX TEACHER RUN + supported-hardware
+rule before future RECOMMEND ELIGIBLE. S05 terminalization / S04D / S06 still
+unauthorized; product repair not authorized by this note.
 ```
 
 ```text
@@ -436,13 +439,59 @@ Q6 is **not** executed in Q0. Plan of record:
 
 | Item | Plan |
 | --- | --- |
-| Question | Given Court A COMPLETE, residual **non-functional** items (§12), and transfer ledger, may DevPM issue **`OWNER-PLAYTHROUGH-ELIGIBLE`** / `candidate SHA:` at PRE-Q7? |
-| Inputs | Court A record; open escapes (§12); STATUS/CURRENT agreement; hard-ban audit (no S04D/S06/S05 terminalization smuggled) |
-| Forbidden | Issuing eligibility from Court B itself (Court B only **recommends**; **DevPM** issues the PRE-Q7 **verdict** after Q6, before Q7); treating owner waiver as functional closure |
+| Question | Given Court A COMPLETE, residual **non-functional** items (§12), transfer ledger, and a required **BLACK-BOX TEACHER RUN** (§9.1), may DevPM issue **`OWNER-PLAYTHROUGH-ELIGIBLE`** / `candidate SHA:` at PRE-Q7? |
+| Inputs | Court A record; open escapes (§12); STATUS/CURRENT agreement; hard-ban audit (no S04D/S06/S05 terminalization smuggled); frozen black-box teacher-run record (§9.1) |
+| Forbidden | Issuing eligibility from Court B itself (Court B only **recommends**; **DevPM** issues the PRE-Q7 **verdict** after Q6, before Q7); treating owner waiver as functional closure; recommending eligibility without a completed black-box teacher run on the candidate; treating keyboard fallback alone as sufficient current-build physical qualification for an advertised supported-hardware path (§9.2) |
 | Outcomes | **RECOMMEND ELIGIBLE** / **RECOMMEND HOLD** / **REPAIR REQUIRED** |
 
 Seats and rigor may follow NightWatch / OpenClaw Court protocol when available
 as **read-only supplemental**. CQS docs and observed Git remain authoritative.
+
+### 9.1 Court B required BLACK-BOX TEACHER RUN
+
+Before Court B may output **RECOMMEND ELIGIBLE**, it must complete a
+**BLACK-BOX TEACHER RUN** on the exact candidate under review. This is **not**
+a new Q stage. It is a Court B prerequisite.
+
+The run must:
+
+1. begin from a **real user starting surface** (ordinary launch / Home /
+   Resume — not a test harness entry);
+2. use **visible / accessibility UI only**;
+3. **forbid** `data-testid` navigation, direct state injection, helper posture
+   setup, direct route shortcuts, developer diagnostics, or source-code
+   coaching while the run is underway;
+4. **not** inspect implementation while the run is underway;
+5. record hesitation, unexpected routes, failed affordances, backtracking, and
+   controls that appear to do nothing;
+6. treat **inability to discover** the intended path as evidence;
+7. inspect code **only after** the run record is frozen.
+
+A run that depends on testids, helpers, or coached routes is **invalid** for
+Court B eligibility recommendation.
+
+Evidence-class honesty is preserved: historical Court/Q1–Q6 records that
+correctly labeled SIMULATED / PHYSICAL-ONLY / NOT RUN evidence are **not**
+rewritten as dishonest. The lesson of Q7 is that those labels were accurate
+but the **eligibility rule was too permissive** without a black-box interaction
+fidelity check.
+
+### 9.2 Supported physical-hardware path rule
+
+A current candidate that ordinarily **advertises a supported physical-hardware
+workflow** (for example the exact Sony/Namtai Wbuzz Class Setup path) **may
+not** rely solely on keyboard fallback to make current-build physical
+qualification non-blocking.
+
+If the hardware path remains exposed as supported during owner playthrough,
+then either:
+
+1. **current-build physical evidence** must cover that path; or
+2. the qualification record must **explicitly gate / exclude** that path
+   (honestly not advertised as currently supported for the candidate).
+
+Keyboard usability remains a permanent product invariant. It does **not**, by
+itself, satisfy Court B for an exposed supported-hardware workflow.
 
 ---
 
@@ -481,18 +530,20 @@ verdict.
    (MENUS workflows; golden paths; branch/failure; Desktop/Electron —
    physical classes labeled separately);
 4. Court A **COMPLETE** (no unresolved ordinary-path functional blocker);
-   Court B **RECOMMEND ELIGIBLE**;
+   Court B **RECOMMEND ELIGIBLE** after a required **BLACK-BOX TEACHER RUN**
+   (§9.1) and the supported-hardware rule (§9.2);
 5. **DevPM PRE-Q7** verdict explicitly issues the string
    **`OWNER-PLAYTHROUGH-ELIGIBLE`** and names `candidate SHA:`;
 6. [`../STATUS.md`](../STATUS.md) and [`../handoff/CURRENT.md`](../handoff/CURRENT.md)
    agree;
 7. Remaining visible issues are **usability/polish** or honestly **NOT-RUN
-   physical** — **not** known ordinary-path functional blockers.
+   physical** — **not** known ordinary-path functional blockers — and any
+   advertised supported-hardware path obeys §9.2.
 
 ### 10.3 Current status
 
-**Issued.** Under `AUTHORIZE-CQS-JOURNAL-LANDING-AND-RUTHLESS-PRE-Q7-1`, DevPM
-PRE-Q7 issued:
+**Historically issued; Q7 now HOLD.** Under
+`AUTHORIZE-CQS-JOURNAL-LANDING-AND-RUTHLESS-PRE-Q7-1`, DevPM PRE-Q7 issued:
 
 ```text
 OWNER-PLAYTHROUGH-ELIGIBLE
@@ -501,9 +552,28 @@ candidate SHA: 9410b6290a6dcb2f971e66da8173c3b44a6f785a
 
 Receipt: [`../receipts/2026-10-04-cqs-pre-q7-eligibility-verdict.md`](../receipts/2026-10-04-cqs-pre-q7-eligibility-verdict.md).
 Evidence/docs main at review: `6735107713aaafedb96b06b60b012f63e7e60a96`
-(product `src/`/`desktop/` trees unchanged since the candidate). **Q7 is NOT
-BEGUN.** Physical Sony / projector / audio / Windows remain **NOT RUN**. S05
-parent remains **OPEN / NOT TERMINAL**. S04D / S06 remain **NOT AUTHORIZED**.
+(product `src/`/`desktop/` trees unchanged since the candidate). That verdict
+correctly used the then-active evidence classes; it is **not** rewritten as
+dishonest.
+
+**Q7 natural owner playthrough on that candidate produced HOLD:**
+
+```text
+Q7: HOLD — REPAIR REQUIRED
+```
+
+Preserved findings (do not collapse):
+
+- **Q7-F01** — Show buzzer setup produced no understandable observable result
+  in natural owner use;
+- **Q7-F02** — on MacBook + Wbuzz receiver + four handsets, the physical
+  buzzer path never became usable CQS input; **root cause UNESTABLISHED**.
+
+Hardware investigation / research shelf (no product repair yet):
+[`../research/hardware/sony-buzz/`](../research/hardware/sony-buzz/).
+Court B contract now requires §9.1 / §9.2 for any **future** eligibility
+recommendation. S05 parent remains **OPEN / NOT TERMINAL**. S04D / S06 remain
+**NOT AUTHORIZED**. Product repair is **not** authorized by this status note.
 
 Historical ladder: Q0–Q5 landed; Q6 Courts + RP-1/RP-2 landings recorded in
 [`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md),
@@ -564,15 +634,15 @@ While this contract is active after PRE-Q7 eligibility:
 
 | Topic | Required routing |
 | --- | --- |
-| Next contributor action | **`OWNER-PLAYTHROUGH-ELIGIBLE` ISSUED** @ candidate `9410b629…`. **Q7 may begin** only as a separate owner/facilitator natural playthrough — **not** auto-started by docs. Do **not** begin S04D / S06 / S05 terminalization / signed release from this file |
-| Completed | **Q0–Q6 + PRE-Q7** on main (product candidate `9410b629…`; PRE-Q7 receipt `2026-10-04-cqs-pre-q7-eligibility-verdict.md`) |
+| Next contributor action | **Q7: HOLD — REPAIR REQUIRED** on candidate `9410b629…`. Do **not** resume Q7, repair product behavior, begin S04D / S06 / S05 terminalization / signing / release from this file without new authority. Hardware research shelf: [`../research/hardware/sony-buzz/`](../research/hardware/sony-buzz/) |
+| Completed | **Q0–Q6 + PRE-Q7 issuance** on main (product candidate `9410b629…`; PRE-Q7 receipt `2026-10-04-cqs-pre-q7-eligibility-verdict.md`); Q7 natural playthrough **executed → HOLD** |
 | S05 parent | **OPEN / NOT TERMINAL** |
 | Prior MENUS Slice I playthrough | **NOT RUN** as acceptance (Scenario D was BLOCKED; I-REPAIR-1 merged; Q1 closed Scenario-D escapes on main; re-gate **not** authorized here) |
-| Owner playthrough / Q7 | **ELIGIBLE / NOT BEGUN** — natural usability playthrough on candidate `9410b629…`; physical NOT RUN remain first exercise |
+| Owner playthrough / Q7 | **HOLD — REPAIR REQUIRED** (F01/F02; root cause UNESTABLISHED); do not claim hardware PASS |
 | S04D / S06 | **NOT AUTHORIZED** |
 | REAL MVP | **not** complete |
 | PR #110 / #118 | Observe only; do not mutate from this contract |
-| Q1 / Q2 / Q3 physical Sony | **NOT RUN** |
+| Q1 / Q2 / Q3 physical Sony | **NOT RUN** as pre-Q7 current-build PASS; Q7 owner physical exercise recorded as HOLD findings |
 | Q3 | **LANDED / VERIFIED ON MAIN** @ `85bb951…` (PR #127; reviewed tip `cf207ca…`) |
 | Q4 | **LANDED / VERIFIED ON MAIN** @ `c32b72c…` (PR #129; proof `541718e1…`; reviewed tip `28d611e…`) |
 | Q5 | **LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`) |
@@ -624,8 +694,9 @@ Exact-head CI on reviewed tip `f1d4535…`: Lint/unit/build SUCCESS; Playwright 
 
 This contract does **not** claim:
 
-- Q6 PASS (Q6 executed with Court A GAPS REMAIN); Q7 execution or PASS;
-- OWNER-PLAYTHROUGH-ELIGIBLE;
+- Q6 PASS (Q6 executed with Court A GAPS REMAIN historically; RP-2 later COMPLETE);
+- Q7 PASS or hardware root-cause establishment (Q7 is **HOLD — REPAIR REQUIRED**);
+- that historical PRE-Q7 eligibility remains sufficient after Q7 HOLD;
 - MENUS Complete / Slice I ACCEPT;
 - S05 parent terminalization;
 - Q1–Q5 physical Sony / Windows / projector / audio PASS;
@@ -653,10 +724,11 @@ Q5: LANDED / VERIFIED ON MAIN @ c7e41a4… (PR #131; proof 455c4cf…; reviewed 
 Q6: EXECUTED on d921b07… — COURT-A GAPS REMAIN (G1, G2); COURT-B NOT RUN; repair packet Q6-RP-1 (Q3) required
 Q6-RP-1: LANDED / VERIFIED ON MAIN @ b1392391… (PR #135; tip 5764fa3…; trees EXACT MATCH) — G1/G2
 Q6-RP-2: LANDED / VERIFIED ON MAIN @ 9410b62… (PR #136) — COURT-A COMPLETE; COURT-B RECOMMEND ELIGIBLE (recommendation only)
-PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE ISSUED — candidate SHA 9410b6290a6dcb2f971e66da8173c3b44a6f785a (DevPM verdict; not a new Q-stage)
-Q7: natural owner usability playthrough — NOT BEGUN (eligible; separate start required)
+PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE ISSUED (historical) — candidate SHA 9410b6290a6dcb2f971e66da8173c3b44a6f785a
+Q7: HOLD — REPAIR REQUIRED (Q7-F01 Show buzzer setup; Q7-F02 physical path unusable; root cause UNESTABLISHED)
+Court B future gate: BLACK-BOX TEACHER RUN (§9.1) + supported-hardware rule (§9.2) required before RECOMMEND ELIGIBLE
 S05 parent: OPEN / NOT TERMINAL
-owner playthrough: ELIGIBLE FOR Q7 (not begun); physical Sony/projector/audio/Windows NOT RUN
+owner playthrough: HOLD (do not resume Q7 / product repair without new authority)
 Finding C: CLOSED ON MAIN BY Q3 @ 85bb951…; Finding D: CLOSED ON MAIN BY Q5 @ c7e41a4…
 functional escapes: repair/verify required — no owner-waiver through PRE-Q7
 S04D / S06: NOT AUTHORIZED

@@ -62,9 +62,11 @@ Court A re-review: GAPS REMAIN (G3). Court B NOT RUN.
 Q6-RP-1 LANDED on main @ b1392391… (PR #135; tip 5764fa3…; trees EXACT MATCH 2f69879…).
 Q6-RP-2 LANDED / VERIFIED ON MAIN @ 9410b62… (PR #136) repairs G3 / HG-13.
 Court A COMPLETE; Court B RECOMMEND ELIGIBLE (recommendation only).
-PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE ISSUED — candidate SHA
+PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE ISSUED (historical) — candidate SHA
 9410b6290a6dcb2f971e66da8173c3b44a6f785a (evidence/docs main at review 6735107…).
-Q7 NOT BEGUN. PHYSICAL SONY / projector / audio / Windows NOT RUN.
+Q7: HOLD — REPAIR REQUIRED (Q7-F01 / Q7-F02; root cause UNESTABLISHED).
+Court B future eligibility recommendations require BLACK-BOX TEACHER RUN +
+supported-hardware rule (contract §9.1 / §9.2).
 Golden paths = Q3; branch/failure = Q4; Electron = Q5; owner feel = Q7.
 Functional escapes / blockers may not be waived through PRE-Q7.
 ```
@@ -269,9 +271,19 @@ Functional blockers may **not** be waived through PRE-Q7.
 4. STATUS/CURRENT agree with contract;
 5. Remaining visible issues = usability/polish or honestly NOT-RUN physical —
    **not** known functional blockers;
-6. Output **RECOMMEND ELIGIBLE** or **HOLD** — never self-issue
+6. **BLACK-BOX TEACHER RUN completed and frozen** on the candidate
+   ([`PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](PRE-OWNER-FUNCTIONAL-QUALIFICATION.md)
+   §9.1) — real starting surface; visible/a11y UI only; no testid navigation,
+   state injection, helper posture, route shortcuts, diagnostics, or
+   source-code coaching during the run; code inspection only after freeze;
+   hesitation / failed affordances / undiscoverable paths recorded as evidence;
+7. **Supported-hardware rule** satisfied (§9.2): if the candidate advertises a
+   supported physical-hardware workflow, current-build physical evidence covers
+   it **or** the path is explicitly gated/excluded — keyboard fallback alone
+   does **not** make that physical path non-blocking;
+8. Output **RECOMMEND ELIGIBLE** or **HOLD** — never self-issue
    `OWNER-PLAYTHROUGH-ELIGIBLE` (**DevPM PRE-Q7 verdict** after Q6; **Q7
-   does not**).
+   does not**). Do **not** recommend eligible without items 6–7.
 
 ---
 
@@ -300,7 +312,9 @@ owner playthrough: PAUSED / GATED (Q0–Q6 + PRE-Q7 eligibility)
 Findings A/B: CLOSED BY Q1 (SIMULATED where labeled); individual Q1 ≠ Q2 PASS
 Finding C: CLOSED ON MAIN BY Q3 @ 85bb951… (HG-12)
 Finding D: CLOSED ON MAIN BY Q5 @ c7e41a4… (shell RETAIN + q5-session-lifecycle)
-PRE-Q7 OWNER-PLAYTHROUGH-ELIGIBLE: NOT ISSUED (DevPM verdict after Q6)
+PRE-Q7 OWNER-PLAYTHROUGH-ELIGIBLE: ISSUED historically @ 9410b629…; Q7 HOLD supersedes playthrough readiness
+Q7: HOLD — REPAIR REQUIRED (F01/F02)
+Court B: BLACK-BOX TEACHER RUN + supported-hardware rule required before future RECOMMEND ELIGIBLE
 Q7 does not issue eligibility
 functional blockers: no owner-waiver escape hatch through PRE-Q7
 ```
