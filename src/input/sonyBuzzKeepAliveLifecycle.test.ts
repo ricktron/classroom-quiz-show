@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { createSonyBuzzKeepAliveLifecycle } from './sonyBuzzKeepAliveLifecycle'
 import { createFakeHidDevice, createFakeWebHidTransport } from './webHidTransport'
+import { wipeWbuzzSignalTraceForTests } from './wbuzzSignalChainTrace'
 
 describe('sonyBuzzKeepAliveLifecycle', () => {
   const intervals: Array<{ id: number; fn: () => void; ms: number }> = []
@@ -18,6 +19,7 @@ describe('sonyBuzzKeepAliveLifecycle', () => {
   afterEach(() => {
     intervals.length = 0
     nextId = 1
+    wipeWbuzzSignalTraceForTests()
   })
 
   function tickAll(): void {

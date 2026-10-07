@@ -91,6 +91,10 @@ export default defineConfig(({ command, isPreview, mode }) => {
 
   return {
     base,
+    // Q7-DIAG-1: bind exact source SHA into the renderer for diagnostic traces.
+    define: {
+      __CQS_SOURCE_SHA__: JSON.stringify(sourceSha()),
+    },
     build: isDesktop
       ? {
           outDir: 'out/renderer',

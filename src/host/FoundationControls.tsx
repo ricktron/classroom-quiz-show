@@ -52,6 +52,7 @@ import { usePresentationAudio } from './usePresentationAudio'
 import { AudioControls } from './AudioControls'
 import { nextHostSessionId } from './ensureSession'
 import { DiagnosticReportPanel } from './DiagnosticReportPanel'
+import { WbuzzSignalChainPanel } from './WbuzzSignalChainPanel'
 import type { HostInputDiagnosticSignals } from './diagnostics/types'
 import {
   canStartPlayFromGame,
@@ -992,6 +993,8 @@ export function FoundationControls({
               displayWindow={displayOpen ? 'open' : 'closed'}
               inputSignals={inputDiagnosticSignals}
             />
+
+            <WbuzzSignalChainPanel />
 
             <div className="foundation__actions" role="group" aria-label="Foundation commands">
               <button

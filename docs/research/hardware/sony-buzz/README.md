@@ -175,7 +175,20 @@ Do **not** treat these as root cause.
 
 ---
 
-## 7. Non-claims
+## 7. Q7-DIAG-1 instrumentation (landed)
+
+Authorization `AUTHORIZE-CQS-Q7-DIAG-1-WBUZZ-SIGNAL-CHAIN-INSTRUMENTATION`
+adds a bounded Advanced-diagnostics **Wbuzz signal-chain trace** for future
+physical E03/E04/E11 runs. It does **not** repair Q7-F01/F02, change keep-alive
+payload/cadence, auto-Connect from Show buzzer setup, or mark any experiment
+executed.
+
+```text
+Q7: HOLD — REPAIR REQUIRED
+root cause: UNESTABLISHED
+```
+
+## 8. Non-claims
 
 This shelf does **not**:
 

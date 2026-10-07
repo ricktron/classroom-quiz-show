@@ -34,9 +34,11 @@ Record all of the following (use ISO timestamps where possible):
 | Result | PASS / FAIL / INCONCLUSIVE |
 | Interpretation | Must keep layers distinct; no root-cause leap |
 
-Optional instrumentation (diagnostic-only; not teacher UX change): temporary
-logging of send/open/permission — only under a future authorized diagnostic
-build if owner approves. Default: observe existing Host copy + OS tools.
+Optional instrumentation: **Q7-DIAG-1** lands a bounded Advanced-diagnostics
+**Wbuzz signal-chain trace** (WebHID lifecycle + Gamepad exposure/observation).
+Use it for future **E03 → E04 → E11** execution. Reset the trace before each
+experiment; copy text/JSON after. Ordinary teacher Class Setup is unchanged.
+No physical experiment in this matrix is marked executed by DIAG-1 alone.
 
 ---
 
@@ -153,16 +155,41 @@ build if owner approves. Default: observe existing Host copy + OS tools.
 
 ---
 
-## Suggested execution order
+## Suggested execution order (with Q7-DIAG-1)
 
-1. E03 (document F01 affordance under controlled observation)  
-2. E01 / E02 (permission matrix)  
-3. E04 (explicit Connect)  
-4. E11 (zeros with Connect)  
-5. E05 / E06 (BIND order)  
-6. E07 (Repair)  
-7. E08 / E09 / E10 (lifecycle edges)  
-8. E12 only after E11 baseline and with explicit diagnostic authority  
+Primary diagnostic path for the next physical session:
+
+1. **E03** — Show buzzer setup before Connect (capture F01 + trace: expect no
+   `connect_invoked` / no first output unless restore already ran)
+2. **E04** — Explicit Connect (expect `connect_invoked` → open/framing → first
+   output success/fail)
+3. **E11** — All-zero keep-alive path under Connect (confirm
+   `output_report_first_*` + `gamepad_wbuzz_appeared` / button / CQS observation)
+
+Then, as needed:
+
+4. E01 / E02 (permission matrix)
+5. E05 / E06 (BIND order)
+6. E07 (Repair)
+7. E08 / E09 / E10 (lifecycle edges)
+8. E12 only after E11 baseline and with explicit diagnostic authority
+
+### Operator procedure for E03 → E04 → E11 (instrumented)
+
+1. Launch the DIAG-1 build (exact SHA from Advanced diagnostics trace meta /
+   `desktop-build-identity.json`).
+2. Open **More → Advanced diagnostics → Wbuzz signal-chain trace**.
+3. Click **Reset trace**.
+4. Resume/reach Class Setup; expand optional buzzers.
+5. **E03:** click **Show buzzer setup** / **Check buzzers**; do **not** Connect;
+   wait ~10s; copy/export trace; note UI effect and whether any WebHID/Gamepad
+   events appeared.
+6. **Reset trace**.
+7. **E04:** click **Connect** (user gesture); wait for keep-alive; copy trace;
+   record first output success/fail and send counts.
+8. **E11:** with Connect healthy, exercise presses; confirm Gamepad appear +
+   first button transition + `cqs_buzzer_observation` timestamps; copy trace.
+9. Fill the capture fields for each row. Do **not** invent results.
 
 ---
 
