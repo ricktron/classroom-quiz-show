@@ -8,6 +8,9 @@ import react from '@vitejs/plugin-react'
  */
 export default defineConfig({
   plugins: [react()],
+  define: {
+    __CQS_SOURCE_SHA__: JSON.stringify('vitest'),
+  },
   test: {
     globals: true,
     environment: 'jsdom',

@@ -1,5 +1,6 @@
 import {
   keepalivePayload,
+  SONY_BUZZ_KEEPALIVE_BYTES,
   SONY_BUZZ_KEEPALIVE_CADENCE_MS,
   SONY_BUZZ_KEEPALIVE_HEALTH_AGE_MS,
   SONY_BUZZ_KEEPALIVE_REPORT_ID,
@@ -14,6 +15,13 @@ import {
   type CqsHidDeviceHandle,
   type WebHidTransport,
 } from './webHidTransport'
+import {
+  recordWbuzzSignalEvent,
+  type WbuzzSignalChainTrace,
+  type WbuzzSignalEventDetail,
+  type WbuzzSignalEventKind,
+  type WbuzzSignalOutcome,
+} from './wbuzzSignalChainTrace'
 
 /**
  * Single authoritative WebHID keep-alive lifecycle owner (Slice 21).
@@ -69,6 +77,13 @@ export interface SonyBuzzKeepAliveLifecycleOptions {
   readonly healthAgeMs?: number
   readonly setIntervalFn?: typeof setInterval
   readonly clearIntervalFn?: typeof clearInterval
+  /**
+   * Q7-DIAG-1 optional diagnostic sink.
+   * - `undefined` → process default ring buffer
+   * - `null` → disabled (unit tests that assert silence)
+   * - custom trace → isolated recorder
+   */
+  readonly diagnosticTrace?: WbuzzSignalChainTrace | null
 }
 
 function teacherCopy(health: SonyBuzzTransportHealth): string {
@@ -102,6 +117,7 @@ export function createSonyBuzzKeepAliveLifecycle(
   const healthAgeMs = options.healthAgeMs ?? SONY_BUZZ_KEEPALIVE_HEALTH_AGE_MS
   const setIntervalFn = options.setIntervalFn ?? setInterval
   const clearIntervalFn = options.clearIntervalFn ?? clearInterval
+  const diagnosticTrace = options.diagnosticTrace
 
   let generation = 0
   let enabled = false
@@ -124,7 +140,23 @@ export function createSonyBuzzKeepAliveLifecycle(
   let sends = 0
   let failures = 0
   let reprimeToken = 0
+  /** Q7-DIAG-1: distinguish first output report from later cadence sends. */
+  let firstOutputAttempted = false
+  let firstOutputSucceeded = false
   const listeners = new Set<SonyBuzzTransportListener>()
+
+  function diag(
+    kind: WbuzzSignalEventKind,
+    outcome: WbuzzSignalOutcome,
+    detail?: WbuzzSignalEventDetail,
+  ): void {
+    if (diagnosticTrace === null) return
+    if (diagnosticTrace) {
+      diagnosticTrace.record(kind, outcome, detail)
+      return
+    }
+    recordWbuzzSignalEvent(kind, outcome, detail)
+  }
 
   const unsubscribeDisconnect = transport.available
     ? transport.onExactDisconnect(() => {
@@ -197,6 +229,14 @@ export function createSonyBuzzKeepAliveLifecycle(
       return
     }
     inFlight = true
+    const isFirstAttempt = !firstOutputAttempted
+    if (isFirstAttempt) {
+      firstOutputAttempted = true
+      diag('output_report_first_attempted', 'info', {
+        reportId: SONY_BUZZ_KEEPALIVE_REPORT_ID,
+        byteLength: SONY_BUZZ_KEEPALIVE_BYTES,
+      })
+    }
     try {
       const payload = keepalivePayload()
       // Capture handle for this physical send; generation may invalidate later.
@@ -209,6 +249,17 @@ export function createSonyBuzzKeepAliveLifecycle(
       sends += 1
       lastSuccessfulSendAt = now()
       lastError = null
+      if (isFirstAttempt || !firstOutputSucceeded) {
+        firstOutputSucceeded = true
+        diag('output_report_first_succeeded', 'ok', {
+          sends,
+          failures,
+          reportId: SONY_BUZZ_KEEPALIVE_REPORT_ID,
+          byteLength: payload.byteLength,
+        })
+      } else {
+        diag('output_report_send', 'ok', { sends, failures })
+      }
       if (health === 'connecting' || health === 'recovering' || health === 'degraded') {
         health = 'healthy'
       } else if (health !== 'healthy' && health !== 'disabled') {
@@ -219,6 +270,21 @@ export function createSonyBuzzKeepAliveLifecycle(
       if (invalidateStale(expectedGeneration)) return
       failures += 1
       lastError = error instanceof Error ? `${error.name}: ${error.message}` : 'send failed'
+      if (isFirstAttempt || !firstOutputSucceeded) {
+        diag('output_report_first_failed', 'fail', {
+          sends,
+          failures,
+          errorName: error instanceof Error ? error.name : 'Error',
+          errorMessage: error instanceof Error ? error.message : String(error),
+        })
+      } else {
+        diag('output_report_send', 'fail', {
+          sends,
+          failures,
+          errorName: error instanceof Error ? error.name : 'Error',
+          errorMessage: error instanceof Error ? error.message : String(error),
+        })
+      }
       health = health === 'disabled' ? health : 'degraded'
       emit()
     } finally {
@@ -240,6 +306,7 @@ export function createSonyBuzzKeepAliveLifecycle(
   function startTimer(expectedGeneration: number): void {
     stopTimer()
     if (!enabled || !device || !framing) return
+    diag('keepalive_started', 'ok', { cadenceMs, generation: expectedGeneration })
     void sendOnce(expectedGeneration)
     timer = setIntervalFn(() => {
       void sendOnce(expectedGeneration)
@@ -248,10 +315,20 @@ export function createSonyBuzzKeepAliveLifecycle(
 
   async function convergeOpen(handle: CqsHidDeviceHandle, expectedGeneration: number): Promise<boolean> {
     if (invalidateStale(expectedGeneration)) return false
-    if (handle.opened) return true
+    if (handle.opened) {
+      diag('hid_open_succeeded', 'ok', { alreadyOpen: true })
+      return true
+    }
+    diag('hid_open_attempted', 'info', {})
     try {
       await handle.open()
-      return !invalidateStale(expectedGeneration) && handle.opened
+      const ok = !invalidateStale(expectedGeneration) && handle.opened
+      if (ok) {
+        diag('hid_open_succeeded', 'ok', { alreadyOpen: false })
+      } else {
+        diag('hid_open_failed', 'fail', { reason: 'stale-or-not-opened' })
+      }
+      return ok
     } catch (error) {
       const name =
         error instanceof DOMException
@@ -263,13 +340,21 @@ export function createSonyBuzzKeepAliveLifecycle(
       if (name === 'InvalidStateError' && /already open/i.test(message)) {
         // Only converge when the current handle is genuinely open/usable.
         if (invalidateStale(expectedGeneration)) return false
-        if (handle.opened) return true
+        if (handle.opened) {
+          diag('hid_open_succeeded', 'ok', { alreadyOpen: true, converged: true })
+          return true
+        }
         lastError = `${name}: ${message} (handle not open)`
+        diag('hid_open_failed', 'fail', { errorName: name, errorMessage: message })
         return false
       }
       if (!invalidateStale(expectedGeneration)) {
         lastError = error instanceof Error ? `${error.name}: ${error.message}` : 'open failed'
       }
+      diag('hid_open_failed', 'fail', {
+        errorName: name || 'Error',
+        errorMessage: message,
+      })
       return false
     }
   }
@@ -291,6 +376,9 @@ export function createSonyBuzzKeepAliveLifecycle(
     // Do NOT clear inFlight: a prior generation's unresolved sendReport still
     // owns the shared channel until that Promise settles.
     health = mode === 'recover' ? 'recovering' : 'connecting'
+    if (mode === 'recover') {
+      diag('transport_recovering', 'info', { mode })
+    }
     emit()
 
     let handle: CqsHidDeviceHandle | null = null
@@ -298,11 +386,29 @@ export function createSonyBuzzKeepAliveLifecycle(
       const granted = await transport.getGrantedExactDevices()
       if (invalidateStale(myGeneration)) return false
       handle = granted[0] ?? null
+      if (handle) {
+        diag('exact_device_found', 'ok', {
+          vendorId: handle.vendorId,
+          productId: handle.productId,
+          mode,
+          via: 'getDevices',
+        })
+      }
       if (!handle && mode === 'connect') {
+        diag('request_device_invoked', 'info', { mode })
         handle = await transport.requestExactDevice()
+        if (handle) {
+          diag('exact_device_found', 'ok', {
+            vendorId: handle.vendorId,
+            productId: handle.productId,
+            mode,
+            via: 'requestDevice',
+          })
+        }
       }
       if (invalidateStale(myGeneration)) return false
       if (!handle) {
+        diag('exact_device_not_found', 'fail', { mode })
         health = 'permission-required'
         device = null
         framing = null
@@ -315,6 +421,12 @@ export function createSonyBuzzKeepAliveLifecycle(
       ) {
         health = 'failed'
         lastError = 'Unexpected HID device (not exact Wbuzz 054c:1000).'
+        diag('exact_device_not_found', 'fail', {
+          mode,
+          vendorId: handle.vendorId,
+          productId: handle.productId,
+          reason: 'unexpected-ids',
+        })
         device = null
         framing = null
         emit()
@@ -325,11 +437,17 @@ export function createSonyBuzzKeepAliveLifecycle(
       if (!framingResult.ok) {
         health = 'failed'
         lastError = framingResult.reason
+        diag('framing_rejected', 'fail', { reason: framingResult.reason, mode })
         device = null
         framing = null
         emit()
         return false
       }
+      diag('framing_validated', 'ok', {
+        reportId: framingResult.reportId,
+        byteLength: framingResult.byteLength,
+        mode,
+      })
 
       const opened = await convergeOpen(handle, myGeneration)
       if (invalidateStale(myGeneration)) return false
@@ -375,6 +493,7 @@ export function createSonyBuzzKeepAliveLifecycle(
     } else {
       health = 'disconnected'
     }
+    diag('transport_disconnected', 'fail', { enabled, sends, failures })
     bumpReprime()
     emit()
   }
@@ -389,6 +508,10 @@ export function createSonyBuzzKeepAliveLifecycle(
       }
     },
     async connect() {
+      diag('connect_invoked', 'info', {
+        priorHealth: health,
+        hadDevice: device != null,
+      })
       if (!transport.available) {
         health = 'unsupported-api'
         emit()
@@ -443,9 +566,16 @@ export function createSonyBuzzKeepAliveLifecycle(
       emit()
     },
     async tryRestoreGranted() {
+      diag('restore_attempted', 'info', { priorHealth: health })
       if (!transport.available) return false
       // Already restored in this lifecycle instance — avoid connecting flicker.
       if (device && framing && (health === 'healthy' || health === 'degraded')) {
+        diag('exact_device_found', 'ok', {
+          vendorId: device.vendorId,
+          productId: device.productId,
+          mode: 'restore',
+          via: 'already-open',
+        })
         return true
       }
       // Probe previously granted devices without prompting. Only enable keep-alive
@@ -453,6 +583,7 @@ export function createSonyBuzzKeepAliveLifecycle(
       // deliberate Connect action.
       const granted = await transport.getGrantedExactDevices()
       if (granted.length === 0) {
+        diag('exact_device_not_found', 'fail', { mode: 'restore' })
         if (health !== 'disabled' && health !== 'unsupported-api') {
           health = 'permission-required'
           emit()
@@ -472,6 +603,7 @@ export function createSonyBuzzKeepAliveLifecycle(
         // class actually changes — subscribers compare snapshots themselves.
         emit()
       } else if (health === 'disconnected' || health === 'failed') {
+        diag('transport_recovering', 'info', { mode: 'visibility-return', priorHealth: health })
         void acquireAndStart('recover')
       } else {
         emit()

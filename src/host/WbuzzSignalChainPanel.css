@@ -1,0 +1,64 @@
+.wbuzz-signal-trace {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius);
+  background: var(--surface-base);
+}
+
+.wbuzz-signal-trace__summary {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: var(--fg-primary);
+}
+
+.wbuzz-signal-trace__summary-title {
+  font-weight: 600;
+}
+
+.wbuzz-signal-trace__summary-hint {
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+}
+
+.wbuzz-signal-trace__body {
+  margin-top: var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.wbuzz-signal-trace__list {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+  max-block-size: 16rem;
+  overflow: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.wbuzz-signal-trace__empty {
+  list-style: none;
+  margin-inline-start: -1.25rem;
+  color: var(--fg-muted);
+}
+
+.wbuzz-signal-trace__kind {
+  font-weight: 600;
+}
+
+.wbuzz-signal-trace__item[data-outcome='fail'] .wbuzz-signal-trace__outcome {
+  color: var(--fg-danger, #c45c5c);
+}
+
+.wbuzz-signal-trace__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}

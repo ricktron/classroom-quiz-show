@@ -15,11 +15,16 @@ import {
 } from '../input/gamepadMapping'
 import {
   actionForSonyBuzzColor,
+  matchesExpectedWbuzzGamepadTopology,
+  reportedIdLooksLikeSupportedWbuzz,
   SONY_BUZZ_COLORS,
+  SONY_BUZZ_EXPECTED_AXIS_COUNT,
+  SONY_BUZZ_EXPECTED_BUTTON_COUNT,
   SONY_BUZZ_SLOT_BASES,
   type SonyBuzzSlotId,
   sonyBuzzSlotId,
 } from '../input/sonyBuzzSupportedProfile'
+import { recordWbuzzSignalEvent } from '../input/wbuzzSignalChainTrace'
 import {
   browserGamepadSource,
   type GamepadReadStatus,
@@ -340,6 +345,10 @@ export function useGamepadBuzzInput({
     // real defect, not against strict mode.
     if (stop.current !== null) return
 
+    /** Q7-DIAG-1: track Wbuzz Gamepad exposure without a second poll owner. */
+    let wbuzzExposed = false
+    let firstWbuzzButtonTransitionRecorded = false
+
     const poll = () => {
       const current = latest.current
       const read = resolvedSource.current?.read() ?? { status: 'unsupported' as const }
@@ -349,6 +358,12 @@ export function useGamepadBuzzInput({
         // and nothing buzzes. A source that starts working again therefore starts
         // from a fresh baseline.
         baseline.current = null
+        if (wbuzzExposed) {
+          wbuzzExposed = false
+          recordWbuzzSignalEvent('gamepad_wbuzz_disappeared', 'fail', {
+            reason: read.status,
+          })
+        }
         publishDiagnostics(current.onDiagnostics, lastDiagnosticsKey, {
           status: read.status,
           controllers: [],
@@ -361,18 +376,60 @@ export function useGamepadBuzzInput({
       })
       baseline.current = scan.baseline
 
+      const controllers = read.snapshot.controllers.map((pad) => ({
+        controllerIndex: pad.controllerIndex,
+        buttonCount: pad.pressed.length,
+        reportedId: pad.reportedId,
+        reportedMapping: pad.reportedMapping,
+        classification: classifyGamepadReportedId(pad.reportedId),
+      }))
+
+      const wbuzzPad = read.snapshot.controllers.find((pad) => {
+        if (pad.reportedId.status !== 'available') return false
+        if (!reportedIdLooksLikeSupportedWbuzz(pad.reportedId.value)) return false
+        return matchesExpectedWbuzzGamepadTopology(pad.pressed.length)
+      })
+      if (wbuzzPad && !wbuzzExposed) {
+        wbuzzExposed = true
+        recordWbuzzSignalEvent('gamepad_wbuzz_appeared', 'ok', {
+          controllerIndex: wbuzzPad.controllerIndex,
+          buttonCount: wbuzzPad.pressed.length,
+          expectedButtons: SONY_BUZZ_EXPECTED_BUTTON_COUNT,
+          // Gameplay Gamepad boundary does not carry axes; do not claim observation.
+          axisCountObserved: false,
+          historicalExpectedAxes: SONY_BUZZ_EXPECTED_AXIS_COUNT,
+        })
+      } else if (!wbuzzPad && wbuzzExposed) {
+        wbuzzExposed = false
+        recordWbuzzSignalEvent('gamepad_wbuzz_disappeared', 'fail', {
+          reason: 'not-in-snapshot',
+        })
+      }
+
       publishDiagnostics(current.onDiagnostics, lastDiagnosticsKey, {
         status: 'ok',
-        controllers: read.snapshot.controllers.map((pad) => ({
-          controllerIndex: pad.controllerIndex,
-          buttonCount: pad.pressed.length,
-          reportedId: pad.reportedId,
-          reportedMapping: pad.reportedMapping,
-          classification: classifyGamepadReportedId(pad.reportedId),
-        })),
+        controllers,
       })
 
       if (scan.edges.length === 0) return
+
+      // Diagnostic-only: attribute the first Wbuzz transition only to edges from
+      // the currently recognized supported Wbuzz controller index. Non-Wbuzz
+      // edges still flow to capture/test/gameplay unchanged.
+      if (!firstWbuzzButtonTransitionRecorded && wbuzzPad) {
+        const wbuzzEdge = scan.edges.find(
+          (edge) => edge.controllerIndex === wbuzzPad.controllerIndex,
+        )
+        if (wbuzzEdge) {
+          firstWbuzzButtonTransitionRecorded = true
+          recordWbuzzSignalEvent('gamepad_wbuzz_button_transition', 'ok', {
+            controllerIndex: wbuzzEdge.controllerIndex,
+            buttonIndex: wbuzzEdge.buttonIndex,
+            edgeCount: scan.edges.length,
+            testMode: current.testMode,
+          })
+        }
+      }
 
       // Capture takes the FIRST fresh edge and consumes the whole poll. Nothing
       // reaches gameplay while a button is being assigned, and the rising edge
@@ -429,6 +486,12 @@ function reportTestModeEdges(
   for (const edge of edges) {
     const binding = resolveGamepadBinding(mapping, edge)
     if (binding !== null) {
+      recordWbuzzSignalEvent('cqs_buzzer_observation', 'ok', {
+        kind: 'test-observation',
+        controllerIndex: edge.controllerIndex,
+        buttonIndex: edge.buttonIndex,
+        teamIdLength: binding.teamId.length,
+      })
       onOutcome?.({
         kind: 'test-observation',
         teamId: binding.teamId,
@@ -439,6 +502,12 @@ function reportTestModeEdges(
     }
     const sony = sonyProfileActionForButtonIndex(edge.buttonIndex)
     if (sony !== null) {
+      recordWbuzzSignalEvent('cqs_buzzer_observation', 'ok', {
+        kind: 'test-observation-sony-slot',
+        controllerIndex: edge.controllerIndex,
+        buttonIndex: edge.buttonIndex,
+        slotId: sony.slotId,
+      })
       onOutcome?.({
         kind: 'test-observation',
         teamId: `sony-slot-${sony.slotId}`,
@@ -508,6 +577,12 @@ function dispatchGameplayEdges(
       current.onOutcome?.({ kind: 'refused', reason: result.reason })
       continue
     }
+    recordWbuzzSignalEvent('cqs_buzzer_observation', 'ok', {
+      kind: 'gameplay-accepted',
+      controllerIndex: edge.controllerIndex,
+      buttonIndex: edge.buttonIndex,
+      teamIdLength: translation.signal.teamId.length,
+    })
     current.onOutcome?.({ kind: 'accepted', teamId: translation.signal.teamId })
   }
 }

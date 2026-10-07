@@ -14,6 +14,7 @@ import {
   type SonyBuzzKeepAliveLifecycle,
   type SonyBuzzTransportSnapshot,
 } from '../input/sonyBuzzKeepAliveLifecycle'
+import { recordWbuzzSignalEvent } from '../input/wbuzzSignalChainTrace'
 import type { WebHidTransport } from '../input/webHidTransport'
 import {
   clearSonyBuzzMappingRecord,
@@ -103,6 +104,7 @@ export function useSonyBuzzSupportedProfile({
       setTransportSnap(lifecycleRef.current.getSnapshot())
     }
     const life = lifecycleRef.current
+    recordWbuzzSignalEvent('profile_hook_mounted', 'info', {})
     const unsub = life.subscribe((snap) => {
       setTransportSnap(snap)
       setReprimeToken(life.getReprimeToken())
