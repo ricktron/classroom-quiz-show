@@ -29,7 +29,8 @@ export type WbuzzSignalEventKind =
   | 'transport_recovering'
   | 'gamepad_wbuzz_appeared'
   | 'gamepad_wbuzz_disappeared'
-  | 'gamepad_button_transition'
+  /** First rising edge attributed to the currently recognized Wbuzz controller only. */
+  | 'gamepad_wbuzz_button_transition'
   | 'cqs_buzzer_observation'
   | 'trace_cleared'
 
@@ -115,12 +116,22 @@ function formatSnapshotText(snap: WbuzzSignalTraceSnapshot): string {
   ]
   for (const event of snap.events) {
     const detailKeys = Object.keys(event.detail)
-    const detail =
-      detailKeys.length === 0
-        ? ''
-        : ` ${detailKeys.map((key) => `${key}=${String(event.detail[key])}`).join(' ')}`
+    const detailParts = detailKeys.map(
+      (key) => key + '=' + String(event.detail[key]),
+    )
+    const detail = detailParts.length === 0 ? '' : ' ' + detailParts.join(' ')
     lines.push(
-      `#${event.seq} t=${event.wallClockMs} mono=${event.monotonicMs.toFixed(1)} ${event.kind} ${event.outcome}${detail}`,
+      '#' +
+        String(event.seq) +
+        ' t=' +
+        String(event.wallClockMs) +
+        ' mono=' +
+        event.monotonicMs.toFixed(1) +
+        ' ' +
+        event.kind +
+        ' ' +
+        event.outcome +
+        detail,
     )
   }
   return lines.join('\n')

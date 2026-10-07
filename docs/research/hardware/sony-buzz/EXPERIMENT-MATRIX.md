@@ -35,9 +35,11 @@ Record all of the following (use ISO timestamps where possible):
 | Interpretation | Must keep layers distinct; no root-cause leap |
 
 Optional instrumentation: **Q7-DIAG-1** lands a bounded Advanced-diagnostics
-**Wbuzz signal-chain trace** (WebHID lifecycle + Gamepad exposure/observation).
-Use it for future **E03 → E04 → E11** execution. Reset the trace before each
-experiment; copy text/JSON after. Ordinary teacher Class Setup is unchanged.
+**Wbuzz signal-chain trace** (keep-alive transport + Gamepad exposure/observation).
+For the primary physical path **E03 → E04 → E11**, use **one continuous trace**:
+reset once before the sequence begins, copy/save after each phase, and do **not**
+reset between phases. Reset clears history only and does not re-emit prior
+restore/open/Gamepad transitions. Ordinary teacher Class Setup is unchanged.
 No physical experiment in this matrix is marked executed by DIAG-1 alone.
 
 ---
@@ -157,14 +159,18 @@ No physical experiment in this matrix is marked executed by DIAG-1 alone.
 
 ## Suggested execution order (with Q7-DIAG-1)
 
-Primary diagnostic path for the next physical session:
+Primary diagnostic path for the next physical session (one continuous trace):
 
-1. **E03** — Show buzzer setup before Connect (capture F01 + trace: expect no
-   `connect_invoked` / no first output unless restore already ran)
-2. **E04** — Explicit Connect (expect `connect_invoked` → open/framing → first
-   output success/fail)
-3. **E11** — All-zero keep-alive path under Connect (confirm
-   `output_report_first_*` + `gamepad_wbuzz_appeared` / button / CQS observation)
+1. **E03** — Show buzzer setup before Connect (capture F01 + trace snapshot:
+   expect no `connect_invoked` / no first output unless restore already ran)
+2. **E04** — Explicit Connect (same extended trace: expect `connect_invoked` →
+   open/framing → first output success/fail)
+3. **E11** — All-zero keep-alive path under Connect (same extended trace: confirm
+   `output_report_first_*` + `gamepad_wbuzz_appeared` /
+   `gamepad_wbuzz_button_transition` / `cqs_buzzer_observation`)
+
+Use `connect_invoked`, output-report events, Gamepad events, and seq/timestamps
+as phase boundaries inside the single trace.
 
 Then, as needed:
 
@@ -174,22 +180,34 @@ Then, as needed:
 7. E08 / E09 / E10 (lifecycle edges)
 8. E12 only after E11 baseline and with explicit diagnostic authority
 
-### Operator procedure for E03 → E04 → E11 (instrumented)
+### Operator procedure for E03 → E04 → E11 (instrumented, continuous trace)
 
-1. Launch the DIAG-1 build (exact SHA from Advanced diagnostics trace meta /
-   `desktop-build-identity.json`).
+1. Launch the DIAG-1 build from a fresh application/session posture (exact SHA
+   from Advanced diagnostics trace meta / `desktop-build-identity.json`).
 2. Open **More → Advanced diagnostics → Wbuzz signal-chain trace**.
-3. Click **Reset trace**.
+3. Click **Reset trace** once before the supported-profile diagnostic sequence.
 4. Resume/reach Class Setup; expand optional buzzers.
 5. **E03:** click **Show buzzer setup** / **Check buzzers**; do **not** Connect;
-   wait ~10s; copy/export trace; note UI effect and whether any WebHID/Gamepad
-   events appeared.
-6. **Reset trace**.
-7. **E04:** click **Connect** (user gesture); wait for keep-alive; copy trace;
-   record first output success/fail and send counts.
-8. **E11:** with Connect healthy, exercise presses; confirm Gamepad appear +
-   first button transition + `cqs_buzzer_observation` timestamps; copy trace.
-9. Fill the capture fields for each row. Do **not** invent results.
+   wait ~10s; **copy/save** the trace snapshot (do **not** reset); note UI effect
+   and whether restore/Gamepad events already appeared.
+6. **E04:** click **Connect** (user gesture); wait for keep-alive; **copy/save**
+   the now-extended trace (do **not** reset); record first output success/fail
+   and send counts via `output_report_*` / seq numbers.
+7. **E11:** with Connect healthy, exercise presses; confirm
+   `gamepad_wbuzz_appeared` (buttonCount evidence only; axes are not observed by
+   the Gamepad boundary) + `gamepad_wbuzz_button_transition` +
+   `cqs_buzzer_observation`; **copy/save** the final extended trace.
+8. Fill the capture fields for each row from the continuous snapshots. Do **not**
+   invent results.
+
+### Reset semantics (standalone experiments)
+
+Reset clears in-memory history and writes a `trace_cleared` marker. It does
+**not** re-emit prior restore/open/first-output/Gamepad appearance transitions
+that already occurred in the running session. For a standalone later experiment
+that needs those antecedents visible again, start from a fresh/remounted
+application posture (or re-trigger the transitions) rather than assuming Reset
+reconstructs causal history.
 
 ---
 

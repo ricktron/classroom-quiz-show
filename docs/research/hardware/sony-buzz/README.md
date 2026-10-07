@@ -178,10 +178,19 @@ Do **not** treat these as root cause.
 ## 7. Q7-DIAG-1 instrumentation (landed)
 
 Authorization `AUTHORIZE-CQS-Q7-DIAG-1-WBUZZ-SIGNAL-CHAIN-INSTRUMENTATION`
-adds a bounded Advanced-diagnostics **Wbuzz signal-chain trace** for future
-physical E03/E04/E11 runs. It does **not** repair Q7-F01/F02, change keep-alive
+(plus precision repair `AUTHORIZE-CQS-Q7-DIAG-1-PRECISION-REPAIR-1`) adds a
+bounded Advanced-diagnostics **Wbuzz signal-chain trace** for future physical
+E03/E04/E11 runs. It does **not** repair Q7-F01/F02, change keep-alive
 payload/cadence, auto-Connect from Show buzzer setup, or mark any experiment
 executed.
+
+Primary physical path uses **one continuous trace**: reset once before E03,
+copy after each phase, never reset between E03/E04/E11. Trace Gamepad evidence
+records observed button topology (`buttonCount` / `expectedButtons`) and
+explicitly marks `axisCountObserved: false` with `historicalExpectedAxes: 2`
+only as historical expectation — not as a claim that 2 axes were observed in
+the current run. Button transitions are attributed only to the recognized
+Wbuzz controller (`gamepad_wbuzz_button_transition`).
 
 ```text
 Q7: HOLD — REPAIR REQUIRED

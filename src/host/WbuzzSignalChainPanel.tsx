@@ -12,6 +12,14 @@ import './WbuzzSignalChainPanel.css'
 
 type CopyStatus = 'idle' | 'copied' | 'failed'
 
+function copyStatusMessage(status: CopyStatus): string {
+  if (status === 'copied') return 'Copied to clipboard. Nothing was sent.'
+  if (status === 'failed') {
+    return 'Clipboard copy failed. Use the list above or try again.'
+  }
+  return 'Reset once before E03→E04→E11, then copy after each phase without resetting.'
+}
+
 /**
  * Q7-DIAG-1 — Advanced-diagnostics-only Wbuzz signal-chain trace viewer.
  *
@@ -49,7 +57,9 @@ export function WbuzzSignalChainPanel() {
       <div className="wbuzz-signal-trace__body">
         <p className="host__note" data-testid="wbuzz-signal-trace-privacy">
           Bounded local trace for physical Wbuzz experiments. It records supported-profile
-          keep-alive transport and controller exposure steps only. Reset before each experiment.
+          keep-alive transport and controller exposure steps only. For the primary E03→E04→E11
+          sequence, reset once at the start, then keep one continuous trace across phases.
+          Reset clears history only — it does not re-emit prior restore/open/Gamepad state.
           Nothing is uploaded.
         </p>
 
@@ -71,7 +81,7 @@ export function WbuzzSignalChainPanel() {
           ) : (
             snapshot.events.map((event) => {
               const detail = Object.keys(event.detail)
-                .map((key) => `${key}=${String(event.detail[key])}`)
+                .map((key) => key + '=' + String(event.detail[key]))
                 .join(' ')
               return (
                 <li
@@ -93,7 +103,8 @@ export function WbuzzSignalChainPanel() {
           )}
         </ol>
 
-        <div className="wbuzz-signal-trace__actions" role="group" aria-label="Trace actions">
+        <fieldset className="wbuzz-signal-trace__actions">
+          <legend className="visually-hidden">Trace actions</legend>
           <button
             type="button"
             className="btn btn--secondary"
@@ -127,7 +138,7 @@ export function WbuzzSignalChainPanel() {
           >
             Copy JSON
           </button>
-        </div>
+        </fieldset>
 
         <p
           id={statusId}
@@ -136,11 +147,7 @@ export function WbuzzSignalChainPanel() {
           role="status"
           aria-live="polite"
         >
-          {copyStatus === 'copied'
-            ? 'Copied to clipboard. Nothing was sent.'
-            : copyStatus === 'failed'
-              ? 'Clipboard copy failed. Use the list above or try again.'
-              : 'Reset before each physical experiment, then copy after the run.'}
+          {copyStatusMessage(copyStatus)}
         </p>
       </div>
     </details>

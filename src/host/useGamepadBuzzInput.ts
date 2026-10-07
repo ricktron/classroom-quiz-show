@@ -347,7 +347,7 @@ export function useGamepadBuzzInput({
 
     /** Q7-DIAG-1: track Wbuzz Gamepad exposure without a second poll owner. */
     let wbuzzExposed = false
-    let firstButtonTransitionRecorded = false
+    let firstWbuzzButtonTransitionRecorded = false
 
     const poll = () => {
       const current = latest.current
@@ -395,7 +395,9 @@ export function useGamepadBuzzInput({
           controllerIndex: wbuzzPad.controllerIndex,
           buttonCount: wbuzzPad.pressed.length,
           expectedButtons: SONY_BUZZ_EXPECTED_BUTTON_COUNT,
-          expectedAxes: SONY_BUZZ_EXPECTED_AXIS_COUNT,
+          // Gameplay Gamepad boundary does not carry axes; do not claim observation.
+          axisCountObserved: false,
+          historicalExpectedAxes: SONY_BUZZ_EXPECTED_AXIS_COUNT,
         })
       } else if (!wbuzzPad && wbuzzExposed) {
         wbuzzExposed = false
@@ -411,15 +413,22 @@ export function useGamepadBuzzInput({
 
       if (scan.edges.length === 0) return
 
-      if (!firstButtonTransitionRecorded) {
-        firstButtonTransitionRecorded = true
-        const edge = scan.edges[0]!
-        recordWbuzzSignalEvent('gamepad_button_transition', 'ok', {
-          controllerIndex: edge.controllerIndex,
-          buttonIndex: edge.buttonIndex,
-          edgeCount: scan.edges.length,
-          testMode: current.testMode,
-        })
+      // Diagnostic-only: attribute the first Wbuzz transition only to edges from
+      // the currently recognized supported Wbuzz controller index. Non-Wbuzz
+      // edges still flow to capture/test/gameplay unchanged.
+      if (!firstWbuzzButtonTransitionRecorded && wbuzzPad) {
+        const wbuzzEdge = scan.edges.find(
+          (edge) => edge.controllerIndex === wbuzzPad.controllerIndex,
+        )
+        if (wbuzzEdge) {
+          firstWbuzzButtonTransitionRecorded = true
+          recordWbuzzSignalEvent('gamepad_wbuzz_button_transition', 'ok', {
+            controllerIndex: wbuzzEdge.controllerIndex,
+            buttonIndex: wbuzzEdge.buttonIndex,
+            edgeCount: scan.edges.length,
+            testMode: current.testMode,
+          })
+        }
       }
 
       // Capture takes the FIRST fresh edge and consumes the whole poll. Nothing
