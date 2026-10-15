@@ -271,10 +271,16 @@ CLOSED ON MAIN BY Q3 @ `85bb951…`).
 candidate `9410b629…`
 ([`../receipts/2026-10-04-cqs-pre-q7-eligibility-verdict.md`](../receipts/2026-10-04-cqs-pre-q7-eligibility-verdict.md)).
 Natural Q7 owner playthrough on that candidate is now **`Q7: HOLD — REPAIR
-REQUIRED`** (Q7-F01 / Q7-F02; root cause UNESTABLISHED). Hardware research
-shelf (no product repair):
-[`../research/hardware/sony-buzz/`](../research/hardware/sony-buzz/). Do
-**not** resume Q7 or repair product behavior without new authority. S05
+REQUIRED`** (Q7-F01 / Q7-F02; root cause UNESTABLISHED). Under
+`AUTHORIZE-CQS-Q7-FULL-TEACHER-BUZZER-WORKFLOW-SIMULATION-REPAIR-QUALIFICATION-1`,
+a bounded simulation/repair/qualification PR is in flight from starting main
+`78304319…` (not merged; simulation ≠ physical; F02 root cause remains
+UNESTABLISHED). The independent certification review of that PR returned
+HOLD; its blockers were repaired on the same branch under
+`AUTHORIZE-CQS-Q7-FULL-TEACHER-BUZZER-WORKFLOW-REPAIR-R1-CERTIFICATION-BLOCKERS-1`
+([`../receipts/2026-10-15-cqs-q7-r1-certification-blockers-repair.md`](../receipts/2026-10-15-cqs-q7-r1-certification-blockers-repair.md);
+no merge authority; owner playthrough eligibility not issued). Hardware research shelf:
+[`../research/hardware/sony-buzz/`](../research/hardware/sony-buzz/). S05
 parent remains **OPEN / NOT TERMINAL**. Prior MENUS Slice I playthrough is
 **NOT RUN** as acceptance. S04D / S06 remain **NOT AUTHORIZED**. REAL MVP is
 **not** complete.

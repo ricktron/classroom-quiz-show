@@ -15,7 +15,7 @@ async function openHost(page: Page) {
   await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
   await ensureHostMoreOpen(page)
   await expect(page.getByTestId('persistence-status')).toBeVisible()
-  await expect(page.getByTestId('persistence-status')).not.toContainText(/loading/i)
+  await expect(page.getByTestId('persistence-status')).not.toContainText(/loading|opening saved games/i)
 }
 
 async function openDisplay(page: Page) {
@@ -97,7 +97,7 @@ test('refresh after completion does not restore the summary or recovery record',
   await host.reload()
   await expect(host.getByRole('heading', { name: /host control/i })).toBeVisible()
   await expect(host.getByTestId('persistence-status')).toBeVisible()
-  await expect(host.getByTestId('persistence-status')).not.toContainText(/loading/i)
+  await expect(host.getByTestId('persistence-status')).not.toContainText(/loading|opening saved games/i)
   await expect(host.getByTestId('persistence-recovery')).toHaveCount(0)
   await expect(host.getByTestId('session-summary-panel')).toHaveCount(0)
   await expect(host.getByTestId('game-lifecycle')).toHaveCount(0)

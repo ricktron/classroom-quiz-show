@@ -54,7 +54,9 @@ pre-owner Q6-RP-1: LANDED / VERIFIED ON MAIN @ b1392391… (PR #135; tip 5764fa3
 pre-owner Q6-RP-2: LANDED / VERIFIED ON MAIN @ 9410b62… (PR #136; product tip ad115a2…; reviewed tip 825bda1…; tree match) — G3/HG-13 repaired; COURT-A COMPLETE; COURT-B RECOMMEND ELIGIBLE
 PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE ISSUED (historical) — candidate SHA 9410b6290a6dcb2f971e66da8173c3b44a6f785a (evidence/docs main at review 6735107…)
 Q7: HOLD — REPAIR REQUIRED (Q7-F01 Show buzzer setup; Q7-F02 physical path unusable; root cause UNESTABLISHED)
-owner playthrough: HOLD (do not resume Q7 / product repair without new authority); hardware research shelf docs/research/hardware/sony-buzz/
+Q7 repair packet: AUTHORIZE-CQS-Q7-FULL-TEACHER-BUZZER-WORKFLOW-SIMULATION-REPAIR-QUALIFICATION-1 (open PR; not merged; simulation ≠ physical)
+Q7-R1 certification-blocker repair: AUTHORIZE-CQS-Q7-FULL-TEACHER-BUZZER-WORKFLOW-REPAIR-R1-CERTIFICATION-BLOCKERS-1 (same PR branch; no merge authority) — receipt docs/receipts/2026-10-15-cqs-q7-r1-certification-blockers-repair.md
+owner playthrough: HOLD pending merge + physical-only facts; hardware research shelf docs/research/hardware/sony-buzz/
 prior MENUS Slice I playthrough: NOT RUN (as acceptance)
 S05 parent: OPEN / NOT TERMINAL
 S04D / S06: NOT AUTHORIZED

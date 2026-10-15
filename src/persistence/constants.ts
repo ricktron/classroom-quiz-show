@@ -14,6 +14,22 @@ export const ACTIVE_SESSION_KEY = 'current'
 export const HOST_WRITER_LEASE_KEY = 'host-writer'
 export const HOST_WRITER_LEASE_TTL_MS = 4000
 
+/**
+ * Per-browser-tab (per Electron window) lease identity that survives a reload
+ * of the SAME tab. sessionStorage is tab-scoped; the value is claimed (removed)
+ * while a document is live and stashed back only on pagehide, so a duplicated
+ * tab or window.open copy never inherits a live window's identity.
+ */
+export const HOST_WINDOW_ID_SESSION_KEY = 'cqs:host-window-id:v1'
+
+/**
+ * Synchronous same-origin release marker written on pagehide by the window that
+ * holds the writer lease. IndexedDB cannot commit synchronously during unload,
+ * so this lets a reload or an Electron quit -> relaunch reclaim saving at once
+ * instead of waiting out HOST_WRITER_LEASE_TTL_MS.
+ */
+export const HOST_WRITER_RELEASE_STORAGE_KEY = 'cqs:host-writer-released:v1'
+
 /** Host-private active pack resource-scope pointer for same-origin display hydration. */
 export const ACTIVE_PACK_RESOURCE_SCOPE_KEY = 'active-pack-resource-scope'
 

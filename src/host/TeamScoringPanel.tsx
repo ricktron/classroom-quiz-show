@@ -25,6 +25,7 @@ import {
   type ScoreSource,
 } from '../game/teams/scoring'
 import { systemClock, type Clock } from '../time/clock'
+import { lastScoreChangeOf } from './lastScoreChange'
 import './TeamScoringPanel.css'
 
 /**
@@ -149,7 +150,7 @@ export function TeamScoringPanel({
   const liveTile = liveTileOf(game)
   const target = teams.find((team) => team.id === targetId) ?? null
   const scoreEvents = effectiveEvents(history).filter(isTeamScoreAdjusted)
-  const lastChange = scoreEvents.length === 0 ? null : scoreEvents[scoreEvents.length - 1]
+  const lastChange = lastScoreChangeOf(history)
   const undoTarget = findUndoTarget(history)
   const canUndoScore = undoTarget !== null && undoTarget.type === 'TEAM_SCORE_ADJUSTED'
 
@@ -468,7 +469,7 @@ export function TeamScoringPanel({
             ? 'No score change yet.'
             : `Last score change: ${displayName(lastChange.teamId)} ${formatSignedDelta(
                 lastChange.delta,
-              )} (${SCORE_ADJUSTMENT_MODE_LABEL[lastChange.mode]}).`}
+              )} (${lastChange.reason}).`}
         </p>
         <button
           type="button"

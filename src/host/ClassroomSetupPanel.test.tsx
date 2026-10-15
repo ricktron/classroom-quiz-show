@@ -703,6 +703,25 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('setup-buzzers-copy')).toHaveTextContent(/waiting for buzzers|detected/i)
     fireEvent.click(screen.getByTestId('setup-reveal-buzzers'))
     expect(onRevealBuzzersSetup).toHaveBeenCalled()
+    expect(screen.getByTestId('setup-buzzer-reveal-status')).toHaveTextContent(/Buzzer Check is on/i)
+    expect(screen.getByTestId('setup-reveal-buzzers')).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('Show buzzer setup produces teacher-visible status without hardware (Q7-F01)', () => {
+    const onRevealBuzzersSetup = vi.fn()
+    renderSetup({
+      wbuzzPresent: false,
+      onRevealBuzzersSetup,
+    })
+    fireEvent.click(screen.getByTestId('readiness-sony'))
+    expect(screen.queryByTestId('setup-buzzer-reveal-status')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Show buzzer setup' }))
+    expect(onRevealBuzzersSetup).toHaveBeenCalled()
+    expect(screen.getByTestId('setup-buzzer-reveal-status')).toHaveTextContent(/Connect buzzers/i)
+    expect(screen.getByTestId('setup-buzzers-task')).toHaveAttribute(
+      'data-buzzer-setup-revealed',
+      'true',
+    )
   })
 
   it('still offers Skip when no supported hardware is present', () => {
@@ -766,6 +785,30 @@ describe('ClassroomSetupPanel', () => {
     expect(copy).toMatch(/keyboard always works/i)
   })
 
+  it('explains a missing class name list and hides inert name choices (Q7 R1 item 8)', () => {
+    for (const wbuzzPresent of [false, true]) {
+      cleanup()
+      const { onSelectedIdentitiesChange } = renderSetup({ teamNameBank: [], wbuzzPresent })
+      fireEvent.click(screen.getByTestId('readiness-names'))
+      const copy = screen.getByTestId('setup-sony-copy').textContent ?? ''
+      expect(copy).toMatch(/no class name list/i)
+      expect(copy).toMatch(/type a name/i)
+      expect(copy).not.toMatch(/Blue|Orange|Green|Yellow|Red|pick from/)
+      const task = screen.getByTestId('setup-names-task')
+      expect(task.querySelectorAll('[data-testid^="tnsb-choice-"]')).toHaveLength(0)
+      expect(task.querySelectorAll('[data-testid^="tnsb-cycle-"]')).toHaveLength(0)
+      expect(task.querySelectorAll('[data-testid^="tnsb-reset-"]')).toHaveLength(0)
+
+      const manual = screen.getByTestId('tnsb-manual-red')
+      fireEvent.change(manual, { target: { value: 'Comet Crew' } })
+      fireEvent.keyDown(manual, { key: 'Enter' })
+      expect(screen.getByTestId('tnsb-claimed-red')).toHaveTextContent('Comet Crew')
+      expect(onSelectedIdentitiesChange).toHaveBeenLastCalledWith({ red: 'Comet Crew' })
+      fireEvent.click(screen.getByRole('button', { name: /^clear name$/i }))
+      expect(screen.queryByTestId('tnsb-claimed-red')).toBeNull()
+    }
+  })
+
   it('reseeds name selection when team roster signature changes', () => {
     const onSelectedIdentitiesChange = vi.fn()
     const { rerender } = render(
@@ -817,5 +860,62 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('tnsb-manual-green')).toBeInTheDocument()
     expect(screen.getByTestId('setup-play')).toBeDisabled()
     expect(screen.getByTestId('readiness-names')).toHaveAttribute('data-status', 'needs-attention')
+  })
+})
+
+describe('Q7-R1 buzzer reveal status follows the live Buzzer Check', () => {
+  function element(
+    overrides: Partial<Parameters<typeof ClassroomSetupPanel>[0]>,
+  ): React.ReactElement {
+    return (
+      <ClassroomSetupPanel
+        teams={TEAMS}
+        teamNameBank={[]}
+        leadership="leader"
+        observation={null}
+        sonyReady={false}
+        displayOpen={false}
+        onOpenDisplay={vi.fn()}
+        audioUnderstood={false}
+        audioMuted={false}
+        onAudioTest={vi.fn()}
+        onPanicMute={vi.fn()}
+        playReady={false}
+        onPlay={vi.fn()}
+        onSelectedIdentitiesChange={vi.fn()}
+        onRevealBuzzersSetup={vi.fn()}
+        wbuzzPresent
+        {...overrides}
+      />
+    )
+  }
+
+  it('says Connect next, then press RED once connected, and ends with Buzzer Check', () => {
+    const view = render(element({ buzzerCheckOn: false, sonyTeacherSummary: 'receiver-needs-attention' }))
+    fireEvent.click(screen.getByTestId('setup-reveal-buzzers'))
+    view.rerender(element({ buzzerCheckOn: true, sonyTeacherSummary: 'receiver-needs-attention' }))
+    expect(screen.getByTestId('setup-buzzer-reveal-status')).toHaveTextContent(
+      /Next: use Connect buzzers/,
+    )
+    expect(screen.getByTestId('setup-reveal-buzzers')).toHaveAttribute('aria-pressed', 'true')
+
+    view.rerender(
+      element({ buzzerCheckOn: true, sonyTeacherSummary: 'receiver-waiting-for-controllers' }),
+    )
+    const status = screen.getByTestId('setup-buzzer-reveal-status')
+    expect(status).not.toHaveTextContent(/Connect buzzers/)
+    expect(status).toHaveTextContent(/receiver is connected\. Next: press RED/i)
+
+    view.rerender(
+      element({ buzzerCheckOn: false, sonyTeacherSummary: 'receiver-waiting-for-controllers' }),
+    )
+    expect(screen.queryByTestId('setup-buzzer-reveal-status')).toBeNull()
+    expect(screen.getByTestId('setup-reveal-buzzers')).toHaveAttribute('aria-pressed', 'false')
+
+    // Re-entering Buzzer Check from elsewhere does not resurrect the old status.
+    view.rerender(
+      element({ buzzerCheckOn: true, sonyTeacherSummary: 'receiver-waiting-for-controllers' }),
+    )
+    expect(screen.queryByTestId('setup-buzzer-reveal-status')).toBeNull()
   })
 })

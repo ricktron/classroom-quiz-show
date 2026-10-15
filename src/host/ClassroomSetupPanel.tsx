@@ -68,6 +68,12 @@ export interface ClassroomSetupPanelProps {
   /** Scroll/reveal the existing Buzzers setup section below Class Setup. */
   readonly onRevealBuzzersSetup?: () => void
   /**
+   * Whether the Buzzers section's Buzzer Check is on (lifted from the poll
+   * owner). Undefined → no live signal; the reveal status then follows the
+   * teacher's own Show/Check click only.
+   */
+  readonly buzzerCheckOn?: boolean
+  /**
    * One-shot expand after contextual Fix return (Q1). Parent clears via
    * `onInitialSelectedTaskConsumed` once applied.
    */
@@ -131,6 +137,7 @@ export function ClassroomSetupPanel({
   onPlay,
   onFixTeamCount,
   onRevealBuzzersSetup,
+  buzzerCheckOn,
   initialSelectedTask = null,
   onInitialSelectedTaskConsumed,
   onSelectedIdentitiesChange,
@@ -149,6 +156,24 @@ export function ClassroomSetupPanel({
     seedSelection(teamNameBank, teamIds, initialSessionNames),
   )
   const [buzzerSkipped, setBuzzerSkipped] = useState(false)
+  /**
+   * Q7-F01: teacher-visible affirmation after Show/Check buzzer setup.
+   * Local UI only — does not invent hardware readiness.
+   */
+  const [buzzerSetupRevealed, setBuzzerSetupRevealed] = useState(false)
+  // Q7-R1: the affirmation describes a live Buzzer Check, so it ends with it
+  // (Leave Buzzer Check, or Start) instead of lingering as stale instructions.
+  const priorBuzzerCheckOn = useRef(buzzerCheckOn)
+  useEffect(() => {
+    const prior = priorBuzzerCheckOn.current
+    priorBuzzerCheckOn.current = buzzerCheckOn
+    if (prior === true && buzzerCheckOn === false) setBuzzerSetupRevealed(false)
+  }, [buzzerCheckOn])
+  const buzzerRevealShown = buzzerSetupRevealed && buzzerCheckOn !== false
+  const buzzerReceiverConnected =
+    sonyTeacherSummary === 'receiver-waiting-for-controllers' ||
+    sonyTeacherSummary === 'controllers-need-team-setup' ||
+    sonyTeacherSummary === 'sony-buzz-ready'
   /**
    * Teacher expand pin. `undefined` = follow pure default (required dominant or
    * none when Ready). Does not feed readiness status.
@@ -392,6 +417,7 @@ export function ClassroomSetupPanel({
           onClick={(event) => {
             event.stopPropagation()
             expandRow('buzzers')
+            setBuzzerSetupRevealed(true)
             onRevealBuzzersSetup()
           }}
         >
@@ -516,12 +542,17 @@ export function ClassroomSetupPanel({
           </div>
         )
       }
+      // Sanitized bank (same source the selection deck deals from).
+      const nameBankAvailable = selection.bank.length > 0
       return (
         <div className="classroom-setup__task" data-testid="setup-names-task">
           <p className="host__note" data-testid="setup-sony-copy">
-            {wbuzzPresent
-              ? 'Each team presses Blue, Orange, Green, or Yellow — top to bottom on the controller — to choose a name. Red shows four more names for that team only. You can also type a name. Keyboard always works.'
-              : 'Type a name for each team, or pick from the name choices. Keyboard always works.'}
+            {!nameBankAvailable
+              ? // Q7 R1 item 8: no class name list → no choices to press or pick.
+                'This game has no class name list, so there are no name choices. Type a name for each team. Keyboard always works.'
+              : wbuzzPresent
+                ? 'Each team presses Blue, Orange, Green, or Yellow — top to bottom on the controller — to choose a name. Red shows four more names for that team only. You can also type a name. Keyboard always works.'
+                : 'Type a name for each team, or pick from the name choices. Keyboard always works.'}
           </p>
           <TeamNameSelectionBoard
             views={teamIds.map((id) => selection.views[id]!).filter(Boolean)}
@@ -540,6 +571,7 @@ export function ClassroomSetupPanel({
             onReset={(teamId) =>
               apply(applyTeamNameInputs(selection, [{ kind: 'reset', teamId }]).state)
             }
+            nameBankAvailable={nameBankAvailable}
             reducedMotion={reducedMotion}
             highContrast={highContrast}
             grayscale={grayscale}
@@ -550,7 +582,11 @@ export function ClassroomSetupPanel({
 
     if (expandedTask === 'buzzers') {
       return (
-        <div className="classroom-setup__task" data-testid="setup-buzzers-task">
+        <div
+          className="classroom-setup__task"
+          data-testid="setup-buzzers-task"
+          data-buzzer-setup-revealed={buzzerRevealShown ? 'true' : 'false'}
+        >
           {playEnabled && (
             <p className="classroom-setup__optional-tag" data-testid="setup-optional-tag">
               Optional
@@ -562,12 +598,29 @@ export function ClassroomSetupPanel({
           <p className="host__note" data-testid="setup-buzzers-section-note">
             Connect and check buzzers in the Buzzers section below when you want them.
           </p>
+          {buzzerRevealShown && (
+            <p
+              className="classroom-setup__buzzer-reveal-status"
+              data-testid="setup-buzzer-reveal-status"
+              role="status"
+              aria-live="polite"
+              tabIndex={-1}
+            >
+              {buzzerReceiverConnected
+                ? 'Buzzer Check is on. The receiver is connected. Next: press RED on each handset to confirm it. Keyboard controls still work.'
+                : 'Buzzer Check is on. Next: use Connect buzzers below, then press RED on each handset to confirm it. Keyboard controls still work.'}
+            </p>
+          )}
           {onRevealBuzzersSetup && (
             <button
               type="button"
               className={buzzerHardwarePresent || sonyReady ? 'btn' : 'btn btn--secondary'}
               data-testid="setup-reveal-buzzers"
-              onClick={onRevealBuzzersSetup}
+              aria-pressed={buzzerRevealShown}
+              onClick={() => {
+                setBuzzerSetupRevealed(true)
+                onRevealBuzzersSetup()
+              }}
             >
               {sonyReady
                 ? 'Show buzzer setup'

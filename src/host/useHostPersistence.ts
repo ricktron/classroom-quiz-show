@@ -20,8 +20,13 @@ import {
   CLEAR_ALL_LOCAL_DATA_SUCCESS_MESSAGE,
   COORDINATION_BROADCAST_CHANNEL,
   HOST_WRITER_LEASE_TTL_MS,
+  HOST_WRITER_RELEASE_STORAGE_KEY,
   PersistenceWriteQueue,
   acquireOrRenewHostLease,
+  createStorageReleaseLedger,
+  getDocumentWindowLeaseId,
+  markHostLeaseReleasedSync,
+  type HostLeaseReleaseLedger,
   clearAllCompletedSummaries,
   clearActiveSession,
   clearAllLocalCqsData,
@@ -89,6 +94,15 @@ export interface UseHostPersistenceOptions {
   readonly leaseTtlMs?: number
   readonly renewIntervalMs?: number
   readonly broadcastChannel?: BroadcastChannel | null
+  /**
+   * Window identity shared by every hook instance in this tab/window. Defaults
+   * to the document's sessionStorage-backed identity when `tabId` is not
+   * injected; injected-`tabId` callers (tests simulating windows) get null
+   * unless they pass one, so each simulated window stays distinct.
+   */
+  readonly windowId?: string | null
+  /** Synchronous unload release marker store. Defaults to localStorage. */
+  readonly releaseLedger?: HostLeaseReleaseLedger | null
 }
 
 export type PersistenceActionResult =
@@ -201,6 +215,13 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   )
   const [writeQueue] = useState(() => new PersistenceWriteQueue())
   const [tabId] = useState(() => options.tabId ?? createTabId())
+  const [windowId] = useState<string | null>(() => {
+    if (options.windowId !== undefined) return options.windowId
+    return options.tabId === undefined ? getDocumentWindowLeaseId() : null
+  })
+  const [releaseLedger] = useState<HostLeaseReleaseLedger | null>(() =>
+    options.releaseLedger === undefined ? createDefaultReleaseLedger() : options.releaseLedger,
+  )
   const [broadcastChannel] = useState<BroadcastChannel | null>(() =>
     options.broadcastChannel === undefined
       ? createCoordinationBroadcastChannel()
@@ -269,8 +290,8 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   )
 
   const leadershipOptions = useMemo(
-    () => ({ adapter, tabId, clock, leaseTtlMs, broadcastChannel }),
-    [adapter, broadcastChannel, clock, leaseTtlMs, tabId],
+    () => ({ adapter, tabId, clock, leaseTtlMs, broadcastChannel, windowId, releaseLedger }),
+    [adapter, broadcastChannel, clock, leaseTtlMs, releaseLedger, tabId, windowId],
   )
 
   const canUseStorage = useCallback((): boolean => {
@@ -400,6 +421,39 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     broadcastChannel.addEventListener('message', listener)
     return () => broadcastChannel.removeEventListener('message', listener)
   }, [broadcastChannel, renewLease])
+
+  // Same-window handoff (Q7 R1 blocker 7). React effect cleanup does not run on
+  // reload or app quit, and an IndexedDB release cannot commit synchronously
+  // while the page unloads, so the saving window marks its release
+  // synchronously on pagehide. The next document in this tab (reload) or the
+  // relaunched Electron window then claims saving at once instead of waiting
+  // out the lease TTL as a false read-only follower. A window that is still
+  // live never writes this marker, so real two-window protection is unchanged.
+  // pagehide (not beforeunload) because a beforeunload can still be cancelled.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const onPageHide = () => {
+      if (leadershipRef.current !== 'leader') return
+      markHostLeaseReleasedSync(leadershipOptions)
+      void releaseHostLease(leadershipOptions)
+    }
+    const onPageShow = (event: PageTransitionEvent) => {
+      // Back/forward-cache restore: this document is live again; re-decide.
+      if (event.persisted) void renewLease()
+    }
+    const onStorage = (event: StorageEvent) => {
+      // Another window just released saving; claim it without waiting a renew tick.
+      if (event.key === HOST_WRITER_RELEASE_STORAGE_KEY) void renewLease()
+    }
+    window.addEventListener('pagehide', onPageHide)
+    window.addEventListener('pageshow', onPageShow)
+    window.addEventListener('storage', onStorage)
+    return () => {
+      window.removeEventListener('pagehide', onPageHide)
+      window.removeEventListener('pageshow', onPageShow)
+      window.removeEventListener('storage', onStorage)
+    }
+  }, [leadershipOptions, renewLease])
 
   function applyActiveSessionRead(read: ActiveSessionRead): void {
     if (read.kind === 'none') {
@@ -1045,6 +1099,14 @@ function findLastInitializedSessionId(history: readonly SessionEvent[]): string 
     if (event?.type === 'SESSION_INITIALIZED') return event.sessionId
   }
   return undefined
+}
+
+function createDefaultReleaseLedger(): HostLeaseReleaseLedger | null {
+  try {
+    return createStorageReleaseLedger(typeof localStorage === 'undefined' ? null : localStorage)
+  } catch {
+    return null
+  }
 }
 
 function createCoordinationBroadcastChannel(): BroadcastChannel | null {

@@ -143,6 +143,14 @@ export function createSonyBuzzKeepAliveLifecycle(
   /** Q7-DIAG-1: distinguish first output report from later cadence sends. */
   let firstOutputAttempted = false
   let firstOutputSucceeded = false
+  /**
+   * Q7-R1: whether the CURRENT acquired connection has delivered an output
+   * report. Lifecycle-wide diagnostic flags above must not decide health: a
+   * reconnect whose first send fails would otherwise read as degraded (shown as
+   * Connected). Reset on every acquire, disconnect, and disable; kept across a
+   * soft refresh of the same open device.
+   */
+  let connectionOutputConfirmed = false
   const listeners = new Set<SonyBuzzTransportListener>()
 
   function diag(
@@ -249,6 +257,7 @@ export function createSonyBuzzKeepAliveLifecycle(
       sends += 1
       lastSuccessfulSendAt = now()
       lastError = null
+      connectionOutputConfirmed = true
       if (isFirstAttempt || !firstOutputSucceeded) {
         firstOutputSucceeded = true
         diag('output_report_first_succeeded', 'ok', {
@@ -270,22 +279,19 @@ export function createSonyBuzzKeepAliveLifecycle(
       if (invalidateStale(expectedGeneration)) return
       failures += 1
       lastError = error instanceof Error ? `${error.name}: ${error.message}` : 'send failed'
-      if (isFirstAttempt || !firstOutputSucceeded) {
-        diag('output_report_first_failed', 'fail', {
-          sends,
-          failures,
-          errorName: error instanceof Error ? error.name : 'Error',
-          errorMessage: error instanceof Error ? error.message : String(error),
-        })
+      diag(isFirstAttempt || !firstOutputSucceeded ? 'output_report_first_failed' : 'output_report_send', 'fail', {
+        sends,
+        failures,
+        errorName: error instanceof Error ? error.name : 'Error',
+        errorMessage: error instanceof Error ? error.message : String(error),
+      })
+      if (!connectionOutputConfirmed) {
+        // Q7: this connection never delivered output — never Connected/healthy.
+        health = health === 'disabled' ? health : 'failed'
+        stopTimer()
       } else {
-        diag('output_report_send', 'fail', {
-          sends,
-          failures,
-          errorName: error instanceof Error ? error.name : 'Error',
-          errorMessage: error instanceof Error ? error.message : String(error),
-        })
+        health = health === 'disabled' ? health : 'degraded'
       }
-      health = health === 'disabled' ? health : 'degraded'
       emit()
     } finally {
       inFlight = false
@@ -373,6 +379,7 @@ export function createSonyBuzzKeepAliveLifecycle(
     const myGeneration = generation
     stopTimer()
     clearDeferredSend()
+    connectionOutputConfirmed = false
     // Do NOT clear inFlight: a prior generation's unresolved sendReport still
     // owns the shared channel until that Promise settles.
     health = mode === 'recover' ? 'recovering' : 'connecting'
@@ -463,7 +470,8 @@ export function createSonyBuzzKeepAliveLifecycle(
       framing = framingResult
       bumpReprime()
       if (enabled) {
-        health = 'healthy'
+        // Stay connecting until the first successful output report (Q7 honesty).
+        health = 'connecting'
         startTimer(myGeneration)
       } else {
         health = 'disabled'
@@ -488,6 +496,7 @@ export function createSonyBuzzKeepAliveLifecycle(
     // Retain inFlight until any already-issued sendReport settles.
     device = null
     framing = null
+    connectionOutputConfirmed = false
     if (!enabled) {
       health = transport.available ? 'disabled' : 'unsupported-api'
     } else {
@@ -527,7 +536,8 @@ export function createSonyBuzzKeepAliveLifecycle(
       ) {
         generation += 1
         const g = generation
-        health = 'healthy'
+        // Keep the observed health class: only a send result may change it.
+        if (!connectionOutputConfirmed) health = 'connecting'
         startTimer(g)
         bumpReprime()
         emit()
@@ -540,7 +550,10 @@ export function createSonyBuzzKeepAliveLifecycle(
       if (device && framing) {
         generation += 1
         const g = generation
-        health = 'healthy'
+        // Q7-R1: never claim healthy before this connection has delivered output.
+        if (!connectionOutputConfirmed || (health !== 'healthy' && health !== 'degraded')) {
+          health = 'connecting'
+        }
         startTimer(g)
         bumpReprime()
         emit()
@@ -558,6 +571,7 @@ export function createSonyBuzzKeepAliveLifecycle(
       const closing = device
       device = null
       framing = null
+      connectionOutputConfirmed = false
       if (closing?.opened) {
         void closing.close().catch(() => {})
       }

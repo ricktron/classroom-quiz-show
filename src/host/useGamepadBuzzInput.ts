@@ -221,6 +221,12 @@ export interface UseGamepadBuzzInputOptions {
   /** Told about the first fresh press while capturing. Suppresses gameplay. */
   readonly onCapture?: (control: GamepadControlRef) => void
   /**
+   * Told about every poll's fresh rising edges, whatever mode consumes them
+   * (capture, test, or gameplay). Host-private hardware evidence only — it
+   * never dispatches and never changes what the edges do.
+   */
+  readonly onButtonEdges?: (edges: readonly GamepadControlRef[]) => void
+  /**
    * Opaque token from an external lifecycle owner (e.g. WebHID keep-alive).
    * Any change forces a Gamepad edge-baseline re-prime without creating a second
    * poll loop.
@@ -241,6 +247,7 @@ export function useGamepadBuzzInput({
   onOutcome,
   onDiagnostics,
   onCapture,
+  onButtonEdges,
   reprimeToken = 0,
 }: UseGamepadBuzzInputOptions): void {
   // Everything the loop reads lives in a ref, so the loop is registered ONCE and
@@ -258,6 +265,7 @@ export function useGamepadBuzzInput({
     onOutcome,
     onDiagnostics,
     onCapture,
+    onButtonEdges,
   })
   latest.current = {
     enabled,
@@ -270,6 +278,7 @@ export function useGamepadBuzzInput({
     onOutcome,
     onDiagnostics,
     onCapture,
+    onButtonEdges,
   }
 
   /** `null` means "re-prime": the next poll is a baseline and emits nothing. */
@@ -412,6 +421,8 @@ export function useGamepadBuzzInput({
       })
 
       if (scan.edges.length === 0) return
+
+      current.onButtonEdges?.(scan.edges)
 
       // Diagnostic-only: attribute the first Wbuzz transition only to edges from
       // the currently recognized supported Wbuzz controller index. Non-Wbuzz

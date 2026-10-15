@@ -109,6 +109,8 @@ export function FoundationControls({
   const [playReplaceArmed, setPlayReplaceArmed] = useState(false)
   /** Class Setup Check/Show → existing SBS Buzzer Check (one-shot). */
   const [enterBuzzerCheck, setEnterBuzzerCheck] = useState(false)
+  /** Buzzer Check (SBS test mode) lifted from the poll owner for Class Setup copy. */
+  const [buzzerCheckOn, setBuzzerCheckOn] = useState(false)
   /** Q1 contextual Fix return: open Names (or named task) once setup remounts. */
   const [setupFocusOnce, setSetupFocusOnce] = useState<HostSetupFocusTask | null>(null)
   const contextualReturnLatchedRef = useRef(false)
@@ -709,16 +711,49 @@ export function FoundationControls({
               },
             })
           }}
+          buzzerCheckOn={buzzerCheckOn}
           onRevealBuzzersSetup={() => {
-            // Q1-A: Check/Show enters existing SBS Buzzer Check, then reveals it.
+            // Q1-A + Q7-F01: enter existing SBS Buzzer Check, then bring Connect
+            // (or the Buzzers section) into the teacher viewport with meaningful focus.
             setEnterBuzzerCheck(true)
-            const target =
-              document.querySelector('[data-testid="sbs-supported-profile"]') ??
-              document.querySelector('[data-testid="gih"]')
-            if (target instanceof HTMLElement) {
-              target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            const reduceMotion =
+              typeof window.matchMedia === 'function' &&
+              window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            const reveal = () => {
+              const connect = document.querySelector('[data-testid="sbs-connect"]')
+              const section =
+                document.querySelector('[data-testid="sbs-supported-profile"]') ??
+                document.querySelector('[data-testid="gih"]')
+              const target =
+                connect instanceof HTMLElement
+                  ? connect
+                  : section instanceof HTMLElement
+                    ? section
+                    : null
+              if (!target) return
+              target.scrollIntoView({
+                behavior: reduceMotion ? 'auto' : 'smooth',
+                block: 'center',
+              })
+              if (
+                connect instanceof HTMLButtonElement &&
+                !connect.disabled &&
+                connect.getAttribute('aria-disabled') !== 'true'
+              ) {
+                connect.focus({ preventScroll: true })
+                return
+              }
+              const status = document.querySelector('[data-testid="setup-buzzer-reveal-status"]')
+              if (status instanceof HTMLElement) {
+                status.focus({ preventScroll: true })
+                return
+              }
               target.focus({ preventScroll: true })
             }
+            // Wait for Class Setup status + Buzzer Check paint before scroll/focus.
+            requestAnimationFrame(() => {
+              requestAnimationFrame(reveal)
+            })
           }}
           onSelectedIdentitiesChange={(claimed) => {
             const issuedAt = now()
@@ -746,9 +781,17 @@ export function FoundationControls({
 
         {game && playReady && (
           <div className="foundation__gameplay" data-testid="host-gameplay">
-            {/* Q6-RP-1 (G1): ordinary round progression — never via Advanced diagnostics. */}
-            <RoundProgressHostPanel dispatch={dispatch} game={game} clock={clock} />
-            <CategoryBoardHostPanel dispatch={dispatch} game={game} clock={clock} />
+            {/*
+              Q7-R1 (item 11): while a clue is open, the clue + round status sit
+              in a lead column with the response window and buzz-in queue beside
+              them (CSS only; see FoundationControls.css). Otherwise this wrapper
+              is `display: contents` and the panels stack exactly as before.
+            */}
+            <div className="foundation__lead">
+              {/* Q6-RP-1 (G1): ordinary round progression — never via Advanced diagnostics. */}
+              <RoundProgressHostPanel dispatch={dispatch} game={game} clock={clock} />
+              <CategoryBoardHostPanel dispatch={dispatch} game={game} clock={clock} />
+            </div>
             <ResponseTimerHostPanel dispatch={dispatch} game={game} clock={clock} />
             <FinalWagerHostPanel
               dispatch={dispatch}
@@ -813,6 +856,7 @@ export function FoundationControls({
           onSonyTeacherSummaryChange={setSonyTeacherSummary}
           onWbuzzPresentChange={setWbuzzPresent}
           onInputDiagnosticSignals={setInputDiagnosticSignals}
+          onBuzzerCheckChange={setBuzzerCheckOn}
         />
       )}
 

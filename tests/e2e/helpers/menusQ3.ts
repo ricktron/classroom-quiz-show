@@ -63,27 +63,22 @@ export async function keyboardNamesReadyStart(page: Page): Promise<void> {
 }
 
 /**
- * Open Audience Display via Host chrome (`window.open`) when possible;
- * fall back to a same-context `#/display` tab (still real BroadcastChannel).
+ * Open Audience Display via the Host's own "Open display" control (`window.open`).
+ * No fallback: if the teacher's control does not open the Display, the journey
+ * fails (Q7-R1 test hardening — a silent `#/display` tab hid that failure).
  */
 export async function openAudienceFromHost(
   context: BrowserContext,
   host: Page,
 ): Promise<Page> {
-  const popupPromise = context.waitForEvent('page', { timeout: 5_000 }).catch(() => null)
-  await host.getByTestId('host-chrome-display').click()
+  const popupPromise = context.waitForEvent('page', { timeout: 10_000 })
+  await host.getByRole('button', { name: /^(open|focus) display$/i }).click()
   const popup = await popupPromise
-  if (popup) {
-    await popup.waitForLoadState('domcontentloaded')
-    await expect(popup.getByRole('heading', { name: /game display ready/i })).toBeVisible({
-      timeout: 20_000,
-    })
-    return popup
-  }
-  const display = await context.newPage()
-  await display.goto('#/display')
-  await expect(display.getByRole('heading', { name: /game display ready/i })).toBeVisible()
-  return display
+  await popup.waitForLoadState('domcontentloaded')
+  await expect(popup.getByRole('heading', { name: /game display ready/i })).toBeVisible({
+    timeout: 20_000,
+  })
+  return popup
 }
 
 /**

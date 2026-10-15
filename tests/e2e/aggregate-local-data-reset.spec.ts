@@ -38,7 +38,7 @@ async function openHost(page: Page) {
   await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
   await ensureHostMoreOpen(page)
   await expect(page.getByTestId('persistence-status')).toBeVisible()
-  await expect(page.getByTestId('persistence-status')).not.toContainText(/loading/i)
+  await expect(page.getByTestId('persistence-status')).not.toContainText(/loading|opening saved games/i)
 }
 
 async function waitForSaved(host: Page) {
@@ -274,7 +274,7 @@ test('teacher clear-all removes every CQS local store and returns a clean first-
 
   await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
   await ensureHostMoreOpen(page)
-  await expect(page.getByTestId('persistence-status')).not.toContainText(/loading/i)
+  await expect(page.getByTestId('persistence-status')).not.toContainText(/loading|opening saved games/i)
   await expect(page.getByTestId('persistence-recovery')).toHaveCount(0)
   await expect(page.getByTestId('persistence-library')).toContainText(/no saved games yet/i)
   await expect(page.getByRole('heading', { name: /ready to run class/i })).toHaveCount(0)

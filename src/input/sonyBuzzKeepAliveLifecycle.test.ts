@@ -340,8 +340,8 @@ describe('sonyBuzzKeepAliveLifecycle', () => {
     for (let i = 0; i < 20; i += 1) {
       await Promise.resolve()
     }
-    // New generation is otherwise ready (timer armed) but must not begin send #2 yet.
-    expect(life.getSnapshot().health).toBe('healthy')
+    // Timer armed / connecting until first successful output; must not begin send #2 yet.
+    expect(life.getSnapshot().health).toBe('connecting')
     expect(intervals.length).toBe(1)
     expect(sendStarts).toBe(1)
     expect(maxConcurrent).toBe(1)
@@ -526,5 +526,98 @@ describe('sonyBuzzKeepAliveLifecycle', () => {
     expect(intervals).toHaveLength(0)
     expect(sendStarts).toBe(1)
     expect(maxConcurrent).toBe(1)
+  })
+  describe('Q7-R1 connection-scoped output honesty', () => {
+    async function flush(): Promise<void> {
+      for (let i = 0; i < 10; i += 1) await Promise.resolve()
+    }
+
+    it('first output failure on first connect is failed, not connecting or healthy', async () => {
+      const device = createFakeHidDevice({ sendBehavior: 'fail' })
+      const transport = createFakeWebHidTransport({ requestResult: device })
+      const life = createSonyBuzzKeepAliveLifecycle({ transport, setIntervalFn, clearIntervalFn })
+      await life.connect()
+      await flush()
+      expect(life.getSnapshot().health).toBe('failed')
+      expect(life.getSnapshot().teacherMessage).toMatch(/could not reconnect/i)
+      expect(intervals).toHaveLength(0)
+      life.dispose()
+    })
+
+    it('reconnect whose first output fails is failed even after an earlier success', async () => {
+      const good = createFakeHidDevice()
+      const bad = createFakeHidDevice({ sendBehavior: 'fail' })
+      const transport = createFakeWebHidTransport({ requestResult: good, granted: [good] })
+      const life = createSonyBuzzKeepAliveLifecycle({ transport, setIntervalFn, clearIntervalFn })
+      await life.connect()
+      expect(life.getSnapshot().health).toBe('healthy')
+      transport.emitDisconnect(good)
+      await flush()
+      expect(life.getSnapshot().health).toBe('disconnected')
+      transport.setGranted([bad])
+      await life.connect()
+      await flush()
+      // Lifecycle-wide "first output succeeded" must not turn this into degraded.
+      expect(life.getSnapshot().health).toBe('failed')
+      expect(intervals).toHaveLength(0)
+      life.dispose()
+    })
+
+    it('a send failure after this connection delivered output is degraded, not failed', async () => {
+      let fail = false
+      const device = createFakeHidDevice()
+      const original = device.sendReport.bind(device)
+      device.sendReport = async (reportId: number, data: BufferSource) => {
+        if (fail) throw new Error('send failed')
+        return original(reportId, data)
+      }
+      const transport = createFakeWebHidTransport({ requestResult: device })
+      const life = createSonyBuzzKeepAliveLifecycle({ transport, setIntervalFn, clearIntervalFn })
+      await life.connect()
+      await flush()
+      expect(life.getSnapshot().health).toBe('healthy')
+      fail = true
+      tickAll()
+      await flush()
+      expect(life.getSnapshot().health).toBe('degraded')
+      life.dispose()
+    })
+
+    it('soft refresh (Connect while already open) does not upgrade degraded to healthy before a send', async () => {
+      let fail = false
+      let block: (() => void) | null = null
+      const device = createFakeHidDevice()
+      const original = device.sendReport.bind(device)
+      device.sendReport = async (reportId: number, data: BufferSource) => {
+        if (fail) throw new Error('send failed')
+        if (block === null && device.sendCalls.length >= 1) {
+          await new Promise<void>((resolve) => {
+            block = resolve
+          })
+        }
+        return original(reportId, data)
+      }
+      const transport = createFakeWebHidTransport({ requestResult: device })
+      const life = createSonyBuzzKeepAliveLifecycle({ transport, setIntervalFn, clearIntervalFn })
+      await life.connect()
+      await flush()
+      expect(life.getSnapshot().health).toBe('healthy')
+      fail = true
+      tickAll()
+      await flush()
+      expect(life.getSnapshot().health).toBe('degraded')
+      fail = false
+      const seen: string[] = []
+      const unsubscribe = life.subscribe((snap) => seen.push(snap.health))
+      seen.length = 0
+      await life.connect()
+      // Soft refresh emitted before the next send settled: still degraded.
+      expect(seen[0]).toBe('degraded')
+      ;(block as (() => void) | null)?.()
+      await flush()
+      expect(life.getSnapshot().health).toBe('healthy')
+      unsubscribe()
+      life.dispose()
+    })
   })
 })

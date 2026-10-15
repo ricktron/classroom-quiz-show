@@ -76,7 +76,7 @@ async function clearStartCount(host: Page) {
 
 async function ensureHostCommandsEnabled(host: Page) {
   await expect(host.getByTestId('persistence-status')).toBeVisible()
-  await expect(host.getByTestId('persistence-status')).not.toContainText(/loading/i)
+  await expect(host.getByTestId('persistence-status')).not.toContainText(/loading|opening saved games/i)
   const discard = host.getByTestId('persistence-discard')
   if (await discard.isVisible()) {
     await discard.click()

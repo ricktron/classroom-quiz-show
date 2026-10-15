@@ -1103,3 +1103,46 @@ than directly editing product code.
 ```text
 Q7: HOLD — REPAIR REQUIRED
 ```
+
+---
+
+## 2026-10-15 — Q7 full teacher buzzer workflow simulation repair qualification
+
+### Authorization
+
+`AUTHORIZE-CQS-Q7-FULL-TEACHER-BUZZER-WORKFLOW-SIMULATION-REPAIR-QUALIFICATION-1`
+
+Starting main: `78304319ec21106c64eee925a5f942726846d384`.
+
+### Permanent QA-escape lesson
+
+Prior PRE-Q7 / Court evidence standards allowed an ordinary owner-facing
+control (**Show buzzer setup**) to pass automation via callback / DOM
+visibility / scroll helpers without proving **REACH → ACT → VISIBLE EFFECT →
+CONTINUATION** from the natural teacher route. The owner became the first
+detector of Q7-F01. That standard is now strengthened in
+`docs/qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md` §9.1.1–§9.1.2.
+Historical receipts are **not** rewritten as dishonest.
+
+### Product repairs (bounded)
+
+1. **Q7-F01** — Class Setup shows teacher-visible status after Show/Check;
+   Connect is scrolled/focused into view; keyboard/semantic activation covered.
+2. Leaving Class Setup clears Buzzer Check `testMode` and auto-enables
+   controller buzzing when a supported Wbuzz mapping is applied (otherwise
+   gameplay presses were swallowed / Off under collapsed Controllers).
+3. Keep-alive stays `connecting` until first successful output; first output
+   failure → `failed` (no Connected lie).
+4. Leaving Buzzer Check clears sticky responding-slot memory.
+
+### Automation
+
+Platform-boundary Wbuzz simulator (`navigator.hid` + Gamepad). Black-box
+golden path + failure/recovery + viewport/a11y + Desktop Electron path.
+Simulation ≠ physical Sony; Q7-F02 physical root cause remains
+**UNESTABLISHED**.
+
+### Explicit non-claims
+
+Does not claim physical Sony PASS, Q7-F02 root cause, S04D, S06, S05
+terminalization, signing/release, or merge authority.

@@ -10,6 +10,13 @@ export interface TeamNameSelectionBoardProps {
   readonly onCycle: (teamId: string) => void
   readonly onManual: (teamId: string, name: string) => void
   readonly onReset: (teamId: string) => void
+  /**
+   * Q7 R1 item 8: whether this Game has a class name list to choose from.
+   * Without one, colour choices, "More names" and "Choose again" would be live
+   * but do nothing, so they are not rendered; typing a name stays fully usable
+   * and a typed name can be cleared. Defaults to true (unchanged behavior).
+   */
+  readonly nameBankAvailable?: boolean
   readonly reducedMotion?: boolean
   readonly highContrast?: boolean
   readonly grayscale?: boolean
@@ -29,6 +36,7 @@ export function TeamNameSelectionBoard({
   onCycle,
   onManual,
   onReset,
+  nameBankAvailable = true,
   reducedMotion = false,
   highContrast = false,
   grayscale = false,
@@ -40,6 +48,7 @@ export function TeamNameSelectionBoard({
       data-reduced-motion={reducedMotion ? 'true' : 'false'}
       data-high-contrast={highContrast ? 'true' : 'false'}
       data-grayscale={grayscale ? 'true' : 'false'}
+      data-name-bank={nameBankAvailable ? 'available' : 'none'}
     >
       {views.map((view) => (
         <article
@@ -54,57 +63,76 @@ export function TeamNameSelectionBoard({
                 Selected: {view.claimedName}
               </p>
             ) : (
-              <p className="tnsb__hint">Press a color or type a name.</p>
+              <p className="tnsb__hint">
+                {nameBankAvailable ? 'Press a color or type a name.' : 'Type a name.'}
+              </p>
             )}
           </header>
-          <ol className="tnsb__choices">
-            {TEAM_NAME_CHOICE_DISPLAY_ORDER.map((choiceIndex) => {
-              const color = TEAM_NAME_CHOICE_COLORS[choiceIndex]
-              const name = view.candidates[choiceIndex] ?? '—'
-              const selected = view.selectedChoiceIndex === choiceIndex
-              const subdued = view.claimedName !== null && !selected
-              const colorWord = color[0]!.toUpperCase() + color.slice(1)
-              return (
-                <li key={color}>
-                  <button
-                    type="button"
-                    className={`tnsb__choice tnsb__choice--${color}${selected ? ' tnsb__choice--selected' : ''}${
-                      subdued ? ' tnsb__choice--subdued' : ''
-                    }`}
-                    data-testid={`tnsb-choice-${view.teamId}-${choiceIndex}`}
-                    data-color={color}
-                    data-ordinal={choiceIndex + 1}
-                    disabled={view.claimedName !== null}
-                    aria-label={`${choiceColorLabel(color, choiceIndex)}: ${name}`}
-                    onClick={() => onClaim(view.teamId, choiceIndex)}
-                  >
-                    <span className="tnsb__ordinal" aria-hidden="true">
-                      {colorWord}
-                    </span>
-                    <span className="tnsb__name">{name}</span>
-                  </button>
-                </li>
-              )
-            })}
-          </ol>
+          {nameBankAvailable && (
+            <ol className="tnsb__choices">
+              {TEAM_NAME_CHOICE_DISPLAY_ORDER.map((choiceIndex) => {
+                const color = TEAM_NAME_CHOICE_COLORS[choiceIndex]
+                const name = view.candidates[choiceIndex] ?? '—'
+                const selected = view.selectedChoiceIndex === choiceIndex
+                const subdued = view.claimedName !== null && !selected
+                const colorWord = color[0]!.toUpperCase() + color.slice(1)
+                return (
+                  <li key={color}>
+                    <button
+                      type="button"
+                      className={`tnsb__choice tnsb__choice--${color}${selected ? ' tnsb__choice--selected' : ''}${
+                        subdued ? ' tnsb__choice--subdued' : ''
+                      }`}
+                      data-testid={`tnsb-choice-${view.teamId}-${choiceIndex}`}
+                      data-color={color}
+                      data-ordinal={choiceIndex + 1}
+                      disabled={view.claimedName !== null}
+                      aria-label={`${choiceColorLabel(color, choiceIndex)}: ${name}`}
+                      onClick={() => onClaim(view.teamId, choiceIndex)}
+                    >
+                      <span className="tnsb__ordinal" aria-hidden="true">
+                        {colorWord}
+                      </span>
+                      <span className="tnsb__name">{name}</span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ol>
+          )}
           <div className="tnsb__actions">
-            <button
-              type="button"
-              className="btn btn--secondary"
-              data-testid={`tnsb-cycle-${view.teamId}`}
-              disabled={view.claimedName !== null}
-              onClick={() => onCycle(view.teamId)}
-            >
-              More names
-            </button>
-            <button
-              type="button"
-              className="btn btn--secondary"
-              data-testid={`tnsb-reset-${view.teamId}`}
-              onClick={() => onReset(view.teamId)}
-            >
-              Choose again
-            </button>
+            {nameBankAvailable ? (
+              <>
+                <button
+                  type="button"
+                  className="btn btn--secondary"
+                  data-testid={`tnsb-cycle-${view.teamId}`}
+                  disabled={view.claimedName !== null}
+                  onClick={() => onCycle(view.teamId)}
+                >
+                  More names
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--secondary"
+                  data-testid={`tnsb-reset-${view.teamId}`}
+                  onClick={() => onReset(view.teamId)}
+                >
+                  Choose again
+                </button>
+              </>
+            ) : (
+              view.claimedName !== null && (
+                <button
+                  type="button"
+                  className="btn btn--secondary"
+                  data-testid={`tnsb-reset-${view.teamId}`}
+                  onClick={() => onReset(view.teamId)}
+                >
+                  Clear name
+                </button>
+              )
+            )}
             <ManualNameField
               key={`${view.teamId}-${view.claimedName ?? ''}`}
               teamId={view.teamId}

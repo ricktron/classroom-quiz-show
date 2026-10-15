@@ -271,6 +271,74 @@ export function LocalInputHostPanel({
       </div>
       <h3 id="lih-title">Buzz-in</h3>
 
+      {/*
+        Q7-R1 (item 11): the live response queue (active claim, waiting teams,
+        Mark correct / incorrect / pass) leads this panel so it stays in the
+        teacher viewport during a clue. Keyboard configuration follows it.
+      */}
+      <h4 className="lih__heading lih__heading--lead">Response queue</h4>
+      {/*
+        The queue is a polite live region too: a teacher looking at the board must
+        still hear that the active team changed.
+      */}
+      <div aria-live="polite">
+        <dl className="lih__summary">
+          <dt>Active team</dt>
+          <dd data-testid="lih-active">{activeTeamCopy}</dd>
+          <dt>Waiting queue</dt>
+          <dd data-testid="lih-waiting">
+            {waitingIds.length === 0
+              ? 'Empty'
+              : waitingIds.map((id, index) => `${index + 1}. ${nameOf(id)}`).join(' · ')}
+          </dd>
+          <dt>Last board adjudication</dt>
+          <dd data-testid="lih-board-outcome">{boardOutcomeCopy}</dd>
+        </dl>
+      </div>
+
+      <div className="lih__actions" role="group" aria-label="Response queue controls">
+        <button
+          type="button"
+          className="btn"
+          data-testid="lih-correct"
+          disabled={!canResolve}
+          onClick={() => resolveActive('correct')}
+        >
+          Mark correct
+        </button>
+        <button
+          type="button"
+          className="btn"
+          data-testid="lih-incorrect"
+          disabled={!canResolve}
+          onClick={() => resolveActive('incorrect')}
+        >
+          Mark incorrect and advance
+        </button>
+        <button
+          type="button"
+          className="btn btn--secondary"
+          data-testid="lih-pass"
+          disabled={!canResolve}
+          onClick={() => resolveActive('passed')}
+        >
+          Pass and advance
+        </button>
+      </div>
+
+      <p className="host__note" data-testid="lih-outcome" aria-live="polite">
+        {describeOutcome(lastOutcome, nameOf)}
+      </p>
+
+      <p className="host__note lih__hint">
+        Marking a response correct, incorrect, or passed moves no points —
+        awarding and deducting stay in the scoring panel, for every team. Correct
+        ends this response opportunity without revealing the answer. Close the
+        queue by resetting the window, returning to the board, or revealing the
+        answer.
+      </p>
+
+      <h4 className="lih__heading">Buzz keys</h4>
       <dl className="lih__summary" data-testid="lih-summary">
         <dt>Keyboard buzzing</dt>
         <dd data-testid="lih-enabled">{enabled ? 'On' : 'Off'}</dd>
@@ -305,7 +373,6 @@ export function LocalInputHostPanel({
         </button>
       </div>
 
-      <h4 className="lih__heading">Buzz keys</h4>
       <p className="host__note" data-testid="lih-storage-note">
         {loadNote} Buzz keys are settings for this device only — they are not part
         of the game file and not part of the game’s history.
@@ -383,67 +450,6 @@ export function LocalInputHostPanel({
         </ul>
       )}
 
-      <h4 className="lih__heading">Response queue</h4>
-      {/*
-        The queue is a polite live region too: a teacher looking at the board must
-        still hear that the active team changed.
-      */}
-      <div aria-live="polite">
-        <dl className="lih__summary">
-          <dt>Active team</dt>
-          <dd data-testid="lih-active">{activeTeamCopy}</dd>
-          <dt>Waiting queue</dt>
-          <dd data-testid="lih-waiting">
-            {waitingIds.length === 0
-              ? 'Empty'
-              : waitingIds.map((id, index) => `${index + 1}. ${nameOf(id)}`).join(' · ')}
-          </dd>
-          <dt>Last board adjudication</dt>
-          <dd data-testid="lih-board-outcome">{boardOutcomeCopy}</dd>
-        </dl>
-      </div>
-
-      <div className="lih__actions" role="group" aria-label="Response queue controls">
-        <button
-          type="button"
-          className="btn"
-          data-testid="lih-correct"
-          disabled={!canResolve}
-          onClick={() => resolveActive('correct')}
-        >
-          Mark correct
-        </button>
-        <button
-          type="button"
-          className="btn"
-          data-testid="lih-incorrect"
-          disabled={!canResolve}
-          onClick={() => resolveActive('incorrect')}
-        >
-          Mark incorrect and advance
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          data-testid="lih-pass"
-          disabled={!canResolve}
-          onClick={() => resolveActive('passed')}
-        >
-          Pass and advance
-        </button>
-      </div>
-
-      <p className="host__note" data-testid="lih-outcome" aria-live="polite">
-        {describeOutcome(lastOutcome, nameOf)}
-      </p>
-
-      <p className="host__note lih__hint">
-        Marking a response correct, incorrect, or passed moves no points —
-        awarding and deducting stay in the scoring panel, for every team. Correct
-        ends this response opportunity without revealing the answer. Close the
-        queue by resetting the window, returning to the board, or revealing the
-        answer.
-      </p>
     </section>
   )
 }
