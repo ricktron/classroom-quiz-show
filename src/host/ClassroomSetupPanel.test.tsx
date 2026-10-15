@@ -785,6 +785,30 @@ describe('ClassroomSetupPanel', () => {
     expect(copy).toMatch(/keyboard always works/i)
   })
 
+  it('explains a missing class name list and hides inert name choices (Q7 R1 item 8)', () => {
+    for (const wbuzzPresent of [false, true]) {
+      cleanup()
+      const { onSelectedIdentitiesChange } = renderSetup({ teamNameBank: [], wbuzzPresent })
+      fireEvent.click(screen.getByTestId('readiness-names'))
+      const copy = screen.getByTestId('setup-sony-copy').textContent ?? ''
+      expect(copy).toMatch(/no class name list/i)
+      expect(copy).toMatch(/type a name/i)
+      expect(copy).not.toMatch(/Blue|Orange|Green|Yellow|Red|pick from/)
+      const task = screen.getByTestId('setup-names-task')
+      expect(task.querySelectorAll('[data-testid^="tnsb-choice-"]')).toHaveLength(0)
+      expect(task.querySelectorAll('[data-testid^="tnsb-cycle-"]')).toHaveLength(0)
+      expect(task.querySelectorAll('[data-testid^="tnsb-reset-"]')).toHaveLength(0)
+
+      const manual = screen.getByTestId('tnsb-manual-red')
+      fireEvent.change(manual, { target: { value: 'Comet Crew' } })
+      fireEvent.keyDown(manual, { key: 'Enter' })
+      expect(screen.getByTestId('tnsb-claimed-red')).toHaveTextContent('Comet Crew')
+      expect(onSelectedIdentitiesChange).toHaveBeenLastCalledWith({ red: 'Comet Crew' })
+      fireEvent.click(screen.getByRole('button', { name: /^clear name$/i }))
+      expect(screen.queryByTestId('tnsb-claimed-red')).toBeNull()
+    }
+  })
+
   it('reseeds name selection when team roster signature changes', () => {
     const onSelectedIdentitiesChange = vi.fn()
     const { rerender } = render(

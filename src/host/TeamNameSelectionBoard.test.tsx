@@ -107,4 +107,74 @@ describe('TeamNameSelectionBoard', () => {
     renderBoard({ longName: true })
     expect(screen.getByTestId('tnsb-choice-a-0').textContent).toMatch(/4th Period Titans/i)
   })
+
+  it('keeps choices, More names and Choose again when a name bank exists', () => {
+    renderBoard()
+    expect(screen.getByTestId('team-name-selection-board')).toHaveAttribute(
+      'data-name-bank',
+      'available',
+    )
+    expect(screen.getAllByRole('button', { name: /^choice \d/i })).toHaveLength(8)
+    expect(screen.getAllByRole('button', { name: /^more names$/i })).toHaveLength(2)
+    expect(screen.getAllByRole('button', { name: /^choose again$/i })).toHaveLength(2)
+    expect(screen.queryByRole('button', { name: /^clear name$/i })).toBeNull()
+  })
+})
+
+describe('TeamNameSelectionBoard without a class name list (Q7 R1 item 8)', () => {
+  function renderNoBank(claimedA: string | null = null) {
+    let state = createTeamNameSelectionState({ bank: [], teamIds: ['a', 'b'] })
+    if (claimedA !== null) {
+      state = {
+        ...state,
+        views: { ...state.views, a: { ...state.views.a!, claimedName: claimedA } },
+      }
+    }
+    const handlers = {
+      onClaim: vi.fn(),
+      onCycle: vi.fn(),
+      onManual: vi.fn(),
+      onReset: vi.fn(),
+    }
+    render(
+      <TeamNameSelectionBoard
+        views={[state.views.a!, state.views.b!]}
+        teamLabels={{ a: 'Team A', b: 'Team B' }}
+        nameBankAvailable={false}
+        {...handlers}
+      />,
+    )
+    return handlers
+  }
+
+  it('renders no inert choice, More names or Choose again controls', () => {
+    renderNoBank()
+    expect(screen.getByTestId('team-name-selection-board')).toHaveAttribute(
+      'data-name-bank',
+      'none',
+    )
+    expect(screen.queryAllByRole('button', { name: /^choice \d/i })).toHaveLength(0)
+    expect(screen.queryByRole('button', { name: /^more names$/i })).toBeNull()
+    expect(screen.queryByRole('button', { name: /^choose again$/i })).toBeNull()
+    expect(screen.queryByRole('button', { name: /^clear name$/i })).toBeNull()
+    expect(screen.getByTestId('tnsb-team-a')).toHaveTextContent('Type a name.')
+    expect(screen.getByTestId('tnsb-team-a')).not.toHaveTextContent(/press a color/i)
+  })
+
+  it('keeps manual name entry fully usable', () => {
+    const { onManual } = renderNoBank()
+    const inputs = screen.getAllByLabelText('Type a name')
+    expect(inputs).toHaveLength(2)
+    fireEvent.change(inputs[1]!, { target: { value: 'Ozone Owls' } })
+    fireEvent.keyDown(inputs[1]!, { key: 'Enter' })
+    expect(onManual).toHaveBeenCalledWith('b', 'Ozone Owls')
+  })
+
+  it('offers Clear name only for a team that has a typed name', () => {
+    const { onReset } = renderNoBank('Comet Crew')
+    const clear = screen.getAllByRole('button', { name: /^clear name$/i })
+    expect(clear).toHaveLength(1)
+    fireEvent.click(clear[0]!)
+    expect(onReset).toHaveBeenCalledWith('a')
+  })
 })

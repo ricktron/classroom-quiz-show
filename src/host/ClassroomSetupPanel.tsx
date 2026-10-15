@@ -542,12 +542,17 @@ export function ClassroomSetupPanel({
           </div>
         )
       }
+      // Sanitized bank (same source the selection deck deals from).
+      const nameBankAvailable = selection.bank.length > 0
       return (
         <div className="classroom-setup__task" data-testid="setup-names-task">
           <p className="host__note" data-testid="setup-sony-copy">
-            {wbuzzPresent
-              ? 'Each team presses Blue, Orange, Green, or Yellow — top to bottom on the controller — to choose a name. Red shows four more names for that team only. You can also type a name. Keyboard always works.'
-              : 'Type a name for each team, or pick from the name choices. Keyboard always works.'}
+            {!nameBankAvailable
+              ? // Q7 R1 item 8: no class name list → no choices to press or pick.
+                'This game has no class name list, so there are no name choices. Type a name for each team. Keyboard always works.'
+              : wbuzzPresent
+                ? 'Each team presses Blue, Orange, Green, or Yellow — top to bottom on the controller — to choose a name. Red shows four more names for that team only. You can also type a name. Keyboard always works.'
+                : 'Type a name for each team, or pick from the name choices. Keyboard always works.'}
           </p>
           <TeamNameSelectionBoard
             views={teamIds.map((id) => selection.views[id]!).filter(Boolean)}
@@ -566,6 +571,7 @@ export function ClassroomSetupPanel({
             onReset={(teamId) =>
               apply(applyTeamNameInputs(selection, [{ kind: 'reset', teamId }]).state)
             }
+            nameBankAvailable={nameBankAvailable}
             reducedMotion={reducedMotion}
             highContrast={highContrast}
             grayscale={grayscale}
