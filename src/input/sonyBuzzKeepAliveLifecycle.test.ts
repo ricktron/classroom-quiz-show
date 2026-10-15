@@ -340,8 +340,8 @@ describe('sonyBuzzKeepAliveLifecycle', () => {
     for (let i = 0; i < 20; i += 1) {
       await Promise.resolve()
     }
-    // New generation is otherwise ready (timer armed) but must not begin send #2 yet.
-    expect(life.getSnapshot().health).toBe('healthy')
+    // Timer armed / connecting until first successful output; must not begin send #2 yet.
+    expect(life.getSnapshot().health).toBe('connecting')
     expect(intervals.length).toBe(1)
     expect(sendStarts).toBe(1)
     expect(maxConcurrent).toBe(1)

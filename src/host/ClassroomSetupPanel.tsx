@@ -150,6 +150,11 @@ export function ClassroomSetupPanel({
   )
   const [buzzerSkipped, setBuzzerSkipped] = useState(false)
   /**
+   * Q7-F01: teacher-visible affirmation after Show/Check buzzer setup.
+   * Local UI only — does not invent hardware readiness.
+   */
+  const [buzzerSetupRevealed, setBuzzerSetupRevealed] = useState(false)
+  /**
    * Teacher expand pin. `undefined` = follow pure default (required dominant or
    * none when Ready). Does not feed readiness status.
    */
@@ -392,6 +397,7 @@ export function ClassroomSetupPanel({
           onClick={(event) => {
             event.stopPropagation()
             expandRow('buzzers')
+            setBuzzerSetupRevealed(true)
             onRevealBuzzersSetup()
           }}
         >
@@ -550,7 +556,11 @@ export function ClassroomSetupPanel({
 
     if (expandedTask === 'buzzers') {
       return (
-        <div className="classroom-setup__task" data-testid="setup-buzzers-task">
+        <div
+          className="classroom-setup__task"
+          data-testid="setup-buzzers-task"
+          data-buzzer-setup-revealed={buzzerSetupRevealed ? 'true' : 'false'}
+        >
           {playEnabled && (
             <p className="classroom-setup__optional-tag" data-testid="setup-optional-tag">
               Optional
@@ -562,12 +572,28 @@ export function ClassroomSetupPanel({
           <p className="host__note" data-testid="setup-buzzers-section-note">
             Connect and check buzzers in the Buzzers section below when you want them.
           </p>
+          {buzzerSetupRevealed && (
+            <p
+              className="classroom-setup__buzzer-reveal-status"
+              data-testid="setup-buzzer-reveal-status"
+              role="status"
+              aria-live="polite"
+              tabIndex={-1}
+            >
+              Buzzer Check is on. Next: use Connect buzzers below, then press RED on each
+              handset to confirm it. Keyboard controls still work.
+            </p>
+          )}
           {onRevealBuzzersSetup && (
             <button
               type="button"
               className={buzzerHardwarePresent || sonyReady ? 'btn' : 'btn btn--secondary'}
               data-testid="setup-reveal-buzzers"
-              onClick={onRevealBuzzersSetup}
+              aria-pressed={buzzerSetupRevealed}
+              onClick={() => {
+                setBuzzerSetupRevealed(true)
+                onRevealBuzzersSetup()
+              }}
             >
               {sonyReady
                 ? 'Show buzzer setup'

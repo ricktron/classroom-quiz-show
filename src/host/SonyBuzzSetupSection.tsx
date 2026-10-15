@@ -223,7 +223,11 @@ function SupportedProfileBlock({
     // repair observe-red. HEAD gated on observe-red only, so Class Setup stayed
     // "Waiting for controller presses" after successful checks (F-S04B-H3-SONY-05):
     // lastTestObservation / testOut advanced, respondingSlots did not.
-    if (!testMode) return
+    if (!testMode) {
+      // Q7: leaving Check clears sticky responding so pad absence is honest.
+      setRespondingSlots([])
+      return
+    }
     const batch =
       recentTestObservations.length > 0
         ? recentTestObservations

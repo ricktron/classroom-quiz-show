@@ -239,6 +239,20 @@
   margin: 0;
 }
 
+/* Q7-F01: unmistakable teacher-visible result after Show buzzer setup */
+.classroom-setup__buzzer-reveal-status {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--accent, #2f6fed);
+  background: var(--surface-base, transparent);
+  font-weight: 600;
+}
+
+.classroom-setup__buzzer-reveal-status:focus {
+  outline: 2px solid var(--focus-ring, var(--accent, #2f6fed));
+  outline-offset: 2px;
+}
+
 @media (max-width: 900px) {
   .classroom-setup__workspace {
     grid-template-columns: 1fr;

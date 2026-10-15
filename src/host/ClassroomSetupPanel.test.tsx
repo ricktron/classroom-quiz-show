@@ -703,6 +703,25 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('setup-buzzers-copy')).toHaveTextContent(/waiting for buzzers|detected/i)
     fireEvent.click(screen.getByTestId('setup-reveal-buzzers'))
     expect(onRevealBuzzersSetup).toHaveBeenCalled()
+    expect(screen.getByTestId('setup-buzzer-reveal-status')).toHaveTextContent(/Buzzer Check is on/i)
+    expect(screen.getByTestId('setup-reveal-buzzers')).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('Show buzzer setup produces teacher-visible status without hardware (Q7-F01)', () => {
+    const onRevealBuzzersSetup = vi.fn()
+    renderSetup({
+      wbuzzPresent: false,
+      onRevealBuzzersSetup,
+    })
+    fireEvent.click(screen.getByTestId('readiness-sony'))
+    expect(screen.queryByTestId('setup-buzzer-reveal-status')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Show buzzer setup' }))
+    expect(onRevealBuzzersSetup).toHaveBeenCalled()
+    expect(screen.getByTestId('setup-buzzer-reveal-status')).toHaveTextContent(/Connect buzzers/i)
+    expect(screen.getByTestId('setup-buzzers-task')).toHaveAttribute(
+      'data-buzzer-setup-revealed',
+      'true',
+    )
   })
 
   it('still offers Skip when no supported hardware is present', () => {

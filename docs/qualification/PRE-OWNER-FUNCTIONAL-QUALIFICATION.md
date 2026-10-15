@@ -470,11 +470,48 @@ The run must:
 A run that depends on testids, helpers, or coached routes is **invalid** for
 Court B eligibility recommendation.
 
+#### 9.1.1 Owner-facing control semantic proof (Q7 hardening)
+
+**Every owner-facing control on an owner-qualification path must have automated
+semantic proof from the natural user route before
+`OWNER-PLAYTHROUGH-ELIGIBLE` may be issued.**
+
+For each such control, automation must prove:
+
+```text
+REACH → ACT → VISIBLE EFFECT → CONTINUATION
+```
+
+Insufficient alone (any of these without the visible teacher effect chain):
+
+- callback / spy fired;
+- reducer transition;
+- mounted component;
+- selector / `data-testid` presence;
+- direct state assertion;
+- Playwright DOM `toBeVisible` without teacher-viewport discoverability where
+  discoverability is the claim.
+
+Test ids may support precise assertions. They must not substitute for
+discovering and activating the teacher-visible control.
+
+#### 9.1.2 Hardware-backed workflows (platform-boundary simulation)
+
+Before owner **physical** qualification of a supported hardware path,
+automation must prove the complete product workflow using deterministic
+**platform-boundary** hardware simulation (`navigator.hid` / Gamepad API —
+not product-state injection).
+
+Physical owner testing is then reserved for facts simulation cannot prove:
+actual receiver/OS behavior, radio pairing, LEDs, timing, and physical device
+quirks. Simulation must never be labeled as physical evidence.
+
 Evidence-class honesty is preserved: historical Court/Q1–Q6 records that
 correctly labeled SIMULATED / PHYSICAL-ONLY / NOT RUN evidence are **not**
 rewritten as dishonest. The lesson of Q7 is that those labels were accurate
 but the **eligibility rule was too permissive** without a black-box interaction
-fidelity check.
+fidelity check and without REACH→ACT→VISIBLE EFFECT→CONTINUATION proof for
+ordinary owner-facing controls.
 
 ### 9.2 Supported physical-hardware path rule
 

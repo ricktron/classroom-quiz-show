@@ -710,15 +710,47 @@ export function FoundationControls({
             })
           }}
           onRevealBuzzersSetup={() => {
-            // Q1-A: Check/Show enters existing SBS Buzzer Check, then reveals it.
+            // Q1-A + Q7-F01: enter existing SBS Buzzer Check, then bring Connect
+            // (or the Buzzers section) into the teacher viewport with meaningful focus.
             setEnterBuzzerCheck(true)
-            const target =
-              document.querySelector('[data-testid="sbs-supported-profile"]') ??
-              document.querySelector('[data-testid="gih"]')
-            if (target instanceof HTMLElement) {
-              target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            const reduceMotion =
+              typeof window.matchMedia === 'function' &&
+              window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            const reveal = () => {
+              const connect = document.querySelector('[data-testid="sbs-connect"]')
+              const section =
+                document.querySelector('[data-testid="sbs-supported-profile"]') ??
+                document.querySelector('[data-testid="gih"]')
+              const target =
+                connect instanceof HTMLElement
+                  ? connect
+                  : section instanceof HTMLElement
+                    ? section
+                    : null
+              if (!target) return
+              target.scrollIntoView({
+                behavior: reduceMotion ? 'auto' : 'smooth',
+                block: 'center',
+              })
+              if (
+                connect instanceof HTMLButtonElement &&
+                !connect.disabled &&
+                connect.getAttribute('aria-disabled') !== 'true'
+              ) {
+                connect.focus({ preventScroll: true })
+                return
+              }
+              const status = document.querySelector('[data-testid="setup-buzzer-reveal-status"]')
+              if (status instanceof HTMLElement) {
+                status.focus({ preventScroll: true })
+                return
+              }
               target.focus({ preventScroll: true })
             }
+            // Wait for Class Setup status + Buzzer Check paint before scroll/focus.
+            requestAnimationFrame(() => {
+              requestAnimationFrame(reveal)
+            })
           }}
           onSelectedIdentitiesChange={(claimed) => {
             const issuedAt = now()

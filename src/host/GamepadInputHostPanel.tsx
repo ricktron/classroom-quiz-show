@@ -287,6 +287,20 @@ export function GamepadInputHostPanel({
     setLastTestObservation(null)
   }, [loadedTeamsKey, teams])
 
+  // Q7: leaving Class Setup must end Buzzer Check and keep an already-applied
+  // supported Wbuzz mapping live for ordinary gameplay. Otherwise testMode stays
+  // true and/or controller buzzing stays Off under collapsed Controllers — the
+  // teacher who just finished Connect/Check would see no gameplay buzz effect.
+  useEffect(() => {
+    if (selectionMode) return
+    setTestMode(false)
+    setCapture((current) => (current.mode === 'sony-setup' ? { mode: 'idle' } : current))
+    setLastTestObservation(null)
+    if (sony.materializedMapping.bindings.length > 0) {
+      setEnabled(true)
+    }
+  }, [selectionMode, sony.materializedMapping.bindings.length])
+
   const target = useMemo(() => responseOpportunityFor(game), [game])
   const capturing = capture.mode === 'capturing' || capture.mode === 'sony-setup'
 
@@ -422,7 +436,10 @@ export function GamepadInputHostPanel({
   const onSonyTestModeChange = useCallback((next: boolean) => {
     setTestMode(next)
     if (next) setCapture({ mode: 'idle' })
-    if (!next) setLastTestObservation(null)
+    if (!next) {
+      setLastTestObservation(null)
+      setRecentTestObservations([])
+    }
   }, [])
 
   // Class Setup Check/Show → existing SBS Buzzer Check (one detector owner).

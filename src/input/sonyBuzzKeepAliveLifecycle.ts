@@ -277,6 +277,9 @@ export function createSonyBuzzKeepAliveLifecycle(
           errorName: error instanceof Error ? error.name : 'Error',
           errorMessage: error instanceof Error ? error.message : String(error),
         })
+        // Q7: first output failure must not leave Receiver as Connected/healthy.
+        health = health === 'disabled' ? health : 'failed'
+        stopTimer()
       } else {
         diag('output_report_send', 'fail', {
           sends,
@@ -284,8 +287,8 @@ export function createSonyBuzzKeepAliveLifecycle(
           errorName: error instanceof Error ? error.name : 'Error',
           errorMessage: error instanceof Error ? error.message : String(error),
         })
+        health = health === 'disabled' ? health : 'degraded'
       }
-      health = health === 'disabled' ? health : 'degraded'
       emit()
     } finally {
       inFlight = false
@@ -463,7 +466,8 @@ export function createSonyBuzzKeepAliveLifecycle(
       framing = framingResult
       bumpReprime()
       if (enabled) {
-        health = 'healthy'
+        // Stay connecting until the first successful output report (Q7 honesty).
+        health = 'connecting'
         startTimer(myGeneration)
       } else {
         health = 'disabled'
