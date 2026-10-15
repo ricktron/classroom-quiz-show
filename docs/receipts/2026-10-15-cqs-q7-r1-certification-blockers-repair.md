@@ -93,6 +93,27 @@ Fail-first logs were captured per item before each fix (see the table above);
 (first-connect output failure shows Failed) already passed there and stays as a
 strengthened regression; R1-sim is a harness self-test added afterwards.
 
+## Exact-head CI follow-up (`7cc80d0`)
+
+The first exact-head CI run on `b0995f8` (Linux) failed Playwright e2e:
+
+- `q7-r1-core-loop-viewport` at 720p: the Host-only answer ended at y=723
+  (3px past the fold). Linux font metrics place the clue column ~55px lower
+  than macOS. While a clue is open on a wide Host, the round title (a
+  duplicate of the Host chrome's game + round line) now stays a heading for
+  assistive tech but takes no row, and the private blocks are tighter. Local
+  answer box: 644–668 → 589–613.
+- `buzz-in` "buzz keys survive a refresh" failed once, then passed on retry. The
+  shared boot wait `not.toContainText(/loading/i)` never matched the real
+  boot copy "Opening saved games…", so the Advanced-diagnostics Initialize
+  could run during boot and boot then reset the store. Reproduced
+  deterministically with 6× CPU throttling, also on `50691af`. All nine copies
+  of that wait now also wait out the boot copy; 6/6 pass under the same
+  throttle. Main CI had 0 retries in the last 10 runs.
+
+The local gate re-ran on `7cc80d0`: lint 0 errors, full e2e 714 passed / 0
+failed.
+
 ## Non-claims
 
 - Simulation (navigator.hid / getGamepads) is **not** physical Sony/Wbuzz
@@ -108,6 +129,11 @@ strengthened regression; R1-sim is a harness self-test added afterwards.
 - After a Final settlement, "Undo last score change" stays disabled and its
   note still says the next undo affects "something other than a score";
   unchanged here (follow-up candidate).
+- Item 11 Linux margin is estimated from one CI observation (~55px offset);
+  the answer has ~50px of projected margin at 720p, not a measured Linux value.
+- The Advanced-diagnostics "Initialize / reset session" control is enabled
+  while the Host is still booting, and boot can then reset what it created.
+  Only the test wait was fixed here (product follow-up candidate).
 - Item 11 margins: the classic 6×5 bottom-row tile has ~10px to spare at
   720p (a two-line category title could push it out); Team Scoring award
   buttons remain below the fold at 720p while a clue is open (scoring is a
