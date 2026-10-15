@@ -41,6 +41,29 @@ export async function isMostlyInViewport(
   return totalArea > 0 && visibleArea / totalArea >= minVisibleRatio
 }
 
+/**
+ * Reach a control the way a teacher does on a short screen: mouse-wheel scroll
+ * in small steps until it is mostly visible. Never scrollIntoView (Q7-R1).
+ */
+export async function wheelScrollUntilMostlyInViewport(
+  locator: Locator,
+  options?: { readonly stepPx?: number; readonly maxSteps?: number },
+): Promise<void> {
+  const page = locator.page()
+  const stepPx = options?.stepPx ?? 160
+  const maxSteps = options?.maxSteps ?? 30
+  await expect(locator).toBeVisible()
+  const viewport = page.viewportSize()
+  if (viewport) await page.mouse.move(viewport.width / 2, viewport.height / 2)
+  for (let i = 0; i < maxSteps; i += 1) {
+    if (await isMostlyInViewport(locator)) return
+    const box = await locator.boundingBox()
+    const down = !box || !viewport || box.y > viewport.height / 2
+    await page.mouse.wheel(0, down ? stepPx : -stepPx)
+    await page.waitForTimeout(50)
+  }
+}
+
 export async function expectMostlyInViewport(
   locator: Locator,
   message: string,
@@ -66,7 +89,8 @@ export async function expectShowBuzzerSetupTeacherEffect(page: Page): Promise<vo
   // (Unmodified main has no such status — this assertion fails closed for F01.)
   await expect(setupStatus).toBeVisible({ timeout: 5_000 })
   await expect(setupStatus).toContainText(/Buzzer Check is on/i)
-  await expect(setupStatus).toContainText(/Connect buzzers/i)
+  // Q7-R1: the next step follows live receiver state (Connect, or press RED).
+  await expect(setupStatus).toContainText(/Next: (use Connect buzzers|press RED)/i)
 
   const connect = page.getByTestId('sbs-connect')
   await expect(connect).toBeVisible()

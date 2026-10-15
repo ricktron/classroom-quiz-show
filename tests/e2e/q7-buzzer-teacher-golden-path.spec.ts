@@ -111,44 +111,36 @@ test('Q7 golden path: Home Resume → Show → Connect → 4× check → play bu
     timeout: 10_000,
   })
 
-  // K. PERSISTENCE / RELOAD / RESUME
+  // K. PERSISTENCE / RELOAD / RESUME — one deterministic route, no branches (Q7-R1).
   await waitForSessionSaved(page)
   await page.reload()
   await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
-  // Host reload recovery OR Home — prefer Resume when shown.
-  const hostResume = page.getByTestId('persistence-resume')
-  const homeResume = page.getByTestId('home-resume-session')
-  if (await hostResume.isVisible().catch(() => false)) {
-    await hostResume.click()
-  } else if (await homeResume.isVisible().catch(() => false)) {
-    await homeResume.click()
-  } else {
-    await page.getByRole('link', { name: /back to home/i }).click()
-    await expect(page.getByRole('button', { name: /resume class/i })).toBeVisible()
-    await page.getByRole('button', { name: /resume class/i }).click()
-  }
-  await expect(page.getByTestId('classroom-setup').or(page.getByTestId('host-gameplay'))).toBeVisible({
+  await page.getByRole('button', { name: 'Resume class' }).click()
+  // An in-progress game resumes into play (observed deterministic route).
+  await expect(page.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'play', {
     timeout: 20_000,
   })
+  await expect(page.getByTestId('host-gameplay')).toBeVisible()
 
-  // Post-resume: if setup, buzzer path remains usable (Connect may be required again).
-  if (await page.getByTestId('classroom-setup').isVisible().catch(() => false)) {
-    await openOptionalBuzzers(page)
-    await clickShowBuzzerSetup(page)
-    const connect = page.getByRole('button', { name: 'Connect buzzers' })
-    if (await connect.isVisible().catch(() => false)) {
-      await connect.click()
-      await expect(page.getByTestId('sbs-receiver-layer')).toContainText(/Connected/i, {
-        timeout: 10_000,
-      })
-    }
-    // Reload cleared in-page Gamepad exposure; re-expose at platform boundary.
-    await exposeSimulatedWbuzzGamepad(page)
-    await pressWbuzzButton(page, buttonIndexForSlotColor(1, 'red'))
-    await expect(page.getByTestId('sbs-test-outcome')).toContainText(/Buzzer Check:/i, {
-      timeout: 10_000,
-    })
+  // Reload ends the page's WebHID session and Gamepad exposure (simulated at the
+  // platform boundary): the teacher reconnects with the play Buzzers controls.
+  await connectSimulatedReceiver(page)
+  await exposeSimulatedWbuzzGamepad(page)
+
+  // L. RESUMED GAMEPLAY — a Wbuzz press must claim, unconditionally.
+  // The adjudicated clue from section I is still open; finish it first.
+  await page.getByRole('button', { name: 'Cancel and return to board' }).click()
+  await expect(page.getByTestId('cbh-grid')).toBeVisible()
+  const freshTile = page.locator('[data-testid^="cbh-tile-"]:not([disabled])').first()
+  await freshTile.click()
+  await expect(page.getByTestId('cbh-prompt')).toBeVisible()
+  if (await page.getByTestId('cbh-reveal-prompt').isVisible().catch(() => false)) {
+    await page.getByTestId('cbh-reveal-prompt').click()
   }
+  await armAndStartTimer(page)
+  await pressWbuzzButton(page, buttonIndexForSlotColor(2, 'red'))
+  await expect(page.getByTestId('lih-active')).toContainText(/Team 2/, { timeout: 10_000 })
+  expect((await getHidSimSnapshot(page)).violations).toEqual([])
 })
 
 test('Q7 mapping contract: all 20 buttons / 4×5 slot colors are deterministic', async () => {

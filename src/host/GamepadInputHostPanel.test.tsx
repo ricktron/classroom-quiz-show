@@ -20,7 +20,8 @@ import {
   type FakePollDriver,
 } from '../test/gamepadFixtures'
 import { createMemoryPersistenceAdapter } from '../persistence'
-import { createFakeWebHidTransport } from '../input/webHidTransport'
+import { createFakeHidDevice, createFakeWebHidTransport } from '../input/webHidTransport'
+import { buttonIndexForSlotColor } from '../input/sonyBuzzSupportedProfile'
 
 /**
  * Host controller-input controls — component behaviour (Slice 9).
@@ -740,5 +741,210 @@ describe('wbuzzPresent lift (Slice E)', () => {
     panel.onWbuzzPresentChange.mockClear()
     panel.view.unmount()
     expect(panel.onWbuzzPresentChange).toHaveBeenCalledWith(false)
+  })
+})
+
+describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence', () => {
+  const WBUZZ_ID = 'Vendor: 054c Product: 1000'
+  const SLOT1_RED = buttonIndexForSlotColor(1, 'red')
+
+  function wbuzzSnapshot(...pressed: number[]) {
+    return snapshot(
+      controller(0, buttons(20, ...pressed), {
+        reportedId: reportedId(WBUZZ_ID),
+        reportedMapping: reportedMapping('standard'),
+      }),
+    )
+  }
+
+  function renderWbuzzPanel(options: { selectionMode: boolean }) {
+    const store = boardStore()
+    const source = fakeGamepadSource()
+    const driver = fakePollDriver()
+    const clock = createManualClock(AT)
+    const persistenceAdapter = createMemoryPersistenceAdapter()
+    const device = createFakeHidDevice()
+    // Not pre-granted: the receiver connects only through the teacher's Connect.
+    const webHidTransport = createFakeWebHidTransport({ requestResult: device, granted: [] })
+    let selectionMode = options.selectionMode
+    let enterBuzzerCheck = false
+    const element = () => {
+      const game = store.getState().session?.game
+      if (!game) throw new Error('fixture has no game')
+      return (
+        <GamepadInputHostPanel
+          dispatch={store.dispatch}
+          game={game}
+          clock={clock}
+          source={source}
+          scheduler={driver}
+          persistenceAdapter={persistenceAdapter}
+          webHidTransport={webHidTransport}
+          selectionMode={selectionMode}
+          enterBuzzerCheck={enterBuzzerCheck}
+          onEnterBuzzerCheckConsumed={() => {
+            enterBuzzerCheck = false
+          }}
+        />
+      )
+    }
+    const view = render(element())
+    const panel = {
+      source,
+      device,
+      webHidTransport,
+      poll(times = 1) {
+        act(() => {
+          for (let index = 0; index < times; index += 1) driver.poll()
+        })
+      },
+      async flush() {
+        await act(async () => {
+          for (let i = 0; i < 10; i += 1) await Promise.resolve()
+        })
+      },
+      setSelectionMode(next: boolean) {
+        selectionMode = next
+        view.rerender(element())
+      },
+      enterCheck() {
+        enterBuzzerCheck = true
+        view.rerender(element())
+      },
+      attachWbuzz() {
+        source.set(wbuzzSnapshot())
+        panel.poll()
+      },
+      detachPads() {
+        source.set(snapshot())
+        panel.poll()
+      },
+      pressRed(buttonIndex = SLOT1_RED) {
+        // Released poll first: any gate change re-primes, and a re-primed poll is
+        // a baseline that emits nothing (exactly as for a real teacher press).
+        source.set(wbuzzSnapshot())
+        panel.poll()
+        source.set(wbuzzSnapshot(buttonIndex))
+        panel.poll()
+        source.set(wbuzzSnapshot())
+        panel.poll()
+      },
+      async pressRedAndSettle(buttonIndex = SLOT1_RED) {
+        panel.pressRed(buttonIndex)
+        await panel.flush()
+      },
+      async connect() {
+        fireEvent.click(screen.getByRole('button', { name: 'Connect buzzers' }))
+        await panel.flush()
+      },
+    }
+    return panel
+  }
+
+  it('stays Off with a Wbuzz pad and a supported mapping when the receiver was never connected', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await panel.flush()
+    panel.attachWbuzz()
+    await panel.flush()
+    expect(screen.getByTestId('gih-enabled')).toHaveTextContent('Off')
+  })
+
+  it('switches On once the teacher connects the receiver with the Wbuzz pad present', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await panel.flush()
+    panel.attachWbuzz()
+    await panel.connect()
+    expect(screen.getByTestId('sbs-receiver-layer')).toHaveTextContent('Connected')
+    expect(screen.getByTestId('gih-enabled')).toHaveTextContent('On')
+  })
+
+  it('never overrides an explicit teacher Off: Back→Start, pad reconnect, receiver reconnect', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await panel.flush()
+    panel.attachWbuzz()
+    await panel.connect()
+    expect(screen.getByTestId('gih-enabled')).toHaveTextContent('On')
+    fireEvent.click(screen.getByRole('button', { name: 'Turn controller buzzing off' }))
+    expect(screen.getByTestId('gih-enabled')).toHaveTextContent('Off')
+
+    panel.setSelectionMode(true)
+    panel.setSelectionMode(false)
+    await panel.flush()
+    expect(screen.getByTestId('gih-enabled')).toHaveTextContent('Off')
+
+    panel.detachPads()
+    panel.attachWbuzz()
+    await panel.flush()
+    expect(screen.getByTestId('gih-enabled')).toHaveTextContent('Off')
+
+    act(() => panel.webHidTransport.emitDisconnect(panel.device))
+    await panel.flush()
+    await panel.connect()
+    expect(screen.getByTestId('sbs-receiver-layer')).toHaveTextContent('Connected')
+    expect(screen.getByTestId('gih-enabled')).toHaveTextContent('Off')
+
+    // Turning it back On is the teacher's choice, and auto-enable may resume.
+    fireEvent.click(screen.getByRole('button', { name: 'Turn controller buzzing on' }))
+    expect(screen.getByTestId('gih-enabled')).toHaveTextContent('On')
+  })
+
+  it('counts a gameplay Wbuzz RED press as responding evidence (not only Buzzer Check)', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await panel.flush()
+    panel.attachWbuzz()
+    await panel.connect()
+    expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent(
+      'Waiting for controller presses',
+    )
+    await panel.pressRedAndSettle()
+    expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent('1 controller responding')
+    expect(screen.getByTestId('sbs-teacher-summary')).not.toHaveTextContent(/waiting for buzzers/i)
+  })
+
+  it('keeps responding evidence across Leave Buzzer Check and Start; clears it when the pad goes away', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: true })
+    await panel.flush()
+    panel.attachWbuzz()
+    await panel.connect()
+    panel.enterCheck()
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(1, 'red'))
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(2, 'red'))
+    expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent('2 controllers responding')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Leave Buzzer Check' }))
+    panel.poll(5)
+    await panel.flush()
+    expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent('2 controllers responding')
+
+    panel.setSelectionMode(false)
+    await panel.flush()
+    expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent('2 controllers responding')
+
+    panel.detachPads()
+    await panel.flush()
+    expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent(
+      'Waiting for controller presses',
+    )
+  })
+
+  it('a later Buzzer Check never re-shows an earlier check’s presses (stale batch)', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: true })
+    await panel.flush()
+    panel.attachWbuzz()
+    await panel.connect()
+    panel.enterCheck()
+    await panel.pressRedAndSettle()
+    expect(screen.getByTestId('sbs-test-outcome')).toHaveTextContent(/^Buzzer Check: /)
+
+    panel.setSelectionMode(false)
+    await panel.flush()
+    panel.detachPads()
+    panel.setSelectionMode(true)
+    panel.enterCheck()
+    await panel.flush()
+    expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent(
+      'Waiting for controller presses',
+    )
+    expect(screen.getByTestId('sbs-test-outcome')).toHaveTextContent(/^Buzzer Check is on\./)
   })
 })

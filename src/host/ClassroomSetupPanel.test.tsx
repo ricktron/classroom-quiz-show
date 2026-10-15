@@ -838,3 +838,60 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('readiness-names')).toHaveAttribute('data-status', 'needs-attention')
   })
 })
+
+describe('Q7-R1 buzzer reveal status follows the live Buzzer Check', () => {
+  function element(
+    overrides: Partial<Parameters<typeof ClassroomSetupPanel>[0]>,
+  ): React.ReactElement {
+    return (
+      <ClassroomSetupPanel
+        teams={TEAMS}
+        teamNameBank={[]}
+        leadership="leader"
+        observation={null}
+        sonyReady={false}
+        displayOpen={false}
+        onOpenDisplay={vi.fn()}
+        audioUnderstood={false}
+        audioMuted={false}
+        onAudioTest={vi.fn()}
+        onPanicMute={vi.fn()}
+        playReady={false}
+        onPlay={vi.fn()}
+        onSelectedIdentitiesChange={vi.fn()}
+        onRevealBuzzersSetup={vi.fn()}
+        wbuzzPresent
+        {...overrides}
+      />
+    )
+  }
+
+  it('says Connect next, then press RED once connected, and ends with Buzzer Check', () => {
+    const view = render(element({ buzzerCheckOn: false, sonyTeacherSummary: 'receiver-needs-attention' }))
+    fireEvent.click(screen.getByTestId('setup-reveal-buzzers'))
+    view.rerender(element({ buzzerCheckOn: true, sonyTeacherSummary: 'receiver-needs-attention' }))
+    expect(screen.getByTestId('setup-buzzer-reveal-status')).toHaveTextContent(
+      /Next: use Connect buzzers/,
+    )
+    expect(screen.getByTestId('setup-reveal-buzzers')).toHaveAttribute('aria-pressed', 'true')
+
+    view.rerender(
+      element({ buzzerCheckOn: true, sonyTeacherSummary: 'receiver-waiting-for-controllers' }),
+    )
+    const status = screen.getByTestId('setup-buzzer-reveal-status')
+    expect(status).not.toHaveTextContent(/Connect buzzers/)
+    expect(status).toHaveTextContent(/receiver is connected\. Next: press RED/i)
+
+    view.rerender(
+      element({ buzzerCheckOn: false, sonyTeacherSummary: 'receiver-waiting-for-controllers' }),
+    )
+    expect(screen.queryByTestId('setup-buzzer-reveal-status')).toBeNull()
+    expect(screen.getByTestId('setup-reveal-buzzers')).toHaveAttribute('aria-pressed', 'false')
+
+    // Re-entering Buzzer Check from elsewhere does not resurrect the old status.
+    view.rerender(
+      element({ buzzerCheckOn: true, sonyTeacherSummary: 'receiver-waiting-for-controllers' }),
+    )
+    expect(screen.queryByTestId('setup-buzzer-reveal-status')).toBeNull()
+  })
+})

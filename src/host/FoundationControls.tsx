@@ -109,6 +109,8 @@ export function FoundationControls({
   const [playReplaceArmed, setPlayReplaceArmed] = useState(false)
   /** Class Setup Check/Show → existing SBS Buzzer Check (one-shot). */
   const [enterBuzzerCheck, setEnterBuzzerCheck] = useState(false)
+  /** Buzzer Check (SBS test mode) lifted from the poll owner for Class Setup copy. */
+  const [buzzerCheckOn, setBuzzerCheckOn] = useState(false)
   /** Q1 contextual Fix return: open Names (or named task) once setup remounts. */
   const [setupFocusOnce, setSetupFocusOnce] = useState<HostSetupFocusTask | null>(null)
   const contextualReturnLatchedRef = useRef(false)
@@ -709,6 +711,7 @@ export function FoundationControls({
               },
             })
           }}
+          buzzerCheckOn={buzzerCheckOn}
           onRevealBuzzersSetup={() => {
             // Q1-A + Q7-F01: enter existing SBS Buzzer Check, then bring Connect
             // (or the Buzzers section) into the teacher viewport with meaningful focus.
@@ -845,6 +848,7 @@ export function FoundationControls({
           onSonyTeacherSummaryChange={setSonyTeacherSummary}
           onWbuzzPresentChange={setWbuzzPresent}
           onInputDiagnosticSignals={setInputDiagnosticSignals}
+          onBuzzerCheckChange={setBuzzerCheckOn}
         />
       )}
 

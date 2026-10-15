@@ -46,6 +46,12 @@ type HidSimState = {
   requestCalls: number
   openCalls: number
   sendCalls: { reportId: number; bytes: number[] }[]
+  /**
+   * Contract violations the real receiver would not accept (Q7-R1): a
+   * requestDevice without the exact 054c:1000 filter, or an output report that is
+   * not reportId 0 with exactly 7 bytes. Each also fails the call.
+   */
+  violations: string[]
   disconnectListeners: Set<(event: { device: FakeHidDevice }) => void>
   device: FakeHidDevice | null
 }
@@ -112,7 +118,14 @@ function installScript(mode: HidSimMode): void {
         const view =
           data instanceof ArrayBuffer
             ? new Uint8Array(data)
-            : new Uint8Array(data as unknown as ArrayBufferLike)
+            : ArrayBuffer.isView(data)
+              ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength)
+              : new Uint8Array(data as unknown as ArrayBufferLike)
+        if (reportId !== 0 || view.byteLength !== 7) {
+          const violation = `sendReport(reportId=${reportId}, bytes=${view.byteLength}) — expected reportId 0 and 7 bytes`
+          window.__cqsWbuzzHidSim?.violations.push(violation)
+          throw new TypeError(violation)
+        }
         window.__cqsWbuzzHidSim?.sendCalls.push({ reportId, bytes: [...view] })
       },
     }
@@ -125,6 +138,7 @@ function installScript(mode: HidSimMode): void {
     requestCalls: 0,
     openCalls: 0,
     sendCalls: [],
+    violations: [],
     disconnectListeners: new Set(),
     device: null,
   }
@@ -148,8 +162,19 @@ function installScript(mode: HidSimMode): void {
       if (state.mode === 'exact-absent') return []
       return state.granted
     },
-    requestDevice: async () => {
+    requestDevice: async (options?: {
+      filters?: readonly { vendorId?: number; productId?: number }[]
+    }) => {
       state.requestCalls += 1
+      const filters = options?.filters ?? []
+      const exact = filters.some((f) => f.vendorId === 0x054c && f.productId === 0x1000)
+      const onlyExact = filters.every((f) => f.vendorId === 0x054c && f.productId === 0x1000)
+      if (!exact || !onlyExact) {
+        state.violations.push(
+          `requestDevice filters ${JSON.stringify(filters)} — expected only {vendorId:0x054c, productId:0x1000}`,
+        )
+        return []
+      }
       if (state.mode === 'permission-cancelled' || state.mode === 'exact-absent') {
         return []
       }
@@ -269,7 +294,14 @@ export async function setHidSimMode(page: Page, mode: HidSimMode): Promise<void>
         const view =
           data instanceof ArrayBuffer
             ? new Uint8Array(data)
-            : new Uint8Array(data as unknown as ArrayBufferLike)
+            : ArrayBuffer.isView(data)
+              ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength)
+              : new Uint8Array(data as unknown as ArrayBufferLike)
+        if (reportId !== 0 || view.byteLength !== 7) {
+          const violation = `sendReport(reportId=${reportId}, bytes=${view.byteLength}) — expected reportId 0 and 7 bytes`
+          state.violations.push(violation)
+          throw new TypeError(violation)
+        }
         state.sendCalls.push({ reportId, bytes: [...view] })
       },
     }
@@ -281,6 +313,7 @@ export async function getHidSimSnapshot(page: Page): Promise<{
   requestCalls: number
   openCalls: number
   sendCalls: { reportId: number; bytes: number[] }[]
+  violations: string[]
 }> {
   return page.evaluate(() => {
     const state = window.__cqsWbuzzHidSim
@@ -289,6 +322,7 @@ export async function getHidSimSnapshot(page: Page): Promise<{
       requestCalls: state.requestCalls,
       openCalls: state.openCalls,
       sendCalls: state.sendCalls.map((c) => ({ reportId: c.reportId, bytes: [...c.bytes] })),
+      violations: [...state.violations],
     }
   })
 }

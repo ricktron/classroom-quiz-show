@@ -40,10 +40,13 @@ import {
 } from './SonyBuzzSetupSection'
 import { useSonyBuzzSupportedProfile } from './useSonyBuzzSupportedProfile'
 import {
+  addRespondingSlot,
   classSetupSonyBuzzFullyReady,
   classifyReceiverLayer,
+  slotIdForPrimaryRedButton,
   type SonyBuzzTeacherSummary,
 } from '../input/sonyBuzzTeacherReadiness'
+import type { SonyBuzzSlotId } from '../input/sonyBuzzSupportedProfile'
 import type { PersistenceAdapter } from '../persistence'
 import type { HostInputDiagnosticSignals } from './diagnostics/types'
 import type { WebHidTransport } from '../input/webHidTransport'
@@ -82,6 +85,13 @@ import './GamepadInputHostPanel.css'
  * it, so an enabled adapter would do nothing anyway — and a controller left
  * plugged into a shared classroom laptop should not be able to reach the game
  * until somebody deliberately says so.
+ *
+ * The one deliberate path that switches it on (ADR-009, Q7-R1): in play, when the
+ * teacher has connected the supported Wbuzz receiver (Connect buzzers, or a
+ * previously granted receiver restored) and the supported team mapping is
+ * materialized for the detected Wbuzz pad. A teacher's explicit Off always wins:
+ * it is never overridden by Back to setup → Start, by a pad reconnect, or by the
+ * receiver reconnecting.
  */
 
 export interface GamepadInputHostPanelProps {
@@ -126,6 +136,8 @@ export interface GamepadInputHostPanelProps {
    * Never device identity or classroom content.
    */
   readonly onInputDiagnosticSignals?: (signals: HostInputDiagnosticSignals) => void
+  /** Whether Buzzer Check (SBS test mode) is on. Lift only — Class Setup status copy. */
+  readonly onBuzzerCheckChange?: (on: boolean) => void
 }
 
 /** What the panel is currently doing about button capture. */
@@ -175,11 +187,14 @@ export function GamepadInputHostPanel({
   onSonyTeacherSummaryChange,
   onWbuzzPresentChange,
   onInputDiagnosticSignals,
+  onBuzzerCheckChange,
 }: GamepadInputHostPanelProps) {
   const teams = game.definition.teams
   const gameId = game.definition.id
 
   const [enabled, setEnabled] = useState(false)
+  /** Teacher pressed "Turn controller buzzing off": auto-enable never overrides it. */
+  const explicitOffRef = useRef(false)
   const [capture, setCapture] = useState<CaptureState>({ mode: 'idle' })
   const [captureMessage, setCaptureMessage] = useState<string | null>(null)
   const [issues, setIssues] = useState<readonly GamepadMappingIssue[]>([])
@@ -200,6 +215,20 @@ export function GamepadInputHostPanel({
   const [recentTestObservations, setRecentTestObservations] = useState<
     readonly SonyBuzzTestObservation[]
   >([])
+  /**
+   * Supported-profile slots that produced a real RED press on the present pad —
+   * from Buzzer Check or from live gameplay. Owned here (the poll owner, mounted
+   * across Start/Back) so leaving Buzzer Check or Class Setup does not erase real
+   * evidence, and updated only by press events, never re-derived from a stale
+   * observation batch. Cleared when the Wbuzz pad or the receiver goes away.
+   */
+  const [respondingSlots, setRespondingSlots] = useState<readonly SonyBuzzSlotId[]>([])
+  const noteRespondingButton = useCallback((buttonIndex: number) => {
+    const slot = slotIdForPrimaryRedButton(buttonIndex)
+    if (slot === null) return
+    setRespondingSlots((current) => addRespondingSlot(current, slot))
+  }, [])
+  const resetRespondingSlots = useCallback(() => setRespondingSlots([]), [])
 
   const sony = useSonyBuzzSupportedProfile({
     gameId,
@@ -210,6 +239,27 @@ export function GamepadInputHostPanel({
   })
 
   const wbuzzPresent = sony.wbuzzController != null
+  const wbuzzControllerIndex = sony.wbuzzController?.controllerIndex ?? null
+  const receiverConnected = classifyReceiverLayer(sony.transport.health) === 'connected'
+
+  // A pad or receiver that went away cannot still be "responding".
+  const respondingSourceKey = `${wbuzzPresent ? 'pad' : 'no-pad'}|${
+    receiverConnected ? 'receiver' : 'no-receiver'
+  }`
+  const priorRespondingSource = useRef(respondingSourceKey)
+  useEffect(() => {
+    const prior = priorRespondingSource.current
+    priorRespondingSource.current = respondingSourceKey
+    if (prior === respondingSourceKey) return
+    const lostPad = prior.startsWith('pad|') && !wbuzzPresent
+    const lostReceiver = prior.endsWith('|receiver') && !receiverConnected
+    if (lostPad || lostReceiver) setRespondingSlots([])
+  }, [respondingSourceKey, wbuzzPresent, receiverConnected])
+
+  useEffect(() => {
+    onBuzzerCheckChange?.(testMode)
+  }, [onBuzzerCheckChange, testMode])
+
   useEffect(() => {
     onWbuzzPresentChange?.(wbuzzPresent)
     // Clear lifted signal on unmount so Host does not keep a stale true after
@@ -285,21 +335,28 @@ export function GamepadInputHostPanel({
     setTestMode(false)
     setSonyPendingCapture(null)
     setLastTestObservation(null)
+    setRecentTestObservations([])
+    setRespondingSlots([])
   }, [loadedTeamsKey, teams])
 
-  // Q7: leaving Class Setup must end Buzzer Check and keep an already-applied
-  // supported Wbuzz mapping live for ordinary gameplay. Otherwise testMode stays
-  // true and/or controller buzzing stays Off under collapsed Controllers — the
-  // teacher who just finished Connect/Check would see no gameplay buzz effect.
+  // Q7: leaving Class Setup ends Buzzer Check. Its observation batch is display
+  // history for that check only; keeping it would let a later check re-show a
+  // press that never happened (Q7-R1 stale responding).
   useEffect(() => {
     if (selectionMode) return
     setTestMode(false)
     setCapture((current) => (current.mode === 'sony-setup' ? { mode: 'idle' } : current))
     setLastTestObservation(null)
-    if (sony.materializedMapping.bindings.length > 0) {
-      setEnabled(true)
-    }
-  }, [selectionMode, sony.materializedMapping.bindings.length])
+    setRecentTestObservations([])
+  }, [selectionMode])
+
+  // Q7-R1 (ADR-009 contract): see "Off by default" above.
+  const supportedBindingCount = sony.materializedMapping.bindings.length
+  useEffect(() => {
+    if (selectionMode || explicitOffRef.current) return
+    if (!receiverConnected || supportedBindingCount === 0) return
+    setEnabled(true)
+  }, [selectionMode, receiverConnected, supportedBindingCount])
 
   const target = useMemo(() => responseOpportunityFor(game), [game])
   const capturing = capture.mode === 'capturing' || capture.mode === 'sony-setup'
@@ -352,6 +409,7 @@ export function GamepadInputHostPanel({
   const onOutcome = useCallback((outcome: GamepadBuzzOutcome) => {
     setLastOutcome(outcome)
     if (outcome.kind === 'test-observation') {
+      noteRespondingButton(outcome.control.buttonIndex)
       const observation = {
         teamId: outcome.teamId,
         action: outcome.action,
@@ -377,7 +435,26 @@ export function GamepadInputHostPanel({
         })
       }
     }
-  }, [clock, onSelectionBatch, onSelectionObservation])
+  }, [clock, noteRespondingButton, onSelectionBatch, onSelectionObservation])
+
+  // Live gameplay presses are real evidence too (Q7-R1): a Wbuzz RED press that
+  // produced a claim must not leave Buzzers saying "waiting for presses". Only the
+  // detected Wbuzz pad counts here; Buzzer Check observations are handled above.
+  const latestTestMode = useRef(testMode)
+  latestTestMode.current = testMode || selectionMode
+  const latestWbuzzIndex = useRef(wbuzzControllerIndex)
+  latestWbuzzIndex.current = wbuzzControllerIndex
+  const onButtonEdges = useCallback(
+    (edges: readonly GamepadControlRef[]) => {
+      if (latestTestMode.current) return
+      const wbuzzIndex = latestWbuzzIndex.current
+      if (wbuzzIndex === null) return
+      for (const edge of edges) {
+        if (edge.controllerIndex === wbuzzIndex) noteRespondingButton(edge.buttonIndex)
+      }
+    },
+    [noteRespondingButton],
+  )
 
   // Apply supported-profile materialized mapping when associations/controller change.
   const sonyMappingKey = useMemo(() => {
@@ -407,6 +484,7 @@ export function GamepadInputHostPanel({
     onOutcome,
     onDiagnostics: setDiagnostics,
     onCapture,
+    onButtonEdges,
     reprimeToken: sony.reprimeToken,
   })
 
@@ -443,10 +521,13 @@ export function GamepadInputHostPanel({
   }, [])
 
   // Class Setup Check/Show → existing SBS Buzzer Check (one detector owner).
+  // A fresh check starts with no observation batch on screen.
   useEffect(() => {
     if (!enterBuzzerCheck) return
     setTestMode(true)
     setCapture({ mode: 'idle' })
+    setLastTestObservation(null)
+    setRecentTestObservations([])
     onEnterBuzzerCheckConsumed?.()
   }, [enterBuzzerCheck, onEnterBuzzerCheckConsumed])
 
@@ -510,6 +591,8 @@ export function GamepadInputHostPanel({
           onTestModeChange={onSonyTestModeChange}
           lastTestObservation={lastTestObservation}
           recentTestObservations={recentTestObservations}
+          respondingSlots={respondingSlots}
+          onResetRespondingSlots={resetRespondingSlots}
           pendingCapture={sonyPendingCapture}
           onPendingCaptureConsumed={onSonyPendingCaptureConsumed}
           compactOrdinary={selectionMode}
@@ -586,7 +669,11 @@ export function GamepadInputHostPanel({
           data-testid="gih-toggle"
           aria-pressed={enabled}
           disabled={!supported}
-          onClick={() => setEnabled((value) => !value)}
+          onClick={() => {
+            const next = !enabled
+            explicitOffRef.current = !next
+            setEnabled(next)
+          }}
         >
           {enabled ? 'Turn controller buzzing off' : 'Turn controller buzzing on'}
         </button>
@@ -737,6 +824,7 @@ export function GamepadInputHostPanel({
       {selectionMode ? null : (
       <SonyBuzzSetupSection
         teams={teams}
+        displayNameForTeam={nameOf}
         controllers={controllers}
         diagnosticsStatus={diagnostics.status}
         activeMapping={mapping}
@@ -747,6 +835,8 @@ export function GamepadInputHostPanel({
         onTestModeChange={onSonyTestModeChange}
         lastTestObservation={lastTestObservation}
         recentTestObservations={recentTestObservations}
+        respondingSlots={respondingSlots}
+        onResetRespondingSlots={resetRespondingSlots}
         pendingCapture={sonyPendingCapture}
         onPendingCaptureConsumed={onSonyPendingCaptureConsumed}
         onTeacherSummaryChange={publishTeacherSummary}

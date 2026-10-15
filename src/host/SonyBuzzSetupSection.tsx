@@ -33,7 +33,6 @@ import {
   type SonyBuzzSlotTeamAssociation,
 } from '../input/sonyBuzzSupportedProfile'
 import {
-  addRespondingSlot,
   classifyControllerLayer,
   classifyMappingLayer,
   classifyReceiverLayer,
@@ -44,7 +43,6 @@ import {
   nextRepairStep,
   receiverLayerLabel,
   repairStepCopy,
-  slotIdForPrimaryRedButton,
   teacherSummaryLabel,
   type SonyBuzzRepairStep,
   type SonyBuzzTeacherSummary,
@@ -87,6 +85,14 @@ export interface SonyBuzzSetupSectionProps {
   readonly lastTestObservation: SonyBuzzTestObservation | null
   /** All observations from the latest Gamepad poll (simultaneous edges). */
   readonly recentTestObservations?: readonly SonyBuzzTestObservation[]
+  /**
+   * Profile slots with a real RED press on the present pad (Buzzer Check or live
+   * gameplay). Owned by the parent poll owner so it survives Leave Buzzer Check
+   * and Start/Back; the parent clears it when the pad or receiver goes away.
+   */
+  readonly respondingSlots?: readonly SonyBuzzSlotId[]
+  /** Repair flow starts/ends with no responding evidence. */
+  readonly onResetRespondingSlots?: () => void
   /** Deliver a captured control from the parent poll owner. */
   readonly pendingCapture: GamepadControlRef | null
   readonly onPendingCaptureConsumed: () => void
@@ -147,8 +153,8 @@ function SupportedProfileBlock({
   supportedProfile,
   testMode,
   onTestModeChange,
-  lastTestObservation,
-  recentTestObservations = [],
+  respondingSlots,
+  onResetRespondingSlots,
   checkDisabled,
   compactOrdinary,
   onTeacherSummaryChange,
@@ -159,8 +165,8 @@ function SupportedProfileBlock({
   supportedProfile: SonyBuzzSupportedProfileSectionProps
   testMode: boolean
   onTestModeChange: (testMode: boolean) => void
-  lastTestObservation: SonyBuzzTestObservation | null
-  recentTestObservations?: readonly SonyBuzzTestObservation[]
+  respondingSlots: readonly SonyBuzzSlotId[]
+  onResetRespondingSlots: () => void
   checkDisabled: boolean
   compactOrdinary: boolean
   onTeacherSummaryChange?: (summary: SonyBuzzTeacherSummary) => void
@@ -175,7 +181,6 @@ function SupportedProfileBlock({
   const [repairStep, setRepairStep] = useState<SonyBuzzRepairStep>('idle')
   const [repairReason, setRepairReason] = useState<'repair' | 'hardware-changed'>('repair')
   const [bindMissed, setBindMissed] = useState(false)
-  const [respondingSlots, setRespondingSlots] = useState<readonly SonyBuzzSlotId[]>([])
   const slots = useMemo(() => {
     const map = new Map<SonyBuzzSlotId, string>()
     for (const a of supportedProfile.associations) map.set(a.slotId, a.teamId)
@@ -218,36 +223,9 @@ function SupportedProfileBlock({
     assignedCount,
   ])
 
-  useEffect(() => {
-    // Controllers-responding readiness must track ordinary Buzzer Check as well as
-    // repair observe-red. HEAD gated on observe-red only, so Class Setup stayed
-    // "Waiting for controller presses" after successful checks (F-S04B-H3-SONY-05):
-    // lastTestObservation / testOut advanced, respondingSlots did not.
-    if (!testMode) {
-      // Q7: leaving Check clears sticky responding so pad absence is honest.
-      setRespondingSlots([])
-      return
-    }
-    const batch =
-      recentTestObservations.length > 0
-        ? recentTestObservations
-        : lastTestObservation !== null
-          ? [lastTestObservation]
-          : []
-    if (batch.length === 0) return
-    setRespondingSlots((current) => {
-      let next = current
-      for (const observation of batch) {
-        const slot = slotIdForPrimaryRedButton(observation.control.buttonIndex)
-        if (slot !== null) next = addRespondingSlot(next, slot)
-      }
-      return next
-    })
-  }, [testMode, lastTestObservation, recentTestObservations])
-
   const beginRepair = (reason: 'repair' | 'hardware-changed') => {
     setRepairReason(reason)
-    setRespondingSlots([])
+    onResetRespondingSlots()
     setBindMissed(false)
     setRepairStep('power-off')
     supportedProfile.onDisableKeepAlive()
@@ -271,7 +249,7 @@ function SupportedProfileBlock({
 
   const exitRepair = () => {
     setRepairStep('idle')
-    setRespondingSlots([])
+    onResetRespondingSlots()
   }
 
   const repairActive = repairStep !== 'idle' && repairStep !== 'done'
@@ -486,25 +464,26 @@ function SupportedProfileBlock({
             const value = slots.get(slotId) ?? ''
             return (
               <li key={slotId}>
-                <label>
-                    Controller {slotId}
-                    {slotId === 4 ? ' (optional fourth)' : ''}
-                  <select
-                    data-testid={`sbs-slot-${slotId}`}
-                    value={value}
-                    onChange={(e) => {
-                      const next = e.target.value
-                      supportedProfile.onSetSlotTeam(slotId, next.length === 0 ? null : next)
-                    }}
-                  >
-                    <option value="">Unassigned</option>
-                    {teams.map((team) => (
-                      <option key={team.id} value={team.id}>
-                        {displayNameForTeam(team.id)}
-                      </option>
-                    ))}
-                  </select>
+                <label htmlFor={`sbs-slot-select-${slotId}`}>
+                  Controller {slotId}
+                  {slotId === 4 ? ' (optional fourth)' : ''}
                 </label>
+                <select
+                  id={`sbs-slot-select-${slotId}`}
+                  data-testid={`sbs-slot-${slotId}`}
+                  value={value}
+                  onChange={(e) => {
+                    const next = e.target.value
+                    supportedProfile.onSetSlotTeam(slotId, next.length === 0 ? null : next)
+                  }}
+                >
+                  <option value="">Unassigned</option>
+                  {teams.map((team) => (
+                    <option key={team.id} value={team.id}>
+                      {displayNameForTeam(team.id)}
+                    </option>
+                  ))}
+                </select>
               </li>
             )
           })}
@@ -612,6 +591,8 @@ export function SonyBuzzSetupSection({
   onTestModeChange,
   lastTestObservation,
   recentTestObservations = [],
+  respondingSlots = NO_RESPONDING_SLOTS,
+  onResetRespondingSlots = noop,
   pendingCapture,
   onPendingCaptureConsumed,
   supportedProfile,
@@ -683,8 +664,13 @@ export function SonyBuzzSetupSection({
   }, [pendingCapture, onPendingCaptureConsumed, onCapturingChange])
 
   const progress = useMemo(() => sonyBuzzStagedProgress(staged), [staged])
-  const nameOf = (id: string) =>
-    displayNameForTeam?.(id) ?? teams.find((team) => team.id === id)?.name ?? id
+  const nameOf = (id: string) => {
+    // Buzzer Check reports a provisional `sony-slot-N` for a RED press on a slot
+    // with no team yet; the teacher sees the slot, never the internal id.
+    const unassigned = /^sony-slot-(\d)$/.exec(id)
+    if (unassigned) return `Controller ${unassigned[1]} (no team yet)`
+    return displayNameForTeam?.(id) ?? teams.find((team) => team.id === id)?.name ?? id
+  }
   const surfaceState = describeSurfaceState(diagnosticsStatus, controllers)
 
   return (
@@ -705,8 +691,8 @@ export function SonyBuzzSetupSection({
           supportedProfile={supportedProfile}
           testMode={testMode}
           onTestModeChange={onTestModeChange}
-          lastTestObservation={lastTestObservation}
-          recentTestObservations={recentTestObservations}
+          respondingSlots={respondingSlots}
+          onResetRespondingSlots={onResetRespondingSlots}
           checkDisabled={diagnosticsStatus === 'unsupported'}
           compactOrdinary={compactOrdinary}
           onTeacherSummaryChange={onTeacherSummaryChange}
@@ -909,6 +895,9 @@ export function SonyBuzzSetupSection({
     </section>
   )
 }
+
+const NO_RESPONDING_SLOTS: readonly SonyBuzzSlotId[] = []
+const noop = () => {}
 
 function describeTestOutcome(
   observations: readonly SonyBuzzTestObservation[],

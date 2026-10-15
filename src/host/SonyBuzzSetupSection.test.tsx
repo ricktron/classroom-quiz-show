@@ -536,7 +536,11 @@ describe('copy guardrails', () => {
     expect(screen.getByTestId('sbs-slot-disposition').textContent?.toLowerCase() ?? '').not.toContain(
       'final rc owed',
     )
-    expect(screen.getByTestId('sbs-slot-4').closest('label')?.textContent ?? '').toMatch(/optional fourth/i)
+    // Q7-R1: the select is labelled by its own <label for>, so the accessible
+    // name is the slot (not the selected option text).
+    expect(screen.getByLabelText('Controller 4 (optional fourth)')).toBe(
+      screen.getByTestId('sbs-slot-4'),
+    )
   })
 })
 

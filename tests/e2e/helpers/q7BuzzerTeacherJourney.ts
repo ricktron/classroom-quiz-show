@@ -56,6 +56,8 @@ export async function connectSimulatedReceiver(page: Page): Promise<void> {
     timeout: 10_000,
   })
   await expect(page.getByRole('button', { name: 'Buzzers connected' })).toBeVisible()
+  // Simulator enforces the exact filter and reportId 0 / 7-byte contract.
+  expect((await getHidSimSnapshot(page)).violations).toEqual([])
 }
 
 export async function waitForKeepAliveContinuation(page: Page): Promise<void> {
@@ -76,7 +78,18 @@ export async function exposeGamepadAndExpectBuzzersStatus(page: Page): Promise<v
   await expect(page.getByTestId('sbs-supported-profile')).toBeVisible()
 }
 
-export async function runFourHandsetRedCheck(page: Page): Promise<void> {
+/** Demo game (Home → Import demo game) authored team names, slot order. */
+export const DEMO_AUTHORED_TEAM_NAMES = ['Blue Basalts', 'Red Rhyolites'] as const
+
+/**
+ * RED on slots 1–4 in Buzzer Check. Each press must name the team that slot is
+ * assigned to (`slotTeamLabels[i]` for slot i+1), or "Controller N (no team yet)"
+ * for a slot with no team — slot→team identity, not just "something responded".
+ */
+export async function runFourHandsetRedCheck(
+  page: Page,
+  slotTeamLabels: readonly string[] = DEMO_AUTHORED_TEAM_NAMES,
+): Promise<void> {
   // Ensure Buzzer Check is on (Show already arms it; re-enter if needed).
   const testMode = page.getByTestId('sbs-test-mode')
   if ((await testMode.getAttribute('aria-pressed')) !== 'true') {
@@ -87,10 +100,14 @@ export async function runFourHandsetRedCheck(page: Page): Promise<void> {
   for (const slot of [1, 2, 3, 4] as const) {
     const buttonIndex = buttonIndexForSlotColor(slot, 'red')
     await pressWbuzzButton(page, buttonIndex)
-    await expect(page.getByTestId('sbs-test-outcome')).toContainText(/Buzzer Check:/i, {
-      timeout: 10_000,
-    })
-    await expect(page.getByTestId('sbs-controller-layer')).toContainText(/responding/i)
+    const label = slotTeamLabels[slot - 1] ?? `Controller ${slot} (no team yet)`
+    await expect(page.getByTestId('sbs-test-outcome')).toHaveText(
+      `Buzzer Check: ${label} · Buzz · Controller 1 · button ${buttonIndex + 1}`,
+      { timeout: 10_000 },
+    )
+    await expect(page.getByTestId('sbs-controller-layer')).toHaveText(
+      slot === 1 ? '1 controller responding' : `${slot} controllers responding`,
+    )
   }
 }
 

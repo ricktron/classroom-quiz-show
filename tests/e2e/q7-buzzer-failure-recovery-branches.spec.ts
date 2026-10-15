@@ -85,10 +85,15 @@ test('branch: first output failure — no healthy lie', async ({ page }, info) =
   test.skip(info.project.name !== 'projector-720p', 'primary viewport')
   await startAtShow(page, 'send-fail')
   await page.getByRole('button', { name: 'Connect buzzers' }).click()
-  await expect(page.getByTestId('sbs-receiver-layer')).toContainText(/Failed|Connecting|Permission/i, {
+  // Q7-R1: a settled first-output failure is Failed with teacher copy, never
+  // left at Connecting (which a still-pending connect would also show).
+  await expect(page.getByTestId('sbs-receiver-layer')).toHaveText('Failed to reconnect', {
     timeout: 8_000,
   })
-  await expect(page.getByTestId('sbs-receiver-layer')).not.toContainText(/^Connected$/i)
+  await expect(page.getByTestId('sbs-teacher-summary')).toHaveText(
+    'Receiver needs attention — keyboard still works.',
+  )
+  await expect(page.getByRole('button', { name: 'Connect buzzers' })).toBeEnabled()
 })
 
 test('branch: HID healthy / Gamepad absent — Buzzers not falsely ready', async ({ page }, info) => {
@@ -119,11 +124,8 @@ test('branch: Gamepad disappears — status becomes truthful', async ({ page }, 
   await pressWbuzzButton(page, buttonIndexForSlotColor(1, 'red'))
   await expect(page.getByTestId('sbs-controller-layer')).toContainText(/responding/i)
   await hideSimulatedWbuzzGamepad(page)
-  // Leave Buzzer Check and re-enter so sticky press memory is not mistaken for live pads.
-  await page.getByTestId('sbs-test-mode').click()
-  await expect(page.getByTestId('sbs-test-mode')).toHaveAttribute('aria-pressed', 'false')
-  await page.getByTestId('sbs-test-mode').click()
-  await expect(page.getByTestId('sbs-controller-layer')).not.toContainText(/responding/i)
+  // Q7-R1: no Leave/re-enter dance — losing the pad clears responding at once.
+  await expect(page.getByTestId('sbs-controller-layer')).toHaveText('Waiting for controller presses')
   await expect(page.getByTestId('sbs-teacher-summary')).not.toContainText(/^Buzzers ready\./i)
 })
 

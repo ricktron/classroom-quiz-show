@@ -4,6 +4,7 @@ import {
   expectMostlyInViewport,
   expectShowBuzzerSetupTeacherEffect,
   TEACHER_VIEWPORTS,
+  wheelScrollUntilMostlyInViewport,
 } from './helpers/viewportDiscoverability'
 
 /**
@@ -57,7 +58,8 @@ for (const vp of TEACHER_VIEWPORTS) {
     // Do not scrollIntoView the Effect/Connect target before Effect assertions.
     const show = classSetupShowBuzzerSetup(page)
     await expect(show).toBeVisible()
-    await show.scrollIntoViewIfNeeded()
+    // Teacher-style mouse-wheel scroll only — never scrollIntoView (Q7-R1).
+    await wheelScrollUntilMostlyInViewport(show)
     await expectMostlyInViewport(show, `${vp.label}: Show buzzer setup must be reachable after ordinary scroll`)
     await show.click()
 
