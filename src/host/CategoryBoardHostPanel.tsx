@@ -82,7 +82,13 @@ export function CategoryBoardHostPanel({
     progress.selectedTileId === null ? null : findTileLocation(board, progress.selectedTileId)
 
   return (
-    <section className="cbh" aria-labelledby="cbh-title">
+    <section
+      // Q7-R1 (item 11): `cbh--clue` marks an open clue so the focused Host
+      // play posture can lay the live loop out beside the prompt (CSS only).
+      className={progress.stage === 'board' ? 'cbh' : 'cbh cbh--clue'}
+      aria-labelledby="cbh-title"
+      data-stage={progress.stage}
+    >
       <div className="foundation__tag foundation__tag--slice5">
         Category board — host controls, private
       </div>
@@ -164,15 +170,12 @@ export function CategoryBoardHostPanel({
             )}
           </p>
 
-          <HostOnlyPrompt prompt={location.tile.prompt} />
-
-          <HostOnlyBlock label="Correct answer" testId="cbh-answer">
-            {location.tile.answer}
-          </HostOnlyBlock>
-
-          <HostOnlyAlternates tile={location.tile} />
-          <HostOnlyNotes tile={location.tile} />
-
+          {/*
+            Q7-R1 (item 11): the reveal / return actions sit directly under the
+            selection, ABOVE the private prompt / answer / alternates / notes, so
+            the next primary action keeps one predictable place in the teacher
+            viewport however long the authored content is.
+          */}
           <div className="cbh__actions" role="group" aria-label="Category board reveal controls">
             {progress.stage === 'selected' && (
               <button
@@ -217,6 +220,15 @@ export function CategoryBoardHostPanel({
               {progress.stage === 'answer' ? 'Return to board' : 'Cancel and return to board'}
             </button>
           </div>
+
+          <HostOnlyPrompt prompt={location.tile.prompt} />
+
+          <HostOnlyBlock label="Correct answer" testId="cbh-answer">
+            {location.tile.answer}
+          </HostOnlyBlock>
+
+          <HostOnlyAlternates tile={location.tile} />
+          <HostOnlyNotes tile={location.tile} />
 
           <p className="host__note cbh__hint">
             {progress.stage === 'answer'

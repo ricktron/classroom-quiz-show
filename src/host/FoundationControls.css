@@ -134,6 +134,141 @@
   margin-bottom: var(--space-2);
 }
 
+/*
+ * Q7-R1 (item 11): core clue loop in the teacher viewport (1280×720).
+ *
+ * The next primary action at every step (Show prompt → Arm clue / Start timer →
+ * active claim + Mark correct / incorrect → Show answer / Return to board) must
+ * be on screen without scrolling. Play posture uses the laptop width, trims
+ * panel rhythm, and — while a clue is open on a laptop-or-wider Host — lays the
+ * loop out left to right in the order the teacher works it:
+ *
+ *   [clue, then round status] [response window] [buzz-in queue]
+ *
+ * Nothing is hidden or duplicated (there is still exactly one arming control);
+ * scoring, summary, and controllers stay full width below. The board stage and
+ * narrow / phone Hosts keep the single stacked column.
+ */
+.foundation--play {
+  max-width: 90rem;
+}
+
+.foundation__lead {
+  display: contents;
+}
+
+.foundation--play .foundation__gameplay .rth,
+.foundation--play .foundation__gameplay .lih {
+  margin-top: 0;
+  padding: var(--space-3);
+}
+
+.foundation--play .foundation__gameplay .rph {
+  margin-top: 0;
+}
+
+.foundation--play .foundation__gameplay .rth h3,
+.foundation--play .foundation__gameplay .lih h3 {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+.foundation--play .foundation__gameplay .cbh__selected {
+  gap: var(--space-2);
+}
+
+.foundation--play .foundation__gameplay .rth__summary,
+.foundation--play .foundation__gameplay .rth__actions,
+.foundation--play .foundation__gameplay .rth__duration,
+.foundation--play .foundation__gameplay .lih__summary,
+.foundation--play .foundation__gameplay .lih__actions {
+  margin-bottom: var(--space-2);
+}
+
+.foundation--play .foundation__gameplay .lih__heading--lead {
+  margin-top: 0;
+}
+
+.foundation--play .foundation__gameplay .rth > .foundation__tag,
+.foundation--play .foundation__gameplay .lih > .foundation__tag {
+  margin-top: 0;
+}
+
+/*
+ * Board header (private tag, round title, "On the display now") shares one
+ * line when the width allows, so a classic 5-row board fits at 1280×720.
+ */
+.foundation--play .foundation__gameplay .cbh {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.foundation--play .foundation__gameplay .cbh > .foundation__tag,
+.foundation--play .foundation__gameplay .cbh > h3,
+.foundation--play .foundation__gameplay .cbh > .cbh__public {
+  margin: 0;
+}
+
+.foundation--play .foundation__gameplay .cbh > .cbh__grid,
+.foundation--play .foundation__gameplay .cbh > .cbh__selected {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.foundation--play .foundation__gameplay .cbh__tiles {
+  gap: var(--space-1);
+}
+
+/*
+ * Timer length label + select share one line when the column allows it
+ * (still wraps on a phone, so the select never forces horizontal overflow).
+ */
+.foundation--play .foundation__gameplay .rth__duration label {
+  white-space: nowrap;
+}
+
+.foundation--play .foundation__gameplay .rth__duration select {
+  flex: 1 1 12rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (min-width: 64rem) {
+  /* The clue column is widest: prompt AND answer must read without scrolling. */
+  .foundation--play .foundation__gameplay:has(.cbh--clue) {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  /* Reveal + return fit one row so the private answer stays above the fold. */
+  .foundation--play .foundation__gameplay:has(.cbh--clue) .cbh__actions .btn {
+    padding: var(--space-2) var(--space-4);
+    font-size: 1rem;
+  }
+
+  .foundation--play .foundation__gameplay:has(.cbh--clue) > .foundation__lead {
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+    min-width: 0;
+  }
+
+  /*
+   * While a clue is open the clue leads its column; round status (whose
+   * advance control is disabled until the clue closes) follows beneath it.
+   */
+  .foundation--play .foundation__gameplay:has(.cbh--clue) > .foundation__lead > .rph {
+    order: 1;
+  }
+
+  .foundation--play
+    .foundation__gameplay:has(.cbh--clue)
+    > :not(.foundation__lead, .rth, .lih) {
+    grid-column: 1 / -1;
+  }
+}
+
 .foundation__more {
   margin-top: var(--space-5);
   padding: var(--space-3);

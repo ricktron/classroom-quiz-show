@@ -127,3 +127,59 @@
 .host__title-row h1 {
   margin: 0;
 }
+
+/*
+ * Q7-R1 (item 11): once the focused Host is in play posture, the route header
+ * stays (title, Back to Home, the laptop/projector reminder) but tightens so
+ * the live clue loop owns the 1280×720 teacher viewport. Setup is unchanged.
+ */
+.host:has(.foundation--play) .screen__main {
+  padding-top: var(--space-2);
+  gap: var(--space-2);
+}
+
+.host:has(.foundation--play) .host__title-row {
+  margin-bottom: 0;
+}
+
+.host:has(.foundation--play) .host__title-row h1 {
+  font-size: 1.25rem;
+}
+
+/* Navigation, not a live action: minimum target size is enough here. */
+.host:has(.foundation--play) .host__title-row .btn {
+  min-height: var(--target-min);
+  padding: var(--space-2) var(--space-4);
+  font-size: 1rem;
+}
+
+.host:has(.foundation--play) .screen__main > .host__note {
+  margin: 0;
+  max-width: 60rem;
+  font-size: 0.85rem;
+}
+
+/* Laptop width and up: title, Back to Home, and the reminder share one row. */
+@media (min-width: 48rem) {
+  .host:has(.foundation--play) .screen__main {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: var(--space-4);
+    row-gap: var(--space-2);
+    /* Align the header row with the play-posture foundation (max 90rem). */
+    width: 100%;
+    max-width: calc(90rem + 2 * var(--space-4));
+    margin-inline: auto;
+    box-sizing: border-box;
+  }
+
+  .host:has(.foundation--play) .screen__main > .host__note {
+    max-width: none;
+    text-align: left;
+  }
+
+  .host:has(.foundation--play) .screen__main > .foundation {
+    grid-column: 1 / -1;
+  }
+}

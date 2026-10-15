@@ -781,9 +781,17 @@ export function FoundationControls({
 
         {game && playReady && (
           <div className="foundation__gameplay" data-testid="host-gameplay">
-            {/* Q6-RP-1 (G1): ordinary round progression — never via Advanced diagnostics. */}
-            <RoundProgressHostPanel dispatch={dispatch} game={game} clock={clock} />
-            <CategoryBoardHostPanel dispatch={dispatch} game={game} clock={clock} />
+            {/*
+              Q7-R1 (item 11): while a clue is open, the clue + round status sit
+              in a lead column with the response window and buzz-in queue beside
+              them (CSS only; see FoundationControls.css). Otherwise this wrapper
+              is `display: contents` and the panels stack exactly as before.
+            */}
+            <div className="foundation__lead">
+              {/* Q6-RP-1 (G1): ordinary round progression — never via Advanced diagnostics. */}
+              <RoundProgressHostPanel dispatch={dispatch} game={game} clock={clock} />
+              <CategoryBoardHostPanel dispatch={dispatch} game={game} clock={clock} />
+            </div>
             <ResponseTimerHostPanel dispatch={dispatch} game={game} clock={clock} />
             <FinalWagerHostPanel
               dispatch={dispatch}
