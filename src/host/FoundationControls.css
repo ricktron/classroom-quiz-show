@@ -247,6 +247,36 @@
     font-size: 1rem;
   }
 
+  /*
+   * Q7-R1 (item 11, CI follow-up): Linux font metrics rendered the Host-only
+   * answer ~55px lower than macOS, past the 720px fold. While a clue is open,
+   * the duplicate round title takes no row and the private blocks keep a
+   * tighter rhythm, so the answer clears the fold with margin.
+   */
+  /*
+   * The round title repeats the Host chrome's game + round line, so while a
+   * clue is open it stays a heading for assistive tech but takes no row.
+   */
+  .foundation--play .foundation__gameplay .cbh--clue > h3 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .foundation--play .foundation__gameplay .cbh--clue .cbh__private {
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .foundation--play .foundation__gameplay .cbh--clue .cbh__private-label {
+    margin-bottom: 0.15rem;
+  }
+
   .foundation--play .foundation__gameplay:has(.cbh--clue) > .foundation__lead {
     display: grid;
     gap: var(--space-2);

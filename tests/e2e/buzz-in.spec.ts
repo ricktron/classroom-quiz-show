@@ -50,7 +50,9 @@ async function openDisplay(page: Page) {
  */
 async function ensureHostCommandsEnabled(host: Page) {
   await expect(host.getByTestId('persistence-status')).toBeVisible()
-  await expect(host.getByTestId('persistence-status')).not.toContainText(/loading/i)
+  // Boot copy is "Opening saved games…"; a "loading"-only check passed during boot,
+  // letting Initialize run before boot finished and reset the store (Q7-R1 CI flake).
+  await expect(host.getByTestId('persistence-status')).not.toContainText(/loading|opening saved games/i)
   const discard = host.getByTestId('persistence-discard')
   if (await discard.isVisible()) {
     await discard.click()

@@ -27,7 +27,7 @@ async function openHost(page: Page) {
   await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
   await ensureHostMoreOpen(page)
   await expect(page.getByTestId('persistence-status')).toBeVisible()
-  await expect(page.getByTestId('persistence-status')).not.toContainText(/loading/i)
+  await expect(page.getByTestId('persistence-status')).not.toContainText(/loading|opening saved games/i)
 }
 
 async function openDisplay(page: Page) {
