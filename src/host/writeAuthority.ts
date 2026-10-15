@@ -7,6 +7,13 @@ export const FOLLOWER_EDITOR_WRITE_BLOCKED_MESSAGE =
 export const FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE =
   'Another Classroom Quiz Show window is currently responsible for saving.'
 
+/**
+ * Truthful Home copy for the controls a read-only (follower) window disables.
+ * Saving returns to this window as soon as the other window closes.
+ */
+export const FOLLOWER_HOME_READ_ONLY_DETAIL =
+  'This window is read-only until that window closes. Resume class, Start fresh, New Game, imports, and changes to your games are turned off here.'
+
 export const UNKNOWN_WRITE_BLOCKED_MESSAGE =
   'Your edits could not be saved. They are still open here.'
 

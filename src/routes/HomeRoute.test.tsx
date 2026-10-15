@@ -16,7 +16,10 @@ import {
 import { CANONICAL_SAMPLE_CATEGORY_BOARD_FILE } from '../import/sampleGameFile'
 import { createManualClock, type ManualClock } from '../time/clock'
 import type { UseHostPersistenceOptions } from '../host/useHostPersistence'
-import { FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE } from '../host/writeAuthority'
+import {
+  FOLLOWER_HOME_READ_ONLY_DETAIL,
+  FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE,
+} from '../host/writeAuthority'
 import { createDefaultRegistry } from '../game/defaultRegistry'
 import { importGameFromJsonText } from '../import/importGame'
 import { gameFileText } from '../test/gameFileFixtures'
@@ -274,22 +277,38 @@ describe('teacher Home', () => {
     })
     await stealLeadership(adapter, clock)
     const writes = trackDurableWrites(adapter)
-    fireEvent.click(screen.getByTestId('home-new-game'))
-    fireEvent.click(screen.getByTestId('home-import-demo'))
-    fireEvent.click(screen.getByTestId('home-import-json'))
-    fireEvent.click(screen.getByTestId('home-replace-saved-game'))
+    // Q7 R1 backstop: blocked write controls are disabled with truthful copy,
+    // never enabled-but-inert.
+    expect(screen.getByTestId('home-follower-notice')).toHaveTextContent(
+      FOLLOWER_HOME_READ_ONLY_DETAIL,
+    )
+    const blocked = [
+      screen.getByTestId('home-new-game'),
+      screen.getByTestId('home-import-demo'),
+      screen.getByTestId('home-import-json'),
+      screen.getByTestId('home-import-spreadsheet'),
+      screen.getByTestId('home-replace-saved-game'),
+    ]
     const more = document.querySelector('.home__game-more summary')
     expect(more).not.toBeNull()
     fireEvent.click(more!)
-    fireEvent.click(screen.getAllByRole('button', { name: /duplicate/i })[0])
-    fireEvent.click(screen.getAllByRole('button', { name: /^delete$/i })[0])
-    fireEvent.click(screen.getAllByRole('button', { name: /confirm delete game/i })[0])
-    fireEvent.click(screen.getAllByRole('button', { name: /^rename$/i })[0])
-    fireEvent.change(screen.getAllByLabelText(/new name/i)[0], { target: { value: 'Renamed As Follower' } })
-    fireEvent.click(screen.getAllByRole('button', { name: /save name/i })[0])
-    await waitFor(() => {
-      expect(screen.getByTestId('home-status')).toHaveTextContent(FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE)
-    })
+    blocked.push(
+      screen.getAllByRole('button', { name: /duplicate/i })[0],
+      screen.getAllByRole('button', { name: /^delete$/i })[0],
+      screen.getAllByRole('button', { name: /^rename$/i })[0],
+    )
+    for (const control of blocked) {
+      expect(control).toBeDisabled()
+      fireEvent.click(control)
+    }
+    for (const control of [blocked[0], ...blocked.slice(-3)]) {
+      expect(control).toHaveAttribute('aria-describedby', 'home-read-only-detail')
+    }
+    expect(screen.queryByRole('button', { name: /confirm delete game/i })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/new name/i)).not.toBeInTheDocument()
+    // Export and Play stay available: they do not write durable data.
+    expect(screen.getAllByRole('button', { name: /^export$/i })[0]).toBeEnabled()
+    await Promise.resolve()
     expect(writes.savedDefinitions).toBe(0)
     expect(document.body.textContent).not.toMatch(IMPLEMENTATION_LEAK)
   })
@@ -754,7 +773,7 @@ describe('teacher Home', () => {
     expect(screen.getAllByText('Kept After Invalid').length).toBeGreaterThan(0)
   })
 
-  it('lets a follower Resume from Home because resume is not a durable write', async () => {
+  it('disables Resume with truthful copy while another window saves, then resumes once saving returns', async () => {
     const adapter = createMemoryPersistenceAdapter()
     await seedResumableSession(adapter)
     const clock = createManualClock(AT)
@@ -770,6 +789,22 @@ describe('teacher Home', () => {
       expect(screen.getByTestId('home-resume')).toBeInTheDocument()
     })
     await stealLeadership(adapter, clock)
+    const resume = screen.getByTestId('home-resume-session')
+    expect(resume).toBeDisabled()
+    expect(resume).toHaveAttribute('aria-describedby', 'home-read-only-detail')
+    expect(screen.getByTestId('home-discard-session')).toBeDisabled()
+    expect(screen.getByTestId('home-follower-notice')).toHaveTextContent(
+      FOLLOWER_HOME_READ_ONLY_DETAIL,
+    )
+    fireEvent.click(resume)
+    expect(screen.queryByText(/host page/i)).not.toBeInTheDocument()
+
+    // The other window's lease lapses (it closed): saving returns, Resume works.
+    clock.advance(61_000)
+    await waitFor(() => {
+      expect(screen.getByTestId('home-resume-session')).toBeEnabled()
+    })
+    expect(screen.queryByTestId('home-follower-notice')).not.toBeInTheDocument()
     fireEvent.click(screen.getByTestId('home-resume-session'))
     await waitFor(() => {
       expect(screen.getByText(/host page/i)).toBeInTheDocument()

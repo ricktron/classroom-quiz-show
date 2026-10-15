@@ -815,6 +815,89 @@ describe('useHostPersistence', () => {
   })
 })
 
+describe('useHostPersistence same-window lease handoff (Q7 R1 blocker 7)', () => {
+  function renderWindow(
+    adapter: PersistenceAdapter,
+    shared: {
+      readonly clock: ReturnType<typeof createManualClock>
+      readonly releaseLedger: persistenceApi.HostLeaseReleaseLedger
+    },
+    ids: { readonly tabId: string; readonly windowId: string },
+  ) {
+    let current: UseHostPersistence | null = null
+    function Probe() {
+      current = useHostPersistence({
+        clock: shared.clock,
+        createAdapter: () => adapter,
+        tabId: ids.tabId,
+        windowId: ids.windowId,
+        releaseLedger: shared.releaseLedger,
+        // Long TTL and slow renew: any handoff below cannot be a TTL expiry.
+        leaseTtlMs: 60_000,
+        renewIntervalMs: 60_000,
+        broadcastChannel: null,
+      })
+      return null
+    }
+    const view = render(<Probe />)
+    return {
+      view,
+      api: () => {
+        if (!current) throw new Error('probe not ready')
+        return current
+      },
+    }
+  }
+
+  it('a reloaded document of the same window is the leader at boot, not a false follower', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    const shared = {
+      clock: createManualClock(AT),
+      releaseLedger: persistenceApi.createMemoryReleaseLedger(),
+    }
+    const before = renderWindow(adapter, shared, { tabId: 'doc-1', windowId: 'win-A' })
+    await waitFor(() => expect(before.api().leadership).toBe('leader'))
+    // Reload without React cleanup: the old document's lease stays live in storage.
+    const reloaded = renderWindow(adapter, shared, { tabId: 'doc-2', windowId: 'win-A' })
+    await waitFor(() => expect(reloaded.api().bootPhase).not.toBe('loading'))
+    expect(reloaded.api().leadership).toBe('leader')
+    expect(reloaded.api().canPersistMutations).toBe(true)
+    before.view.unmount()
+    reloaded.view.unmount()
+  })
+
+  it('keeps a second live window read-only, and hands saving over on the owner pagehide', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    const shared = {
+      clock: createManualClock(AT),
+      releaseLedger: persistenceApi.createMemoryReleaseLedger(),
+    }
+    const owner = renderWindow(adapter, shared, { tabId: 'doc-A', windowId: 'win-A' })
+    await waitFor(() => expect(owner.api().leadership).toBe('leader'))
+    const second = renderWindow(adapter, shared, { tabId: 'doc-B', windowId: 'win-B' })
+    await waitFor(() => expect(second.api().leadership).toBe('follower'))
+    expect(second.api().canPersistMutations).toBe(false)
+
+    // Renewing does not steal a live foreign lease.
+    await act(async () => {
+      await second.api().renewLease()
+    })
+    expect(second.api().leadership).toBe('follower')
+
+    // The owner window unloads (reload / close / Electron quit): pagehide only.
+    act(() => {
+      window.dispatchEvent(new Event('pagehide'))
+    })
+    expect(shared.releaseLedger.read()).toMatchObject({ ownerId: 'doc-A' })
+    await act(async () => {
+      await second.api().renewLease()
+    })
+    expect(second.api().leadership).toBe('leader')
+    owner.view.unmount()
+    second.view.unmount()
+  })
+})
+
 function activeTimerHistory(deadline: number): readonly SessionEvent[] {
   const store = createSessionStore()
   store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 'timer-session' })

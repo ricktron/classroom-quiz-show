@@ -5,6 +5,7 @@ import { ROUTES, absoluteDisplayUrlWithTheme, editPath, playPath } from './paths
 import { useHostPersistence, type UseHostPersistenceOptions } from '../host/useHostPersistence'
 import { hostResumeRecoveryState } from '../host/hostResumeNavigation'
 import {
+  FOLLOWER_HOME_READ_ONLY_DETAIL,
   FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE,
   UNREADABLE_SESSION_TEACHER_MESSAGE,
 } from '../host/writeAuthority'
@@ -124,8 +125,11 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
 
   function onResumeSession(): void {
     if (!canResume) return
-    // Resume is not a durable write. A stale host-writer lease after quit/relaunch
-    // must not block restoring the unfinished Session (H1 relaunch path).
+    // Q7 R1: a read-only window cannot run the resumed class (Host refuses
+    // session commands while another window saves), so Resume is disabled with
+    // truthful copy instead. A same-window reload or quit/relaunch no longer
+    // leaves a stale lease (pagehide handoff), so the H1 relaunch path resumes.
+    if (readOnly) return
     navigate(ROUTES.host, { state: hostResumeRecoveryState() })
   }
 
@@ -606,7 +610,8 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
       </p>
       {readOnly ? (
         <p className="host__note" role="status" data-testid="home-follower-notice">
-          {FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE}
+          {FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE}{' '}
+          <span id="home-read-only-detail">{FOLLOWER_HOME_READ_ONLY_DETAIL}</span>
         </p>
       ) : null}
 
@@ -627,6 +632,8 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
               className="btn"
               data-testid="home-discard-session"
               aria-label={startFreshArmed ? DISCARD_INVALID_CONFIRM_LABEL : DISCARD_INVALID_LABEL}
+              disabled={readOnly}
+              aria-describedby={readOnly ? 'home-read-only-detail' : undefined}
               onClick={() => void onStartFresh()}
             >
               {startFreshArmed ? DISCARD_INVALID_CONFIRM_LABEL : DISCARD_INVALID_LABEL}
@@ -655,6 +662,8 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
               type="button"
               className="btn"
               data-testid="home-resume-session"
+              disabled={readOnly}
+              aria-describedby={readOnly ? 'home-read-only-detail' : undefined}
               onClick={onResumeSession}
             >
               {RESUME_SESSION_LABEL}
@@ -664,6 +673,8 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
               className="btn btn--secondary"
               data-testid="home-discard-session"
               aria-label={startFreshArmed ? START_FRESH_CONFIRM_LABEL : START_FRESH_LABEL}
+              disabled={readOnly}
+              aria-describedby={readOnly ? 'home-read-only-detail' : undefined}
               onClick={() => void onStartFresh()}
             >
               {startFreshArmed ? START_FRESH_CONFIRM_LABEL : START_FRESH_LABEL}
@@ -687,7 +698,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
             <GameRenameEditor
               gameId={heroEntry.entry.gameId}
               value={renameValue}
-              disabled={!ready}
+              disabled={!ready || readOnly}
               onChange={setRenameValue}
               onConfirm={(id) => void onRename(id)}
               onCancel={() => setRenameId(null)}
@@ -717,6 +728,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
               <GameMoreMenu
                 entry={heroEntry.entry}
                 disabled={!ready}
+                writeBlocked={readOnly}
                 confirmDeleteId={confirmDeleteId}
                 onDuplicate={(id) => void onDuplicate(id)}
                 onRenameStart={(entry) => {
@@ -743,6 +755,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
             newGamePrimary
             groupLabel="Start"
             disabled={!ready}
+            writeBlocked={readOnly}
             busy={busy}
             onNewGame={() => void onNewGame()}
             onImport={() => setImportOpen((open) => !open)}
@@ -753,6 +766,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
           newGamePrimary={false}
           groupLabel={libraryEmpty ? 'Start' : 'Add games'}
           disabled={!ready}
+          writeBlocked={readOnly}
           busy={busy}
           recoverySubordinate={recoveryDominant}
           onNewGame={() => void onNewGame()}
@@ -804,7 +818,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
                 setImportText(CANONICAL_SAMPLE_CATEGORY_BOARD_FILE)
                 void importJson(CANONICAL_SAMPLE_CATEGORY_BOARD_FILE)
               }}
-              disabled={busy}
+              disabled={busy || readOnly}
             >
               Import demo game
             </button>
@@ -824,7 +838,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
               type="button"
               className="btn"
               data-testid="home-import-json"
-              disabled={busy}
+              disabled={busy || readOnly}
               onClick={() => void importJson(importText)}
             >
               Import file text
@@ -841,7 +855,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
               type="button"
               className="btn btn--secondary"
               data-testid="home-import-spreadsheet"
-              disabled={busy}
+              disabled={busy || readOnly}
               onClick={() => {
                 if (salvageSaveInFlight.current) return
                 if (refuseIfFollower()) return
@@ -855,7 +869,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
                 type="button"
                 className="btn"
                 data-testid="home-replace-saved-game"
-                disabled={busy}
+                disabled={busy || readOnly}
                 onClick={() => void confirmJsonReplace()}
               >
                 Replace the existing saved game
@@ -866,7 +880,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
                 type="button"
                 className="btn"
                 data-testid="home-replace-workbook"
-                disabled={busy}
+                disabled={busy || readOnly}
                 onClick={() => void confirmWorkbookReplace()}
               >
                 Replace the existing saved game
@@ -929,6 +943,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
             renameId={renameId}
             renameValue={renameValue}
             disabled={!ready}
+            writeBlocked={readOnly}
             recoveryDominant={recoveryDominant}
             onPlay={(entry) => void onPlay(entry)}
             onEdit={(id) => navigate(editPath(id))}
@@ -992,6 +1007,8 @@ interface GameListProps {
   readonly renameId: string | null
   readonly renameValue: string
   readonly disabled: boolean
+  /** Read-only window: durable write controls are disabled (Play/Edit/Export stay). */
+  readonly writeBlocked: boolean
   /** When recovery owns Home, Play/Edit stay reachable but are never primary. */
   readonly recoveryDominant: boolean
   readonly onPlay: (entry: SavedDefinitionSummary) => void
@@ -1017,6 +1034,7 @@ function NewImportActions({
   newGamePrimary,
   groupLabel,
   disabled,
+  writeBlocked,
   busy,
   recoverySubordinate = false,
   onNewGame,
@@ -1025,6 +1043,7 @@ function NewImportActions({
   readonly newGamePrimary: boolean
   readonly groupLabel: string
   readonly disabled: boolean
+  readonly writeBlocked: boolean
   readonly busy: boolean
   readonly recoverySubordinate?: boolean
   readonly onNewGame: () => void
@@ -1042,7 +1061,8 @@ function NewImportActions({
         type="button"
         className={newGamePrimary ? 'btn' : 'btn btn--secondary'}
         data-testid="home-new-game"
-        disabled={disabled || busy}
+        disabled={disabled || busy || writeBlocked}
+        aria-describedby={writeBlocked ? 'home-read-only-detail' : undefined}
         onClick={onNewGame}
       >
         New Game
@@ -1103,6 +1123,7 @@ function GameRenameEditor({
 function GameMoreMenu({
   entry,
   disabled,
+  writeBlocked,
   confirmDeleteId,
   onDuplicate,
   onRenameStart,
@@ -1111,6 +1132,7 @@ function GameMoreMenu({
 }: {
   readonly entry: SavedDefinitionSummary
   readonly disabled: boolean
+  readonly writeBlocked: boolean
   readonly confirmDeleteId: string | null
   readonly onDuplicate: (gameId: string) => void
   readonly onRenameStart: (entry: SavedDefinitionSummary) => void
@@ -1124,7 +1146,8 @@ function GameMoreMenu({
         <button
           type="button"
           className="btn btn--secondary"
-          disabled={disabled}
+          disabled={disabled || writeBlocked}
+          aria-describedby={writeBlocked ? 'home-read-only-detail' : undefined}
           onClick={() => onDuplicate(entry.gameId)}
         >
           Duplicate
@@ -1132,7 +1155,8 @@ function GameMoreMenu({
         <button
           type="button"
           className="btn btn--secondary"
-          disabled={disabled}
+          disabled={disabled || writeBlocked}
+          aria-describedby={writeBlocked ? 'home-read-only-detail' : undefined}
           onClick={() => onRenameStart(entry)}
         >
           Rename
@@ -1148,7 +1172,8 @@ function GameMoreMenu({
         <button
           type="button"
           className="btn btn--secondary"
-          disabled={disabled}
+          disabled={disabled || writeBlocked}
+          aria-describedby={writeBlocked ? 'home-read-only-detail' : undefined}
           onClick={() => onDelete(entry.gameId)}
         >
           {confirmDeleteId === entry.gameId ? 'Confirm delete game' : 'Delete'}
@@ -1164,6 +1189,7 @@ function GameList({
   renameId,
   renameValue,
   disabled,
+  writeBlocked,
   recoveryDominant,
   onPlay,
   onEdit,
@@ -1190,7 +1216,7 @@ function GameList({
               <GameRenameEditor
                 gameId={entry.gameId}
                 value={renameValue}
-                disabled={disabled}
+                disabled={disabled || writeBlocked}
                 onChange={onRenameChange}
                 onConfirm={onRenameConfirm}
                 onCancel={onRenameCancel}
@@ -1218,6 +1244,7 @@ function GameList({
                 <GameMoreMenu
                   entry={entry}
                   disabled={disabled}
+                  writeBlocked={writeBlocked}
                   confirmDeleteId={confirmDeleteId}
                   onDuplicate={onDuplicate}
                   onRenameStart={onRenameStart}
