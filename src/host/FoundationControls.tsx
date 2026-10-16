@@ -62,6 +62,7 @@ import { soundFactLabel } from '../session/classroomReadiness'
 import { THEME_META, type ThemeId } from '../theme/themeRegistry'
 import { ownsSameGameRosterRefresh } from './sameGameRosterRefresh'
 import { hostResumeWelcomeCopy } from './hostResumeWelcome'
+import { useDisplayPresence } from './useDisplayPresence'
 import './FoundationControls.css'
 
 /**
@@ -126,7 +127,11 @@ export function FoundationControls({
   const [selectionObservationBatch, setSelectionObservationBatch] = useState<
     readonly ClassroomSetupObservation[] | null
   >(null)
-  const [displayOpen, setDisplayOpen] = useState(false)
+  // CB-01: a handle this document opened, OR presence on the sync path. The
+  // handle alone is lost on Host reload while the Display stays open and live.
+  const [displayHandleOpen, setDisplayHandleOpen] = useState(false)
+  const displayPresent = useDisplayPresence()
+  const displayOpen = displayHandleOpen || displayPresent
   const [audioUnderstood, setAudioUnderstood] = useState(false)
   const [sonyReady, setSonyReady] = useState(false)
   const [sonyTeacherSummary, setSonyTeacherSummary] = useState<SonyBuzzTeacherSummary | null>(
@@ -463,7 +468,7 @@ export function FoundationControls({
   useEffect(() => {
     const timer = window.setInterval(() => {
       const handle = displayWindowRef.current
-      setDisplayOpen(Boolean(handle && !handle.closed))
+      setDisplayHandleOpen(Boolean(handle && !handle.closed))
     }, 1000)
     return () => window.clearInterval(timer)
   }, [])
@@ -491,7 +496,7 @@ export function FoundationControls({
       'quiz-show-display',
     )
     displayWindowRef.current = opened
-    setDisplayOpen(Boolean(opened && !opened.closed))
+    setDisplayHandleOpen(Boolean(opened && !opened.closed))
   }
   const roundLabel =
     game && game.currentRoundIndex !== null

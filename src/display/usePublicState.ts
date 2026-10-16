@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { INITIAL_PUBLIC_STATE, type PublicState } from '../state/publicState'
+import { attachDisplayPresenceResponder } from '../sync/displayPresence'
 import { attachDisplayWakeCatchUp } from '../sync/displayWakeCatchUp'
 import { createPublicStateReceiver } from '../sync/receiver'
 
@@ -14,6 +15,9 @@ import { createPublicStateReceiver } from '../sync/receiver'
  *
  * After ordinary sleep/backgrounding, visibility resume asks the Host again for
  * the current sanitized snapshot via the existing `request-state` path.
+ *
+ * It also answers Host presence probes (Court B CB-01) so a reloaded Host can
+ * tell the teacher this Display is still open. Presence carries no state.
  *
  * It also carries the receiver's estimate of the host/display clock difference
  * (Slice 7), because a published deadline is an instant on the HOST's clock and
@@ -39,7 +43,9 @@ export function usePublicState(): PublicStateView {
     const detachWake = attachDisplayWakeCatchUp({
       requestState: () => receiver.requestState(),
     })
+    const detachPresence = attachDisplayPresenceResponder()
     return () => {
+      detachPresence()
       detachWake()
       receiver.close()
     }
