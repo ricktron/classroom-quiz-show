@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useParams } from 'react-router-dom'
 import { ROUTES } from './paths'
 import { HomeRoute } from './HomeRoute'
@@ -24,7 +24,7 @@ import { createDefaultRegistry } from '../game/defaultRegistry'
 import { importGameFromJsonText } from '../import/importGame'
 import { gameFileText } from '../test/gameFileFixtures'
 import { boardGameFile, boardGameFileText } from '../test/categoryBoardFixtures'
-import { loadLibraryRecord } from '../persistence/savedDefinitions'
+import { listSavedDefinitions, loadLibraryRecord } from '../persistence/savedDefinitions'
 import {
   START_FRESH_CONFIRM_LABEL,
   START_FRESH_LABEL,
@@ -524,6 +524,57 @@ describe('teacher Home', () => {
     expect(screen.getByText('Playable')).toBeInTheDocument()
     expect(screen.queryByText(/ready to play/i)).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: /recent games/i })).not.toBeInTheDocument()
+  })
+
+  it('deletes exactly the confirmed Game and keeps every other saved Game (HL-06)', async () => {
+    // M54 detector: the library is title-sorted, so the target must not be the
+    // first entry. Deleting the wrong Game while saying "Your other games are
+    // unchanged" is teacher data loss.
+    const adapter = createMemoryPersistenceAdapter()
+    await seedSavedGame(adapter, 'Alpha Keeper', 'alpha-keeper')
+    await seedSavedGame(adapter, 'Bravo Target', 'bravo-target')
+    await seedSavedGame(adapter, 'Charlie Keeper', 'charlie-keeper')
+    const before = await listSavedDefinitions(adapter)
+    expect(before.ok).toBe(true)
+    if (!before.ok) return
+    expect(before.value.map((entry) => entry.gameId)).toEqual([
+      'alpha-keeper',
+      'bravo-target',
+      'charlie-keeper',
+    ])
+    await renderReadyHome({
+      createAdapter: () => adapter,
+      tabId: 'home-delete-target',
+      clock: createManualClock(AT),
+      leaseTtlMs: 60_000,
+      renewIntervalMs: 20_000,
+      broadcastChannel: null,
+    })
+    await waitFor(() => {
+      expect(screen.getByText('Bravo Target')).toBeInTheDocument()
+    })
+    const target = screen.getByText('Bravo Target').closest('li, section')
+    expect(target).not.toBeNull()
+    const card = within(target as HTMLElement)
+    fireEvent.click(card.getByText('More'))
+    fireEvent.click(card.getByRole('button', { name: /^delete$/i }))
+    const confirm = await card.findByRole('button', { name: /confirm delete game/i })
+    await waitFor(() => expect(confirm).toBeEnabled())
+    fireEvent.click(confirm)
+    await waitFor(() => {
+      expect(screen.getByTestId('home-status')).toHaveTextContent(
+        'Game deleted. Your other games are unchanged.',
+      )
+    })
+    const after = await listSavedDefinitions(adapter)
+    expect(after.ok).toBe(true)
+    if (!after.ok) return
+    expect(after.value.map((entry) => entry.gameId)).toEqual(['alpha-keeper', 'charlie-keeper'])
+    await waitFor(() => {
+      expect(screen.queryByText('Bravo Target')).not.toBeInTheDocument()
+    })
+    expect(screen.getByText('Alpha Keeper')).toBeInTheDocument()
+    expect(screen.getByText('Charlie Keeper')).toBeInTheDocument()
   })
 
   it('names the unfinished Game on the recovery banner', async () => {

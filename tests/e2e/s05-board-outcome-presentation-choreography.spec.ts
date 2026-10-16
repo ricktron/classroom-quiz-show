@@ -1,6 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
 import {
-  visualStressArmedWaitingBuzzSnapshot,
   visualStressBoardCorrectOutcomeSnapshot,
   visualStressBoardIncorrectWithActiveSnapshot,
   visualStressBoardPassedOutcomeSnapshot,
@@ -8,8 +7,10 @@ import {
 import { visualStressTeams } from '../../src/test/visualStressFixtures'
 import {
   assertNoHorizontalOverflow,
+  expectAcknowledgementExpires,
   injectPublicState,
-  openDisplay,
+  injectRenderedArmedWaitingBuzz,
+  openDisplayWithHeldAcks,
 } from './helpers/displayPublicState'
 import type { PublicState } from '../../src/state/publicState'
 
@@ -19,6 +20,11 @@ import type { PublicState } from '../../src/state/publicState'
  *
  * Injects sanitizer-derived PublicState snapshots. No PublicState / schema
  * expansion. Physical Sony / projector qualification remains S06.
+ *
+ * Display opens on a paused page clock, so ~420ms acknowledgement holds stay
+ * observable until a test advances time (no wall-clock race). Observed
+ * transitions first wait for their starting state to render; score-only
+ * refreshes wait for the new score to render.
  */
 
 const OUTCOME_CHROME_TOLERANCE_PX = 2
@@ -58,6 +64,32 @@ async function assertOutcomeChromeInsideBox(page: Page) {
   expect(report.transform === 'none' || report.transform === 'matrix(1, 0, 0, 1, 0, 0)').toBe(true)
 }
 
+/**
+ * Inject `base` with only team t0's public score changed by `delta`, and wait
+ * until the scoreboard shows the new total (so the refresh has rendered).
+ */
+async function injectRenderedScoreRefresh(
+  page: Page,
+  base: PublicState,
+  revision: number,
+  delta: number,
+) {
+  const score = page.getByTestId('tsb-score-t0')
+  const before = await score.textContent()
+  const refreshed: PublicState = structuredClone(base)
+  refreshed.revision = revision
+  if (refreshed.teams?.status === 'available') {
+    refreshed.teams = {
+      status: 'available',
+      teams: refreshed.teams.teams.map((team, index) =>
+        index === 0 ? { ...team, score: team.score + delta } : team,
+      ),
+    }
+  }
+  await injectPublicState(page, refreshed)
+  await expect(score).not.toHaveText(before ?? '')
+}
+
 /** Outcome is static secondary beside promoted active claim (buzz owns motion). */
 async function assertOutcomeStaticSecondaryBesideBuzz(
   page: Page,
@@ -90,7 +122,7 @@ test.describe('S05 board-outcome presentation choreography', () => {
       info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
       'projector viewports only',
     )
-    await openDisplay(page)
+    await openDisplayWithHeldAcks(page)
     await injectPublicState(page, visualStressBoardCorrectOutcomeSnapshot(150))
     const outcome = page.getByTestId('board-outcome')
     await expect(outcome).toBeVisible()
@@ -111,8 +143,8 @@ test.describe('S05 board-outcome presentation choreography', () => {
       info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
       'projector viewports only',
     )
-    await openDisplay(page)
-    await injectPublicState(page, visualStressArmedWaitingBuzzSnapshot(149))
+    await openDisplayWithHeldAcks(page)
+    await injectRenderedArmedWaitingBuzz(page, 149)
     await expect(page.getByTestId('board-outcome')).toHaveCount(0)
 
     await injectPublicState(page, visualStressBoardCorrectOutcomeSnapshot(150))
@@ -123,6 +155,12 @@ test.describe('S05 board-outcome presentation choreography', () => {
     await expect(outcome).toHaveClass(/bod--outcome-changed/)
     await assertOutcomeChromeInsideBox(page)
     await assertNoHorizontalOverflow(page)
+
+    // The acknowledgement is a transient hold; authoritative text remains.
+    await expectAcknowledgementExpires(page, outcome, 'data-outcome-changed')
+    await expect(outcome).not.toHaveClass(/bod--outcome-changed/)
+    await expect(outcome).toContainText('Correct')
+    await expect(outcome).toContainText(FIRST_TEAM)
   })
 
   test('Incorrect + promoted active: buzz owns motion; outcome is static secondary', async ({
@@ -132,8 +170,8 @@ test.describe('S05 board-outcome presentation choreography', () => {
       info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
       'projector viewports only',
     )
-    await openDisplay(page)
-    await injectPublicState(page, visualStressArmedWaitingBuzzSnapshot(149))
+    await openDisplayWithHeldAcks(page)
+    await injectRenderedArmedWaitingBuzz(page, 149)
     await injectPublicState(page, visualStressBoardIncorrectWithActiveSnapshot(151))
     await assertOutcomeStaticSecondaryBesideBuzz(page, 'Incorrect')
     await assertNoHorizontalOverflow(page)
@@ -146,8 +184,8 @@ test.describe('S05 board-outcome presentation choreography', () => {
       info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
       'projector viewports only',
     )
-    await openDisplay(page)
-    await injectPublicState(page, visualStressArmedWaitingBuzzSnapshot(149))
+    await openDisplayWithHeldAcks(page)
+    await injectRenderedArmedWaitingBuzz(page, 149)
     const passedActive: PublicState = structuredClone(
       visualStressBoardIncorrectWithActiveSnapshot(162),
     )
@@ -169,7 +207,7 @@ test.describe('S05 board-outcome presentation choreography', () => {
       info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
       'projector viewports only',
     )
-    await openDisplay(page)
+    await openDisplayWithHeldAcks(page)
     await injectPublicState(page, visualStressBoardIncorrectWithActiveSnapshot(151))
     const outcome = page.getByTestId('board-outcome')
     await expect(outcome).toHaveAttribute('data-outcome-changed', 'false')
@@ -187,8 +225,8 @@ test.describe('S05 board-outcome presentation choreography', () => {
       info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
       'projector viewports only',
     )
-    await openDisplay(page)
-    await injectPublicState(page, visualStressArmedWaitingBuzzSnapshot(149))
+    await openDisplayWithHeldAcks(page)
+    await injectRenderedArmedWaitingBuzz(page, 149)
     await injectPublicState(page, visualStressBoardPassedOutcomeSnapshot(152))
     const outcome = page.getByTestId('board-outcome')
     await expect(outcome).toContainText('Passed')
@@ -208,28 +246,35 @@ test.describe('S05 board-outcome presentation choreography', () => {
       info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
       'projector viewports only',
     )
-    await openDisplay(page)
-    await injectPublicState(page, visualStressArmedWaitingBuzzSnapshot(149))
+    await openDisplayWithHeldAcks(page)
+    await injectRenderedArmedWaitingBuzz(page, 149)
     const correct = visualStressBoardCorrectOutcomeSnapshot(150)
     await injectPublicState(page, correct)
-    await expect(page.getByTestId('board-outcome')).toHaveAttribute('data-outcome-changed', 'true')
+    const outcome = page.getByTestId('board-outcome')
+    await expect(outcome).toHaveAttribute('data-outcome-changed', 'true')
 
     // Same outcome identity; only public team totals change (Path S-C static scores).
-    const scored: PublicState = structuredClone(correct)
-    scored.revision = 153
-    if (scored.teams?.status === 'available') {
-      scored.teams = {
-        status: 'available',
-        teams: scored.teams.teams.map((team, index) =>
-          index === 0 ? { ...team, score: team.score + 400 } : team,
-        ),
-      }
-    }
-    await injectPublicState(page, scored)
-    await expect(page.getByTestId('board-outcome')).toContainText('Correct')
-    await expect(page.getByTestId('board-outcome')).toHaveAttribute('data-outcome-changed', 'true')
-    await expect(page.getByTestId('board-outcome')).toHaveClass(/bod--outcome-changed/)
+    // First refresh is also a barrier: React flushes the acknowledgement's passive
+    // effects (hold timer registration) before rendering it, so the hold below is
+    // timed from the acknowledgement, not from whenever the effect happened to run.
+    await injectRenderedScoreRefresh(page, correct, 153, 400)
+    await page.clock.runFor(300)
+
+    await injectRenderedScoreRefresh(page, correct, 154, 800)
+    await expect(outcome).toContainText('Correct')
+    // Not cancelled by the refresh…
+    await expect(outcome).toHaveAttribute('data-outcome-changed', 'true')
+    await expect(outcome).toHaveClass(/bod--outcome-changed/)
     await assertNoHorizontalOverflow(page)
+
+    // …and not restarted by it: 500ms after the acknowledgement (> 420ms hold,
+    // < 300ms + 420ms restarted hold) the marker has cleared. Refresh #3 is a
+    // barrier so any restart from refresh #2's effects is registered (at
+    // T0+300) before time advances again.
+    await injectRenderedScoreRefresh(page, correct, 155, 1200)
+    await page.clock.runFor(200)
+    await expect(outcome).toHaveAttribute('data-outcome-changed', 'false')
+    await expect(outcome).not.toHaveClass(/bod--outcome-changed/)
   })
 
   test('720p reduced-motion Correct acknowledgement disables animation; static cue remains', async ({
@@ -237,8 +282,8 @@ test.describe('S05 board-outcome presentation choreography', () => {
   }, info) => {
     test.skip(info.project.name !== 'projector-720p', '720p project only')
     await page.emulateMedia({ reducedMotion: 'reduce' })
-    await openDisplay(page)
-    await injectPublicState(page, visualStressArmedWaitingBuzzSnapshot(149))
+    await openDisplayWithHeldAcks(page)
+    await injectRenderedArmedWaitingBuzz(page, 149)
     await injectPublicState(page, visualStressBoardCorrectOutcomeSnapshot(150))
     const outcome = page.getByTestId('board-outcome')
     await expect(outcome).toContainText('Correct')
@@ -270,8 +315,8 @@ test.describe('S05 board-outcome presentation choreography', () => {
   }, info) => {
     test.skip(info.project.name !== 'projector-720p', '720p project only')
     await page.emulateMedia({ reducedMotion: 'no-preference' })
-    await openDisplay(page)
-    await injectPublicState(page, visualStressArmedWaitingBuzzSnapshot(149))
+    await openDisplayWithHeldAcks(page)
+    await injectRenderedArmedWaitingBuzz(page, 149)
     await injectPublicState(page, visualStressBoardCorrectOutcomeSnapshot(150))
     const outcome = page.getByTestId('board-outcome')
     await expect(outcome).toHaveAttribute('data-outcome-changed', 'true')
@@ -288,8 +333,8 @@ test.describe('S05 board-outcome presentation choreography', () => {
       info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
       'projector viewports only',
     )
-    await openDisplay(page)
-    await injectPublicState(page, visualStressArmedWaitingBuzzSnapshot(149))
+    await openDisplayWithHeldAcks(page)
+    await injectRenderedArmedWaitingBuzz(page, 149)
 
     // Exhausted Incorrect (single respondent) — outcome may own ack.
     const exhausted = structuredClone(visualStressBoardPassedOutcomeSnapshot(160))
@@ -325,7 +370,7 @@ test.describe('S05 board-outcome presentation choreography', () => {
 
   test('720p high-contrast Correct keeps kind + team readable', async ({ page }, info) => {
     test.skip(info.project.name !== 'projector-720p', '720p project only')
-    await openDisplay(page, 'high-contrast')
+    await openDisplayWithHeldAcks(page, 'high-contrast')
     await injectPublicState(page, visualStressBoardCorrectOutcomeSnapshot(150))
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'high-contrast')
     await expect(page.getByTestId('board-outcome')).toContainText('Correct')

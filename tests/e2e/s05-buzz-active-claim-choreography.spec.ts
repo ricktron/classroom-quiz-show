@@ -9,8 +9,10 @@ import {
 import { visualStressLongPrompt, visualStressTeams } from '../../src/test/visualStressFixtures'
 import {
   assertNoHorizontalOverflow,
+  expectAcknowledgementExpires,
   injectPublicState,
-  openDisplay,
+  injectRenderedArmedWaitingBuzz,
+  openDisplayWithHeldAcks,
 } from './helpers/displayPublicState'
 
 /**
@@ -19,6 +21,11 @@ import {
  * Injects sanitizer-derived PublicState snapshots (canonical Game → Session →
  * sanitizer). Does not hand-author a second PublicState authority. Physical
  * Sony / projector qualification remains S06.
+ *
+ * Display opens on a paused page clock, so the ~420ms claim-change hold stays
+ * observable until a test advances time; acknowledgement assertions no longer
+ * race CPU load, and an acknowledgement that never starts (or is cancelled)
+ * still fails.
  */
 
 const CLAIM_CHROME_TOLERANCE_PX = 2
@@ -73,7 +80,7 @@ test.describe('S05 buzz / active-claim choreography', () => {
       info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
       'projector viewports only',
     )
-    await openDisplay(page)
+    await openDisplayWithHeldAcks(page)
     await injectPublicState(page, visualStressArmedWaitingBuzzSnapshot(130))
     await expect(page.getByTestId('signal-rail-status')).toHaveText('Waiting for a buzz')
     await expect(page.getByTestId('bqd')).toHaveCount(0)
@@ -88,7 +95,7 @@ test.describe('S05 buzz / active-claim choreography', () => {
       info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
       'projector viewports only',
     )
-    await openDisplay(page)
+    await openDisplayWithHeldAcks(page)
     await injectPublicState(page, visualStressFirstActiveClaimSnapshot(131))
     await expect(page.getByTestId('bqd')).toHaveAttribute('data-status', 'active')
     await expect(page.getByTestId('bqd-active')).toHaveText(ACTIVE_TEAM)
@@ -104,7 +111,7 @@ test.describe('S05 buzz / active-claim choreography', () => {
       info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
       'projector viewports only',
     )
-    await openDisplay(page)
+    await openDisplayWithHeldAcks(page)
     await injectPublicState(page, visualStressArmedWaitingBuzzSnapshot(130))
     await expect(page.getByTestId('signal-rail-status')).toHaveText('Waiting for a buzz')
 
@@ -115,6 +122,11 @@ test.describe('S05 buzz / active-claim choreography', () => {
     await assertClaimChromeInsidePanel(page)
     await assertNoWaitingIdentities(page)
     await assertNoHorizontalOverflow(page)
+
+    // The acknowledgement is a transient hold, not a durable state.
+    await expectAcknowledgementExpires(page, page.getByTestId('bqd'), 'data-claim-changed')
+    await expect(page.getByTestId('bqd')).not.toHaveClass(/bqd--claim-changed/)
+    await expect(page.getByTestId('bqd-active')).toHaveText(ACTIVE_TEAM)
   })
 
   test('active claim + max waiting count never publishes waiting identities', async ({
@@ -124,7 +136,7 @@ test.describe('S05 buzz / active-claim choreography', () => {
       info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
       'projector viewports only',
     )
-    await openDisplay(page)
+    await openDisplayWithHeldAcks(page)
     await injectPublicState(page, visualStressActiveClaimMaxWaitingSnapshot(132))
     await expect(page.getByTestId('bqd-active')).toHaveText(ACTIVE_TEAM)
     await expect(page.getByTestId('bqd-waiting')).toHaveText('7 teams waiting')
@@ -140,8 +152,8 @@ test.describe('S05 buzz / active-claim choreography', () => {
       info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
       'projector viewports only',
     )
-    await openDisplay(page)
-    await injectPublicState(page, visualStressArmedWaitingBuzzSnapshot(130))
+    await openDisplayWithHeldAcks(page)
+    await injectRenderedArmedWaitingBuzz(page, 130)
     await injectPublicState(page, visualStressFirstActiveClaimSnapshot(131))
     await expect(page.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
 
@@ -163,7 +175,7 @@ test.describe('S05 buzz / active-claim choreography', () => {
       info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
       'projector viewports only',
     )
-    await openDisplay(page)
+    await openDisplayWithHeldAcks(page)
     await injectPublicState(page, visualStressFirstActiveClaimSnapshot(131))
     await expect(page.getByTestId('bqd-active')).toHaveText(ACTIVE_TEAM)
 
@@ -183,7 +195,7 @@ test.describe('S05 buzz / active-claim choreography', () => {
       info.project.name !== 'projector-720p' && info.project.name !== 'desktop-1080p',
       'projector viewports only',
     )
-    await openDisplay(page)
+    await openDisplayWithHeldAcks(page)
     await injectPublicState(page, visualStressExhaustedBuzzSnapshot(134))
     await expect(page.getByTestId('bqd')).toHaveAttribute('data-status', 'exhausted')
     await expect(page.getByTestId('bqd-active')).toHaveText('No one left to answer')
@@ -193,7 +205,7 @@ test.describe('S05 buzz / active-claim choreography', () => {
 
   test('720p high-contrast active claim keeps text carriers', async ({ page }, info) => {
     test.skip(info.project.name !== 'projector-720p', '720p project only')
-    await openDisplay(page, 'high-contrast')
+    await openDisplayWithHeldAcks(page, 'high-contrast')
     await injectPublicState(page, visualStressActiveClaimMaxWaitingSnapshot(132))
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'high-contrast')
     await expect(page.getByTestId('bqd')).toContainText('Answering')
@@ -208,8 +220,9 @@ test.describe('S05 buzz / active-claim choreography', () => {
   }, info) => {
     test.skip(info.project.name !== 'projector-720p', '720p project only')
     await page.emulateMedia({ reducedMotion: 'reduce' })
-    await openDisplay(page)
+    await openDisplayWithHeldAcks(page)
     await injectPublicState(page, visualStressFirstActiveClaimSnapshot(131))
+    await expect(page.getByTestId('bqd-active')).toHaveText(ACTIVE_TEAM)
     await injectPublicState(page, visualStressPromotedActiveClaimSnapshot(133))
     await expect(page.getByTestId('bqd-active')).toHaveText(PROMOTED_TEAM)
     await expect(page.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
