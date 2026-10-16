@@ -146,16 +146,10 @@ async function expectPlayContinues(page: Page): Promise<void> {
   await expect(page.getByTestId('cbh-grid')).toBeVisible()
 }
 
-/** The viewport is forced to 1280×720; one project is enough. */
-function onlyOnProjector720p(projectName: string): void {
-  test.skip(projectName !== 'projector-720p', '1280×720 runs on projector-720p only')
-}
-
 for (const path of ['buzzers-first', 'skip-buzzers'] as const) {
   test(`${path}: Start Game is perceivable at natural 1280×720 Ready posture; pointer starts the game`, async ({
     page,
-  }, testInfo) => {
-    onlyOnProjector720p(testInfo.project.name)
+  }) => {
     await readyAt720p(page, path)
 
     // REACH: as the setup actions left the page. Nothing scrolls before this.
@@ -170,8 +164,7 @@ for (const path of ['buzzers-first', 'skip-buzzers'] as const) {
 
   test(`${path}: Tab reaches a perceivable Start Game at 1280×720; Enter starts the game`, async ({
     page,
-  }, testInfo) => {
-    onlyOnProjector720p(testInfo.project.name)
+  }) => {
     await readyAt720p(page, path)
 
     // REACH
@@ -187,8 +180,7 @@ for (const path of ['buzzers-first', 'skip-buzzers'] as const) {
 
   test(`${path}: no focused Class Setup control is hidden under the Ready strip at 1280×720`, async ({
     page,
-  }, testInfo) => {
-    onlyOnProjector720p(testInfo.project.name)
+  }) => {
     await readyAt720p(page, path)
     await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur())
 
