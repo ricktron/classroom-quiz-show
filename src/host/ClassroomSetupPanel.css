@@ -204,7 +204,8 @@
 
 /* M48 / VP-HIDDEN: once Ready, keep Start Game on screen at 1280×720 by
    pinning the outcome strip to the viewport bottom while Class Setup is in
-   view. Opaque background and z-index keep it the topmost hit target. */
+   view. Sticky positioning plus z-index keep it the topmost hit target; the
+   opaque background only stops scrolled content showing through. */
 .classroom-setup__outcome--ready {
   position: sticky;
   bottom: 0;
