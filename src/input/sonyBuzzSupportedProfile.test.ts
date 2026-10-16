@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest'
 import {
   buttonIndexForSlotColor,
   isExactSupportedWbuzzIds,
+  SONY_BUZZ_COLORS,
+  sonyBuzzButtonLabel,
+  sonyBuzzerLabel,
+  sonyBuzzHandsetForButton,
   defaultSonyBuzzSlotAssociations,
   keepalivePayload,
   materializeSupportedProfileMapping,
@@ -148,5 +152,32 @@ describe('defaultSonyBuzzSlotAssociations', () => {
       { slotId: 1, teamId: 'a' },
       { slotId: 2, teamId: 'b' },
     ])
+  })
+})
+
+describe('CB-04 canonical buzzer labels', () => {
+  it('every Wbuzz button maps back to exactly one Buzzer N and colour (inverse of the layout)', () => {
+    const seen = new Set<string>()
+    for (const slot of [1, 2, 3, 4] as const) {
+      for (const color of SONY_BUZZ_COLORS) {
+        const index = buttonIndexForSlotColor(slot, color)
+        expect(sonyBuzzHandsetForButton(index)).toEqual({ slotId: slot, color })
+        seen.add(`${slot}:${color}`)
+      }
+    }
+    expect(seen.size).toBe(20)
+    expect(sonyBuzzHandsetForButton(20)).toBeNull()
+    expect(sonyBuzzHandsetForButton(-1)).toBeNull()
+    expect(sonyBuzzHandsetForButton(1.5)).toBeNull()
+  })
+
+  it('labels a handset button as "Buzzer N · Colour" with no raw controller or button index', () => {
+    expect(sonyBuzzButtonLabel(buttonIndexForSlotColor(2, 'red'))).toBe('Buzzer 2 · Red')
+    expect(sonyBuzzButtonLabel(buttonIndexForSlotColor(4, 'yellow'))).toBe('Buzzer 4 · Yellow')
+    expect(sonyBuzzButtonLabel(buttonIndexForSlotColor(1, 'blue'))).toBe('Buzzer 1 · Blue')
+    expect(sonyBuzzButtonLabel(99)).toBeNull()
+    for (const slot of [1, 2, 3, 4] as const) {
+      expect(sonyBuzzerLabel(slot)).toBe(`Buzzer ${slot}`)
+    }
   })
 })

@@ -46,7 +46,7 @@ import {
   slotIdForPrimaryRedButton,
   type SonyBuzzTeacherSummary,
 } from '../input/sonyBuzzTeacherReadiness'
-import type { SonyBuzzSlotId } from '../input/sonyBuzzSupportedProfile'
+import { sonyBuzzButtonLabel, type SonyBuzzSlotId } from '../input/sonyBuzzSupportedProfile'
 import type { PersistenceAdapter } from '../persistence'
 import type { HostInputDiagnosticSignals } from './diagnostics/types'
 import type { WebHidTransport } from '../input/webHidTransport'
@@ -603,6 +603,7 @@ export function GamepadInputHostPanel({
             associations: sony.associations,
             mappingStatus: sony.mappingStatus,
             wbuzzPresent,
+            wbuzzControllerIndex,
             onConnect: () => {
               void sony.connect()
             },
@@ -746,7 +747,11 @@ export function GamepadInputHostPanel({
                   ? 'Press a button…'
                   : control === null
                     ? 'Not assigned'
-                    : describeGamepadControl(control)}
+                    : // CB-04: a supported Wbuzz handset reads "Buzzer N · Colour";
+                      // raw controller/button identity is for other controllers.
+                      (control.controllerIndex === wbuzzControllerIndex
+                        ? sonyBuzzButtonLabel(control.buttonIndex)
+                        : null) ?? describeGamepadControl(control)}
               </span>
               <button
                 type="button"
@@ -845,6 +850,7 @@ export function GamepadInputHostPanel({
           associations: sony.associations,
           mappingStatus: sony.mappingStatus,
           wbuzzPresent,
+          wbuzzControllerIndex,
           onConnect: () => {
             void sony.connect()
           },

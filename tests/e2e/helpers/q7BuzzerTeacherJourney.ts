@@ -83,7 +83,7 @@ export const DEMO_AUTHORED_TEAM_NAMES = ['Blue Basalts', 'Red Rhyolites'] as con
 
 /**
  * RED on slots 1–4 in Buzzer Check. Each press must name the team that slot is
- * assigned to (`slotTeamLabels[i]` for slot i+1), or "Controller N (no team yet)"
+ * assigned to (`slotTeamLabels[i]` for slot i+1), or "no team yet"
  * for a slot with no team — slot→team identity, not just "something responded".
  */
 export async function runFourHandsetRedCheck(
@@ -100,13 +100,14 @@ export async function runFourHandsetRedCheck(
   for (const slot of [1, 2, 3, 4] as const) {
     const buttonIndex = buttonIndexForSlotColor(slot, 'red')
     await pressWbuzzButton(page, buttonIndex)
-    const label = slotTeamLabels[slot - 1] ?? `Controller ${slot} (no team yet)`
+    const label = slotTeamLabels[slot - 1] ?? 'no team yet'
     await expect(page.getByTestId('sbs-test-outcome')).toHaveText(
-      `Buzzer Check: ${label} · Buzz · Controller 1 · button ${buttonIndex + 1}`,
+      // CB-04 canonical label: the same "Buzzer N" the mapping list shows.
+      `Buzzer Check: Buzzer ${slot} · Red · ${label}`,
       { timeout: 10_000 },
     )
     await expect(page.getByTestId('sbs-controller-layer')).toHaveText(
-      slot === 1 ? '1 controller responding' : `${slot} controllers responding`,
+      slot === 1 ? '1 buzzer responding' : `${slot} buzzers responding`,
     )
   }
 }

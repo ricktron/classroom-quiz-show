@@ -125,7 +125,7 @@ test('branch: Gamepad disappears — status becomes truthful', async ({ page }, 
   await expect(page.getByTestId('sbs-controller-layer')).toContainText(/responding/i)
   await hideSimulatedWbuzzGamepad(page)
   // Q7-R1: no Leave/re-enter dance — losing the pad clears responding at once.
-  await expect(page.getByTestId('sbs-controller-layer')).toHaveText('Waiting for controller presses')
+  await expect(page.getByTestId('sbs-controller-layer')).toHaveText('Waiting for buzzer presses')
   await expect(page.getByTestId('sbs-teacher-summary')).not.toContainText(/^Buzzers ready\./i)
 })
 

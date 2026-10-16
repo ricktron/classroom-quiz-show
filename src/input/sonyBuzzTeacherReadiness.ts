@@ -4,6 +4,7 @@ import {
   SONY_BUZZ_HANDSET_SLOT_COUNT,
   SONY_BUZZ_SLOT_BASES,
   type SonyBuzzSlotId,
+  sonyBuzzerLabel,
   sonyBuzzSlotId,
 } from './sonyBuzzSupportedProfile'
 
@@ -187,9 +188,9 @@ export function controllerLayerLabel(
   layer: SonyBuzzControllerLayer,
   respondingSlotCount: number,
 ): string {
-  if (layer === 'waiting') return 'Waiting for controller presses'
-  if (respondingSlotCount === 1) return '1 controller responding'
-  return `${respondingSlotCount} controllers responding`
+  if (layer === 'waiting') return 'Waiting for buzzer presses'
+  if (respondingSlotCount === 1) return '1 buzzer responding'
+  return `${respondingSlotCount} buzzers responding`
 }
 
 export function mappingLayerLabel(layer: SonyBuzzMappingLayer): string {
@@ -228,13 +229,14 @@ export function addRespondingSlot(
 }
 
 export function respondingControllerCountLabel(count: number): string {
-  if (count <= 0) return 'No controllers detected yet'
-  if (count === 1) return 'Controller 1 detected'
-  return `${count} controllers detected`
+  if (count <= 0) return 'No buzzers detected yet'
+  if (count === 1) return '1 buzzer detected'
+  return `${count} buzzers detected`
 }
 
-export function discoveredControllerLine(ordinal: number): string {
-  return `Controller ${ordinal} detected`
+/** CB-04: names the handset by its slot ("Buzzer 3 detected"), never by list position. */
+export function discoveredControllerLine(slotId: SonyBuzzSlotId): string {
+  return `${sonyBuzzerLabel(slotId)} detected`
 }
 
 /** Ordered repair steps the teacher walks (excluding idle/done). */
