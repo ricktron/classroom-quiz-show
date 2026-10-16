@@ -1146,3 +1146,102 @@ Simulation ≠ physical Sony; Q7-F02 physical root cause remains
 
 Does not claim physical Sony PASS, Q7-F02 root cause, S04D, S06, S05
 terminalization, signing/release, or merge authority.
+
+---
+
+## 2026-10-15 — Guidance delta harvest: reference evidence and navigation focus
+
+### Objective
+
+Harvest reusable learning from the pre-owner Display/MENUS work without
+duplicating Q6/Q7 guidance that has already been promoted.
+
+### Observation — external design evidence was a real execution dependency
+
+PR #106's Display fidelity review depended on the Claude Design source package.
+Several execution environments could see descriptions, filenames, or historical
+references to the package without being able to open the actual bytes. One
+intermediate attempt falsely claimed the references had been opened from a
+store path that did not exist; that claim was detected and reverted.
+
+The review became valid only after the exact package was recovered, its byte
+identity was established, all four source families were actually opened and
+rendered, and the resulting reference package was later stored immutably under
+`docs/design/reference-artifacts/claude-design/`.
+
+The durable lesson is not the specific Drive/file-id workaround. The lesson is
+that a fidelity review has an **input-evidence precondition**: if the source
+artifact cannot actually be inspected, the truthful verdict is BLOCKED.
+
+Evidence:
+- `docs/CQS-DISPLAY-VISUAL-CONVERGENCE.md` §9–10
+- `docs/design/reference-artifacts/claude-design/README.md`
+- PR #106
+
+### Observation — viewport movement was not focus transfer
+
+Independent review of PR #121 found a narrower accessibility/navigation gap in
+the new **Check buzzers** handoff. The action scrolled toward the intended
+buzzer setup, but its preferred target was an inner non-focusable element, so a
+visual reveal did not reliably establish keyboard/screen-reader focus.
+
+This class of mistake can survive green functional/e2e checks when they assert
+visibility but not the actual interaction destination.
+
+Later Q7 hardening already promoted the broader control rule:
+
+`REACH → ACT → VISIBLE EFFECT → CONTINUATION`
+
+This harvest adds only the accessibility-specific refinement: when a
+programmatic reveal/navigation action is supposed to transfer focus, the
+destination must be a genuinely focusable semantic target and the review/test
+should inspect active focus rather than infer it from scrolling.
+
+Evidence:
+- PR #121 exact-head review lineage
+- `docs/qualification/PRE-OWNER-FUNCTIONAL-QUALIFICATION.md` §9.1.1
+- `docs/design/CQS-UX-DOCTRINE.md` P15 / P17
+
+### What was intentionally not promoted
+
+The following lessons from the same chat were already durable in current CQS
+guidance and were not duplicated:
+
+- green CI / Playwright is not independent semantic or usability review;
+- authentic teacher journeys outrank fragment-suite composition assumptions;
+- owner-facing controls need observable semantic effects;
+- evidence classes (browser, Electron, simulated hardware, physical hardware,
+  projector, owner observation) remain distinct;
+- the owner should not be the first functional integration tester;
+- template download/import adjacency and task-oriented pre-game setup are
+  already represented in the MENUS plan and qualification suites.
+
+The temporary Library → ZIP → Drive-id transport path was also not promoted
+because it was tool-specific operational friction rather than a reusable product
+rule.
+
+### Reusable candidate principle
+
+**Consequential reference artifacts are review dependencies.** Prove exact
+source access and render/read fidelity before relying on them, and make enduring
+reference evidence durably reachable when appropriate.
+
+A second, narrower UX refinement follows:
+
+**Programmatic reveal is not accessible navigation unless the intended focus
+destination is actually focusable and receives focus.**
+
+### Owner/process benefit
+
+Both controls reduce avoidable loops: the first prevents agents from repeatedly
+searching for or accidentally hallucinating unavailable evidence; the second
+prevents green UI automation from masking a keyboard/screen-reader navigation
+failure that would otherwise reach owner testing.
+
+### Evidence / authority
+
+This entry is reflective only. It changes no product behavior, qualification
+verdict, roadmap state, or implementation authority.
+
+DEV_JOURNAL: ENTRY ADDED — 2026-10-15 Guidance delta harvest: reference evidence and navigation focus
+

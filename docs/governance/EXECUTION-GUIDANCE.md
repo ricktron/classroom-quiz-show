@@ -257,6 +257,28 @@ Check relevant:
 Local Playwright may reuse an existing server. Exact-head browser claims
 need a proven served build for that head.
 
+### External reference evidence
+
+When a fidelity review, Court, comparison, or acceptance claim depends on an
+external reference artifact, prove that the **exact source bytes** are actually
+available and inspectable before making the claim.
+
+A filename, search result, chat attachment label, PR description, claimed tool
+path, prior screenshot, or prose summary is not proof that the reviewer opened
+the source. Successful extraction alone is also insufficient when the claim
+depends on rendered or readable content.
+
+For consequential reference evidence, bind identity where practical using the
+artifact filename plus byte size, hash, or durable provenance, then actually
+render or read the relevant source. If the required source cannot be opened,
+report **BLOCKED** rather than inferring fidelity from secondary material.
+
+When an external reference becomes an enduring development dependency and its
+license, privacy, and scope permit, prefer a stable durable evidence location
+over transient chat or agent-storage surfaces. Preserve immutable dated
+versions rather than overwriting prior reference bytes. Tool-specific transport
+workarounds remain operational history, not universal product governance.
+
 ---
 
 ## 6. Independent invariant-seeking review

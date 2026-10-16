@@ -480,7 +480,9 @@ satisfied, and only on the Display.
 **Reduced motion removes theatrical motion, not necessary state feedback.**
 This is a Product Contract requirement (§8), and the distinction is the whole
 point: under reduced motion the teacher and students must still perceive every
-state change, expressed without animation.
+state change, expressed without animation. Functional navigation should not add
+gratuitous smooth scrolling; when motion is used for orientation it must obey
+reduced-motion behavior and must not be required to understand the destination.
 
 ---
 
@@ -495,6 +497,9 @@ not the stylesheet.
 Required across surfaces:
 
 - full keyboard operation and a visible focus indicator;
+- programmatic reveal/navigation actions move focus to a genuinely focusable,
+  semantic destination when focus transfer is part of the interaction; viewport
+  movement or element visibility alone is not keyboard/screen-reader navigation;
 - non-color cues for every state — color is always redundant;
 - sufficient contrast, verified rather than assumed;
 - readable typography, including at projection distance;
