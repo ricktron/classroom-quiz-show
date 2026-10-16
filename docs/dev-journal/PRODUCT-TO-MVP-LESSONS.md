@@ -22,6 +22,7 @@ support may justify promotion into a future generic product-development playbook
 | PTM-013 | Product readiness needs an explicit pre-owner eligibility verdict | Earlier owner walkthrough attempts encountered ordinary functional blockers | Do not begin owner usability playthrough until functional/integration/Court gates explicitly issue eligibility | CANDIDATE |
 | PTM-014 | Post-merge truth reconciliation should be routine and cheap | Q1/Q2/Q3 candidate docs otherwise became stale immediately after squash merge | Standard post-merge reconciliation packet for startup-canonical truth; historical receipts remain immutable | CANDIDATE |
 | PTM-015 | Preserve the smallest excellent product while qualifying deeply | CQS benefits from rigorous qualification without adding speculative SaaS/cloud infrastructure | Deeply test current product invariants; do not solve qualification pain by expanding architecture | CANDIDATE |
+| PTM-016 | Treat consequential external reference artifacts as review dependencies | PR #106 fidelity review stalled when Claude reference descriptions were visible but exact source bytes were not reachable; one false-open claim had to be reverted before exact artifacts were recovered, rendered, and durably stored | Preflight external inputs; prove byte identity and render/read access; use a durable immutable evidence store when the reference is an enduring dependency | CANDIDATE |
 
 ## Candidate reusable workflow
 
