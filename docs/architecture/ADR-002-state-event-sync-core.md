@@ -195,3 +195,33 @@ Multiple Host tabs could also publish interleaved snapshots on one channel.
 Host/Display ship together). Historical ADR references that “`SYNC_SCHEMA_VERSION`
 stays **2**” are superseded for runtime behavior by this amendment and
 `src/sync/protocol.ts`.
+
+## Amendment — Display presence messages (Court B CB-01)
+
+**Status:** Accepted as merged implementation truth when the repair lands.
+
+**Problem:** The Host knew a Display was open only through the `window.open`
+handle of the document that opened it. After a Host reload that handle is gone,
+so the Host reported "Display not open" while the Display stayed open and live.
+
+**Decision:**
+
+- Add two **additive** message types to envelope version **3** (no version bump):
+  - `display-presence-probe` (Host → Displays): carries nothing.
+  - `display-presence` (Display → Host): only an opaque per-Display-lifetime
+    `displayId` and a boolean `live`.
+- The Host probes every 2 s; each live Display answers from its message handler,
+  announces itself on start, and reports `live: false` on `pagehide` / teardown.
+  The Host treats a Display as live while it has answered one of the two probes
+  before the newest one (tolerates one missed probe; a silently vanished Display
+  drops within about three intervals; an ordinary close drops at once). Presence
+  timing uses a monotonic clock.
+- The Host's display-open fact is `this document's window handle is open OR a
+  Display is present`. It drives teacher-facing status and labels only.
+- Neither message carries game, public or private state. The Display still cannot
+  push state into the Host; the public-state receiver and the broadcaster ignore
+  both types, and older peers reject them as `unknown-type` (fail closed).
+
+**Consequences:** Same-origin Host/Display ship together, so no version bump is
+needed; a Display from an older build simply leaves the Host on its window-handle
+fallback.

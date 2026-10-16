@@ -1,6 +1,6 @@
 import { createBroadcastChannelTransport, type SyncChannel } from './channel'
 import { SYNC_CHANNEL_NAME, decodeEnvelope, encodeEnvelope } from './protocol'
-import { systemClock, type Clock } from '../time/clock'
+import type { Clock } from '../time/clock'
 
 /**
  * Display presence over the existing public sync channel (Court B CB-01).
@@ -22,6 +22,14 @@ import { systemClock, type Clock } from '../time/clock'
 
 /** Host probe cadence. */
 export const DISPLAY_PRESENCE_PROBE_INTERVAL_MS = 2_000
+
+/**
+ * Presence is timing evidence only, never state, so it uses a monotonic clock:
+ * a wall-clock step (NTP correction) must not flip a live Display to "not open".
+ */
+const monotonicClock: Clock = {
+  now: () => (typeof performance !== 'undefined' ? performance.now() : Date.now()),
+}
 
 export type CreateDisplayId = () => string
 
@@ -102,27 +110,29 @@ export interface DisplayPresenceTracker {
 /**
  * Host side: probe on an interval and track which Displays answer.
  *
- * A Display counts as live when it has answered the previous probe or anything
- * later. Comparing against the previous probe's send time (instead of a fixed
- * wall-clock window) keeps a throttled Host from flapping to "not open" when its
- * own timer fires late: the Display answered that probe within milliseconds.
- * A Display that vanishes without `pagehide` is reported not live within about
- * two probe intervals.
+ * A Display counts as live while it has answered at least one of the two probes
+ * before the current one. Comparing against probe send times (instead of a fixed
+ * window) keeps a throttled Host from flapping when its own timer fires late, and
+ * allowing one missed probe tolerates a Display whose main thread is briefly busy
+ * (a long task on a slow laptop) for up to a full interval. A Display that
+ * vanishes without `pagehide` is reported not live within about three intervals;
+ * an ordinary close is reported at once via `live: false`.
  */
 export function createDisplayPresenceTracker(
   options: DisplayPresenceTrackerOptions,
 ): DisplayPresenceTracker {
   const channel = options.channel ?? createBroadcastChannelTransport(SYNC_CHANNEL_NAME)
-  const clock = options.clock ?? systemClock
+  const clock = options.clock ?? monotonicClock
   const intervalMs = options.intervalMs ?? DISPLAY_PRESENCE_PROBE_INTERVAL_MS
 
   const lastSeenAt = new Map<string, number>()
-  let previousProbeAt: number | null = null
-  let latestProbeAt: number | null = null
+  /** Send times of the most recent probes, oldest first (at most three). */
+  const probeTimes: number[] = []
   let live = false
 
   const recompute = () => {
-    const threshold = previousProbeAt ?? Number.NEGATIVE_INFINITY
+    // Live if any Display answered one of the two probes before the newest one.
+    const threshold = probeTimes.length >= 3 ? probeTimes[0]! : Number.NEGATIVE_INFINITY
     let next = false
     for (const seenAt of lastSeenAt.values()) {
       if (seenAt >= threshold) {
@@ -146,8 +156,8 @@ export function createDisplayPresenceTracker(
   })
 
   const probe = () => {
-    previousProbeAt = latestProbeAt
-    latestProbeAt = clock.now()
+    probeTimes.push(clock.now())
+    if (probeTimes.length > 3) probeTimes.shift()
     recompute()
     channel.post(encodeEnvelope({ type: 'display-presence-probe' }))
   }

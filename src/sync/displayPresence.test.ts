@@ -7,6 +7,9 @@ import {
 } from './displayPresence'
 import { decodeEnvelope, encodeEnvelope, SYNC_PROTOCOL, SYNC_SCHEMA_VERSION } from './protocol'
 
+/** Test clock driven by vi fake timers (the tracker defaults to a monotonic clock). */
+const testClock = { now: () => Date.now() }
+
 function fakeLifecycle() {
   const target = new EventTarget()
   return {
@@ -73,6 +76,7 @@ describe('display presence tracker + responder', () => {
     const changes: boolean[] = []
     // The Host starts AFTER the Display: only the probe can reveal it.
     const tracker = createDisplayPresenceTracker({
+      clock: testClock,
       channel: hub.createChannel(),
       onChange: (live) => changes.push(live),
     })
@@ -96,7 +100,7 @@ describe('display presence tracker + responder', () => {
       createDisplayId: () => 'display-a',
       lifecycleTarget: lifecycle.target,
     })
-    const tracker = createDisplayPresenceTracker({ channel: hub.createChannel(), onChange: () => {} })
+    const tracker = createDisplayPresenceTracker({ clock: testClock, channel: hub.createChannel(), onChange: () => {} })
     expect(tracker.isLive()).toBe(true)
     lifecycle.fire('pagehide')
     expect(tracker.isLive()).toBe(false)
@@ -106,7 +110,7 @@ describe('display presence tracker + responder', () => {
     tracker.close()
   })
 
-  it('reports not live within two probe intervals when a Display vanishes silently', () => {
+  it('reports not live within three probe intervals when a Display vanishes silently', () => {
     const hub = createMemoryChannelHub()
     const displayChannel = hub.createChannel()
     attachDisplayPresenceResponder({
@@ -114,13 +118,67 @@ describe('display presence tracker + responder', () => {
       createDisplayId: () => 'display-a',
       lifecycleTarget: null,
     })
-    const tracker = createDisplayPresenceTracker({ channel: hub.createChannel(), onChange: () => {} })
+    const tracker = createDisplayPresenceTracker({ clock: testClock, channel: hub.createChannel(), onChange: () => {} })
     vi.advanceTimersByTime(DISPLAY_PRESENCE_PROBE_INTERVAL_MS)
     expect(tracker.isLive()).toBe(true)
     // Crash: no pagehide, the channel just stops answering.
     displayChannel.close()
-    vi.advanceTimersByTime(DISPLAY_PRESENCE_PROBE_INTERVAL_MS * 2)
+    vi.advanceTimersByTime(DISPLAY_PRESENCE_PROBE_INTERVAL_MS * 3)
     expect(tracker.isLive()).toBe(false)
+    tracker.close()
+  })
+
+  it('stays live when a busy Display misses one probe, and drops once two in a row go unanswered', () => {
+    const hub = createMemoryChannelHub()
+    const displayChannel = hub.createChannel()
+    let busy = false
+    const gated = {
+      post: (data: unknown) => {
+        if (!busy) displayChannel.post(data)
+      },
+      subscribe: displayChannel.subscribe,
+      close: displayChannel.close,
+    }
+    attachDisplayPresenceResponder({
+      channel: gated,
+      createDisplayId: () => 'display-a',
+      lifecycleTarget: null,
+    })
+    const tracker = createDisplayPresenceTracker({
+      clock: testClock,
+      channel: hub.createChannel(),
+      onChange: () => {},
+    })
+    vi.advanceTimersByTime(DISPLAY_PRESENCE_PROBE_INTERVAL_MS * 3)
+    expect(tracker.isLive()).toBe(true)
+    busy = true // a long task: the next probe goes unanswered
+    vi.advanceTimersByTime(DISPLAY_PRESENCE_PROBE_INTERVAL_MS)
+    expect(tracker.isLive()).toBe(true)
+    busy = false // answers again in time
+    vi.advanceTimersByTime(DISPLAY_PRESENCE_PROBE_INTERVAL_MS)
+    expect(tracker.isLive()).toBe(true)
+    busy = true // now it stops answering
+    vi.advanceTimersByTime(DISPLAY_PRESENCE_PROBE_INTERVAL_MS * 2)
+    // One probe unanswered so far can still be in flight: tolerated.
+    expect(tracker.isLive()).toBe(true)
+    vi.advanceTimersByTime(DISPLAY_PRESENCE_PROBE_INTERVAL_MS)
+    // Both probes before the newest went unanswered: not live.
+    expect(tracker.isLive()).toBe(false)
+    tracker.close()
+  })
+
+  it('the default tracker clock is monotonic: a wall-clock step back does not drop a live Display', () => {
+    const hub = createMemoryChannelHub()
+    attachDisplayPresenceResponder({
+      channel: hub.createChannel(),
+      createDisplayId: () => 'display-a',
+      lifecycleTarget: null,
+    })
+    const tracker = createDisplayPresenceTracker({ channel: hub.createChannel(), onChange: () => {} })
+    vi.advanceTimersByTime(DISPLAY_PRESENCE_PROBE_INTERVAL_MS * 2)
+    vi.setSystemTime(Date.now() - 60 * 60_000) // NTP correction one hour back
+    vi.advanceTimersByTime(DISPLAY_PRESENCE_PROBE_INTERVAL_MS * 4)
+    expect(tracker.isLive()).toBe(true)
     tracker.close()
   })
 
@@ -133,6 +191,7 @@ describe('display presence tracker + responder', () => {
     })
     const changes: boolean[] = []
     const tracker = createDisplayPresenceTracker({
+      clock: testClock,
       channel: hub.createChannel(),
       onChange: (live) => changes.push(live),
     })
@@ -160,7 +219,7 @@ describe('display presence tracker + responder', () => {
       createDisplayId: () => 'display-b',
       lifecycleTarget: b.target,
     })
-    const tracker = createDisplayPresenceTracker({ channel: hub.createChannel(), onChange: () => {} })
+    const tracker = createDisplayPresenceTracker({ clock: testClock, channel: hub.createChannel(), onChange: () => {} })
     a.fire('pagehide')
     expect(tracker.isLive()).toBe(true)
     b.fire('pagehide')
@@ -175,7 +234,7 @@ describe('display presence tracker + responder', () => {
       createDisplayId: () => 'display-a',
       lifecycleTarget: null,
     })
-    const tracker = createDisplayPresenceTracker({ channel: hub.createChannel(), onChange: () => {} })
+    const tracker = createDisplayPresenceTracker({ clock: testClock, channel: hub.createChannel(), onChange: () => {} })
     expect(tracker.isLive()).toBe(true)
     detach()
     expect(tracker.isLive()).toBe(false)

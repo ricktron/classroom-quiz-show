@@ -78,13 +78,21 @@ test('CB-01: Host reports a live Display as open after reload + Resume, and not 
   expect(await display.evaluate(() => performance.timeOrigin)).toBe(displayOrigin)
 
   // Focus display targets the existing named Display: no second window, no reload.
-  const pagesBefore = context.pages().length
+  let windowsOpened = 0
+  const countWindow = () => {
+    windowsOpened += 1
+  }
+  context.on('page', countWindow)
   await host
     .getByRole('group', { name: 'Host controls' })
     .getByRole('button', { name: 'Focus display' })
     .click()
   await expect(hostStatus(host)).toContainText('Display open')
-  expect(context.pages().length).toBe(pagesBefore)
+  // Settle window: a duplicate popup or a navigation would have landed by now.
+  await host.waitForTimeout(1_500)
+  context.off('page', countWindow)
+  expect(windowsOpened).toBe(0)
+  await expect(display.locator('body')).toContainText('The mantle')
   expect(await display.evaluate(() => performance.timeOrigin)).toBe(displayOrigin)
 
   // Close the Display → the Host reports it is not open within the bound.
