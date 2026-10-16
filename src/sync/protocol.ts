@@ -65,7 +65,41 @@ export interface RequestStateMessage {
   readonly type: 'request-state'
 }
 
-export type SyncMessage = PublicStateMessage | RequestStateMessage
+/**
+ * Host → displays: "is a Display live?" (Court B CB-01).
+ *
+ * Carries nothing. A Host asks so it can tell the teacher the truth about an
+ * already-open Display after its own reload, when the `window.open` handle that
+ * opened that Display belonged to a document that no longer exists.
+ */
+export interface DisplayPresenceProbeMessage {
+  readonly type: 'display-presence-probe'
+}
+
+/**
+ * Display → host: presence report (Court B CB-01).
+ *
+ * Only an opaque per-Display-lifetime id and whether that Display is still live.
+ * It carries no state in either direction: a Display can never push state into
+ * the Host, and the Host learns nothing private or public from it.
+ */
+export interface DisplayPresenceMessage {
+  readonly type: 'display-presence'
+  readonly displayId: string
+  readonly live: boolean
+}
+
+export type SyncMessage =
+  | PublicStateMessage
+  | RequestStateMessage
+  | DisplayPresenceProbeMessage
+  | DisplayPresenceMessage
+
+const MAX_DISPLAY_ID_LENGTH = 128
+
+function isDisplayId(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0 && value.length <= MAX_DISPLAY_ID_LENGTH
+}
 
 export interface SyncEnvelope {
   readonly protocol: typeof SYNC_PROTOCOL
@@ -111,6 +145,19 @@ export function decodeEnvelope(raw: unknown): DecodeResult {
   switch (message.type) {
     case 'request-state':
       return { ok: true, message: { type: 'request-state' } }
+
+    case 'display-presence-probe':
+      return { ok: true, message: { type: 'display-presence-probe' } }
+
+    case 'display-presence': {
+      if (!isDisplayId(message.displayId) || typeof message.live !== 'boolean') {
+        return { ok: false, reason: 'malformed-payload' }
+      }
+      return {
+        ok: true,
+        message: { type: 'display-presence', displayId: message.displayId, live: message.live },
+      }
+    }
 
     case 'public-state': {
       if (!isHostStreamId(message.hostStreamId)) {
