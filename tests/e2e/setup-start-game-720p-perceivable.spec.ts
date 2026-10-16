@@ -8,7 +8,9 @@ import { fillAllTeamNames, importDemoAndPlay } from './helpers/menusClassSetup'
  * - REACH: the teacher's natural Class Setup posture, exactly as the setup
  *   actions left it. No scrollIntoView, no scrollTo, no locator action on
  *   Start Game before the assertion. Start Game must be in the viewport,
- *   effectively opaque (self × every ancestor), and the topmost hit target.
+ *   effectively opaque (self × every ancestor), painted (label and fill not
+ *   transparent), backed by an opaque surface inside the outcome strip, and
+ *   the topmost hit target.
  * - ACT: a pointer click at the measured on-screen point (page.mouse, which
  *   does not scroll), or Tab then Enter for the keyboard path.
  * - VISIBLE EFFECT: Host leaves setup for play posture.
@@ -36,10 +38,20 @@ async function readyAt720p(page: Page, path: ReadyPath): Promise<void> {
   await expect(page.getByTestId('setup-play')).toHaveText(/start game/i)
 }
 
+type Backdrop = { element: string; color: string; alpha: number }
+
 type Perceivability = {
   scrollY: number
   opacity: number
   hiddenBy: string | null
+  textColor: string
+  textAlpha: number
+  textFillAlpha: number
+  backgroundColor: string
+  backgroundAlpha: number
+  backgroundImage: string
+  /** Nearest ancestor of Start Game, up to and including the outcome strip, that paints a background. */
+  backdrop: Backdrop | null
   width: number
   height: number
   top: number
@@ -57,6 +69,35 @@ async function measureStartGame(page: Page): Promise<Perceivability> {
   return page.evaluate(() => {
     const play = document.querySelector('[data-testid="classroom-setup"] [data-testid="setup-play"]')
     if (!(play instanceof HTMLElement)) throw new Error('setup-play not found in Class Setup')
+    const strip = play.closest('[data-testid="setup-outcome-strip"]')
+    if (!strip) throw new Error('setup-play is not inside setup-outcome-strip')
+
+    // Alpha of any computed CSS color, whatever syntax the engine reports it in:
+    // paint it on a 1×1 canvas and read the pixel back.
+    const ctx = document.createElement('canvas').getContext('2d', { willReadFrequently: true })
+    if (!ctx) throw new Error('2d canvas unavailable')
+    const alphaOf = (color: string): number => {
+      ctx.clearRect(0, 0, 1, 1)
+      ctx.fillStyle = 'rgba(0, 0, 0, 0)'
+      ctx.fillStyle = color
+      ctx.fillRect(0, 0, 1, 1)
+      return ctx.getImageData(0, 0, 1, 1).data[3] / 255
+    }
+    const describe = (el: Element): string =>
+      el.getAttribute('data-testid') ?? `${el.tagName.toLowerCase()}.${[...el.classList].join('.')}`
+
+    const playStyle = getComputedStyle(play)
+    let backdrop: { element: string; color: string; alpha: number } | null = null
+    for (let el: Element | null = play.parentElement; el; el = el.parentElement) {
+      const color = getComputedStyle(el).backgroundColor
+      const alpha = alphaOf(color)
+      if (alpha > 0) {
+        backdrop = { element: describe(el), color, alpha }
+        break
+      }
+      if (el === strip) break
+    }
+
     let opacity = 1
     let hiddenBy: string | null = null
     for (let el: Element | null = play; el; el = el.parentElement) {
@@ -86,6 +127,13 @@ async function measureStartGame(page: Page): Promise<Perceivability> {
       scrollY: window.scrollY,
       opacity,
       hiddenBy,
+      textColor: playStyle.color,
+      textAlpha: alphaOf(playStyle.color),
+      textFillAlpha: alphaOf(playStyle.webkitTextFillColor),
+      backgroundColor: playStyle.backgroundColor,
+      backgroundAlpha: alphaOf(playStyle.backgroundColor),
+      backgroundImage: playStyle.backgroundImage,
+      backdrop,
       width: rect.width,
       height: rect.height,
       top: rect.top,
@@ -104,6 +152,17 @@ function expectPerceivable(m: Perceivability): void {
   const where = `rect top=${Math.round(m.top)} bottom=${Math.round(m.bottom)} in ${m.viewportWidth}×${m.viewportHeight}, scrollY=${Math.round(m.scrollY)}`
   expect(m.hiddenBy, 'Start Game or an ancestor is hidden').toBeNull()
   expect(m.opacity, 'Start Game effective opacity (self × ancestors)').toBeGreaterThanOrEqual(0.95)
+  expect(m.textAlpha, `Start Game label color alpha (color ${m.textColor})`).toBeGreaterThan(0)
+  expect(m.textFillAlpha, 'Start Game label -webkit-text-fill-color alpha').toBeGreaterThan(0)
+  expect(
+    m.backgroundAlpha > 0 || m.backgroundImage !== 'none',
+    `Start Game fill is painted (background-color ${m.backgroundColor}, background-image ${m.backgroundImage})`,
+  ).toBe(true)
+  expect(m.backdrop, 'an ancestor up to and including the outcome strip paints a background').not.toBeNull()
+  expect(
+    m.backdrop?.alpha,
+    `backdrop behind Start Game is opaque (${m.backdrop?.element} background-color ${m.backdrop?.color})`,
+  ).toBe(1)
   expect(m.width, 'Start Game width').toBeGreaterThan(0)
   expect(m.height, 'Start Game height').toBeGreaterThan(0)
   expect(m.top >= 0 && m.left >= 0, `Start Game starts inside the viewport (${where})`).toBe(true)
