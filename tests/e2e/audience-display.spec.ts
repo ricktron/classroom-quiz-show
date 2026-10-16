@@ -1,5 +1,9 @@
 import { test, expect, type Page } from '@playwright/test'
 import { FORBIDDEN_DISPLAY_LABELS } from '../../src/test/leakLabels'
+import {
+  expectAcknowledgementExpires,
+  holdPresentationAckClock,
+} from './helpers/displayPublicState'
 
 /**
  * Slice 18 audience display system — targeted projector viewport coverage.
@@ -306,6 +310,9 @@ test.describe('audience display scenes and privacy', () => {
     page,
   }, info) => {
     test.skip(info.project.name === 'mobile-host', 'projector projects only')
+    // Paused page clock: the transient completion acknowledgement below stays
+    // observable instead of racing its ~420ms hold under load.
+    await holdPresentationAckClock(page)
     await openDisplay(page)
     await injectPublicState(
       page,
@@ -413,6 +420,9 @@ test.describe('audience display scenes and privacy', () => {
     page,
   }, info) => {
     test.skip(info.project.name === 'mobile-host', 'projector projects only')
+    // Paused page clock: ~420ms Final acknowledgements stay observable until
+    // the test advances time, instead of racing the wall clock under load.
+    await holdPresentationAckClock(page)
     await openDisplay(page)
     const teams = {
       status: 'available' as const,
@@ -422,11 +432,27 @@ test.describe('audience display scenes and privacy', () => {
     await injectPublicState(
       page,
       baseSnapshot({
-        revision: 60,
+        revision: 59,
         round: { kind: 'final', stage: 'setup' },
         teams,
       }),
     )
+    await expect(page.getByTestId('fwd-setup')).toBeVisible()
+    // Render barrier: React flushes the seed render's effects before rendering
+    // this score-only refresh, so a fabricated seed acknowledgement would be
+    // visible by the time the new score is.
+    await injectPublicState(
+      page,
+      baseSnapshot({
+        revision: 60,
+        round: { kind: 'final', stage: 'setup' },
+        teams: {
+          status: 'available',
+          teams: [team('t0', 'Alpha', 'crimson', 201), team('t1', 'Bravo', 'azure', 50)],
+        },
+      }),
+    )
+    await expect(page.getByTestId('tsb-score-t0')).toHaveText('201')
     await expect(page.getByTestId('fwd-setup')).toHaveAttribute('data-final-stage-ack', 'false')
 
     await injectPublicState(
@@ -472,10 +498,12 @@ test.describe('audience display scenes and privacy', () => {
         teams,
       }),
     )
+    await expect(page.getByTestId('fwd-answer-revealed')).toBeVisible()
     await injectPublicState(page, baseSnapshot({ revision: 64, round: pendingReveal, teams }))
     await expect(page.getByTestId('fwd-reveal')).toHaveAttribute('data-reveal-ack', 'true')
 
-    await page.waitForTimeout(450)
+    // Let the reveal hold expire, then prove a score-only refresh does not restart it.
+    await expectAcknowledgementExpires(page, page.getByTestId('fwd-reveal'), 'data-reveal-ack')
     await injectPublicState(
       page,
       baseSnapshot({
@@ -487,6 +515,7 @@ test.describe('audience display scenes and privacy', () => {
         },
       }),
     )
+    await expect(page.getByTestId('tsb-score-t0')).toHaveText('250')
     await expect(page.getByTestId('fwd-reveal')).toHaveAttribute('data-reveal-ack', 'false')
 
     const settledReveal = {
