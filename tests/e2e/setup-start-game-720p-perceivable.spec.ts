@@ -49,9 +49,10 @@ type Perceivability = {
   textFillAlpha: number
   backgroundColor: string
   backgroundAlpha: number
-  backgroundImage: string
-  /** Nearest ancestor of Start Game, up to and including the outcome strip, that paints a background. */
+  /** Nearest ancestor of Start Game, up to and including the outcome strip, with a non-transparent background-color. */
   backdrop: Backdrop | null
+  /** Finite animations still running after the settle wait. */
+  unsettledAnimations: string[]
   width: number
   height: number
   top: number
@@ -64,13 +65,45 @@ type Perceivability = {
   topmostAt: string[]
 }
 
-/** Measures Start Game where it is now. Never scrolls. */
+/**
+ * Measures Start Game where it is now. Never scrolls.
+ *
+ * Waits for finite animations to finish first: Start Game's fill transitions
+ * from the disabled color when it enables, and reading it mid-transition
+ * would measure the disabled fill instead of the real one.
+ *
+ * Paint checks read background-color only. A gradient or image restyle of the
+ * button or the strip must update this spec.
+ */
 async function measureStartGame(page: Page): Promise<Perceivability> {
-  return page.evaluate(() => {
+  return page.evaluate(async () => {
     const play = document.querySelector('[data-testid="classroom-setup"] [data-testid="setup-play"]')
     if (!(play instanceof HTMLElement)) throw new Error('setup-play not found in Class Setup')
+
     const strip = play.closest('[data-testid="setup-outcome-strip"]')
     if (!strip) throw new Error('setup-play is not inside setup-outcome-strip')
+
+    // Animations that can change what Start Game paints: on it, an ancestor,
+    // or anything in the outcome strip.
+    const targetOf = (a: Animation): Element | null =>
+      a.effect instanceof KeyframeEffect ? a.effect.target : null
+    const affectsStartGame = (a: Animation): boolean => {
+      const target = targetOf(a)
+      return target !== null && (target.contains(play) || strip.contains(target))
+    }
+    const endsOnItsOwn = (a: Animation): boolean =>
+      Number.isFinite(Number(a.effect?.getComputedTiming().endTime ?? Number.POSITIVE_INFINITY))
+    const finiteRunning = (): Animation[] =>
+      document.getAnimations().filter((a) => a.playState !== 'finished' && endsOnItsOwn(a) && affectsStartGame(a))
+    await Promise.race([
+      Promise.all(finiteRunning().map((a) => a.finished.catch(() => undefined))),
+      new Promise((resolve) => setTimeout(resolve, 2000)),
+    ])
+    const unsettledAnimations = finiteRunning().map((a) => {
+      const target = targetOf(a)
+      const name = a instanceof CSSTransition ? a.transitionProperty : a instanceof CSSAnimation ? a.animationName : a.id
+      return `${target?.getAttribute('data-testid') ?? target?.tagName.toLowerCase() ?? '?'}:${name}`
+    })
 
     // Alpha of any computed CSS color, whatever syntax the engine reports it in:
     // paint it on a 1×1 canvas and read the pixel back.
@@ -132,8 +165,8 @@ async function measureStartGame(page: Page): Promise<Perceivability> {
       textFillAlpha: alphaOf(playStyle.webkitTextFillColor),
       backgroundColor: playStyle.backgroundColor,
       backgroundAlpha: alphaOf(playStyle.backgroundColor),
-      backgroundImage: playStyle.backgroundImage,
       backdrop,
+      unsettledAnimations,
       width: rect.width,
       height: rect.height,
       top: rect.top,
@@ -150,15 +183,16 @@ async function measureStartGame(page: Page): Promise<Perceivability> {
 
 function expectPerceivable(m: Perceivability): void {
   const where = `rect top=${Math.round(m.top)} bottom=${Math.round(m.bottom)} in ${m.viewportWidth}×${m.viewportHeight}, scrollY=${Math.round(m.scrollY)}`
+  expect(m.unsettledAnimations, 'finite animations still running when Start Game was measured').toEqual([])
   expect(m.hiddenBy, 'Start Game or an ancestor is hidden').toBeNull()
   expect(m.opacity, 'Start Game effective opacity (self × ancestors)').toBeGreaterThanOrEqual(0.95)
   expect(m.textAlpha, `Start Game label color alpha (color ${m.textColor})`).toBeGreaterThan(0)
   expect(m.textFillAlpha, 'Start Game label -webkit-text-fill-color alpha').toBeGreaterThan(0)
+  expect(m.backgroundAlpha, `Start Game fill alpha (background-color ${m.backgroundColor})`).toBeGreaterThan(0)
   expect(
-    m.backgroundAlpha > 0 || m.backgroundImage !== 'none',
-    `Start Game fill is painted (background-color ${m.backgroundColor}, background-image ${m.backgroundImage})`,
-  ).toBe(true)
-  expect(m.backdrop, 'an ancestor up to and including the outcome strip paints a background').not.toBeNull()
+    m.backdrop,
+    'an ancestor up to and including the outcome strip has a non-transparent background-color',
+  ).not.toBeNull()
   expect(
     m.backdrop?.alpha,
     `backdrop behind Start Game is opaque (${m.backdrop?.element} background-color ${m.backdrop?.color})`,
