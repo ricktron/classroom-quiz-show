@@ -241,6 +241,19 @@ Physical evidence should record:
 
 Completion claims must name supporting evidence.
 
+### Helper / fixture claim boundaries
+
+When a test fixture, helper, direct command, route shortcut, injected state, or
+test-only posture bypasses part of the normal product path, record what it
+bypasses. That evidence may still prove the state or behavior reached, but it
+must not be cited as proof that an ordinary user can reach that state through
+the product unless a separate authentic-path proof covers the bypassed seam.
+
+A helper or fixture that changes navigation posture, opens privileged controls,
+injects authoritative state, or substitutes for a real producer is part of the
+evidence boundary. Treat those preconditions as evidence metadata rather than
+invisible setup.
+
 ### Browser served-build provenance
 
 A passing Playwright/browser suite against an unidentified existing server
@@ -307,6 +320,23 @@ Security test names must not claim stronger protection than exercised.
 Named trust/security threats should have adversarial coverage proportionate
 to consequence. Passing regression tests alone do not prove a trust
 invariant if the boundary was never adversarially exercised.
+
+For consequential user workflows, independent review should include a
+representative realistic mistake, failure, correction, interruption, or
+recovery path when that behavior is plausible. Unit- or reducer-level failure
+coverage is not sufficient when the user must understand and recover through
+the visible product.
+
+At major readiness or eligibility gates, review should begin from a
+**falsification posture**: actively look for realistic behavior, hidden
+preconditions, shared helper assumptions, or evidence gaps that would make the
+readiness claim false. Green automation is submitted evidence, not the target
+answer.
+
+If qualification becomes unexpectedly smooth, or implementation and review
+share substantial execution lineage, deliberately add a fresh-context
+disconfirming pass when practical. Smoothness may reflect maturity, but it may
+also reflect common-mode assumptions in tests, fixtures, helpers, and review.
 
 ### 6.1 Teacher-facing UX/design review trigger
 
