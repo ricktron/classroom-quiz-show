@@ -202,10 +202,21 @@
   background: var(--surface-base);
 }
 
+/* M48 / VP-HIDDEN: once Ready, keep Start Game on screen at 1280×720 by
+   pinning the outcome strip to the viewport bottom while Class Setup is in
+   view. Opaque background and z-index keep it the topmost hit target. */
 .classroom-setup__outcome--ready {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
   border-color: var(--border-selected);
   border-top-width: 3px;
   background: var(--surface-raised);
+}
+
+/* Focus scrolling must not leave a focused control under the pinned strip. */
+html:has(.classroom-setup__outcome--ready) {
+  scroll-padding-bottom: 11rem;
 }
 
 .classroom-setup__ready-heading {
@@ -271,6 +282,11 @@
   .classroom-setup__outcome-actions {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  /* Stacked actions make the pinned Ready strip taller. */
+  html:has(.classroom-setup__outcome--ready) {
+    scroll-padding-bottom: 16rem;
   }
 }
 
