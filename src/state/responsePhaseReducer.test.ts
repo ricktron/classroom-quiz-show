@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { SessionCommand } from './commands'
 import type { SessionEvent } from './events'
-import { planCommand, replay, responsePhaseFor, type RejectionReason } from './reducer'
+import { findUndoTarget, planCommand, replay, responsePhaseFor, type RejectionReason } from './reducer'
 import { createSessionStore, type SessionStore } from './store'
 import { importGameFromUnknown } from '../import/importGame'
 import type { GameDefinition } from '../game/gameDefinition'
@@ -921,5 +921,21 @@ describe('the clock seam itself', () => {
     // Clamped at both ends: never negative, never more than the window started.
     expect(remainingMsAt(timer, timer.deadline + 60_000)).toBe(0)
     expect(remainingMsAt(timer, AT - 60_000)).toBe(30_000)
+  })
+})
+
+describe('board-tile timer Undo is unchanged by the Final expiry repair (Court B NEW-1)', () => {
+  it('a board response-timer expiry stays reversible, is the undo target, and re-expires (ADR-007 §13)', () => {
+    const store = openStore()
+    const timer = startedTimer(store, AT, 30)
+    accept(store, expire(AT + 30_000, timer.timerId, timer.deadline))
+    const history = store.getHistory()
+    const expiry = history[history.length - 1]!
+    expect(expiry.type).toBe('RESPONSE_TIMER_EXPIRED')
+    expect(expiry.reversible).toBe(true)
+    expect(findUndoTarget(history)?.id).toBe(expiry.id)
+    store.dispatch(undo)
+    // Undo restores the prior durable state exactly: running, deadline already past.
+    expect(phaseOf(store).timer.status).toBe('running')
   })
 })

@@ -2119,7 +2119,8 @@ export function planCommand(
             type: 'FINAL_WAGER_WINDOW_EXPIRED',
             seq,
             occurredAt: at,
-            reversible: true,
+            // Observed time fact; never an undo target (NEW-1, ADR-014 §8).
+            reversible: false,
             roundId: context.round.id,
             ...expired.facts,
           },
@@ -2280,7 +2281,8 @@ export function planCommand(
             type: 'FINAL_RESPONSE_WINDOW_EXPIRED',
             seq,
             occurredAt: at,
-            reversible: true,
+            // Observed time fact; never an undo target (NEW-1, ADR-014 §8).
+            reversible: false,
             roundId: context.round.id,
             ...expired.facts,
           },

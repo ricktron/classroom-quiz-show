@@ -445,6 +445,18 @@ interface FinalWagerEventBase<T extends EventType> extends EventBase<T> {
 }
 
 /**
+ * A Final window expiry is an observed wall-clock fact, not a teacher action, so
+ * it is NOT reversible (Court B NEW-1; ADR-014 §8). Undoing one could only restore
+ * a deadline already in the past, which expires again at once (ADR-007 §13), so a
+ * reversible expiry sat on top of the Undo stack and buried every later teacher
+ * action, including a Final settlement. Latest-only Undo now skips it.
+ */
+interface FinalWindowExpiryEventBase<T extends EventType> extends EventBase<T> {
+  readonly reversible: false
+  readonly roundId: string
+}
+
+/**
  * Final began, with the complete frozen snapshot of eligibility mode, pre-final
  * scores, eligible team ids, wager caps and the default reveal order.
  *
@@ -490,7 +502,7 @@ export interface FinalWagerWindowResumedEvent
  * no wager is locked, no missing team is given a zero, and nothing advances.
  */
 export interface FinalWagerWindowExpiredEvent
-  extends FinalWagerEventBase<'FINAL_WAGER_WINDOW_EXPIRED'> {
+  extends FinalWindowExpiryEventBase<'FINAL_WAGER_WINDOW_EXPIRED'> {
   readonly timerId: string
   readonly deadline: number
 }
@@ -537,7 +549,7 @@ export interface FinalResponseWindowResumedEvent
  * actually happened before responses can be locked.
  */
 export interface FinalResponseWindowExpiredEvent
-  extends FinalWagerEventBase<'FINAL_RESPONSE_WINDOW_EXPIRED'> {
+  extends FinalWindowExpiryEventBase<'FINAL_RESPONSE_WINDOW_EXPIRED'> {
   readonly timerId: string
   readonly deadline: number
 }

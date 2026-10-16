@@ -7,6 +7,7 @@ import { importGameFromUnknown } from '../import/importGame'
 import { boardGameFile, richBoardConfig } from '../test/categoryBoardFixtures'
 import { teamBoardGameFile, teamsList, twoTeams } from '../test/teamFixtures'
 import { LARGE_ADJUSTMENT_CONFIRM_THRESHOLD } from '../game/teams/scoring'
+import { FINAL_ROUND_ID, finalStore, playToReveal } from '../test/finalWagerFixtures'
 
 /**
  * Host teams & scoring controls — component behaviour (Slice 6).
@@ -572,5 +573,37 @@ describe('no Slice 7+ controls appear', () => {
     expect(html).not.toContain('Alpha one hundred prompt')
     expect(html).not.toContain('Alpha one hundred answer')
     expect(html).not.toContain('ALPHA-TEACHER-NOTE-100')
+  })
+})
+
+
+describe('score undo recognizes a Final settlement (Court B CB-06b)', () => {
+  function settled(wagers: Readonly<Record<string, number>>) {
+    const store = finalStore({ scores: { red: 300, blue: 100 } })
+    playToReveal(store, { wagers })
+    store.dispatch({ type: 'REVEAL_FINAL_TEAM', issuedAt: AT, roundId: FINAL_ROUND_ID, teamId: 'blue' })
+    store.dispatch({
+      type: 'SETTLE_FINAL_TEAM',
+      issuedAt: AT,
+      roundId: FINAL_ROUND_ID,
+      teamId: 'blue',
+      outcome: 'correct',
+    })
+    return store
+  }
+
+  it('a settlement that moved points is offered as the next score undo, with truthful copy', () => {
+    const { store } = renderPanel(settled({ red: 100, blue: 50 }))
+    const button = screen.getByTestId('tsp-undo-score')
+    expect(button).toBeEnabled()
+    expect(screen.queryByText(/something other than a score/)).toBeNull()
+    expect(screen.getByText(/lets you judge that team again/)).toBeInTheDocument()
+    fireEvent.click(button)
+    expect(store.getState().session!.game!.teamScores.blue).toBe(100)
+  })
+
+  it('a zero-wager settlement moved no points, so score undo stays off', () => {
+    renderPanel(settled({ red: 100, blue: 0 }))
+    expect(screen.getByTestId('tsp-undo-score')).toBeDisabled()
   })
 })
