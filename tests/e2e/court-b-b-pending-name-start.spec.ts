@@ -5,7 +5,8 @@ import { importMenusJsonAndPlay, menusBoardGameJson } from './helpers/menusGameJ
  * Court B repair B (CB-03) — a typed team name counts as typed, and one ordinary
  * activation of Start Game commits it and starts the game.
  *
- * Fail-first on beeacd33: the last typed name was committed only on blur/Enter.
+ * Fail-first on beeacd33 (re-confirmed on baa818f by independent review): the
+ * last typed name was committed only on blur/Enter.
  * The pointerdown on Start Game blurred the field, the commit re-laid out Class
  * Setup, Start Game moved out from under the pointer, and the first click did
  * nothing (1280x720: +88 px; 1920x1080: +23 px, inert in the button's top edge).
@@ -50,6 +51,9 @@ async function expectGameStarted(page: Page, names: readonly string[]) {
   ).toBeVisible()
   const scoring = page.getByRole('region', { name: 'Teams & scoring' })
   for (const name of names) await expect(scoring.getByText(name, { exact: true }).first()).toBeVisible()
+  // CONTINUATION: play actually proceeds from here.
+  await page.getByRole('button', { name: 'Start Round 1' }).click()
+  await expect(page.getByRole('heading', { name: 'Round progress' })).toBeVisible()
 }
 
 for (const topEdge of [false, true]) {
@@ -167,6 +171,8 @@ test('CB-03: dense 8-team class starts in one click with the last name still typ
   await page.keyboard.type(names[7]!)
   await expect(startGame(page)).toBeEnabled()
 
+  // The dense case proves typed-name readiness and single-click start with many
+  // teams; the pointer-shift repair itself is proven by the 2-team tests above.
   const { before, duringPress } = await pointerClick(page, startGame(page), { topEdge: true })
   expect(duringPress?.y).toBe(before.y)
   await expectGameStarted(page, names)

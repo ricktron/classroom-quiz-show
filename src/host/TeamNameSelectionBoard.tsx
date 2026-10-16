@@ -15,7 +15,7 @@ export interface TeamNameSelectionBoardProps {
    * mount and on every change, so Class Setup can count a visibly typed name
    * toward readiness before it is committed by Enter / blur.
    */
-  readonly onDraft?: (teamId: string, draft: string) => void
+  readonly onDraft?: (teamId: string, draft: string | null) => void
   /**
    * Q7 R1 item 8: whether this Game has a class name list to choose from.
    * Without one, colour choices, "More names" and "Choose again" would be live
@@ -163,14 +163,16 @@ function ManualNameField({
   readonly teamId: string
   readonly claimedName: string | null
   readonly onManual: (teamId: string, name: string) => void
-  readonly onDraft?: (teamId: string, draft: string) => void
+  readonly onDraft?: (teamId: string, draft: string | null) => void
 }) {
   const [draft, setDraft] = useState(claimedName ?? '')
   // Report the field's real text on mount (a remount resets it to the claimed
-  // name) so Class Setup never counts a stale draft.
+  // name) and withdraw it on unmount, so Class Setup only ever counts text that
+  // is visibly typed in a mounted field (never a hidden or stale draft).
   useEffect(() => {
     onDraft?.(teamId, claimedName ?? '')
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only report; changes are reported from onChange
+    return () => onDraft?.(teamId, null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- teamId and claimedName are part of this field's key, so they never change for one mount
   }, [])
   const commit = () => {
     if (draft.trim().length === 0) return

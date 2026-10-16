@@ -7,6 +7,7 @@ import {
   createTeamNameSelectionState,
   normalizeTeamNameCandidate,
   sessionTeamNamesAreUnique,
+  teamNameUniquenessKey,
   type TeamNameInput,
   type TeamNameSelectionState,
 } from '../session/teamNameSelection'
@@ -266,8 +267,16 @@ export function ClassroomSetupPanel({
     applySonyObservations(observationBatch)
   }, [observationBatch, applySonyObservations])
 
-  const recordTypedName = useCallback((teamId: string, draft: string) => {
-    setTypedNames((current) => (current[teamId] === draft ? current : { ...current, [teamId]: draft }))
+  const recordTypedName = useCallback((teamId: string, draft: string | null) => {
+    setTypedNames((current) => {
+      if (draft === null) {
+        if (!(teamId in current)) return current
+        const next = { ...current }
+        delete next[teamId]
+        return next
+      }
+      return current[teamId] === draft ? current : { ...current, [teamId]: draft }
+    })
   }, [])
 
   const apply = (state: TeamNameSelectionState) => {
@@ -285,7 +294,13 @@ export function ClassroomSetupPanel({
     const typed = typedNames[team.id]
     if (typed === undefined) return []
     const name = normalizeTeamNameCandidate(typed)
-    if (name.length === 0 || name === claimed[team.id]) return []
+    if (name.length === 0) return []
+    // The team's own name, even re-capitalized, is not a new claim: the committed
+    // name stands (as with Enter), so it never reads as a duplicate of itself.
+    const own = claimed[team.id]
+    if (typeof own === 'string' && teamNameUniquenessKey(own) === teamNameUniquenessKey(name)) {
+      return []
+    }
     return [{ kind: 'manual' as const, teamId: team.id, name }]
   })
   const pendingApplied =
@@ -324,7 +339,7 @@ export function ClassroomSetupPanel({
   /** Committed readiness: chooses the task shown, so typing never collapses Names. */
   const stagePlayEnabled = canStartPlay(committedGuidance)
   const playBlocker = typedNameTaken
-    ? 'Each team needs a different name.'
+    ? 'Each team needs a different name. Another team already has, or is offered, that name.'
     : playBlockerExplanation(guidance)
   const pureDominant = dominantSetupTask(committedGuidance)
   const workflowDefault = defaultSetupWorkflowTask(committedGuidance)

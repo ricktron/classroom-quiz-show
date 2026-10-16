@@ -992,6 +992,48 @@ describe('ClassroomSetupPanel — typed names count as typed (Court B CB-03)', (
     expect(screen.getByTestId('setup-play')).toBeDisabled()
   })
 
+  it('re-capitalizing a team\'s own name never reads as a duplicate (review defect 1)', () => {
+    const { onPlay, onSelectedIdentitiesChange } = renderSetup({
+      teamNameBank: [],
+      initialSessionNames: { red: 'Comet Crew', blue: 'ozone owls' },
+    })
+    openNames()
+    const field = fields()[1]!
+    fireEvent.change(field, { target: { value: 'Ozone Owls' } })
+    expect(screen.getByTestId('setup-play')).toBeEnabled()
+    expect(screen.queryByTestId('setup-play-blocker')).toBeNull()
+    fireEvent.blur(field)
+    expect(screen.getByTestId('setup-play')).toBeEnabled()
+    onSelectedIdentitiesChange.mockClear()
+    fireEvent.click(screen.getByTestId('setup-play'))
+    expect(onPlay).toHaveBeenCalledTimes(1)
+    // The committed name stands (same identity), exactly as Enter behaves.
+    expect(onSelectedIdentitiesChange).not.toHaveBeenCalled()
+  })
+
+  it('a draft left in a closed Names section is never committed by Start (review defect 2)', () => {
+    const { onPlay, onSelectedIdentitiesChange } = renderSetup({
+      teamNameBank: [],
+      initialSessionNames: { red: 'Comet Crew', blue: 'Ozone Owls' },
+    })
+    openNames()
+    // Team 2 types Team 1's name: rejected on blur, but the text stays in the field.
+    fireEvent.change(fields()[1]!, { target: { value: 'Comet Crew' } })
+    fireEvent.blur(fields()[1]!)
+    // Team 1 is renamed, which would make that hidden draft valid.
+    fireEvent.change(fields()[0]!, { target: { value: 'Ash' } })
+    fireEvent.keyDown(fields()[0]!, { key: 'Enter' })
+    // Leave Names: the fields unmount.
+    fireEvent.click(screen.getByTestId('readiness-display'))
+    expect(screen.queryAllByRole('textbox', { name: 'Type a name' })).toHaveLength(0)
+    expect(screen.getByTestId('setup-play')).toBeEnabled()
+    onSelectedIdentitiesChange.mockClear()
+    fireEvent.click(screen.getByTestId('setup-play'))
+    expect(onPlay).toHaveBeenCalledTimes(1)
+    // Start must not publish a name the teacher cannot see.
+    expect(onSelectedIdentitiesChange).not.toHaveBeenCalled()
+  })
+
   it('Enter still commits a typed name (keyboard path unchanged)', () => {
     const { onSelectedIdentitiesChange } = renderSetup({
       teamNameBank: [],
