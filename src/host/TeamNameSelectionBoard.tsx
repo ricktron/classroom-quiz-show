@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { TEAM_NAME_CHOICE_COLORS, type TeamNameSelectionView } from '../session/teamNameSelection'
 import { choiceColorLabel } from '../input/sonyNameSelection'
 import './TeamNameSelectionBoard.css'
@@ -10,6 +10,12 @@ export interface TeamNameSelectionBoardProps {
   readonly onCycle: (teamId: string) => void
   readonly onManual: (teamId: string, name: string) => void
   readonly onReset: (teamId: string) => void
+  /**
+   * Court B CB-03: the text currently typed in a team's name field, reported on
+   * mount and on every change, so Class Setup can count a visibly typed name
+   * toward readiness before it is committed by Enter / blur.
+   */
+  readonly onDraft?: (teamId: string, draft: string) => void
   /**
    * Q7 R1 item 8: whether this Game has a class name list to choose from.
    * Without one, colour choices, "More names" and "Choose again" would be live
@@ -36,6 +42,7 @@ export function TeamNameSelectionBoard({
   onCycle,
   onManual,
   onReset,
+  onDraft,
   nameBankAvailable = true,
   reducedMotion = false,
   highContrast = false,
@@ -138,6 +145,7 @@ export function TeamNameSelectionBoard({
               teamId={view.teamId}
               claimedName={view.claimedName}
               onManual={onManual}
+              onDraft={onDraft}
             />
           </div>
         </article>
@@ -150,12 +158,20 @@ function ManualNameField({
   teamId,
   claimedName,
   onManual,
+  onDraft,
 }: {
   readonly teamId: string
   readonly claimedName: string | null
   readonly onManual: (teamId: string, name: string) => void
+  readonly onDraft?: (teamId: string, draft: string) => void
 }) {
   const [draft, setDraft] = useState(claimedName ?? '')
+  // Report the field's real text on mount (a remount resets it to the claimed
+  // name) so Class Setup never counts a stale draft.
+  useEffect(() => {
+    onDraft?.(teamId, claimedName ?? '')
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only report; changes are reported from onChange
+  }, [])
   const commit = () => {
     if (draft.trim().length === 0) return
     onManual(teamId, draft)
@@ -168,7 +184,10 @@ function ManualNameField({
         data-testid={`tnsb-manual-${teamId}`}
         value={draft}
         maxLength={40}
-        onChange={(event) => setDraft(event.target.value)}
+        onChange={(event) => {
+          setDraft(event.target.value)
+          onDraft?.(teamId, event.target.value)
+        }}
         onBlur={commit}
         onKeyDown={(event) => {
           if (event.key === 'Enter') commit()
