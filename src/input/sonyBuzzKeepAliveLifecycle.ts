@@ -51,6 +51,12 @@ export interface SonyBuzzTransportSnapshot {
   readonly deviceLabel: string | null
   readonly framingOk: boolean
   readonly enabled: boolean
+  /**
+   * The automatic restore probe (`tryRestoreGranted`) has finished, whether or
+   * not it found a granted receiver. Before that, `permission-required` is only
+   * the starting state, not evidence that permission was lost.
+   */
+  readonly restoreSettled: boolean
 }
 
 export type SonyBuzzTransportListener = (snapshot: SonyBuzzTransportSnapshot) => void
@@ -121,6 +127,7 @@ export function createSonyBuzzKeepAliveLifecycle(
 
   let generation = 0
   let enabled = false
+  let restoreSettled = false
   let health: SonyBuzzTransportHealth = transport.available
     ? 'permission-required'
     : 'unsupported-api'
@@ -200,6 +207,7 @@ export function createSonyBuzzKeepAliveLifecycle(
             .padStart(4, '0')})`
         : null,
       framingOk: framing != null,
+      restoreSettled,
       enabled,
     }
   }
@@ -507,6 +515,35 @@ export function createSonyBuzzKeepAliveLifecycle(
     emit()
   }
 
+  async function probeRestore(): Promise<boolean> {
+    diag('restore_attempted', 'info', { priorHealth: health })
+    if (!transport.available) return false
+    // Already restored in this lifecycle instance — avoid connecting flicker.
+    if (device && framing && (health === 'healthy' || health === 'degraded')) {
+      diag('exact_device_found', 'ok', {
+        vendorId: device.vendorId,
+        productId: device.productId,
+        mode: 'restore',
+        via: 'already-open',
+      })
+      return true
+    }
+    // Probe previously granted devices without prompting. Only enable keep-alive
+    // when an exact device is actually restored — initial permission remains a
+    // deliberate Connect action.
+    const granted = await transport.getGrantedExactDevices()
+    if (granted.length === 0) {
+      diag('exact_device_not_found', 'fail', { mode: 'restore' })
+      if (health !== 'disabled' && health !== 'unsupported-api') {
+        health = 'permission-required'
+        emit()
+      }
+      return false
+    }
+    enabled = true
+    return acquireAndStart('restore')
+  }
+
   return {
     getSnapshot: snapshot,
     subscribe(listener) {
@@ -580,32 +617,14 @@ export function createSonyBuzzKeepAliveLifecycle(
       emit()
     },
     async tryRestoreGranted() {
-      diag('restore_attempted', 'info', { priorHealth: health })
-      if (!transport.available) return false
-      // Already restored in this lifecycle instance — avoid connecting flicker.
-      if (device && framing && (health === 'healthy' || health === 'degraded')) {
-        diag('exact_device_found', 'ok', {
-          vendorId: device.vendorId,
-          productId: device.productId,
-          mode: 'restore',
-          via: 'already-open',
-        })
-        return true
-      }
-      // Probe previously granted devices without prompting. Only enable keep-alive
-      // when an exact device is actually restored — initial permission remains a
-      // deliberate Connect action.
-      const granted = await transport.getGrantedExactDevices()
-      if (granted.length === 0) {
-        diag('exact_device_not_found', 'fail', { mode: 'restore' })
-        if (health !== 'disabled' && health !== 'unsupported-api') {
-          health = 'permission-required'
+      try {
+        return await probeRestore()
+      } finally {
+        if (!restoreSettled) {
+          restoreSettled = true
           emit()
         }
-        return false
       }
-      enabled = true
-      return acquireAndStart('restore')
     },
     onVisibilityOrFocusReturn() {
       if (!enabled) return

@@ -35,6 +35,25 @@ describe('sonyBuzzKeepAliveLifecycle', () => {
     life.dispose()
   })
 
+  it('marks the restore probe settled once it finishes, granted or not', async () => {
+    const none = createFakeWebHidTransport({ available: true, granted: [], requestResult: null })
+    const lifeNone = createSonyBuzzKeepAliveLifecycle({ transport: none, setIntervalFn, clearIntervalFn })
+    expect(lifeNone.getSnapshot().restoreSettled).toBe(false)
+    expect(await lifeNone.tryRestoreGranted()).toBe(false)
+    expect(lifeNone.getSnapshot()).toMatchObject({ health: 'permission-required', restoreSettled: true })
+    lifeNone.dispose()
+
+    const kept = createFakeWebHidTransport({ granted: [createFakeHidDevice()] })
+    const lifeKept = createSonyBuzzKeepAliveLifecycle({ transport: kept, setIntervalFn, clearIntervalFn })
+    const seen: Array<{ health: string; restoreSettled: boolean }> = []
+    lifeKept.subscribe((snap) => seen.push({ health: snap.health, restoreSettled: snap.restoreSettled }))
+    expect(await lifeKept.tryRestoreGranted()).toBe(true)
+    // While connecting, the probe is not settled; it settles after the outcome.
+    expect(seen.filter((s) => s.health === 'connecting').every((s) => !s.restoreSettled)).toBe(true)
+    expect(lifeKept.getSnapshot().restoreSettled).toBe(true)
+    lifeKept.dispose()
+  })
+
   it('stays permission-required when request cancels', async () => {
     const transport = createFakeWebHidTransport({
       available: true,
