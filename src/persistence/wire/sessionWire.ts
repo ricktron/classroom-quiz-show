@@ -701,7 +701,11 @@ function decodeEvent(
       return persistenceOk({
         ...base.value,
         type,
-        reversible: true,
+        // Reversibility is a property of the event type, as for every other
+        // event. A Final expiry saved before NEW-1 (stored reversible: true)
+        // replays identically; an undo marker that already neutralized one still
+        // neutralizes it by id. It is simply never chosen as an undo target again.
+        reversible: false,
         roundId: input.roundId,
         timerId: input.timerId,
         deadline,
@@ -818,7 +822,8 @@ function readBase(input: Record<string, unknown>, index: number): PersistenceRes
   if (input.id !== `evt-${index}`) return persistenceErr('corrupt', 'Persistence event id does not match its sequence.')
   if (!isInstant(input.occurredAt)) return persistenceErr('corrupt', 'Persistence event occurredAt is invalid.')
   if (typeof input.reversible !== 'boolean') return persistenceErr('corrupt', 'Persistence event reversibility is invalid.')
-  if (input.reversible !== reversibleFor(input.type, input)) {
+  const reversible = reversibleFor(input.type, input)
+  if (input.reversible !== reversible && !isLegacyReversibleFinalExpiry(input.type, input.reversible)) {
     return persistenceErr('corrupt', 'Persistence event reversibility does not match its type.')
   }
   return persistenceOk({
@@ -826,8 +831,21 @@ function readBase(input: Record<string, unknown>, index: number): PersistenceRes
     type: input.type,
     seq: index,
     occurredAt: input.occurredAt,
-    reversible: input.reversible,
+    reversible,
   })
+}
+
+/**
+ * Court B NEW-1: Final window expiries became irreversible. A history saved by an
+ * earlier build stored them as `reversible: true`; that is still a valid record of
+ * the same fact, so it decodes (normalized to irreversible) instead of failing
+ * closed. A teacher's saved session is worth more than one release's strictness.
+ */
+function isLegacyReversibleFinalExpiry(type: SessionEvent['type'], stored: boolean): boolean {
+  return (
+    stored &&
+    (type === 'FINAL_WAGER_WINDOW_EXPIRED' || type === 'FINAL_RESPONSE_WINDOW_EXPIRED')
+  )
 }
 
 function reversibleFor(
@@ -844,6 +862,9 @@ function reversibleFor(
     'EVENT_UNDONE',
     'GAME_INITIALIZED',
     'GAME_SESSION_ENDED',
+    // Observed time facts, never undo targets (Court B NEW-1; ADR-014 §8).
+    'FINAL_WAGER_WINDOW_EXPIRED',
+    'FINAL_RESPONSE_WINDOW_EXPIRED',
   ].includes(type)
 }
 

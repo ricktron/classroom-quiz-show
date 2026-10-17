@@ -293,6 +293,8 @@ Two consequences worth stating:
   past. That is the prior durable state, exactly — the adapter then schedules a
   zero-delay callback and the window expires again unless the host acts. Undo
   restores the previous state; it does not invent a friendlier one.
+  (Board timers only. Final Wager window expiries are irreversible since Court B
+  NEW-1, so they never sit on top of Undo; see ADR-014's amendment.)
 - **Undo remains latest-only** (ADR-002). One undo after arm-then-start reaches the
   start, not the arm. That limit is preserved and documented rather than broadened
   into arbitrary historical undo.

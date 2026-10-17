@@ -152,7 +152,13 @@ export function TeamScoringPanel({
   const scoreEvents = effectiveEvents(history).filter(isTeamScoreAdjusted)
   const lastChange = lastScoreChangeOf(history)
   const undoTarget = findUndoTarget(history)
-  const canUndoScore = undoTarget !== null && undoTarget.type === 'TEAM_SCORE_ADJUSTED'
+  // A Final settlement that moved points is a score change too (CB-06b); its
+  // undo reverses the score and reopens that team's judgement as one fact.
+  const undoTargetIsFinalSettlement =
+    undoTarget !== null && undoTarget.type === 'FINAL_TEAM_SETTLED' && undoTarget.delta !== 0
+  const canUndoScore =
+    undoTarget !== null &&
+    (undoTarget.type === 'TEAM_SCORE_ADJUSTED' || undoTargetIsFinalSettlement)
 
   // A game with no teams has nothing to score. Say so once, host-only, instead of
   // rendering an empty panel the teacher has to interpret.
@@ -481,7 +487,9 @@ export function TeamScoringPanel({
           Undo last score change
         </button>
         <p className="host__note">
-          {canUndoScore
+          {undoTargetIsFinalSettlement
+            ? 'Undo removes this Final score change exactly and lets you judge that team again. It does not hide the answer.'
+            : canUndoScore
             ? 'Undo removes the score change exactly. It does not un-reveal an answer or return a tile to the board.'
             : 'The next undo would affect something other than a score, so it is disabled here. To fix an older score, apply a manual correction — history is never rewritten.'}
         </p>

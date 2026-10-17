@@ -455,3 +455,37 @@ types or board arming.
   belongs.
 - Final is the one round that still projects after the game ends, so the closing
   screen stays on the projector while the final scoreboard is read out.
+
+## Amendment — Final window expiry is irreversible (Court B NEW-1)
+
+**Status:** Accepted as merged implementation truth when the repair lands.
+
+**Problem (independently reproduced on `beeacd33`):** the Final response window
+keeps running after responses lock. When it expired after a team was settled, a
+reversible `FINAL_RESPONSE_WINDOW_EXPIRED` sat on top of the latest-only Undo
+stack. Undoing it restored a deadline already in the past, which expired again at
+once (ADR-007 §13), so ordinary Undo could never reach the settlement, breaking §9
+("a settlement undoes as one atomic fact"). The same loop blocked Undo deeper in
+history when the window expired before settlement.
+
+**Decision:**
+
+- `FINAL_WAGER_WINDOW_EXPIRED` and `FINAL_RESPONSE_WINDOW_EXPIRED` are
+  **irreversible** (`reversible: false`), in every Final phase. An expiry is an
+  observed wall-clock fact that records only that the window ended (§8); undoing
+  one could never mean anything except an instant re-expiry. Latest-only Undo
+  (ADR-002) therefore skips it and reaches the teacher's last real action.
+- Locking responses still does **not** stop the window. Stopping it at lock was
+  considered and rejected: undoing the lock would restore a past deadline and
+  recreate the loop one step earlier.
+- Persistence: reversibility stays a property of the event type. A history saved
+  by an earlier build stored these expiries as `reversible: true`; that legacy form
+  still decodes (normalized to irreversible) instead of failing closed, and an undo
+  marker that already neutralized one still neutralizes it by id. The private wire
+  version is unchanged.
+- Board-tile response timers (ADR-007) are unchanged: their expiry stays
+  reversible and still re-expires when undone.
+- Score Undo (ADR-006): a Final settlement that moved points is the "last score
+  change", so "Undo last score change" is offered for it, and its copy says the
+  team can be judged again. A zero-wager settlement moves no points and is not a
+  score change.
