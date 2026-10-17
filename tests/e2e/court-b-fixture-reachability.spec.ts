@@ -59,6 +59,17 @@ async function namesDisplayStart(page: Page, context: BrowserContext): Promise<P
   return display
 }
 
+/**
+ * The Host says when the class session is durably saved ("Saving this class
+ * session." while a write is in flight). A reload before that may lose the last
+ * action, as it would for a teacher, so reload journeys wait for it first.
+ */
+async function waitUntilSavedOnThisDevice(page: Page) {
+  await expect(
+    page.getByText('This class session is saved on this device.', { exact: true }).first(),
+  ).toBeAttached()
+}
+
 const scores = (page: Page) =>
   page.getByRole('region', { name: 'Teams & scoring' }).getByRole('list').first()
 
@@ -197,6 +208,8 @@ test('[CBJ-07] Host reload + Resume during the Final', async ({ page, context })
   await page.getByRole('button', { name: 'Start Round 1' }).click()
   await scoreTile(page, 'Rocks, 200 points', 'Granite')
   await toFinalWithWagers(page, { granite: '50' })
+  await expect(page.getByRole('region', { name: 'Final wager' })).toContainText('Wagers locked')
+  await waitUntilSavedOnThisDevice(page)
   await page.reload()
   await page.getByRole('button', { name: 'Resume class' }).click()
   const finalPanel = page.getByRole('region', { name: 'Final wager' })

@@ -12,6 +12,7 @@ import {
   installWbuzzHardwareSimulator,
   pressWbuzzButton,
 } from './helpers/simulatedWbuzzHardware'
+import { waitForSessionSaved } from './helpers/menusSession'
 import { buttonIndexForSlotColor } from '../../src/input/sonyBuzzSupportedProfile'
 
 /**
@@ -42,6 +43,8 @@ test('CB-02 (simulated): reload + Resume restores the granted receiver; first RE
   await page.getByRole('button', { name: 'Start Round 1' }).click()
   const status = page.getByRole('status').filter({ hasText: /Buzzers/ }).first()
   await expect(status).toContainText('Buzzers ready')
+  // Reload only once the class session (mapping, names, round) is durably saved.
+  await waitForSessionSaved(page)
 
   // Host reload + Resume. The Gamepad is NOT exposed yet (explicit sequencing).
   await page.reload()
