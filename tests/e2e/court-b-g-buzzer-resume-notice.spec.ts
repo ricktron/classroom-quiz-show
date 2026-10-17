@@ -12,6 +12,8 @@ import {
   pressWbuzzButton,
 } from './helpers/simulatedWbuzzHardware'
 import { waitForSessionSaved } from './helpers/menusSession'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { buttonIndexForSlotColor } from '../../src/input/sonyBuzzSupportedProfile'
 
 /**
@@ -23,7 +25,7 @@ import { buttonIndexForSlotColor } from '../../src/input/sonyBuzzSupportedProfil
  * which is exactly the "readiness dropped" case. SIMULATED only: whether real
  * Chrome keeps the grant is a Q7 physical item.
  *
- * Fail-first on 9417464: the status line silently fell back to
+ * Fail-first on b18cf9d: the status line silently fell back to
  * "Buzzers optional · keyboard works".
  */
 
@@ -104,6 +106,15 @@ test('CB-02: a receiver restored from a kept grant is not reported as needing re
   await expect(statusLine(page)).toContainText('Buzzers ready')
   await waitForSessionSaved(page)
 
+  // Record every text the page shows from load on, so even a momentary
+  // "need reconnecting" during the automatic restore is caught.
+  await page.addInitScript((notice: string) => {
+    const w = window as unknown as { __cqsNoticeSeen?: boolean }
+    w.__cqsNoticeSeen = false
+    new MutationObserver(() => {
+      if (document.body?.textContent?.includes(notice)) w.__cqsNoticeSeen = true
+    }).observe(document, { subtree: true, childList: true, characterData: true })
+  }, NOTICE)
   await page.reload()
   await page.getByRole('button', { name: 'Resume class' }).click()
   await expect(page.getByTestId('sbs-receiver-layer')).toContainText(/Connected/i, { timeout: 10_000 })
@@ -117,5 +128,52 @@ test('CB-02: a receiver restored from a kept grant is not reported as needing re
   await exposeSimulatedWbuzzGamepad(page)
   await pressWbuzzButton(page, buttonIndexForSlotColor(1, 'red'))
   await expect(statusLine(page)).toContainText('Buzzers ready')
+  await expect(statusLine(page)).not.toContainText(NOTICE)
+  const seen = await page.evaluate(() => (window as unknown as { __cqsNoticeSeen?: boolean }).__cqsNoticeSeen)
+  expect(seen, 'the notice must never appear, even briefly, during the restore').toBe(false)
+})
+
+test('CB-02: readiness known for one game does not carry into a different game loaded into the session', async ({
+  page,
+}) => {
+  // Game A (demo): buzzers ready, round started, saved.
+  await installWbuzzHardwareSimulator(page, 'ready')
+  await importDemoAndPlay(page)
+  await openOptionalBuzzers(page)
+  await clickShowBuzzerSetup(page)
+  await connectSimulatedReceiver(page)
+  await exposeGamepadAndExpectBuzzersStatus(page)
+  for (const slot of [1, 2] as const) await pressWbuzzButton(page, buttonIndexForSlotColor(slot, 'red'))
+  await page.getByRole('button', { name: 'Save team mapping' }).click()
+  await fillAllTeamNames(page)
+  await page.getByRole('button', { name: 'Start Game' }).click()
+  await page.getByRole('button', { name: 'Start Round 1' }).click()
+  await expect(statusLine(page)).toContainText('Buzzers ready')
+  await waitForSessionSaved(page)
+
+  // The teacher loads a different game into this tab, replacing the class.
+  const gameB = readFileSync(
+    resolve(process.cwd(), 'docs/qualification/fixtures/court-b-final-qualification.game.json'),
+    'utf8',
+  )
+  await page.goto('./')
+  await page.getByRole('button', { name: 'Import Game' }).click()
+  await page.getByRole('textbox', { name: 'Game file text' }).fill(gameB)
+  await page.getByRole('button', { name: 'Import file text' }).click()
+  await expect(page.getByRole('region', { name: 'Import quality' })).toContainText('accepted')
+  await page
+    .getByRole('list', { name: 'Your Games' })
+    .getByRole('listitem')
+    .filter({ hasText: 'Court B Final Qualification' })
+    .getByRole('button', { name: 'Play', exact: true })
+    .click()
+  await page.getByRole('button', { name: 'Resume class' }).click()
+  await page.getByRole('button', { name: 'Load this game and replace the current session' }).click()
+  await expect(page.getByText('Court B Final Qualification').first()).toBeVisible()
+
+  // Game B now has the class, with the receiver no longer granted (the
+  // navigation dropped it). Readiness was never known for game B, so this is
+  // not a "dropped" state and must not be reported as one.
+  await expect(statusLine(page)).toContainText('Buzzers optional · keyboard works')
   await expect(statusLine(page)).not.toContainText(NOTICE)
 })

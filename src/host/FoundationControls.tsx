@@ -65,7 +65,9 @@ import { ownsSameGameRosterRefresh } from './sameGameRosterRefresh'
 import { hostResumeWelcomeCopy } from './hostResumeWelcome'
 import {
   BUZZER_RESUME_NOTICE,
+  buzzerReadyScope,
   buzzersWereReady,
+  forgetBuzzersReady,
   rememberBuzzersReady,
   shouldShowBuzzerResumeNotice,
 } from './buzzerResumeNotice'
@@ -144,8 +146,10 @@ export function FoundationControls({
   const [sonyTeacherSummary, setSonyTeacherSummary] = useState<SonyBuzzTeacherSummary | null>(
     null,
   )
-  /** CB-02: buzzers were ready earlier in this class session, in this tab. */
+  /** CB-02: buzzers were ready earlier for this class and game, in this tab. */
   const [buzzersKnownReady, setBuzzersKnownReady] = useState(false)
+  /** CB-02: the receiver has settled into a drop (not merely restoring). */
+  const [receiverDropSettled, setReceiverDropSettled] = useState(false)
   /** Supported Namtai Wbuzz Gamepad detected — lifted from GamepadInputHostPanel only. */
   const [wbuzzPresent, setWbuzzPresent] = useState(false)
   const [inputDiagnosticSignals, setInputDiagnosticSignals] =
@@ -173,16 +177,33 @@ export function FoundationControls({
   const registry = store.getRegistry()
   const game = state.session?.game ?? null
   const classSessionId = state.session?.sessionId ?? null
-  // CB-02: recall readiness known for this class session in this tab (a Host
-  // reload keeps tab storage), and remember it whenever buzzers are ready.
+  const gameDefinition = game?.definition ?? null
+  const buzzerScope =
+    classSessionId !== null && gameDefinition !== null
+      ? buzzerReadyScope(classSessionId, gameDefinition.id)
+      : null
+  // CB-02: readiness is known per class session AND game. Loading a game into
+  // this tab replaces the class (a new frozen definition snapshot, even for the
+  // same game id), so forget what was known; a reload rebuilds state from
+  // history and starts from no previous definition, so it keeps the memory.
+  const knownDefinitionRef = useRef(gameDefinition)
   useEffect(() => {
-    setBuzzersKnownReady(classSessionId !== null && buzzersWereReady(classSessionId))
-  }, [classSessionId])
+    const previous = knownDefinitionRef.current
+    knownDefinitionRef.current = gameDefinition
+    if (previous === null || gameDefinition === null || previous === gameDefinition) return
+    if (buzzerScope !== null) forgetBuzzersReady(buzzerScope)
+    setBuzzersKnownReady(false)
+  }, [gameDefinition, buzzerScope])
+  // Recall readiness known in this tab (a Host reload keeps tab storage), and
+  // remember it whenever buzzers are ready.
   useEffect(() => {
-    if (!sonyReady || classSessionId === null) return
-    rememberBuzzersReady(classSessionId)
+    setBuzzersKnownReady(buzzerScope !== null && buzzersWereReady(buzzerScope))
+  }, [buzzerScope])
+  useEffect(() => {
+    if (!sonyReady || buzzerScope === null) return
+    rememberBuzzersReady(buzzerScope)
     setBuzzersKnownReady(true)
-  }, [sonyReady, classSessionId])
+  }, [sonyReady, buzzerScope])
   const hasGame = game !== null
   const dispatch = (command: Parameters<typeof storeDispatch>[0]) =>
     persistence.dispatchSessionCommand(command, storeDispatch, () => store.getHistory(), registry)
@@ -541,7 +562,7 @@ export function FoundationControls({
   const showBuzzerResumeNotice = shouldShowBuzzerResumeNotice({
     wereReady: buzzersKnownReady,
     sonyReady,
-    summary: sonyTeacherSummary,
+    receiverDropSettled,
   })
   if (playReady && game) {
     playStatusParts.push(namesComplete ? 'Names ready' : 'Names incomplete')
@@ -914,6 +935,7 @@ export function FoundationControls({
           onSelectionBatch={setSelectionObservationBatch}
           onSonyReadyChange={setSonyReady}
           onSonyTeacherSummaryChange={setSonyTeacherSummary}
+          onReceiverDropSettledChange={setReceiverDropSettled}
           onWbuzzPresentChange={setWbuzzPresent}
           onInputDiagnosticSignals={setInputDiagnosticSignals}
           onBuzzerCheckChange={setBuzzerCheckOn}

@@ -47,6 +47,7 @@ import {
   type SonyBuzzTeacherSummary,
 } from '../input/sonyBuzzTeacherReadiness'
 import { sonyBuzzButtonLabel, type SonyBuzzSlotId } from '../input/sonyBuzzSupportedProfile'
+import { isSettledReceiverDrop } from './buzzerResumeNotice'
 import type { PersistenceAdapter } from '../persistence'
 import type { HostInputDiagnosticSignals } from './diagnostics/types'
 import type { WebHidTransport } from '../input/webHidTransport'
@@ -132,6 +133,12 @@ export interface GamepadInputHostPanelProps {
    */
   readonly onWbuzzPresentChange?: (present: boolean) => void
   /**
+   * CB-02: the supported receiver has settled into a drop (disconnected, failed,
+   * or no permission after the automatic restore ran). Never true while it is
+   * still connecting or recovering.
+   */
+  readonly onReceiverDropSettledChange?: (settled: boolean) => void
+  /**
    * Safe Host diagnostic input signals (counts + semantic layers only).
    * Never device identity or classroom content.
    */
@@ -186,6 +193,7 @@ export function GamepadInputHostPanel({
   onSonyReadyChange,
   onSonyTeacherSummaryChange,
   onWbuzzPresentChange,
+  onReceiverDropSettledChange,
   onInputDiagnosticSignals,
   onBuzzerCheckChange,
 }: GamepadInputHostPanelProps) {
@@ -268,6 +276,17 @@ export function GamepadInputHostPanel({
       onWbuzzPresentChange?.(false)
     }
   }, [wbuzzPresent, onWbuzzPresentChange])
+
+  const receiverDropSettled = isSettledReceiverDrop(sony.transport)
+  useEffect(() => {
+    onReceiverDropSettledChange?.(receiverDropSettled)
+  }, [receiverDropSettled, onReceiverDropSettledChange])
+  useEffect(
+    () => () => {
+      onReceiverDropSettledChange?.(false)
+    },
+    [onReceiverDropSettledChange],
+  )
 
   const publishTeacherSummary = useCallback(
     (summary: SonyBuzzTeacherSummary) => {
