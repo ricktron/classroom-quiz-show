@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   applyTeamNameInputs,
+  applyTypedTeamNames,
   claimedSessionTeamNames,
   createTeamNameSelectionState,
   sanitizeTeamNameBank,
@@ -285,5 +286,78 @@ describe('team-name selection engine', () => {
     const cleaned = sanitizeTeamNameBank(source)
     expect(cleaned).toEqual(['Comet Crew', 'Valid'])
     expect(source[0]).toBe('  Comet Crew ')
+  })
+})
+
+
+describe('typed team names resolve as one order-independent batch (Court B CB-03)', () => {
+  function named(names: Record<string, string>, teamIds = ['a', 'b']) {
+    let state = createTeamNameSelectionState({ bank: [], teamIds })
+    for (const [teamId, name] of Object.entries(names)) {
+      state = applyTeamNameInputs(state, [{ kind: 'manual', teamId, name }]).state
+    }
+    return state
+  }
+
+  it('a rename chain is valid in either team order (A→B while B→C)', () => {
+    const start = named({ a: 'Comets', b: 'Magma' })
+    const forward = applyTypedTeamNames(start, { a: 'Magma', b: 'Lava' })
+    expect(forward.rejected).toEqual([])
+    expect(claimedSessionTeamNames(forward.state)).toEqual({ a: 'Magma', b: 'Lava' })
+    const backward = applyTypedTeamNames(start, { a: 'Lava', b: 'Comets' })
+    expect(backward.rejected).toEqual([])
+    expect(claimedSessionTeamNames(backward.state)).toEqual({ a: 'Lava', b: 'Comets' })
+  })
+
+  it('a swap is valid', () => {
+    const start = named({ a: 'Comets', b: 'Magma' })
+    const swapped = applyTypedTeamNames(start, { a: 'Magma', b: 'Comets' })
+    expect(swapped.rejected).toEqual([])
+    expect(claimedSessionTeamNames(swapped.state)).toEqual({ a: 'Magma', b: 'Comets' })
+  })
+
+  it('a real duplicate is rejected (typed vs kept, and typed vs typed), and nothing is applied', () => {
+    const start = named({ a: 'Comets', b: 'Magma' })
+    const kept = applyTypedTeamNames(start, { b: ' comets ' })
+    expect(kept.rejected).toEqual([{ teamId: 'b', status: 'rejected-name-taken' }])
+    expect(kept.state).toBe(start)
+    const both = applyTypedTeamNames(start, { a: 'Lava', b: 'lava' })
+    expect(both.rejected.map((r) => r.teamId).sort()).toEqual(['a', 'b'])
+    expect(both.changed).toBe(false)
+  })
+
+  it('re-capitalizing a team\'s own name is not a change; blank text keeps the committed name', () => {
+    const start = named({ a: 'Comets', b: 'magma' })
+    const result = applyTypedTeamNames(start, { a: '   ', b: 'Magma' })
+    expect(result).toEqual({ state: start, changed: false, rejected: [] })
+  })
+
+  it('a typed name offered to a team that stays unclaimed is taken, in either order', () => {
+    const start = createTeamNameSelectionState({ bank: bank(8), teamIds: ['a', 'b'] })
+    const offeredToB = candidatesOf(start, 'b')[0]!
+    expect(applyTypedTeamNames(start, { a: offeredToB }).rejected).toEqual([
+      { teamId: 'a', status: 'rejected-name-taken' },
+    ])
+    const offeredToA = candidatesOf(start, 'a')[0]!
+    expect(applyTypedTeamNames(start, { b: offeredToA }).rejected).toEqual([
+      { teamId: 'b', status: 'rejected-name-taken' },
+    ])
+    // Once that team is named too, its old offers no longer reserve anything.
+    const both = applyTypedTeamNames(start, { a: offeredToB, b: 'Zircon' })
+    expect(both.rejected).toEqual([])
+  })
+
+  it('an over-long name is invalid', () => {
+    const start = named({ a: 'Comets', b: 'Magma' })
+    expect(applyTypedTeamNames(start, { a: 'x'.repeat(41) }).rejected).toEqual([
+      { teamId: 'a', status: 'rejected-invalid-name' },
+    ])
+  })
+
+  it('three teams: a chain plus an untouched team', () => {
+    const start = named({ a: 'Ash', b: 'Basalt', c: 'Chert' }, ['a', 'b', 'c'])
+    const result = applyTypedTeamNames(start, { b: 'Ash', a: 'Dolomite' })
+    expect(result.rejected).toEqual([])
+    expect(claimedSessionTeamNames(result.state)).toEqual({ a: 'Dolomite', b: 'Ash', c: 'Chert' })
   })
 })

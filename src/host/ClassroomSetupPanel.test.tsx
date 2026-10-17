@@ -919,3 +919,155 @@ describe('Q7-R1 buzzer reveal status follows the live Buzzer Check', () => {
     expect(screen.queryByTestId('setup-buzzer-reveal-status')).toBeNull()
   })
 })
+
+describe('ClassroomSetupPanel — typed names count as typed (Court B CB-03)', () => {
+  const openNames = () => fireEvent.click(screen.getByTestId('readiness-names'))
+  const fields = () => screen.getAllByRole('textbox', { name: 'Type a name' })
+
+  it('a valid typed last name enables Start Game without Enter/blur, and keeps the Names task open', () => {
+    renderSetup({ teamNameBank: [], initialSessionNames: { red: 'Comet Crew' } })
+    openNames()
+    const field = fields()[1]!
+    field.focus()
+    fireEvent.change(field, { target: { value: 'Ozone Owls' } })
+    expect(screen.getByTestId('setup-play')).toBeEnabled()
+    expect(screen.queryByTestId('setup-play-blocker')).toBeNull()
+    expect(screen.getByTestId('setup-ready-heading')).toHaveTextContent('Ready')
+    // Committed state still chooses the task: the field being typed in stays mounted.
+    expect(screen.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
+    expect(document.activeElement).toBe(field)
+  })
+
+  it('one Start Game activation commits pending typed names, then starts', () => {
+    const { onPlay, onSelectedIdentitiesChange } = renderSetup({
+      teamNameBank: [],
+      initialSessionNames: { red: 'Comet Crew' },
+    })
+    openNames()
+    fireEvent.change(fields()[1]!, { target: { value: '  Ozone   Owls ' } })
+    onSelectedIdentitiesChange.mockClear()
+    fireEvent.click(screen.getByTestId('setup-play'))
+    expect(onSelectedIdentitiesChange).toHaveBeenLastCalledWith({
+      red: 'Comet Crew',
+      blue: 'Ozone Owls',
+    })
+    expect(onPlay).toHaveBeenCalledTimes(1)
+    const commitOrder = onSelectedIdentitiesChange.mock.invocationCallOrder.at(-1)!
+    expect(commitOrder).toBeLessThan(onPlay.mock.invocationCallOrder[0]!)
+  })
+
+  it('pressing Start Game does not move focus out of a name field (no blur re-layout under the pointer)', () => {
+    renderSetup({ teamNameBank: [], initialSessionNames: { red: 'Comet Crew' } })
+    openNames()
+    const field = fields()[1]!
+    field.focus()
+    fireEvent.change(field, { target: { value: 'Ozone Owls' } })
+    const pressed = fireEvent.mouseDown(screen.getByTestId('setup-play'))
+    expect(pressed).toBe(false) // default prevented
+  })
+
+  it('a typed duplicate keeps Start Game disabled with truthful copy', () => {
+    const { onPlay } = renderSetup({ teamNameBank: [], initialSessionNames: { red: 'Comet Crew' } })
+    openNames()
+    fireEvent.change(fields()[1]!, { target: { value: ' comet  crew' } })
+    expect(screen.getByTestId('setup-play')).toBeDisabled()
+    expect(screen.getByTestId('setup-play-blocker')).toHaveTextContent('Each team needs a different name.')
+    fireEvent.click(screen.getByTestId('setup-play'))
+    expect(onPlay).not.toHaveBeenCalled()
+  })
+
+  it('a whitespace-only typed name does not count and the blocker still names the team', () => {
+    renderSetup({ teamNameBank: [], initialSessionNames: { red: 'Comet Crew' } })
+    openNames()
+    fireEvent.change(fields()[1]!, { target: { value: '   ' } })
+    expect(screen.getByTestId('setup-play')).toBeDisabled()
+    expect(screen.getByTestId('setup-play-blocker')).toHaveTextContent(/still needs a name/i)
+  })
+
+  it('a typed name over the length limit does not count', () => {
+    renderSetup({ teamNameBank: [], initialSessionNames: { red: 'Comet Crew' } })
+    openNames()
+    // The field caps input at 40 characters; a pasted value is still checked.
+    fireEvent.change(fields()[1]!, { target: { value: 'x'.repeat(41) } })
+    expect(screen.getByTestId('setup-play')).toBeDisabled()
+  })
+
+  it('re-capitalizing a team\'s own name never reads as a duplicate (review defect 1)', () => {
+    const { onPlay, onSelectedIdentitiesChange } = renderSetup({
+      teamNameBank: [],
+      initialSessionNames: { red: 'Comet Crew', blue: 'ozone owls' },
+    })
+    openNames()
+    const field = fields()[1]!
+    fireEvent.change(field, { target: { value: 'Ozone Owls' } })
+    expect(screen.getByTestId('setup-play')).toBeEnabled()
+    expect(screen.queryByTestId('setup-play-blocker')).toBeNull()
+    fireEvent.blur(field)
+    expect(screen.getByTestId('setup-play')).toBeEnabled()
+    onSelectedIdentitiesChange.mockClear()
+    fireEvent.click(screen.getByTestId('setup-play'))
+    expect(onPlay).toHaveBeenCalledTimes(1)
+    // The committed name stands (same identity), exactly as Enter behaves.
+    expect(onSelectedIdentitiesChange).not.toHaveBeenCalled()
+  })
+
+  it('a draft left in a closed Names section is never committed by Start (review defect 2)', () => {
+    const { onPlay, onSelectedIdentitiesChange } = renderSetup({
+      teamNameBank: [],
+      initialSessionNames: { red: 'Comet Crew', blue: 'Ozone Owls' },
+    })
+    openNames()
+    // Team 2 types Team 1's name: rejected on blur, but the text stays in the field.
+    fireEvent.change(fields()[1]!, { target: { value: 'Comet Crew' } })
+    fireEvent.blur(fields()[1]!)
+    // Team 1 is renamed, which would make that hidden draft valid.
+    fireEvent.change(fields()[0]!, { target: { value: 'Ash' } })
+    fireEvent.keyDown(fields()[0]!, { key: 'Enter' })
+    // Leave Names: the fields unmount.
+    fireEvent.click(screen.getByTestId('readiness-display'))
+    expect(screen.queryAllByRole('textbox', { name: 'Type a name' })).toHaveLength(0)
+    expect(screen.getByTestId('setup-play')).toBeEnabled()
+    onSelectedIdentitiesChange.mockClear()
+    fireEvent.click(screen.getByTestId('setup-play'))
+    expect(onPlay).toHaveBeenCalledTimes(1)
+    // Start must not publish a name the teacher cannot see.
+    expect(onSelectedIdentitiesChange).not.toHaveBeenCalled()
+  })
+
+  it('a rename chain typed in either order is ready and commits as typed (review of 8d9679e)', () => {
+    for (const [typedRed, typedBlue] of [
+      ['Ozone Owls', 'Lava'],
+      ['Lava', 'Comet Crew'],
+    ] as const) {
+      const { onPlay, onSelectedIdentitiesChange } = renderSetup({
+        teamNameBank: [],
+        initialSessionNames: { red: 'Comet Crew', blue: 'Ozone Owls' },
+      })
+      openNames()
+      fireEvent.change(fields()[0]!, { target: { value: typedRed } })
+      fireEvent.change(fields()[1]!, { target: { value: typedBlue } })
+      expect(screen.getByTestId('setup-play')).toBeEnabled()
+      expect(screen.queryByTestId('setup-play-blocker')).toBeNull()
+      onSelectedIdentitiesChange.mockClear()
+      fireEvent.click(screen.getByTestId('setup-play'))
+      expect(onSelectedIdentitiesChange).toHaveBeenLastCalledWith({ red: typedRed, blue: typedBlue })
+      expect(onPlay).toHaveBeenCalledTimes(1)
+      cleanup()
+    }
+  })
+
+  it('Enter still commits a typed name (keyboard path unchanged)', () => {
+    const { onSelectedIdentitiesChange } = renderSetup({
+      teamNameBank: [],
+      initialSessionNames: { red: 'Comet Crew' },
+    })
+    openNames()
+    const field = fields()[1]!
+    fireEvent.change(field, { target: { value: 'Ozone Owls' } })
+    fireEvent.keyDown(field, { key: 'Enter' })
+    expect(onSelectedIdentitiesChange).toHaveBeenLastCalledWith({
+      red: 'Comet Crew',
+      blue: 'Ozone Owls',
+    })
+  })
+})

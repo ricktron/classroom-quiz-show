@@ -5,6 +5,7 @@ import {
   applyTeamNameInputs,
   claimedSessionTeamNames,
   createTeamNameSelectionState,
+  applyTypedTeamNames,
   sessionTeamNamesAreUnique,
   type TeamNameSelectionState,
 } from '../session/teamNameSelection'
@@ -155,6 +156,12 @@ export function ClassroomSetupPanel({
   const [selection, setSelection] = useState<TeamNameSelectionState>(() =>
     seedSelection(teamNameBank, teamIds, initialSessionNames),
   )
+  /**
+   * Court B CB-03: text visibly typed in each team's name field, committed or not.
+   * A valid, unique typed name counts toward readiness as typed, and Start Game
+   * commits it, so the teacher never needs Enter / blur before one click.
+   */
+  const [typedNames, setTypedNames] = useState<Readonly<Record<string, string>>>({})
   const [buzzerSkipped, setBuzzerSkipped] = useState(false)
   /**
    * Q7-F01: teacher-visible affirmation after Show/Check buzzer setup.
@@ -258,21 +265,46 @@ export function ClassroomSetupPanel({
     applySonyObservations(observationBatch)
   }, [observationBatch, applySonyObservations])
 
+  const recordTypedName = useCallback((teamId: string, draft: string | null) => {
+    setTypedNames((current) => {
+      if (draft === null) {
+        if (!(teamId in current)) return current
+        const next = { ...current }
+        delete next[teamId]
+        return next
+      }
+      return current[teamId] === draft ? current : { ...current, [teamId]: draft }
+    })
+  }, [])
+
   const apply = (state: TeamNameSelectionState) => {
     setSelection(state)
     persistAndPublish(state)
   }
 
+  // Committed names drive which task Class Setup shows (so the field a teacher is
+  // typing in never disappears mid-word); effective names (committed + valid
+  // typed drafts) drive Start Game, its blocker copy and the Ready strip.
   const claimed = claimedSessionTeamNames(selection)
   const namesAssigned = teams.every((team) => typeof claimed[team.id] === 'string')
   const unique = sessionTeamNamesAreUnique(Object.values(claimed))
+  // Order-independent: a rename chain (A→B while B→C) or swap is judged as one
+  // batch, exactly as Start will commit it (review of 8d9679e).
+  const typedResolution = applyTypedTeamNames(selection, typedNames)
+  const typedNameRejected = typedResolution.rejected.length > 0
+  const typedNameTaken = typedResolution.rejected.some((item) => item.status === 'rejected-name-taken')
+  const pendingApplied = typedResolution.changed ? typedResolution : null
+  const effectiveClaimed = claimedSessionTeamNames(typedResolution.state)
+  const effectiveNamesAssigned =
+    !typedNameRejected && teams.every((team) => typeof effectiveClaimed[team.id] === 'string')
+  const effectiveUnique = !typedNameTaken && sessionTeamNamesAreUnique(Object.values(effectiveClaimed))
   const unnamedTeamLabels = teams.flatMap((team, index) =>
-    typeof claimed[team.id] === 'string' ? [] : [teamOrdinalLabel(team, index)],
+    typeof effectiveClaimed[team.id] === 'string' ? [] : [teamOrdinalLabel(team, index)],
   )
   const guidance = {
     teamCount: teams.length,
-    namesAssigned,
-    namesUnique: unique,
+    namesAssigned: effectiveNamesAssigned,
+    namesUnique: effectiveUnique,
     sonyReady,
     sonyTeacherSummary,
     wbuzzPresent,
@@ -284,12 +316,18 @@ export function ClassroomSetupPanel({
     buzzerSkipped: buzzerSkipped || sonyReady,
     repairActive: false,
   }
+  const committedGuidance = { ...guidance, namesAssigned, namesUnique: unique }
   const buzzerHardwarePresent = classSetupBuzzerHardwarePresent(guidance)
   const mayOfferBuzzerSkip = classSetupMayOfferBuzzerSkip(guidance)
+  /** Start Game may be activated (typed names count). */
   const playEnabled = canStartPlay(guidance)
-  const playBlocker = playBlockerExplanation(guidance)
-  const pureDominant = dominantSetupTask(guidance)
-  const workflowDefault = defaultSetupWorkflowTask(guidance)
+  /** Committed readiness: chooses the task shown, so typing never collapses Names. */
+  const stagePlayEnabled = canStartPlay(committedGuidance)
+  const playBlocker = typedNameTaken
+    ? 'Each team needs a different name. Another team already has, or is offered, that name.'
+    : playBlockerExplanation(guidance)
+  const pureDominant = dominantSetupTask(committedGuidance)
+  const workflowDefault = defaultSetupWorkflowTask(committedGuidance)
   const classReady = playEnabled && !playReady
   const summary = compactReadinessItems(guidance)
   const optionalFacts = unresolvedOptionalFacts(guidance)
@@ -303,12 +341,12 @@ export function ClassroomSetupPanel({
   useEffect(() => {
     const wasReady = prevClassReady.current
     const wasDominant = prevPureDominant.current
-    prevClassReady.current = playEnabled
+    prevClassReady.current = stagePlayEnabled
     prevPureDominant.current = pureDominant
 
     if (wasReady === null) return
 
-    if (!wasReady && playEnabled) {
+    if (!wasReady && stagePlayEnabled) {
       setExpandOverride((current) => {
         if (current === undefined) return undefined
         if (current === 'teams' || current === 'names') return undefined
@@ -327,17 +365,17 @@ export function ClassroomSetupPanel({
         current === wasDominant || current === undefined ? undefined : current,
       )
     }
-  }, [playEnabled, pureDominant])
+  }, [stagePlayEnabled, pureDominant])
 
   // Workflow selection (Buzzers-first) is separate from required readiness emphasis.
   const defaultExpanded: SetupTaskId | null =
-    playReady || playEnabled ? null : workflowDefault === 'play' ? null : workflowDefault
+    playReady || stagePlayEnabled ? null : workflowDefault === 'play' ? null : workflowDefault
   const expandedTask: SetupTaskId | null =
     expandOverride === undefined ? defaultExpanded : expandOverride
 
   // Required-readiness cue only — must not masquerade as row selection.
   const emphasizedTask: SetupTaskId | null =
-    playReady || playEnabled ? null : pureDominant === 'play' ? null : pureDominant
+    playReady || stagePlayEnabled ? null : pureDominant === 'play' ? null : pureDominant
 
   const toggleRow = (id: SetupTaskId) => {
     // I-REPAIR-1: row click selects/opens; re-click keeps open (no accidental hide).
@@ -364,7 +402,7 @@ export function ClassroomSetupPanel({
 
   const stageTitle = playReady
     ? 'In play'
-    : playEnabled && !expandedTask
+    : stagePlayEnabled && !expandedTask
       ? 'Ready'
       : currentTaskTitle(
           expandedTask ?? (pureDominant === 'play' ? 'names' : pureDominant),
@@ -467,7 +505,7 @@ export function ClassroomSetupPanel({
       ) : null
     }
 
-    if (!expandedTask && playEnabled) {
+    if (!expandedTask && stagePlayEnabled) {
       return (
         <div className="classroom-setup__ready-stage" data-testid="setup-ready-stage">
           <p className="host__note" data-testid="setup-ready-copy">
@@ -555,6 +593,7 @@ export function ClassroomSetupPanel({
                 : 'Type a name for each team, or pick from the name choices. Keyboard always works.'}
           </p>
           <TeamNameSelectionBoard
+            onDraft={recordTypedName}
             views={teamIds.map((id) => selection.views[id]!).filter(Boolean)}
             teamLabels={Object.fromEntries(
               teams.map((team, index) => [team.id, teamOrdinalLabel(team, index)]),
@@ -802,7 +841,7 @@ export function ClassroomSetupPanel({
             className="classroom-setup__stage"
             aria-labelledby="setup-stage-title"
             data-testid="setup-current-task"
-            data-task={expandedTask ?? (playEnabled ? 'play' : pureDominant)}
+            data-task={expandedTask ?? (stagePlayEnabled ? 'play' : pureDominant)}
             id={expandedTask ? `setup-stage-${expandedTask}` : 'setup-stage-ready'}
           >
             <h4 id="setup-stage-title">{stageTitle}</h4>
@@ -833,7 +872,18 @@ export function ClassroomSetupPanel({
             data-testid="setup-play"
             disabled={playReady ? false : !playEnabled}
             aria-describedby={!playReady && playBlocker ? 'setup-play-blocker' : undefined}
-            onClick={onPlay}
+            onMouseDown={(event) => {
+              // CB-03: keep focus in a name field on press. A blur commit here
+              // re-laid out Class Setup and moved Start Game out from under the
+              // pointer before release; the click below commits typed names.
+              if (!playReady) event.preventDefault()
+            }}
+            onClick={() => {
+              if (!playReady && pendingApplied && !typedNameRejected) {
+                apply(pendingApplied.state)
+              }
+              onPlay()
+            }}
           >
             {playReady ? 'Back to setup' : 'Start Game'}
           </button>

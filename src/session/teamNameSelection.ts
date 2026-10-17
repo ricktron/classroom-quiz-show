@@ -342,3 +342,91 @@ export function visibleCandidatesAreGloballyUnique(state: TeamNameSelectionState
   const keys = visibleCandidateKeys(state)
   return new Set(keys).size === keys.length
 }
+
+export interface TypedTeamNameRejection {
+  readonly teamId: string
+  readonly status: 'rejected-name-taken' | 'rejected-invalid-name'
+}
+
+export interface TypedTeamNameResolution {
+  /** Selection with every typed name applied; unchanged when anything is rejected. */
+  readonly state: TeamNameSelectionState
+  /** True when at least one team's claimed name would change. */
+  readonly changed: boolean
+  readonly rejected: readonly TypedTeamNameRejection[]
+}
+
+/**
+ * Court B CB-03: resolve the names teachers have TYPED (not yet committed) as one
+ * batch, independent of team order.
+ *
+ * Each team's final name is its typed text when present (normalized, non-blank,
+ * and not merely a re-capitalization of its own committed name), else its
+ * committed name. A typed name is rejected when it is invalid, when another
+ * team's FINAL name has the same identity, or when it is offered to a team that
+ * stays unclaimed (the same reservation rule as {@link applyTeamNameInputs}).
+ * Applying drafts one at a time in team order instead made a valid rename chain
+ * (A→B while B→C) read as a duplicate.
+ */
+export function applyTypedTeamNames(
+  state: TeamNameSelectionState,
+  typed: Readonly<Record<string, string>>,
+): TypedTeamNameResolution {
+  const finalNames = new Map<string, string | null>()
+  const newNames = new Map<string, string>()
+  const rejected: TypedTeamNameRejection[] = []
+
+  for (const teamId of state.teamIds) {
+    const committed = state.views[teamId]?.claimedName ?? null
+    finalNames.set(teamId, committed)
+    const raw = typed[teamId]
+    if (raw === undefined) continue
+    const name = normalizeTeamNameCandidate(raw)
+    if (name.length === 0) continue
+    if (committed !== null && teamNameUniquenessKey(committed) === teamNameUniquenessKey(name)) {
+      continue
+    }
+    if (!isValidSessionTeamName(name)) {
+      rejected.push({ teamId, status: 'rejected-invalid-name' })
+      continue
+    }
+    finalNames.set(teamId, name)
+    newNames.set(teamId, name)
+  }
+
+  const keyCount = new Map<string, number>()
+  for (const name of finalNames.values()) {
+    if (name === null) continue
+    const key = teamNameUniquenessKey(name)
+    keyCount.set(key, (keyCount.get(key) ?? 0) + 1)
+  }
+  const offeredToUnclaimed = new Set<string>()
+  for (const teamId of state.teamIds) {
+    if (finalNames.get(teamId) !== null) continue
+    for (const candidate of state.views[teamId]?.candidates ?? []) {
+      offeredToUnclaimed.add(teamNameUniquenessKey(candidate))
+    }
+  }
+  for (const [teamId, name] of newNames) {
+    const key = teamNameUniquenessKey(name)
+    if ((keyCount.get(key) ?? 0) > 1 || offeredToUnclaimed.has(key)) {
+      rejected.push({ teamId, status: 'rejected-name-taken' })
+    }
+  }
+
+  if (rejected.length > 0 || newNames.size === 0) {
+    return { state, changed: false, rejected }
+  }
+  let next = state
+  for (const [teamId, name] of newNames) {
+    const view = next.views[teamId] ?? emptyView(teamId)
+    const key = teamNameUniquenessKey(name)
+    const choiceIndex = view.candidates.findIndex((candidate) => teamNameUniquenessKey(candidate) === key)
+    next = replaceView(next, teamId, {
+      ...view,
+      claimedName: name,
+      selectedChoiceIndex: choiceIndex >= 0 ? (choiceIndex as 0 | 1 | 2 | 3) : null,
+    })
+  }
+  return { state: next, changed: true, rejected }
+}
