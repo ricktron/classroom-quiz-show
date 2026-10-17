@@ -670,7 +670,8 @@ export function SonyBuzzSetupSection({
   const progress = useMemo(() => sonyBuzzStagedProgress(staged), [staged])
   const nameOf = (id: string) => {
     // Buzzer Check reports a provisional `sony-slot-N` for a RED press on a slot
-    // with no team yet; the teacher sees the slot, never the internal id.
+    // with no team yet; the teacher never sees the internal id (on the Wbuzz
+    // pad the "Buzzer N" prefix already names the slot).
     const unassigned = /^sony-slot-(\d)$/.exec(id)
     if (unassigned) return 'no team yet'
     return displayNameForTeam?.(id) ?? teams.find((team) => team.id === id)?.name ?? id
