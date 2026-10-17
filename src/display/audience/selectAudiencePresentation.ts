@@ -195,6 +195,27 @@ function deriveBoardDepletion(
 }
 
 /**
+ * Court B CB-05 (owner decision): completion of a game that ends without a
+ * projected Final names a result from the public final scores. A single top
+ * score is the winner; a shared top score is a tied finish; missing or
+ * unavailable teams fail safe to generic "Game complete" (null). Only reached
+ * once the public game status is `ended`, so it can never name a winner before
+ * the teacher explicitly completes the game.
+ */
+export function selectCompletionResult(
+  teams: PublicTeamsState | null,
+): FinalResultPresentation | null {
+  const list = teamsList(teams)
+  if (!list) return null
+  const max = Math.max(...list.map((team) => team.score))
+  const leaders = list.filter((team) => team.score === max)
+  if (leaders.length !== 1) {
+    return { outcome: 'tied', leaderTeamKey: null, leaderTeamName: null }
+  }
+  return { outcome: 'unique-leader', leaderTeamKey: leaders[0]!.key, leaderTeamName: leaders[0]!.name }
+}
+
+/**
  * Unique-leader visual emphasis from currently public scores only.
  * Requires a single score maximum; otherwise returns null leader fields.
  */
@@ -415,6 +436,7 @@ export function selectAudiencePresentation(state: PublicState): AudiencePresenta
   }
 
   if (state.game?.status === 'ended' && state.round === null) {
+    const completionResult = selectCompletionResult(state.teams)
     return {
       scene: 'complete',
       nexus: nexusFor('Game complete', state.game, state.detail),
@@ -423,8 +445,8 @@ export function selectAudiencePresentation(state: PublicState): AudiencePresenta
       activeTeamName: null,
       waitingCount: null,
       boardDepletion: null,
-      finalResult: null,
-      emphasis: 'none',
+      finalResult: completionResult,
+      emphasis: selectEmphasis('complete', null, null, null, completionResult),
       primaryContent: 'status',
       showDecorativeLattice: false,
       teamsInAuthoredOrder: teams,

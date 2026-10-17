@@ -15,6 +15,7 @@ import {
   selectAudiencePresentation,
   selectPublicTimer,
   selectScoreLayoutFromTeams,
+  selectCompletionResult,
   selectScoreLayoutMode,
   selectUniqueLeader,
 } from './selectAudiencePresentation'
@@ -496,5 +497,67 @@ describe('selectAudiencePresentation', () => {
     expect(presentation.nexus.stageLabel).toBe('Board open')
     const blob = JSON.stringify(presentation)
     expect(blob).not.toMatch(/category-board|final-wager|teacher|class title|host notes/i)
+  })
+})
+
+
+describe('board-only completion result (Court B CB-05)', () => {
+  const ended = (teams: PublicTeamsState | null, overrides: Partial<PublicState> = {}) =>
+    selectAudiencePresentation(
+      baseState({
+        game: { status: 'ended', roundCount: 1, currentRound: 1, roundAvailability: 'available' },
+        round: null,
+        teams,
+        ...overrides,
+      }),
+    )
+
+  it('names a unique top score as the winner', () => {
+    const p = ended(available(team('t0', 'Comets', 'crimson', 100), team('t1', 'Magma', 'azure', 200)))
+    expect(p.scene).toBe('complete')
+    expect(p.finalResult).toEqual({ outcome: 'unique-leader', leaderTeamKey: 't1', leaderTeamName: 'Magma' })
+    expect(p.emphasis).toBe('unique-leader')
+  })
+
+  it('a shared top score is a tie, including 0-0 and negative scores', () => {
+    for (const scores of [[0, 0], [100, 100], [-100, -100]]) {
+      const p = ended(available(team('t0', 'A', 'crimson', scores[0]!), team('t1', 'B', 'azure', scores[1]!)))
+      expect(p.finalResult?.outcome).toBe('tied')
+      expect(p.finalResult?.leaderTeamName).toBeNull()
+      expect(p.emphasis).toBe('tied')
+    }
+    const three = ended(
+      available(team('t0', 'A', 'crimson', 300), team('t1', 'B', 'azure', 300), team('t2', 'C', 'emerald', 100)),
+    )
+    expect(three.finalResult?.outcome).toBe('tied')
+  })
+
+  it('fails safe to generic completion when public teams are unavailable', () => {
+    expect(ended(null).finalResult).toBeNull()
+    expect(ended({ status: 'available', teams: [] }).finalResult).toBeNull()
+    expect(selectCompletionResult(null)).toBeNull()
+  })
+
+  it('never names a result before the game has ended', () => {
+    const playing = selectAudiencePresentation(
+      baseState({
+        game: { status: 'active', roundCount: 1, currentRound: 1, roundAvailability: 'available' },
+        round: null,
+        teams: available(team('t0', 'Comets', 'crimson', 100), team('t1', 'Magma', 'azure', 200)),
+      }),
+    )
+    expect(playing.finalResult).toBeNull()
+    expect(playing.scene).not.toBe('complete')
+  })
+
+  it('a completed Final keeps its own Final-stage result path', () => {
+    const p = selectAudiencePresentation(
+      baseState({
+        game: { status: 'ended', roundCount: 2, currentRound: 2, roundAvailability: 'available' },
+        round: { kind: PUBLIC_FINAL_KIND, stage: 'complete', outcome: 'tied' },
+        teams: available(team('t0', 'A', 'crimson', 100), team('t1', 'B', 'azure', 100)),
+      }),
+    )
+    expect(p.finalResult?.outcome).toBe('tied')
   })
 })

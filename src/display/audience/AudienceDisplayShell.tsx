@@ -258,6 +258,28 @@ export function AudienceDisplayShell({
           ) : (
             <div className="audience__status-panel" data-testid="audience-status">
               <p data-testid="audience-waiting-copy">{nexus.stageLabel}</p>
+              {/*
+                CB-05: a game completed without a projected Final names its result
+                from the public final scores, styled like the Final completion.
+              */}
+              {scene === 'complete' && finalResult?.outcome === 'unique-leader' &&
+                finalResult.leaderTeamName !== null && (
+                  <div className="fwd__winner" data-testid="audience-completion-winner">
+                    <span className="fwd__label">Winner</span>
+                    <span className="fwd__winner-name">{finalResult.leaderTeamName}</span>
+                    <span className="fwd__winner-score" data-testid="audience-completion-winner-score">
+                      {(
+                        teamsInAuthoredOrder?.find((team) => team.key === finalResult.leaderTeamKey)
+                          ?.score ?? 0
+                      ).toLocaleString('en-US')}
+                    </span>
+                  </div>
+                )}
+              {scene === 'complete' && finalResult?.outcome === 'tied' && (
+                <p className="fwd__status" data-testid="audience-completion-tied">
+                  Game complete — a tie
+                </p>
+              )}
             </div>
           )}
         </div>
