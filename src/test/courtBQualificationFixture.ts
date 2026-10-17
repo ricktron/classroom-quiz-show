@@ -81,7 +81,7 @@ export function courtBFixtureGameFile(): Record<string, unknown> {
       {
         id: 'board-round',
         type: 'category-board',
-        title: 'Board',
+        title: COURT_B_FIXTURE_TITLE, // the workbook's board round takes the game title
         config: {
           categories: COURT_B_FIXTURE_CATEGORIES.map((category, c) => ({
             id: `category-${c + 1}`,
