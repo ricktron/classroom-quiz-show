@@ -270,6 +270,12 @@
   padding: var(--space-6);
 }
 
+/* CB-05 board-only completion: the status panel is shorter than the Final stage,
+   so cap the winner name (a 40-character name wraps) to keep the score visible. */
+.audience__completion-winner .fwd__winner-name {
+  font-size: min(var(--type-projector-winner), clamp(1.75rem, 4.2vw, 4.5rem));
+}
+
 .audience__footer {
   display: flex;
   flex-direction: column;

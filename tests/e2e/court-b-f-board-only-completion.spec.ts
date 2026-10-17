@@ -9,7 +9,11 @@ import { test, expect, type BrowserContext, type Page } from '@playwright/test'
  * Fail-first on baa818f: board-only completion showed only "Game complete".
  */
 
-async function demoStartedWithDisplay(page: Page, context: BrowserContext): Promise<Page> {
+async function demoStartedWithDisplay(
+  page: Page,
+  context: BrowserContext,
+  names: readonly [string, string] = ['Comets', 'Magma'],
+): Promise<Page> {
   await page.goto('./')
   await page.getByRole('button', { name: 'Import Game' }).click()
   await page.getByRole('button', { name: 'Import demo game' }).click()
@@ -17,9 +21,9 @@ async function demoStartedWithDisplay(page: Page, context: BrowserContext): Prom
   const setup = page.getByRole('region', { name: 'Class setup' })
   await setup.getByRole('button', { name: /^Names/ }).click()
   const fields = setup.getByRole('textbox', { name: 'Type a name' })
-  await fields.nth(0).fill('Comets')
+  await fields.nth(0).fill(names[0])
   await fields.nth(0).press('Enter')
-  await fields.nth(1).fill('Magma')
+  await fields.nth(1).fill(names[1])
   await fields.nth(1).press('Enter')
   const popup = context.waitForEvent('page')
   await setup.getByRole('button', { name: 'Open display' }).first().click()
@@ -33,7 +37,7 @@ async function demoStartedWithDisplay(page: Page, context: BrowserContext): Prom
   return display
 }
 
-async function award(page: Page, tile: string, team: 'Comets' | 'Magma') {
+async function award(page: Page, tile: string, team: string) {
   await page.getByRole('button', { name: tile }).click()
   await page.getByRole('button', { name: 'Show prompt on display' }).click()
   await page.getByRole('radio', { name: new RegExp(`^${team}`) }).check()
@@ -99,3 +103,22 @@ for (const [label, awards] of [
     await expect(display.locator('body')).not.toContainText(/winner/i)
   })
 }
+
+test('CB-05: a maximum-length winner name keeps its score on screen at projector size', async ({
+  page,
+  context,
+}) => {
+  // 40 characters: the longest team name CQS accepts.
+  const longName = 'Extraordinarily Magnificent Plate Shifts'
+  expect(longName).toHaveLength(40)
+  const display = await demoStartedWithDisplay(page, context, ['Comets', longName])
+  await award(page, 'Earth Structure, 200 points', longName)
+  await endGame(page)
+  await expect(display.getByTestId('audience-completion-winner')).toContainText(/plate shifts/i)
+  const score = display.getByTestId('audience-completion-winner-score')
+  await expect(score).toHaveText('200')
+  await expect(score).toBeInViewport({ ratio: 1 })
+  const scoreBox = await score.boundingBox()
+  const footerBox = await display.locator('.audience__footer').boundingBox()
+  expect(scoreBox && footerBox && scoreBox.y + scoreBox.height <= footerBox.y).toBe(true)
+})

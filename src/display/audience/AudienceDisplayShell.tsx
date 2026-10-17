@@ -128,6 +128,12 @@ export function AudienceDisplayShell({
     teamsInAuthoredOrder,
   )
   const leaderKey = finalResult?.leaderTeamKey ?? null
+  // CB-05: board-only completion result (no Final projected).
+  const showCompletionWinner =
+    scene === 'complete' &&
+    finalResult?.outcome === 'unique-leader' &&
+    finalResult.leaderTeamName !== null
+  const showCompletionTie = scene === 'complete' && finalResult?.outcome === 'tied'
   const showFinalResolutionResult =
     publicState.round?.kind === PUBLIC_FINAL_KIND && publicState.round.stage === 'resolution'
   const publicTimer = selectPublicTimer(publicState)
@@ -257,25 +263,31 @@ export function AudienceDisplayShell({
             </div>
           ) : (
             <div className="audience__status-panel" data-testid="audience-status">
-              <p data-testid="audience-waiting-copy">{nexus.stageLabel}</p>
               {/*
                 CB-05: a game completed without a projected Final names its result
-                from the public final scores, styled like the Final completion.
+                from the public final scores, styled like the Final completion. The
+                result replaces the generic stage line (the header still says
+                "Game complete"), so a long winner name keeps its score on screen.
               */}
-              {scene === 'complete' && finalResult?.outcome === 'unique-leader' &&
-                finalResult.leaderTeamName !== null && (
-                  <div className="fwd__winner" data-testid="audience-completion-winner">
-                    <span className="fwd__label">Winner</span>
-                    <span className="fwd__winner-name">{finalResult.leaderTeamName}</span>
-                    <span className="fwd__winner-score" data-testid="audience-completion-winner-score">
-                      {(
-                        teamsInAuthoredOrder?.find((team) => team.key === finalResult.leaderTeamKey)
-                          ?.score ?? 0
-                      ).toLocaleString('en-US')}
-                    </span>
-                  </div>
-                )}
-              {scene === 'complete' && finalResult?.outcome === 'tied' && (
+              {!showCompletionWinner && !showCompletionTie && (
+                <p data-testid="audience-waiting-copy">{nexus.stageLabel}</p>
+              )}
+              {showCompletionWinner && (
+                <div
+                  className="fwd__winner audience__completion-winner"
+                  data-testid="audience-completion-winner"
+                >
+                  <span className="fwd__label">Winner</span>
+                  <span className="fwd__winner-name">{finalResult.leaderTeamName}</span>
+                  <span className="fwd__winner-score" data-testid="audience-completion-winner-score">
+                    {(
+                      teamsInAuthoredOrder?.find((team) => team.key === finalResult.leaderTeamKey)
+                        ?.score ?? 0
+                    ).toLocaleString('en-US')}
+                  </span>
+                </div>
+              )}
+              {showCompletionTie && (
                 <p className="fwd__status" data-testid="audience-completion-tied">
                   Game complete — a tie
                 </p>
