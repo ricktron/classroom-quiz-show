@@ -1034,6 +1034,28 @@ describe('ClassroomSetupPanel — typed names count as typed (Court B CB-03)', (
     expect(onSelectedIdentitiesChange).not.toHaveBeenCalled()
   })
 
+  it('a rename chain typed in either order is ready and commits as typed (review of 8d9679e)', () => {
+    for (const [typedRed, typedBlue] of [
+      ['Ozone Owls', 'Lava'],
+      ['Lava', 'Comet Crew'],
+    ] as const) {
+      const { onPlay, onSelectedIdentitiesChange } = renderSetup({
+        teamNameBank: [],
+        initialSessionNames: { red: 'Comet Crew', blue: 'Ozone Owls' },
+      })
+      openNames()
+      fireEvent.change(fields()[0]!, { target: { value: typedRed } })
+      fireEvent.change(fields()[1]!, { target: { value: typedBlue } })
+      expect(screen.getByTestId('setup-play')).toBeEnabled()
+      expect(screen.queryByTestId('setup-play-blocker')).toBeNull()
+      onSelectedIdentitiesChange.mockClear()
+      fireEvent.click(screen.getByTestId('setup-play'))
+      expect(onSelectedIdentitiesChange).toHaveBeenLastCalledWith({ red: typedRed, blue: typedBlue })
+      expect(onPlay).toHaveBeenCalledTimes(1)
+      cleanup()
+    }
+  })
+
   it('Enter still commits a typed name (keyboard path unchanged)', () => {
     const { onSelectedIdentitiesChange } = renderSetup({
       teamNameBank: [],

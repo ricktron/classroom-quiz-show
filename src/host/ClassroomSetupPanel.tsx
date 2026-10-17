@@ -5,10 +5,8 @@ import {
   applyTeamNameInputs,
   claimedSessionTeamNames,
   createTeamNameSelectionState,
-  normalizeTeamNameCandidate,
+  applyTypedTeamNames,
   sessionTeamNamesAreUnique,
-  teamNameUniquenessKey,
-  type TeamNameInput,
   type TeamNameSelectionState,
 } from '../session/teamNameSelection'
 import { canPersistMutations, type PersistLeadership } from './writeAuthority'
@@ -290,26 +288,13 @@ export function ClassroomSetupPanel({
   const claimed = claimedSessionTeamNames(selection)
   const namesAssigned = teams.every((team) => typeof claimed[team.id] === 'string')
   const unique = sessionTeamNamesAreUnique(Object.values(claimed))
-  const pendingNameInputs: TeamNameInput[] = teams.flatMap((team) => {
-    const typed = typedNames[team.id]
-    if (typed === undefined) return []
-    const name = normalizeTeamNameCandidate(typed)
-    if (name.length === 0) return []
-    // The team's own name, even re-capitalized, is not a new claim: the committed
-    // name stands (as with Enter), so it never reads as a duplicate of itself.
-    const own = claimed[team.id]
-    if (typeof own === 'string' && teamNameUniquenessKey(own) === teamNameUniquenessKey(name)) {
-      return []
-    }
-    return [{ kind: 'manual' as const, teamId: team.id, name }]
-  })
-  const pendingApplied =
-    pendingNameInputs.length > 0 ? applyTeamNameInputs(selection, pendingNameInputs) : null
-  const typedNameRejected =
-    pendingApplied?.results.some((item) => item.status !== 'applied') ?? false
-  const typedNameTaken =
-    pendingApplied?.results.some((item) => item.status === 'rejected-name-taken') ?? false
-  const effectiveClaimed = pendingApplied ? claimedSessionTeamNames(pendingApplied.state) : claimed
+  // Order-independent: a rename chain (A→B while B→C) or swap is judged as one
+  // batch, exactly as Start will commit it (review of 8d9679e).
+  const typedResolution = applyTypedTeamNames(selection, typedNames)
+  const typedNameRejected = typedResolution.rejected.length > 0
+  const typedNameTaken = typedResolution.rejected.some((item) => item.status === 'rejected-name-taken')
+  const pendingApplied = typedResolution.changed ? typedResolution : null
+  const effectiveClaimed = claimedSessionTeamNames(typedResolution.state)
   const effectiveNamesAssigned =
     !typedNameRejected && teams.every((team) => typeof effectiveClaimed[team.id] === 'string')
   const effectiveUnique = !typedNameTaken && sessionTeamNamesAreUnique(Object.values(effectiveClaimed))

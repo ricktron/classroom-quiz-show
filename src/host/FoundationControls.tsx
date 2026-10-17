@@ -59,6 +59,7 @@ import {
   deriveHostPlayPosture,
 } from '../session/hostPlayPosture'
 import { soundFactLabel } from '../session/classroomReadiness'
+import { teamNameUniquenessKey } from '../session/teamNameSelection'
 import { THEME_META, type ThemeId } from '../theme/themeRegistry'
 import { ownsSameGameRosterRefresh } from './sameGameRosterRefresh'
 import { hostResumeWelcomeCopy } from './hostResumeWelcome'
@@ -762,17 +763,41 @@ export function FoundationControls({
           }}
           onSelectedIdentitiesChange={(claimed) => {
             const issuedAt = now()
-            for (const team of game.definition.teams) {
-              const next = claimed[team.id] ?? null
-              const current = sessionTeamNameFor(game, team.id)
-              if (next === current) continue
-              dispatch({
-                type: 'SET_SESSION_TEAM_NAME',
-                issuedAt,
-                teamId: team.id,
-                name: next,
-              })
+            // CB-03: the session refuses a name another team currently holds, so
+            // a rename chain (A→B while B→C) or a swap is applied in a safe
+            // order: set a team only once its new name is free; break a swap
+            // cycle by clearing one name first.
+            const current = new Map<string, string | null>(
+              game.definition.teams.map((team) => [team.id, sessionTeamNameFor(game, team.id)]),
+            )
+            const pending = game.definition.teams
+              .map((team) => ({ teamId: team.id, next: claimed[team.id] ?? null }))
+              .filter(({ teamId, next }) => next !== current.get(teamId))
+            const heldByAnother = (teamId: string, name: string | null) =>
+              name !== null &&
+              [...current].some(
+                ([otherId, held]) =>
+                  otherId !== teamId &&
+                  held !== null &&
+                  teamNameUniquenessKey(held) === teamNameUniquenessKey(name),
+              )
+            const set = (teamId: string, name: string | null) => {
+              dispatch({ type: 'SET_SESSION_TEAM_NAME', issuedAt, teamId, name })
+              current.set(teamId, name)
             }
+            // Bounded: each team needs at most one clear and one set.
+            for (let guard = pending.length * 2 + 1; pending.length > 0 && guard > 0; guard -= 1) {
+              const ready = pending.findIndex(({ teamId, next }) => !heldByAnother(teamId, next))
+              if (ready >= 0) {
+                const [{ teamId, next }] = pending.splice(ready, 1)
+                set(teamId, next)
+              } else {
+                set(pending[0]!.teamId, null)
+              }
+            }
+            // Only reachable for an inconsistent batch; the session then refuses
+            // the duplicate itself rather than this loop guessing.
+            for (const { teamId, next } of pending) set(teamId, next)
           }}
         />
       )}

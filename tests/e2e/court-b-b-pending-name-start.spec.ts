@@ -177,3 +177,35 @@ test('CB-03: dense 8-team class starts in one click with the last name still typ
   expect(duringPress?.y).toBe(before.y)
   await expectGameStarted(page, names)
 })
+
+for (const [label, typed] of [
+  ['rename chain', ['Magma', 'Lava']],
+  ['swap', ['Magma', 'Comets']],
+] as const) {
+  test(`CB-03: a typed ${label} is ready and one pointer click starts with exactly the visible names`, async ({
+    page,
+  }, info) => {
+    test.skip(info.project.name === 'mobile-host', 'pointer laptop/projector projects only')
+    await importDemoToSetup(page)
+    const setup = await openNames(page)
+    const fields = setup.getByRole('textbox', { name: 'Type a name' })
+    await fields.nth(0).fill('Comets')
+    await fields.nth(0).press('Enter')
+    await fields.nth(1).fill('Magma')
+    await fields.nth(1).press('Enter')
+    await setup.getByRole('button', { name: 'Change names' }).click()
+
+    await fields.nth(0).fill(typed[0])
+    await fields.nth(1).click()
+    await fields.nth(1).fill(typed[1])
+    await expect(fields.nth(1)).toBeFocused()
+    await expect(startGame(page)).toBeEnabled()
+    await expect(setup.getByText(/different name/)).toHaveCount(0)
+
+    const { before, duringPress } = await pointerClick(page, startGame(page), { topEdge: true })
+    expect(duringPress?.y).toBe(before.y)
+    await expectGameStarted(page, typed)
+    const scoring = page.getByRole('region', { name: 'Teams & scoring' }).getByRole('list').first()
+    await expect(scoring).toHaveText(new RegExp(`^\\s*${typed[0]}\\s*0\\s*${typed[1]}\\s*0\\s*$`))
+  })
+}
