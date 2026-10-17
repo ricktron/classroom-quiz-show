@@ -187,6 +187,24 @@ describe('what the projector sees at each stage', () => {
     expect(finalDto(store)).toEqual({ kind: PUBLIC_FINAL_KIND, stage: 'sudden-death' })
   })
 
+  it('projects no Final once the game ends before the Final began (CB-05)', () => {
+    const store = finalStore({ scores: { red: 300, blue: 100 } })
+    expect(finalDto(store)).toEqual({ kind: PUBLIC_FINAL_KIND, stage: 'setup' })
+    store.dispatch({ type: 'END_GAME_SESSION', issuedAt: AT })
+    const state = toPublicState(store.getState())
+    // No setup panel: the Display shows the completed game from the scores.
+    expect(state.round).toBeNull()
+    expect(state.game?.status).toBe('ended')
+    expect(state.game?.roundAvailability).not.toBe('unavailable')
+  })
+
+  it('keeps projecting a begun Final after the game ends', () => {
+    const store = finalStore({ scores: { red: 300, blue: 100 } })
+    store.dispatch({ type: 'BEGIN_FINAL_WAGER', issuedAt: AT, roundId: ROUND, mode: 'classic' })
+    store.dispatch({ type: 'END_GAME_SESSION', issuedAt: AT })
+    expect(finalDto(store)?.kind).toBe(PUBLIC_FINAL_KIND)
+  })
+
   it('resolves an empty classic Final with no fabricated prompt or answer', () => {
     const store = finalStore({ scores: {} })
     store.dispatch({ type: 'BEGIN_FINAL_WAGER', issuedAt: AT, roundId: ROUND, mode: 'classic' })

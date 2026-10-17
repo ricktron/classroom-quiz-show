@@ -169,13 +169,28 @@ export function FinalWagerHostPanel({
       )}
 
       {phase === 'setup' && (
-        <SetupSection
-          mode={mode}
-          onModeChange={setMode}
-          disabled={!active || game.definition.teams.length === 0}
-          teamCount={game.definition.teams.length}
-          onBegin={() => send({ type: 'BEGIN_FINAL_WAGER', issuedAt: now(), roundId, mode })}
-        />
+        <>
+          <SetupSection
+            mode={mode}
+            onModeChange={setMode}
+            disabled={!active || game.definition.teams.length === 0}
+            teamCount={game.definition.teams.length}
+            onBegin={() => send({ type: 'BEGIN_FINAL_WAGER', issuedAt: now(), roundId, mode })}
+          />
+          {/* CB-05: the teacher may end the game without playing the Final; the
+              current scores then decide the result. */}
+          {active && (
+            <div className="fwh__actions" role="group" aria-label="End without the Final">
+              <ConfirmButton
+                testId="fwh-end-before-final"
+                label="End the game session"
+                confirmLabel="End the game — this cannot be undone"
+                disabled={false}
+                onConfirm={() => send({ type: 'END_GAME_SESSION', issuedAt: now() })}
+              />
+            </div>
+          )}
+        </>
       )}
 
       {phase === 'wager-entry' && (

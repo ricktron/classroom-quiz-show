@@ -609,15 +609,17 @@ function projectCurrentRound(game: PrivateGameState | null): RoundProjection {
 
   const final = readFinalWagerDefinition(current)
   if (final !== null) {
-    // Final is the ONE round that still projects after the game ends: its
-    // `complete` stage is the closing screen a class looks at while the final
-    // scoreboard is read out.
-    const projected = toPublicFinalWagerState(
-      game,
-      finalWagerStateFor(game, current.id),
-      final.answer,
-      final.prompt,
-    )
+    const finalState = finalWagerStateFor(game, current.id)
+    // CB-05: a game ended before its Final began (opened, never begun) has no
+    // Final to close on. Project no round, so the Display shows the completed
+    // game and its result from the current scores, not the Final's setup.
+    if (game.gameLifecycle === 'ended' && isInitialFinalWagerState(finalState)) {
+      return { round: null, failed: false }
+    }
+    // Otherwise Final is the ONE round that still projects after the game ends:
+    // its `complete` stage is the closing screen a class looks at while the
+    // final scoreboard is read out.
+    const projected = toPublicFinalWagerState(game, finalState, final.answer, final.prompt)
     return { round: projected, failed: projected === null }
   }
 
