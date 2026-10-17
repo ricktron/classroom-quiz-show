@@ -83,7 +83,9 @@ declare global {
  * Gamepad still appears only when a test exposes it (explicit sequencing).
  * SIMULATED: it says nothing about real Chrome grant persistence.
  */
-const PERSISTED_GRANT_KEY = '__cqsWbuzzSimPersistedGrant'
+// The sessionStorage key `__cqsWbuzzSimPersistedGrant` is written inline in
+// installScript: the function is serialized into the page and cannot close over
+// module constants.
 
 function installScript(config: { mode: HidSimMode; persistGrantAcrossReload: boolean }): void {
   const { mode, persistGrantAcrossReload } = config
@@ -261,9 +263,6 @@ export async function installWbuzzHardwareSimulator(
     persistGrantAcrossReload: options.persistGrantAcrossReload ?? false,
   })
 }
-
-/** Key used by the persisted-grant simulation (exported for assertions only). */
-export const SIM_PERSISTED_GRANT_KEY = PERSISTED_GRANT_KEY
 
 export async function setHidSimMode(page: Page, mode: HidSimMode): Promise<void> {
   await page.evaluate((next) => {

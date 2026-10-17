@@ -118,7 +118,8 @@ test('[CBJ-02] Import the filled spreadsheet and reach Class Setup', async ({ pa
   await (await chooser).setFiles(SPREADSHEET)
   await expect(page.getByRole('region', { name: 'Import quality' })).toContainText('accepted')
   await playToClassSetup(page)
-  // The spreadsheet carries the Final too.
+  // The fixture's teams arrive from the spreadsheet. (That the spreadsheet carries
+  // the same Final is proven by the vitest guard, which imports it in full.)
   await page.getByRole('region', { name: 'Class setup' }).getByRole('button', { name: /^Names/ }).click()
   await expect(page.getByRole('region', { name: 'Class setup' })).toContainText('Team Granite')
 })
@@ -127,7 +128,10 @@ test('[CBJ-03] Names, Display and Start Game', async ({ page, context }) => {
   await importGameFile(page)
   await playToClassSetup(page)
   const display = await namesDisplayStart(page, context)
+  // The typed names, not the fixture defaults, reach the Display.
   await expect(display.locator('body')).toContainText('Granite')
+  await expect(display.locator('body')).toContainText('Nimbus')
+  await expect(display.locator('body')).not.toContainText('Team Granite')
 })
 
 test('[CBJ-04] Board clue: prompt, score, answer, Undo', async ({ page, context }) => {
