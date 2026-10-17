@@ -7,6 +7,7 @@ import {
   openOptionalBuzzers,
 } from './helpers/q7BuzzerTeacherJourney'
 import {
+  disconnectSimulatedReceiver,
   exposeSimulatedWbuzzGamepad,
   installWbuzzHardwareSimulator,
   pressWbuzzButton,
@@ -176,4 +177,71 @@ test('CB-02: readiness known for one game does not carry into a different game l
   // not a "dropped" state and must not be reported as one.
   await expect(statusLine(page)).toContainText('Buzzers optional · keyboard works')
   await expect(statusLine(page)).not.toContainText(NOTICE)
+})
+
+test('CB-02: a game imported in place while buzzers are ready starts unknown; unplugging is not a "drop"', async ({
+  page,
+}) => {
+  await installWbuzzHardwareSimulator(page, 'ready')
+  await importDemoAndPlay(page)
+  await openOptionalBuzzers(page)
+  await clickShowBuzzerSetup(page)
+  await connectSimulatedReceiver(page)
+  await exposeGamepadAndExpectBuzzersStatus(page)
+  for (const slot of [1, 2] as const) await pressWbuzzButton(page, buttonIndexForSlotColor(slot, 'red'))
+  await page.getByRole('button', { name: 'Save team mapping' }).click()
+  await fillAllTeamNames(page)
+  await page.getByRole('button', { name: 'Start Game' }).click()
+  await page.getByRole('button', { name: 'Start Round 1' }).click()
+  await expect(statusLine(page)).toContainText('Buzzers ready')
+
+  // The teacher loads a different game from More without leaving the Host.
+  const more = page.getByTestId('host-more')
+  if (!(await more.evaluate((d) => (d as HTMLDetailsElement).open))) {
+    await more.locator('summary').first().click()
+  }
+  await page.getByRole('button', { name: 'Load valid sample file' }).click()
+  await page.getByTestId('import-run').click()
+  await expect(statusLine(page)).toContainText('Buzzers optional · keyboard works')
+
+  // Buzzers were never ready for this game, so losing the receiver is not news.
+  await disconnectSimulatedReceiver(page)
+  await expect(page.getByTestId('sbs-receiver-layer')).toContainText(/disconnected/i)
+  await expect(statusLine(page)).toContainText('Buzzers optional · keyboard works')
+  await expect(statusLine(page)).not.toContainText(NOTICE)
+})
+
+test('CB-02: a new class session started from More does not inherit known readiness', async ({ page }) => {
+  await installWbuzzHardwareSimulator(page, 'ready')
+  await importDemoAndPlay(page)
+  await openOptionalBuzzers(page)
+  await clickShowBuzzerSetup(page)
+  await connectSimulatedReceiver(page)
+  await exposeGamepadAndExpectBuzzersStatus(page)
+  for (const slot of [1, 2] as const) await pressWbuzzButton(page, buttonIndexForSlotColor(slot, 'red'))
+  await page.getByRole('button', { name: 'Save team mapping' }).click()
+  await fillAllTeamNames(page)
+  await page.getByRole('button', { name: 'Start Game' }).click()
+  await page.getByRole('button', { name: 'Start Round 1' }).click()
+  await expect(statusLine(page)).toContainText('Buzzers ready')
+  const knownScopes = () =>
+    page.evaluate(() =>
+      Object.keys(sessionStorage).filter((key) => key.startsWith('cqs.buzzersWereReady:')),
+    )
+  const before = await knownScopes()
+  expect(before).toHaveLength(1)
+
+  const more = page.getByTestId('host-more')
+  if (!(await more.evaluate((d) => (d as HTMLDetailsElement).open))) {
+    await more.locator('summary').first().click()
+  }
+  await page.getByTestId('start-new-game-session').click()
+  await page.getByTestId('start-new-game-session').click()
+  await page.getByRole('button', { name: 'Load category-board sample file' }).click()
+  await page.getByTestId('import-run').click()
+  await disconnectSimulatedReceiver(page)
+
+  // Nothing is known for the new class: no new memory, and no notice.
+  await expect.poll(knownScopes).toEqual(before)
+  await expect(page.getByText(NOTICE)).toHaveCount(0)
 })

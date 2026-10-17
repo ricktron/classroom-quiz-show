@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   absoluteDisplayUrlWithTheme,
@@ -199,11 +199,21 @@ export function FoundationControls({
   useEffect(() => {
     setBuzzersKnownReady(buzzerScope !== null && buzzersWereReady(buzzerScope))
   }, [buzzerScope])
+  // Remember only readiness the buzzer panel reported for the CURRENT scope: when
+  // a game loads in place, `sonyReady` still holds the previous game's value
+  // until the panel reports again, and that must not count for the new game.
+  const buzzerScopeRef = useRef(buzzerScope)
+  buzzerScopeRef.current = buzzerScope
+  const [readyReportedScope, setReadyReportedScope] = useState<string | null>(null)
+  const onSonyReadyChange = useCallback((ready: boolean) => {
+    setSonyReady(ready)
+    setReadyReportedScope(ready ? buzzerScopeRef.current : null)
+  }, [])
   useEffect(() => {
-    if (!sonyReady || buzzerScope === null) return
+    if (buzzerScope === null || readyReportedScope !== buzzerScope) return
     rememberBuzzersReady(buzzerScope)
     setBuzzersKnownReady(true)
-  }, [sonyReady, buzzerScope])
+  }, [readyReportedScope, buzzerScope])
   const hasGame = game !== null
   const dispatch = (command: Parameters<typeof storeDispatch>[0]) =>
     persistence.dispatchSessionCommand(command, storeDispatch, () => store.getHistory(), registry)
@@ -933,7 +943,7 @@ export function FoundationControls({
           enterBuzzerCheck={enterBuzzerCheck}
           onEnterBuzzerCheckConsumed={() => setEnterBuzzerCheck(false)}
           onSelectionBatch={setSelectionObservationBatch}
-          onSonyReadyChange={setSonyReady}
+          onSonyReadyChange={onSonyReadyChange}
           onSonyTeacherSummaryChange={setSonyTeacherSummary}
           onReceiverDropSettledChange={setReceiverDropSettled}
           onWbuzzPresentChange={setWbuzzPresent}
