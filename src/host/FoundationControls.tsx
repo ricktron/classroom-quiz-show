@@ -63,6 +63,12 @@ import { teamNameUniquenessKey } from '../session/teamNameSelection'
 import { THEME_META, type ThemeId } from '../theme/themeRegistry'
 import { ownsSameGameRosterRefresh } from './sameGameRosterRefresh'
 import { hostResumeWelcomeCopy } from './hostResumeWelcome'
+import {
+  BUZZER_RESUME_NOTICE,
+  buzzersWereReady,
+  rememberBuzzersReady,
+  shouldShowBuzzerResumeNotice,
+} from './buzzerResumeNotice'
 import { useDisplayPresence } from './useDisplayPresence'
 import './FoundationControls.css'
 
@@ -138,6 +144,8 @@ export function FoundationControls({
   const [sonyTeacherSummary, setSonyTeacherSummary] = useState<SonyBuzzTeacherSummary | null>(
     null,
   )
+  /** CB-02: buzzers were ready earlier in this class session, in this tab. */
+  const [buzzersKnownReady, setBuzzersKnownReady] = useState(false)
   /** Supported Namtai Wbuzz Gamepad detected — lifted from GamepadInputHostPanel only. */
   const [wbuzzPresent, setWbuzzPresent] = useState(false)
   const [inputDiagnosticSignals, setInputDiagnosticSignals] =
@@ -164,6 +172,17 @@ export function FoundationControls({
   const hasSession = state.session !== null
   const registry = store.getRegistry()
   const game = state.session?.game ?? null
+  const classSessionId = state.session?.sessionId ?? null
+  // CB-02: recall readiness known for this class session in this tab (a Host
+  // reload keeps tab storage), and remember it whenever buzzers are ready.
+  useEffect(() => {
+    setBuzzersKnownReady(classSessionId !== null && buzzersWereReady(classSessionId))
+  }, [classSessionId])
+  useEffect(() => {
+    if (!sonyReady || classSessionId === null) return
+    rememberBuzzersReady(classSessionId)
+    setBuzzersKnownReady(true)
+  }, [sonyReady, classSessionId])
   const hasGame = game !== null
   const dispatch = (command: Parameters<typeof storeDispatch>[0]) =>
     persistence.dispatchSessionCommand(command, storeDispatch, () => store.getHistory(), registry)
@@ -517,11 +536,22 @@ export function FoundationControls({
     : null
   const dismissWelcomeBack = () => setHomeResumeWelcomeVisible(false)
   const playStatusParts: string[] = []
+  // CB-02: buzzer readiness that dropped since it was last known in this tab for
+  // this class session (e.g. after a Host reload / Resume) is said plainly.
+  const showBuzzerResumeNotice = shouldShowBuzzerResumeNotice({
+    wereReady: buzzersKnownReady,
+    sonyReady,
+    summary: sonyTeacherSummary,
+  })
   if (playReady && game) {
     playStatusParts.push(namesComplete ? 'Names ready' : 'Names incomplete')
     playStatusParts.push(displayOpen ? 'Display open' : 'Display not open')
     playStatusParts.push(
-      sonyReady ? 'Buzzers ready' : 'Buzzers optional · keyboard works',
+      sonyReady
+        ? 'Buzzers ready'
+        : showBuzzerResumeNotice
+          ? BUZZER_RESUME_NOTICE
+          : 'Buzzers optional · keyboard works',
     )
     playStatusParts.push(
       soundFactLabel({
