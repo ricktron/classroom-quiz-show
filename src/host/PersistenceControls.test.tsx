@@ -199,7 +199,8 @@ describe('PersistenceControls', () => {
 
     fireEvent.click(screen.getByTestId('persistence-clear-all-action'))
     await waitFor(() => expect(clearAllLocalData).toHaveBeenCalledTimes(1))
-    expect(reloadPage).toHaveBeenCalledTimes(1)
+    // The reload follows the awaited clear result, not the call itself.
+    await waitFor(() => expect(reloadPage).toHaveBeenCalledTimes(1))
   })
 
   it('cancel leaves confirmation without calling clear', () => {
@@ -237,10 +238,14 @@ describe('PersistenceControls', () => {
     fireEvent.click(screen.getByTestId('persistence-clear-all-action'))
     fireEvent.click(screen.getByTestId('persistence-clear-all-action'))
     await waitFor(() => expect(clearAllLocalData).toHaveBeenCalledTimes(1))
-    expect(reloadPage).not.toHaveBeenCalled()
-    expect(screen.getByTestId('persistence-clear-all-message')).toHaveTextContent(
-      /close other cqs tabs/i,
+    // The message renders after the awaited clear result; wait for it, then
+    // check that no reload happened (a check before the result would be vacuous).
+    await waitFor(() =>
+      expect(screen.getByTestId('persistence-clear-all-message')).toHaveTextContent(
+        /close other cqs tabs/i,
+      ),
     )
+    expect(reloadPage).not.toHaveBeenCalled()
     expect(screen.getByTestId('persistence-clear-all-message')).not.toHaveTextContent(
       /was cleared/i,
     )

@@ -76,7 +76,19 @@ declare global {
   }
 }
 
-function installScript(mode: HidSimMode): void {
+/**
+ * Court B CB-02 harness: `persistGrantAcrossReload` models a browser that keeps
+ * the exact 054c:1000 WebHID grant for this tab across a reload, so
+ * `getDevices()` returns the receiver again with no permission prompt. The
+ * Gamepad still appears only when a test exposes it (explicit sequencing).
+ * SIMULATED: it says nothing about real Chrome grant persistence.
+ */
+// The sessionStorage key `__cqsWbuzzSimPersistedGrant` is written inline in
+// installScript: the function is serialized into the page and cannot close over
+// module constants.
+
+function installScript(config: { mode: HidSimMode; persistGrantAcrossReload: boolean }): void {
+  const { mode, persistGrantAcrossReload } = config
   const makeDevice = (opts: {
     framingOk: boolean
     openFail: boolean
@@ -156,6 +168,13 @@ function installScript(mode: HidSimMode): void {
     })
   }
   rebuildDevice()
+  if (
+    persistGrantAcrossReload &&
+    state.device &&
+    window.sessionStorage.getItem('__cqsWbuzzSimPersistedGrant') === '1'
+  ) {
+    state.granted = [state.device]
+  }
 
   const hid = {
     getDevices: async () => {
@@ -181,6 +200,9 @@ function installScript(mode: HidSimMode): void {
       if (!state.device) rebuildDevice()
       if (!state.device) return []
       state.granted = [state.device]
+      if (persistGrantAcrossReload) {
+        window.sessionStorage.setItem('__cqsWbuzzSimPersistedGrant', '1')
+      }
       return [state.device]
     },
     addEventListener: (type: string, listener: EventListener) => {
@@ -234,8 +256,12 @@ function installScript(mode: HidSimMode): void {
 export async function installWbuzzHardwareSimulator(
   page: Page,
   mode: HidSimMode = 'ready',
+  options: { readonly persistGrantAcrossReload?: boolean } = {},
 ): Promise<void> {
-  await page.addInitScript(installScript, mode)
+  await page.addInitScript(installScript, {
+    mode,
+    persistGrantAcrossReload: options.persistGrantAcrossReload ?? false,
+  })
 }
 
 export async function setHidSimMode(page: Page, mode: HidSimMode): Promise<void> {

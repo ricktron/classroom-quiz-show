@@ -1,0 +1,88 @@
+{
+  "format": "classroom-quiz-show/game",
+  "schemaVersion": 1,
+  "id": "court-b-final-qualification",
+  "title": "Court B Final Qualification",
+  "teams": [
+    {
+      "id": "granite",
+      "name": "Team Granite",
+      "accent": "crimson"
+    },
+    {
+      "id": "nimbus",
+      "name": "Team Nimbus",
+      "accent": "azure"
+    }
+  ],
+  "timer": {
+    "responseSeconds": 30
+  },
+  "rounds": [
+    {
+      "id": "board-round",
+      "type": "category-board",
+      "title": "Court B Final Qualification",
+      "config": {
+        "categories": [
+          {
+            "id": "category-1",
+            "title": "Rocks",
+            "tiles": [
+              {
+                "id": "category-1-100",
+                "value": 100,
+                "prompt": "Synthetic prompt R1: which rock type forms from cooled magma?",
+                "answer": "Igneous",
+                "alternates": [
+                  "Igneous rock"
+                ],
+                "notes": "Host-only note R1: never projected."
+              },
+              {
+                "id": "category-1-200",
+                "value": 200,
+                "prompt": "Synthetic prompt R2: which rock type forms from compacted layers?",
+                "answer": "Sedimentary"
+              }
+            ]
+          },
+          {
+            "id": "category-2",
+            "title": "Skies",
+            "tiles": [
+              {
+                "id": "category-2-100",
+                "value": 100,
+                "prompt": "Synthetic prompt S1: what is water falling from clouds called?",
+                "answer": "Precipitation",
+                "alternates": [
+                  "Rain"
+                ]
+              },
+              {
+                "id": "category-2-200",
+                "value": 200,
+                "prompt": "Synthetic prompt S2: which instrument measures air pressure?",
+                "answer": "Barometer"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "final-round",
+      "type": "final-wager",
+      "title": "Final Wager",
+      "config": {
+        "prompt": "Synthetic Final prompt: name the process that moves heat through the mantle.",
+        "answer": "Mantle convection",
+        "alternates": [
+          "Convection"
+        ],
+        "notes": "Host-only Final note: never projected."
+      }
+    }
+  ]
+}
