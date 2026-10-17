@@ -129,7 +129,7 @@ test('R1-2: stale responding — pad gone after Start is not "responding" on Bac
   await backToSetupOrdinary(page)
   await openOptionalBuzzers(page)
   await clickShowBuzzerSetup(page)
-  await expect(page.getByTestId('sbs-controller-layer')).toHaveText('Waiting for controller presses')
+  await expect(page.getByTestId('sbs-controller-layer')).toHaveText('Waiting for buzzer presses')
   await expect(page.getByTestId('sbs-test-outcome')).not.toContainText(/Buzzer Check:/)
   await expect(page.getByTestId('sbs-teacher-summary')).not.toContainText(/responding|ready/i)
 })
@@ -141,21 +141,21 @@ test('R1-2b: pad disappears during Buzzer Check — responding clears without le
   await setupConnected(page)
   await runFourHandsetRedCheck(page, SESSION_NAMES)
   await hideSimulatedWbuzzGamepad(page)
-  await expect(page.getByTestId('sbs-controller-layer')).toHaveText('Waiting for controller presses')
+  await expect(page.getByTestId('sbs-controller-layer')).toHaveText('Waiting for buzzer presses')
 })
 
 test('R1-3: Leave Buzzer Check keeps real responding evidence', async ({ page }, info) => {
   test.skip(info.project.name !== 'projector-720p', 'buzzer journeys on projector-720p')
   await setupConnected(page)
   await runFourHandsetRedCheck(page, SESSION_NAMES)
-  await expect(page.getByTestId('sbs-controller-layer')).toHaveText('4 controllers responding')
+  await expect(page.getByTestId('sbs-controller-layer')).toHaveText('4 buzzers responding')
   await page.getByRole('button', { name: 'Leave Buzzer Check' }).click()
   await expect(page.getByRole('button', { name: 'Check buzzers' }).last()).toHaveAttribute(
     'aria-pressed',
     'false',
   )
   await holdStill(page)
-  await expect(page.getByTestId('sbs-controller-layer')).toHaveText('4 controllers responding')
+  await expect(page.getByTestId('sbs-controller-layer')).toHaveText('4 buzzers responding')
   await expect(page.getByTestId('sbs-teacher-summary')).toContainText(/Buzzers responding|Buzzers ready/)
 })
 
@@ -190,7 +190,7 @@ test('R1-5: Buzzers panel during live gameplay reflects presses that produce cla
   await pressWbuzzButton(page, buttonIndexForSlotColor(1, 'red'))
   await expect(page.getByTestId('lih-active')).toContainText(SESSION_NAMES[0], { timeout: 10_000 })
   await holdStill(page)
-  await expect(page.getByTestId('sbs-controller-layer')).toHaveText('1 controller responding')
+  await expect(page.getByTestId('sbs-controller-layer')).toHaveText('1 buzzer responding')
   await expect(page.getByTestId('sbs-teacher-summary')).not.toContainText(/waiting for buzzers/i)
 })
 
@@ -198,7 +198,7 @@ test('R1-6: "Which buzzer is which team" options use the Session team names', as
   test.skip(info.project.name !== 'projector-720p', 'buzzer journeys on projector-720p')
   await setupConnected(page)
   await pressWbuzzButton(page, buttonIndexForSlotColor(1, 'red'))
-  const slot1 = page.getByLabel('Controller 1', { exact: true })
+  const slot1 = page.getByLabel('Buzzer 1', { exact: true })
   await expect(slot1).toBeVisible()
   await expect(slot1.locator('option')).toContainText([
     'Unassigned',
@@ -207,7 +207,7 @@ test('R1-6: "Which buzzer is which team" options use the Session team names', as
   ])
 
   await startGame(page)
-  const playSlot1 = page.getByLabel('Controller 1', { exact: true })
+  const playSlot1 = page.getByLabel('Buzzer 1', { exact: true })
   await expect(playSlot1.locator('option')).toContainText([
     'Unassigned',
     SESSION_NAMES[0],

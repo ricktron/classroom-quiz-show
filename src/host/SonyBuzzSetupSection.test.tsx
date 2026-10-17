@@ -433,7 +433,7 @@ describe('test mode', () => {
     // F-S04B-H3-SONY-05: ordinary Buzzer Check must advance controllers-responding
     // readiness, not only repair observe-red.
     expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent(
-      /1 controller responding/i,
+      /1 buzzer responding/i,
     )
     expect(screen.getByTestId('gih-outcome')).toHaveTextContent(/no gameplay change/i)
     expect(queueOf(store).order).toEqual([])
@@ -538,7 +538,7 @@ describe('copy guardrails', () => {
     )
     // Q7-R1: the select is labelled by its own <label for>, so the accessible
     // name is the slot (not the selected option text).
-    expect(screen.getByLabelText('Controller 4 (optional fourth)')).toBe(
+    expect(screen.getByLabelText('Buzzer 4 (optional fourth)')).toBe(
       screen.getByTestId('sbs-slot-4'),
     )
   })
@@ -601,7 +601,7 @@ describe('repair controller connection flow', () => {
     expect(screen.getByTestId('sbs-repair-advance')).toHaveTextContent(/They blinked/i)
     fireEvent.click(screen.getByTestId('sbs-repair-advance'))
     expect(screen.getByTestId('sbs-repair-step-observe-red')).toHaveTextContent(/Press RED/i)
-    expect(screen.getByTestId('sbs-discovered-none')).toHaveTextContent(/No controllers detected yet/i)
+    expect(screen.getByTestId('sbs-discovered-none')).toHaveTextContent(/No buzzers detected yet/i)
     expect(screen.getByTestId('sbs-run-buzzer-check')).toHaveTextContent(/Run Buzzer Check/i)
     expect(screen.getByTestId('sbs-teacher-intro').textContent).not.toMatch(/hold BIND|solid blue/i)
   })

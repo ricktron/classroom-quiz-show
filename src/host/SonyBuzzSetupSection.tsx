@@ -28,6 +28,8 @@ import {
   SONY_BUZZ_RC_OWED_NOTE,
   SONY_BUZZ_SLOT4_TEACHER_NOTE,
   SONY_BUZZ_SUPPORTED_PROFILE_ID,
+  sonyBuzzButtonLabel,
+  sonyBuzzerLabel,
   sonyBuzzSlotId,
   type SonyBuzzSlotId,
   type SonyBuzzSlotTeamAssociation,
@@ -122,6 +124,8 @@ export interface SonyBuzzSupportedProfileSectionProps {
   readonly associations: readonly SonyBuzzSlotTeamAssociation[]
   readonly mappingStatus: string
   readonly wbuzzPresent: boolean
+  /** Gamepad index of the detected supported Wbuzz pad (CB-04 handset labels). */
+  readonly wbuzzControllerIndex?: number | null
   readonly onConnect: () => void
   readonly onDisableKeepAlive: () => void
   readonly onSetSlotTeam: (slotId: SonyBuzzSlotId, teamId: string | null) => void
@@ -393,11 +397,11 @@ function SupportedProfileBlock({
             <div data-testid="sbs-repair-observe">
               <ul className="sbs__discovered" data-testid="sbs-discovered-controllers">
                 {respondingSlots.length === 0 ? (
-                  <li data-testid="sbs-discovered-none">No controllers detected yet</li>
+                  <li data-testid="sbs-discovered-none">No buzzers detected yet</li>
                 ) : (
-                  respondingSlots.map((_, i) => (
-                    <li key={respondingSlots[i]} data-testid={`sbs-discovered-${i + 1}`}>
-                      {discoveredControllerLine(i + 1)}
+                  respondingSlots.map((slotId, i) => (
+                    <li key={slotId} data-testid={`sbs-discovered-${i + 1}`}>
+                      {discoveredControllerLine(slotId)}
                     </li>
                   ))
                 )}
@@ -465,7 +469,7 @@ function SupportedProfileBlock({
             return (
               <li key={slotId}>
                 <label htmlFor={`sbs-slot-select-${slotId}`}>
-                  Controller {slotId}
+                  {sonyBuzzerLabel(slotId)}
                   {slotId === 4 ? ' (optional fourth)' : ''}
                 </label>
                 <select
@@ -666,9 +670,10 @@ export function SonyBuzzSetupSection({
   const progress = useMemo(() => sonyBuzzStagedProgress(staged), [staged])
   const nameOf = (id: string) => {
     // Buzzer Check reports a provisional `sony-slot-N` for a RED press on a slot
-    // with no team yet; the teacher sees the slot, never the internal id.
+    // with no team yet; the teacher never sees the internal id (on the Wbuzz
+    // pad the "Buzzer N" prefix already names the slot).
     const unassigned = /^sony-slot-(\d)$/.exec(id)
-    if (unassigned) return `Controller ${unassigned[1]} (no team yet)`
+    if (unassigned) return 'no team yet'
     return displayNameForTeam?.(id) ?? teams.find((team) => team.id === id)?.name ?? id
   }
   const surfaceState = describeSurfaceState(diagnosticsStatus, controllers)
@@ -887,6 +892,7 @@ export function SonyBuzzSetupSection({
               : [],
           testMode,
           nameOf,
+          supportedProfile?.wbuzzControllerIndex ?? null,
         )}
       </p>
       <p className="host__note" data-testid="sbs-keyboard-fallback">
@@ -903,12 +909,20 @@ function describeTestOutcome(
   observations: readonly SonyBuzzTestObservation[],
   testMode: boolean,
   nameOf: (teamId: string) => string,
+  wbuzzControllerIndex: number | null,
 ): string {
   if (observations.length > 0) {
-    const parts = observations.map(
-      (observation) =>
-        `${nameOf(observation.teamId)} · ${actionWords(observation.action)} · ${controllerLabel(observation.control.controllerIndex)} · button ${observation.control.buttonIndex + 1}`,
-    )
+    // CB-04: "Buzzer 2 · Red · Magma" — the same handset identity as the mapping
+    // list. Raw Gamepad / button numbers stay in Advanced diagnostics.
+    const parts = observations.map((observation) => {
+      const handset =
+        observation.control.controllerIndex === wbuzzControllerIndex
+          ? sonyBuzzButtonLabel(observation.control.buttonIndex)
+          : null
+      return handset !== null
+        ? `${handset} · ${nameOf(observation.teamId)}`
+        : `${nameOf(observation.teamId)} · ${actionWords(observation.action)}`
+    })
     if (parts.length === 1) return `Buzzer Check: ${parts[0]}`
     return `Buzzer Check (${parts.length}): ${parts.join(' | ')}`
   }

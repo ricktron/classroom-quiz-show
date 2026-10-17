@@ -894,10 +894,10 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     panel.attachWbuzz()
     await panel.connect()
     expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent(
-      'Waiting for controller presses',
+      'Waiting for buzzer presses',
     )
     await panel.pressRedAndSettle()
-    expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent('1 controller responding')
+    expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent('1 buzzer responding')
     expect(screen.getByTestId('sbs-teacher-summary')).not.toHaveTextContent(/waiting for buzzers/i)
   })
 
@@ -909,21 +909,21 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     panel.enterCheck()
     await panel.pressRedAndSettle(buttonIndexForSlotColor(1, 'red'))
     await panel.pressRedAndSettle(buttonIndexForSlotColor(2, 'red'))
-    expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent('2 controllers responding')
+    expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent('2 buzzers responding')
 
     fireEvent.click(screen.getByRole('button', { name: 'Leave Buzzer Check' }))
     panel.poll(5)
     await panel.flush()
-    expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent('2 controllers responding')
+    expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent('2 buzzers responding')
 
     panel.setSelectionMode(false)
     await panel.flush()
-    expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent('2 controllers responding')
+    expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent('2 buzzers responding')
 
     panel.detachPads()
     await panel.flush()
     expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent(
-      'Waiting for controller presses',
+      'Waiting for buzzer presses',
     )
   })
 
@@ -943,7 +943,7 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     panel.enterCheck()
     await panel.flush()
     expect(screen.getByTestId('sbs-controller-layer')).toHaveTextContent(
-      'Waiting for controller presses',
+      'Waiting for buzzer presses',
     )
     expect(screen.getByTestId('sbs-test-outcome')).toHaveTextContent(/^Buzzer Check is on\./)
   })

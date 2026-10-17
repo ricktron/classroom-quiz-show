@@ -187,10 +187,10 @@ describe('controller discovery progression', () => {
   })
 
   it('labels progressive detection without physical handset numbers', () => {
-    expect(respondingControllerCountLabel(0)).toMatch(/No controllers/i)
-    expect(discoveredControllerLine(1)).toBe('Controller 1 detected')
-    expect(discoveredControllerLine(2)).toBe('Controller 2 detected')
-    expect(discoveredControllerLine(3)).toBe('Controller 3 detected')
+    expect(respondingControllerCountLabel(0)).toMatch(/No buzzers/i)
+    expect(discoveredControllerLine(1)).toBe('Buzzer 1 detected')
+    expect(discoveredControllerLine(2)).toBe('Buzzer 2 detected')
+    expect(discoveredControllerLine(3)).toBe('Buzzer 3 detected')
   })
 
   it('maps only primary Red button indexes to slots', () => {

@@ -94,6 +94,47 @@ export function buttonIndexForSlotColor(slot: SonyBuzzSlotId, color: SonyBuzzCol
   return SONY_BUZZ_SLOT_BASES[slot - 1]! + SONY_BUZZ_COLOR_OFFSET[color]
 }
 
+/**
+ * Court B CB-04: the ONE teacher-facing name for a handset slot. Teacher
+ * surfaces (Class Setup, Buzzer Check, mapping, gameplay) say "Buzzer N"; the
+ * receiver's Gamepad number and raw button indices stay in Advanced diagnostics.
+ */
+export function sonyBuzzerLabel(slot: SonyBuzzSlotId): string {
+  return `Buzzer ${slot}`
+}
+
+/** Teacher-facing colour names for the five handset buttons. */
+export const SONY_BUZZ_COLOR_LABEL: Readonly<Record<SonyBuzzColor, string>> = {
+  red: 'Red',
+  yellow: 'Yellow',
+  green: 'Green',
+  orange: 'Orange',
+  blue: 'Blue',
+}
+
+/** Inverse of {@link buttonIndexForSlotColor}: which handset slot and colour a Wbuzz button is. */
+export function sonyBuzzHandsetForButton(
+  buttonIndex: number,
+): { readonly slotId: SonyBuzzSlotId; readonly color: SonyBuzzColor } | null {
+  if (!Number.isInteger(buttonIndex) || buttonIndex < 0) return null
+  for (let i = 0; i < SONY_BUZZ_HANDSET_SLOT_COUNT; i += 1) {
+    const base = SONY_BUZZ_SLOT_BASES[i]!
+    for (const color of SONY_BUZZ_COLORS) {
+      if (base + SONY_BUZZ_COLOR_OFFSET[color] === buttonIndex) {
+        return { slotId: sonyBuzzSlotId(i)!, color }
+      }
+    }
+  }
+  return null
+}
+
+/** "Buzzer 2 · Red" for a Wbuzz button; null when the index is not a handset button. */
+export function sonyBuzzButtonLabel(buttonIndex: number): string | null {
+  const handset = sonyBuzzHandsetForButton(buttonIndex)
+  if (handset === null) return null
+  return `${sonyBuzzerLabel(handset.slotId)} · ${SONY_BUZZ_COLOR_LABEL[handset.color]}`
+}
+
 export function actionForSonyBuzzColor(color: SonyBuzzColor): LocalInputAction {
   switch (color) {
     case 'red':

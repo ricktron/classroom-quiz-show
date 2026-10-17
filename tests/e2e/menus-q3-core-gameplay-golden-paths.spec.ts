@@ -140,7 +140,8 @@ test('Q3-G: SIMULATED supported-Sony gameplay claim on authentic Session (PHYSIC
   await host.getByTestId('gih-toggle').click()
   await expect(host.getByTestId('gih-enabled')).toHaveText('On')
   // Supported-profile materialization binds slot→team (red = primary buzz).
-  await expect(host.getByTestId(`gih-control-${Q3_TEAM_ALPHA}`)).toContainText(/button/i)
+  // CB-04: the gameplay mapping list names the handset, never the raw button.
+  await expect(host.getByTestId(`gih-control-${Q3_TEAM_ALPHA}`)).toHaveText('Buzzer 1 · Red')
   await expect(host.getByTestId('gih-bindings')).toContainText(Q3_SESSION_NAME_ALPHA)
 
   await settleGamepadPolls(host, 12)
