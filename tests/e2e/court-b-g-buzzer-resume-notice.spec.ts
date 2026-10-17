@@ -11,6 +11,7 @@ import {
   installWbuzzHardwareSimulator,
   pressWbuzzButton,
 } from './helpers/simulatedWbuzzHardware'
+import { waitForSessionSaved } from './helpers/menusSession'
 import { buttonIndexForSlotColor } from '../../src/input/sonyBuzzSupportedProfile'
 
 /**
@@ -51,6 +52,8 @@ test('CB-02: readiness lost across reload + Resume shows the reconnect notice; r
   await expect(statusLine(page)).toContainText('Buzzers ready')
   await expect(statusLine(page)).not.toContainText(NOTICE)
 
+  // Reload only once the class session is durably saved (as a teacher would).
+  await waitForSessionSaved(page)
   await page.reload()
   await page.getByRole('button', { name: 'Resume class' }).click()
   await expect(statusLine(page)).toContainText(NOTICE)
@@ -74,8 +77,45 @@ test('CB-02: a keyboard-only class never shows the reconnect notice after reload
   await fillAllTeamNames(page)
   await page.getByRole('button', { name: 'Start Game' }).click()
   await page.getByRole('button', { name: 'Start Round 1' }).click()
+  await waitForSessionSaved(page)
   await page.reload()
   await page.getByRole('button', { name: 'Resume class' }).click()
   await expect(statusLine(page)).toContainText('Buzzers optional')
+  await expect(statusLine(page)).not.toContainText(NOTICE)
+})
+
+test('CB-02: a receiver restored from a kept grant is not reported as needing reconnection', async ({
+  page,
+}) => {
+  // The browser keeps the exact 054c:1000 grant (SIMULATED), so CQS restores the
+  // receiver itself after reload; it only waits for a first press. Nothing needs
+  // reconnecting, so the notice must not claim otherwise.
+  await installWbuzzHardwareSimulator(page, 'ready', { persistGrantAcrossReload: true })
+  await importDemoAndPlay(page)
+  await openOptionalBuzzers(page)
+  await clickShowBuzzerSetup(page)
+  await connectSimulatedReceiver(page)
+  await exposeGamepadAndExpectBuzzersStatus(page)
+  for (const slot of [1, 2] as const) await pressWbuzzButton(page, buttonIndexForSlotColor(slot, 'red'))
+  await page.getByRole('button', { name: 'Save team mapping' }).click()
+  await fillAllTeamNames(page)
+  await page.getByRole('button', { name: 'Start Game' }).click()
+  await page.getByRole('button', { name: 'Start Round 1' }).click()
+  await expect(statusLine(page)).toContainText('Buzzers ready')
+  await waitForSessionSaved(page)
+
+  await page.reload()
+  await page.getByRole('button', { name: 'Resume class' }).click()
+  await expect(page.getByTestId('sbs-receiver-layer')).toContainText(/Connected/i, { timeout: 10_000 })
+  await expect(statusLine(page)).not.toContainText('Buzzers ready')
+  await expect(statusLine(page)).not.toContainText(NOTICE)
+
+  // The first press restores readiness; still no notice.
+  await page.getByRole('button', { name: 'Earth Structure, 100 points' }).click()
+  await page.getByRole('button', { name: 'Show prompt on display' }).click()
+  await page.getByRole('button', { name: 'Arm clue', exact: true }).click()
+  await exposeSimulatedWbuzzGamepad(page)
+  await pressWbuzzButton(page, buttonIndexForSlotColor(1, 'red'))
+  await expect(statusLine(page)).toContainText('Buzzers ready')
   await expect(statusLine(page)).not.toContainText(NOTICE)
 })
