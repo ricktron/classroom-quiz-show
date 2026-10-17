@@ -31,7 +31,9 @@ import './RoundProgressHostPanel.css'
  *  - moving on while clues remain needs an explicit confirmation;
  *  - ending a game is irreversible, so it always needs confirmation;
  *  - during the Final this panel stays out of the way — the Final panel owns
- *    completion.
+ *    completion;
+ *  - the game can be ended early from any round, even with a later round or
+ *    the Final still to come (CB-05: current scores decide the result).
  */
 
 export interface RoundProgressHostPanelProps {
@@ -124,13 +126,17 @@ export function RoundProgressHostPanel({
 
   const nextLabel = hasNext ? enterRoundLabel(rounds, nextIndex) : 'End the game'
   const needsConfirm = !hasNext || !boardDone
-  const advance = () => {
+  const endGame = () => {
     setConfirming(null)
-    if (hasNext) {
-      dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: now() })
-    } else {
-      dispatch({ type: 'END_GAME_SESSION', issuedAt: now() })
+    dispatch({ type: 'END_GAME_SESSION', issuedAt: now() })
+  }
+  const advance = () => {
+    if (!hasNext) {
+      endGame()
+      return
     }
+    setConfirming(null)
+    dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: now() })
   }
   const kind: Confirming = hasNext ? 'next' : 'end'
 
@@ -158,6 +164,17 @@ export function RoundProgressHostPanel({
             {nextLabel}
           </button>
         )}
+        {confirming === null && hasNext && (
+          <button
+            type="button"
+            className="btn btn--secondary"
+            data-testid="rph-end-early"
+            disabled={clueOpen}
+            onClick={() => setConfirming('end')}
+          >
+            End the game
+          </button>
+        )}
       </div>
       {clueOpen && confirming === null && (
         <p className="rph__note" data-testid="rph-blocked-note">
@@ -174,7 +191,7 @@ export function RoundProgressHostPanel({
             className="btn"
             data-testid={confirming === 'end' ? 'rph-end-confirm' : 'rph-next-confirm'}
             disabled={clueOpen}
-            onClick={advance}
+            onClick={confirming === 'end' ? endGame : advance}
           >
             {confirming === 'end' ? 'End the game now' : `${nextLabel} now`}
           </button>
