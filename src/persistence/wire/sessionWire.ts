@@ -554,7 +554,9 @@ function decodeEvent(
       return persistenceOk({
         ...base.value,
         type,
-        reversible: true,
+        // A board expiry saved before CBN-2 (stored reversible: true) replays
+        // identically; it is simply never chosen as an undo target again.
+        reversible: false,
         roundId: input.roundId,
         timerId: input.timerId,
         deadline,
@@ -844,7 +846,10 @@ function readBase(input: Record<string, unknown>, index: number): PersistenceRes
 function isLegacyReversibleFinalExpiry(type: SessionEvent['type'], stored: boolean): boolean {
   return (
     stored &&
-    (type === 'FINAL_WAGER_WINDOW_EXPIRED' || type === 'FINAL_RESPONSE_WINDOW_EXPIRED')
+    (type === 'FINAL_WAGER_WINDOW_EXPIRED' ||
+      type === 'FINAL_RESPONSE_WINDOW_EXPIRED' ||
+      // CBN-2: board response-timer expiries became irreversible too.
+      type === 'RESPONSE_TIMER_EXPIRED')
   )
 }
 
@@ -865,6 +870,8 @@ function reversibleFor(
     // Observed time facts, never undo targets (Court B NEW-1; ADR-014 §8).
     'FINAL_WAGER_WINDOW_EXPIRED',
     'FINAL_RESPONSE_WINDOW_EXPIRED',
+    // Board response-timer expiry: same clock-fact rule (CBN-2; ADR-007 §13).
+    'RESPONSE_TIMER_EXPIRED',
   ].includes(type)
 }
 

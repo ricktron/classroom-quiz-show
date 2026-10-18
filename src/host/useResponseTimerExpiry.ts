@@ -61,8 +61,9 @@ export function useResponseTimerExpiry({
 
   useEffect(() => {
     if (roundId === null || timerId === null || deadline === null) return
-    // Never negative: a deadline already in the past (after an undone expiry, say)
-    // fires on the next tick rather than being ignored.
+    // Never negative: a deadline already in the past (a legacy history whose expiry
+    // was undone, or a page that slept past it) fires on the next tick rather than
+    // being ignored.
     const delay = Math.max(0, deadline - clock.now())
     const handle = setTimeout(() => {
       dispatch({

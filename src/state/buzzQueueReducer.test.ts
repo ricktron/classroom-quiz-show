@@ -767,7 +767,7 @@ describe('opportunity-ending correct adjudication (S05 Path A)', () => {
       type: 'RESPONSE_TIMER_EXPIRED',
       seq: baseSeq + 4,
       occurredAt: deadline,
-      reversible: true,
+      reversible: false,
       roundId: ROUND,
       timerId,
       deadline,

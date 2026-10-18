@@ -483,8 +483,9 @@ history when the window expired before settlement.
   still decodes (normalized to irreversible) instead of failing closed, and an undo
   marker that already neutralized one still neutralizes it by id. The private wire
   version is unchanged.
-- Board-tile response timers (ADR-007) are unchanged: their expiry stays
-  reversible and still re-expires when undone.
+- Board-tile response timers (ADR-007) were left unchanged by this amendment.
+  Superseded 2026-10-17 (Court A/B CBN-2, ADR-007 §13 amendment): a board-tile
+  expiry is now irreversible too, by the same rule and the same legacy decode.
 - Score Undo (ADR-006): a Final settlement that moved points is the "last score
   change", so "Undo last score change" is offered for it, and its copy says the
   team can be judged again. A zero-wager settlement moves no points and is not a

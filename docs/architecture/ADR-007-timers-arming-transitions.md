@@ -283,18 +283,29 @@ Both versioned surfaces therefore moved in this slice, and both fail closed.
 
 ### 13. Replay and undo
 
-Every one of the eight events is reversible and replay-derived, so undo is exact
-for free and needs no bookkeeping. Tested: arm, disarm, start, pause, resume,
-interrupt, expire, reset, and the answer reveal that closed a window.
+Every one of the eight events is replay-derived, so undo is exact for free and
+needs no bookkeeping. Seven are teacher actions and reversible: arm, disarm,
+start, pause, resume, interrupt and reset (plus the answer reveal that closed a
+window). The eighth, **expiry**, is an observed clock fact and is **not**
+reversible.
 
 Two consequences worth stating:
 
-- Undoing an **expiry** restores a `running` timer whose deadline is already in the
-  past. That is the prior durable state, exactly — the adapter then schedules a
-  zero-delay callback and the window expires again unless the host acts. Undo
-  restores the previous state; it does not invent a friendlier one.
-  (Board timers only. Final Wager window expiries are irreversible since Court B
-  NEW-1, so they never sit on top of Undo; see ADR-014's amendment.)
+- **Amendment (2026-10-17, Court failure repair CBN-2).** A response-timer
+  expiry is never an undo target. Undoing it could only restore a `running` timer
+  whose deadline is already in the past, which the adapter would expire again at
+  once, so a reversible expiry sat on top of latest-only Undo as an inert "Undo
+  time up" and buried every earlier teacher action. Latest-only Undo now skips
+  it and reaches the latest genuinely reversible teacher action (for example a
+  score change, an adjudication, or the timer start); the expiry stays effective
+  history. Histories saved before this amendment stored board expiries as
+  reversible; they still decode (normalized to irreversible) and replay
+  identically. This is the same rule the Final Wager windows follow since Court B
+  NEW-1 (ADR-014's amendment). Undoing an earlier teacher action can still
+  restore a running timer whose deadline has passed (for example Undo of a pause,
+  or of a stop, once the deadline is behind it); that is the exact prior state,
+  so the adapter records one new expiry and the next Undo moves on. It cannot
+  loop, because the new expiry is never an undo target either.
 - **Undo remains latest-only** (ADR-002). One undo after arm-then-start reaches the
   start, not the arm. That limit is preserved and documented rather than broadened
   into arbitrary historical undo.
@@ -442,9 +453,10 @@ timing test deterministic and fast.
 
 **Costs and limits.** `PublicState` version 4 consumers and sync version 1
 consumers both fail closed; there is no migration and none is implied. The
-host/display offset is an estimate, not synchronisation. Undo of an expiry restores
-an already-overdue timer. A response window does not survive a round change. Undo
-is still latest-only. Everything remains in memory, lost on tab close. And the
+host/display offset is an estimate, not synchronisation. (Originally: Undo of an
+expiry restored an already-overdue timer. Superseded 2026-10-17 by the §13
+amendment: an expiry is never an Undo target.) A response window does not
+survive a round change. Undo is still latest-only. Everything remains in memory, lost on tab close. And the
 `prompt` stage is the only place a window may exist, so a timed round type that
 wants a different anchor will extend `resolveResponsePhase` rather than reuse it
 verbatim.

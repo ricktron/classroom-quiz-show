@@ -1847,7 +1847,8 @@ export function planCommand(
             type: 'RESPONSE_TIMER_EXPIRED',
             seq,
             occurredAt: at,
-            reversible: true,
+            // Observed clock fact; never an undo target (CBN-2, ADR-007 §13).
+            reversible: false,
             roundId: context.round.id,
             timerId: timer.timerId,
             deadline: timer.deadline,

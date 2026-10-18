@@ -792,15 +792,16 @@ describe('replay and undo', () => {
     expect(phaseOf(store).timer).toMatchObject({ status: 'running', deadline: timer.deadline })
   })
 
-  it('undoes an expiry back to a running timer, and it may then expire again', () => {
+  it('never undoes an expiry: Undo reaches the timer start and nothing can expire again (CBN-2)', () => {
     const store = openStore()
     accept(store, arm())
     const timer = startedTimer(store, AT, 30)
     accept(store, expire(timer.deadline, timer.timerId, timer.deadline))
     store.dispatch(undo)
-    // Arming is restored too, because the expiry event carried both effects.
-    expect(phaseOf(store)).toEqual({ armed: true, timer, queue: NO_QUEUE, outcome: null })
-    accept(store, expire(timer.deadline + 5_000, timer.timerId, timer.deadline))
+    // The start is undone, so the clue is back to armed with no timer; the stale
+    // expiry no longer applies and the old deadline cannot expire again.
+    expect(phaseOf(store)).toEqual({ ...INITIAL_RESPONSE_PHASE_STATE, armed: true })
+    expectRejected(store, expire(timer.deadline + 5_000, timer.timerId, timer.deadline), 'stale-timer-expiration')
   })
 
   it('undoes a reset back to the whole prior window', () => {
@@ -844,7 +845,7 @@ describe('a corrupt log degrades safely rather than throwing', () => {
       type: 'RESPONSE_TIMER_EXPIRED',
       seq: 999,
       occurredAt: AT + 30_000,
-      reversible: true,
+      reversible: false,
       roundId: ROUND,
       timerId: 'tmr-not-this-one',
       deadline: timer.deadline,
@@ -924,18 +925,18 @@ describe('the clock seam itself', () => {
   })
 })
 
-describe('board-tile timer Undo is unchanged by the Final expiry repair (Court B NEW-1)', () => {
-  it('a board response-timer expiry stays reversible, is the undo target, and re-expires (ADR-007 §13)', () => {
+describe('board-tile timer expiry is a clock fact, like the Final windows (CBN-2)', () => {
+  it('a board response-timer expiry is irreversible and never the undo target (ADR-007 §13)', () => {
     const store = openStore()
     const timer = startedTimer(store, AT, 30)
     accept(store, expire(AT + 30_000, timer.timerId, timer.deadline))
     const history = store.getHistory()
     const expiry = history[history.length - 1]!
     expect(expiry.type).toBe('RESPONSE_TIMER_EXPIRED')
-    expect(expiry.reversible).toBe(true)
-    expect(findUndoTarget(history)?.id).toBe(expiry.id)
+    expect(expiry.reversible).toBe(false)
+    expect(findUndoTarget(history)?.type).toBe('RESPONSE_TIMER_STARTED')
     store.dispatch(undo)
-    // Undo restores the prior durable state exactly: running, deadline already past.
-    expect(phaseOf(store).timer.status).toBe('running')
+    // Undo reaches the timer start: no running timer with a past deadline is restored.
+    expect(phaseOf(store).timer.status).not.toBe('running')
   })
 })
