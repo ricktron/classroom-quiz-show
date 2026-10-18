@@ -7,6 +7,7 @@ import { SpreadsheetAuthoringPanel } from './SpreadsheetAuthoringPanel'
 function renderPanel(
   options: {
     hasSession?: boolean
+    canDispatch?: boolean
     bytesByName?: Map<string, Uint8Array>
   } = {},
 ) {
@@ -22,6 +23,7 @@ function renderPanel(
       registry={store.getRegistry()}
       hasSession={options.hasSession !== false}
       activeGame={store.getState().session?.game ?? null}
+      canDispatch={options.canDispatch !== false}
       downloadTemplate={downloadTemplate}
       readFileBytes={async (file) => {
         const bytes = bytesByName.get(file.name)
@@ -146,4 +148,19 @@ describe('SpreadsheetAuthoringPanel', () => {
     },
     20_000,
   )
+})
+
+it('offers no actionable approve-and-import while this window cannot accept session commands', async () => {
+  // A fully valid, otherwise-approvable draft: only the window's inability to
+  // accept session commands may hold Approve back.
+  const { bytesByName } = renderPanel({ canDispatch: false })
+  await uploadNamed(
+    bytesByName,
+    'classic.xlsx',
+    buildTestWorkbookBytes({ profile: 'classic-board' }),
+  )
+  await waitFor(() => {
+    expect(screen.getByTestId('spreadsheet-review')).toBeInTheDocument()
+  })
+  expect(screen.getByTestId('spreadsheet-approve')).toBeDisabled()
 })

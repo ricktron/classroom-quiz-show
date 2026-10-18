@@ -28,6 +28,14 @@ export interface SpreadsheetAuthoringPanelProps {
   readonly registry: RoundRegistry
   readonly hasSession: boolean
   readonly activeGame: PrivateGameState | null
+  /**
+   * False while this window cannot accept session commands: persistence boot
+   * has not settled, or another window owns saving. Content load starts a
+   * session when none exists, so an actionable control here would be a control
+   * that appears to work and is then refused. The Host save-status live region
+   * carries the truthful reason; this prop only makes availability honest.
+   */
+  readonly canDispatch: boolean
   /** Test seam for jsdom File.arrayBuffer gaps. */
   readonly readFileBytes?: (file: File) => Promise<Uint8Array>
   readonly downloadTemplate?: typeof downloadWorkbookTemplate
@@ -53,6 +61,7 @@ export function SpreadsheetAuthoringPanel({
   registry,
   hasSession,
   activeGame,
+  canDispatch,
   readFileBytes = defaultReadFileBytes,
   downloadTemplate = downloadWorkbookTemplate,
 }: SpreadsheetAuthoringPanelProps) {
@@ -147,7 +156,8 @@ export function SpreadsheetAuthoringPanel({
 
   const blockers = parseIssues.filter((i) => i.severity === 'blocker')
   const warnings = parseIssues.filter((i) => i.severity === 'warning')
-  const canApprove = draft !== null && draft.status !== 'blocked' && blockers.length === 0
+  const canApprove =
+    canDispatch && draft !== null && draft.status !== 'blocked' && blockers.length === 0
   const categoryCount = draft?.board.categories.length ?? 0
   const clueCount =
     draft?.board.categories.reduce((sum, category) => sum + category.clues.length, 0) ?? 0

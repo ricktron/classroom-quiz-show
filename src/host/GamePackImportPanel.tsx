@@ -37,6 +37,14 @@ export interface GamePackImportPanelProps {
   readonly registry: RoundRegistry
   readonly hasSession: boolean
   readonly activeGame: PrivateGameState | null
+  /**
+   * False while this window cannot accept session commands: persistence boot
+   * has not settled, or another window owns saving. Content load starts a
+   * session when none exists, so an actionable control here would be a control
+   * that appears to work and is then refused. The Host save-status live region
+   * carries the truthful reason; this prop only makes availability honest.
+   */
+  readonly canDispatch: boolean
   readonly adapter: PersistenceAdapter
   readonly packRegistry?: PackResourceRegistry
   /** Injectable file reader for tests. */
@@ -64,6 +72,7 @@ export function GamePackImportPanel({
   registry,
   hasSession,
   activeGame,
+  canDispatch,
   adapter,
   packRegistry = getSharedPackResourceRegistry(),
   readFileBytes = defaultReadFileBytes,
@@ -226,7 +235,7 @@ export function GamePackImportPanel({
           data-testid="pack-import-file"
           type="file"
           accept={PACK_EXTENSION}
-          disabled={busy}
+          disabled={busy || !canDispatch}
           onChange={(event) => {
             const file = event.target.files?.[0]
             if (file) void runImport(file)

@@ -205,6 +205,19 @@ export interface UseHostPersistence {
 
 const DEFAULT_RENEW_INTERVAL_MS = Math.floor(HOST_WRITER_LEASE_TTL_MS / 2)
 
+/**
+ * One identity for "no recovered history", so settling boot on an empty active
+ * session does not remount the session store.
+ *
+ * `useSessionStore` recreates the store whenever `storeEpoch` OR the
+ * `initialHistory` identity changes, and `storeEpoch` is the documented remount
+ * key. A fresh `[]` from the boot read was therefore a second, undocumented
+ * remount authority that would silently discard anything already dispatched.
+ * The deliberate remounts (Resume, Discard, aggregate wipe) all bump
+ * `storeEpoch`, so they are unaffected.
+ */
+const EMPTY_SESSION_HISTORY: readonly SessionEvent[] = Object.freeze([])
+
 export function useHostPersistence(options: UseHostPersistenceOptions = {}): UseHostPersistence {
   const clock = options.clock ?? systemClock
   const leaseTtlMs = options.leaseTtlMs ?? HOST_WRITER_LEASE_TTL_MS
@@ -246,7 +259,8 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     useState<readonly CompletedSummaryListing[]>([])
   const [library, setLibrary] = useState<readonly SavedDefinitionSummary[]>([])
   const [message, setMessage] = useState('Opening saved games…')
-  const [initialHistory, setInitialHistory] = useState<readonly SessionEvent[]>([])
+  const [initialHistory, setInitialHistory] =
+    useState<readonly SessionEvent[]>(EMPTY_SESSION_HISTORY)
   const [storeEpoch, setStoreEpoch] = useState(0)
   const storageReadyRef = useRef(false)
   const latestWriteToken = useRef(0)
@@ -459,7 +473,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     if (read.kind === 'none') {
       setRecovery(null)
       setInvalidRecovery(null)
-      setInitialHistory([])
+      setInitialHistory(EMPTY_SESSION_HISTORY)
       setDurableEventCount(0)
       setPendingEventCount(null)
       setActiveSessionPersistFailed(false)
@@ -795,7 +809,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     setCompletedListings([])
     setRecovery(null)
     setInvalidRecovery(null)
-    setInitialHistory([])
+    setInitialHistory(EMPTY_SESSION_HISTORY)
     setDurableEventCount(0)
     setPendingEventCount(null)
     setActiveSessionPersistFailed(false)
@@ -847,7 +861,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       )
       return { ok: false, message: result.message }
     }
-    setInitialHistory([])
+    setInitialHistory(EMPTY_SESSION_HISTORY)
     setDurableEventCount(0)
     setPendingEventCount(null)
     setActiveSessionPersistFailed(false)

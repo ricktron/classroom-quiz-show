@@ -1068,6 +1068,7 @@ export function FoundationControls({
               registry={registry}
               hasSession={hasSession}
               activeGame={game}
+              canDispatch={persistence.canDispatchSessionCommands}
             />
 
             <SpreadsheetAuthoringPanel
@@ -1075,6 +1076,7 @@ export function FoundationControls({
               registry={registry}
               hasSession={hasSession}
               activeGame={game}
+              canDispatch={persistence.canDispatchSessionCommands}
             />
 
             <GamePackImportPanel
@@ -1082,6 +1084,7 @@ export function FoundationControls({
               registry={registry}
               hasSession={hasSession}
               activeGame={game}
+              canDispatch={persistence.canDispatchSessionCommands}
               adapter={persistence.adapter}
             />
 
@@ -1136,6 +1139,7 @@ export function FoundationControls({
               <button
                 type="button"
                 className="btn btn--secondary"
+                disabled={!persistence.canDispatchSessionCommands}
                 onClick={() =>
                   dispatch({
                     type: 'INIT_SESSION',

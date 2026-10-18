@@ -47,6 +47,7 @@ function renderPanel(
     dispatch?: (command: Parameters<ReturnType<typeof createSessionStore>['dispatch']>[0]) => ReturnType<
       ReturnType<typeof createSessionStore>['dispatch']
     >
+    canDispatch?: boolean
     activeGame?: ReturnType<typeof createSessionStore>['getState'] extends () => infer S
       ? S extends { session: { game: infer G } | null }
         ? G | null
@@ -69,6 +70,7 @@ function renderPanel(
       registry={store.getRegistry()}
       hasSession={options.hasSession !== false}
       activeGame={activeGame}
+      canDispatch={options.canDispatch !== false}
       adapter={adapter}
       readFileBytes={options.readFileBytes}
       packRegistry={createPackResourceRegistry({
@@ -263,4 +265,9 @@ describe('GamePackImportPanel', () => {
     ).toBeInTheDocument()
     expect(await listPackMediaScopeKeys(adapter)).toEqual([])
   })
+})
+
+it('offers no actionable pack file picker while this window cannot accept session commands', () => {
+  renderPanel({ canDispatch: false })
+  expect(screen.getByTestId('pack-import-file')).toBeDisabled()
 })
