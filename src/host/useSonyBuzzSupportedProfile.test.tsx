@@ -5,7 +5,9 @@ import { createTeamDefinitions } from '../game/teams/definition'
 import { twoTeams } from '../test/teamFixtures'
 import { createMemoryPersistenceAdapter } from '../persistence/memoryAdapter'
 import { loadSonyBuzzMappingRecord } from '../persistence/sonyBuzzMappingStore'
-import { createFakeWebHidTransport } from '../input/webHidTransport'
+import { createFakeWebHidTransport, createFakeHidDevice } from '../input/webHidTransport'
+import { SONY_BUZZ_EXPECTED_BUTTON_COUNT } from '../input/sonyBuzzSupportedProfile'
+import type { GamepadControllerInfo } from './useGamepadBuzzInput'
 
 /**
  * CBN-1: Save team mapping is truthful. A many-to-one mapping (several Buzzers
@@ -102,5 +104,94 @@ describe('Save team mapping (CBN-1)', () => {
       await result.current.clearSavedMapping()
     })
     expect(result.current.mappingIssue).toBeNull()
+  })
+})
+
+/**
+ * CBN-6c — "ready" must mean the mapping can actually be materialized.
+ *
+ * `profileReady` gated on `associations.length > 0`, which is not the same
+ * question: associations can be non-empty and still fail to materialize (a slot
+ * set to a team this game does not have). The honest gate is the materialized
+ * mapping itself, which is the artefact gameplay actually uses.
+ */
+describe('profileReady means the mapping can be materialized (CBN-6c)', () => {
+  /**
+   * A present, supported Wbuzz pad, so readiness turns only on the mapping.
+   * The reported id must carry the real vendor/product tokens, and the button
+   * count must match the expected topology, or the hook does not see a pad at
+   * all and every readiness assertion below would pass for the wrong reason.
+   */
+  const WBUZZ: readonly GamepadControllerInfo[] = [
+    {
+      controllerIndex: 0,
+      buttonCount: SONY_BUZZ_EXPECTED_BUTTON_COUNT,
+      reportedId: { status: 'available', value: 'Vendor: 054c Product: 1000' },
+      reportedMapping: { status: 'available', value: 'standard' },
+      classification: 'candidate-sony-buzz-wireless',
+    },
+  ]
+
+  function renderWithTeams(gameId: string, teams: ReturnType<typeof createTeamDefinitions>) {
+    const persistenceAdapter = createMemoryPersistenceAdapter()
+    const transport = createFakeWebHidTransport({
+      available: true,
+      granted: [createFakeHidDevice()],
+    })
+    const hook = renderHook(
+      (props: { gameId: string; teams: ReturnType<typeof createTeamDefinitions> }) =>
+        useSonyBuzzSupportedProfile({
+          gameId: props.gameId,
+          teams: props.teams,
+          controllers: WBUZZ,
+          transport,
+          persistenceAdapter,
+        }),
+      { initialProps: { gameId, teams } },
+    )
+    return { ...hook, persistenceAdapter, transport }
+  }
+
+  it('never reports ready while the mapping materializes to nothing', async () => {
+    const OTHER_TEAMS = createTeamDefinitions([
+      { id: 'amber', name: 'Amber', accent: 'amber' },
+      { id: 'violet', name: 'Violet', accent: 'violet' },
+    ])
+    const { result, rerender } = renderWithTeams('game-1', TEAMS)
+    await waitFor(() => expect(result.current.mappingStatus).toBe('absent'))
+    expect(result.current.associations.length).toBeGreaterThan(0)
+
+    // The loaded game changes to one with entirely different team ids. Until the
+    // saved-mapping read settles, the associations still name the OLD teams, so
+    // the mapping cannot be materialized for this game.
+    act(() => {
+      rerender({ gameId: 'game-2', teams: OTHER_TEAMS })
+    })
+
+    expect(result.current.associations.length).toBeGreaterThan(0)
+    expect(result.current.materializedMapping.bindings).toHaveLength(0)
+    // The invariant: readiness may never outrun materializability.
+    expect(result.current.profileReady).toBe(false)
+  })
+
+  it('keeps a materializable mapping available to gameplay', async () => {
+    const { result } = renderWithTeams('game-1', TEAMS)
+    await waitFor(() => expect(result.current.mappingStatus).toBe('absent'))
+    act(() => result.current.setSlotTeam(3, 'red'))
+    // Readiness also needs a healthy transport, which is a separate fact; what
+    // this pins is that a good mapping is never the thing holding readiness back.
+    expect(result.current.materializedMapping.bindings.length).toBeGreaterThan(0)
+    expect(result.current.associations.length).toBeGreaterThan(0)
+  })
+
+  it('stops reporting ready once every Buzzer is unassigned', async () => {
+    const { result } = renderWithTeams('game-1', TEAMS)
+    await waitFor(() => expect(result.current.mappingStatus).toBe('absent'))
+    act(() => {
+      for (const slot of [1, 2, 3, 4] as const) result.current.setSlotTeam(slot, null)
+    })
+    expect(result.current.associations).toHaveLength(0)
+    expect(result.current.materializedMapping.bindings).toHaveLength(0)
+    expect(result.current.profileReady).toBe(false)
   })
 })

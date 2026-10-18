@@ -309,6 +309,25 @@ export function gamepadControlForTeamAction(
  * silently is the point, and it is why a conflicting capture is reported to the
  * teacher instead of quietly reassigning somebody else's button.
  */
+/**
+ * How many controls are currently bound to one team for one action.
+ *
+ * More than one is legitimate — the supported Sony profile maps Buzzer slot →
+ * team many-to-one (CBN-1). It matters because the generic per-team controls
+ * express exactly ONE control per team: `withGamepadControlForTeamAction`
+ * replaces every binding for that team and action, so a singular generic edit
+ * beside a shared-team mapping would silently unassign the rest (CBN-6).
+ */
+export function teamActionBindingCount(
+  mapping: GamepadMapping,
+  teamId: string,
+  action: LocalInputAction,
+): number {
+  return mapping.bindings.filter(
+    (binding) => binding.teamId === teamId && sameLocalInputAction(binding.action, action),
+  ).length
+}
+
 export function withGamepadControlForTeamAction(
   mapping: GamepadMapping,
   teamId: string,

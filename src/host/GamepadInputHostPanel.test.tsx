@@ -1073,4 +1073,105 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     )
     expect(screen.getByTestId('sbs-test-outcome')).toHaveTextContent(/^Buzzer Check is on\./)
   })
+
+
+  /**
+   * CBN-6 — once several Buzzers buzz one team, visible assignment state and the
+   * live gameplay mapping must agree immediately, a singular control must not
+   * destroy several assignments as a side effect, and "ready" must mean the
+   * mapping can actually be materialized.
+   */
+  async function saveRedWithBuzzers1And3(panel: ReturnType<typeof renderWbuzzPanel>) {
+    await panel.flush()
+    panel.attachWbuzz()
+    await panel.connect()
+    // Buzzer 1 is red by default; add Buzzer 3 so red really has two Buzzers.
+    fireEvent.change(screen.getByTestId('sbs-slot-3'), { target: { value: 'red' } })
+    fireEvent.click(screen.getByTestId('sbs-save-mapping'))
+    await panel.flush()
+    expect(screen.getByTestId('sbs-mapping-layer')).toHaveTextContent('Team mapping saved')
+  }
+
+  it('CBN-6a: a singular generic buzz edit does not silently unassign a team’s other Buzzers', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await saveRedWithBuzzers1And3(panel)
+
+    // Both of red's Buzzers buzz red before the edit.
+    openClue(panel.store)
+    arm(panel.store)
+    panel.refresh()
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
+    panel.refresh()
+    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+
+    // A generic per-team capture for red, which the singular copy describes as
+    // assigning ONE button. It must not quietly drop Buzzer 1 and Buzzer 3.
+    const freeButton = buttonIndexForSlotColor(4, 'red')
+    fireEvent.click(screen.getByTestId('gih-capture-red'))
+    panel.pressRed(freeButton)
+    await panel.flush()
+    panel.refresh()
+
+    // The edit fails closed and says why, naming the count and where to change it.
+    const status = screen.getByTestId('gih-capture-status').textContent ?? ''
+    expect(status).toMatch(/has 2 buzzers assigned/i)
+    expect(status).toMatch(/Buzzer setup/i)
+
+    // And nothing was destroyed: both of red's Buzzers still buzz red.
+    panel.store.dispatch({ type: 'RESET_RESPONSE_PHASE', issuedAt: AT, roundId: ROUND })
+    arm(panel.store)
+    panel.refresh()
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
+    panel.refresh()
+    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+
+    panel.store.dispatch({ type: 'RESET_RESPONSE_PHASE', issuedAt: AT, roundId: ROUND })
+    arm(panel.store)
+    panel.refresh()
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(1, 'red'))
+    panel.refresh()
+    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+  })
+
+  it('CBN-6a: clearing the buzz button of a team with several Buzzers also fails closed', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await saveRedWithBuzzers1And3(panel)
+
+    fireEvent.click(screen.getByTestId('gih-clear-red'))
+    panel.refresh()
+    expect(screen.getByTestId('gih-capture-status')).toHaveTextContent(/has 2 buzzers assigned/i)
+    expect(screen.getByTestId('gih-capture-status')).not.toHaveTextContent(/cleared/i)
+
+    openClue(panel.store)
+    arm(panel.store)
+    panel.refresh()
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
+    panel.refresh()
+    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+  })
+
+  it('CBN-6b: unassigning every Buzzer stops them buzzing immediately, not after a reload', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await saveRedWithBuzzers1And3(panel)
+
+    // Unassign every Buzzer slot through the supported mapping UI.
+    for (const slot of [1, 2, 3, 4]) {
+      const select = screen.queryByTestId(`sbs-slot-${slot}`)
+      if (select) fireEvent.change(select, { target: { value: '' } })
+    }
+    await panel.flush()
+    panel.refresh()
+
+    // The UI now shows nothing assigned, so nothing may still buzz.
+    openClue(panel.store)
+    arm(panel.store)
+    panel.refresh()
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
+    panel.refresh()
+    expect(activeRespondent(queueOf(panel.store))).toBeNull()
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(1, 'red'))
+    panel.refresh()
+    expect(activeRespondent(queueOf(panel.store))).toBeNull()
+  })
+
 })
