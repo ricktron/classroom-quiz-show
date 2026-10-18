@@ -34,6 +34,7 @@ import { remainingMsAt, type ResponseTimerState } from '../game/timing/responseP
 import { findTeamById } from '../game/teams/definition'
 import { formatSignedDelta } from '../game/teams/scoring'
 import { systemClock, type Clock } from '../time/clock'
+import { useRunningClockNow } from './useRunningClockNow'
 import { formatRemaining } from '../time/duration'
 import {
   FULLY_DURABLE_SESSION,
@@ -139,12 +140,19 @@ export function FinalWagerHostPanel({
   const [wagerDrafts, setWagerDrafts] = useState<Record<string, string>>({})
   const [responseDrafts, setResponseDrafts] = useState<Record<string, string>>({})
   const wagersDurable = isActiveSessionHistoryDurable(eventHistoryLength, activeSessionDurability)
+  const liveFinal = round === null || definition === null ? null : finalWagerStateFor(game, round.id)
+  // CBN-3: the host countdown ticks while either Final window runs.
+  const windowClockNow = useRunningClockNow(
+    clock,
+    liveFinal !== null &&
+      (liveFinal.wagerWindow.status === 'running' || liveFinal.responseWindow.status === 'running'),
+  )
 
   // Rendered only for a playable Final round. Every other state (no game, no
   // round, a board round, an unregistered type) renders nothing at all.
   if (round === null || definition === null) return null
 
-  const final = finalWagerStateFor(game, round.id)
+  const final = liveFinal ?? finalWagerStateFor(game, round.id)
   const roundId = round.id
   const now = () => clock.now()
   const send = (command: SessionCommand) => dispatch(command)
@@ -201,7 +209,7 @@ export function FinalWagerHostPanel({
             seconds={wagerSeconds}
             authoredSeconds={authoredSeconds}
             onSecondsChange={setWagerSeconds}
-            clockNow={clock.now()}
+            clockNow={windowClockNow}
             idPrefix="fwh-wager"
             disabled={!active}
             onStart={() =>
@@ -390,7 +398,7 @@ export function FinalWagerHostPanel({
             seconds={responseSeconds}
             authoredSeconds={authoredSeconds}
             onSecondsChange={setResponseSeconds}
-            clockNow={clock.now()}
+            clockNow={windowClockNow}
             idPrefix="fwh-response"
             disabled={!active}
             /* The window is already running: only pause/resume apply. */
