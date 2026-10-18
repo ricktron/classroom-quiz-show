@@ -309,8 +309,11 @@ describe('a stale callback changes nothing', () => {
   })
 })
 
-describe('an expiry that was undone can be re-armed', () => {
-  it('fires again on the next tick, because the deadline is already past', () => {
+describe('an expiry is a clock fact, never undone (CBN-2)', () => {
+  const expiriesIn = (store: SessionStore) =>
+    store.getHistory().filter((event) => event.type === 'RESPONSE_TIMER_EXPIRED')
+
+  it('Undo after Time up reaches the timer start, and nothing re-arms or expires again', () => {
     const store = openStore()
     const clock = createManualClock(AT)
     start(store)
@@ -321,15 +324,17 @@ describe('an expiry that was undone can be re-armed', () => {
       vi.advanceTimersByTime(30_000)
     })
     expect(phase(store)?.timer.status).toBe('expired')
+    expect(expiriesIn(store)).toHaveLength(1)
 
+    // The expiry is not an undo target: Undo reaches the timer start, so no
+    // running timer with a past deadline is restored for the adapter to re-fire.
     store.dispatch({ type: 'UNDO', issuedAt: AT + 31_000 })
     sync()
     act(() => {
-      vi.advanceTimersByTime(1)
+      clock.advance(5_000)
+      vi.advanceTimersByTime(5_000)
     })
-    // Undo restored a running timer whose deadline is in the past, so the adapter
-    // schedules a zero-delay callback and the window expires again. Undo restored
-    // the prior durable state exactly; it did not invent an unreachable one.
-    expect(phase(store)?.timer.status).toBe('expired')
+    expect(phase(store)?.timer.status).not.toBe('running')
+    expect(expiriesIn(store)).toHaveLength(1)
   })
 })

@@ -335,8 +335,15 @@ export interface ResponseTimerInterruptedEvent
  * timer to `expired`, so a repeated or late callback is rejected rather than
  * appending a second identical fact. It awards and deducts nothing.
  */
-export interface ResponseTimerExpiredEvent
-  extends ResponsePhaseEventBase<'RESPONSE_TIMER_EXPIRED'> {
+export interface ResponseTimerExpiredEvent extends EventBase<'RESPONSE_TIMER_EXPIRED'> {
+  /**
+   * An observed wall-clock fact, not a teacher action, so it is NOT reversible
+   * (CBN-2, Court A/B recertification 2026-10-17; ADR-007 §13). Undoing one could
+   * only restore a deadline already in the past, which expires again at once, so
+   * a reversible expiry sat on top of latest-only Undo as an inert "Undo time up".
+   */
+  readonly reversible: false
+  readonly roundId: string
   readonly timerId: string
   readonly deadline: number
 }
