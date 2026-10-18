@@ -234,15 +234,17 @@ test('media pack clean-environment chain survives hosted media block', async ({
   await withCleanContext(browser, async (clean) => {
     const { host, display } = await openHostDisplayWithBlockedMedia(clean)
 
-    let hostedMediaAttempts = 0
-    const countingAbort = (route: Parameters<Parameters<Page['route']>[1]>[0]) => {
-      hostedMediaAttempts += 1
-      return route.abort('failed')
-    }
+    const hostedMediaAttempts = { host: 0, display: 0 }
+    const countingAbort =
+      (page: keyof typeof hostedMediaAttempts) =>
+      (route: Parameters<Parameters<Page['route']>[1]>[0]) => {
+        hostedMediaAttempts[page] += 1
+        return route.abort('failed')
+      }
     await host.unroute(MEDIA_ROUTE)
     await display.unroute(MEDIA_ROUTE)
-    await host.route(MEDIA_ROUTE, countingAbort)
-    await display.route(MEDIA_ROUTE, countingAbort)
+    await host.route(MEDIA_ROUTE, countingAbort('host'))
+    await display.route(MEDIA_ROUTE, countingAbort('display'))
 
     await initSession(host)
     await importPackFile(host, packBytes)
@@ -252,11 +254,25 @@ test('media pack clean-environment chain survives hosted media block', async ({
     await host.getByRole('button', { name: /advance to next round/i }).click()
     await assertImagePromptVisible(host, display, 'cbh-tile-pack-image-100')
 
+    // The Host hydrates its pack registry at import, before it renders the prompt.
+    expect(hostedMediaAttempts.host, 'host pack media must not fetch the hosted path').toBe(0)
+    // ADR-017 §30: pack media must not REQUIRE the hosted path. Before the
+    // projector's pack hydration settles, the path resolves to its hosted URL
+    // once; whether that request reaches the network depends on the service
+    // worker (a precached fixture is answered before page.route sees it). It
+    // is never needed: it is blocked here and the image is still the pack blob.
+    expect(hostedMediaAttempts.display, 'at most one pre-hydration hosted attempt').toBeLessThanOrEqual(1)
+    const attemptsBeforeAnswer = { ...hostedMediaAttempts }
+
     await host.getByTestId('cbh-reveal-answer').click()
     await expect(display.getByTestId('cbd-answer')).toContainText('PACK-IMAGE-ANSWER-PRIVATE')
     await expect(display.getByTestId('mcd-img')).toBeVisible()
+    await expect(display.getByTestId('mcd-img')).toHaveAttribute('src', /^blob:/)
 
-    expect(hostedMediaAttempts, 'pack-resolved media must not fetch hosted fixture').toBe(0)
+    // Once resolved to the pack blob, nothing goes back to the hosted path.
+    expect(hostedMediaAttempts, 'pack-resolved media must not fetch the hosted path').toEqual(
+      attemptsBeforeAnswer,
+    )
   })
 })
 
@@ -447,6 +463,8 @@ test('export-after-import produces an independent pack without hosted media', as
 /**
  * Harness-only timing control: hold back IndexedDB open success on one page so
  * its pack-media hydration settles after the given delay. No state is injected.
+ * Covers only what this app uses (onsuccess / addEventListener('success')); it
+ * is not a general-purpose IndexedDB stand-in.
  */
 async function delayIndexedDbOpen(page: Page, ms: number) {
   await page.addInitScript((delay) => {
@@ -499,11 +517,19 @@ test('a hosted-path failure before pack hydration does not hide the pack image',
     await openHost(host)
     await openDisplay(display)
     await applyHostedMediaBlock(host, display)
+    let displayHostedAttempts = 0
+    await display.unroute(MEDIA_ROUTE)
+    await display.route(MEDIA_ROUTE, (route) => {
+      displayHostedAttempts += 1
+      return route.abort('failed')
+    })
 
     await initSession(host)
     await importPackFile(host, pack)
     await host.getByRole('button', { name: /advance to next round/i }).click()
     await assertImagePromptVisible(host, display, 'cbh-tile-pack-image-100')
+    // The race really happened: the projector's one hosted attempt failed first.
+    expect(displayHostedAttempts, 'the hosted path must have failed before hydration').toBe(1)
   } finally {
     await clean.close()
   }
