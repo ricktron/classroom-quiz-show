@@ -215,6 +215,15 @@ export function FoundationControls({
     setBuzzersKnownReady(true)
   }, [readyReportedScope, buzzerScope])
   const hasGame = game !== null
+  /**
+   * Whether this window may issue session commands at all: persistence boot has
+   * settled AND another window does not own saving. `dispatchSessionCommand`
+   * refuses everything otherwise, so every mutation-capable control below must
+   * fold this in — a control gated only by `hasSession`/`hasGame` is still
+   * actionable in a window that was demoted to read-only mid-game, and would be
+   * pressed and silently refused.
+   */
+  const canCommand = persistence.canDispatchSessionCommands
   const dispatch = (command: Parameters<typeof storeDispatch>[0]) =>
     persistence.dispatchSessionCommand(command, storeDispatch, () => store.getHistory(), registry)
 
@@ -1068,7 +1077,7 @@ export function FoundationControls({
               registry={registry}
               hasSession={hasSession}
               activeGame={game}
-              canDispatch={persistence.canDispatchSessionCommands}
+              canDispatch={canCommand}
             />
 
             <SpreadsheetAuthoringPanel
@@ -1076,7 +1085,7 @@ export function FoundationControls({
               registry={registry}
               hasSession={hasSession}
               activeGame={game}
-              canDispatch={persistence.canDispatchSessionCommands}
+              canDispatch={canCommand}
             />
 
             <GamePackImportPanel
@@ -1084,7 +1093,7 @@ export function FoundationControls({
               registry={registry}
               hasSession={hasSession}
               activeGame={game}
-              canDispatch={persistence.canDispatchSessionCommands}
+              canDispatch={canCommand}
               adapter={persistence.adapter}
             />
 
@@ -1139,7 +1148,7 @@ export function FoundationControls({
               <button
                 type="button"
                 className="btn btn--secondary"
-                disabled={!persistence.canDispatchSessionCommands}
+                disabled={!canCommand}
                 onClick={() =>
                   dispatch({
                     type: 'INIT_SESSION',
@@ -1153,7 +1162,7 @@ export function FoundationControls({
               <button
                 type="button"
                 className="btn btn--secondary"
-                disabled={!hasSession}
+                disabled={!hasSession || !canCommand}
                 onClick={() => dispatch({ type: 'ADVANCE_SEQUENCE', issuedAt: now() })}
               >
                 Advance sequence
@@ -1161,7 +1170,7 @@ export function FoundationControls({
               <button
                 type="button"
                 className="btn btn--secondary"
-                disabled={!hasSession}
+                disabled={!hasSession || !canCommand}
                 onClick={() => dispatch({ type: 'MARK_WAITING', issuedAt: now() })}
               >
                 Mark waiting
@@ -1169,7 +1178,7 @@ export function FoundationControls({
               <button
                 type="button"
                 className="btn btn--secondary"
-                disabled={!hasSession}
+                disabled={!hasSession || !canCommand}
                 onClick={() =>
                   dispatch({
                     type: 'SET_HOST_NOTE',
@@ -1183,14 +1192,14 @@ export function FoundationControls({
               <button
                 type="button"
                 className="btn btn--secondary"
-                disabled={!hasSession || game?.gameLifecycle === 'ended'}
+                disabled={!hasSession || !canCommand || game?.gameLifecycle === 'ended'}
                 onClick={() => dispatch({ type: 'UNDO', issuedAt: now() })}
               >
                 Undo last reversible
               </button>
             </div>
 
-            <fieldset className="foundation__status" disabled={!hasSession}>
+            <fieldset className="foundation__status" disabled={!hasSession || !canCommand}>
               <legend>Public status</legend>
               {PUBLIC_STATUS_CODES.map((code) => (
                 <button
@@ -1261,7 +1270,7 @@ export function FoundationControls({
               <button
                 type="button"
                 className="btn btn--secondary"
-                disabled={!hasSession}
+                disabled={!hasSession || !canCommand}
                 onClick={() =>
                   dispatch({
                     type: 'INITIALIZE_GAME',
@@ -1275,7 +1284,7 @@ export function FoundationControls({
               <button
                 type="button"
                 className="btn btn--secondary"
-                disabled={!hasSession}
+                disabled={!hasSession || !canCommand}
                 onClick={() =>
                   dispatch({
                     type: 'INITIALIZE_GAME',
@@ -1289,7 +1298,7 @@ export function FoundationControls({
               <button
                 type="button"
                 className="btn btn--secondary"
-                disabled={!hasGame}
+                disabled={!hasGame || !canCommand}
                 onClick={() => dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: now() })}
               >
                 Advance to next round
@@ -1297,7 +1306,7 @@ export function FoundationControls({
               <button
                 type="button"
                 className="btn btn--secondary"
-                disabled={!hasGame}
+                disabled={!hasGame || !canCommand}
                 onClick={() => dispatch({ type: 'END_GAME_SESSION', issuedAt: now() })}
               >
                 End game session
@@ -1322,6 +1331,7 @@ export function FoundationControls({
                         <button
                           type="button"
                           className="btn btn--secondary foundation__status-btn"
+                          disabled={!canCommand}
                           onClick={() =>
                             dispatch({ type: 'SELECT_ROUND', issuedAt: now(), roundId: round.id })
                           }

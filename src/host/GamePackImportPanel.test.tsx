@@ -270,4 +270,13 @@ describe('GamePackImportPanel', () => {
 it('offers no actionable pack file picker while this window cannot accept session commands', () => {
   renderPanel({ canDispatch: false })
   expect(screen.getByTestId('pack-import-file')).toBeDisabled()
+  // The styled label is the thing a teacher actually sees and clicks, so it must
+  // not keep an available appearance while the input it points at is inert.
+  expect(screen.getByTestId('pack-import-choose')).toHaveAttribute('aria-disabled', 'true')
+})
+
+it('keeps the pack file picker and its label actionable when commands are accepted', () => {
+  renderPanel()
+  expect(screen.getByTestId('pack-import-file')).toBeEnabled()
+  expect(screen.getByTestId('pack-import-choose')).toHaveAttribute('aria-disabled', 'false')
 })

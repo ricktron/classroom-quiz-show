@@ -93,10 +93,32 @@ for (const delayMs of [0, 500, 1500]) {
     const button = initialize(page)
     await expect(button).toBeAttached()
 
-    // While the Host truthfully reports that it is still opening saved games,
-    // the mutation control must not be actionable.
-    if (/opening saved games/i.test((await status.textContent()) ?? '')) {
-      await expect(button).toBeDisabled()
+    /*
+      The gate, asserted without a pre-sampled `if`: sample the control and the
+      status TOGETHER, repeatedly, and require that the control is never
+      actionable while the status still says the Host is opening saved games.
+      A one-shot `if` could be evaluated after boot had already settled and then
+      assert nothing at all; this cannot. At 0ms there may be no boot window to
+      catch, which is correct — the invariant is "never actionable while
+      loading", not "a loading window must exist".
+    */
+    const sightings = { loading: 0, actionableWhileLoading: 0 }
+    const deadline = Date.now() + 3_000
+    while (Date.now() < deadline) {
+      const [text, enabled] = await Promise.all([status.textContent(), button.isEnabled()])
+      const loading = /opening saved games/i.test(text ?? '')
+      if (loading) {
+        sightings.loading += 1
+        if (enabled) sightings.actionableWhileLoading += 1
+      } else if (sightings.loading > 0 || delayMs === 0) {
+        break
+      }
+    }
+    expect(sightings.actionableWhileLoading).toBe(0)
+    if (delayMs > 0) {
+      // A real delay must have produced an observable boot window, otherwise the
+      // assertion above passed vacuously and proves nothing.
+      expect(sightings.loading).toBeGreaterThan(0)
     }
 
     // It becomes actionable once boot settles, and one activation has one
@@ -147,10 +169,6 @@ test('a reloaded Host with an existing saved session still gates until recovery 
   await expect(page.getByRole('heading', { name: /host control/i })).toBeVisible()
   await ensureHostMoreOpen(page)
 
-  const status = page.getByTestId('persistence-status')
-  if (/opening saved games/i.test((await status.textContent()) ?? '')) {
-    await expect(initialize(page)).toBeDisabled()
-  }
   await expect(page.getByTestId('persistence-recovery')).toBeVisible()
   // Recovery is a choice, not a settled boot: session commands stay unavailable.
   await expect(initialize(page)).toBeDisabled()

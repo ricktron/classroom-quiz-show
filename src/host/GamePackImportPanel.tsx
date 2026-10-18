@@ -225,7 +225,21 @@ export function GamePackImportPanel({
       </p>
 
       <div className="pack-import__actions">
-        <label className="btn btn--secondary" htmlFor="pack-import-file">
+        {/*
+          The label carries the button styling, so it must also carry the
+          unavailable styling: a `<label>` can never match `.btn:disabled`, and
+          without this it keeps full secondary-button appearance while the input
+          it points at is inert (CQS-UX-P08 — an action must not look available
+          when it is not). `aria-disabled` is the established CQS convention for
+          a non-button affordance; the input's own `disabled` already makes the
+          assistive announcement truthful.
+        */}
+        <label
+          className="btn btn--secondary"
+          htmlFor="pack-import-file"
+          aria-disabled={busy || !canDispatch}
+          data-testid="pack-import-choose"
+        >
           Choose pack file
         </label>
         <input
