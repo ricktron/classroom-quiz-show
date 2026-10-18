@@ -15,6 +15,7 @@ import {
 import { HOST_DURATION_PRESET_SECONDS } from '../game/timing/limits'
 import { systemClock, type Clock } from '../time/clock'
 import { describeRemaining, formatRemaining } from '../time/duration'
+import { useRunningClockNow } from './useRunningClockNow'
 import './ResponseTimerHostPanel.css'
 
 /**
@@ -31,7 +32,8 @@ import './ResponseTimerHostPanel.css'
  * ARMED, is the clock RUNNING, how much is LEFT, and did the window END (and
  * how). All four are on screen in words. The remaining time shown here is derived
  * the same way the projector derives it — from the durable deadline plus a clock
- * read at render time — so the two cannot disagree about the number.
+ * read at the rendering edge, re-read at the projector's cadence while the window
+ * runs — so the two cannot disagree about the number.
  *
  * ## Bounded controls
  *
@@ -106,12 +108,7 @@ export function ResponseTimerHostPanel({
       </div>
       <h3 id="rth-title">Response window</h3>
 
-      <PhaseSummary
-        phase={phase}
-        open={open}
-        correctClosed={correctClosed}
-        clockNow={clock.now()}
-      />
+      <PhaseSummary phase={phase} open={open} correctClosed={correctClosed} clock={clock} />
 
       {!open && (
         <p className="host__note" data-testid="rth-unavailable">
@@ -245,23 +242,30 @@ export function ResponseTimerHostPanel({
  * The four facts, in words.
  *
  * The remaining time is computed from the durable deadline against a clock read
- * at RENDER time, exactly as the projector does it. Nothing is stored, and the
- * panel re-renders whenever the store changes — a host watching a live clock also
- * has the projector in front of them, so this panel deliberately does not run its
- * own interval just to animate a number.
+ * at RENDER time, exactly as the projector does it (CBN-5). While the window
+ * runs, `useRunningClockNow` re-reads that clock at the projector's cadence, so
+ * the teacher's number visibly progresses instead of standing still until some
+ * other change happens to re-render the panel.
+ *
+ * There is still exactly one timer authority. This appends no event, stores no
+ * sampled time and mutates no store state per tick; reaching 0:00 changes
+ * nothing here, and expiry remains the expiry hook's command. Any status other
+ * than `running` is a fixed value, so nothing is scheduled.
  */
 function PhaseSummary({
   phase,
   open,
   correctClosed,
-  clockNow,
+  clock,
 }: {
   readonly phase: ResponsePhaseState
   readonly open: boolean
   readonly correctClosed: boolean
-  readonly clockNow: number
+  readonly clock: Clock
 }) {
   const timer = phase.timer
+  // After Correct the panel shows no remaining time at all, so it must not tick.
+  const clockNow = useRunningClockNow(clock, timer.status === 'running' && !correctClosed)
   const remainingMs = remainingMsAt(timer, clockNow)
   // After Correct, leftover private running/paused/expired facts are not a live
   // Host response window — do not present Running / Paused / Time up as status.
