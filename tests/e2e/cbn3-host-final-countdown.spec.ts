@@ -95,6 +95,7 @@ test('CBN-3: the Host Final response countdown ticks and agrees with the project
   }
   await page.getByRole('button', { name: 'Lock all responses' }).click()
   await expect(page.getByRole('button', { name: 'Reveal the answer' })).toBeVisible()
+  await expect(hostResponse(page).filter({ hasText: 'running' })).toHaveCount(0)
 })
 
 test('CBN-3: the Host Final wager countdown ticks and agrees with the projector', async ({

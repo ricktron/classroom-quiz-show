@@ -1,3 +1,4 @@
+import { useLayoutEffect } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, render, screen } from '@testing-library/react'
 import { FinalWagerHostPanel } from './FinalWagerHostPanel'
@@ -135,6 +136,35 @@ describe('the host Final response countdown ticks from the durable deadline (CBN
     tick(clock, 10_000)
     expect(responseStatus().textContent).toBe(paused)
     expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it('the first render after Resume already shows the paused remaining time, never a stale sample', () => {
+    const store = responseWindowStore()
+    const clock = createManualClock(AT)
+    const committed: (string | null)[] = []
+    // Records the text of every commit, before any effect can correct it.
+    function CommitProbe() {
+      useLayoutEffect(() => {
+        committed.push(screen.queryByTestId('fwh-response-status')?.textContent ?? null)
+      })
+      return null
+    }
+    const element = () => (
+      <>
+        <FinalWagerHostPanel dispatch={(command) => store.dispatch(command)} game={gameOf(store)} clock={clock} />
+        <CommitProbe />
+      </>
+    )
+    const view = render(element())
+    tick(clock, 4_000)
+    store.dispatch({ type: 'PAUSE_FINAL_RESPONSE_WINDOW', issuedAt: AT + 4_000, roundId: ROUND })
+    view.rerender(element())
+    const paused = responseStatus().textContent?.replace('paused', 'running')
+    tick(clock, 60_000)
+    store.dispatch({ type: 'RESUME_FINAL_RESPONSE_WINDOW', issuedAt: AT + 64_000, roundId: ROUND })
+    committed.length = 0
+    view.rerender(element())
+    expect(committed[0]).toBe(paused)
   })
 
   it('shows time up after the authoritative expiry and schedules nothing more', () => {

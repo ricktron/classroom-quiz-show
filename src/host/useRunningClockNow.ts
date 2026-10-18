@@ -10,15 +10,18 @@ import type { Clock } from '../time/clock'
  * running this re-reads the clock at the projector's rate, so the number visibly
  * progresses; nothing is stored, no event is appended, and expiry stays the
  * expiry hook's command. Any other status needs no ticking, so nothing is
- * scheduled and the clock is read on render as before.
+ * scheduled.
+ *
+ * Every render reads the clock itself; the interval only asks for a re-render.
+ * So no commit can show a value sampled earlier (for example the pre-pause value
+ * on the first render after Resume).
  */
 export function useRunningClockNow(clock: Clock, running: boolean): number {
-  const [sampled, setSampled] = useState(() => clock.now())
+  const [, setTick] = useState(0)
   useEffect(() => {
     if (!running) return
-    setSampled(clock.now())
-    const handle = setInterval(() => setSampled(clock.now()), COUNTDOWN_TICK_MS)
+    const handle = setInterval(() => setTick((tick) => tick + 1), COUNTDOWN_TICK_MS)
     return () => clearInterval(handle)
   }, [clock, running])
-  return running ? sampled : clock.now()
+  return clock.now()
 }
