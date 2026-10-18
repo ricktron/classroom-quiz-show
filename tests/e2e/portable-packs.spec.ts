@@ -184,14 +184,19 @@ async function assertImagePromptVisible(host: Page, display: Page, tileTestId: s
   await expect(host.getByTestId('mcd-img')).toHaveCount(0)
 
   await host.getByTestId('cbh-reveal-prompt').click()
+  // The projector may render before its pack-media hydration settles; what this
+  // test claims is the SETTLED image. Web-first assertions poll for it (bounded
+  // by the expect timeout), so a product that never reaches the pack blob still
+  // fails, while a single early read no longer races hydration (Court A/B 2026-10-17).
+  await expect(
+    display.getByTestId('mcd-img'),
+    'display image must resolve from pack blob, not hosted path',
+  ).toHaveAttribute('src', /^blob:/)
   await expect(display.getByTestId('mcd-img')).toBeVisible()
   await expect(display.getByTestId('mcd-image-fallback')).toHaveCount(0)
-  const displaySrc = await display.getByTestId('mcd-img').getAttribute('src')
-  expect(displaySrc, 'display image must resolve from pack blob, not hosted path').toMatch(/^blob:/)
-  expect(displaySrc).not.toContain(MEDIA_PATH)
+  expect(await display.getByTestId('mcd-img').getAttribute('src')).not.toContain(MEDIA_PATH)
 
-  const hostSrc = await host.getByTestId('cbh-prompt-image').getAttribute('src')
-  expect(hostSrc).toMatch(/^blob:/)
+  await expect(host.getByTestId('cbh-prompt-image')).toHaveAttribute('src', /^blob:/)
 }
 
 async function openHostDisplayWithBlockedMedia(context: BrowserContext) {
