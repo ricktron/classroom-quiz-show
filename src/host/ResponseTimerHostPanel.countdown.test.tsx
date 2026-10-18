@@ -202,7 +202,6 @@ describe('the host board response countdown ticks from the durable deadline (CBN
     expect(remaining()).toHaveTextContent(formatRemaining(remainingMsAt(timer, AT + 12_000)))
   })
 
-
   it('schedules nothing once Correct has closed the opportunity', () => {
     // Canonical leftover-running Correct: the private timer is still `running`
     // for undo fidelity, but Correct owns the opportunity so the panel shows no
@@ -213,6 +212,9 @@ describe('the host board response countdown ticks from the durable deadline (CBN
     renderPanel(store, clock)
 
     expect(screen.getByTestId('rth-remaining')).toHaveTextContent('—')
+    // The discriminator, stated rather than left to a mutation run: this is the
+    // Correct-closed branch, not the idle branch (which also shows a dash).
+    expect(status()).toHaveTextContent(/closed — not a live response timer/i)
     expect(vi.getTimerCount()).toBe(0)
 
     // And the leftover timer really is still running underneath, so this is the
