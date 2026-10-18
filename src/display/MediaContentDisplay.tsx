@@ -83,9 +83,13 @@ function ImagePrompt({
 }) {
   const path = content.source.path
   const [hydrateTick, setHydrateTick] = useState(0)
-  // Path-scoped failure: a prior failed source must not poison a later valid
-  // source, and a stale onError from an abandoned src must be ignored.
-  const [failedForPath, setFailedForPath] = useState<string | null>(null)
+  // Source-scoped failure: a prior failed source must not poison a later valid
+  // source, and a stale onError from an abandoned src must be ignored. Scoped to
+  // the resolved src, not the authored path: the same path first resolves to its
+  // hosted URL and, once pack media hydrates, to the pack blob. A hosted-path
+  // error that lands before hydration must not hide the blob (Court A/B
+  // portable-packs failure, 2026-10-17).
+  const [failedSrc, setFailedSrc] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -106,7 +110,7 @@ function ImagePrompt({
   // hydrateTick forces re-resolve after async pack registry hydration.
   void hydrateTick
   const src = resolveSameOriginMediaSrc(path)
-  const failed = src === null || failedForPath === path
+  const failed = src === null || failedSrc === src
 
   if (failed || src === null) {
     return <ImageFallback content={content} />
@@ -121,7 +125,7 @@ function ImagePrompt({
         data-testid="mcd-img"
         onError={(event) => {
           if (event.currentTarget.getAttribute('src') !== src) return
-          setFailedForPath(path)
+          setFailedSrc(src)
         }}
       />
       {content.caption !== null && (
