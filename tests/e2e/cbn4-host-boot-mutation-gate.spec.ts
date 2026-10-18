@@ -73,6 +73,72 @@ async function delayFirstStorageOpen(page: Page, delayMs: number): Promise<void>
   }, delayMs)
 }
 
+/**
+ * Hold the FIRST `indexedDB.open` until the test releases it, so the boot window
+ * is a fact the test controls rather than a wall-clock delay it races.
+ *
+ * `delayFirstStorageOpen` is still used where the point is a realistic delay;
+ * this is used where the point is observing the unsettled state itself. The
+ * release hook is installed by `addInitScript` only — product code never
+ * defines or reads it (see production-bundle-test-hooks.spec.ts, which forbids
+ * `__cqs*` window globals in the shipped bundle).
+ */
+const RELEASE_HOOK = 'cbn4ReleaseStorageOpen'
+
+async function gateFirstStorageOpen(page: Page): Promise<() => Promise<void>> {
+  await page.addInitScript((hook: string) => {
+    const realOpen = IDBFactory.prototype.open
+    let gated = false
+    let release = () => undefined as void
+    const opened = new Promise<void>((resolve) => {
+      release = () => resolve()
+    })
+    ;(window as unknown as Record<string, () => void>)[hook] = () => release()
+    IDBFactory.prototype.open = function patchedOpen(
+      this: IDBFactory,
+      name: string,
+      version?: number,
+    ) {
+      if (gated) return realOpen.call(this, name, version)
+      gated = true
+      const stub = {
+        onupgradeneeded: null as ((event: Event) => void) | null,
+        onsuccess: null as ((event: Event) => void) | null,
+        onerror: null as ((event: Event) => void) | null,
+        onblocked: null as ((event: Event) => void) | null,
+        result: undefined as IDBDatabase | undefined,
+        error: null as DOMException | null,
+        transaction: null,
+        readyState: 'pending' as const,
+      }
+      void opened.then(() => {
+        const request = realOpen.call(this, name, version)
+        request.onupgradeneeded = (event) => {
+          stub.result = request.result
+          stub.onupgradeneeded?.call(stub as unknown as IDBOpenDBRequest, event)
+        }
+        request.onsuccess = (event) => {
+          stub.result = request.result
+          stub.onsuccess?.call(stub as unknown as IDBOpenDBRequest, event)
+        }
+        request.onerror = (event) => {
+          stub.error = request.error
+          stub.onerror?.call(stub as unknown as IDBOpenDBRequest, event)
+        }
+        request.onblocked = (event) => {
+          stub.onblocked?.call(stub as unknown as IDBOpenDBRequest, event)
+        }
+      })
+      return stub as unknown as IDBOpenDBRequest
+    } as typeof IDBFactory.prototype.open
+  }, RELEASE_HOOK)
+  return async () => {
+    await page.evaluate((hook: string) => {
+      ;(window as unknown as Record<string, () => void>)[hook]()
+    }, RELEASE_HOOK)
+  }
+}
+
 const initialize = (page: Page) =>
   page.getByRole('button', { name: /initialize \/ reset session/i })
 
@@ -82,58 +148,43 @@ async function openHost(page: Page): Promise<void> {
   await ensureHostMoreOpen(page)
 }
 
+test('the Host offers no actionable Initialize while saved-state boot is unsettled', async ({
+  page,
+}) => {
+  const releaseStorage = await gateFirstStorageOpen(page)
+  await openHost(page)
+
+  const status = page.getByTestId('persistence-status')
+  const button = initialize(page)
+
+  // Deterministic: storage is held open, so this IS the unsettled state. No
+  // wall-clock race, and nothing here can pass vacuously.
+  await expect(status).toHaveText(/opening saved games/i)
+  await expect(button).toBeDisabled()
+  await expect(page.getByTestId('import-run')).toBeDisabled()
+  await expect(page.getByTestId('private-session')).toHaveText('—')
+
+  // Pressing it while unavailable cannot queue an action for later either.
+  await button.click({ force: true }).catch(() => undefined)
+  await expect(page.getByTestId('private-session')).toHaveText('—')
+
+  await releaseStorage()
+
+  // Once boot settles the same control becomes actionable, and one activation
+  // has one durable visible effect — no phantom and no double activation.
+  await expect(button).toBeEnabled()
+  await expect(status).not.toHaveText(/opening saved games/i)
+  await expect(page.getByTestId('private-session')).toHaveText('—')
+  await button.click()
+
+  await expect(page.getByTestId('private-session')).not.toHaveText('—')
+  await expect(page.getByTestId('private-revision')).toHaveText('1')
+  await expect(
+    page.getByTestId('event-history').getByText('SESSION_INITIALIZED', { exact: true }),
+  ).toHaveCount(1)
+})
+
 for (const delayMs of [0, 500, 1500]) {
-  test(`Host boot at ${delayMs}ms storage delay never offers an actionable Initialize before it settles`, async ({
-    page,
-  }) => {
-    await delayFirstStorageOpen(page, delayMs)
-    await openHost(page)
-
-    const status = page.getByTestId('persistence-status')
-    const button = initialize(page)
-    await expect(button).toBeAttached()
-
-    /*
-      The gate, asserted without a pre-sampled `if`: sample the control and the
-      status TOGETHER, repeatedly, and require that the control is never
-      actionable while the status still says the Host is opening saved games.
-      A one-shot `if` could be evaluated after boot had already settled and then
-      assert nothing at all; this cannot. At 0ms there may be no boot window to
-      catch, which is correct — the invariant is "never actionable while
-      loading", not "a loading window must exist".
-    */
-    const sightings = { loading: 0, actionableWhileLoading: 0 }
-    const deadline = Date.now() + 3_000
-    while (Date.now() < deadline) {
-      const [text, enabled] = await Promise.all([status.textContent(), button.isEnabled()])
-      const loading = /opening saved games/i.test(text ?? '')
-      if (loading) {
-        sightings.loading += 1
-        if (enabled) sightings.actionableWhileLoading += 1
-      } else if (sightings.loading > 0 || delayMs === 0) {
-        break
-      }
-    }
-    expect(sightings.actionableWhileLoading).toBe(0)
-    if (delayMs > 0) {
-      // A real delay must have produced an observable boot window, otherwise the
-      // assertion above passed vacuously and proves nothing.
-      expect(sightings.loading).toBeGreaterThan(0)
-    }
-
-    // It becomes actionable once boot settles, and one activation has one
-    // durable visible effect — no phantom and no double activation.
-    await expect(button).toBeEnabled()
-    await expect(status).not.toHaveText(/opening saved games/i)
-    await button.click()
-
-    await expect(page.getByTestId('private-session')).not.toHaveText('—')
-    await expect(page.getByTestId('private-revision')).toHaveText('1')
-    await expect(
-      page.getByTestId('event-history').getByText('SESSION_INITIALIZED', { exact: true }),
-    ).toHaveCount(1)
-  })
-
   test(`import through the Host harness survives a ${delayMs}ms storage-open delay`, async ({
     page,
   }) => {
