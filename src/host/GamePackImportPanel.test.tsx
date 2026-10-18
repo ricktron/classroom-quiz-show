@@ -278,5 +278,7 @@ it('offers no actionable pack file picker while this window cannot accept sessio
 it('keeps the pack file picker and its label actionable when commands are accepted', () => {
   renderPanel()
   expect(screen.getByTestId('pack-import-file')).toBeEnabled()
-  expect(screen.getByTestId('pack-import-choose')).toHaveAttribute('aria-disabled', 'false')
+  // Omitted, not "false": <label> has no mapped ARIA role, so the attribute
+  // should not linger once the control is actionable.
+  expect(screen.getByTestId('pack-import-choose')).not.toHaveAttribute('aria-disabled')
 })

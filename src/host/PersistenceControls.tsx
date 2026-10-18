@@ -350,7 +350,9 @@ export function PersistenceControls({
             type="button"
             className="btn btn--secondary"
             data-testid="persistence-clear-all-action"
-            disabled={persistence.bootPhase === 'loading' || clearAllBusy}
+            // Read-only means another window owns saving; an irreversible wipe
+            // of every CQS record on the device is not this window's to make.
+            disabled={persistence.bootPhase === 'loading' || clearAllBusy || readOnly}
             onClick={() => void clearAllLocalData()}
           >
             {clearAllBusy

@@ -9,6 +9,7 @@ import type { DispatchResult } from '../state/store'
 import { systemClock, type Clock } from '../time/clock'
 import { nextHostSessionId } from './ensureSession'
 import {
+  FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE,
   canPersistMutations,
   canPublishHostPublicState,
   rejectIfCannotPersist,
@@ -781,6 +782,17 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   )
 
   const clearAllLocalData = useCallback(async (): Promise<PersistenceActionResult> => {
+    // Fail closed while ANOTHER window owns saving (CBN-4 R2). This is an
+    // irreversible aggregate wipe of every CQS record on the device, so a
+    // read-only follower must not destroy the class the saving window is in the
+    // middle of. `unknown` is deliberately still allowed: nobody owns the lease
+    // then, so the wipe — and a retry after a blocked attempt — is the
+    // teacher's to make.
+    if (leadershipRef.current === 'follower') {
+      const message = FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE
+      setMessage(message)
+      return { ok: false, message }
+    }
     // Invalidate in-flight active-session writes before tearing down storage.
     writeQueue.nextActiveSessionGeneration()
     storageReadyRef.current = false

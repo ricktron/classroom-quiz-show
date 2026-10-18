@@ -928,3 +928,39 @@ function activeTimerHistory(deadline: number): readonly SessionEvent[] {
     },
   ]
 }
+
+describe('aggregate local-data wipe write authority (CBN-4 R2)', () => {
+  it('blocks a follower from wiping all local data and leaves every record intact', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    const clock = createManualClock(AT)
+    await seedActiveSession(adapter, activeHistory())
+    await acquireOrRenewHostLease({
+      adapter,
+      tabId: 'tab-owner',
+      clock,
+      leaseTtlMs: 1_000,
+      broadcastChannel: null,
+    })
+
+    const { api } = renderHarness(adapter, 'tab-follower')
+    await waitFor(() => expect(api().persistence.leadership).toBe('follower'))
+
+    // The wipe is irreversible and covers every CQS record on the device, so a
+    // window that is read-only because ANOTHER window owns saving must not be
+    // able to destroy that window's class.
+    let ok = true
+    let message = ''
+    await act(async () => {
+      const result = await api().persistence.clearAllLocalData()
+      ok = result.ok
+      message = result.message
+    })
+    expect(ok).toBe(false)
+    expect(message).toMatch(/another classroom quiz show window/i)
+
+    // Nothing was torn down: the seeded active session is still readable.
+    const read = await readActiveSession(adapter, createDefaultRegistry())
+    expect(read.ok).toBe(true)
+    expect(read.ok && read.value.kind).toBe('resumable')
+  })
+})

@@ -230,14 +230,18 @@ export function GamePackImportPanel({
           unavailable styling: a `<label>` can never match `.btn:disabled`, and
           without this it keeps full secondary-button appearance while the input
           it points at is inert (CQS-UX-P08 — an action must not look available
-          when it is not). `aria-disabled` is the established CQS convention for
-          a non-button affordance; the input's own `disabled` already makes the
-          assistive announcement truthful.
+          when it is not). `.btn[aria-disabled='true']` in global.css is the
+          existing rule this reuses, on a `<label>` for the first time in CQS.
+          The attribute is OMITTED rather than set to "false" when the control is
+          actionable: `<label>` has no mapped ARIA role, so the attribute is not
+          allowed there and should not linger. The input's own `disabled` already
+          makes the assistive announcement truthful, and clicking a label whose
+          control is disabled does not activate it.
         */}
         <label
           className="btn btn--secondary"
           htmlFor="pack-import-file"
-          aria-disabled={busy || !canDispatch}
+          aria-disabled={busy || !canDispatch || undefined}
           data-testid="pack-import-choose"
         >
           Choose pack file

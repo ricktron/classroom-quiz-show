@@ -244,8 +244,13 @@ it('holds Initialize / reset session unavailable in a read-only follower window'
  */
 function isActionable(element: HTMLElement): boolean {
   if ((element as HTMLButtonElement).disabled) return false
-  if (element.getAttribute('aria-disabled') === 'true') return false
-  return element.closest('fieldset[disabled]') === null
+  if (element.closest('[aria-disabled="true"]') !== null) return false
+  const fieldset = element.closest('fieldset[disabled]')
+  if (fieldset === null) return true
+  // A control inside a disabled fieldset's FIRST legend is not disabled by it,
+  // so treating it as inert here would hide a real finding.
+  const legend = fieldset.querySelector(':scope > legend')
+  return legend !== null && legend.contains(element)
 }
 
 /**
@@ -255,12 +260,82 @@ function isActionable(element: HTMLElement): boolean {
  * closed: a newly added mutation-capable button is enabled, is not named here,
  * and turns this test RED without anyone remembering to extend it.
  */
-const NON_COMMAND_ADVANCED_CONTROLS: readonly string[] = [
-  'Copy diagnostic report',
-  'Reset trace',
-  'Copy text',
-  'Copy JSON',
+const NON_COMMAND_HOST_CONTROLS: readonly string[] = [
+  // Host chrome and navigation: posture and window state only.
+  'Back to Home',
+  'More',
+  'host-chrome-mute',
+  'host-chrome-display',
+  'setup-play',
+  '<input name=host-theme>',
+  // Presentation audio: device output, never the session.
+  'audio-enable',
+  'audio-panic-mute',
+  // Content PREPARATION. These stage text or read a file; the dispatching step
+  // in each flow (import-run, spreadsheet-approve, pack-import-file) is gated.
+  'Load valid sample file',
+  'Load category-board sample file',
+  'Load board + final-wager sample file',
+  'Load sample with unregistered round type',
+  'Load sample with a duplicate team id',
+  'Load sample with a duplicate tile id',
+  'Clear',
+  'spreadsheet-download-classic',
+  'spreadsheet-download-final',
+  'spreadsheet-upload',
+  // Export and read-only ledger views.
+  'export-download',
+  'pack-export-download',
+  'Refresh ledger',
+  'Filter by game',
+  'Filter by class label',
+  'Sort completed summaries',
+  // Advanced diagnostics: observability only. None reaches the session — they
+  // copy a sanitized snapshot to the clipboard or clear an in-memory trace
+  // buffer. "Reset trace" does have a side effect, so this list means "changes
+  // nothing in the session", not "side-effect free".
+  'Advanced diagnostics',
+  'Copy diagnostic reportTroubleshooting evidence · no classroo',
+  'diagnostic-report-copy',
+  'Wbuzz signal-chain traceQ7 diagnostic · Advanced only · no c',
+  'wbuzz-signal-trace-reset',
+  'wbuzz-signal-trace-copy-text',
+  'wbuzz-signal-trace-copy-json',
 ]
+
+/**
+ * Every styled affordance and form control on the whole Host surface.
+ *
+ * `getAllByRole('button')` alone returns only `<button>`: it would miss the pack
+ * picker's `<label className="btn">` — the exact affordance class this repair
+ * had to fix — and miss `<select>` / `<input>` controls entirely.
+ */
+/**
+ * A stable identifier for an affordance: its `data-testid` when it has one,
+ * otherwise its trimmed label. Matching on `textContent` alone is fragile — a
+ * future control sharing a label would silently inherit an allowlist entry.
+ */
+function affordanceId(element: HTMLElement): string {
+  const testId = element.getAttribute('data-testid')
+  if (testId !== null) return testId
+  const id = element.getAttribute('id')
+  if (id !== null && id.length > 0) return `#${id}`
+  const label = element.getAttribute('aria-label') ?? element.textContent?.trim() ?? ''
+  // Never return an empty identifier: an anonymous affordance must not be able
+  // to slip past the allowlist by matching an empty entry.
+  if (label.length > 0) return label.slice(0, 60)
+  const name = element.getAttribute('name')
+  return `<${element.tagName.toLowerCase()}${name === null ? '' : ` name=${name}`}>`
+}
+
+function hostAffordances(): readonly HTMLElement[] {
+  const host = screen.getByTestId('host-foundation')
+  return [
+    ...host.querySelectorAll<HTMLElement>(
+      'button, [role="button"], label.btn, a.btn, summary, select, input:not([type="hidden"])',
+    ),
+  ]
+}
 
 const GAME_FILE = JSON.stringify({
   format: 'classroom-quiz-show/game',
@@ -305,22 +380,18 @@ describe('a window demoted to read-only mid-game', () => {
 
     await demoteToFollower(adapter)
 
-    const advanced = within(screen.getByTestId('host-advanced'))
-    const stillActionable = advanced
-      .getAllByRole('button')
-      .filter(isActionable)
-      .map((button) => button.textContent?.trim() ?? '')
-    expect(stillActionable).toEqual(
-      stillActionable.filter((label) => NON_COMMAND_ADVANCED_CONTROLS.includes(label)),
-    )
+    const stillActionable = hostAffordances().filter(isActionable)
+    const unexpected = stillActionable
+      .map(affordanceId)
+      .filter((id) => !NON_COMMAND_HOST_CONTROLS.includes(id))
+    expect(unexpected).toEqual([])
 
-    // Pressing everything that is still actionable changes nothing durable —
-    // proving the allowlist really is command-free, not merely unchecked.
+    // Pressing everything still actionable changes nothing in the session —
+    // proving the allowlist is command-free, not merely unchecked. (Some of
+    // these do have other side effects: the clipboard, an in-memory trace.)
     const revisionBefore = screen.getByTestId('private-revision').textContent
     const historyBefore = screen.getByTestId('event-history').textContent
-    for (const button of advanced.getAllByRole('button').filter(isActionable)) {
-      fireEvent.click(button)
-    }
+    for (const element of stillActionable) fireEvent.click(element)
     expect(screen.getByTestId('private-revision').textContent).toBe(revisionBefore)
     expect(screen.getByTestId('event-history').textContent).toBe(historyBefore)
   })
@@ -338,5 +409,24 @@ describe('a window demoted to read-only mid-game', () => {
     expect(screen.getByTestId('import-run')).toBeDisabled()
     expect(screen.getByTestId('pack-import-file')).toBeDisabled()
     expect(initializeButton()).toBeDisabled()
+  })
+
+
+  it('offers no aggregate data wipe while another window owns saving', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    renderHost(adapter, 'cbn4-wipe')
+    await waitForInitializeActionable()
+    fireEvent.click(initializeButton())
+    await waitFor(() => {
+      expect(screen.getByTestId('private-session').textContent).not.toBe('—')
+    })
+
+    await demoteToFollower(adapter)
+
+    // The aggregate wipe is irreversible and covers every CQS record on the
+    // device, including the class the SAVING window is in the middle of. The
+    // host-wide inventory above would also catch this; it is asserted by name
+    // because the consequence is permanent data loss, not a discarded action.
+    expect(screen.getByTestId('persistence-clear-all-action')).toBeDisabled()
   })
 })
