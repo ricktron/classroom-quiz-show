@@ -69,6 +69,20 @@ describe('sonyBuzzMappingStore', () => {
     expect(materialized.ok && materialized.mapping.bindings.length).toBe(20)
   })
 
+  it('treats a record that assigns one Buzzer slot twice as malformed (CBN-1)', () => {
+    const record = createSonyBuzzMappingRecord({
+      gameId: 'game-1',
+      teamSignature: 'blue\u001fred',
+      associations: [
+        { slotId: 2, teamId: 'red' },
+        { slotId: 2, teamId: 'blue' },
+      ],
+      optedIn: true,
+      updatedAt: '2026-10-17T00:00:00.000Z',
+    })
+    expect(parseSonyBuzzMappingRecord(JSON.parse(JSON.stringify(record)))).toBeNull()
+  })
+
   it('fail-closes unknown mapping version', async () => {
     const adapter = createMemoryPersistenceAdapter()
     await adapter.open()

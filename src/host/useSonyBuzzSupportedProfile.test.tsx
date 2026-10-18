@@ -79,4 +79,28 @@ describe('Save team mapping (CBN-1)', () => {
       { slotId: 2, teamId: 'blue' },
     ])
   })
+
+  it('clears a refusal once the teacher edits or clears, and does not claim a kept mapping that never existed', async () => {
+    const { result } = renderProfile()
+    await waitFor(() => expect(result.current.mappingStatus).toBe('absent'))
+    act(() => result.current.setSlotTeam(3, 'ghost-team'))
+    await act(async () => {
+      await result.current.saveAssociations()
+    })
+    // Nothing was saved before, so the copy must not say a saved mapping was kept.
+    expect(result.current.mappingIssue).toMatch(/not saved/i)
+    expect(result.current.mappingIssue).not.toMatch(/saved mapping was not changed/i)
+    act(() => result.current.setSlotTeam(3, 'red'))
+    expect(result.current.mappingIssue).toBeNull()
+
+    act(() => result.current.setSlotTeam(4, 'ghost-team'))
+    await act(async () => {
+      await result.current.saveAssociations()
+    })
+    expect(result.current.mappingIssue).not.toBeNull()
+    await act(async () => {
+      await result.current.clearSavedMapping()
+    })
+    expect(result.current.mappingIssue).toBeNull()
+  })
 })

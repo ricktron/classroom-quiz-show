@@ -477,6 +477,10 @@ note only *additional* authority where it exists.
 - **Deferred because:** one-controller-per-team is the accepted starting
   point; the mapping model's team-primary uniqueness rule would need a
   deliberate, tested relaxation.
+- **Partly delivered (2026-10-17, CBN-1):** for the supported Sony Buzz
+  profile only, several Buzzer handsets on the one receiver may map to one
+  team (ADR-019 §6; `CQS-OD-040` clarification). Generic per-team
+  controller capture and multiple receivers per team remain parked here.
 - **Dependencies:** stable physical-controller practice (OADL2-S07
   follow-ups, keep-alive resolution); `CQS-RA2-CONTROLLER-01`.
 - **Trigger:** a real class configuration needs more than four

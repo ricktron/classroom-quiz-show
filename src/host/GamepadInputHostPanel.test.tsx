@@ -790,9 +790,13 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     }
     const view = render(element())
     const panel = {
+      store,
       source,
       device,
       webHidTransport,
+      refresh() {
+        view.rerender(element())
+      },
       poll(times = 1) {
         act(() => {
           for (let index = 0; index < times; index += 1) driver.poll()
@@ -840,6 +844,27 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     }
     return panel
   }
+
+  it('CBN-1: Buzzers 3 and 4 saved to a team that already has Buzzer 1 all buzz that team', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await panel.flush()
+    panel.attachWbuzz()
+    await panel.connect()
+    fireEvent.change(screen.getByTestId('sbs-slot-3'), { target: { value: 'red' } })
+    fireEvent.change(screen.getByTestId('sbs-slot-4'), { target: { value: 'red' } })
+    fireEvent.click(screen.getByTestId('sbs-save-mapping'))
+    await panel.flush()
+    expect(screen.getByTestId('sbs-mapping-layer')).toHaveTextContent('Team mapping saved')
+    expect(screen.queryByTestId('sbs-mapping-issue')).toBeNull()
+    expect(screen.getByTestId('gih-enabled')).toHaveTextContent('On')
+
+    openClue(panel.store)
+    arm(panel.store)
+    panel.refresh()
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(4, 'red'))
+    panel.refresh()
+    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+  })
 
   it('stays Off with a Wbuzz pad and a supported mapping when the receiver was never connected', async () => {
     const panel = renderWbuzzPanel({ selectionMode: false })
