@@ -443,3 +443,68 @@ test('export-after-import produces an independent pack without hosted media', as
     await assertImagePromptVisible(host, display, 'cbh-tile-pack-image-100')
   })
 })
+
+/**
+ * Harness-only timing control: hold back IndexedDB open success on one page so
+ * its pack-media hydration settles after the given delay. No state is injected.
+ */
+async function delayIndexedDbOpen(page: Page, ms: number) {
+  await page.addInitScript((delay) => {
+    const original = indexedDB.open.bind(indexedDB)
+    const delayed = (...args: Parameters<typeof indexedDB.open>) => {
+      const request = original(...args)
+      const listeners: EventListenerOrEventListenerObject[] = []
+      let onsuccess: ((this: IDBRequest, event: Event) => unknown) | null = null
+      const addListener = request.addEventListener.bind(request)
+      request.addEventListener = ((type: string, listener: EventListenerOrEventListenerObject) => {
+        if (type === 'success') listeners.push(listener)
+        else addListener(type, listener)
+      }) as typeof request.addEventListener
+      Object.defineProperty(request, 'onsuccess', {
+        configurable: true,
+        get: () => onsuccess,
+        set: (handler) => {
+          onsuccess = handler
+        },
+      })
+      addListener('success', (event: Event) => {
+        setTimeout(() => {
+          onsuccess?.call(request, event)
+          for (const listener of listeners) {
+            if (typeof listener === 'function') listener.call(request, event)
+            else listener.handleEvent(event)
+          }
+        }, delay)
+      })
+      return request
+    }
+    ;(indexedDB as { open: typeof indexedDB.open }).open = delayed as typeof indexedDB.open
+  }, ms)
+}
+
+test('a hosted-path failure before pack hydration does not hide the pack image', async ({
+  browser,
+  context,
+}, info) => {
+  test.skip(info.project.name !== 'desktop-1080p', 'timing regression runs once (1080p)')
+  const pack = await buildImagePackBytes(context)
+
+  // No service worker: the projector's first request for the hosted path really
+  // reaches the network and fails, while its pack-media hydration is held back.
+  const clean = await browser.newContext({ serviceWorkers: 'block' })
+  try {
+    const host = await clean.newPage()
+    const display = await clean.newPage()
+    await delayIndexedDbOpen(display, 1_500)
+    await openHost(host)
+    await openDisplay(display)
+    await applyHostedMediaBlock(host, display)
+
+    await initSession(host)
+    await importPackFile(host, pack)
+    await host.getByRole('button', { name: /advance to next round/i }).click()
+    await assertImagePromptVisible(host, display, 'cbh-tile-pack-image-100')
+  } finally {
+    await clean.close()
+  }
+})

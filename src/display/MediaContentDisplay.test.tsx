@@ -181,6 +181,47 @@ describe('MediaContentDisplay', () => {
     expect(screen.getByTestId('mcd-img')).toBeInTheDocument()
   })
 
+  it('shows the pack image once it hydrates, even if the hosted path already failed', () => {
+    const registry = createPackResourceRegistry({
+      createObjectURL: () => 'blob:display-pack',
+      revokeObjectURL: () => undefined,
+    })
+    setSharedPackResourceRegistryForTests(registry)
+    const content: PublicPromptContent = {
+      kind: 'image',
+      source: { kind: 'same-origin-path', path: 'media-fixtures/slice-11-clue.png' },
+      alt: 'Pack image',
+      caption: null,
+      attribution: null,
+    }
+    // Before hydration the path resolves to its hosted URL, which is not hosted.
+    const { rerender } = render(<MediaContentDisplay content={content} />)
+    expect(screen.getByTestId('mcd-img')).toHaveAttribute(
+      'src',
+      expect.stringContaining('media-fixtures/slice-11-clue.png'),
+    )
+    fireEvent.error(screen.getByTestId('mcd-img'))
+    expect(screen.getByTestId('mcd-image-fallback')).toBeInTheDocument()
+
+    // Pack media hydrates; the next render resolves the same path to the blob.
+    registry.setActiveScope(
+      'scope',
+      new Map([
+        [
+          'media-fixtures/slice-11-clue.png',
+          { bytes: TINY_PNG_BYTES, mediaType: 'image/png', sha256: 'x' },
+        ],
+      ]),
+    )
+    rerender(<MediaContentDisplay content={content} />)
+    expect(screen.queryByTestId('mcd-image-fallback')).not.toBeInTheDocument()
+    expect(screen.getByTestId('mcd-img')).toHaveAttribute('src', 'blob:display-pack')
+
+    // A failure of the blob itself still fails closed.
+    fireEvent.error(screen.getByTestId('mcd-img'))
+    expect(screen.getByTestId('mcd-image-fallback')).toBeInTheDocument()
+  })
+
   it('keeps long caption and attribution wrapping classes for responsive projectors', () => {
     const long = 'Word '.repeat(40).trim()
     const content: PublicPromptContent = {
