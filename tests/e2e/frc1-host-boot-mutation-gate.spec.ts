@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test'
 import { ensureHostMoreOpen } from './helpers/hostMore'
 
 /**
- * CBN-4 — a teacher action must never be accepted and then silently discarded
+ * FRC-1 — a teacher action must never be accepted and then silently discarded
  * by Host persistence boot.
  *
  * `dispatchSessionCommand` refuses every session command while
@@ -20,8 +20,8 @@ import { ensureHostMoreOpen } from './helpers/hostMore'
 const VALID_GAME_FILE = JSON.stringify({
   format: 'classroom-quiz-show/game',
   schemaVersion: 1,
-  id: 'cbn4-boot-gate-game',
-  title: 'CBN-4 Boot Gate Game',
+  id: 'frc1-boot-gate-game',
+  title: 'FRC-1 Boot Gate Game',
   rounds: [{ id: 'r1', type: 'placeholder', title: 'First', config: { note: 'engine plumbing' } }],
 })
 
@@ -83,7 +83,7 @@ async function delayFirstStorageOpen(page: Page, delayMs: number): Promise<void>
  * defines or reads it (see production-bundle-test-hooks.spec.ts, which forbids
  * `__cqs*` window globals in the shipped bundle).
  */
-const RELEASE_HOOK = 'cbn4ReleaseStorageOpen'
+const RELEASE_HOOK = '__cqsReleaseStorageOpen'
 
 async function gateFirstStorageOpen(page: Page): Promise<() => Promise<void>> {
   await page.addInitScript((hook: string) => {
@@ -164,8 +164,10 @@ test('the Host offers no actionable Initialize while saved-state boot is unsettl
   await expect(page.getByTestId('import-run')).toBeDisabled()
   await expect(page.getByTestId('private-session')).toHaveText('—')
 
-  // Pressing it while unavailable cannot queue an action for later either.
-  await button.click({ force: true }).catch(() => undefined)
+  // Pressing it while unavailable cannot queue an action for later either. The
+  // press must actually be delivered: a swallowed failure here would make the
+  // assertion below prove nothing.
+  await button.click({ force: true, timeout: 5_000 })
   await expect(page.getByTestId('private-session')).toHaveText('—')
 
   await releaseStorage()
@@ -199,7 +201,7 @@ for (const delayMs of [0, 500, 1500]) {
     await page.getByTestId('import-run').click()
 
     await expect(page.getByTestId('import-result')).toContainText(/import succeeded/i)
-    await expect(page.getByTestId('game-title')).toHaveText('CBN-4 Boot Gate Game')
+    await expect(page.getByTestId('game-title')).toHaveText('FRC-1 Boot Gate Game')
     await expect(page.getByTestId('event-history')).toContainText('GAME_INITIALIZED')
   })
 }
@@ -211,7 +213,7 @@ test('a reloaded Host with an existing saved session still gates until recovery 
   await initialize(page).click()
   await page.getByTestId('import-json').fill(VALID_GAME_FILE)
   await page.getByTestId('import-run').click()
-  await expect(page.getByTestId('game-title')).toHaveText('CBN-4 Boot Gate Game')
+  await expect(page.getByTestId('game-title')).toHaveText('FRC-1 Boot Gate Game')
 
   // Reload behind a delayed storage open: the unfinished session must be
   // offered for recovery, and nothing may mutate it before that choice.
@@ -226,5 +228,5 @@ test('a reloaded Host with an existing saved session still gates until recovery 
 
   await page.getByTestId('persistence-resume').click()
   await expect(initialize(page)).toBeEnabled()
-  await expect(page.getByTestId('game-title')).toHaveText('CBN-4 Boot Gate Game')
+  await expect(page.getByTestId('game-title')).toHaveText('FRC-1 Boot Gate Game')
 })

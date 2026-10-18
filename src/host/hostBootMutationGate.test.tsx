@@ -18,7 +18,7 @@ import {
 } from '../test/hostPersistenceTestFixtures'
 
 /**
- * CBN-4 — no teacher action may be accepted and then silently discarded by
+ * FRC-1 — no teacher action may be accepted and then silently discarded by
  * Host persistence boot.
  *
  * `dispatchSessionCommand` already refuses every session command while
@@ -38,6 +38,16 @@ afterEach(() => {
 
 beforeEach(() => {
   stubHostMatchMedia(vi)
+  // The inventory below PRESSES every control it finds actionable, and the
+  // template-download controls reach `URL.createObjectURL`, which jsdom does not
+  // implement. Without this the run reported "passed" while emitting uncaught
+  // exceptions — a dirty run is not a green run.
+  if (typeof URL.createObjectURL !== 'function') {
+    vi.stubGlobal('URL', Object.assign(URL, {
+      createObjectURL: () => 'blob:host-boot-gate',
+      revokeObjectURL: () => undefined,
+    }))
+  }
 })
 
 /** Wraps an adapter so the FIRST `open()` settles only after `delayMs`. */
@@ -140,7 +150,7 @@ function sessionInitializedCount(): number {
 describe('mutation controls during unsettled persistence boot', () => {
   it('holds Initialize / reset session unavailable until boot settles, and loses nothing', async () => {
     const { adapter, release } = withGatedFirstOpen(createMemoryPersistenceAdapter())
-    renderHost(adapter, 'cbn4-gated')
+    renderHost(adapter, 'frc1-gated')
 
     const button = await screen.findByRole('button', {
       name: /initialize \/ reset session/i,
@@ -168,7 +178,7 @@ describe('mutation controls during unsettled persistence boot', () => {
     'holds Initialize / reset session unavailable across a %ims storage-open delay',
     async (delayMs) => {
       const adapter = withDelayedFirstOpen(createMemoryPersistenceAdapter(), delayMs)
-      renderHost(adapter, `cbn4-delay-${delayMs}`)
+      renderHost(adapter, `frc1-delay-${delayMs}`)
 
       const button = await screen.findByRole('button', {
         name: /initialize \/ reset session/i,
@@ -187,7 +197,7 @@ describe('mutation controls during unsettled persistence boot', () => {
 describe.each([0, 500, 1500])('Host at %ims storage-open delay, after boot', (delayMs) => {
   it('makes Initialize / reset session actionable, with one durable effect per activation', async () => {
     const adapter = withDelayedFirstOpen(createMemoryPersistenceAdapter(), delayMs)
-    renderHost(adapter, `cbn4-ready-${delayMs}`)
+    renderHost(adapter, `frc1-ready-${delayMs}`)
 
     await waitForInitializeActionable()
     fireEvent.click(initializeButton())
@@ -203,7 +213,7 @@ describe.each([0, 500, 1500])('Host at %ims storage-open delay, after boot', (de
 
 it('holds Initialize / reset session unavailable in a read-only follower window', async () => {
   const shared = createMemoryPersistenceAdapter()
-  renderHost(shared, 'cbn4-leader')
+  renderHost(shared, 'frc1-leader')
   await waitForInitializeActionable()
 
   // A second Host window on the same device, while the first still holds the
@@ -216,7 +226,7 @@ it('holds Initialize / reset session unavailable in a read-only follower window'
         <Routes>
           <Route
             path={ROUTES.host}
-            element={<HostRoute persistenceOptions={hostPersistenceOptions(shared, 'cbn4-follower')} />}
+            element={<HostRoute persistenceOptions={hostPersistenceOptions(shared, 'frc1-follower')} />}
           />
         </Routes>
       </ThemeProvider>
@@ -262,7 +272,6 @@ function isActionable(element: HTMLElement): boolean {
  */
 const NON_COMMAND_HOST_CONTROLS: readonly string[] = [
   // Host chrome and navigation: posture and window state only.
-  'Back to Home',
   'More',
   'host-chrome-mute',
   'host-chrome-display',
@@ -283,6 +292,8 @@ const NON_COMMAND_HOST_CONTROLS: readonly string[] = [
   'spreadsheet-download-classic',
   'spreadsheet-download-final',
   'spreadsheet-upload',
+  'import-json',
+  'diagnostic-report-text',
   // Export and read-only ledger views.
   'export-download',
   'pack-export-download',
@@ -332,7 +343,7 @@ function hostAffordances(): readonly HTMLElement[] {
   const host = screen.getByTestId('host-foundation')
   return [
     ...host.querySelectorAll<HTMLElement>(
-      'button, [role="button"], label.btn, a.btn, summary, select, input:not([type="hidden"])',
+      'button, [role="button"], label.btn, a.btn, summary, select, textarea, input:not([type="hidden"])',
     ),
   ]
 }
@@ -340,8 +351,8 @@ function hostAffordances(): readonly HTMLElement[] {
 const GAME_FILE = JSON.stringify({
   format: 'classroom-quiz-show/game',
   schemaVersion: 1,
-  id: 'cbn4-follower-game',
-  title: 'CBN-4 Follower Game',
+  id: 'frc1-follower-game',
+  title: 'FRC-1 Follower Game',
   rounds: [{ id: 'r1', type: 'placeholder', title: 'First', config: { note: 'engine plumbing' } }],
 })
 
@@ -365,7 +376,7 @@ async function demoteToFollower(adapter: PersistenceAdapter): Promise<void> {
 describe('a window demoted to read-only mid-game', () => {
   it('offers no actionable session command, and loses nothing when pressed', async () => {
     const adapter = createMemoryPersistenceAdapter()
-    renderHost(adapter, 'cbn4-demoted')
+    renderHost(adapter, 'frc1-demoted')
     await waitForInitializeActionable()
 
     // A real mid-game window: a session AND a loaded game, so every control
@@ -374,7 +385,7 @@ describe('a window demoted to read-only mid-game', () => {
     fireEvent.change(screen.getByTestId('import-json'), { target: { value: GAME_FILE } })
     fireEvent.click(screen.getByTestId('import-run'))
     await waitFor(() => {
-      expect(screen.getByTestId('game-title')).toHaveTextContent('CBN-4 Follower Game')
+      expect(screen.getByTestId('game-title')).toHaveTextContent('FRC-1 Follower Game')
     })
     expect(screen.getByTestId('game-rounds')).toBeInTheDocument()
 
@@ -398,7 +409,7 @@ describe('a window demoted to read-only mid-game', () => {
 
   it('keeps the demoted window from reaching the content-load paths', async () => {
     const adapter = createMemoryPersistenceAdapter()
-    renderHost(adapter, 'cbn4-demoted-load')
+    renderHost(adapter, 'frc1-demoted-load')
     await waitForInitializeActionable()
     fireEvent.click(initializeButton())
 
@@ -414,7 +425,7 @@ describe('a window demoted to read-only mid-game', () => {
 
   it('offers no aggregate data wipe while another window owns saving', async () => {
     const adapter = createMemoryPersistenceAdapter()
-    renderHost(adapter, 'cbn4-wipe')
+    renderHost(adapter, 'frc1-wipe')
     await waitForInitializeActionable()
     fireEvent.click(initializeButton())
     await waitFor(() => {

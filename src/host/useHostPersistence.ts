@@ -24,6 +24,7 @@ import {
   HOST_WRITER_RELEASE_STORAGE_KEY,
   PersistenceWriteQueue,
   acquireOrRenewHostLease,
+  hasLiveForeignHostLease,
   createStorageReleaseLedger,
   getDocumentWindowLeaseId,
   markHostLeaseReleasedSync,
@@ -264,6 +265,15 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     useState<readonly SessionEvent[]>(EMPTY_SESSION_HISTORY)
   const [storeEpoch, setStoreEpoch] = useState(0)
   const storageReadyRef = useRef(false)
+  /**
+   * Why this window's last `adapter.open()` failed, or null.
+   *
+   * `upgrade-blocked` is positive evidence that ANOTHER window still holds the
+   * database open, and it is reported by this window's own failed open — the one
+   * state in which no lease read can answer the question, because this window
+   * cannot read anything. The aggregate wipe needs that distinction.
+   */
+  const lastOpenFailureRef = useRef<PersistenceErrorCode | null>(null)
   const latestWriteToken = useRef(0)
   const lastCompletionAttemptRef = useRef<string | null>(null)
   const retryCompletionRef = useRef<{
@@ -365,6 +375,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       const opened = await adapter.open()
       if (cancelled) return
       if (!opened.ok) {
+        lastOpenFailureRef.current = opened.code
         setBootPhase('ready')
         setDurabilityStatus('unavailable')
         setLeadership('unknown')
@@ -372,6 +383,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         return
       }
 
+      lastOpenFailureRef.current = null
       storageReadyRef.current = true
       const lease = await acquireOrRenewHostLease(leadershipOptions)
       if (!cancelled) applyBootLease(lease)
@@ -782,16 +794,38 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   )
 
   const clearAllLocalData = useCallback(async (): Promise<PersistenceActionResult> => {
-    // Fail closed while ANOTHER window owns saving (CBN-4 R2). This is an
-    // irreversible aggregate wipe of every CQS record on the device, so a
-    // read-only follower must not destroy the class the saving window is in the
-    // middle of. `unknown` is deliberately still allowed: nobody owns the lease
-    // then, so the wipe — and a retry after a blocked attempt — is the
-    // teacher's to make.
-    if (leadershipRef.current === 'follower') {
-      const message = FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE
-      setMessage(message)
-      return { ok: false, message }
+    /*
+      Fail closed on EVIDENCE, not on cached leadership (FRC-1 R2b).
+
+      This is an irreversible aggregate wipe of every CQS record on the device,
+      and `deleteDatabase` cannot be cancelled: once issued it completes as soon
+      as the other window's connection closes, even when this window has already
+      reported `onblocked` as a failure. So a window must not issue it while
+      another window is live.
+
+      `leadership === 'unknown'` must NOT be read as "nobody owns the lease". It
+      means ownership could not be determined — including the realistic case
+      where this window's own `adapter.open()` failed (an IndexedDB version
+      upgrade is blocked by the first window), which is exactly when a teacher
+      reaches for Clear all. So instead of trusting that state, read the lease
+      store now: a live foreign lease refuses the wipe.
+
+      An unreadable lease store is the corrupt-storage recovery path and stays
+      available — Clear all is its only terminal — with the control's own
+      confirmation naming the risk this read could not rule out.
+    */
+    // An upgrade-blocked open is this window saying "another window still has
+    // the database open". No lease read can tell us that here, because a window
+    // whose own open failed cannot read the lease store either — which is the
+    // gap that made the wipe reachable against a live class.
+    if (lastOpenFailureRef.current === 'upgrade-blocked') {
+      setMessage(FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE)
+      return { ok: false, message: FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE }
+    }
+    const foreign = await hasLiveForeignHostLease(leadershipOptions)
+    if (foreign) {
+      setMessage(FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE)
+      return { ok: false, message: FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE }
     }
     // Invalidate in-flight active-session writes before tearing down storage.
     writeQueue.nextActiveSessionGeneration()
@@ -832,7 +866,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     setMessage(CLEAR_ALL_LOCAL_DATA_SUCCESS_MESSAGE)
     setStoreEpoch((epoch) => epoch + 1)
     return { ok: true, message: CLEAR_ALL_LOCAL_DATA_SUCCESS_MESSAGE }
-  }, [adapter, renewLease, updateCompletedLedger, updateLibrary, writeQueue])
+  }, [adapter, leadershipOptions, renewLease, updateCompletedLedger, updateLibrary, writeQueue])
 
   const resume = useCallback(() => {
     if (!recovery) return

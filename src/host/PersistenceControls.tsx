@@ -343,6 +343,23 @@ export function PersistenceControls({
             Confirm that you want to permanently delete all local Classroom Quiz Show
             data on this browser. Close other CQS tabs first if a previous attempt was
             blocked.
+            {/*
+              When saving is unavailable this window could not determine whether
+              another window is still using this data, and deleting cannot be
+              called back once it starts. Name that risk here rather than letting
+              the generic second press stand for it (CQS-UX-P22).
+            */}
+            {persistence.durabilityStatus === 'unavailable' && (
+              <>
+                {' '}
+                <strong data-testid="persistence-clear-all-ownership-warning">
+                  This window cannot tell whether another Classroom Quiz Show window is
+                  still using this data. If one is, its class session will be deleted too,
+                  and deleting cannot be stopped once it starts. Close every other
+                  Classroom Quiz Show window first.
+                </strong>
+              </>
+            )}
           </p>
         )}
         <div className="persistence__actions">

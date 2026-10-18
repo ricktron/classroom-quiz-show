@@ -929,7 +929,74 @@ function activeTimerHistory(deadline: number): readonly SessionEvent[] {
   ]
 }
 
-describe('aggregate local-data wipe write authority (CBN-4 R2)', () => {
+describe('aggregate local-data wipe write authority (FRC-1 R2)', () => {
+  it('refuses the wipe when this window\'s own open was blocked by another window', async () => {
+    /*
+      FRC-1 R2b — the reviewer's reproduced path. A second Host window whose
+      IndexedDB open is BLOCKED by the first window (the ordinary "app updated,
+      teacher opens a second Host" sequence) reaches `leadership === 'unknown'`
+      and `durabilityStatus === 'unavailable'`, which makes Clear all look like
+      the remedy. It cannot read the lease store either, because its own open
+      failed — so cached leadership and a lease read both answer "don't know".
+
+      `upgrade-blocked` IS the answer: it is this window reporting that another
+      window still holds the database open. And `deleteDatabase` cannot be
+      cancelled — once issued it completes when the other connection closes,
+      after this window has already reported `onblocked` as a failure. So it
+      must not be issued at all.
+    */
+    const adapter = createMemoryPersistenceAdapter()
+    await seedActiveSession(adapter, activeHistory())
+    vi.spyOn(adapter, 'open').mockResolvedValue({
+      ok: false,
+      code: 'upgrade-blocked',
+      message: 'IndexedDB upgrade is blocked by another open Classroom Quiz Show tab.',
+    } as never)
+
+    const { api } = renderHarness(adapter, 'tab-second')
+    await waitFor(() => expect(api().persistence.bootPhase).toBe('ready'))
+    expect(api().persistence.leadership).toBe('unknown')
+    expect(api().persistence.durabilityStatus).toBe('unavailable')
+
+    let ok = true
+    let message = ''
+    await act(async () => {
+      const result = await api().persistence.clearAllLocalData()
+      ok = result.ok
+      message = result.message
+    })
+    expect(ok).toBe(false)
+    expect(message).toMatch(/another classroom quiz show window/i)
+
+    // The other window's class is still on the device, and untouched.
+    vi.restoreAllMocks()
+    const read = await readActiveSession(adapter, createDefaultRegistry())
+    expect(read.ok && read.value.kind).toBe('resumable')
+  })
+
+  it('still allows the wipe when storage is genuinely unusable, so recovery has a terminal', async () => {
+    // The other side of the same coin: a teacher whose storage is corrupt is
+    // ALSO `unknown`, and Clear all is the only way out. Refusing here would
+    // strand them (Contract invariant: a recovery path needs a terminal).
+    const adapter = createMemoryPersistenceAdapter()
+    vi.spyOn(adapter, 'open').mockResolvedValue({
+      ok: false,
+      code: 'corrupt',
+      message: 'unreadable',
+    } as never)
+
+    const { api } = renderHarness(adapter, 'tab-alone')
+    await waitFor(() => expect(api().persistence.bootPhase).toBe('ready'))
+    expect(api().persistence.leadership).toBe('unknown')
+
+    let message = ''
+    await act(async () => {
+      message = (await api().persistence.clearAllLocalData()).message
+    })
+    // Whatever the outcome, it is NOT refused for ownership reasons.
+    expect(message).not.toMatch(/another classroom quiz show window/i)
+  })
+
   it('blocks a follower from wiping all local data and leaves every record intact', async () => {
     const adapter = createMemoryPersistenceAdapter()
     const clock = createManualClock(AT)
