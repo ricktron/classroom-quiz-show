@@ -300,7 +300,8 @@ export function previewSonyBuzzApply(
     version: GAMEPAD_MAPPING_VERSION,
     bindings: [...kept, ...built.bindings],
   }
-  return validateGamepadMapping(next, teams)
+  // Only the profile's own team is held to one buzz button (CBN-1).
+  return validateGamepadMapping(next, teams, { onePrimaryOnlyFor: profile.teamId })
 }
 
 /**

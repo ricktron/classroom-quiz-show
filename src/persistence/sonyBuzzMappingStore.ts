@@ -66,6 +66,9 @@ export function parseSonyBuzzMappingRecord(raw: unknown): SonyBuzzMappingRecord 
     const a = item as Record<string, unknown>
     if (!isSlotId(a.slotId)) return null
     if (typeof a.teamId !== 'string' || a.teamId.length === 0) return null
+    // One team per Buzzer slot (CBN-1): a duplicated slot is malformed, never
+    // silently materialized into an empty mapping.
+    if (associations.some((existing) => existing.slotId === a.slotId)) return null
     associations.push({ slotId: a.slotId, teamId: a.teamId })
   }
   // Reject accidental controllerIndex persistence

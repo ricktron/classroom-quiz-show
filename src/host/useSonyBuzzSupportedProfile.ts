@@ -52,6 +52,8 @@ export interface SonyBuzzSupportedProfileApi {
     | 'malformed'
     | 'loading'
   readonly materializedMapping: GamepadMapping
+  /** Why the last Save team mapping was refused, in teacher words; null otherwise. */
+  readonly mappingIssue: string | null
   readonly wbuzzController: GamepadControllerInfo | null
   readonly profileReady: boolean
   readonly connect: () => Promise<void>
@@ -90,6 +92,7 @@ export function useSonyBuzzSupportedProfile({
   const [mappingStatus, setMappingStatus] = useState<
     'absent' | 'ready' | 'stale' | 'unsupported-version' | 'malformed' | 'loading'
   >('loading')
+  const [mappingIssue, setMappingIssue] = useState<string | null>(null)
   const loadGeneration = useRef(0)
 
   const signature = useMemo(() => teamSetSignature(teams), [teams])
@@ -126,6 +129,8 @@ export function useSonyBuzzSupportedProfile({
   useEffect(() => {
     const gen = ++loadGeneration.current
     setMappingStatus('loading')
+    // A refusal belongs to the edit that caused it; a reload starts clean.
+    setMappingIssue(null)
     void (async () => {
       const outcome = await loadSonyBuzzMappingRecord(adapterRef.current!)
       if (gen !== loadGeneration.current) return
@@ -185,6 +190,7 @@ export function useSonyBuzzSupportedProfile({
     mappingStatus !== 'unsupported-version'
 
   const setSlotTeam = useCallback((slotId: SonyBuzzSlotId, teamId: string | null) => {
+    setMappingIssue(null)
     setAssociations((current) => {
       const without = current.filter((a) => a.slotId !== slotId)
       if (teamId == null) return without
@@ -193,6 +199,14 @@ export function useSonyBuzzSupportedProfile({
   }, [])
 
   const saveAssociations = useCallback(async () => {
+    // Fail closed (CBN-1): a mapping that cannot be materialized is never saved,
+    // so it can never silently become an empty mapping. The controller index is
+    // a live session locator and does not affect validity, so 0 stands in.
+    const usable = materializeSupportedProfileMapping({ controllerIndex: 0, associations, teams })
+    if (!usable.ok) {
+      setMappingIssue(`Team mapping not saved: ${usable.reason}${keptCopy(mappingStatus)}`)
+      return false
+    }
     const record = createSonyBuzzMappingRecord({
       gameId,
       teamSignature: signature,
@@ -200,14 +214,19 @@ export function useSonyBuzzSupportedProfile({
       optedIn: true,
     })
     const result = await saveSonyBuzzMappingRecord(adapterRef.current!, record)
-    if (!result.ok) return false
+    if (!result.ok) {
+      setMappingIssue(`Team mapping not saved: this device could not store it.${keptCopy(mappingStatus)}`)
+      return false
+    }
+    setMappingIssue(null)
     setMappingStatus('ready')
     return true
-  }, [gameId, signature, associations])
+  }, [gameId, signature, associations, teams, mappingStatus])
 
   const clearSavedMapping = useCallback(async () => {
     const result = await clearSonyBuzzMappingRecord(adapterRef.current!)
     if (!result.ok) return false
+    setMappingIssue(null)
     setAssociations(defaultSonyBuzzSlotAssociations(teams))
     setMappingStatus('absent')
     return true
@@ -219,6 +238,7 @@ export function useSonyBuzzSupportedProfile({
     associations,
     mappingStatus,
     materializedMapping,
+    mappingIssue,
     wbuzzController,
     profileReady,
     connect: () => lifecycleRef.current!.connect(),
@@ -228,4 +248,9 @@ export function useSonyBuzzSupportedProfile({
     clearSavedMapping,
     applyMaterializedMapping: () => materializedMapping,
   }
+}
+
+/** Only say the saved mapping was kept when a usable one is actually saved. */
+function keptCopy(mappingStatus: string): string {
+  return mappingStatus === 'ready' ? ' Your saved mapping was not changed.' : ''
 }

@@ -116,6 +116,49 @@ describe('sonyBuzzSupportedProfile', () => {
     expect(result.ok).toBe(false)
   })
 
+  it('materializes several Buzzers for one team: every slot buzzes its own team (CBN-1)', () => {
+    const a = teamId('a')
+    const b = teamId('b')
+    const result = materializeSupportedProfileMapping({
+      controllerIndex: 0,
+      associations: [
+        { slotId: 1, teamId: a },
+        { slotId: 2, teamId: b },
+        { slotId: 3, teamId: a },
+        { slotId: 4, teamId: a },
+      ],
+      teams: [{ id: a }, { id: b }],
+    })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.mapping.bindings).toHaveLength(4 * SONY_BUZZ_COLORS.length)
+    const primaryTeamForSlot = (slot: 1 | 2 | 3 | 4) =>
+      result.mapping.bindings.find(
+        (binding) =>
+          binding.buttonIndex === buttonIndexForSlotColor(slot, 'red') &&
+          binding.action.kind === 'primary-buzz',
+      )?.teamId
+    expect(primaryTeamForSlot(1)).toBe(a)
+    expect(primaryTeamForSlot(2)).toBe(b)
+    expect(primaryTeamForSlot(3)).toBe(a)
+    expect(primaryTeamForSlot(4)).toBe(a)
+  })
+
+  it('still refuses the same Buzzer slot twice (CBN-1)', () => {
+    const a = teamId('a')
+    const b = teamId('b')
+    const result = materializeSupportedProfileMapping({
+      controllerIndex: 0,
+      associations: [
+        { slotId: 2, teamId: a },
+        { slotId: 2, teamId: b },
+      ],
+      teams: [{ id: a }, { id: b }],
+    })
+    expect(result.ok).toBe(false)
+    expect(!result.ok && result.reason).toMatch(/Buzzer 2/)
+  })
+
   it('teamSetSignature is deterministic and order-independent', () => {
     const a = teamId('alpha')
     const b = teamId('beta')

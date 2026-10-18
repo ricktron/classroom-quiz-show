@@ -267,10 +267,18 @@ export function materializeSupportedProfileMapping(args: {
     return { ok: false, reason: 'Invalid controller index.' }
   }
   const bindings: GamepadBinding[] = []
+  const seenSlots = new Set<number>()
   for (const assoc of args.associations) {
+    if (seenSlots.has(assoc.slotId)) {
+      return { ok: false, reason: `${sonyBuzzerLabel(assoc.slotId)} is assigned more than once.` }
+    }
+    seenSlots.add(assoc.slotId)
     const teamKey = String(assoc.teamId)
     if (!teamIds.has(teamKey)) {
-      return { ok: false, reason: `Unknown or stale team id for slot ${assoc.slotId}.` }
+      return {
+        ok: false,
+        reason: `${sonyBuzzerLabel(assoc.slotId)} is set to a team this game does not have.`,
+      }
     }
     for (const color of SONY_BUZZ_COLORS) {
       bindings.push({
@@ -285,7 +293,10 @@ export function materializeSupportedProfileMapping(args: {
     return { ok: true, mapping: EMPTY_GAMEPAD_MAPPING }
   }
   const mapping: GamepadMapping = { version: 1, bindings }
-  const validated = validateGamepadMapping(mapping, args.teams as TeamDefinition[])
+  // Buzzer slot → team is many-to-one: several Buzzers may buzz for one team.
+  const validated = validateGamepadMapping(mapping, args.teams as TeamDefinition[], {
+    allowSharedTeamPrimary: true,
+  })
   if (!validated.ok) {
     return { ok: false, reason: validated.issues[0]?.message ?? 'Mapping validation failed.' }
   }

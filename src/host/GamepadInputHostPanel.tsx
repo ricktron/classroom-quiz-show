@@ -14,6 +14,7 @@ import {
   type GamepadControlRef,
   type GamepadMapping,
   type GamepadMappingIssue,
+  type GamepadMappingValidationOptions,
 } from '../input/gamepadMapping'
 import { controllerLabel, type GamepadSource } from '../input/gamepadSource'
 import { GAMEPAD_IGNORE_MESSAGE } from '../input/gamepadAdapter'
@@ -407,7 +408,11 @@ export function GamepadInputHostPanel({
         pending.action,
         control,
       )
-      const validation = validateGamepadMapping(next, teams)
+      const validation = validateGamepadMapping(
+        next,
+        teams,
+        editValidationOptions(pending.teamId, pending.action),
+      )
       if (!validation.ok) {
         // Nothing is overwritten: the conflict is reported and the existing
         // assignment is left exactly as it was.
@@ -485,7 +490,10 @@ export function GamepadInputHostPanel({
 
   useEffect(() => {
     if (sony.materializedMapping.bindings.length === 0) return
-    const validation = validateGamepadMapping(sony.materializedMapping, teams)
+    // Buzzer slot → team is many-to-one (CBN-1): several Buzzers may share a team.
+    const validation = validateGamepadMapping(sony.materializedMapping, teams, {
+      allowSharedTeamPrimary: true,
+    })
     if (!validation.ok) return
     setMapping(validation.mapping)
   }, [sonyMappingKey, sony.materializedMapping, teams])
@@ -508,8 +516,12 @@ export function GamepadInputHostPanel({
   })
 
   const applyMapping = useCallback(
-    (next: GamepadMapping): boolean => {
-      const validation = validateGamepadMapping(next, teams)
+    (next: GamepadMapping, editedTeamId?: string, editedAction: LocalInputAction = PRIMARY_BUZZ): boolean => {
+      const validation = validateGamepadMapping(
+        next,
+        teams,
+        editedTeamId === undefined ? {} : editValidationOptions(editedTeamId, editedAction),
+      )
       if (!validation.ok) {
         setIssues(validation.issues)
         return false
@@ -628,6 +640,7 @@ export function GamepadInputHostPanel({
             },
             onDisableKeepAlive: () => sony.disableKeepAlive(),
             onSetSlotTeam: sony.setSlotTeam,
+            mappingIssue: sony.mappingIssue,
             onSaveAssociations: () => {
               void sony.saveAssociations()
             },
@@ -808,10 +821,13 @@ export function GamepadInputHostPanel({
                 aria-label={`Clear the controller button for ${teamLabel}`}
                 disabled={control === null}
                 onClick={() => {
-                  applyMapping(
+                  const cleared = applyMapping(
                     withGamepadControlForTeamAction(mapping, team.id, pendingAction, null),
+                    team.id,
+                    pendingAction,
                   )
-                  setCaptureMessage(`Controller button cleared for ${teamLabel}.`)
+                  // Say "cleared" only when it was (CBN-1 review: no false success copy).
+                  setCaptureMessage(cleared ? `Controller button cleared for ${teamLabel}.` : null)
                 }}
               >
                 Clear
@@ -875,6 +891,7 @@ export function GamepadInputHostPanel({
           },
           onDisableKeepAlive: () => sony.disableKeepAlive(),
           onSetSlotTeam: sony.setSlotTeam,
+          mappingIssue: sony.mappingIssue,
           onSaveAssociations: () => {
             void sony.saveAssociations()
           },
@@ -945,4 +962,15 @@ const REFUSAL_MESSAGE: Partial<Record<string, string>> = {
   'no-teams-configured': 'This game has no teams, so nobody can buzz.',
   'game-already-ended': 'The game has ended.',
   'round-mismatch': 'That press was for a round that is no longer current.',
+}
+
+/**
+ * Validation for a generic edit of ONE team's ONE action (CBN-1). The edit
+ * helper replaces every binding the team has for that action, so a buzz edit
+ * leaves exactly one buzz button for the edited team and only that team is held
+ * to the one-primary rule; other teams' supported-profile Buzzers are not
+ * re-judged. A non-buzz edit touches no buzz button, so it re-judges none.
+ */
+function editValidationOptions(teamId: string, action: LocalInputAction): GamepadMappingValidationOptions {
+  return action.kind === 'primary-buzz' ? { onePrimaryOnlyFor: teamId } : { allowSharedTeamPrimary: true }
 }

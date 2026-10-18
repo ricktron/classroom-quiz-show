@@ -75,7 +75,7 @@ export interface SonyBuzzSetupSectionProps {
   readonly diagnosticsStatus: 'ok' | 'unsupported' | 'unreadable'
   readonly activeMapping: GamepadMapping
   /** Apply a validated mapping produced by this section. Parent owns storage. */
-  readonly onApplyMapping: (mapping: GamepadMapping) => boolean
+  readonly onApplyMapping: (mapping: GamepadMapping, editedTeamId?: string) => boolean
   /** Whether the parent is currently capturing for THIS section. */
   readonly capturing: boolean
   /** Begin / cancel guided capture for the next outstanding prompt. */
@@ -129,6 +129,8 @@ export interface SonyBuzzSupportedProfileSectionProps {
   readonly onConnect: () => void
   readonly onDisableKeepAlive: () => void
   readonly onSetSlotTeam: (slotId: SonyBuzzSlotId, teamId: string | null) => void
+  /** Why the last Save team mapping was refused (CBN-1), or null. */
+  readonly mappingIssue?: string | null
   readonly onSaveAssociations: () => void
   readonly onClearSavedMapping: () => void
 }
@@ -297,6 +299,11 @@ function SupportedProfileBlock({
           <dt>Teams</dt>
           <dd data-testid="sbs-mapping-layer">{mappingLayerLabel(mappingLayer)}</dd>
         </dl>
+        {supportedProfile.mappingIssue ? (
+          <p className="host__note" role="alert" data-testid="sbs-mapping-issue">
+            {supportedProfile.mappingIssue}
+          </p>
+        ) : null}
         <p className="host__note" data-testid="sbs-readiness-note">
           A connected receiver does not mean the buzzers are ready. Keyboard
           controls still work.
@@ -842,7 +849,7 @@ export function SonyBuzzSetupSection({
               )
               return
             }
-            if (!onApplyMapping(result.mapping)) {
+            if (!onApplyMapping(result.mapping, teamId)) {
               setMessage('Apply refused by mapping validation. The active mapping was left unchanged.')
               return
             }

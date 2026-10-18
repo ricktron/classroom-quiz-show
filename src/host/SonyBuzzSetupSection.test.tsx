@@ -22,6 +22,10 @@ import { GAMEPAD_DEVICE_CLASSIFICATION_LABEL } from '../input/gamepadDeviceProfi
 import { GAMEPAD_DEVICE_CLASSIFICATION_MESSAGE } from '../input/gamepadDeviceProfile'
 import { createMemoryPersistenceAdapter } from '../persistence'
 import { createFakeWebHidTransport } from '../input/webHidTransport'
+import { SonyBuzzSetupSection } from './SonyBuzzSetupSection'
+import { createSonyBuzzKeepAliveLifecycle } from '../input/sonyBuzzKeepAliveLifecycle'
+import { createTeamDefinitions } from '../game/teams/definition'
+import { EMPTY_GAMEPAD_MAPPING } from '../input/gamepadMapping'
 
 /**
  * Sony Buzz! setup section — component behaviour (Slice 10).
@@ -626,6 +630,45 @@ describe('repair controller connection flow', () => {
     expect(screen.getByTestId('sbs-repair-flow')).toHaveTextContent(/Hardware changed/i)
     expect(screen.getByTestId('sbs-buzzer-check-bridge')).toHaveTextContent(
       /Repair buzzers → Buzzer Check/i,
+    )
+  })
+})
+
+describe('Save team mapping refusal copy (CBN-1)', () => {
+  it('shows why a team mapping was not saved, as an alert next to the Teams status', () => {
+    const transport = createSonyBuzzKeepAliveLifecycle({
+      transport: createFakeWebHidTransport({ available: false }),
+    }).getSnapshot()
+    render(
+      <SonyBuzzSetupSection
+        teams={createTeamDefinitions(THREE_TEAMS)}
+        controllers={[]}
+        diagnosticsStatus="ok"
+        activeMapping={EMPTY_GAMEPAD_MAPPING}
+        onApplyMapping={() => true}
+        capturing={false}
+        onCapturingChange={() => {}}
+        testMode={false}
+        onTestModeChange={() => {}}
+        lastTestObservation={null}
+        pendingCapture={null}
+        onPendingCaptureConsumed={() => {}}
+        supportedProfile={{
+          transport,
+          associations: [{ slotId: 1, teamId: 'red' }],
+          mappingStatus: 'ready',
+          mappingIssue: 'Team mapping not saved: Buzzer 3 is set to a team this game does not have.',
+          wbuzzPresent: false,
+          onConnect: () => {},
+          onDisableKeepAlive: () => {},
+          onSetSlotTeam: () => {},
+          onSaveAssociations: () => {},
+          onClearSavedMapping: () => {},
+        }}
+      />,
+    )
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Team mapping not saved: Buzzer 3 is set to a team this game does not have.',
     )
   })
 })

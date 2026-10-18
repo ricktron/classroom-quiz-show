@@ -179,6 +179,38 @@ describe('validating a mapping', () => {
     })
   })
 
+  it('allows several primary buzz buttons for one team only when the caller opts in (CBN-1)', () => {
+    const shared = mapping(
+      { controllerIndex: 0, buttonIndex: 0, teamId: 'red' },
+      { controllerIndex: 0, buttonIndex: 1, teamId: 'red' },
+    )
+    expect(validateGamepadMapping(shared, TEAMS).ok).toBe(false)
+    const result = validateGamepadMapping(shared, TEAMS, { allowSharedTeamPrimary: true })
+    expect(result.ok).toBe(true)
+    // Every other rule still holds under the option.
+    const clash = mapping(
+      { controllerIndex: 0, buttonIndex: 0, teamId: 'red' },
+      { controllerIndex: 0, buttonIndex: 0, teamId: 'blue' },
+    )
+    const refused = validateGamepadMapping(clash, TEAMS, { allowSharedTeamPrimary: true })
+    expect(!refused.ok && refused.issues[0]?.code).toBe('duplicate-control')
+    const ghost = validateGamepadMapping(mapping({ teamId: 'nobody' }), TEAMS, {
+      allowSharedTeamPrimary: true,
+    })
+    expect(!ghost.ok && ghost.issues[0]?.code).toBe('unknown-team')
+  })
+
+  it('an edit for one team holds only that team to one primary buzz button (CBN-1 review)', () => {
+    const sharedRed = mapping(
+      { controllerIndex: 0, buttonIndex: 0, teamId: 'red' },
+      { controllerIndex: 0, buttonIndex: 1, teamId: 'red' },
+      { controllerIndex: 0, buttonIndex: 2, teamId: 'blue' },
+    )
+    expect(validateGamepadMapping(sharedRed, TEAMS, { onePrimaryOnlyFor: 'blue' }).ok).toBe(true)
+    const refused = validateGamepadMapping(sharedRed, TEAMS, { onePrimaryOnlyFor: 'red' })
+    expect(!refused.ok && refused.issues[0]?.code).toBe('duplicate-team-primary')
+  })
+
   /**
    * The "one primary" rule is WITHIN the Gamepad mapping. A team may hold a buzz
    * key AND a controller buzz button at the same time — different adapters, and

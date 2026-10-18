@@ -10,7 +10,10 @@ import {
   SONY_BUZZ_MAPPING_RECORD_KEY,
 } from './sonyBuzzMappingStore'
 import { OBJECT_STORE_SONY_BUZZ_MAPPINGS } from './constants'
-import { SONY_BUZZ_MAPPING_VERSION } from '../input/sonyBuzzSupportedProfile'
+import {
+  materializeSupportedProfileMapping,
+  SONY_BUZZ_MAPPING_VERSION,
+} from '../input/sonyBuzzSupportedProfile'
 
 const TEAMS = new Set(['red', 'blue'])
 
@@ -34,6 +37,50 @@ describe('sonyBuzzMappingStore', () => {
     if (loaded.status !== 'loaded') return
     expect(loaded.record).toEqual(record)
     expect('controllerIndex' in loaded.record).toBe(false)
+  })
+
+  it('round-trips a many-to-one mapping and it still materializes every Buzzer (CBN-1)', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    const associations = [
+      { slotId: 1, teamId: 'red' },
+      { slotId: 2, teamId: 'blue' },
+      { slotId: 3, teamId: 'red' },
+      { slotId: 4, teamId: 'red' },
+    ] as const
+    const record = createSonyBuzzMappingRecord({
+      gameId: 'game-1',
+      teamSignature: 'blue\u001fred',
+      associations,
+      optedIn: true,
+      updatedAt: '2026-10-17T00:00:00.000Z',
+    })
+    expect(await saveSonyBuzzMappingRecord(adapter, record)).toMatchObject({ ok: true })
+    const loaded = await loadSonyBuzzMappingRecord(adapter)
+    expect(loaded.status).toBe('loaded')
+    if (loaded.status !== 'loaded') return
+    expect(loaded.record.associations).toEqual(associations)
+    expect(mappingMatchesContext(loaded.record, 'game-1', 'blue\u001fred', TEAMS)).toBe(true)
+    const materialized = materializeSupportedProfileMapping({
+      controllerIndex: 0,
+      associations: loaded.record.associations,
+      teams: [{ id: 'red' }, { id: 'blue' }] as never,
+    })
+    expect(materialized.ok && materialized.mapping.bindings.length).toBe(20)
+  })
+
+  it('treats a record that assigns one Buzzer slot twice as malformed (CBN-1)', () => {
+    const record = createSonyBuzzMappingRecord({
+      gameId: 'game-1',
+      teamSignature: 'blue\u001fred',
+      associations: [
+        { slotId: 2, teamId: 'red' },
+        { slotId: 2, teamId: 'blue' },
+      ],
+      optedIn: true,
+      updatedAt: '2026-10-17T00:00:00.000Z',
+    })
+    expect(parseSonyBuzzMappingRecord(JSON.parse(JSON.stringify(record)))).toBeNull()
   })
 
   it('fail-closes unknown mapping version', async () => {
