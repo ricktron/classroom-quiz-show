@@ -175,6 +175,15 @@ Primary red is the only gameplay buzz via the existing Gamepad path. Secondary
 colors are non-gameplay. Teacher team association is explicit; never inferred
 from slots. Gamepad `controllerIndex` is ephemeral and **never persisted**.
 
+**Slot → team is many-to-one** (owner direction, 2026-10-17, Court failure
+repair CBN-1). Several Buzzers may belong to one team; each mapped Buzzer buzzes
+its own assigned team. Save team mapping fails closed: a mapping that cannot be
+materialized (for example a Buzzer slot assigned twice, or a team the game does
+not have) is never saved, the teacher is told why, and the previously saved
+mapping is left unchanged. It is never silently replaced by an empty mapping.
+The generic Slice 9 per-team capture (ADR-009) keeps its one-primary-per-team
+rule.
+
 ### 7. Persistence
 
 - IndexedDB schema **3 → 4** (additive store `sonyBuzzMappings`).

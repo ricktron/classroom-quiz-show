@@ -129,6 +129,8 @@ export interface SonyBuzzSupportedProfileSectionProps {
   readonly onConnect: () => void
   readonly onDisableKeepAlive: () => void
   readonly onSetSlotTeam: (slotId: SonyBuzzSlotId, teamId: string | null) => void
+  /** Why the last Save team mapping was refused (CBN-1), or null. */
+  readonly mappingIssue?: string | null
   readonly onSaveAssociations: () => void
   readonly onClearSavedMapping: () => void
 }
@@ -297,6 +299,11 @@ function SupportedProfileBlock({
           <dt>Teams</dt>
           <dd data-testid="sbs-mapping-layer">{mappingLayerLabel(mappingLayer)}</dd>
         </dl>
+        {supportedProfile.mappingIssue ? (
+          <p className="host__note" role="alert" data-testid="sbs-mapping-issue">
+            {supportedProfile.mappingIssue}
+          </p>
+        ) : null}
         <p className="host__note" data-testid="sbs-readiness-note">
           A connected receiver does not mean the buzzers are ready. Keyboard
           controls still work.

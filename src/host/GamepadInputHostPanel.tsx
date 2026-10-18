@@ -485,7 +485,10 @@ export function GamepadInputHostPanel({
 
   useEffect(() => {
     if (sony.materializedMapping.bindings.length === 0) return
-    const validation = validateGamepadMapping(sony.materializedMapping, teams)
+    // Buzzer slot → team is many-to-one (CBN-1): several Buzzers may share a team.
+    const validation = validateGamepadMapping(sony.materializedMapping, teams, {
+      allowSharedTeamPrimary: true,
+    })
     if (!validation.ok) return
     setMapping(validation.mapping)
   }, [sonyMappingKey, sony.materializedMapping, teams])
@@ -628,6 +631,7 @@ export function GamepadInputHostPanel({
             },
             onDisableKeepAlive: () => sony.disableKeepAlive(),
             onSetSlotTeam: sony.setSlotTeam,
+            mappingIssue: sony.mappingIssue,
             onSaveAssociations: () => {
               void sony.saveAssociations()
             },
@@ -875,6 +879,7 @@ export function GamepadInputHostPanel({
           },
           onDisableKeepAlive: () => sony.disableKeepAlive(),
           onSetSlotTeam: sony.setSlotTeam,
+          mappingIssue: sony.mappingIssue,
           onSaveAssociations: () => {
             void sony.saveAssociations()
           },

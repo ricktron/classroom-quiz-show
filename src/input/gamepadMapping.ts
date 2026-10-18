@@ -139,7 +139,11 @@ export function sameLocalInputAction(left: LocalInputAction, right: LocalInputAc
  *  - no physical control is assigned twice (BOTH are reported, neither wins);
  *  - every action is a recognized logical action;
  *  - every team exists in the loaded game;
- *  - no team has two primary buzz controls.
+ *  - no team has two primary buzz controls — unless the caller passes
+ *    `allowSharedTeamPrimary`. The supported Sony profile does: its mapping is
+ *    Buzzer slot → team, and several Buzzers may belong to one team (owner
+ *    direction, Court failure repair campaign 2026-10-17, CBN-1). Generic
+ *    per-team capture keeps the one-primary rule.
  *
  * Note what is deliberately NOT checked: whether the controller is currently
  * connected, and whether it has that many buttons. A mapping made while a
@@ -148,9 +152,15 @@ export function sameLocalInputAction(left: LocalInputAction, right: LocalInputAc
  * simply never fires, and the host UI says the controller is not connected) — not
  * validation failures that would delete a teacher's work.
  */
+export interface GamepadMappingValidationOptions {
+  /** Several primary buzz controls may name the same team (Buzzer slot → team). */
+  readonly allowSharedTeamPrimary?: boolean
+}
+
 export function validateGamepadMapping(
   mapping: GamepadMapping,
   teams: readonly TeamDefinition[],
+  options: GamepadMappingValidationOptions = {},
 ): GamepadMappingValidation {
   const issues: GamepadMappingIssue[] = []
   const bindings = mapping.bindings
@@ -219,7 +229,7 @@ export function validateGamepadMapping(
       return
     }
 
-    if (binding.action.kind === 'primary-buzz') {
+    if (binding.action.kind === 'primary-buzz' && !options.allowSharedTeamPrimary) {
       if (primaryByTeam.has(binding.teamId)) {
         issues.push({
           code: 'duplicate-team-primary',

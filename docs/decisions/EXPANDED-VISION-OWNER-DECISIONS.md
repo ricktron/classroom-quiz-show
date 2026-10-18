@@ -531,6 +531,11 @@ deferred work lives in
 - **Lineage.** The implemented mapping model already enforces at most one
   primary buzz control per team within a mapping (ADR-008/ADR-009); the
   future multi-controller extension is `CQS-OPP-MULTI-CONTROLLER-TEAMS`.
+- **Clarification (2026-10-17, owner direction, Court failure repair CBN-1).**
+  For the supported Sony Buzz profile, several Buzzer handsets on the one
+  receiver may map to the same team (Buzzer slot → team is many-to-one; see
+  ADR-019 §6). The generic per-team controller capture keeps one primary buzz
+  control per team.
 
 ## Decisions 41–48 — LLM authoring and quality
 
