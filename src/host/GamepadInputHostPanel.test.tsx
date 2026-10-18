@@ -866,6 +866,29 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(activeRespondent(queueOf(panel.store))).toBe('red')
   })
 
+  it('CBN-1 review: with several Buzzers on one team, clearing another team works and says so truthfully', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await panel.flush()
+    panel.attachWbuzz()
+    await panel.connect()
+    fireEvent.change(screen.getByTestId('sbs-slot-3'), { target: { value: 'red' } })
+    fireEvent.click(screen.getByTestId('sbs-save-mapping'))
+    await panel.flush()
+    expect(screen.getByTestId('gih-control-blue')).not.toHaveTextContent(/not assigned/i)
+
+    fireEvent.click(screen.getByTestId('gih-clear-blue'))
+    expect(screen.queryByTestId('gih-issues')?.textContent ?? '').not.toMatch(/already has a buzz button/)
+    expect(screen.getByTestId('gih-capture-status')).toHaveTextContent('Controller button cleared for')
+    expect(screen.getByTestId('gih-control-blue')).toHaveTextContent(/not assigned/i)
+    // Red keeps both of its Buzzers.
+    openClue(panel.store)
+    arm(panel.store)
+    panel.refresh()
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
+    panel.refresh()
+    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+  })
+
   it('stays Off with a Wbuzz pad and a supported mapping when the receiver was never connected', async () => {
     const panel = renderWbuzzPanel({ selectionMode: false })
     await panel.flush()

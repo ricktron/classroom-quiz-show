@@ -407,7 +407,8 @@ export function GamepadInputHostPanel({
         pending.action,
         control,
       )
-      const validation = validateGamepadMapping(next, teams)
+      // Only the team being assigned is held to one buzz button (CBN-1).
+      const validation = validateGamepadMapping(next, teams, { onePrimaryOnlyFor: pending.teamId })
       if (!validation.ok) {
         // Nothing is overwritten: the conflict is reported and the existing
         // assignment is left exactly as it was.
@@ -511,8 +512,13 @@ export function GamepadInputHostPanel({
   })
 
   const applyMapping = useCallback(
-    (next: GamepadMapping): boolean => {
-      const validation = validateGamepadMapping(next, teams)
+    (next: GamepadMapping, editedTeamId?: string): boolean => {
+      // An edit for one team holds only that team to one buzz button (CBN-1).
+      const validation = validateGamepadMapping(
+        next,
+        teams,
+        editedTeamId === undefined ? {} : { onePrimaryOnlyFor: editedTeamId },
+      )
       if (!validation.ok) {
         setIssues(validation.issues)
         return false
@@ -812,10 +818,12 @@ export function GamepadInputHostPanel({
                 aria-label={`Clear the controller button for ${teamLabel}`}
                 disabled={control === null}
                 onClick={() => {
-                  applyMapping(
+                  const cleared = applyMapping(
                     withGamepadControlForTeamAction(mapping, team.id, pendingAction, null),
+                    team.id,
                   )
-                  setCaptureMessage(`Controller button cleared for ${teamLabel}.`)
+                  // Say "cleared" only when it was (CBN-1 review: no false success copy).
+                  setCaptureMessage(cleared ? `Controller button cleared for ${teamLabel}.` : null)
                 }}
               >
                 Clear

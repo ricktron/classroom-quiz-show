@@ -191,7 +191,8 @@ rule.
 - Persist associations + profile identity + game/team context signature.
 - Do not persist the static button recipe or controller index.
 - Unknown mapping versions fail closed. Team/context mismatch fails closed and
-  prompts reassignment.
+  prompts reassignment. A stored record that assigns one Buzzer slot twice is
+  malformed (CBN-1), never silently materialized into an empty mapping.
 - Disable keep-alive does not clear saved mapping; explicit clear does.
 - Full host-private DB wipe clears Sony mappings with other stores.
 

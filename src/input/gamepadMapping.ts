@@ -155,6 +155,13 @@ export function sameLocalInputAction(left: LocalInputAction, right: LocalInputAc
 export interface GamepadMappingValidationOptions {
   /** Several primary buzz controls may name the same team (Buzzer slot → team). */
   readonly allowSharedTeamPrimary?: boolean
+  /**
+   * A generic edit for ONE team: hold only that team to one primary buzz control.
+   * Other teams' existing primaries (for example a supported-profile mapping where
+   * several Buzzers buzz one team, CBN-1) are not re-judged by an edit that does
+   * not touch them.
+   */
+  readonly onePrimaryOnlyFor?: string
 }
 
 export function validateGamepadMapping(
@@ -229,7 +236,11 @@ export function validateGamepadMapping(
       return
     }
 
-    if (binding.action.kind === 'primary-buzz' && !options.allowSharedTeamPrimary) {
+    if (
+      binding.action.kind === 'primary-buzz' &&
+      !options.allowSharedTeamPrimary &&
+      (options.onePrimaryOnlyFor === undefined || options.onePrimaryOnlyFor === binding.teamId)
+    ) {
       if (primaryByTeam.has(binding.teamId)) {
         issues.push({
           code: 'duplicate-team-primary',

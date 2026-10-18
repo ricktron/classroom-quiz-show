@@ -75,7 +75,7 @@ export interface SonyBuzzSetupSectionProps {
   readonly diagnosticsStatus: 'ok' | 'unsupported' | 'unreadable'
   readonly activeMapping: GamepadMapping
   /** Apply a validated mapping produced by this section. Parent owns storage. */
-  readonly onApplyMapping: (mapping: GamepadMapping) => boolean
+  readonly onApplyMapping: (mapping: GamepadMapping, editedTeamId?: string) => boolean
   /** Whether the parent is currently capturing for THIS section. */
   readonly capturing: boolean
   /** Begin / cancel guided capture for the next outstanding prompt. */
@@ -849,7 +849,7 @@ export function SonyBuzzSetupSection({
               )
               return
             }
-            if (!onApplyMapping(result.mapping)) {
+            if (!onApplyMapping(result.mapping, teamId)) {
               setMessage('Apply refused by mapping validation. The active mapping was left unchanged.')
               return
             }
