@@ -259,12 +259,13 @@ export interface TeamScoreAdjustedEvent extends EventBase<'TEAM_SCORE_ADJUSTED'>
  * `issuedAt` — the reducer still never reads a clock — so replaying a stored
  * history reproduces the timer state exactly, however much later it happens.
  *
- * ## All reversible
+ * ## Reversible, except expiry
  *
- * A mis-clicked start, a premature stop and an expiry a teacher wants to take
- * back are all ordinary classroom mistakes, so all eight are reversible. Undo is
- * exact for free: state is replayed, so an undone start simply is not applied and
- * the phase returns to the state that preceded it.
+ * A mis-clicked start or a premature stop is an ordinary classroom mistake, so
+ * the teacher actions are reversible. Undo is exact for free: state is replayed,
+ * so an undone start simply is not applied and the phase returns to the state
+ * that preceded it. The expiry is an observed clock fact, never an Undo target
+ * (CBN-2, ADR-007 §13), so it does not use this base.
  */
 interface ResponsePhaseEventBase<T extends EventType> extends EventBase<T> {
   readonly reversible: true

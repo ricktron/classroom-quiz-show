@@ -301,7 +301,11 @@ Two consequences worth stating:
   history. Histories saved before this amendment stored board expiries as
   reversible; they still decode (normalized to irreversible) and replay
   identically. This is the same rule the Final Wager windows follow since Court B
-  NEW-1 (ADR-014's amendment).
+  NEW-1 (ADR-014's amendment). Undoing an earlier teacher action can still
+  restore a running timer whose deadline has passed (for example Undo of a pause,
+  or of a stop, once the deadline is behind it); that is the exact prior state,
+  so the adapter records one new expiry and the next Undo moves on. It cannot
+  loop, because the new expiry is never an undo target either.
 - **Undo remains latest-only** (ADR-002). One undo after arm-then-start reaches the
   start, not the arm. That limit is preserved and documented rather than broadened
   into arbitrary historical undo.
@@ -451,8 +455,8 @@ timing test deterministic and fast.
 consumers both fail closed; there is no migration and none is implied. The
 host/display offset is an estimate, not synchronisation. (Originally: Undo of an
 expiry restored an already-overdue timer. Superseded 2026-10-17 by the §13
-amendment: an expiry is never an Undo target.) A response window does not survive a round change. Undo
-is still latest-only. Everything remains in memory, lost on tab close. And the
+amendment: an expiry is never an Undo target.) A response window does not
+survive a round change. Undo is still latest-only. Everything remains in memory, lost on tab close. And the
 `prompt` stage is the only place a window may exist, so a timed round type that
 wants a different anchor will extend `resolveResponsePhase` rather than reuse it
 verbatim.
