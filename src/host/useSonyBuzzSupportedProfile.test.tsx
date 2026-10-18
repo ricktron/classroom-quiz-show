@@ -7,6 +7,11 @@ import { createMemoryPersistenceAdapter } from '../persistence/memoryAdapter'
 import { loadSonyBuzzMappingRecord } from '../persistence/sonyBuzzMappingStore'
 import { createFakeWebHidTransport, createFakeHidDevice } from '../input/webHidTransport'
 import { SONY_BUZZ_EXPECTED_BUTTON_COUNT } from '../input/sonyBuzzSupportedProfile'
+import {
+  classSetupSonyBuzzFullyReady,
+  classifyMappingLayer,
+  classifyTeacherSummary,
+} from '../input/sonyBuzzTeacherReadiness'
 import type { GamepadControllerInfo } from './useGamepadBuzzInput'
 
 /**
@@ -108,20 +113,21 @@ describe('Save team mapping (CBN-1)', () => {
 })
 
 /**
- * CBN-6c — "ready" must mean the mapping can actually be materialized.
+ * FRC-3 — readiness must never outrun usability.
  *
- * `profileReady` gated on `associations.length > 0`, which is not the same
- * question: associations can be non-empty and still fail to materialize (a slot
- * set to a team this game does not have). The honest gate is the materialized
- * mapping itself, which is the artefact gameplay actually uses.
+ * The previous campaign's report suspected that "ready" could be claimed for a
+ * mapping that cannot be materialized. Adjudicated as NO DEFECT on the
+ * teacher-facing path, and pinned here so that stays true.
+ *
+ * The hook's own `profileReady` boolean DID gate on `associations.length > 0`
+ * rather than on usability — but it had no consumer anywhere in the repository,
+ * so no teacher could ever read it. It has been deleted rather than tightened:
+ * a stricter unused gate is still a trap. The surface a teacher actually reads
+ * is `classifyMappingLayer` -> `classifyTeacherSummary`, and the tests below
+ * exercise THAT, including the exact scenario the report implied.
  */
-describe('profileReady means the mapping can be materialized (CBN-6c)', () => {
-  /**
-   * A present, supported Wbuzz pad, so readiness turns only on the mapping.
-   * The reported id must carry the real vendor/product tokens, and the button
-   * count must match the expected topology, or the hook does not see a pad at
-   * all and every readiness assertion below would pass for the wrong reason.
-   */
+describe('teacher readiness never outruns a usable mapping (FRC-3)', () => {
+  /** A present, supported Wbuzz pad, so readiness turns only on the mapping. */
   const WBUZZ: readonly GamepadControllerInfo[] = [
     {
       controllerIndex: 0,
@@ -152,7 +158,43 @@ describe('profileReady means the mapping can be materialized (CBN-6c)', () => {
     return { ...hook, persistenceAdapter, transport }
   }
 
-  it('never reports ready while the mapping materializes to nothing', async () => {
+  const summaryFor = (mappingStatus: string, associationCount: number) =>
+    classifyTeacherSummary({
+      receiver: 'connected',
+      controllers: 'responding',
+      mapping: classifyMappingLayer(mappingStatus, associationCount),
+    })
+
+  it('does not claim readiness while the saved mapping is still being read', () => {
+    // The scenario the report implied: the loaded game changes to one with
+    // different team ids, so until the read settles the associations still name
+    // the previous game's teams and nothing can be materialized for this game.
+    const summary = summaryFor('loading', 2)
+    expect(summary).not.toBe('sony-buzz-ready')
+    expect(classSetupSonyBuzzFullyReady(summary)).toBe(false)
+  })
+
+  it('does not claim readiness for a stale or unusable saved mapping', () => {
+    for (const status of ['stale', 'malformed', 'unsupported-version'] as const) {
+      const summary = summaryFor(status, 2)
+      expect(summary).not.toBe('sony-buzz-ready')
+      expect(classSetupSonyBuzzFullyReady(summary)).toBe(false)
+    }
+  })
+
+  it('does not claim readiness with no Buzzer assigned at all', () => {
+    const summary = summaryFor('ready', 0)
+    expect(summary).not.toBe('sony-buzz-ready')
+    expect(classSetupSonyBuzzFullyReady(summary)).toBe(false)
+  })
+
+  it('claims readiness only for a saved mapping with Buzzers assigned', () => {
+    const summary = summaryFor('ready', 2)
+    expect(summary).toBe('sony-buzz-ready')
+    expect(classSetupSonyBuzzFullyReady(summary)).toBe(true)
+  })
+
+  it('materializes nothing for a game whose teams the associations do not name', async () => {
     const OTHER_TEAMS = createTeamDefinitions([
       { id: 'amber', name: 'Amber', accent: 'amber' },
       { id: 'violet', name: 'Violet', accent: 'violet' },
@@ -161,37 +203,24 @@ describe('profileReady means the mapping can be materialized (CBN-6c)', () => {
     await waitFor(() => expect(result.current.mappingStatus).toBe('absent'))
     expect(result.current.associations.length).toBeGreaterThan(0)
 
-    // The loaded game changes to one with entirely different team ids. Until the
-    // saved-mapping read settles, the associations still name the OLD teams, so
-    // the mapping cannot be materialized for this game.
     act(() => {
       rerender({ gameId: 'game-2', teams: OTHER_TEAMS })
     })
 
+    // Associations still name the old teams, so nothing is handed to gameplay —
+    // and `mappingStatus` is `loading`, which the teacher summary reports as not
+    // ready. The two facts agree.
     expect(result.current.associations.length).toBeGreaterThan(0)
     expect(result.current.materializedMapping.bindings).toHaveLength(0)
-    // The invariant: readiness may never outrun materializability.
-    expect(result.current.profileReady).toBe(false)
+    expect(summaryFor(result.current.mappingStatus, result.current.associations.length)).not.toBe(
+      'sony-buzz-ready',
+    )
   })
 
-  it('keeps a materializable mapping available to gameplay', async () => {
+  it('hands gameplay a usable mapping once a Buzzer is assigned', async () => {
     const { result } = renderWithTeams('game-1', TEAMS)
     await waitFor(() => expect(result.current.mappingStatus).toBe('absent'))
     act(() => result.current.setSlotTeam(3, 'red'))
-    // Readiness also needs a healthy transport, which is a separate fact; what
-    // this pins is that a good mapping is never the thing holding readiness back.
     expect(result.current.materializedMapping.bindings.length).toBeGreaterThan(0)
-    expect(result.current.associations.length).toBeGreaterThan(0)
-  })
-
-  it('stops reporting ready once every Buzzer is unassigned', async () => {
-    const { result } = renderWithTeams('game-1', TEAMS)
-    await waitFor(() => expect(result.current.mappingStatus).toBe('absent'))
-    act(() => {
-      for (const slot of [1, 2, 3, 4] as const) result.current.setSlotTeam(slot, null)
-    })
-    expect(result.current.associations).toHaveLength(0)
-    expect(result.current.materializedMapping.bindings).toHaveLength(0)
-    expect(result.current.profileReady).toBe(false)
   })
 })

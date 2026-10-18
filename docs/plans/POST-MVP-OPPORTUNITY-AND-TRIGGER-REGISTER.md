@@ -481,6 +481,23 @@ note only *additional* authority where it exists.
   profile only, several Buzzer handsets on the one receiver may map to one
   team (ADR-019 §6; `CQS-OD-040` clarification). Generic per-team
   controller capture and multiple receivers per team remain parked here.
+- **Hardened (2026-10-18, FRC-3):** a generic per-team Assign or Clear beside a
+  shared mapping now fails closed for every action instead of silently
+  destroying that team's other Buzzers, and unassigning every Buzzer withdraws
+  the applied mapping immediately rather than at the next reload.
+- **Known open, not repaired (2026-10-18, FRC-3):** three members of the same
+  "visible Buzzer state must match the live mapping" family remain.
+  (a) `Clear all controller buttons` clears the live mapping while Buzzer setup
+  still shows the slots assigned and the mapping saved — the disagreement FRC-3
+  closed for the unassign path, in the other direction.
+  (b) The supported profile's *apply* still replaces the whole live mapping, so a
+  generic binding a teacher made on any controller is dropped at the next
+  association change.
+  (c) A team row shows only the FIRST of its bindings ("Buzzer 1"), giving no
+  hint that another Buzzer is also mapped to it; the truth appears only in the
+  refusal message after the teacher attempts a change.
+  Each needs an owner decision about destructive copy and row presentation
+  rather than a silent behaviour change.
 - **Dependencies:** stable physical-controller practice (OADL2-S07
   follow-ups, keep-alive resolution); `CQS-RA2-CONTROLLER-01`.
 - **Trigger:** a real class configuration needs more than four

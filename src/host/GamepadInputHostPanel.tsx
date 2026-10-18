@@ -394,29 +394,39 @@ export function GamepadInputHostPanel({
   latestMapping.current = mapping
 
   /**
-   * CBN-6: the generic per-team controls express exactly ONE control per team,
-   * and applying one replaces EVERY binding for that team and action. Beside a
+   * The generic per-team controls express exactly ONE control per team, and
+   * applying one replaces EVERY binding for that team and action. Beside a
    * shared-team mapping (several Buzzers buzzing one team, CBN-1) a singular
-   * generic buzz edit would therefore unassign the rest for the session while
-   * the copy described assigning or clearing one button. Who can buzz in is the
-   * gameplay-critical fact, so that edit fails closed and routes the teacher to
-   * the surface that can express a shared mapping.
+   * generic edit therefore unassigned the rest for the session while the copy
+   * described assigning or clearing one button. It now fails closed and routes
+   * the teacher to the surface that can express a shared mapping.
    *
-   * Scoped to the primary buzz action deliberately. A generic edit of a
-   * SECONDARY action beside a shared mapping was reviewed and accepted under
-   * CBN-1 (it must not disturb the team's buzz buttons, and does not); widening
-   * this guard would reverse that accepted decision rather than repair a defect.
-   * The secondary-action analogue is recorded for the owner instead.
+   * Covers EVERY action, not only the primary buzz. The supported profile binds
+   * all five Sony colours per slot, so the identical replace-all destruction
+   * exists for each; and the secondary colours are not inert — they drive team
+   * NAME SELECTION in Class Setup (`src/input/sonyNameSelection.ts`), so losing
+   * them leaves a handset whose colour buttons silently do nothing.
+   *
+   * This does not disturb ADR-019 §6 / CBN-1, which settled that the VALIDATOR
+   * must not refuse such an edit (`onePrimaryOnlyFor`). That scoping is intact;
+   * this is a separate, later guard against destroying bindings the edit never
+   * described.
    */
   const sharedTeamEditRefusal = useCallback(
     (current: GamepadMapping, teamId: string, action: LocalInputAction): string | null => {
-      if (!sameLocalInputAction(action, PRIMARY_BUZZ)) return null
       const count = teamActionBindingCount(current, teamId, action)
       if (count <= 1) return null
-      const label = findTeamById(teams, teamId)?.name ?? teamId
-      return `${label} has ${count} buzzers assigned. Change them in Buzzer setup above, so one change here cannot unassign the others.`
+      const label = publicTeamDisplayName(
+        game,
+        teamId,
+        findTeamById(teams, teamId)?.name ?? teamId,
+      )
+      const scope = sameLocalInputAction(action, PRIMARY_BUZZ)
+        ? 'buzzers assigned'
+        : 'buzzers assigned for this action'
+      return `${label} has ${count} ${scope}. Change them in Buzzer setup, so one change here cannot unassign the others.`
     },
-    [teams],
+    [game, teams],
   )
 
   const onCapture = useCallback(
@@ -528,11 +538,17 @@ export function GamepadInputHostPanel({
   }, [sony.materializedMapping, sony.wbuzzController?.controllerIndex])
 
   /**
-   * Which controller the supported profile currently owns bindings for, so the
-   * profile can withdraw exactly its own bindings and nothing else (§8: one
-   * mutable resource, one authoritative lifecycle owner).
+   * The exact controls the supported profile last applied, so it can withdraw
+   * its OWN bindings and nothing else (§8: one mutable resource, one
+   * authoritative lifecycle owner).
+   *
+   * Keyed by controller + button, not by controller alone: a teacher may bind a
+   * free button on the Wbuzz pad itself through the generic controls, and that
+   * binding is theirs, not this owner's.
    */
-  const appliedProfileControllerRef = useRef<number | null>(null)
+  const appliedProfileControlsRef = useRef<ReadonlySet<string> | null>(null)
+  const controlKey = (binding: { controllerIndex: number; buttonIndex: number }) =>
+    `${binding.controllerIndex}:${binding.buttonIndex}`
 
   useEffect(() => {
     const materialized = sony.materializedMapping
@@ -542,21 +558,20 @@ export function GamepadInputHostPanel({
         allowSharedTeamPrimary: true,
       })
       if (!validation.ok) return
-      appliedProfileControllerRef.current = materialized.bindings[0]!.controllerIndex
+      appliedProfileControlsRef.current = new Set(validation.mapping.bindings.map(controlKey))
       setMapping(validation.mapping)
       return
     }
-    // CBN-6: the supported profile now maps nothing — the teacher unassigned
-    // every Buzzer, or the mapping stopped being materializable. Visible
-    // assignment state and the live gameplay mapping must agree IMMEDIATELY, so
-    // withdraw the bindings this profile applied instead of leaving the previous
-    // Buzzers buzzing until a reload. Generic bindings on other controllers are
-    // not this owner's to remove.
-    const owned = appliedProfileControllerRef.current
+    // The supported profile now maps nothing — the teacher unassigned every
+    // Buzzer, or the mapping stopped being materializable. Visible assignment
+    // state and the live gameplay mapping must agree IMMEDIATELY, so withdraw
+    // the controls this profile applied instead of leaving the previous Buzzers
+    // buzzing until a reload.
+    const owned = appliedProfileControlsRef.current
     if (owned === null) return
-    appliedProfileControllerRef.current = null
+    appliedProfileControlsRef.current = null
     setMapping((current) => {
-      const kept = current.bindings.filter((binding) => binding.controllerIndex !== owned)
+      const kept = current.bindings.filter((binding) => !owned.has(controlKey(binding)))
       if (kept.length === current.bindings.length) return current
       return { version: GAMEPAD_MAPPING_VERSION, bindings: kept }
     })

@@ -941,23 +941,44 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(activeRespondent(queueOf(panel.store))).toBe('red')
   })
 
-  it('CBN-1 review: a secondary action can be assigned and cleared on the team with several Buzzers', async () => {
+  it('FRC-3: a secondary-action edit on a team with several Buzzers also fails closed', async () => {
+    /*
+      Rewritten from "a secondary action can be assigned and cleared on the team
+      with several Buzzers" (CBN-1 review round 3).
+
+      That test performed the destruction and asserted only the one thing the
+      destruction does not touch — that red's BUZZ buttons survive. The
+      supported profile binds all five Sony colours per slot, so a secondary
+      edit on a shared team silently dropped that team's other Buzzers for that
+      colour exactly as the buzz edit did, and the secondary colours are not
+      inert: they drive team name selection in Class Setup
+      (src/input/sonyNameSelection.ts).
+
+      What CBN-1 actually settled is preserved and still covered: the VALIDATOR
+      must not refuse such an edit (`onePrimaryOnlyFor`, pinned in
+      src/input/gamepadMapping.test.ts). This guard sits later, in the panel, and
+      stops an edit from destroying bindings it never described.
+    */
     const panel = renderWbuzzPanel({ selectionMode: false })
     await saveRedSharedWithBuzzer3(panel)
-    // Buzzer 4 is unassigned, so its buttons are free to capture.
     const secondaryButton = buttonIndexForSlotColor(4, 'blue')
     fireEvent.change(screen.getByTestId('gih-action'), { target: { value: 'secondary1' } })
 
     fireEvent.click(screen.getByTestId('gih-capture-red'))
     await panel.pressRedAndSettle(secondaryButton)
-    expect(screen.queryByTestId('gih-issues')?.textContent ?? '').not.toMatch(/already has a buzz button/)
-    expect(screen.getByTestId('gih-control-red')).toHaveTextContent('Buzzer 4 · Blue')
+    const status = screen.getByTestId('gih-capture-status')
+    expect(status).toHaveTextContent(/has 2 buzzers assigned for this action/i)
+    expect(status).toHaveTextContent(/Buzzer setup/i)
+    expect(status).not.toHaveTextContent(/assigned to/i)
 
+    // Clear refuses for the same reason, and says so rather than claiming success.
     fireEvent.click(screen.getByTestId('gih-clear-red'))
-    expect(screen.queryByTestId('gih-issues')?.textContent ?? '').not.toMatch(/already has a buzz button/)
-    expect(screen.getByTestId('gih-capture-status')).toHaveTextContent('Controller button cleared for')
-    expect(screen.getByTestId('gih-control-red')).toHaveTextContent(/not assigned/i)
-    // Red's buzz buttons were not touched by the secondary edit.
+    expect(screen.getByTestId('gih-capture-status')).toHaveTextContent(
+      /has 2 buzzers assigned for this action/i,
+    )
+    expect(screen.getByTestId('gih-capture-status')).not.toHaveTextContent(/cleared/i)
+
+    // Red's buzz buttons were never in question and still buzz.
     fireEvent.change(screen.getByTestId('gih-action'), { target: { value: 'primary-buzz' } })
     openClue(panel.store)
     arm(panel.store)
@@ -965,6 +986,44 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
     panel.refresh()
     expect(activeRespondent(queueOf(panel.store))).toBe('red')
+  })
+
+  it('FRC-3: withdrawing the profile mapping keeps a generic binding on the same pad', async () => {
+    /*
+      Scoped to the WITHDRAW branch on purpose. The profile's APPLY branch still
+      replaces the whole live mapping, so a generic binding made before an
+      association change is wiped by that apply — a pre-existing behaviour
+      recorded as a remaining defect, not repaired here. This drives the single
+      transition from "profile maps something" straight to "profile maps
+      nothing", which is the branch this change added, and proves it withdraws
+      only the controls the profile itself applied.
+    */
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await panel.flush()
+    panel.attachWbuzz()
+    await panel.connect()
+    // Leave exactly ONE Buzzer assigned, so clearing it is a single transition.
+    for (const slot of [2, 3, 4]) {
+      const select = screen.queryByTestId(`sbs-slot-${slot}`)
+      if (select) fireEvent.change(select, { target: { value: '' } })
+    }
+    fireEvent.click(screen.getByTestId('sbs-save-mapping'))
+    await panel.flush()
+    panel.refresh()
+
+    // The teacher binds a FREE button on the Wbuzz pad for another team through
+    // the generic controls. That binding is theirs, not the profile's.
+    fireEvent.click(screen.getByTestId('gih-capture-green'))
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(4, 'red'))
+    panel.refresh()
+    expect(screen.getByTestId('gih-control-green')).toHaveTextContent('Buzzer 4 · Red')
+
+    // Unassign the last Buzzer: the profile withdraws its own controls only.
+    fireEvent.change(screen.getByTestId('sbs-slot-1'), { target: { value: '' } })
+    await panel.flush()
+    panel.refresh()
+    expect(screen.getByTestId('gih-control-green')).toHaveTextContent('Buzzer 4 · Red')
+    expect(screen.getByTestId('gih-control-red')).toHaveTextContent(/not assigned/i)
   })
 
   it('stays Off with a Wbuzz pad and a supported mapping when the receiver was never connected', async () => {
@@ -1076,7 +1135,7 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
 
 
   /**
-   * CBN-6 — once several Buzzers buzz one team, visible assignment state and the
+   * FRC-3 — once several Buzzers buzz one team, visible assignment state and the
    * live gameplay mapping must agree immediately, a singular control must not
    * destroy several assignments as a side effect, and "ready" must mean the
    * mapping can actually be materialized.
@@ -1092,7 +1151,7 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(screen.getByTestId('sbs-mapping-layer')).toHaveTextContent('Team mapping saved')
   }
 
-  it('CBN-6a: a singular generic buzz edit does not silently unassign a team’s other Buzzers', async () => {
+  it('FRC-3a: a singular generic buzz edit does not silently unassign a team’s other Buzzers', async () => {
     const panel = renderWbuzzPanel({ selectionMode: false })
     await saveRedWithBuzzers1And3(panel)
 
@@ -1133,7 +1192,7 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(activeRespondent(queueOf(panel.store))).toBe('red')
   })
 
-  it('CBN-6a: clearing the buzz button of a team with several Buzzers also fails closed', async () => {
+  it('FRC-3a: clearing the buzz button of a team with several Buzzers also fails closed', async () => {
     const panel = renderWbuzzPanel({ selectionMode: false })
     await saveRedWithBuzzers1And3(panel)
 
@@ -1150,7 +1209,7 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(activeRespondent(queueOf(panel.store))).toBe('red')
   })
 
-  it('CBN-6b: unassigning every Buzzer stops them buzzing immediately, not after a reload', async () => {
+  it('FRC-3b: unassigning every Buzzer stops them buzzing immediately, not after a reload', async () => {
     const panel = renderWbuzzPanel({ selectionMode: false })
     await saveRedWithBuzzers1And3(panel)
 

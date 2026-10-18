@@ -12,7 +12,7 @@ import { armAndStartTimer } from './helpers/menusQ3'
 import { buttonIndexForSlotColor } from '../../src/input/sonyBuzzSupportedProfile'
 
 /**
- * CBN-6: visible Buzzer assignment state and the live gameplay mapping must
+ * FRC-3: visible Buzzer assignment state and the live gameplay mapping must
  * agree IMMEDIATELY, and "ready" must mean the mapping can actually be used.
  *
  * A Buzzer the teacher has unassigned must not keep buzzing through a stale
@@ -47,7 +47,7 @@ async function startGameToBoard(page: Page) {
   await expect(page.getByTestId('cbh-grid')).toBeVisible()
 }
 
-test('CBN-6: a Buzzer unassigned in the mapping UI stops buzzing at once, without a reload', async ({
+test('FRC-3: a Buzzer unassigned in the mapping UI stops buzzing at once, without a reload', async ({
   page,
 }, info) => {
   test.skip(info.project.name !== 'desktop-1080p', 'simulated hardware journey runs once (1080p)')
@@ -83,11 +83,44 @@ test('CBN-6: a Buzzer unassigned in the mapping UI stops buzzing at once, withou
   await expect(page.getByTestId('lih-active')).toContainText(/Nobody has buzzed/i)
 })
 
-/*
-  The generic per-team Assign/Clear refusal is NOT proved here. Those controls
-  live in GamepadInputHostPanel, which Q7-R1 keeps out of the first gameplay
-  viewport after Start, so they are not reachable on this natural route. They
-  are covered instead by two mutation-proven component detectors against the
-  real panel in src/host/GamepadInputHostPanel.test.tsx ("CBN-6a"). Recorded
-  rather than papered over with an unnatural route.
-*/
+test('FRC-3: a singular generic Clear refuses to unassign a team’s other Buzzers', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'desktop-1080p', 'simulated hardware journey runs once (1080p)')
+  test.setTimeout(120_000)
+  await installWbuzzHardwareSimulator(page, 'ready')
+  await setUpBuzzers(page, { 3: 'Blue Basalts' })
+  await expect(page.getByTestId('sbs-mapping-layer')).toHaveText('Team mapping saved')
+
+  await startGameToBoard(page)
+
+  // The generic per-team controls sit behind the "Controller assignments"
+  // disclosure, the same way gamepad-input.spec.ts and
+  // q7-r1-buzzer-certification-blockers.spec.ts reach them.
+  const disclosure = page.getByTestId('gih-advanced-generic')
+  if ((await disclosure.getAttribute('open')) === null) {
+    await page.getByText('Controller assignments', { exact: true }).click()
+  }
+
+  // Each control expresses ONE button per team, so beside a shared mapping Clear
+  // must fail closed and say where to change it, not silently drop the team's
+  // other Buzzers.
+  // The PER-TEAM Clear, by its own accessible name — not `gih-clear-all`, which
+  // is a different, explicitly plural control.
+  const clearShared = page
+    .getByRole('button', { name: /^Clear the controller button for/ })
+    .first()
+  await clearShared.scrollIntoViewIfNeeded()
+  await clearShared.click()
+  const status = page.getByTestId('gih-capture-status')
+  await expect(status).toContainText(/has 2 buzzers assigned/i)
+  await expect(status).toContainText(/Buzzer setup/i)
+  await expect(status).not.toContainText(/cleared/i)
+
+  // Both of the team's Buzzers still buzz it.
+  await page.locator('[data-testid^="cbh-tile-"]:not([disabled])').first().click()
+  await page.getByRole('button', { name: 'Show prompt on display' }).click()
+  await armAndStartTimer(page)
+  await pressWbuzzButton(page, buttonIndexForSlotColor(3, 'red'))
+  await expect(page.getByTestId('lih-active')).toContainText('Team 1', { timeout: 10_000 })
+})

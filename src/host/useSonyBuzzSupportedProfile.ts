@@ -55,7 +55,6 @@ export interface SonyBuzzSupportedProfileApi {
   /** Why the last Save team mapping was refused, in teacher words; null otherwise. */
   readonly mappingIssue: string | null
   readonly wbuzzController: GamepadControllerInfo | null
-  readonly profileReady: boolean
   readonly connect: () => Promise<void>
   readonly disableKeepAlive: () => void
   readonly setSlotTeam: (slotId: SonyBuzzSlotId, teamId: string | null) => void
@@ -182,24 +181,6 @@ export function useSonyBuzzSupportedProfile({
     return result.ok ? result.mapping : EMPTY_GAMEPAD_MAPPING
   }, [wbuzzController, associations, teams])
 
-  /**
-   * Ready means the mapping gameplay will actually use EXISTS (CBN-6).
-   *
-   * `associations.length > 0` is a different question: associations can be
-   * non-empty and still fail to materialize — for example while the loaded game
-   * changes and they still name the previous game's teams — in which case
-   * `materializedMapping` is empty and no handset can buzz. Gating on the
-   * materialized bindings makes "ready" mean what a teacher reads it to mean,
-   * and `loading` is not readiness either: the saved mapping is still being read.
-   */
-  const profileReady =
-    (transportSnap.health === 'healthy' || transportSnap.health === 'degraded') &&
-    wbuzzController != null &&
-    materializedMapping.bindings.length > 0 &&
-    mappingStatus !== 'loading' &&
-    mappingStatus !== 'stale' &&
-    mappingStatus !== 'unsupported-version'
-
   const setSlotTeam = useCallback((slotId: SonyBuzzSlotId, teamId: string | null) => {
     setMappingIssue(null)
     setAssociations((current) => {
@@ -251,7 +232,6 @@ export function useSonyBuzzSupportedProfile({
     materializedMapping,
     mappingIssue,
     wbuzzController,
-    profileReady,
     connect: () => lifecycleRef.current!.connect(),
     disableKeepAlive: () => lifecycleRef.current!.disable(),
     setSlotTeam,

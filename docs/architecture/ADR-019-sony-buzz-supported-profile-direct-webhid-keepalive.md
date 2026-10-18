@@ -185,6 +185,23 @@ The generic Slice 9 per-team capture (ADR-009 §7) keeps its one-primary-per-tea
 rule for the team being edited only; editing another team, or a non-buzz action,
 beside a many-to-one mapping is not refused.
 
+**Amendment (2026-10-18, FRC-3).** Not being *refused by the validator* is not
+the same as being *safe to apply*. `withGamepadControlForTeamAction` replaces
+every binding a team holds for the edited action, so beside a many-to-one
+mapping a generic per-team Assign or Clear destroyed that team's other Buzzers
+for the session while the copy described one button. The Host panel now refuses
+that edit before the validator sees it, for **every** action rather than the
+buzz action alone — the profile binds all five Sony colours per slot, and the
+secondary colours drive team name selection in Class Setup, so losing them
+leaves a handset whose colour buttons silently do nothing. The validator scoping
+described above is unchanged; this is a later, separate guard against an edit
+destroying bindings it never described.
+
+The teacher is routed to Buzzer setup, which is the surface that can express a
+shared mapping. A supported-profile mapping that maps nothing (every Buzzer
+unassigned) now also withdraws the controls it applied, so visible assignment
+state and the live gameplay mapping agree without a reload.
+
 ### 7. Persistence
 
 - IndexedDB schema **3 → 4** (additive store `sonyBuzzMappings`).
