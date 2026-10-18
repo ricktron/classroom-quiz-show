@@ -236,3 +236,57 @@ describe('preview, apply, and discard', () => {
     expect(active.bindings).toHaveLength(1)
   })
 })
+
+describe('guided apply beside several Buzzers on one team (CBN-1)', () => {
+  // Supported-profile many-to-one: red already has two buzz buttons.
+  const SHARED_RED: GamepadMapping = {
+    version: GAMEPAD_MAPPING_VERSION,
+    bindings: [
+      { controllerIndex: 0, buttonIndex: 0, teamId: 'red', action: PRIMARY_BUZZ },
+      { controllerIndex: 0, buttonIndex: 10, teamId: 'red', action: PRIMARY_BUZZ },
+    ],
+  }
+  const BLUE_CAPTURES = [control(1, 0), control(1, 1), control(1, 2), control(1, 3), control(1, 4)]
+
+  it('applies a profile for another team without re-judging the shared team', () => {
+    const profile = captureAll('blue', BLUE_CAPTURES, SHARED_RED)
+    const preview = previewSonyBuzzApply(profile, SHARED_RED, TEAMS)
+    expect(preview.ok, JSON.stringify(!preview.ok && preview.issues)).toBe(true)
+    const applied = applySonyBuzzStagedProfile(profile, SHARED_RED, TEAMS)
+    expect(applied.ok).toBe(true)
+    if (!applied.ok) return
+    const redBuzz = applied.mapping.bindings.filter(
+      (binding) => binding.teamId === 'red' && binding.action.kind === 'primary-buzz',
+    )
+    expect(redBuzz).toHaveLength(2)
+  })
+
+  it('would be refused under the strict one-buzz-per-team rule (the scoping is what allows it)', () => {
+    const profile = captureAll('blue', BLUE_CAPTURES, SHARED_RED)
+    const next: GamepadMapping = {
+      version: GAMEPAD_MAPPING_VERSION,
+      bindings: [...SHARED_RED.bindings, ...bindingsOrThrow(profile)],
+    }
+    const strict = validateGamepadMapping(next, TEAMS)
+    expect(strict.ok).toBe(false)
+    if (strict.ok) return
+    expect(strict.issues.map((issue) => issue.code)).toContain('duplicate-team-primary')
+  })
+
+  it('still holds the profile’s own team to one buzz button', () => {
+    const profile = captureAll('red', [control(1, 0), control(1, 1), control(1, 2), control(1, 3), control(1, 4)], SHARED_RED)
+    const applied = applySonyBuzzStagedProfile(profile, SHARED_RED, TEAMS)
+    expect(applied.ok).toBe(true)
+    if (!applied.ok) return
+    const redBuzz = applied.mapping.bindings.filter(
+      (binding) => binding.teamId === 'red' && binding.action.kind === 'primary-buzz',
+    )
+    expect(redBuzz).toEqual([{ controllerIndex: 1, buttonIndex: 0, teamId: 'red', action: PRIMARY_BUZZ }])
+  })
+})
+
+function bindingsOrThrow(profile: SonyBuzzStagedProfile) {
+  const built = bindingsFromSonyBuzzStagedProfile(profile)
+  if (!built.ok) throw new Error('fixture profile incomplete')
+  return built.bindings
+}

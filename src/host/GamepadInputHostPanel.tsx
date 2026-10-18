@@ -14,6 +14,7 @@ import {
   type GamepadControlRef,
   type GamepadMapping,
   type GamepadMappingIssue,
+  type GamepadMappingValidationOptions,
 } from '../input/gamepadMapping'
 import { controllerLabel, type GamepadSource } from '../input/gamepadSource'
 import { GAMEPAD_IGNORE_MESSAGE } from '../input/gamepadAdapter'
@@ -407,8 +408,11 @@ export function GamepadInputHostPanel({
         pending.action,
         control,
       )
-      // Only the team being assigned is held to one buzz button (CBN-1).
-      const validation = validateGamepadMapping(next, teams, { onePrimaryOnlyFor: pending.teamId })
+      const validation = validateGamepadMapping(
+        next,
+        teams,
+        editValidationOptions(pending.teamId, pending.action),
+      )
       if (!validation.ok) {
         // Nothing is overwritten: the conflict is reported and the existing
         // assignment is left exactly as it was.
@@ -512,12 +516,11 @@ export function GamepadInputHostPanel({
   })
 
   const applyMapping = useCallback(
-    (next: GamepadMapping, editedTeamId?: string): boolean => {
-      // An edit for one team holds only that team to one buzz button (CBN-1).
+    (next: GamepadMapping, editedTeamId?: string, editedAction: LocalInputAction = PRIMARY_BUZZ): boolean => {
       const validation = validateGamepadMapping(
         next,
         teams,
-        editedTeamId === undefined ? {} : { onePrimaryOnlyFor: editedTeamId },
+        editedTeamId === undefined ? {} : editValidationOptions(editedTeamId, editedAction),
       )
       if (!validation.ok) {
         setIssues(validation.issues)
@@ -821,6 +824,7 @@ export function GamepadInputHostPanel({
                   const cleared = applyMapping(
                     withGamepadControlForTeamAction(mapping, team.id, pendingAction, null),
                     team.id,
+                    pendingAction,
                   )
                   // Say "cleared" only when it was (CBN-1 review: no false success copy).
                   setCaptureMessage(cleared ? `Controller button cleared for ${teamLabel}.` : null)
@@ -958,4 +962,15 @@ const REFUSAL_MESSAGE: Partial<Record<string, string>> = {
   'no-teams-configured': 'This game has no teams, so nobody can buzz.',
   'game-already-ended': 'The game has ended.',
   'round-mismatch': 'That press was for a round that is no longer current.',
+}
+
+/**
+ * Validation for a generic edit of ONE team's ONE action (CBN-1). The edit
+ * helper replaces every binding the team has for that action, so a buzz edit
+ * leaves exactly one buzz button for the edited team and only that team is held
+ * to the one-primary rule; other teams' supported-profile Buzzers are not
+ * re-judged. A non-buzz edit touches no buzz button, so it re-judges none.
+ */
+function editValidationOptions(teamId: string, action: LocalInputAction): GamepadMappingValidationOptions {
+  return action.kind === 'primary-buzz' ? { onePrimaryOnlyFor: teamId } : { allowSharedTeamPrimary: true }
 }

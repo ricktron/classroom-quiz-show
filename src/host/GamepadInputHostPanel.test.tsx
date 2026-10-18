@@ -889,6 +889,84 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(activeRespondent(queueOf(panel.store))).toBe('red')
   })
 
+  async function saveRedSharedWithBuzzer3(panel: ReturnType<typeof renderWbuzzPanel>) {
+    await panel.flush()
+    panel.attachWbuzz()
+    await panel.connect()
+    fireEvent.change(screen.getByTestId('sbs-slot-3'), { target: { value: 'red' } })
+    fireEvent.click(screen.getByTestId('sbs-save-mapping'))
+    await panel.flush()
+    expect(screen.getByTestId('sbs-mapping-layer')).toHaveTextContent('Team mapping saved')
+  }
+
+  it('CBN-1 review: with several Buzzers on one team, assigning another team’s buzz button by pressing it works', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await saveRedSharedWithBuzzer3(panel)
+    // Buzzer 4 is unassigned, so its buttons are free to capture.
+    const blueButton = buttonIndexForSlotColor(4, 'red')
+
+    fireEvent.click(screen.getByTestId('gih-capture-blue'))
+    await panel.pressRedAndSettle(blueButton)
+    expect(screen.queryByTestId('gih-issues')?.textContent ?? '').not.toMatch(/already has a buzz button/)
+    expect(screen.getByTestId('gih-capture-status')).toHaveTextContent(/assigned to .* for buzz/i)
+    expect(screen.getByTestId('gih-control-blue')).toHaveTextContent('Buzzer 4 · Red')
+    // Red keeps both of its Buzzers.
+    openClue(panel.store)
+    arm(panel.store)
+    panel.refresh()
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
+    panel.refresh()
+    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+  })
+
+  it('CBN-1 review: with several Buzzers on one team, the guided handset setup applies for another team', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await saveRedSharedWithBuzzer3(panel)
+    fireEvent.change(screen.getByTestId('sbs-team'), { target: { value: 'blue' } })
+    // Buzzer 4 is unassigned, so its five buttons are free to capture.
+    for (const color of ['red', 'blue', 'orange', 'green', 'yellow'] as const) {
+      fireEvent.click(screen.getByTestId('sbs-capture'))
+      await panel.pressRedAndSettle(buttonIndexForSlotColor(4, color))
+    }
+    fireEvent.click(screen.getByTestId('sbs-apply'))
+    expect(screen.getByTestId('sbs-status')).toHaveTextContent(/Applied handset profile/i)
+    expect(screen.queryByTestId('gih-issues')?.textContent ?? '').not.toMatch(/already has a buzz button/)
+    expect(screen.getByTestId('gih-control-blue')).toHaveTextContent('Buzzer 4 · Red')
+    // Red keeps both of its Buzzers.
+    openClue(panel.store)
+    arm(panel.store)
+    panel.refresh()
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
+    panel.refresh()
+    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+  })
+
+  it('CBN-1 review: a secondary action can be assigned and cleared on the team with several Buzzers', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await saveRedSharedWithBuzzer3(panel)
+    // Buzzer 4 is unassigned, so its buttons are free to capture.
+    const secondaryButton = buttonIndexForSlotColor(4, 'blue')
+    fireEvent.change(screen.getByTestId('gih-action'), { target: { value: 'secondary1' } })
+
+    fireEvent.click(screen.getByTestId('gih-capture-red'))
+    await panel.pressRedAndSettle(secondaryButton)
+    expect(screen.queryByTestId('gih-issues')?.textContent ?? '').not.toMatch(/already has a buzz button/)
+    expect(screen.getByTestId('gih-control-red')).toHaveTextContent('Buzzer 4 · Blue')
+
+    fireEvent.click(screen.getByTestId('gih-clear-red'))
+    expect(screen.queryByTestId('gih-issues')?.textContent ?? '').not.toMatch(/already has a buzz button/)
+    expect(screen.getByTestId('gih-capture-status')).toHaveTextContent('Controller button cleared for')
+    expect(screen.getByTestId('gih-control-red')).toHaveTextContent(/not assigned/i)
+    // Red's buzz buttons were not touched by the secondary edit.
+    fireEvent.change(screen.getByTestId('gih-action'), { target: { value: 'primary-buzz' } })
+    openClue(panel.store)
+    arm(panel.store)
+    panel.refresh()
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
+    panel.refresh()
+    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+  })
+
   it('stays Off with a Wbuzz pad and a supported mapping when the receiver was never connected', async () => {
     const panel = renderWbuzzPanel({ selectionMode: false })
     await panel.flush()

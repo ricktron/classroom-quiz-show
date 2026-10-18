@@ -181,8 +181,9 @@ its own assigned team. Save team mapping fails closed: a mapping that cannot be
 materialized (for example a Buzzer slot assigned twice, or a team the game does
 not have) is never saved, the teacher is told why, and the previously saved
 mapping is left unchanged. It is never silently replaced by an empty mapping.
-The generic Slice 9 per-team capture (ADR-009) keeps its one-primary-per-team
-rule.
+The generic Slice 9 per-team capture (ADR-009 §7) keeps its one-primary-per-team
+rule for the team being edited only; editing another team, or a non-buzz action,
+beside a many-to-one mapping is not refused.
 
 ### 7. Persistence
 

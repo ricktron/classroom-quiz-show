@@ -250,6 +250,14 @@ key AND a controller buzz button at the same time — different adapters, both
 feeding the same queue. The validator cannot see the keyboard mapping at all, so
 this is structural.
 
+**Exception: the supported Sony Buzz profile (ADR-019 §6, owner direction
+2026-10-17, CBN-1).** A saved supported-profile mapping may give one team several
+Buzzers, so several buzz buttons. Validation therefore takes options: the
+supported profile validates with the shared-team allowance, and a generic edit of
+one team's one action (press-to-assign, Clear, the guided handset setup) holds
+only the edited team to one buzz button. A non-buzz edit re-judges no buzz button.
+Other teams' supported-profile Buzzers are never re-judged by a generic edit.
+
 **"Controller not attached" and "controller has no such button" are NOT validation
 failures.** A mapping made while a controller was plugged in must survive it being
 unplugged; those are resolution facts the adapter observes (the binding simply
