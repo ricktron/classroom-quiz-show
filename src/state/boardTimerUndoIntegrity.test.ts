@@ -106,6 +106,8 @@ describe('a board response-timer expiry is a clock fact, never an undo target', 
     store.dispatch(undo)
     // The start is undone, so no running timer with a past deadline remains to re-expire.
     expect(phase(store).timer.status).not.toBe('running')
+    // ADR-002: exactly the state before the start, so the clue is armed again.
+    expect(phase(store).armed).toBe(true)
     const stale = store.dispatch({
       type: 'EXPIRE_RESPONSE_TIMER',
       issuedAt: started.deadline + 2_000,
@@ -222,7 +224,9 @@ describe('reload and saved sessions (teacher data safety)', () => {
     expect(decoded.ok).toBe(true)
     if (!decoded.ok) return
     const state = replay(decoded.value)
+    // The legacy loop's second expiry lands on the same timer state as the first.
     expect(state.session?.game?.teamScores).toEqual(store.getState().session?.game?.teamScores)
+    expect(state.session?.game && responsePhaseFor(state.session.game, ROUND)).toEqual(phase(store))
     expect(findUndoTarget(decoded.value)?.type).toBe('TEAM_SCORE_ADJUSTED')
   })
 })

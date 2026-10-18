@@ -313,7 +313,7 @@ describe('an expiry is a clock fact, never undone (CBN-2)', () => {
   const expiriesIn = (store: SessionStore) =>
     store.getHistory().filter((event) => event.type === 'RESPONSE_TIMER_EXPIRED')
 
-  it('Undo after Time up reaches the timer start, and nothing re-arms or expires again', () => {
+  it('Undo after Time up reaches the timer start, and the timer never restarts or expires again', () => {
     const store = openStore()
     const clock = createManualClock(AT)
     start(store)

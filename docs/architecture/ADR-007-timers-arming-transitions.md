@@ -449,8 +449,9 @@ timing test deterministic and fast.
 
 **Costs and limits.** `PublicState` version 4 consumers and sync version 1
 consumers both fail closed; there is no migration and none is implied. The
-host/display offset is an estimate, not synchronisation. Undo of an expiry restores
-an already-overdue timer. A response window does not survive a round change. Undo
+host/display offset is an estimate, not synchronisation. (Originally: Undo of an
+expiry restored an already-overdue timer. Superseded 2026-10-17 by the §13
+amendment: an expiry is never an Undo target.) A response window does not survive a round change. Undo
 is still latest-only. Everything remains in memory, lost on tab close. And the
 `prompt` stage is the only place a window may exist, so a timed round type that
 wants a different anchor will extend `resolveResponsePhase` rather than reuse it
