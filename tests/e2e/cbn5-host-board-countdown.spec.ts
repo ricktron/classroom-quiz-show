@@ -54,6 +54,25 @@ function seconds(text: string): number {
   return Number(match[1]) * 60 + Number(match[2])
 }
 
+/**
+ * Read the Host number and the projector number as close to simultaneously as
+ * the transport allows. Two sequential reads leave real time between them, and
+ * the Display's own sample is already up to COUNTDOWN_TICK_MS stale, so a
+ * sequential pair can differ by 2 whole seconds after rounding on a loaded
+ * machine — a flake shape, not a product fact.
+ */
+async function hostAndProjectorSeconds(
+  page: Page,
+  display: Page,
+  host: ReturnType<typeof hostRemaining>,
+): Promise<readonly [number, number]> {
+  const [hostText, projectorText] = await Promise.all([
+    host.innerText(),
+    displayClock(display).innerText(),
+  ])
+  return [seconds(hostText), seconds(projectorText)]
+}
+
 const hostRemaining = (page: Page) => page.getByTestId('rth-remaining')
 const hostStatus = (page: Page) => page.getByTestId('rth-status')
 const displayClock = (display: Page) => display.getByTestId('rtd-clock')
@@ -79,8 +98,7 @@ test('CBN-5: the Host board response countdown ticks and agrees with the project
     .toBeLessThanOrEqual(first - 3)
 
   // Same remaining-time truth as the projector, within display granularity.
-  const host = seconds(await hostRemaining(page).innerText())
-  const projector = seconds(await displayClock(display).innerText())
+  const [host, projector] = await hostAndProjectorSeconds(page, display, hostRemaining(page))
   expect(Math.abs(host - projector)).toBeLessThanOrEqual(1)
 })
 
@@ -104,8 +122,13 @@ test('CBN-5: pausing the Host board countdown freezes the same number on both su
 
   // Paused is a fixed fact on both surfaces: it must not keep counting down.
   await page.waitForTimeout(2_000)
-  expect(seconds(await hostRemaining(page).innerText())).toBe(paused)
-  expect(Math.abs(seconds(await displayClock(display).innerText()) - paused)).toBeLessThanOrEqual(1)
+  const [hostPaused, projectorPaused] = await hostAndProjectorSeconds(
+    page,
+    display,
+    hostRemaining(page),
+  )
+  expect(hostPaused).toBe(paused)
+  expect(Math.abs(projectorPaused - paused)).toBeLessThanOrEqual(1)
 
   // Resume returns both to a live, moving countdown from the same remaining time.
   await page.getByTestId('rth-resume').click()
@@ -113,10 +136,10 @@ test('CBN-5: pausing the Host board countdown freezes the same number on both su
   await expect
     .poll(async () => seconds(await hostRemaining(page).innerText()), { timeout: 10_000 })
     .toBeLessThan(paused)
-  expect(
-    Math.abs(
-      seconds(await hostRemaining(page).innerText()) -
-        seconds(await displayClock(display).innerText()),
-    ),
-  ).toBeLessThanOrEqual(1)
+  const [hostResumed, projectorResumed] = await hostAndProjectorSeconds(
+    page,
+    display,
+    hostRemaining(page),
+  )
+  expect(Math.abs(hostResumed - projectorResumed)).toBeLessThanOrEqual(1)
 })

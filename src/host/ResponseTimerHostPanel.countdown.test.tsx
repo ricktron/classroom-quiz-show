@@ -9,6 +9,11 @@ import { createManualClock, type ManualClock } from '../time/clock'
 import { remainingMsAt } from '../game/timing/responsePhase'
 import { responsePhaseFor } from '../state/reducer'
 import { formatRemaining } from '../time/duration'
+import {
+  LEFTOVER_AT,
+  LEFTOVER_ROUND,
+  leftoverRunningCorrectStore,
+} from '../test/leftoverRunningBoardFixtures'
 
 /**
  * CBN-5 — the teacher's BOARD response countdown must visibly progress while the
@@ -116,7 +121,10 @@ describe('the host board response countdown ticks from the durable deadline (CBN
     expect(store.getHistory().length).toBe(historyBefore)
   })
 
-  it('floors at 0:00 and still lets only the host expire the window', () => {
+  // The harness deliberately omits useResponseTimerExpiry, so this pins the
+  // panel reaching 0:00 while appending and mutating nothing. It does NOT test
+  // expiry itself — in the real Host the expiry hook fires at the deadline.
+  it('reaches 0:00 without appending an event or expiring anything itself', () => {
     const store = boardStore()
     const clock = createManualClock(AT)
     renderPanel(store, clock)
@@ -172,7 +180,11 @@ describe('the host board response countdown ticks from the durable deadline (CBN
     expect(vi.getTimerCount()).toBe(0)
   })
 
-  it('derives the correct remaining time after a reload mid-window', () => {
+  // Not a reload: the same store is reused and the panel re-mounts against a
+  // later clock. That is the fact worth pinning — a fresh mount derives from the
+  // durable deadline (already correct before this repair) and then keeps ticking
+  // (the part that was broken).
+  it('derives from the durable deadline on a fresh mount, then keeps ticking', () => {
     const store = boardStore()
     const clock = createManualClock(AT)
     const first = renderPanel(store, clock)
@@ -188,5 +200,24 @@ describe('the host board response countdown ticks from the durable deadline (CBN
 
     tick(reloadClock, 5_000)
     expect(remaining()).toHaveTextContent(formatRemaining(remainingMsAt(timer, AT + 12_000)))
+  })
+
+
+  it('schedules nothing once Correct has closed the opportunity', () => {
+    // Canonical leftover-running Correct: the private timer is still `running`
+    // for undo fidelity, but Correct owns the opportunity so the panel shows no
+    // remaining time. It must not keep a 4Hz interval alive behind a dash for as
+    // long as the clue stays on screen — an unbounded lifetime.
+    const store = leftoverRunningCorrectStore()
+    const clock = createManualClock(LEFTOVER_AT)
+    renderPanel(store, clock)
+
+    expect(screen.getByTestId('rth-remaining')).toHaveTextContent('—')
+    expect(vi.getTimerCount()).toBe(0)
+
+    // And the leftover timer really is still running underneath, so this is the
+    // `!correctClosed` half of the gate being pinned, not an idle timer.
+    const timer = responsePhaseFor(store.getState().session!.game!, LEFTOVER_ROUND).timer
+    expect(timer.status).toBe('running')
   })
 })
