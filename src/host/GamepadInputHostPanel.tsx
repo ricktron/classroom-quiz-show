@@ -50,7 +50,11 @@ import {
   slotIdForPrimaryRedButton,
   type SonyBuzzTeacherSummary,
 } from '../input/sonyBuzzTeacherReadiness'
-import { sonyBuzzButtonLabel, type SonyBuzzSlotId } from '../input/sonyBuzzSupportedProfile'
+import {
+  sonyBuzzButtonLabel,
+  sonyBuzzHandsetForButton,
+  type SonyBuzzSlotId,
+} from '../input/sonyBuzzSupportedProfile'
 import { isSettledReceiverDrop } from './buzzerResumeNotice'
 import type { PersistenceAdapter } from '../persistence'
 import type { HostInputDiagnosticSignals } from './diagnostics/types'
@@ -618,8 +622,9 @@ export function GamepadInputHostPanel({
         call site, so a future caller cannot reopen it.
 
         `Clear all controller buttons` passes no `editedTeamId` and is deliberately
-        unaffected: it is an explicitly plural control, and its own disagreement
-        with Buzzer setup is recorded as open.
+        unaffected by the shared-team refusal: it is an explicitly plural control.
+        Phase 3 R2 keeps its Buzzer-setup slot UI in agreement by unassigning
+        supported slots when the live mapping is emptied.
       */
       if (editedTeamId !== undefined) {
         const shared = sharedTeamEditRefusal(latestMapping.current, editedTeamId, editedAction)
@@ -830,6 +835,12 @@ export function GamepadInputHostPanel({
           disabled={mapping.bindings.length === 0}
           onClick={() => {
             setCapture({ mode: 'idle' })
+            // Phase 3 R2: VISIBLE == LIVE. Clearing the live mapping alone left
+            // Buzzer setup slots assigned and "Team mapping saved" — so null the
+            // profile-ownership bookkeeping and empty every supported slot in one
+            // update before emptying the live mapping.
+            appliedProfileControlsRef.current = null
+            sony.clearAllSlotTeams()
             applyMapping(EMPTY_GAMEPAD_MAPPING)
             setCaptureMessage('All controller buttons cleared for this session.')
           }}
@@ -939,6 +950,7 @@ export function GamepadInputHostPanel({
                     setCaptureMessage(shared)
                     return
                   }
+                  const prior = gamepadControlForTeamAction(mapping, team.id, pendingAction)
                   const cleared = applyMapping(
                     withGamepadControlForTeamAction(mapping, team.id, pendingAction, null),
                     team.id,
@@ -951,7 +963,26 @@ export function GamepadInputHostPanel({
                   // message AND that message is the whole explanation. Nulling
                   // unconditionally would erase it, which on a campaign about
                   // silent destruction is the one thing this must not do.
-                  if (cleared) setCaptureMessage(`Controller button cleared for ${teamLabel}.`)
+                  if (cleared) {
+                    // Phase 3 R2: a non-shared Sony slot must not keep looking
+                    // assigned after its live binding was cleared.
+                    if (
+                      prior !== null &&
+                      prior.controllerIndex === wbuzzControllerIndex
+                    ) {
+                      const handset = sonyBuzzHandsetForButton(prior.buttonIndex)
+                      if (
+                        handset !== null &&
+                        sony.associations.some(
+                          (entry) =>
+                            entry.slotId === handset.slotId && entry.teamId === team.id,
+                        )
+                      ) {
+                        sony.setSlotTeam(handset.slotId, null)
+                      }
+                    }
+                    setCaptureMessage(`Controller button cleared for ${teamLabel}.`)
+                  }
                 }}
               >
                 Clear

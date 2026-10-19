@@ -58,6 +58,7 @@ export interface SonyBuzzSupportedProfileApi {
   readonly connect: () => Promise<void>
   readonly disableKeepAlive: () => void
   readonly setSlotTeam: (slotId: SonyBuzzSlotId, teamId: string | null) => void
+  readonly clearAllSlotTeams: () => void
   readonly saveAssociations: () => Promise<boolean>
   readonly clearSavedMapping: () => Promise<boolean>
   readonly applyMaterializedMapping: () => GamepadMapping
@@ -190,6 +191,12 @@ export function useSonyBuzzSupportedProfile({
     })
   }, [])
 
+  /** Empty every slot association in one update (Clear-all / live-mapping sync). */
+  const clearAllSlotTeams = useCallback(() => {
+    setMappingIssue(null)
+    setAssociations([])
+  }, [])
+
   const saveAssociations = useCallback(async () => {
     // Fail closed (CBN-1): a mapping that cannot be materialized is never saved,
     // so it can never silently become an empty mapping. The controller index is
@@ -235,6 +242,7 @@ export function useSonyBuzzSupportedProfile({
     connect: () => lifecycleRef.current!.connect(),
     disableKeepAlive: () => lifecycleRef.current!.disable(),
     setSlotTeam,
+    clearAllSlotTeams,
     saveAssociations,
     clearSavedMapping,
     applyMaterializedMapping: () => materializedMapping,

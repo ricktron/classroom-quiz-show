@@ -1005,6 +1005,49 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(await buzzOnFreshClue(panel, 3)).toBe('red')
   })
 
+  it('Phase 3 R2: Clear all keeps Buzzer setup slots and live mapping in agreement', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await saveRedSharedWithBuzzer3(panel)
+    expect(screen.getByTestId('sbs-slot-1')).not.toHaveValue('')
+    expect(screen.getByTestId('sbs-slot-3')).toHaveValue('red')
+    expect(screen.getByTestId('sbs-mapping-layer')).toHaveTextContent('Team mapping saved')
+    expect(await buzzOnFreshClue(panel, 3)).toBe('red')
+
+    fireEvent.click(screen.getByTestId('gih-clear-all'))
+    await panel.flush()
+    expect(screen.getByTestId('gih-capture-status')).toHaveTextContent(/cleared for this session/i)
+    // VISIBLE == LIVE: slots must not keep looking assigned after live is empty.
+    expect(screen.getByTestId('sbs-slot-1')).toHaveValue('')
+    expect(screen.getByTestId('sbs-slot-3')).toHaveValue('')
+    expect(screen.getByTestId('sbs-mapping-layer')).not.toHaveTextContent('Team mapping saved')
+    expect(screen.getByTestId('gih-control-red')).toHaveTextContent(/not assigned/i)
+    // Reopen the opportunity — the first buzz already used the fresh-clue path.
+    expect(await buzzOnReopenedClue(panel, 3)).toBeNull()
+    expect(await buzzOnReopenedClue(panel, 1)).toBeNull()
+  })
+
+  it('Phase 3 R2: per-team Clear on a non-shared Sony team unassigns that Buzzer setup slot', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await panel.flush()
+    panel.attachWbuzz()
+    await panel.connect()
+    // One Buzzer on blue only — Clear is allowed (not a shared-team refusal).
+    for (const slot of [1, 2, 3, 4] as const) {
+      fireEvent.change(screen.getByTestId(`sbs-slot-${slot}`), { target: { value: '' } })
+    }
+    fireEvent.change(screen.getByTestId('sbs-slot-2'), { target: { value: 'blue' } })
+    fireEvent.click(screen.getByTestId('sbs-save-mapping'))
+    await panel.flush()
+    expect(screen.getByTestId('sbs-slot-2')).toHaveValue('blue')
+    expect(screen.getByTestId('gih-control-blue')).not.toHaveTextContent(/not assigned/i)
+
+    fireEvent.click(screen.getByTestId('gih-clear-blue'))
+    expect(screen.getByTestId('gih-capture-status')).toHaveTextContent(/cleared/i)
+    expect(screen.getByTestId('gih-control-blue')).toHaveTextContent(/not assigned/i)
+    expect(screen.getByTestId('sbs-slot-2')).toHaveValue('')
+    expect(await buzzOnFreshClue(panel, 2)).toBeNull()
+  })
+
   it('FRC-3: withdrawing the profile mapping keeps a generic binding on the same pad', async () => {
     /*
       Scoped to the WITHDRAW branch on purpose. The profile's APPLY branch still
