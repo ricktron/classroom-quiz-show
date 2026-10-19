@@ -25,6 +25,17 @@ export function joinBaseAndMediaPath(base: string, path: string): string | null 
  * Returns `null` when the path fails the shared same-origin grammar — callers
  * must fail closed (no `<img src>`).
  */
+/**
+ * The PACK blob for this path, or null when no hydrated pack scope carries it.
+ *
+ * Separate from {@link resolveSameOriginMediaSrc} because the Display must be
+ * able to tell "the pack has this" from "fall back to the hosted path": before
+ * hydration settles, the hosted path is NOT a safe fallback (FRC-6).
+ */
+export function resolvePackMediaSrc(path: string): string | null {
+  return getSharedPackResourceRegistry().resolveSrc(path)
+}
+
 export function resolveSameOriginMediaSrc(path: string): string | null {
   const packSrc = getSharedPackResourceRegistry().resolveSrc(path)
   if (packSrc !== null) return packSrc

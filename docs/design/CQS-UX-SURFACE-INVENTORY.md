@@ -410,6 +410,30 @@ hardware, recovery, and the end-to-end experience.
   future effects are deferred.
   Answer-reveal authorization is an architectural invariant, not a design
   choice.
+- **Open residual — authored media paths are not namespaced away from build
+  output (2026-10-18, FRC-6):** `isValidSameOriginPath`
+  (`src/game/media/limits.ts`) imposes no reserved prefix, and `MEDIA_PREFIX`
+  namespaces only the ZIP entry, so an authored clue path may collide with a
+  file the deployment ships. `public/media-fixtures/` ships real clue images at
+  clue-shaped paths, and the repository's own pack fixtures author
+  `media-fixtures/slice-11-clue.png` while carrying different bytes for it
+  (digest-verified).
+
+  FRC-6 closed the window in which the projector painted the deployed file
+  **without the teacher having chosen it** — while pack hydration is unresolved
+  the authored path is not resolved to its hosted URL at all. It did **not**
+  close the collision. Post-settle, a clue whose media is not in a hydrated pack
+  still resolves to its hosted URL, so a build asset at that path still paints,
+  permanently rather than transiently.
+
+  Severity low: author-triggered, the teacher's own pack, no private data and no
+  other classroom's content. Recorded rather than repaired because reserving a
+  path prefix changes the authoring contract and is an owner decision. Pinned as
+  an observed fact — not prose — by the colliding-path test in
+  `src/display/packMediaTransientAdjudication.test.tsx`, which drains the
+  hydration settle and asserts the hosted URL does paint. **That assertion is
+  expected to go RED when this residual is fixed; that is the signal, not a
+  regression.**
 
 ### 16. Buzz-in moment
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MediaContentDisplay } from './MediaContentDisplay'
 import {
   joinBaseAndMediaPath,
@@ -65,6 +65,27 @@ describe('joinBaseAndMediaPath / resolveSameOriginMediaSrc', () => {
   })
 })
 
+/**
+ * Wait for the hosted `<img>` to exist, because the Display does not resolve an
+ * authored path to its hosted URL until pack media hydration settles — an image
+ * clue begins on a loading placeholder (FRC-6).
+ *
+ * What this helper is NOT: a detector for that behaviour. It only waits for
+ * `mcd-img` to appear, so it would pass on the first tick if the repair were
+ * reverted — a reviewer was right that an earlier docblock calling the wait
+ * "the contract" overstated it. The repair itself is pinned by
+ * `packMediaTransientAdjudication.test.tsx` and, below, by "shows the pack image
+ * once it hydrates, even if the hosted path already failed" — both of which go
+ * red on a revert. Named rather than numbered: an earlier version of this
+ * docblock cited `:213`, which is a closing brace. This is a timing helper
+ * serving pre-existing assertions that were not otherwise changed.
+ */
+async function waitForHostedImage(): Promise<void> {
+  await waitFor(() => {
+    expect(screen.getByTestId('mcd-img')).toBeInTheDocument()
+  })
+}
+
 describe('MediaContentDisplay', () => {
   beforeEach(() => {
     setSharedPackResourceRegistryForTests(null)
@@ -88,7 +109,7 @@ describe('MediaContentDisplay', () => {
     expect(screen.getByTestId('mcd-text')).toHaveAttribute('data-length', 'long')
   })
 
-  it('renders an image with alt, caption, and attribution', () => {
+  it('renders an image with alt, caption, and attribution', async () => {
     const content: PublicPromptContent = {
       kind: 'image',
       source: { kind: 'same-origin-path', path: 'media-fixtures/slice-11-clue.png' },
@@ -97,6 +118,7 @@ describe('MediaContentDisplay', () => {
       attribution: 'Fixture',
     }
     render(<MediaContentDisplay content={content} />)
+    await waitForHostedImage()
     const img = screen.getByTestId('mcd-img')
     expect(img).toHaveAttribute('alt', 'Earth layers diagram')
     expect(img.getAttribute('src')).toContain('media-fixtures/slice-11-clue.png')
@@ -104,7 +126,7 @@ describe('MediaContentDisplay', () => {
     expect(screen.getByTestId('mcd-attribution')).toHaveTextContent('Fixture')
   })
 
-  it('on image error shows Image unavailable and the authored alt as visible text', () => {
+  it('on image error shows Image unavailable and the authored alt as visible text', async () => {
     const content: PublicPromptContent = {
       kind: 'image',
       source: { kind: 'same-origin-path', path: 'media-fixtures/missing.png' },
@@ -113,6 +135,7 @@ describe('MediaContentDisplay', () => {
       attribution: null,
     }
     render(<MediaContentDisplay content={content} />)
+    await waitForHostedImage()
     fireEvent.error(screen.getByTestId('mcd-img'))
     expect(screen.getByTestId('mcd-image-fallback')).toHaveTextContent('Image unavailable')
     expect(screen.getByTestId('mcd-alt-fallback')).toHaveTextContent('Authored alt fallback')
@@ -121,7 +144,7 @@ describe('MediaContentDisplay', () => {
     expect(screen.getByTestId('mcd-image-fallback').textContent).not.toContain('media-fixtures')
   })
 
-  it('resets failure state when source.path changes to a valid image', () => {
+  it('resets failure state when source.path changes to a valid image', async () => {
     const missing: PublicPromptContent = {
       kind: 'image',
       source: { kind: 'same-origin-path', path: 'media-fixtures/missing.png' },
@@ -130,6 +153,7 @@ describe('MediaContentDisplay', () => {
       attribution: null,
     }
     const { rerender } = render(<MediaContentDisplay content={missing} />)
+    await waitForHostedImage()
     fireEvent.error(screen.getByTestId('mcd-img'))
     expect(screen.getByTestId('mcd-image-fallback')).toBeInTheDocument()
 
@@ -141,6 +165,7 @@ describe('MediaContentDisplay', () => {
       attribution: null,
     }
     rerender(<MediaContentDisplay content={present} />)
+    await waitForHostedImage()
     expect(screen.queryByTestId('mcd-image-fallback')).not.toBeInTheDocument()
     expect(screen.getByTestId('mcd-img')).toHaveAttribute(
       'src',
@@ -149,7 +174,7 @@ describe('MediaContentDisplay', () => {
     expect(screen.getByTestId('mcd-img')).toHaveAttribute('alt', 'Present fixture')
   })
 
-  it('ignores a stale onError from a previous source after the path changes', () => {
+  it('ignores a stale onError from a previous source after the path changes', async () => {
     const first: PublicPromptContent = {
       kind: 'image',
       source: { kind: 'same-origin-path', path: 'media-fixtures/first.png' },
@@ -158,6 +183,7 @@ describe('MediaContentDisplay', () => {
       attribution: null,
     }
     const { rerender } = render(<MediaContentDisplay content={first} />)
+    await waitForHostedImage()
     const firstImg = screen.getByTestId('mcd-img')
     const firstSrc = firstImg.getAttribute('src')
     expect(firstSrc).toContain('media-fixtures/first.png')
@@ -170,6 +196,7 @@ describe('MediaContentDisplay', () => {
       attribution: null,
     }
     rerender(<MediaContentDisplay content={second} />)
+    await waitForHostedImage()
     expect(screen.getByTestId('mcd-img')).toHaveAttribute(
       'src',
       expect.stringContaining('media-fixtures/slice-11-clue.png'),
@@ -181,7 +208,7 @@ describe('MediaContentDisplay', () => {
     expect(screen.getByTestId('mcd-img')).toBeInTheDocument()
   })
 
-  it('shows the pack image once it hydrates, even if the hosted path already failed', () => {
+  it('shows the pack image once it hydrates, even if the hosted path already failed', async () => {
     const registry = createPackResourceRegistry({
       createObjectURL: () => 'blob:display-pack',
       revokeObjectURL: () => undefined,
@@ -194,8 +221,16 @@ describe('MediaContentDisplay', () => {
       caption: null,
       attribution: null,
     }
-    // Before hydration the path resolves to its hosted URL, which is not hosted.
+    /*
+      Before hydration settles the Display shows a loading placeholder and does
+      NOT resolve the authored path to its hosted URL (FRC-6) — that resolution
+      is what let a deployed asset sitting at an authored clue path paint on the
+      projector. Once it settles with no pack scope yet, the hosted URL is used
+      and can fail, which is the state this test needs.
+    */
     const { rerender } = render(<MediaContentDisplay content={content} />)
+    expect(screen.getByTestId('mcd-image-loading')).toBeInTheDocument()
+    await waitForHostedImage()
     expect(screen.getByTestId('mcd-img')).toHaveAttribute(
       'src',
       expect.stringContaining('media-fixtures/slice-11-clue.png'),
@@ -214,6 +249,7 @@ describe('MediaContentDisplay', () => {
       ]),
     )
     rerender(<MediaContentDisplay content={content} />)
+    await waitForHostedImage()
     expect(screen.queryByTestId('mcd-image-fallback')).not.toBeInTheDocument()
     expect(screen.getByTestId('mcd-img')).toHaveAttribute('src', 'blob:display-pack')
 
@@ -222,7 +258,7 @@ describe('MediaContentDisplay', () => {
     expect(screen.getByTestId('mcd-image-fallback')).toBeInTheDocument()
   })
 
-  it('keeps long caption and attribution wrapping classes for responsive projectors', () => {
+  it('keeps long caption and attribution wrapping classes for responsive projectors', async () => {
     const long = 'Word '.repeat(40).trim()
     const content: PublicPromptContent = {
       kind: 'image',
@@ -232,12 +268,13 @@ describe('MediaContentDisplay', () => {
       attribution: long,
     }
     render(<MediaContentDisplay content={content} />)
+    await waitForHostedImage()
     expect(screen.getByTestId('mcd-caption')).toHaveClass('mcd__caption')
     expect(screen.getByTestId('mcd-attribution')).toHaveClass('mcd__attribution')
     expect(screen.getByTestId('mcd-caption')).toHaveTextContent(long)
   })
 
-  it('uses pack-scoped object URLs when the registry has assets', () => {
+  it('uses pack-scoped object URLs when the registry has assets', async () => {
     const registry = createPackResourceRegistry({
       createObjectURL: () => 'blob:display-pack',
       revokeObjectURL: () => undefined,
@@ -261,6 +298,14 @@ describe('MediaContentDisplay', () => {
       attribution: null,
     }
     render(<MediaContentDisplay content={content} />)
+    expect(screen.getByTestId('mcd-img')).toHaveAttribute('src', 'blob:display-pack')
+    // Drain the hydration settle inside act: the pack blob paints immediately,
+    // but the settle lands a microtask later and would otherwise update state
+    // outside any act scope, which is a warning this branch must not add.
+    await act(async () => {
+      await Promise.resolve()
+      await Promise.resolve()
+    })
     expect(screen.getByTestId('mcd-img')).toHaveAttribute('src', 'blob:display-pack')
   })
 

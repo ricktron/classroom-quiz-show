@@ -500,15 +500,28 @@ async function delayIndexedDbOpen(page: Page, ms: number) {
   }, ms)
 }
 
-test('a hosted-path failure before pack hydration does not hide the pack image', async ({
+test('the projector never requests the hosted path before pack hydration settles', async ({
   browser,
   context,
 }, info) => {
   test.skip(info.project.name !== 'desktop-1080p', 'timing regression runs once (1080p)')
   const pack = await buildImagePackBytes(context)
 
-  // No service worker: the projector's first request for the hosted path really
-  // reaches the network and fails, while its pack-media hydration is held back.
+  /*
+    Strengthened from "a hosted-path failure before pack hydration does not hide
+    the pack image" (#165).
+
+    That test needed the projector to actually REQUEST the authored path before
+    hydration, and asserted the later blob survived the resulting failure. FRC-6
+    removed the request: an authored clue path can collide with a deployed build
+    asset (`public/media-fixtures/` ships real clue images and authored paths are
+    not namespaced), so resolving it early could paint a DIFFERENT clue's image
+    on the projector. The old precondition is therefore unreachable by design,
+    and the claim worth pinning is the stronger one — zero hosted attempts while
+    hydration is unresolved, and the pack image still arrives.
+
+    No service worker, so any request really would reach the network.
+  */
   const clean = await browser.newContext({ serviceWorkers: 'block' })
   try {
     const host = await clean.newPage()
@@ -528,8 +541,11 @@ test('a hosted-path failure before pack hydration does not hide the pack image',
     await importPackFile(host, pack)
     await host.getByRole('button', { name: /advance to next round/i }).click()
     await assertImagePromptVisible(host, display, 'cbh-tile-pack-image-100')
-    // The race really happened: the projector's one hosted attempt failed first.
-    expect(displayHostedAttempts, 'the hosted path must have failed before hydration').toBe(1)
+    // The authored path was never fetched, so no deployed asset could paint.
+    expect(
+      displayHostedAttempts,
+      'the projector must not request the authored path before hydration settles',
+    ).toBe(0)
   } finally {
     await clean.close()
   }
