@@ -116,10 +116,15 @@ export function isLiveForeignLease(
  * aggregate local-data wipe is the case that matters: `deleteDatabase` cannot
  * be cancelled, so it must not be issued while another window is live.
  *
- * `false` when the lease store cannot be read. That is an UNREADABLE answer,
- * not a safe one; the caller decides what to do with it.
+ * Three answers, not two: `'unreadable'` is NOT `'none'`. A boolean gave the
+ * caller nothing to decide with, which is exactly how the newest evidence got
+ * dropped for an uncancellable delete.
  */
-export async function hasLiveForeignHostLease(opts: LeadershipOptions): Promise<boolean> {
+export type ForeignHostLeaseAnswer = 'live' | 'none' | 'unreadable'
+
+export async function hasLiveForeignHostLease(
+  opts: LeadershipOptions,
+): Promise<ForeignHostLeaseAnswer> {
   let found = false
   const releaseMarker = readReleaseMarkerSafely(opts.releaseLedger)
   const result = await opts.adapter.withTransaction([OBJECT_STORE_COORDINATION], async (tx) => {
@@ -129,7 +134,8 @@ export async function hasLiveForeignHostLease(opts: LeadershipOptions): Promise<
     if (existing === null) return
     found = isLiveForeignLease(existing, opts, opts.clock.now(), releaseMarker)
   })
-  return result.ok ? found : false
+  if (!result.ok) return 'unreadable'
+  return found ? 'live' : 'none'
 }
 
 export async function releaseHostLease(

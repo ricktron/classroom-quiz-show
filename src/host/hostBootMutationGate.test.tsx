@@ -315,11 +315,23 @@ const NON_COMMAND_HOST_CONTROLS: readonly string[] = [
 ]
 
 /**
- * Every styled affordance and form control on the whole Host surface.
+ * Every styled affordance and form control in the Host's PLAY posture.
  *
  * `getAllByRole('button')` alone returns only `<button>`: it would miss the pack
  * picker's `<label className="btn">` — the exact affordance class this repair
- * had to fix — and miss `<select>` / `<input>` controls entirely.
+ * had to fix — and miss `<select>` / `<textarea>` / `<input>` controls entirely.
+ *
+ * KNOWN GAP, recorded here rather than implied away. This sweeps ONE posture.
+ * The SETUP posture is not inventoried, and ten further affordances become
+ * actionable there in a demoted window (`host-change-game`, the five
+ * `readiness-*` tasks, `setup-revisit-names`, `setup-open-display`,
+ * `setup-reveal-buzzers`, `setup-skip-buzzers`) — all verified non-command, but
+ * none checked by this test. Setup is also where `ClassroomSetupPanel` renders,
+ * whose team-name controls stay actionable in a window that cannot dispatch,
+ * show "Selected: <name>", and silently never reach the session. That is a real
+ * OPEN defect, not an allowlist omission, so it is deliberately not given an
+ * entry below. Still invisible either way: a `div`/`li` with a click handler and
+ * no role, and `contenteditable`.
  */
 /**
  * A stable identifier for an affordance: its `data-testid` when it has one,
@@ -439,5 +451,58 @@ describe('a window demoted to read-only mid-game', () => {
     // host-wide inventory above would also catch this; it is asserted by name
     // because the consequence is permanent data loss, not a discarded action.
     expect(screen.getByTestId('persistence-clear-all-action')).toBeDisabled()
+  })
+
+
+  it('says why the wipe was refused, in the live region under the button', async () => {
+    /*
+      The teacher scenario, not a synthetic one: this window's own storage open
+      is blocked by another window, so it reports "saving is unavailable" and
+      Clear all stays ENABLED — which is what makes it look like the remedy.
+      Pressing it must refuse AND say why, in the region under the button.
+    */
+    const inner = createMemoryPersistenceAdapter()
+    const adapter = new Proxy(inner, {
+      get(target, prop, receiver) {
+        if (prop === 'open') {
+          return async () => ({
+            ok: false,
+            code: 'upgrade-blocked',
+            message: 'IndexedDB upgrade is blocked by another open Classroom Quiz Show tab.',
+          })
+        }
+        const value = Reflect.get(target, prop, receiver)
+        return typeof value === 'function' ? value.bind(target) : value
+      },
+    }) as PersistenceAdapter
+
+    renderHost(adapter, 'frc1-wipe-copy')
+    await waitFor(() => {
+      expect(screen.getByTestId('persistence-status').textContent ?? '').toMatch(
+        /saving on this device is unavailable/i,
+      )
+    })
+
+    const wipe = screen.getByTestId('persistence-clear-all-action')
+    expect(wipe).toBeEnabled()
+    // The confirmation names the ownership risk this window could not rule out.
+    fireEvent.click(wipe)
+    expect(
+      screen.getByTestId('persistence-clear-all-ownership-warning').textContent ?? '',
+    ).toMatch(/cannot tell whether another Classroom Quiz Show window/i)
+
+    fireEvent.click(screen.getByTestId('persistence-clear-all-action'))
+
+    // Refused, and the reason reaches the region directly under the control —
+    // the same silent-refusal class this repair exists to remove, applied to
+    // its own new guard. It names the remedy, not only the obstacle.
+    await waitFor(() => {
+      expect(screen.getByTestId('persistence-clear-all-message').textContent ?? '').toMatch(
+        /still has storage open/i,
+      )
+    })
+    expect(screen.getByTestId('persistence-clear-all-message').textContent ?? '').toMatch(
+      /close other CQS tabs and windows/i,
+    )
   })
 })

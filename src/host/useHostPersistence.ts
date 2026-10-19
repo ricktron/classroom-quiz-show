@@ -9,7 +9,6 @@ import type { DispatchResult } from '../state/store'
 import { systemClock, type Clock } from '../time/clock'
 import { nextHostSessionId } from './ensureSession'
 import {
-  FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE,
   canPersistMutations,
   canPublishHostPublicState,
   rejectIfCannotPersist,
@@ -31,6 +30,7 @@ import {
   type HostLeaseReleaseLedger,
   clearAllCompletedSummaries,
   clearActiveSession,
+  CLEAR_ALL_LOCAL_DATA_BLOCKED_MESSAGE,
   clearAllLocalCqsData,
   createIndexedDbPersistenceAdapter,
   createTabId,
@@ -818,14 +818,31 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     // the database open". No lease read can tell us that here, because a window
     // whose own open failed cannot read the lease store either — which is the
     // gap that made the wipe reachable against a live class.
-    if (lastOpenFailureRef.current === 'upgrade-blocked') {
-      setMessage(FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE)
-      return { ok: false, message: FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE }
-    }
-    const foreign = await hasLiveForeignHostLease(leadershipOptions)
-    if (foreign) {
-      setMessage(FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE)
-      return { ok: false, message: FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE }
+    /*
+      Take the FRESHEST evidence, not a boot-time snapshot (FRC-1 R4).
+      `adapter.open()` is also called from inside the adapter's lazy reopen and
+      from this function's own retry, neither of which this hook sees, so a
+      boot-time code can be older than the newest answer — and the stale
+      direction fails OPEN. Probing here is cheap and is the same call the wipe
+      would make anyway.
+    */
+    const probe = await adapter.open()
+    lastOpenFailureRef.current = probe.ok ? null : probe.code
+
+    // An upgrade-blocked open is this window saying "another window still has
+    // the database open". No lease read can tell us that, because a window
+    // whose own open failed cannot read the lease store either — the gap that
+    // made the wipe reachable against a live class.
+    const blockedByAnotherWindow =
+      lastOpenFailureRef.current === 'upgrade-blocked' ||
+      (await hasLiveForeignHostLease(leadershipOptions)) === 'live'
+    if (blockedByAnotherWindow) {
+      // Truthful and actionable, and it names storage rather than saving: in the
+      // upgrade-blocked case no window owns SAVING — another merely holds the
+      // database open. This message also reaches the live region directly under
+      // the button, which the follower copy did not.
+      setMessage(CLEAR_ALL_LOCAL_DATA_BLOCKED_MESSAGE)
+      return { ok: false, message: CLEAR_ALL_LOCAL_DATA_BLOCKED_MESSAGE }
     }
     // Invalidate in-flight active-session writes before tearing down storage.
     writeQueue.nextActiveSessionGeneration()

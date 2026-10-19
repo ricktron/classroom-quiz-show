@@ -966,7 +966,7 @@ describe('aggregate local-data wipe write authority (FRC-1 R2)', () => {
       message = result.message
     })
     expect(ok).toBe(false)
-    expect(message).toMatch(/another classroom quiz show window/i)
+    expect(message).toMatch(/still has storage open/i)
 
     // The other window's class is still on the device, and untouched.
     vi.restoreAllMocks()
@@ -974,14 +974,16 @@ describe('aggregate local-data wipe write authority (FRC-1 R2)', () => {
     expect(read.ok && read.value.kind).toBe('resumable')
   })
 
-  it('still allows the wipe when storage is genuinely unusable, so recovery has a terminal', async () => {
+  it('does not refuse the wipe for ownership when storage is simply unusable', async () => {
     // The other side of the same coin: a teacher whose storage is corrupt is
     // ALSO `unknown`, and Clear all is the only way out. Refusing here would
     // strand them (Contract invariant: a recovery path needs a terminal).
     const adapter = createMemoryPersistenceAdapter()
+    // `unavailable` is what IndexedDbPersistenceAdapter.open() actually returns
+    // for unusable storage; `corrupt` is a valid code it never produces.
     vi.spyOn(adapter, 'open').mockResolvedValue({
       ok: false,
-      code: 'corrupt',
+      code: 'unavailable',
       message: 'unreadable',
     } as never)
 
@@ -993,8 +995,11 @@ describe('aggregate local-data wipe write authority (FRC-1 R2)', () => {
     await act(async () => {
       message = (await api().persistence.clearAllLocalData()).message
     })
-    // Whatever the outcome, it is NOT refused for ownership reasons.
-    expect(message).not.toMatch(/another classroom quiz show window/i)
+    // Not refused for ownership reasons — which is what keeps the
+    // corrupt-storage recovery path from being stranded. Whether the wipe then
+    // succeeds against unusable storage is a different question, tested in
+    // src/persistence/clearAllLocalData.test.ts.
+    expect(message).not.toMatch(/still has storage open/i)
   })
 
   it('blocks a follower from wiping all local data and leaves every record intact', async () => {
@@ -1023,11 +1028,55 @@ describe('aggregate local-data wipe write authority (FRC-1 R2)', () => {
       message = result.message
     })
     expect(ok).toBe(false)
-    expect(message).toMatch(/another classroom quiz show window/i)
+    expect(message).toMatch(/still has storage open/i)
 
     // Nothing was torn down: the seeded active session is still readable.
     const read = await readActiveSession(adapter, createDefaultRegistry())
     expect(read.ok).toBe(true)
     expect(read.ok && read.value.kind).toBe('resumable')
   })
+
+
+  it('refuses on the NEWEST open evidence, not the boot-time snapshot', async () => {
+    /*
+      FRC-1 R4. `adapter.open()` is also called from the adapter's own lazy
+      reopen and from this function's retry, neither of which the hook observes,
+      so a boot-time failure code can be older than the newest answer — and the
+      stale direction fails OPEN.
+
+      Here boot fails with `unavailable` (which permits the wipe, so the
+      corrupt-storage recovery path keeps its terminal), and conditions then
+      change so every later open is `upgrade-blocked`. Deciding from the boot
+      snapshot would issue an uncancellable delete while another window
+      demonstrably holds the database open.
+    */
+    const adapter = createMemoryPersistenceAdapter()
+    await seedActiveSession(adapter, activeHistory())
+    let opens = 0
+    vi.spyOn(adapter, 'open').mockImplementation((async () => {
+      opens += 1
+      return opens === 1
+        ? { ok: false, code: 'unavailable', message: 'storage unavailable' }
+        : { ok: false, code: 'upgrade-blocked', message: 'blocked by another window' }
+    }) as never)
+
+    const { api } = renderHarness(adapter, 'tab-stale-evidence')
+    await waitFor(() => expect(api().persistence.bootPhase).toBe('ready'))
+    expect(api().persistence.leadership).toBe('unknown')
+
+    let ok = true
+    let message = ''
+    await act(async () => {
+      const result = await api().persistence.clearAllLocalData()
+      ok = result.ok
+      message = result.message
+    })
+    expect(ok).toBe(false)
+    expect(message).toMatch(/still has storage open/i)
+
+    vi.restoreAllMocks()
+    const read = await readActiveSession(adapter, createDefaultRegistry())
+    expect(read.ok && read.value.kind).toBe('resumable')
+  })
+
 })
