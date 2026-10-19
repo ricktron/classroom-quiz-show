@@ -362,8 +362,17 @@ describe('M04: Save means the Game is really on the device', () => {
 
     fireEvent.click(screen.getByTestId('authoring-save'))
 
+    /*
+      Assert the SETTLED text positively. A negative `waitFor` resolves on its
+      first synchronous check, when the status still reads "Unsaved" from the
+      edit — before the click's async save has settled at all — so it would pass
+      against the very lie this test names. Verified: with that negative
+      assertion, mutating `completeSave` to treat a failed write as ok let the
+      status settle to "Saved" and all ten tests still passed.
+    */
     await waitFor(() => {
-      expect(screen.getByTestId('authoring-save-status')).not.toHaveTextContent(/^saved$/i)
+      expect(screen.getByTestId('authoring-save-status')).toHaveTextContent(/save problem/i)
     })
+    expect(screen.getByTestId('authoring-save-status')).not.toHaveTextContent(/^saved$/i)
   })
 })

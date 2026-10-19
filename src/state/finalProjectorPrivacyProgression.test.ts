@@ -24,10 +24,19 @@ import {
 
 const ROUND = FINAL_ROUND_ID
 const ANSWER = 'Mantle convection'
+/** Distinctive, so a substring check cannot collide with a revision or timer. */
+const WAGER = 137
 const PROMPT = 'Which process drives plate motion?'
 
-/** Every string on the wire for this store. */
-const wire = (store: SessionStore): string => JSON.stringify(toPublicState(store.getState()))
+/**
+ * Every string on the wire for this store.
+ *
+ * `store.getPublicState()` — not `toPublicState(store.getState())` — because
+ * that is exactly what the broadcaster publishes (`src/sync/broadcaster.ts`).
+ * Asserting the sanitizer alone would leave a leak ADDED inside
+ * `getPublicState`, downstream of the sanitizer, completely undetected.
+ */
+const wire = (store: SessionStore): string => JSON.stringify(store.getPublicState())
 
 const finalDto = (store: SessionStore): PublicFinalWagerState | null => {
   const round = toPublicState(store.getState()).round
@@ -47,7 +56,7 @@ function playToResponsesLocked(store: SessionStore): void {
       issuedAt: AT,
       roundId: ROUND,
       teamId: team.teamId,
-      wager: 100,
+      wager: WAGER,
     })
   }
   store.dispatch({ type: 'LOCK_FINAL_WAGERS', issuedAt: AT, roundId: ROUND })
@@ -94,7 +103,7 @@ describe('M40: the Final answer reaches the projector only at explicit reveal', 
         issuedAt: AT,
         roundId: ROUND,
         teamId: team.teamId,
-        wager: 100,
+        wager: WAGER,
       })
     }
     assertAnswerAbsent()
@@ -150,8 +159,12 @@ describe('M40: the Final answer reaches the projector only at explicit reveal', 
     // What each team wagered, and what each team wrote, are host-private until
     // that team is explicitly revealed — which has not happened here.
     expect(serialized).not.toContain('wrote this')
+    // Both spellings: a `wagers` record would not match a `"wager"` key.
     expect(serialized).not.toContain('"wager"')
-    expect(serialized).not.toContain('100')
+    expect(serialized).not.toContain('"wagers"')
+    // A distinctive amount, not a bare '100' that any revision or timer could
+    // contain and false-red on later.
+    expect(serialized).not.toContain(String(WAGER))
 
     const dto = finalDto(store)
     expect(dto).not.toBeNull()
@@ -165,10 +178,17 @@ describe('M40: the Final answer reaches the projector only at explicit reveal', 
     }
   })
 
-  it('does not leak the answer through a round that is not the live one', () => {
-    // A fresh store whose Final has never begun must not carry the answer
-    // either, so the absence above is the sanitizer and not an empty round.
+  it('publishes nothing about the Final before a session exists', () => {
+    // Renamed and re-scoped: `createSessionStore()` has NO session, so the
+    // sanitizer takes its early return and never enters the Final branch. The
+    // old name and comment claimed this proved something about a live round; it
+    // does not. What it legitimately pins is that the empty case carries no
+    // Final content at all. The real anti-vacuity guard for the stage walk is
+    // the positive `toContain(ANSWER)` after the reveal, above.
     const store = createSessionStore()
-    expect(wire(store)).not.toContain(ANSWER)
+    const serialized = wire(store)
+    expect(serialized).not.toContain(ANSWER)
+    expect(serialized).not.toContain(PROMPT)
+    expect(toPublicState(store.getState()).round).toBeNull()
   })
 })
