@@ -47,6 +47,7 @@ function renderPanel(
     dispatch?: (command: Parameters<ReturnType<typeof createSessionStore>['dispatch']>[0]) => ReturnType<
       ReturnType<typeof createSessionStore>['dispatch']
     >
+    canDispatch?: boolean
     activeGame?: ReturnType<typeof createSessionStore>['getState'] extends () => infer S
       ? S extends { session: { game: infer G } | null }
         ? G | null
@@ -69,6 +70,7 @@ function renderPanel(
       registry={store.getRegistry()}
       hasSession={options.hasSession !== false}
       activeGame={activeGame}
+      canDispatch={options.canDispatch !== false}
       adapter={adapter}
       readFileBytes={options.readFileBytes}
       packRegistry={createPackResourceRegistry({
@@ -263,4 +265,20 @@ describe('GamePackImportPanel', () => {
     ).toBeInTheDocument()
     expect(await listPackMediaScopeKeys(adapter)).toEqual([])
   })
+})
+
+it('offers no actionable pack file picker while this window cannot accept session commands', () => {
+  renderPanel({ canDispatch: false })
+  expect(screen.getByTestId('pack-import-file')).toBeDisabled()
+  // The styled label is the thing a teacher actually sees and clicks, so it must
+  // not keep an available appearance while the input it points at is inert.
+  expect(screen.getByTestId('pack-import-choose')).toHaveAttribute('aria-disabled', 'true')
+})
+
+it('keeps the pack file picker and its label actionable when commands are accepted', () => {
+  renderPanel()
+  expect(screen.getByTestId('pack-import-file')).toBeEnabled()
+  // Omitted, not "false": <label> has no mapped ARIA role, so the attribute
+  // should not linger once the control is actionable.
+  expect(screen.getByTestId('pack-import-choose')).not.toHaveAttribute('aria-disabled')
 })

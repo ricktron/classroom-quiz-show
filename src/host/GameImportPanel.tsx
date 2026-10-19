@@ -43,6 +43,14 @@ export interface GameImportPanelProps {
   readonly registry: RoundRegistry
   readonly hasSession: boolean
   readonly activeGame: PrivateGameState | null
+  /**
+   * False while this window cannot accept session commands: persistence boot
+   * has not settled, or another window owns saving. Content load starts a
+   * session when none exists, so an actionable control here would be a control
+   * that appears to work and is then refused. The Host save-status live region
+   * carries the truthful reason; this prop only makes availability honest.
+   */
+  readonly canDispatch: boolean
 }
 
 /** What happened to the store as a result of the last import attempt. */
@@ -63,6 +71,7 @@ export function GameImportPanel({
   registry,
   hasSession,
   activeGame,
+  canDispatch,
 }: GameImportPanelProps) {
   const [text, setText] = useState('')
   const [attempt, setAttempt] = useState<Attempt | null>(null)
@@ -186,7 +195,13 @@ export function GameImportPanel({
       />
 
       <div className="import__actions">
-        <button type="button" className="btn" data-testid="import-run" onClick={runImport}>
+        <button
+          type="button"
+          className="btn"
+          data-testid="import-run"
+          disabled={!canDispatch}
+          onClick={runImport}
+        >
           Import game
         </button>
       </div>

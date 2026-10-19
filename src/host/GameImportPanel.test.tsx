@@ -13,7 +13,7 @@ import { GameImportPanel } from './GameImportPanel'
  * never lets a stale success stand in for a fresh failure.
  */
 
-function renderPanel(options: { hasSession?: boolean } = {}) {
+function renderPanel(options: { hasSession?: boolean; canDispatch?: boolean } = {}) {
   const store = createSessionStore()
   if (options.hasSession !== false) {
     store.dispatch({ type: 'INIT_SESSION', issuedAt: 1, sessionId: 'session-1' })
@@ -24,6 +24,7 @@ function renderPanel(options: { hasSession?: boolean } = {}) {
       registry={store.getRegistry()}
       hasSession={options.hasSession !== false}
       activeGame={store.getState().session?.game ?? null}
+      canDispatch={options.canDispatch !== false}
     />,
   )
   return { store }
@@ -163,4 +164,11 @@ describe('GameImportPanel', () => {
     fireEvent.click(screen.getByTestId('import-run'))
     expect(screen.getByTestId('import-result')).toHaveTextContent('empty-input')
   })
+})
+
+it('offers no actionable import while this window cannot accept session commands', () => {
+  const { store } = renderPanel({ hasSession: false, canDispatch: false })
+  expect(screen.getByTestId('import-run')).toBeDisabled()
+  // Nothing reached the store, so no session was started and then refused.
+  expect(store.getState().session).toBeNull()
 })

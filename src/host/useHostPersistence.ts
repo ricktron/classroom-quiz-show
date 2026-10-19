@@ -23,12 +23,14 @@ import {
   HOST_WRITER_RELEASE_STORAGE_KEY,
   PersistenceWriteQueue,
   acquireOrRenewHostLease,
+  hasLiveForeignHostLease,
   createStorageReleaseLedger,
   getDocumentWindowLeaseId,
   markHostLeaseReleasedSync,
   type HostLeaseReleaseLedger,
   clearAllCompletedSummaries,
   clearActiveSession,
+  CLEAR_ALL_LOCAL_DATA_BLOCKED_MESSAGE,
   clearAllLocalCqsData,
   createIndexedDbPersistenceAdapter,
   createTabId,
@@ -205,6 +207,19 @@ export interface UseHostPersistence {
 
 const DEFAULT_RENEW_INTERVAL_MS = Math.floor(HOST_WRITER_LEASE_TTL_MS / 2)
 
+/**
+ * One identity for "no recovered history", so settling boot on an empty active
+ * session does not remount the session store.
+ *
+ * `useSessionStore` recreates the store whenever `storeEpoch` OR the
+ * `initialHistory` identity changes, and `storeEpoch` is the documented remount
+ * key. A fresh `[]` from the boot read was therefore a second, undocumented
+ * remount authority that would silently discard anything already dispatched.
+ * The deliberate remounts (Resume, Discard, aggregate wipe) all bump
+ * `storeEpoch`, so they are unaffected.
+ */
+const EMPTY_SESSION_HISTORY: readonly SessionEvent[] = Object.freeze([])
+
 export function useHostPersistence(options: UseHostPersistenceOptions = {}): UseHostPersistence {
   const clock = options.clock ?? systemClock
   const leaseTtlMs = options.leaseTtlMs ?? HOST_WRITER_LEASE_TTL_MS
@@ -246,9 +261,19 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     useState<readonly CompletedSummaryListing[]>([])
   const [library, setLibrary] = useState<readonly SavedDefinitionSummary[]>([])
   const [message, setMessage] = useState('Opening saved games…')
-  const [initialHistory, setInitialHistory] = useState<readonly SessionEvent[]>([])
+  const [initialHistory, setInitialHistory] =
+    useState<readonly SessionEvent[]>(EMPTY_SESSION_HISTORY)
   const [storeEpoch, setStoreEpoch] = useState(0)
   const storageReadyRef = useRef(false)
+  /**
+   * Why this window's last `adapter.open()` failed, or null.
+   *
+   * `upgrade-blocked` is positive evidence that ANOTHER window still holds the
+   * database open, and it is reported by this window's own failed open — the one
+   * state in which no lease read can answer the question, because this window
+   * cannot read anything. The aggregate wipe needs that distinction.
+   */
+  const lastOpenFailureRef = useRef<PersistenceErrorCode | null>(null)
   const latestWriteToken = useRef(0)
   const lastCompletionAttemptRef = useRef<string | null>(null)
   const retryCompletionRef = useRef<{
@@ -350,6 +375,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       const opened = await adapter.open()
       if (cancelled) return
       if (!opened.ok) {
+        lastOpenFailureRef.current = opened.code
         setBootPhase('ready')
         setDurabilityStatus('unavailable')
         setLeadership('unknown')
@@ -357,6 +383,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
         return
       }
 
+      lastOpenFailureRef.current = null
       storageReadyRef.current = true
       const lease = await acquireOrRenewHostLease(leadershipOptions)
       if (!cancelled) applyBootLease(lease)
@@ -459,7 +486,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     if (read.kind === 'none') {
       setRecovery(null)
       setInvalidRecovery(null)
-      setInitialHistory([])
+      setInitialHistory(EMPTY_SESSION_HISTORY)
       setDurableEventCount(0)
       setPendingEventCount(null)
       setActiveSessionPersistFailed(false)
@@ -767,6 +794,56 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
   )
 
   const clearAllLocalData = useCallback(async (): Promise<PersistenceActionResult> => {
+    /*
+      Fail closed on EVIDENCE, not on cached leadership (FRC-1 R2b).
+
+      This is an irreversible aggregate wipe of every CQS record on the device,
+      and `deleteDatabase` cannot be cancelled: once issued it completes as soon
+      as the other window's connection closes, even when this window has already
+      reported `onblocked` as a failure. So a window must not issue it while
+      another window is live.
+
+      `leadership === 'unknown'` must NOT be read as "nobody owns the lease". It
+      means ownership could not be determined — including the realistic case
+      where this window's own `adapter.open()` failed (an IndexedDB version
+      upgrade is blocked by the first window), which is exactly when a teacher
+      reaches for Clear all. So instead of trusting that state, read the lease
+      store now: a live foreign lease refuses the wipe.
+
+      An unreadable lease store is the corrupt-storage recovery path and stays
+      available — Clear all is its only terminal — with the control's own
+      confirmation naming the risk this read could not rule out.
+    */
+    // An upgrade-blocked open is this window saying "another window still has
+    // the database open". No lease read can tell us that here, because a window
+    // whose own open failed cannot read the lease store either — which is the
+    // gap that made the wipe reachable against a live class.
+    /*
+      Take the FRESHEST evidence, not a boot-time snapshot (FRC-1 R4).
+      `adapter.open()` is also called from inside the adapter's lazy reopen and
+      from this function's own retry, neither of which this hook sees, so a
+      boot-time code can be older than the newest answer — and the stale
+      direction fails OPEN. Probing here is cheap and is the same call the wipe
+      would make anyway.
+    */
+    const probe = await adapter.open()
+    lastOpenFailureRef.current = probe.ok ? null : probe.code
+
+    // An upgrade-blocked open is this window saying "another window still has
+    // the database open". No lease read can tell us that, because a window
+    // whose own open failed cannot read the lease store either — the gap that
+    // made the wipe reachable against a live class.
+    const blockedByAnotherWindow =
+      lastOpenFailureRef.current === 'upgrade-blocked' ||
+      (await hasLiveForeignHostLease(leadershipOptions)) === 'live'
+    if (blockedByAnotherWindow) {
+      // Truthful and actionable, and it names storage rather than saving: in the
+      // upgrade-blocked case no window owns SAVING — another merely holds the
+      // database open. This message also reaches the live region directly under
+      // the button, which the follower copy did not.
+      setMessage(CLEAR_ALL_LOCAL_DATA_BLOCKED_MESSAGE)
+      return { ok: false, message: CLEAR_ALL_LOCAL_DATA_BLOCKED_MESSAGE }
+    }
     // Invalidate in-flight active-session writes before tearing down storage.
     writeQueue.nextActiveSessionGeneration()
     storageReadyRef.current = false
@@ -795,7 +872,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     setCompletedListings([])
     setRecovery(null)
     setInvalidRecovery(null)
-    setInitialHistory([])
+    setInitialHistory(EMPTY_SESSION_HISTORY)
     setDurableEventCount(0)
     setPendingEventCount(null)
     setActiveSessionPersistFailed(false)
@@ -806,7 +883,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
     setMessage(CLEAR_ALL_LOCAL_DATA_SUCCESS_MESSAGE)
     setStoreEpoch((epoch) => epoch + 1)
     return { ok: true, message: CLEAR_ALL_LOCAL_DATA_SUCCESS_MESSAGE }
-  }, [adapter, renewLease, updateCompletedLedger, updateLibrary, writeQueue])
+  }, [adapter, leadershipOptions, renewLease, updateCompletedLedger, updateLibrary, writeQueue])
 
   const resume = useCallback(() => {
     if (!recovery) return
@@ -847,7 +924,7 @@ export function useHostPersistence(options: UseHostPersistenceOptions = {}): Use
       )
       return { ok: false, message: result.message }
     }
-    setInitialHistory([])
+    setInitialHistory(EMPTY_SESSION_HISTORY)
     setDurableEventCount(0)
     setPendingEventCount(null)
     setActiveSessionPersistFailed(false)

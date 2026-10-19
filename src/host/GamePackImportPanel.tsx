@@ -37,6 +37,14 @@ export interface GamePackImportPanelProps {
   readonly registry: RoundRegistry
   readonly hasSession: boolean
   readonly activeGame: PrivateGameState | null
+  /**
+   * False while this window cannot accept session commands: persistence boot
+   * has not settled, or another window owns saving. Content load starts a
+   * session when none exists, so an actionable control here would be a control
+   * that appears to work and is then refused. The Host save-status live region
+   * carries the truthful reason; this prop only makes availability honest.
+   */
+  readonly canDispatch: boolean
   readonly adapter: PersistenceAdapter
   readonly packRegistry?: PackResourceRegistry
   /** Injectable file reader for tests. */
@@ -64,6 +72,7 @@ export function GamePackImportPanel({
   registry,
   hasSession,
   activeGame,
+  canDispatch,
   adapter,
   packRegistry = getSharedPackResourceRegistry(),
   readFileBytes = defaultReadFileBytes,
@@ -216,7 +225,25 @@ export function GamePackImportPanel({
       </p>
 
       <div className="pack-import__actions">
-        <label className="btn btn--secondary" htmlFor="pack-import-file">
+        {/*
+          The label carries the button styling, so it must also carry the
+          unavailable styling: a `<label>` can never match `.btn:disabled`, and
+          without this it keeps full secondary-button appearance while the input
+          it points at is inert (CQS-UX-P08 — an action must not look available
+          when it is not). `.btn[aria-disabled='true']` in global.css is the
+          existing rule this reuses, on a `<label>` for the first time in CQS.
+          The attribute is OMITTED rather than set to "false" when the control is
+          actionable: `<label>` has no mapped ARIA role, so the attribute is not
+          allowed there and should not linger. The input's own `disabled` already
+          makes the assistive announcement truthful, and clicking a label whose
+          control is disabled does not activate it.
+        */}
+        <label
+          className="btn btn--secondary"
+          htmlFor="pack-import-file"
+          aria-disabled={busy || !canDispatch || undefined}
+          data-testid="pack-import-choose"
+        >
           Choose pack file
         </label>
         <input
@@ -226,7 +253,7 @@ export function GamePackImportPanel({
           data-testid="pack-import-file"
           type="file"
           accept={PACK_EXTENSION}
-          disabled={busy}
+          disabled={busy || !canDispatch}
           onChange={(event) => {
             const file = event.target.files?.[0]
             if (file) void runImport(file)

@@ -108,6 +108,36 @@ export function isLiveForeignLease(
   return true
 }
 
+/**
+ * Is another LIVE window holding the durable-writer lease right now?
+ *
+ * For decisions that must not act on cached leadership, because `'unknown'`
+ * means "ownership could not be determined" — not "nobody owns it". The
+ * aggregate local-data wipe is the case that matters: `deleteDatabase` cannot
+ * be cancelled, so it must not be issued while another window is live.
+ *
+ * Three answers, not two: `'unreadable'` is NOT `'none'`. A boolean gave the
+ * caller nothing to decide with, which is exactly how the newest evidence got
+ * dropped for an uncancellable delete.
+ */
+export type ForeignHostLeaseAnswer = 'live' | 'none' | 'unreadable'
+
+export async function hasLiveForeignHostLease(
+  opts: LeadershipOptions,
+): Promise<ForeignHostLeaseAnswer> {
+  let found = false
+  const releaseMarker = readReleaseMarkerSafely(opts.releaseLedger)
+  const result = await opts.adapter.withTransaction([OBJECT_STORE_COORDINATION], async (tx) => {
+    const existing = readHostLeaseRecord(
+      await tx.get(OBJECT_STORE_COORDINATION, HOST_WRITER_LEASE_KEY),
+    )
+    if (existing === null) return
+    found = isLiveForeignLease(existing, opts, opts.clock.now(), releaseMarker)
+  })
+  if (!result.ok) return 'unreadable'
+  return found ? 'live' : 'none'
+}
+
 export async function releaseHostLease(
   opts: LeadershipOptions,
 ): Promise<PersistenceResult<void>> {
