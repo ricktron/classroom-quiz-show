@@ -1,6 +1,5 @@
 import { test, expect, type BrowserContext, type Page } from '@playwright/test'
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { importPlayNamesDisplayStartRound1 } from './helpers/courtQualificationJourney'
 
 /**
  * FRC-2: during a BOARD clue, the teacher's Host response countdown must visibly
@@ -13,35 +12,9 @@ import { resolve } from 'node:path'
  * injection.
  */
 
-const GAME_FILE = resolve(
-  process.cwd(),
-  'docs/qualification/fixtures/court-b-final-qualification.game.json',
-)
-
 /** Natural route to a live board clue with the prompt public. */
 async function toOpenBoardClue(page: Page, context: BrowserContext): Promise<Page> {
-  await page.goto('./')
-  await page.getByRole('button', { name: 'Import Game' }).click()
-  await page.getByRole('textbox', { name: 'Game file text' }).fill(readFileSync(GAME_FILE, 'utf8'))
-  await page.getByRole('button', { name: 'Import file text' }).click()
-  await expect(page.getByRole('region', { name: 'Import quality' })).toContainText('accepted')
-  await page.getByRole('button', { name: 'Play', exact: true }).first().click()
-  const setup = page.getByRole('region', { name: 'Class setup' })
-  await setup.getByRole('button', { name: /^Names/ }).click()
-  const fields = setup.getByRole('textbox', { name: 'Type a name' })
-  await fields.nth(0).fill('Granite')
-  await fields.nth(0).press('Enter')
-  await fields.nth(1).fill('Nimbus')
-  await fields.nth(1).press('Enter')
-  const popup = context.waitForEvent('page')
-  await setup.getByRole('button', { name: 'Open display' }).first().click()
-  const display = await popup
-  await expect(display.getByRole('heading', { name: /game display ready/i })).toBeVisible({
-    timeout: 20_000,
-  })
-  await page.bringToFront()
-  await page.getByRole('button', { name: 'Start Game' }).click()
-  await page.getByRole('button', { name: 'Start Round 1' }).click()
+  const display = await importPlayNamesDisplayStartRound1(page, context)
   await page.getByRole('button', { name: 'Rocks, 200 points' }).click()
   await page.getByRole('button', { name: 'Show prompt on display' }).click()
   return display
