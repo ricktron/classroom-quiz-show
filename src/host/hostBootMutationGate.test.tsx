@@ -152,9 +152,9 @@ describe('mutation controls during unsettled persistence boot', () => {
     const { adapter, release } = withGatedFirstOpen(createMemoryPersistenceAdapter())
     renderHost(adapter, 'frc1-gated')
 
-    const button = await screen.findByRole('button', {
-      name: /initialize \/ reset session/i,
-    })
+    // Synchronous, for the same reason as the delayed cases below: the gate
+    // holds the first open, so nothing may elapse before the unsettled reads.
+    const button = initializeButton()
 
     // Truthful boot copy, and the control is honestly unavailable.
     expect(bootStatus()).toMatch(BOOT_STATUS_COPY)
@@ -174,15 +174,35 @@ describe('mutation controls during unsettled persistence boot', () => {
     expect(sessionInitializedCount()).toBe(0)
   })
 
+  /*
+    Read the unsettled state SYNCHRONOUSLY, before any await.
+
+    These cases previously did `await screen.findByRole(...)` and only then
+    asserted the boot copy, which races the very delay they are built on:
+    `findByRole` polls, so under CPU load the 500ms open could settle DURING
+    that await and the assertion then read the settled copy. Observed in a
+    preflight run at load average 39.88 on 8 CPUs — "expected 'Ready to save
+    this class session.' to match /opening saved games/i". Assertion-shaped,
+    not a timeout, which is what distinguishes it from ordinary contention.
+
+    The fix is NOT a longer delay or a longer timeout. Either would leave the
+    race in place and only make it rarer, which is the failure mode the FRC-1
+    brief explicitly forbids. Instead nothing is allowed to elapse between
+    render and the assertion. That is sound rather than merely faster: the
+    delayed adapter holds the FIRST open, so at the moment `render` returns,
+    boot cannot have settled under any scheduling.
+
+    The deterministic statement of this property is the gated test above, which
+    holds the open until it chooses to `release()`. These cases add that the
+    same property survives real wall-clock delays.
+  */
   it.each([500, 1500])(
     'holds Initialize / reset session unavailable across a %ims storage-open delay',
     async (delayMs) => {
       const adapter = withDelayedFirstOpen(createMemoryPersistenceAdapter(), delayMs)
       renderHost(adapter, `frc1-delay-${delayMs}`)
 
-      const button = await screen.findByRole('button', {
-        name: /initialize \/ reset session/i,
-      })
+      const button = initializeButton()
       expect(bootStatus()).toMatch(BOOT_STATUS_COPY)
       expect(button).toBeDisabled()
 
