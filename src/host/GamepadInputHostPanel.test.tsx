@@ -861,6 +861,22 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(await buzzOnFreshClue(panel, 4)).toBe('red')
   })
 
+  it('Phase 3 R4: a team row names every Buzzer mapped to that team, not only the first', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await panel.flush()
+    panel.attachWbuzz()
+    await panel.connect()
+    fireEvent.change(screen.getByTestId('sbs-slot-3'), { target: { value: 'red' } })
+    fireEvent.click(screen.getByTestId('sbs-save-mapping'))
+    await panel.flush()
+
+    const row = screen.getByTestId('gih-control-red')
+    expect(row).toHaveTextContent(/Buzzer 1/)
+    expect(row).toHaveTextContent(/Buzzer 3/)
+    // Must not under-report as a singular first-only label.
+    expect(row.textContent).toMatch(/Buzzer 1.*Buzzer 3|Buzzer 3.*Buzzer 1/)
+  })
+
   it('CBN-1 review: with several Buzzers on one team, clearing another team works and says so truthfully', async () => {
     const panel = renderWbuzzPanel({ selectionMode: false })
     await panel.flush()

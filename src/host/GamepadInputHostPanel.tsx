@@ -8,6 +8,7 @@ import {
   describeGamepadControl,
   EMPTY_GAMEPAD_MAPPING,
   gamepadControlForTeamAction,
+  gamepadControlsForTeamAction,
   pruneUnknownGamepadTeams,
   validateGamepadMapping,
   withGamepadControlForTeamAction,
@@ -914,23 +915,27 @@ export function GamepadInputHostPanel({
 
       <ul className="gih__bindings" data-testid="gih-bindings">
         {teams.map((team) => {
-          const control = gamepadControlForTeamAction(mapping, team.id, pendingAction)
+          const controls = gamepadControlsForTeamAction(mapping, team.id, pendingAction)
+          const control = controls[0] ?? null
           const isCapturing =
             capture.mode === 'capturing' && capture.teamId === team.id
           const teamLabel = nameOf(team.id)
+          const controlLabel = (ref: GamepadControlRef): string =>
+            // CB-04: a supported Wbuzz handset reads "Buzzer N · Colour";
+            // raw controller/button identity is for other controllers.
+            (ref.controllerIndex === wbuzzControllerIndex
+              ? sonyBuzzButtonLabel(ref.buttonIndex)
+              : null) ?? describeGamepadControl(ref)
           return (
             <li key={team.id} className="gih__binding-row">
               <span className="gih__binding-team">{teamLabel}</span>
               <span className="gih__binding-control" data-testid={`gih-control-${team.id}`}>
                 {isCapturing
                   ? 'Press a button…'
-                  : control === null
+                  : controls.length === 0
                     ? 'Not assigned'
-                    : // CB-04: a supported Wbuzz handset reads "Buzzer N · Colour";
-                      // raw controller/button identity is for other controllers.
-                      (control.controllerIndex === wbuzzControllerIndex
-                        ? sonyBuzzButtonLabel(control.buttonIndex)
-                        : null) ?? describeGamepadControl(control)}
+                    : // Phase 3 R4: name every active Buzzer, not only the first.
+                      controls.map(controlLabel).join(' · ')}
               </span>
               <button
                 type="button"

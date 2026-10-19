@@ -290,12 +290,30 @@ export function gamepadControlForTeamAction(
   teamId: string,
   action: LocalInputAction,
 ): GamepadControlRef | null {
-  const binding = mapping.bindings.find(
-    (candidate) =>
-      candidate.teamId === teamId && sameLocalInputAction(candidate.action, action),
-  )
-  if (binding === undefined) return null
-  return { controllerIndex: binding.controllerIndex, buttonIndex: binding.buttonIndex }
+  const controls = gamepadControlsForTeamAction(mapping, teamId, action)
+  return controls[0] ?? null
+}
+
+/**
+ * Every control bound to one team's one logical action (ordered as stored).
+ *
+ * Several are legitimate for the supported Sony profile (Buzzer slot → team).
+ * The team row must name all of them in normal UI (Phase 3 R4), not only the first.
+ */
+export function gamepadControlsForTeamAction(
+  mapping: GamepadMapping,
+  teamId: string,
+  action: LocalInputAction,
+): readonly GamepadControlRef[] {
+  return mapping.bindings
+    .filter(
+      (candidate) =>
+        candidate.teamId === teamId && sameLocalInputAction(candidate.action, action),
+    )
+    .map((binding) => ({
+      controllerIndex: binding.controllerIndex,
+      buttonIndex: binding.buttonIndex,
+    }))
 }
 
 /**
