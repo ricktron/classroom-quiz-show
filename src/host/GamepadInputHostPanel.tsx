@@ -429,6 +429,19 @@ export function GamepadInputHostPanel({
     [game, teams],
   )
 
+  /**
+   * The guided setup's view of the guard: it edits one team's buzz control, so
+   * it asks the same question `onCapture` and per-team Clear ask. One callback
+   * rather than the same arrow at each render site, so the two postures cannot
+   * drift apart — they already did once, and only the setup-posture detector
+   * caught it.
+   */
+  const guidedSharedTeamEditRefusal = useCallback(
+    (teamId: string): string | null =>
+      sharedTeamEditRefusal(latestMapping.current, teamId, PRIMARY_BUZZ),
+    [sharedTeamEditRefusal],
+  )
+
   const onCapture = useCallback(
     (control: GamepadControlRef) => {
       const pending = latestCapture.current
@@ -715,9 +728,7 @@ export function GamepadInputHostPanel({
           diagnosticsStatus={diagnostics.status}
           activeMapping={mapping}
           onApplyMapping={applyMapping}
-          sharedTeamEditRefusal={(teamId) =>
-            sharedTeamEditRefusal(latestMapping.current, teamId, PRIMARY_BUZZ)
-          }
+          sharedTeamEditRefusal={guidedSharedTeamEditRefusal}
           capturing={capture.mode === 'sony-setup'}
           onCapturingChange={onSonyCapturingChange}
           testMode={testMode}
@@ -982,9 +993,7 @@ export function GamepadInputHostPanel({
         diagnosticsStatus={diagnostics.status}
         activeMapping={mapping}
         onApplyMapping={applyMapping}
-        sharedTeamEditRefusal={(teamId) =>
-          sharedTeamEditRefusal(latestMapping.current, teamId, PRIMARY_BUZZ)
-        }
+        sharedTeamEditRefusal={guidedSharedTeamEditRefusal}
         capturing={capture.mode === 'sony-setup'}
         onCapturingChange={onSonyCapturingChange}
         testMode={testMode}

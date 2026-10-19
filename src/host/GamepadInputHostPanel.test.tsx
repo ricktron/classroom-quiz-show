@@ -858,12 +858,7 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(screen.queryByTestId('sbs-mapping-issue')).toBeNull()
     expect(screen.getByTestId('gih-enabled')).toHaveTextContent('On')
 
-    openClue(panel.store)
-    arm(panel.store)
-    panel.refresh()
-    await panel.pressRedAndSettle(buttonIndexForSlotColor(4, 'red'))
-    panel.refresh()
-    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+    expect(await buzzOnFreshClue(panel, 4)).toBe('red')
   })
 
   it('CBN-1 review: with several Buzzers on one team, clearing another team works and says so truthfully', async () => {
@@ -881,13 +876,38 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(screen.getByTestId('gih-capture-status')).toHaveTextContent('Controller button cleared for')
     expect(screen.getByTestId('gih-control-blue')).toHaveTextContent(/not assigned/i)
     // Red keeps both of its Buzzers.
+    expect(await buzzOnFreshClue(panel, 3)).toBe('red')
+  })
+
+  /**
+   * Open a fresh clue, arm it, press one Buzzer's RED, and report who holds the
+   * opportunity. Nine tests needed exactly this sequence; one definition keeps
+   * them comparable and keeps duplicated assertions from drifting apart.
+   */
+  async function buzzOnFreshClue(
+    panel: ReturnType<typeof renderWbuzzPanel>,
+    slot: 1 | 2 | 3 | 4,
+  ): Promise<string | null> {
     openClue(panel.store)
     arm(panel.store)
     panel.refresh()
-    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(slot, 'red'))
     panel.refresh()
-    expect(activeRespondent(queueOf(panel.store))).toBe('red')
-  })
+    return activeRespondent(queueOf(panel.store))
+  }
+
+  /** The same, on an opportunity reopened in a test that already used one. */
+  async function buzzOnReopenedClue(
+    panel: ReturnType<typeof renderWbuzzPanel>,
+    slot: 1 | 2 | 3 | 4,
+  ): Promise<string | null> {
+    panel.store.dispatch({ type: 'RESET_RESPONSE_PHASE', issuedAt: AT, roundId: ROUND })
+    arm(panel.store)
+    panel.refresh()
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(slot, 'red'))
+    panel.refresh()
+    return activeRespondent(queueOf(panel.store))
+  }
 
   async function saveRedSharedWithBuzzer3(panel: ReturnType<typeof renderWbuzzPanel>) {
     await panel.flush()
@@ -911,12 +931,7 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(screen.getByTestId('gih-capture-status')).toHaveTextContent(/assigned to .* for buzz/i)
     expect(screen.getByTestId('gih-control-blue')).toHaveTextContent('Buzzer 4 · Red')
     // Red keeps both of its Buzzers.
-    openClue(panel.store)
-    arm(panel.store)
-    panel.refresh()
-    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
-    panel.refresh()
-    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+    expect(await buzzOnFreshClue(panel, 3)).toBe('red')
   })
 
   it('CBN-1 review: with several Buzzers on one team, the guided handset setup applies for another team', async () => {
@@ -933,12 +948,7 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(screen.queryByTestId('gih-issues')?.textContent ?? '').not.toMatch(/already has a buzz button/)
     expect(screen.getByTestId('gih-control-blue')).toHaveTextContent('Buzzer 4 · Red')
     // Red keeps both of its Buzzers.
-    openClue(panel.store)
-    arm(panel.store)
-    panel.refresh()
-    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
-    panel.refresh()
-    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+    expect(await buzzOnFreshClue(panel, 3)).toBe('red')
   })
 
   it('FRC-3: a secondary-action edit on a team with several Buzzers also fails closed', async () => {
@@ -980,12 +990,7 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
 
     // Red's buzz buttons were never in question and still buzz.
     fireEvent.change(screen.getByTestId('gih-action'), { target: { value: 'primary-buzz' } })
-    openClue(panel.store)
-    arm(panel.store)
-    panel.refresh()
-    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
-    panel.refresh()
-    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+    expect(await buzzOnFreshClue(panel, 3)).toBe('red')
   })
 
   it('FRC-3: withdrawing the profile mapping keeps a generic binding on the same pad', async () => {
@@ -1140,28 +1145,12 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
    * destroy several assignments as a side effect, and "ready" must mean the
    * mapping can actually be materialized.
    */
-  async function saveRedWithBuzzers1And3(panel: ReturnType<typeof renderWbuzzPanel>) {
-    await panel.flush()
-    panel.attachWbuzz()
-    await panel.connect()
-    // Buzzer 1 is red by default; add Buzzer 3 so red really has two Buzzers.
-    fireEvent.change(screen.getByTestId('sbs-slot-3'), { target: { value: 'red' } })
-    fireEvent.click(screen.getByTestId('sbs-save-mapping'))
-    await panel.flush()
-    expect(screen.getByTestId('sbs-mapping-layer')).toHaveTextContent('Team mapping saved')
-  }
-
   it('FRC-3a: a singular generic buzz edit does not silently unassign a team’s other Buzzers', async () => {
     const panel = renderWbuzzPanel({ selectionMode: false })
-    await saveRedWithBuzzers1And3(panel)
+    await saveRedSharedWithBuzzer3(panel)
 
     // Both of red's Buzzers buzz red before the edit.
-    openClue(panel.store)
-    arm(panel.store)
-    panel.refresh()
-    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
-    panel.refresh()
-    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+    expect(await buzzOnFreshClue(panel, 3)).toBe('red')
 
     // A generic per-team capture for red, which the singular copy describes as
     // assigning ONE button. It must not quietly drop Buzzer 1 and Buzzer 3.
@@ -1177,41 +1166,26 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(status).toMatch(/Buzzer setup/i)
 
     // And nothing was destroyed: both of red's Buzzers still buzz red.
-    panel.store.dispatch({ type: 'RESET_RESPONSE_PHASE', issuedAt: AT, roundId: ROUND })
-    arm(panel.store)
-    panel.refresh()
-    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
-    panel.refresh()
-    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+    expect(await buzzOnReopenedClue(panel, 3)).toBe('red')
 
-    panel.store.dispatch({ type: 'RESET_RESPONSE_PHASE', issuedAt: AT, roundId: ROUND })
-    arm(panel.store)
-    panel.refresh()
-    await panel.pressRedAndSettle(buttonIndexForSlotColor(1, 'red'))
-    panel.refresh()
-    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+    expect(await buzzOnReopenedClue(panel, 1)).toBe('red')
   })
 
   it('FRC-3a: clearing the buzz button of a team with several Buzzers also fails closed', async () => {
     const panel = renderWbuzzPanel({ selectionMode: false })
-    await saveRedWithBuzzers1And3(panel)
+    await saveRedSharedWithBuzzer3(panel)
 
     fireEvent.click(screen.getByTestId('gih-clear-red'))
     panel.refresh()
     expect(screen.getByTestId('gih-capture-status')).toHaveTextContent(/has 2 buzzers assigned/i)
     expect(screen.getByTestId('gih-capture-status')).not.toHaveTextContent(/cleared/i)
 
-    openClue(panel.store)
-    arm(panel.store)
-    panel.refresh()
-    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
-    panel.refresh()
-    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+    expect(await buzzOnFreshClue(panel, 3)).toBe('red')
   })
 
   it('FRC-3b: unassigning every Buzzer stops them buzzing immediately, not after a reload', async () => {
     const panel = renderWbuzzPanel({ selectionMode: false })
-    await saveRedWithBuzzers1And3(panel)
+    await saveRedSharedWithBuzzer3(panel)
 
     // Unassign every Buzzer slot through the supported mapping UI.
     for (const slot of [1, 2, 3, 4]) {
@@ -1222,12 +1196,7 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     panel.refresh()
 
     // The UI now shows nothing assigned, so nothing may still buzz.
-    openClue(panel.store)
-    arm(panel.store)
-    panel.refresh()
-    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
-    panel.refresh()
-    expect(activeRespondent(queueOf(panel.store))).toBeNull()
+    expect(await buzzOnFreshClue(panel, 3)).toBeNull()
     await panel.pressRedAndSettle(buttonIndexForSlotColor(1, 'red'))
     panel.refresh()
     expect(activeRespondent(queueOf(panel.store))).toBeNull()
@@ -1261,19 +1230,9 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(status).not.toHaveTextContent(/applied handset profile/i)
 
     // Both of the shared team's Buzzers still buzz it.
-    openClue(panel.store)
-    arm(panel.store)
-    panel.refresh()
-    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
-    panel.refresh()
-    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+    expect(await buzzOnFreshClue(panel, 3)).toBe('red')
 
-    panel.store.dispatch({ type: 'RESET_RESPONSE_PHASE', issuedAt: AT, roundId: ROUND })
-    arm(panel.store)
-    panel.refresh()
-    await panel.pressRedAndSettle(buttonIndexForSlotColor(1, 'red'))
-    panel.refresh()
-    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+    expect(await buzzOnReopenedClue(panel, 1)).toBe('red')
   })
 
 
