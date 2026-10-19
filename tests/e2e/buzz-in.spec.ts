@@ -23,8 +23,21 @@ import { FORBIDDEN_DISPLAY_LABELS } from '../../src/test/leakLabels'
       expiry on the projector, asserted immediately after the triggering state
       injection under a held-acknowledgement harness built for exactly this.
 
-  What this spec still asserts at both points is the semantic outcome: which team
-  is active, that the previous team is gone, and the waiting count.
+  The semantic outcome is still asserted at both points, though not the same
+  parts at each — stated precisely rather than as one composite, because at the
+  first buzz there is no previous team to be gone and the waiting count is
+  asserted two steps later:
+    - first buzz (section 4): which team is active, and `data-status='active'`;
+    - promotion (section 8): which team is active, that the previous team is
+      gone, and that no teams are waiting.
+
+  Scope of "loses no coverage": on the projector and desktop viewports. This
+  spec was the only claim-marker assertion that ran unskipped on `mobile-host`,
+  and every remaining site gates on `projector-720p` / `desktop-1080p`. That is
+  acceptable rather than overlooked — `claimChanged` is viewport-independent
+  React state with no media query on its path, and the unit coverage is
+  viewport-agnostic — but a mobile-only regression in the marker would now be
+  caught by no e2e.
 */
 
 /**

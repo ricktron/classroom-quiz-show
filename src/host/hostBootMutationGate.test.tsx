@@ -188,9 +188,19 @@ describe('mutation controls during unsettled persistence boot', () => {
     The fix is NOT a longer delay or a longer timeout. Either would leave the
     race in place and only make it rarer, which is the failure mode the FRC-1
     brief explicitly forbids. Instead nothing is allowed to elapse between
-    render and the assertion. That is sound rather than merely faster: the
-    delayed adapter holds the FIRST open, so at the moment `render` returns,
-    boot cannot have settled under any scheduling.
+    render and the assertion.
+
+    Why that is sound: no microtask can run between RTL's synchronous `render()`
+    returning and the next synchronous statement, so the read necessarily
+    precedes settlement — independently of what the adapter does. A reviewer
+    demonstrated this by reading the unsettled copy with a plain
+    `createMemoryPersistenceAdapter()`, no gate and no delay at all.
+
+    An earlier version of this comment rested the argument on the adapter
+    holding the FIRST open instead. True, but the weaker reason, and it has a
+    soft spot this one does not: the gate covers only the first `open()`, while
+    `useHostPersistence` has three call sites, so a boot-path retry would slip
+    past it. Moot under the real guarantee above.
 
     The deterministic statement of this property is the gated test above, which
     holds the open until it chooses to `release()`. These cases add that the
