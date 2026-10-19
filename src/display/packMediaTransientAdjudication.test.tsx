@@ -1,6 +1,4 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest'
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MediaContentDisplay } from './MediaContentDisplay'
 import { resolveSameOriginMediaSrc } from './resolveSameOriginMediaSrc'
@@ -12,44 +10,57 @@ import {
 import { TINY_PNG_BYTES } from '../pack/testFixtures'
 
 /**
- * FRC-6 — adjudication of the pack-media first-paint transient.
+ * FRC-6 — the projector must not paint a DIFFERENT clue's image while pack
+ * media is still hydrating.
  *
- * The previous campaign's report said that on a fresh projector the first image
- * clue can briefly show "Image unavailable" OR "an old hosted image" before
- * pack hydration settles, and asked what "an old hosted image" actually means.
+ * The report asked what "an old hosted image" meant during the first-paint
+ * transient. I first adjudicated it ACCEPTABLE TRANSIENT on the argument that
+ * the hosted fallback could only ever serve "the correct content for the clue's
+ * own path, or nothing". An independent reviewer showed that is FALSE:
  *
- * Adjudicated ACCEPTABLE TRANSIENT, and pinned here so the reasoning cannot
- * quietly stop being true. The three facts the verdict rests on:
+ *  - authored media paths are not namespaced away from build output
+ *    (`isValidSameOriginPath` imposes no reserved prefix), and
+ *  - `public/media-fixtures/` ships REAL clue images at clue-shaped paths, which
+ *    `globPatterns` sweeps into the deployment.
  *
- *  1. The pre-hydration src is the hosted URL of the CURRENT clue's own
- *     authored path. It is never another clue's path and never another game's.
- *  2. The service worker has NO runtime caching, so it can only serve files
- *     from the BUILD precache. Teacher media is never in the build, so no
- *     earlier class's media can be served at that URL. This is the load-bearing
- *     fact, and test 3 makes it a durable constraint rather than an observation.
- *  3. A hosted-path failure before hydration does not hide the pack blob once
- *     it settles (the repair in #165), so the transient is bounded.
+ * The repository's own canonical pack fixtures author
+ * `media-fixtures/slice-11-clue.png` while carrying DIFFERENT bytes for it
+ * inside the pack. So on a fresh projector the hosted fallback served the
+ * repo's slice-11 image, not the pack's — a different clue's image, on the
+ * projector, in front of a class. A fresh projector reaches that with no
+ * service worker at all, so precache behaviour was never what protected it.
  *
- * What remains imperfect is the COPY, not the content: a failed hosted request
- * during the transient reads "Image unavailable", which asserts permanence
- * about a bounded loading state. Recorded as a preference item; it exposes no
- * wrong or private media, which is the question that would have blocked.
+ * Repaired the way the brief prescribes: while hydration is unresolved the
+ * Display shows a neutral LOADING placeholder and does not resolve the authored
+ * path to its hosted URL at all. That closes the wrong-image route and also
+ * stops "Image unavailable" — a terminal claim — being asserted about a state
+ * the Display cannot yet verify.
  */
 
-const PACK_IMAGE: Extract<PublicPromptContent, { kind: 'image' }> = {
-  kind: 'image',
-  source: { kind: 'same-origin-path', path: 'media-fixtures/frc6-clue.png' },
-  alt: 'A pack-carried clue image',
-  caption: null,
-  attribution: null,
-}
+const PACK_PATH = 'media-fixtures/frc6-clue.png'
 
-const OTHER_IMAGE: Extract<PublicPromptContent, { kind: 'image' }> = {
+const imageContent = (
+  path: string,
+  alt = 'A clue image',
+): Extract<PublicPromptContent, { kind: 'image' }> => ({
   kind: 'image',
-  source: { kind: 'same-origin-path', path: 'media-fixtures/frc6-other-clue.png' },
-  alt: 'A different clue image',
+  source: { kind: 'same-origin-path', path },
+  alt,
   caption: null,
   attribution: null,
+})
+
+function hydratedRegistryFor(path: string, blobUrl: string) {
+  const registry = createPackResourceRegistry({
+    createObjectURL: () => blobUrl,
+    revokeObjectURL: () => undefined,
+  })
+  setSharedPackResourceRegistryForTests(registry)
+  registry.setActiveScope(
+    'frc6-scope',
+    new Map([[path, { bytes: TINY_PNG_BYTES, mediaType: 'image/png', sha256: 'x' }]]),
+  )
+  return registry
 }
 
 beforeEach(() => {
@@ -59,81 +70,54 @@ afterEach(() => {
   setSharedPackResourceRegistryForTests(null)
 })
 
-describe('FRC-6: what the projector can show before pack hydration settles', () => {
-  it('falls back to the CURRENT clue’s own authored path, never another clue’s', () => {
-    // No pack registry yet: this is the pre-hydration state.
-    const mine = resolveSameOriginMediaSrc(PACK_IMAGE.source.path)
-    const other = resolveSameOriginMediaSrc(OTHER_IMAGE.source.path)
-    expect(mine).not.toBeNull()
-    expect(mine!.endsWith('media-fixtures/frc6-clue.png')).toBe(true)
-    // The fallback is a pure function of the clue's own path, so it cannot
-    // resolve to a different clue's media.
-    expect(mine).not.toBe(other)
-    expect(mine!.includes('frc6-other-clue')).toBe(false)
+describe('FRC-6: the projector while pack hydration is unresolved', () => {
+  it('shows a loading placeholder, and never requests the authored path', () => {
+    render(<MediaContentDisplay content={imageContent(PACK_PATH)} />)
+
+    // No <img> at all: the hosted URL is not requested, so a deployed build
+    // asset sitting at this authored path cannot paint.
+    expect(screen.queryByTestId('mcd-img')).toBeNull()
+    expect(screen.getByTestId('mcd-image-loading')).toBeInTheDocument()
+    // And it does not claim unavailability it cannot verify.
+    expect(screen.queryByTestId('mcd-image-fallback')).toBeNull()
+    expect(screen.getByTestId('mcd-image-loading')).not.toHaveTextContent(/unavailable/i)
+    // The alt still reaches the room, so the clue is not silent.
+    expect(screen.getByTestId('mcd-alt-fallback')).toHaveTextContent('A clue image')
   })
 
-  it('renders the pack blob, not the hosted path, once hydration has settled', () => {
-    const registry = createPackResourceRegistry({
-      createObjectURL: () => 'blob:frc6-pack-image',
-      revokeObjectURL: () => undefined,
-    })
-    setSharedPackResourceRegistryForTests(registry)
-    registry.setActiveScope(
-      'frc6-scope',
-      new Map([
-        [PACK_IMAGE.source.path, { bytes: TINY_PNG_BYTES, mediaType: 'image/png', sha256: 'x' }],
-      ]),
-    )
+  it('never paints a deployed asset that happens to sit at the authored path', () => {
+    // The reviewer's reproduction, as a regression: this exact path ships in
+    // `public/media-fixtures/` AND is authored by the repo's pack fixtures with
+    // different bytes. Before the repair the transient painted the deployed one.
+    const collidingPath = 'media-fixtures/slice-11-clue.png'
+    const hostedUrl = resolveSameOriginMediaSrc(collidingPath)
+    expect(hostedUrl).not.toBeNull()
 
-    render(<MediaContentDisplay content={PACK_IMAGE} />)
+    render(<MediaContentDisplay content={imageContent(collidingPath)} />)
+
+    expect(screen.queryByTestId('mcd-img')).toBeNull()
+    expect(screen.getByTestId('mcd-image-loading')).toBeInTheDocument()
+  })
+
+  it('paints the pack blob immediately when the scope is already hydrated', () => {
+    hydratedRegistryFor(PACK_PATH, 'blob:frc6-pack-image')
+    render(<MediaContentDisplay content={imageContent(PACK_PATH)} />)
     expect(screen.getByTestId('mcd-img')).toHaveAttribute('src', 'blob:frc6-pack-image')
   })
 
-  it('does not let a hosted-path failure during the transient hide the settled pack blob', () => {
-    // The transient, on ONE mounted component: no pack scope yet, and the
-    // hosted request fails. Re-mounting instead would reset the failure latch
-    // and prove nothing about it.
-    const { rerender } = render(<MediaContentDisplay content={PACK_IMAGE} />)
+  it('keeps a hosted-path failure scoped to that source, not to the pack blob', () => {
+    // #165, on ONE mounted component: re-mounting would reset the failure latch
+    // and prove nothing about it. The scope is hydrated here so an <img> exists
+    // to fail in the first place.
+    hydratedRegistryFor(PACK_PATH, 'blob:frc6-first')
+    const { rerender } = render(<MediaContentDisplay content={imageContent(PACK_PATH)} />)
     fireEvent.error(screen.getByTestId('mcd-img'))
-    // "Image unavailable" — copy that asserts permanence about a bounded
-    // loading state. This is the recorded preference item, not a wrong image.
     expect(screen.getByTestId('mcd-image-fallback')).toHaveTextContent(/image unavailable/i)
 
-    // Hydration settles. The failure was scoped to the hosted src, so the SAME
-    // component must now show the blob rather than the latched failure (#165).
-    const registry = createPackResourceRegistry({
-      createObjectURL: () => 'blob:frc6-settled',
-      revokeObjectURL: () => undefined,
-    })
-    setSharedPackResourceRegistryForTests(registry)
-    registry.setActiveScope(
-      'frc6-scope',
-      new Map([
-        [PACK_IMAGE.source.path, { bytes: TINY_PNG_BYTES, mediaType: 'image/png', sha256: 'x' }],
-      ]),
-    )
-    rerender(<MediaContentDisplay content={PACK_IMAGE} />)
+    hydratedRegistryFor(PACK_PATH, 'blob:frc6-settled')
+    rerender(<MediaContentDisplay content={imageContent(PACK_PATH)} />)
 
     expect(screen.getByTestId('mcd-img')).toHaveAttribute('src', 'blob:frc6-settled')
     expect(screen.queryByTestId('mcd-image-fallback')).toBeNull()
-  })
-
-  it('keeps the service worker free of runtime caching, which is what the verdict rests on', () => {
-    /*
-      The load-bearing constraint, not an observation.
-
-      "An old hosted image" could only be an EARLIER CLASS's media if something
-      served teacher media at the hosted path. The service worker precaches
-      build output only and has no `runtimeCaching`, so it cannot. If a future
-      change adds runtime caching — especially of images — then stale media
-      from a previous game could be served during this transient and the
-      ACCEPTABLE TRANSIENT verdict above would no longer hold. This test fails
-      at that moment, which is the point.
-    */
-    const config = readFileSync(resolve(process.cwd(), 'vite.config.ts'), 'utf8')
-    expect(config).toContain('VitePWA')
-    expect(config).not.toContain('runtimeCaching')
-    // Precache globs cover built shell assets; teacher media is never built in.
-    expect(config).toContain("globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest,wav}']")
   })
 })

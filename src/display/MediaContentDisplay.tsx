@@ -4,7 +4,7 @@ import {
   ensureDisplayPackMediaHydration,
   subscribePackScopeAnnouncements,
 } from '../pack/packMediaScopeSync'
-import { resolveSameOriginMediaSrc } from './resolveSameOriginMediaSrc'
+import { resolvePackMediaSrc, resolveSameOriginMediaSrc } from './resolveSameOriginMediaSrc'
 import './MediaContentDisplay.css'
 
 /**
@@ -51,6 +51,28 @@ function TextPrompt({ text }: { readonly text: string }) {
   )
 }
 
+/**
+ * Pack-media hydration has not settled yet (FRC-6).
+ *
+ * Deliberately NOT `ImageFallback`: "Image unavailable" is a terminal claim,
+ * and at this moment the Display does not know whether the image is available.
+ * Saying so would be the projector asserting something it cannot verify.
+ */
+function ImageLoading({
+  content,
+}: {
+  readonly content: Extract<PublicPromptContent, { kind: 'image' }>
+}) {
+  return (
+    <div className="mcd mcd--image-loading" data-testid="mcd-image-loading">
+      <p className="mcd__status">Loading image…</p>
+      <p className="mcd__alt-fallback" data-testid="mcd-alt-fallback">
+        {content.alt}
+      </p>
+    </div>
+  )
+}
+
 function ImageFallback({
   content,
 }: {
@@ -83,6 +105,18 @@ function ImagePrompt({
 }) {
   const path = content.source.path
   const [hydrateTick, setHydrateTick] = useState(0)
+  /**
+   * Has this document's first pack-media hydration attempt finished?
+   *
+   * Until it has, the authored path must NOT be resolved to its hosted URL. The
+   * hosted URL is a real same-origin request, and a deployed build asset can sit
+   * at an authored clue path — `public/media-fixtures/` ships real clue images,
+   * and authored paths are not namespaced away from build output — so the
+   * projector could paint a DIFFERENT clue's image for a moment before the pack
+   * blob arrived. A fresh projector reaches this with no service worker at all,
+   * so precache behaviour is not what protects it; not asking is (FRC-6).
+   */
+  const [hydrationSettled, setHydrationSettled] = useState(false)
   // Source-scoped failure: a prior failed source must not poison a later valid
   // source, and a stale onError from an abandoned src must be ignored. Scoped to
   // the resolved src, not the authored path: the same path first resolves to its
@@ -94,7 +128,9 @@ function ImagePrompt({
   useEffect(() => {
     let cancelled = false
     void ensureDisplayPackMediaHydration().then((changed) => {
-      if (!cancelled && changed) setHydrateTick((tick) => tick + 1)
+      if (cancelled) return
+      setHydrationSettled(true)
+      if (changed) setHydrateTick((tick) => tick + 1)
     })
     const unsubscribe = subscribePackScopeAnnouncements(() => {
       void ensureDisplayPackMediaHydration().then((changed) => {
@@ -109,10 +145,18 @@ function ImagePrompt({
 
   // hydrateTick forces re-resolve after async pack registry hydration.
   void hydrateTick
-  const src = resolveSameOriginMediaSrc(path)
-  const failed = src === null || failedSrc === src
+  // Before hydration settles, only a pack blob we already hold is safe to show.
+  const src = hydrationSettled ? resolveSameOriginMediaSrc(path) : resolvePackMediaSrc(path)
 
-  if (failed || src === null) {
+  if (src === null) {
+    // Unsettled is a loading state, not an unavailable one.
+    return hydrationSettled ? (
+      <ImageFallback content={content} />
+    ) : (
+      <ImageLoading content={content} />
+    )
+  }
+  if (failedSrc === src) {
     return <ImageFallback content={content} />
   }
 
