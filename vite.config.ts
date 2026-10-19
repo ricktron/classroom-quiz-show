@@ -42,8 +42,8 @@ function resolveGitDir(): string | null {
     return null
   }
   // A worktree's gitdir pointer. `git` writes an absolute path here.
-  const pointer = readFileSync(dotGit, 'utf8').trim()
-  if (!pointer.startsWith('gitdir: ')) return null
+  const pointer = readFileOrNull(dotGit)?.trim()
+  if (pointer === undefined || !pointer.startsWith('gitdir: ')) return null
   const target = pointer.slice('gitdir: '.length).trim()
   return target.length > 0 ? resolve(here, target) : null
 }
@@ -55,32 +55,40 @@ function resolveGitDir(): string | null {
  * A linked worktree keeps `HEAD` locally but shares `refs/` and `packed-refs`
  * with the common dir, so a branch tip generally is NOT under its own gitdir.
  */
-function readRef(gitDir: string, ref: string): string | null {
-  const commonDirFile = resolve(gitDir, 'commondir')
-  const searchDirs = [gitDir]
+/** Read a file, or null when it is absent or unreadable. */
+function readFileOrNull(path: string): string | null {
   try {
-    const commonDir = readFileSync(commonDirFile, 'utf8').trim()
-    if (commonDir.length > 0) searchDirs.push(resolve(gitDir, commonDir))
+    return readFileSync(path, 'utf8')
   } catch {
-    // An ordinary clone has no `commondir`; its own gitdir is the common dir.
+    return null
   }
+}
 
-  for (const dir of searchDirs) {
-    try {
-      return readFileSync(resolve(dir, ref), 'utf8').trim()
-    } catch {
-      // Not a loose ref here; fall through to the next candidate.
-    }
-    try {
-      const packed = readFileSync(resolve(dir, 'packed-refs'), 'utf8')
-      for (const line of packed.split('\n')) {
-        if (line.startsWith('#') || line.startsWith('^')) continue
-        const [sha, name] = line.split(' ')
-        if (name === ref && sha) return sha.trim()
-      }
-    } catch {
-      // No packed-refs here either.
-    }
+/** The directories a ref may live in: this worktree's gitdir, then the common dir. */
+function refSearchDirs(gitDir: string): string[] {
+  // An ordinary clone has no `commondir`; its own gitdir IS the common dir.
+  const commonDir = readFileOrNull(resolve(gitDir, 'commondir'))?.trim()
+  return commonDir ? [gitDir, resolve(gitDir, commonDir)] : [gitDir]
+}
+
+/** Find `ref` in one directory's `packed-refs`. */
+function readPackedRef(dir: string, ref: string): string | null {
+  const packed = readFileOrNull(resolve(dir, 'packed-refs'))
+  if (packed === null) return null
+  for (const line of packed.split('\n')) {
+    if (line.startsWith('#') || line.startsWith('^')) continue
+    const [sha, name] = line.split(' ')
+    if (name === ref && sha) return sha.trim()
+  }
+  return null
+}
+
+function readRef(gitDir: string, ref: string): string | null {
+  for (const dir of refSearchDirs(gitDir)) {
+    const loose = readFileOrNull(resolve(dir, ref))?.trim()
+    if (loose) return loose
+    const packed = readPackedRef(dir, ref)
+    if (packed) return packed
   }
   return null
 }
