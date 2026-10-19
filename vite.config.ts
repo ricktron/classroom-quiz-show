@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, statSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, type Plugin } from 'vite'
@@ -24,6 +24,67 @@ const packageJson = JSON.parse(
   readFileSync(resolve(here, 'package.json'), 'utf8'),
 ) as { version: string }
 
+/**
+ * Resolve this checkout's git directory.
+ *
+ * In an ordinary clone `.git` is a DIRECTORY. In a linked worktree
+ * (`git worktree add`) it is a FILE holding `gitdir: <path>`, and reading
+ * `.git/HEAD` therefore fails outright — which is why `sourceSha()` returned
+ * `'unknown'` for every build made from a worktree, and why the Q5-A and Q7
+ * desktop identity tests could not pass locally there. CI never saw it because
+ * `GITHUB_SHA` is set and short-circuits above.
+ */
+function resolveGitDir(): string | null {
+  const dotGit = resolve(here, '.git')
+  try {
+    if (statSync(dotGit).isDirectory()) return dotGit
+  } catch {
+    return null
+  }
+  // A worktree's gitdir pointer. `git` writes an absolute path here.
+  const pointer = readFileSync(dotGit, 'utf8').trim()
+  if (!pointer.startsWith('gitdir: ')) return null
+  const target = pointer.slice('gitdir: '.length).trim()
+  return target.length > 0 ? resolve(here, target) : null
+}
+
+/**
+ * Read a ref, trying the worktree's own gitdir first and then the repository's
+ * common directory.
+ *
+ * A linked worktree keeps `HEAD` locally but shares `refs/` and `packed-refs`
+ * with the common dir, so a branch tip generally is NOT under its own gitdir.
+ */
+function readRef(gitDir: string, ref: string): string | null {
+  const commonDirFile = resolve(gitDir, 'commondir')
+  const searchDirs = [gitDir]
+  try {
+    const commonDir = readFileSync(commonDirFile, 'utf8').trim()
+    if (commonDir.length > 0) searchDirs.push(resolve(gitDir, commonDir))
+  } catch {
+    // An ordinary clone has no `commondir`; its own gitdir is the common dir.
+  }
+
+  for (const dir of searchDirs) {
+    try {
+      return readFileSync(resolve(dir, ref), 'utf8').trim()
+    } catch {
+      // Not a loose ref here; fall through to the next candidate.
+    }
+    try {
+      const packed = readFileSync(resolve(dir, 'packed-refs'), 'utf8')
+      for (const line of packed.split('\n')) {
+        if (line.startsWith('#') || line.startsWith('^')) continue
+        const [sha, name] = line.split(' ')
+        if (name === ref && sha) return sha.trim()
+      }
+    } catch {
+      // No packed-refs here either.
+    }
+  }
+  return null
+}
+
 function sourceSha(): string {
   if (process.env.CQS_SOURCE_SHA && process.env.CQS_SOURCE_SHA.length > 0) {
     return process.env.CQS_SOURCE_SHA
@@ -32,14 +93,16 @@ function sourceSha(): string {
     return process.env.GITHUB_SHA
   }
   try {
-    const gitDir = resolve(here, '.git')
+    const gitDir = resolveGitDir()
+    if (gitDir === null) return 'unknown'
     const head = readFileSync(resolve(gitDir, 'HEAD'), 'utf8').trim()
+    // Detached HEAD (what a pinned preflight worktree uses) is the sha itself.
     if (!head.startsWith('ref: ')) return head
     const ref = head.slice('ref: '.length).trim()
     if (ref.includes('..') || ref.startsWith('/') || ref.includes('\\')) {
       return 'unknown'
     }
-    return readFileSync(resolve(gitDir, ref), 'utf8').trim()
+    return readRef(gitDir, ref) ?? 'unknown'
   } catch {
     return 'unknown'
   }
