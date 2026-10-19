@@ -13,7 +13,7 @@ import { buttonIndexForSlotColor } from '../../src/input/sonyBuzzSupportedProfil
 
 /**
  * FRC-3: visible Buzzer assignment state and the live gameplay mapping must
- * agree IMMEDIATELY, and "ready" must mean the mapping can actually be used.
+ * agree IMMEDIATELY, and a singular control must never destroy several assignments.
  *
  * A Buzzer the teacher has unassigned must not keep buzzing through a stale
  * live mapping until a reload. Natural route only, on the same simulated

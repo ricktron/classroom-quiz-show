@@ -1233,4 +1233,46 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(activeRespondent(queueOf(panel.store))).toBeNull()
   })
 
+
+
+  it('FRC-3: the guided handset setup refuses to replace a shared team’s Buzzers', async () => {
+    /*
+      The third generic write path, and the worst of the three. Before this
+      guard `previewSonyBuzzApply` replaced every binding the staged team held
+      for all five recipe actions, and the panel reported "Applied handset
+      profile for …". A teacher who picked the wrong team in the guided setup
+      lost both of a shared team's handsets while being told it worked — unlike
+      Assign and Clear, which merely did nothing.
+    */
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await saveRedSharedWithBuzzer3(panel)
+    // Aim the guided setup at the SHARED team, the single-keystroke mistake.
+    fireEvent.change(screen.getByTestId('sbs-team'), { target: { value: 'red' } })
+    for (const color of ['red', 'blue', 'orange', 'green', 'yellow'] as const) {
+      fireEvent.click(screen.getByTestId('sbs-capture'))
+      await panel.pressRedAndSettle(buttonIndexForSlotColor(4, color))
+    }
+
+    fireEvent.click(screen.getByTestId('sbs-apply'))
+
+    // Refused where the teacher is working, and NOT reported as applied.
+    const status = screen.getByTestId('sbs-status')
+    expect(status).toHaveTextContent(/has 2 buzzers assigned/i)
+    expect(status).not.toHaveTextContent(/applied handset profile/i)
+
+    // Both of the shared team's Buzzers still buzz it.
+    openClue(panel.store)
+    arm(panel.store)
+    panel.refresh()
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
+    panel.refresh()
+    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+
+    panel.store.dispatch({ type: 'RESET_RESPONSE_PHASE', issuedAt: AT, roundId: ROUND })
+    arm(panel.store)
+    panel.refresh()
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(1, 'red'))
+    panel.refresh()
+    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+  })
 })

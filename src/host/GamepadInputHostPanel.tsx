@@ -424,7 +424,7 @@ export function GamepadInputHostPanel({
       const scope = sameLocalInputAction(action, PRIMARY_BUZZ)
         ? 'buzzers assigned'
         : 'buzzers assigned for this action'
-      return `${label} has ${count} ${scope}. Change them in Buzzer setup, so one change here cannot unassign the others.`
+      return `${label} has ${count} ${scope}. Change them in Buzzer setup, under Class Setup, so one change here cannot unassign the others.`
     },
     [game, teams],
   )
@@ -596,6 +596,26 @@ export function GamepadInputHostPanel({
 
   const applyMapping = useCallback(
     (next: GamepadMapping, editedTeamId?: string, editedAction: LocalInputAction = PRIMARY_BUZZ): boolean => {
+      /*
+        The guided handset setup is the THIRD generic write path (after capture
+        and per-team Clear), and `previewSonyBuzzApply` replaces every binding the
+        staged team holds for all five recipe actions at once. Unguarded it
+        destroyed a shared mapping AND reported success, which is worse than the
+        two paths that merely did nothing. Guarded here as well as at the guided
+        call site, so a future caller cannot reopen it.
+
+        `Clear all controller buttons` passes no `editedTeamId` and is deliberately
+        unaffected: it is an explicitly plural control, and its own disagreement
+        with Buzzer setup is recorded as open.
+      */
+      if (editedTeamId !== undefined) {
+        const shared = sharedTeamEditRefusal(latestMapping.current, editedTeamId, editedAction)
+        if (shared !== null) {
+          setIssues([])
+          setCaptureMessage(shared)
+          return false
+        }
+      }
       const validation = validateGamepadMapping(
         next,
         teams,
@@ -609,7 +629,7 @@ export function GamepadInputHostPanel({
       setMapping(validation.mapping)
       return true
     },
-    [teams],
+    [sharedTeamEditRefusal, teams],
   )
 
   const onSonyCapturingChange = useCallback((next: boolean) => {
@@ -695,6 +715,9 @@ export function GamepadInputHostPanel({
           diagnosticsStatus={diagnostics.status}
           activeMapping={mapping}
           onApplyMapping={applyMapping}
+          sharedTeamEditRefusal={(teamId) =>
+            sharedTeamEditRefusal(latestMapping.current, teamId, PRIMARY_BUZZ)
+          }
           capturing={capture.mode === 'sony-setup'}
           onCapturingChange={onSonyCapturingChange}
           testMode={testMode}
@@ -953,6 +976,9 @@ export function GamepadInputHostPanel({
         diagnosticsStatus={diagnostics.status}
         activeMapping={mapping}
         onApplyMapping={applyMapping}
+        sharedTeamEditRefusal={(teamId) =>
+          sharedTeamEditRefusal(latestMapping.current, teamId, PRIMARY_BUZZ)
+        }
         capturing={capture.mode === 'sony-setup'}
         onCapturingChange={onSonyCapturingChange}
         testMode={testMode}

@@ -76,6 +76,15 @@ export interface SonyBuzzSetupSectionProps {
   readonly activeMapping: GamepadMapping
   /** Apply a validated mapping produced by this section. Parent owns storage. */
   readonly onApplyMapping: (mapping: GamepadMapping, editedTeamId?: string) => boolean
+  /**
+   * Why a guided apply for this team must be refused, or null.
+   *
+   * The guided recipe replaces every binding the team holds for all five Sony
+   * colours, so beside a shared mapping (several Buzzers on one team) it would
+   * destroy the rest while reporting success. The reason is shown HERE, where
+   * the teacher is working, not only in the generic controller panel.
+   */
+  readonly sharedTeamEditRefusal?: (teamId: string) => string | null
   /** Whether the parent is currently capturing for THIS section. */
   readonly capturing: boolean
   /** Begin / cancel guided capture for the next outstanding prompt. */
@@ -596,6 +605,7 @@ export function SonyBuzzSetupSection({
   diagnosticsStatus,
   activeMapping,
   onApplyMapping,
+  sharedTeamEditRefusal,
   capturing,
   onCapturingChange,
   testMode,
@@ -814,6 +824,12 @@ export function SonyBuzzSetupSection({
           data-testid="sbs-preview"
           disabled={capturing || testMode || progress.captured === 0}
           onClick={() => {
+            const shared = sharedTeamEditRefusal?.(teamId) ?? null
+            if (shared !== null) {
+              setPreviewLines(null)
+              setMessage(shared)
+              return
+            }
             const preview = previewSonyBuzzApply(staged, activeMapping, teams)
             if (!preview.ok) {
               setPreviewLines(null)
@@ -839,6 +855,11 @@ export function SonyBuzzSetupSection({
           data-testid="sbs-apply"
           disabled={capturing || testMode || progress.nextPrompt !== null}
           onClick={() => {
+            const shared = sharedTeamEditRefusal?.(teamId) ?? null
+            if (shared !== null) {
+              setMessage(shared)
+              return
+            }
             const result = applySonyBuzzStagedProfile(staged, activeMapping, teams)
             if (!result.ok) {
               const first = result.issues[0]
@@ -850,7 +871,9 @@ export function SonyBuzzSetupSection({
               return
             }
             if (!onApplyMapping(result.mapping, teamId)) {
-              setMessage('Apply refused by mapping validation. The active mapping was left unchanged.')
+              setMessage(
+                'Apply refused. The active mapping was left unchanged. See the controller assignments message for why.',
+              )
               return
             }
             setStaged(emptySonyBuzzStagedProfile(teamId))
