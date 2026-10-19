@@ -218,9 +218,13 @@ describe('M40: the Final answer reaches the projector only at explicit reveal', 
 
     expect(phaseOf(store)).toBe('answer-revealed')
     /*
-      PRESENCE is asserted on the PUBLISHED edge alone — the last place in this
-      file that still read the dual sweep, and the sibling of the two guards
-      fixed in R3.
+      PRESENCE is asserted on the PUBLISHED edge alone — the last PRESENCE
+      assertion in this file that still read the dual sweep, and the sibling of
+      the two fixed in R3. Absence assertions still read it, deliberately, and
+      that asymmetry is the point: `toContain` over a concatenation is a
+      DISJUNCTION, so the weaker edge decides and a blanked published snapshot
+      passes; `not.toContain` over the same concatenation is a CONJUNCTION, so
+      it is strictly stronger than either edge alone.
 
       `wire()` includes the raw projection, which carries the answer even when
       the published snapshot has fallen back to `INITIAL_PUBLIC_STATE`. So a
@@ -255,6 +259,14 @@ describe('M40: the Final answer reaches the projector only at explicit reveal', 
 
     const dto = rawFinalDto(store)
     expect(dto).not.toBeNull()
+    /*
+      A stage read on the RAW edge, which `publishedFinalDto`'s docblock warns
+      against — so, explicitly, why it is right here. This is a precondition for
+      the exact-key-set assertion below, which must be raw to see a leaked key
+      at all; a published read would blank and the key set would look satisfied.
+      Reading the stage on the same edge keeps the two consistent. The published
+      stage at this point is covered by the walk above, not here.
+    */
     expect(dto!.stage).toBe('responses-locked')
     /*
       `responses-locked` carries NO per-team key at all — that is the strongest
@@ -274,12 +286,18 @@ describe('M40: the Final answer reaches the projector only at explicit reveal', 
     // does not. What it legitimately pins is that the empty case carries no
     // Final content at all.
     //
-    // Anti-vacuity for the stage walk does NOT rest on this test. It rests on
-    // two things above: the published-edge `toContain(ANSWER)` after the reveal,
-    // and the per-stage published `stage` assertion inside `assertAnswerAbsent`.
-    // An earlier version of this comment named the reveal assertion "the real
-    // anti-vacuity guard" while that assertion still read the raw edge, which
-    // claimed more than it exercised.
+    // Anti-vacuity for the stage walk does NOT rest on this test. Inside the
+    // walk itself it rests on the per-stage published `stage` assertion in
+    // `assertAnswerAbsent`, on the two published-edge `toContain(PROMPT)`
+    // assertions once the response window opens, and on the `seen` checks that
+    // a walk which never started cannot satisfy.
+    //
+    // The published-edge `toContain(ANSWER)` after the reveal anchors the FILE,
+    // not the walk: it lives in a separate `it()`, so it cannot make the walk
+    // non-vacuous. Two earlier versions of this comment got this wrong — one
+    // named the reveal assertion "the real anti-vacuity guard" while it still
+    // read the raw edge, and the next named it as a walk anchor while omitting
+    // the `toContain(PROMPT)` pair that genuinely is one.
     const store = createSessionStore()
     const serialized = wire(store)
     expect(serialized).not.toContain(ANSWER)
