@@ -112,6 +112,56 @@ export async function runFourHandsetRedCheck(
   }
 }
 
+/** A Sony Buzz handset slot, as the teacher-facing Buzzer setup numbers them. */
+export type SonyBuzzSlot = 1 | 2 | 3 | 4
+
+/** The visible label of a slot's team select. Buzzer 4 is the optional fourth. */
+export function sonyBuzzSlotLabel(slot: SonyBuzzSlot): string {
+  return slot === 4 ? 'Buzzer 4 (optional fourth)' : `Buzzer ${slot}`
+}
+
+/**
+ * Natural route to a SAVED supported-profile Buzzer mapping.
+ *
+ * Home demo import -> Play -> optional Buzzers -> Show buzzer setup -> connect
+ * the simulated receiver -> expose the pad -> four-handset RED check -> assign
+ * the named slots -> Save team mapping. Shared by every spec that needs a saved
+ * mapping as a precondition, so the journey has ONE definition: it was copied
+ * between specs, and a route that drifts between copies stops proving the same
+ * thing in each.
+ */
+export async function setUpSavedBuzzerMapping(
+  page: Page,
+  assign: Partial<Record<SonyBuzzSlot, string>>,
+): Promise<void> {
+  await importDemoAndPlay(page)
+  await openOptionalBuzzers(page)
+  await clickShowBuzzerSetup(page)
+  await connectSimulatedReceiver(page)
+  await exposeGamepadAndExpectBuzzersStatus(page)
+  await runFourHandsetRedCheck(page)
+  for (const [slot, team] of Object.entries(assign)) {
+    await page
+      .getByLabel(sonyBuzzSlotLabel(Number(slot) as SonyBuzzSlot), { exact: true })
+      .selectOption({ label: team })
+  }
+  await page.getByRole('button', { name: 'Save team mapping' }).click()
+}
+
+/**
+ * Names -> Start Game -> Start Round 1 -> board, from the buzzer-setup posture.
+ *
+ * Deliberately NOT `startRound1Ordinary`: that one additionally asserts Host
+ * More is closed, which is not true on a route that went through Show buzzer
+ * setup.
+ */
+export async function startGameToBoardAfterBuzzerSetup(page: Page): Promise<void> {
+  await fillAllTeamNames(page)
+  await page.getByRole('button', { name: 'Start Game' }).click()
+  await page.getByRole('button', { name: 'Start Round 1' }).click()
+  await expect(page.getByTestId('cbh-grid')).toBeVisible()
+}
+
 export async function namesReadyStartGame(page: Page): Promise<void> {
   await fillAllTeamNames(page)
   await expect(page.getByTestId('setup-ready-heading')).toBeVisible()

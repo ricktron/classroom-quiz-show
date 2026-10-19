@@ -1,11 +1,7 @@
-import { test, expect, type Page } from '@playwright/test'
-import { fillAllTeamNames, importDemoAndPlay } from './helpers/menusClassSetup'
+import { test, expect } from '@playwright/test'
 import {
-  clickShowBuzzerSetup,
-  connectSimulatedReceiver,
-  exposeGamepadAndExpectBuzzersStatus,
-  openOptionalBuzzers,
-  runFourHandsetRedCheck,
+  setUpSavedBuzzerMapping,
+  startGameToBoardAfterBuzzerSetup,
 } from './helpers/q7BuzzerTeacherJourney'
 import { installWbuzzHardwareSimulator, pressWbuzzButton } from './helpers/simulatedWbuzzHardware'
 import { armAndStartTimer } from './helpers/menusQ3'
@@ -20,33 +16,6 @@ import { buttonIndexForSlotColor } from '../../src/input/sonyBuzzSupportedProfil
  * 054c:1000 hardware boundary CBN-1 uses (not physical evidence).
  */
 
-type Slot = 1 | 2 | 3 | 4
-
-const slotLabel = (slot: Slot) =>
-  slot === 4 ? 'Buzzer 4 (optional fourth)' : `Buzzer ${slot}`
-
-async function setUpBuzzers(page: Page, assign: Partial<Record<Slot, string>>) {
-  await importDemoAndPlay(page)
-  await openOptionalBuzzers(page)
-  await clickShowBuzzerSetup(page)
-  await connectSimulatedReceiver(page)
-  await exposeGamepadAndExpectBuzzersStatus(page)
-  await runFourHandsetRedCheck(page)
-  for (const [slot, team] of Object.entries(assign)) {
-    await page.getByLabel(slotLabel(Number(slot) as Slot), { exact: true }).selectOption({
-      label: team,
-    })
-  }
-  await page.getByRole('button', { name: 'Save team mapping' }).click()
-}
-
-async function startGameToBoard(page: Page) {
-  await fillAllTeamNames(page)
-  await page.getByRole('button', { name: 'Start Game' }).click()
-  await page.getByRole('button', { name: 'Start Round 1' }).click()
-  await expect(page.getByTestId('cbh-grid')).toBeVisible()
-}
-
 test('FRC-3: a Buzzer unassigned in the mapping UI stops buzzing at once, without a reload', async ({
   page,
 }, info) => {
@@ -54,7 +23,7 @@ test('FRC-3: a Buzzer unassigned in the mapping UI stops buzzing at once, withou
   test.setTimeout(120_000)
   await installWbuzzHardwareSimulator(page, 'ready')
   // Two Buzzers on one team, the shared-team mapping CBN-1 established.
-  await setUpBuzzers(page, { 3: 'Blue Basalts' })
+  await setUpSavedBuzzerMapping(page, { 3: 'Blue Basalts' })
   await expect(page.getByTestId('sbs-mapping-layer')).toHaveText('Team mapping saved')
   await expect(page.getByTestId('sbs-teacher-summary')).toContainText('Buzzers ready')
 
@@ -70,7 +39,7 @@ test('FRC-3: a Buzzer unassigned in the mapping UI stops buzzing at once, withou
   // Readiness must stop claiming a mapping that now maps nothing.
   await expect(page.getByTestId('sbs-teacher-summary')).not.toContainText('Buzzers ready')
 
-  await startGameToBoard(page)
+  await startGameToBoardAfterBuzzerSetup(page)
   await page.locator('[data-testid^="cbh-tile-"]:not([disabled])').first().click()
   await page.getByRole('button', { name: 'Show prompt on display' }).click()
   await armAndStartTimer(page)
@@ -89,10 +58,10 @@ test('FRC-3: a singular generic Clear refuses to unassign a team’s other Buzze
   test.skip(info.project.name !== 'desktop-1080p', 'simulated hardware journey runs once (1080p)')
   test.setTimeout(120_000)
   await installWbuzzHardwareSimulator(page, 'ready')
-  await setUpBuzzers(page, { 3: 'Blue Basalts' })
+  await setUpSavedBuzzerMapping(page, { 3: 'Blue Basalts' })
   await expect(page.getByTestId('sbs-mapping-layer')).toHaveText('Team mapping saved')
 
-  await startGameToBoard(page)
+  await startGameToBoardAfterBuzzerSetup(page)
 
   // The generic per-team controls sit behind the "Controller assignments"
   // disclosure, the same way gamepad-input.spec.ts and
