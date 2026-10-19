@@ -858,12 +858,7 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(screen.queryByTestId('sbs-mapping-issue')).toBeNull()
     expect(screen.getByTestId('gih-enabled')).toHaveTextContent('On')
 
-    openClue(panel.store)
-    arm(panel.store)
-    panel.refresh()
-    await panel.pressRedAndSettle(buttonIndexForSlotColor(4, 'red'))
-    panel.refresh()
-    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+    expect(await buzzOnFreshClue(panel, 4)).toBe('red')
   })
 
   it('CBN-1 review: with several Buzzers on one team, clearing another team works and says so truthfully', async () => {
@@ -881,13 +876,38 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(screen.getByTestId('gih-capture-status')).toHaveTextContent('Controller button cleared for')
     expect(screen.getByTestId('gih-control-blue')).toHaveTextContent(/not assigned/i)
     // Red keeps both of its Buzzers.
+    expect(await buzzOnFreshClue(panel, 3)).toBe('red')
+  })
+
+  /**
+   * Open a fresh clue, arm it, press one Buzzer's RED, and report who holds the
+   * opportunity. Nine tests needed exactly this sequence; one definition keeps
+   * them comparable and keeps duplicated assertions from drifting apart.
+   */
+  async function buzzOnFreshClue(
+    panel: ReturnType<typeof renderWbuzzPanel>,
+    slot: 1 | 2 | 3 | 4,
+  ): Promise<string | null> {
     openClue(panel.store)
     arm(panel.store)
     panel.refresh()
-    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(slot, 'red'))
     panel.refresh()
-    expect(activeRespondent(queueOf(panel.store))).toBe('red')
-  })
+    return activeRespondent(queueOf(panel.store))
+  }
+
+  /** The same, on an opportunity reopened in a test that already used one. */
+  async function buzzOnReopenedClue(
+    panel: ReturnType<typeof renderWbuzzPanel>,
+    slot: 1 | 2 | 3 | 4,
+  ): Promise<string | null> {
+    panel.store.dispatch({ type: 'RESET_RESPONSE_PHASE', issuedAt: AT, roundId: ROUND })
+    arm(panel.store)
+    panel.refresh()
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(slot, 'red'))
+    panel.refresh()
+    return activeRespondent(queueOf(panel.store))
+  }
 
   async function saveRedSharedWithBuzzer3(panel: ReturnType<typeof renderWbuzzPanel>) {
     await panel.flush()
@@ -911,12 +931,7 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(screen.getByTestId('gih-capture-status')).toHaveTextContent(/assigned to .* for buzz/i)
     expect(screen.getByTestId('gih-control-blue')).toHaveTextContent('Buzzer 4 · Red')
     // Red keeps both of its Buzzers.
-    openClue(panel.store)
-    arm(panel.store)
-    panel.refresh()
-    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
-    panel.refresh()
-    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+    expect(await buzzOnFreshClue(panel, 3)).toBe('red')
   })
 
   it('CBN-1 review: with several Buzzers on one team, the guided handset setup applies for another team', async () => {
@@ -933,38 +948,87 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(screen.queryByTestId('gih-issues')?.textContent ?? '').not.toMatch(/already has a buzz button/)
     expect(screen.getByTestId('gih-control-blue')).toHaveTextContent('Buzzer 4 · Red')
     // Red keeps both of its Buzzers.
-    openClue(panel.store)
-    arm(panel.store)
-    panel.refresh()
-    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
-    panel.refresh()
-    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+    expect(await buzzOnFreshClue(panel, 3)).toBe('red')
   })
 
-  it('CBN-1 review: a secondary action can be assigned and cleared on the team with several Buzzers', async () => {
+  it('FRC-3: a secondary-action edit on a team with several Buzzers also fails closed', async () => {
+    /*
+      Rewritten from "a secondary action can be assigned and cleared on the team
+      with several Buzzers" (CBN-1 review round 3).
+
+      That test performed the destruction and asserted only the one thing the
+      destruction does not touch — that red's BUZZ buttons survive. The
+      supported profile binds all five Sony colours per slot, so a secondary
+      edit on a shared team silently dropped that team's other Buzzers for that
+      colour exactly as the buzz edit did, and the secondary colours are not
+      inert: they drive team name selection in Class Setup
+      (src/input/sonyNameSelection.ts).
+
+      What CBN-1 actually settled is preserved and still covered: the VALIDATOR
+      must not refuse such an edit (`onePrimaryOnlyFor`, pinned in
+      src/input/gamepadMapping.test.ts). This guard sits later, in the panel, and
+      stops an edit from destroying bindings it never described.
+    */
     const panel = renderWbuzzPanel({ selectionMode: false })
     await saveRedSharedWithBuzzer3(panel)
-    // Buzzer 4 is unassigned, so its buttons are free to capture.
     const secondaryButton = buttonIndexForSlotColor(4, 'blue')
     fireEvent.change(screen.getByTestId('gih-action'), { target: { value: 'secondary1' } })
 
     fireEvent.click(screen.getByTestId('gih-capture-red'))
     await panel.pressRedAndSettle(secondaryButton)
-    expect(screen.queryByTestId('gih-issues')?.textContent ?? '').not.toMatch(/already has a buzz button/)
-    expect(screen.getByTestId('gih-control-red')).toHaveTextContent('Buzzer 4 · Blue')
+    const status = screen.getByTestId('gih-capture-status')
+    expect(status).toHaveTextContent(/has 2 buzzers assigned for this action/i)
+    expect(status).toHaveTextContent(/Buzzer setup/i)
+    expect(status).not.toHaveTextContent(/assigned to/i)
 
+    // Clear refuses for the same reason, and says so rather than claiming success.
     fireEvent.click(screen.getByTestId('gih-clear-red'))
-    expect(screen.queryByTestId('gih-issues')?.textContent ?? '').not.toMatch(/already has a buzz button/)
-    expect(screen.getByTestId('gih-capture-status')).toHaveTextContent('Controller button cleared for')
-    expect(screen.getByTestId('gih-control-red')).toHaveTextContent(/not assigned/i)
-    // Red's buzz buttons were not touched by the secondary edit.
+    expect(screen.getByTestId('gih-capture-status')).toHaveTextContent(
+      /has 2 buzzers assigned for this action/i,
+    )
+    expect(screen.getByTestId('gih-capture-status')).not.toHaveTextContent(/cleared/i)
+
+    // Red's buzz buttons were never in question and still buzz.
     fireEvent.change(screen.getByTestId('gih-action'), { target: { value: 'primary-buzz' } })
-    openClue(panel.store)
-    arm(panel.store)
+    expect(await buzzOnFreshClue(panel, 3)).toBe('red')
+  })
+
+  it('FRC-3: withdrawing the profile mapping keeps a generic binding on the same pad', async () => {
+    /*
+      Scoped to the WITHDRAW branch on purpose. The profile's APPLY branch still
+      replaces the whole live mapping, so a generic binding made before an
+      association change is wiped by that apply — a pre-existing behaviour
+      recorded as a remaining defect, not repaired here. This drives the single
+      transition from "profile maps something" straight to "profile maps
+      nothing", which is the branch this change added, and proves it withdraws
+      only the controls the profile itself applied.
+    */
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await panel.flush()
+    panel.attachWbuzz()
+    await panel.connect()
+    // Leave exactly ONE Buzzer assigned, so clearing it is a single transition.
+    for (const slot of [2, 3, 4]) {
+      const select = screen.queryByTestId(`sbs-slot-${slot}`)
+      if (select) fireEvent.change(select, { target: { value: '' } })
+    }
+    fireEvent.click(screen.getByTestId('sbs-save-mapping'))
+    await panel.flush()
     panel.refresh()
-    await panel.pressRedAndSettle(buttonIndexForSlotColor(3, 'red'))
+
+    // The teacher binds a FREE button on the Wbuzz pad for another team through
+    // the generic controls. That binding is theirs, not the profile's.
+    fireEvent.click(screen.getByTestId('gih-capture-green'))
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(4, 'red'))
     panel.refresh()
-    expect(activeRespondent(queueOf(panel.store))).toBe('red')
+    expect(screen.getByTestId('gih-control-green')).toHaveTextContent('Buzzer 4 · Red')
+
+    // Unassign the last Buzzer: the profile withdraws its own controls only.
+    fireEvent.change(screen.getByTestId('sbs-slot-1'), { target: { value: '' } })
+    await panel.flush()
+    panel.refresh()
+    expect(screen.getByTestId('gih-control-green')).toHaveTextContent('Buzzer 4 · Red')
+    expect(screen.getByTestId('gih-control-red')).toHaveTextContent(/not assigned/i)
   })
 
   it('stays Off with a Wbuzz pad and a supported mapping when the receiver was never connected', async () => {
@@ -1073,4 +1137,129 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     )
     expect(screen.getByTestId('sbs-test-outcome')).toHaveTextContent(/^Buzzer Check is on\./)
   })
+
+
+  /**
+   * FRC-3 — once several Buzzers buzz one team, visible assignment state and the
+   * live gameplay mapping must agree immediately, a singular control must not
+   * destroy several assignments as a side effect, and "ready" must mean the
+   * mapping can actually be materialized.
+   */
+  it('FRC-3a: a singular generic buzz edit does not silently unassign a team’s other Buzzers', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await saveRedSharedWithBuzzer3(panel)
+
+    // Both of red's Buzzers buzz red before the edit.
+    expect(await buzzOnFreshClue(panel, 3)).toBe('red')
+
+    // A generic per-team capture for red, which the singular copy describes as
+    // assigning ONE button. It must not quietly drop Buzzer 1 and Buzzer 3.
+    const freeButton = buttonIndexForSlotColor(4, 'red')
+    fireEvent.click(screen.getByTestId('gih-capture-red'))
+    panel.pressRed(freeButton)
+    await panel.flush()
+    panel.refresh()
+
+    // The edit fails closed and says why, naming the count and where to change it.
+    const status = screen.getByTestId('gih-capture-status').textContent ?? ''
+    expect(status).toMatch(/has 2 buzzers assigned/i)
+    expect(status).toMatch(/Buzzer setup/i)
+
+    // And nothing was destroyed: both of red's Buzzers still buzz red.
+    expect(await buzzOnReopenedClue(panel, 3)).toBe('red')
+
+    expect(await buzzOnReopenedClue(panel, 1)).toBe('red')
+  })
+
+  it('FRC-3a: clearing the buzz button of a team with several Buzzers also fails closed', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await saveRedSharedWithBuzzer3(panel)
+
+    fireEvent.click(screen.getByTestId('gih-clear-red'))
+    panel.refresh()
+    expect(screen.getByTestId('gih-capture-status')).toHaveTextContent(/has 2 buzzers assigned/i)
+    expect(screen.getByTestId('gih-capture-status')).not.toHaveTextContent(/cleared/i)
+
+    expect(await buzzOnFreshClue(panel, 3)).toBe('red')
+  })
+
+  it('FRC-3b: unassigning every Buzzer stops them buzzing immediately, not after a reload', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await saveRedSharedWithBuzzer3(panel)
+
+    // Unassign every Buzzer slot through the supported mapping UI.
+    for (const slot of [1, 2, 3, 4]) {
+      const select = screen.queryByTestId(`sbs-slot-${slot}`)
+      if (select) fireEvent.change(select, { target: { value: '' } })
+    }
+    await panel.flush()
+    panel.refresh()
+
+    // The UI now shows nothing assigned, so nothing may still buzz.
+    expect(await buzzOnFreshClue(panel, 3)).toBeNull()
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(1, 'red'))
+    panel.refresh()
+    expect(activeRespondent(queueOf(panel.store))).toBeNull()
+  })
+
+
+
+  it('FRC-3: the guided handset setup refuses to replace a shared team’s Buzzers', async () => {
+    /*
+      The third generic write path, and the worst of the three. Before this
+      guard `previewSonyBuzzApply` replaced every binding the staged team held
+      for all five recipe actions, and the panel reported "Applied handset
+      profile for …". A teacher who picked the wrong team in the guided setup
+      lost both of a shared team's handsets while being told it worked — unlike
+      Assign and Clear, which merely did nothing.
+    */
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await saveRedSharedWithBuzzer3(panel)
+    // Aim the guided setup at the SHARED team, the single-keystroke mistake.
+    fireEvent.change(screen.getByTestId('sbs-team'), { target: { value: 'red' } })
+    for (const color of ['red', 'blue', 'orange', 'green', 'yellow'] as const) {
+      fireEvent.click(screen.getByTestId('sbs-capture'))
+      await panel.pressRedAndSettle(buttonIndexForSlotColor(4, color))
+    }
+
+    fireEvent.click(screen.getByTestId('sbs-apply'))
+
+    // Refused where the teacher is working, and NOT reported as applied.
+    const status = screen.getByTestId('sbs-status')
+    expect(status).toHaveTextContent(/has 2 buzzers assigned/i)
+    expect(status).not.toHaveTextContent(/applied handset profile/i)
+
+    // Both of the shared team's Buzzers still buzz it.
+    expect(await buzzOnFreshClue(panel, 3)).toBe('red')
+
+    expect(await buzzOnReopenedClue(panel, 1)).toBe('red')
+  })
+
+
+  it('FRC-3: the guided refusal is wired in the SETUP posture too, where teachers do handset setup', async () => {
+    /*
+      The committed guided detector renders with `selectionMode: false`, so it
+      exercises only the play-posture SonyBuzzSetupSection. Class Setup is where
+      a teacher actually does handset setup, and it is a SECOND render site — the
+      one I wired second and had briefly left unwired, which the depth layer in
+      `applyMapping` then hid by degrading the message instead of letting the
+      write through. This pins that site directly.
+    */
+    const panel = renderWbuzzPanel({ selectionMode: true })
+    await saveRedSharedWithBuzzer3(panel)
+    fireEvent.change(screen.getByTestId('sbs-team'), { target: { value: 'red' } })
+    for (const color of ['red', 'blue', 'orange', 'green', 'yellow'] as const) {
+      fireEvent.click(screen.getByTestId('sbs-capture'))
+      await panel.pressRedAndSettle(buttonIndexForSlotColor(4, color))
+    }
+
+    fireEvent.click(screen.getByTestId('sbs-apply'))
+
+    const status = screen.getByTestId('sbs-status')
+    expect(status).toHaveTextContent(/has 2 buzzers assigned/i)
+    expect(status).not.toHaveTextContent(/applied handset profile/i)
+    // Not the depth layer's degraded fallback: the call-site guard ran.
+    expect(status).not.toHaveTextContent(/see the controller assignments message/i)
+  })
+
 })

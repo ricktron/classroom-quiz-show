@@ -481,6 +481,36 @@ note only *additional* authority where it exists.
   profile only, several Buzzer handsets on the one receiver may map to one
   team (ADR-019 §6; `CQS-OD-040` clarification). Generic per-team
   controller capture and multiple receivers per team remain parked here.
+- **Hardened (2026-10-18, FRC-3):** all three generic write paths — per-team
+  press-to-assign, per-team Clear, and the guided handset setup — now fail
+  closed beside a shared mapping, for every action, instead of destroying that
+  team's other Buzzers. The guided path was the worst of the three: it reported
+  "Applied handset profile" while replacing all five recipe actions. The
+  consequence to state plainly is that there is now **no generic path to add a
+  second controller's button for a shared team**; that capability never worked
+  (it silently destroyed the profile mapping instead) and remains parked here.
+  Unassigning every Buzzer also withdraws the applied mapping immediately
+  rather than at the next reload.
+- **Known open, not repaired (2026-10-18, FRC-3):** four defects in the same
+  "visible Buzzer state must match the live mapping" family remain, across the
+  three items below.
+  (a) `Clear all controller buttons` AND a per-team Clear on a non-shared team
+  both clear the live mapping while Buzzer setup still shows the slot assigned
+  and the mapping saved — the disagreement FRC-3 closed for the unassign path,
+  in the other direction.
+  (b) The supported profile's *apply* still replaces the whole live mapping, so a
+  generic binding a teacher made on any controller is dropped at the next
+  association change. This also masks FRC-3's withdraw fix in the multi-slot
+  route: unassigning slots one at a time re-runs the apply between each, so the
+  teacher-visible outcome there is unchanged. And because `Clear all` empties
+  the live mapping without telling the profile owner, the profile's record of
+  what it applied can go stale and over-withdraw a later generic binding that
+  happens to occupy a button it once owned.
+  (c) A team row shows only the FIRST of its bindings ("Buzzer 1"), giving no
+  hint that another Buzzer is also mapped to it; the truth appears only in the
+  refusal message after the teacher attempts a change.
+  Each needs an owner decision about destructive copy and row presentation
+  rather than a silent behaviour change.
 - **Dependencies:** stable physical-controller practice (OADL2-S07
   follow-ups, keep-alive resolution); `CQS-RA2-CONTROLLER-01`.
 - **Trigger:** a real class configuration needs more than four

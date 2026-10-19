@@ -258,6 +258,14 @@ one team's one action (press-to-assign, Clear, the guided handset setup) holds
 only the edited team to one buzz button. A non-buzz edit re-judges no buzz button.
 Other teams' supported-profile Buzzers are never re-judged by a generic edit.
 
+That describes **validation**. Since FRC-3 (2026-10-18) the Host panel refuses
+*before* validation when the edited team already holds several bindings for that
+action, because applying it would replace all of them while the control
+expresses one. This covers **all three** generic write paths enumerated above —
+press-to-assign, Clear, and the guided handset setup. The guided path needed it
+most: it replaces every binding the staged team holds for all five recipe
+actions at once, and reported success while doing so. See ADR-019 §6.
+
 **"Controller not attached" and "controller has no such button" are NOT validation
 failures.** A mapping made while a controller was plugged in must survive it being
 unplugged; those are resolution facts the adapter observes (the binding simply

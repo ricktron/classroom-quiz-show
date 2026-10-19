@@ -262,10 +262,18 @@ hardware, recovery, and the end-to-end experience.
 - **User:** teacher, private.
 - **Primary job:** make each physical handset correspond to a team.
 - **Important states:** unassigned; assigned; responding; not responding;
-  reassigned mid-setup.
+  reassigned mid-setup; **several Buzzers on one team** (shared mapping);
+  **a generic edit refused because it would destroy a shared mapping**.
 - **UX risks:** `CQS-UXF-06` browser identity shown instead of physical
-  identity; `CQS-UXF-11` ambiguous "Controller 1".
+  identity; `CQS-UXF-11` ambiguous "Controller 1"; a singular control whose
+  copy describes one button while it would replace several (FRC-3); a team row
+  that names only the first of several mapped Buzzers (open).
 - **Principles:** `P06`, `P07`, `P08`, `P17`.
+- **Adopted convention (2026-10-18, FRC-3):** where a generic per-team control
+  cannot express a shared mapping, it **fails closed and names the count plus
+  where to change it** rather than applying a destructive edit silently. Visible
+  assignment state and the live gameplay mapping must agree immediately, not
+  after a reload.
 - **Research routing:** Norman (mapping), Young.
 - **Ownership / state:** **S04B — CURRENT.** Input mapping foundation
   (`src/input/`) is an existing qualified foundation from slices 8–10 / 21.

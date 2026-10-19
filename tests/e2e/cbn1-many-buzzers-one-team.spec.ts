@@ -1,11 +1,8 @@
 import { test, expect, type Page } from '@playwright/test'
-import { fillAllTeamNames, importDemoAndPlay } from './helpers/menusClassSetup'
 import {
-  clickShowBuzzerSetup,
-  connectSimulatedReceiver,
-  exposeGamepadAndExpectBuzzersStatus,
-  openOptionalBuzzers,
-  runFourHandsetRedCheck,
+  setUpSavedBuzzerMapping,
+  startGameToBoardAfterBuzzerSetup,
+  type SonyBuzzSlot,
 } from './helpers/q7BuzzerTeacherJourney'
 import {
   exposeSimulatedWbuzzGamepad,
@@ -26,24 +23,7 @@ import { buttonIndexForSlotColor } from '../../src/input/sonyBuzzSupportedProfil
  * 054c:1000 hardware boundary (not physical evidence).
  */
 
-type Slot = 1 | 2 | 3 | 4
-
-async function setUpBuzzers(page: Page, assign: Partial<Record<Slot, string>>) {
-  await importDemoAndPlay(page)
-  await openOptionalBuzzers(page)
-  await clickShowBuzzerSetup(page)
-  await connectSimulatedReceiver(page)
-  await exposeGamepadAndExpectBuzzersStatus(page)
-  await runFourHandsetRedCheck(page)
-  for (const [slot, team] of Object.entries(assign)) {
-    await page.getByLabel(slot === '4' ? 'Buzzer 4 (optional fourth)' : `Buzzer ${slot}`, { exact: true }).selectOption({
-      label: team,
-    })
-  }
-  await page.getByRole('button', { name: 'Save team mapping' }).click()
-}
-
-async function expectCheckLabel(page: Page, slot: Slot, label: string) {
+async function expectCheckLabel(page: Page, slot: SonyBuzzSlot, label: string) {
   await pressWbuzzButton(page, buttonIndexForSlotColor(slot, 'red'))
   await expect(page.getByTestId('sbs-test-outcome')).toHaveText(
     `Buzzer Check: Buzzer ${slot} · Red · ${label}`,
@@ -51,15 +31,8 @@ async function expectCheckLabel(page: Page, slot: Slot, label: string) {
   )
 }
 
-async function startGameToBoard(page: Page) {
-  await fillAllTeamNames(page)
-  await page.getByRole('button', { name: 'Start Game' }).click()
-  await page.getByRole('button', { name: 'Start Round 1' }).click()
-  await expect(page.getByTestId('cbh-grid')).toBeVisible()
-}
-
 /** Open the first clue, show it, arm it, press one handset's RED, then read who buzzed. */
-async function buzzOnFreshClue(page: Page, slot: Slot): Promise<string> {
+async function buzzOnFreshClue(page: Page, slot: SonyBuzzSlot): Promise<string> {
   await page.locator('[data-testid^="cbh-tile-"]:not([disabled])').first().click()
   await page.getByRole('button', { name: 'Show prompt on display' }).click()
   await armAndStartTimer(page)
@@ -79,7 +52,7 @@ test('CBN-1: Buzzers 1, 3 and 4 all buzz Team 1; Buzzer 2 buzzes Team 2; mapping
   test.skip(info.project.name !== 'desktop-1080p', 'simulated hardware journey runs once (1080p)')
   test.setTimeout(120_000)
   await installWbuzzHardwareSimulator(page, 'ready', { persistGrantAcrossReload: true })
-  await setUpBuzzers(page, { 3: 'Blue Basalts', 4: 'Blue Basalts' })
+  await setUpSavedBuzzerMapping(page, { 3: 'Blue Basalts', 4: 'Blue Basalts' })
 
   // Truthful saved / ready state, and every Buzzer names its own team.
   await expect(page.getByTestId('sbs-mapping-layer')).toHaveText('Team mapping saved')
@@ -89,7 +62,7 @@ test('CBN-1: Buzzers 1, 3 and 4 all buzz Team 1; Buzzer 2 buzzes Team 2; mapping
   await expectCheckLabel(page, 3, 'Blue Basalts')
   await expectCheckLabel(page, 4, 'Blue Basalts')
 
-  await startGameToBoard(page)
+  await startGameToBoardAfterBuzzerSetup(page)
   expect(await buzzOnFreshClue(page, 1)).toContain('Team 1')
   expect(await buzzOnFreshClue(page, 3)).toContain('Team 1')
   expect(await buzzOnFreshClue(page, 4)).toContain('Team 1')
@@ -114,12 +87,12 @@ test('CBN-1: an unassigned Buzzer stays silent while a second Buzzer for a team 
   test.skip(info.project.name !== 'desktop-1080p', 'simulated hardware journey runs once (1080p)')
   test.setTimeout(120_000)
   await installWbuzzHardwareSimulator(page, 'ready')
-  await setUpBuzzers(page, { 4: 'Red Rhyolites' })
+  await setUpSavedBuzzerMapping(page, { 4: 'Red Rhyolites' })
   await expect(page.getByTestId('sbs-mapping-layer')).toHaveText('Team mapping saved')
   await expectCheckLabel(page, 3, 'no team yet')
   await expectCheckLabel(page, 4, 'Red Rhyolites')
 
-  await startGameToBoard(page)
+  await startGameToBoardAfterBuzzerSetup(page)
   await page.locator('[data-testid^="cbh-tile-"]:not([disabled])').first().click()
   await page.getByRole('button', { name: 'Show prompt on display' }).click()
   await armAndStartTimer(page)

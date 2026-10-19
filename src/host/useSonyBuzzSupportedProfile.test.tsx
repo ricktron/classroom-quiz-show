@@ -5,7 +5,14 @@ import { createTeamDefinitions } from '../game/teams/definition'
 import { twoTeams } from '../test/teamFixtures'
 import { createMemoryPersistenceAdapter } from '../persistence/memoryAdapter'
 import { loadSonyBuzzMappingRecord } from '../persistence/sonyBuzzMappingStore'
-import { createFakeWebHidTransport } from '../input/webHidTransport'
+import { createFakeWebHidTransport, createFakeHidDevice } from '../input/webHidTransport'
+import { SONY_BUZZ_EXPECTED_BUTTON_COUNT } from '../input/sonyBuzzSupportedProfile'
+import {
+  classSetupSonyBuzzFullyReady,
+  classifyMappingLayer,
+  classifyTeacherSummary,
+} from '../input/sonyBuzzTeacherReadiness'
+import type { GamepadControllerInfo } from './useGamepadBuzzInput'
 
 /**
  * CBN-1: Save team mapping is truthful. A many-to-one mapping (several Buzzers
@@ -102,5 +109,118 @@ describe('Save team mapping (CBN-1)', () => {
       await result.current.clearSavedMapping()
     })
     expect(result.current.mappingIssue).toBeNull()
+  })
+})
+
+/**
+ * FRC-3 — readiness must never outrun usability.
+ *
+ * The previous campaign's report suspected that "ready" could be claimed for a
+ * mapping that cannot be materialized. Adjudicated as NO DEFECT on the
+ * teacher-facing path, and pinned here so that stays true.
+ *
+ * The hook's own `profileReady` boolean DID gate on `associations.length > 0`
+ * rather than on usability — but it had no consumer anywhere in the repository,
+ * so no teacher could ever read it. It has been deleted rather than tightened:
+ * a stricter unused gate is still a trap. The surface a teacher actually reads
+ * is `classifyMappingLayer` -> `classifyTeacherSummary`, and the tests below
+ * exercise THAT, including the exact scenario the report implied.
+ */
+describe('teacher readiness never outruns a usable mapping (FRC-3)', () => {
+  /** A present, supported Wbuzz pad, so readiness turns only on the mapping. */
+  const WBUZZ: readonly GamepadControllerInfo[] = [
+    {
+      controllerIndex: 0,
+      buttonCount: SONY_BUZZ_EXPECTED_BUTTON_COUNT,
+      reportedId: { status: 'available', value: 'Vendor: 054c Product: 1000' },
+      reportedMapping: { status: 'available', value: 'standard' },
+      classification: 'candidate-sony-buzz-wireless',
+    },
+  ]
+
+  function renderWithTeams(gameId: string, teams: ReturnType<typeof createTeamDefinitions>) {
+    const persistenceAdapter = createMemoryPersistenceAdapter()
+    const transport = createFakeWebHidTransport({
+      available: true,
+      granted: [createFakeHidDevice()],
+    })
+    const hook = renderHook(
+      (props: { gameId: string; teams: ReturnType<typeof createTeamDefinitions> }) =>
+        useSonyBuzzSupportedProfile({
+          gameId: props.gameId,
+          teams: props.teams,
+          controllers: WBUZZ,
+          transport,
+          persistenceAdapter,
+        }),
+      { initialProps: { gameId, teams } },
+    )
+    return { ...hook, persistenceAdapter, transport }
+  }
+
+  const summaryFor = (mappingStatus: string, associationCount: number) =>
+    classifyTeacherSummary({
+      receiver: 'connected',
+      controllers: 'responding',
+      mapping: classifyMappingLayer(mappingStatus, associationCount),
+    })
+
+  it('does not claim readiness while the saved mapping is still being read', () => {
+    // The scenario the report implied: the loaded game changes to one with
+    // different team ids, so until the read settles the associations still name
+    // the previous game's teams and nothing can be materialized for this game.
+    const summary = summaryFor('loading', 2)
+    expect(summary).not.toBe('sony-buzz-ready')
+    expect(classSetupSonyBuzzFullyReady(summary)).toBe(false)
+  })
+
+  it('does not claim readiness for a stale or unusable saved mapping', () => {
+    for (const status of ['stale', 'malformed', 'unsupported-version'] as const) {
+      const summary = summaryFor(status, 2)
+      expect(summary).not.toBe('sony-buzz-ready')
+      expect(classSetupSonyBuzzFullyReady(summary)).toBe(false)
+    }
+  })
+
+  it('does not claim readiness with no Buzzer assigned at all', () => {
+    const summary = summaryFor('ready', 0)
+    expect(summary).not.toBe('sony-buzz-ready')
+    expect(classSetupSonyBuzzFullyReady(summary)).toBe(false)
+  })
+
+  it('claims readiness only for a saved mapping with Buzzers assigned', () => {
+    const summary = summaryFor('ready', 2)
+    expect(summary).toBe('sony-buzz-ready')
+    expect(classSetupSonyBuzzFullyReady(summary)).toBe(true)
+  })
+
+  it('materializes nothing for a game whose teams the associations do not name', async () => {
+    const OTHER_TEAMS = createTeamDefinitions([
+      { id: 'amber', name: 'Amber', accent: 'amber' },
+      { id: 'violet', name: 'Violet', accent: 'violet' },
+    ])
+    const { result, rerender } = renderWithTeams('game-1', TEAMS)
+    await waitFor(() => expect(result.current.mappingStatus).toBe('absent'))
+    expect(result.current.associations.length).toBeGreaterThan(0)
+
+    act(() => {
+      rerender({ gameId: 'game-2', teams: OTHER_TEAMS })
+    })
+
+    // Associations still name the old teams, so nothing is handed to gameplay —
+    // and `mappingStatus` is `loading`, which the teacher summary reports as not
+    // ready. The two facts agree.
+    expect(result.current.associations.length).toBeGreaterThan(0)
+    expect(result.current.materializedMapping.bindings).toHaveLength(0)
+    expect(summaryFor(result.current.mappingStatus, result.current.associations.length)).not.toBe(
+      'sony-buzz-ready',
+    )
+  })
+
+  it('hands gameplay a usable mapping once a Buzzer is assigned', async () => {
+    const { result } = renderWithTeams('game-1', TEAMS)
+    await waitFor(() => expect(result.current.mappingStatus).toBe('absent'))
+    act(() => result.current.setSlotTeam(3, 'red'))
+    expect(result.current.materializedMapping.bindings.length).toBeGreaterThan(0)
   })
 })

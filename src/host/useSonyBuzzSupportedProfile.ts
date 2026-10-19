@@ -55,7 +55,6 @@ export interface SonyBuzzSupportedProfileApi {
   /** Why the last Save team mapping was refused, in teacher words; null otherwise. */
   readonly mappingIssue: string | null
   readonly wbuzzController: GamepadControllerInfo | null
-  readonly profileReady: boolean
   readonly connect: () => Promise<void>
   readonly disableKeepAlive: () => void
   readonly setSlotTeam: (slotId: SonyBuzzSlotId, teamId: string | null) => void
@@ -182,13 +181,6 @@ export function useSonyBuzzSupportedProfile({
     return result.ok ? result.mapping : EMPTY_GAMEPAD_MAPPING
   }, [wbuzzController, associations, teams])
 
-  const profileReady =
-    (transportSnap.health === 'healthy' || transportSnap.health === 'degraded') &&
-    wbuzzController != null &&
-    associations.length > 0 &&
-    mappingStatus !== 'stale' &&
-    mappingStatus !== 'unsupported-version'
-
   const setSlotTeam = useCallback((slotId: SonyBuzzSlotId, teamId: string | null) => {
     setMappingIssue(null)
     setAssociations((current) => {
@@ -240,7 +232,6 @@ export function useSonyBuzzSupportedProfile({
     materializedMapping,
     mappingIssue,
     wbuzzController,
-    profileReady,
     connect: () => lifecycleRef.current!.connect(),
     disableKeepAlive: () => lifecycleRef.current!.disable(),
     setSlotTeam,

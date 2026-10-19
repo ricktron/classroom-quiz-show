@@ -299,11 +299,30 @@ export function gamepadControlForTeamAction(
 }
 
 /**
+ * How many controls are currently bound to one team for one action.
+ *
+ * More than one is legitimate — the supported Sony profile maps Buzzer slot →
+ * team many-to-one (CBN-1). It matters because the generic per-team controls
+ * express exactly ONE control per team: `withGamepadControlForTeamAction`
+ * replaces every binding for that team and action, so a singular generic edit
+ * beside a shared-team mapping would silently unassign the rest (FRC-3).
+ */
+export function teamActionBindingCount(
+  mapping: GamepadMapping,
+  teamId: string,
+  action: LocalInputAction,
+): number {
+  return mapping.bindings.filter(
+    (binding) => binding.teamId === teamId && sameLocalInputAction(binding.action, action),
+  ).length
+}
+
+/**
  * Return a mapping with one team's binding for one action set (or cleared with
  * `null`).
  *
  * PURE: it builds a new mapping and never mutates the input. It REPLACES that
- * team's existing binding for that action rather than adding a second — but it
+ * team's existing binding(s) for that action rather than adding a second — but it
  * does NOT steal a control already used by another team or another action, so the
  * result can still be invalid and the caller must validate. Refusing to repair
  * silently is the point, and it is why a conflicting capture is reported to the

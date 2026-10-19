@@ -15,6 +15,9 @@ import {
   type GamepadMapping,
   type GamepadMappingIssue,
   type GamepadMappingValidationOptions,
+  teamActionBindingCount,
+  GAMEPAD_MAPPING_VERSION,
+  sameLocalInputAction,
 } from '../input/gamepadMapping'
 import { controllerLabel, type GamepadSource } from '../input/gamepadSource'
 import { GAMEPAD_IGNORE_MESSAGE } from '../input/gamepadAdapter'
@@ -390,6 +393,55 @@ export function GamepadInputHostPanel({
   const latestMapping = useRef(mapping)
   latestMapping.current = mapping
 
+  /**
+   * The generic per-team controls express exactly ONE control per team, and
+   * applying one replaces EVERY binding for that team and action. Beside a
+   * shared-team mapping (several Buzzers buzzing one team, CBN-1) a singular
+   * generic edit therefore unassigned the rest for the session while the copy
+   * described assigning or clearing one button. It now fails closed and routes
+   * the teacher to the surface that can express a shared mapping.
+   *
+   * Covers EVERY action, not only the primary buzz. The supported profile binds
+   * all five Sony colours per slot, so the identical replace-all destruction
+   * exists for each; and the secondary colours are not inert — they drive team
+   * NAME SELECTION in Class Setup (`src/input/sonyNameSelection.ts`), so losing
+   * them leaves a handset whose colour buttons silently do nothing.
+   *
+   * This does not disturb ADR-019 §6 / CBN-1, which settled that the VALIDATOR
+   * must not refuse such an edit (`onePrimaryOnlyFor`). That scoping is intact;
+   * this is a separate, later guard against destroying bindings the edit never
+   * described.
+   */
+  const sharedTeamEditRefusal = useCallback(
+    (current: GamepadMapping, teamId: string, action: LocalInputAction): string | null => {
+      const count = teamActionBindingCount(current, teamId, action)
+      if (count <= 1) return null
+      const label = publicTeamDisplayName(
+        game,
+        teamId,
+        findTeamById(teams, teamId)?.name ?? teamId,
+      )
+      const scope = sameLocalInputAction(action, PRIMARY_BUZZ)
+        ? 'buzzers assigned'
+        : 'buzzers assigned for this action'
+      return `${label} has ${count} ${scope}. Change them in Buzzer setup, under Class Setup, so one change here cannot unassign the others.`
+    },
+    [game, teams],
+  )
+
+  /**
+   * The guided setup's view of the guard: it edits one team's buzz control, so
+   * it asks the same question `onCapture` and per-team Clear ask. One callback
+   * rather than the same arrow at each render site, so the two postures cannot
+   * drift apart — they already did once, and only the setup-posture detector
+   * caught it.
+   */
+  const guidedSharedTeamEditRefusal = useCallback(
+    (teamId: string): string | null =>
+      sharedTeamEditRefusal(latestMapping.current, teamId, PRIMARY_BUZZ),
+    [sharedTeamEditRefusal],
+  )
+
   const onCapture = useCallback(
     (control: GamepadControlRef) => {
       const pending = latestCapture.current
@@ -401,6 +453,16 @@ export function GamepadInputHostPanel({
       }
       if (pending.mode !== 'capturing') return
       setCapture({ mode: 'idle' })
+
+      const shared = sharedTeamEditRefusal(
+        latestMapping.current,
+        pending.teamId,
+        pending.action,
+      )
+      if (shared !== null) {
+        setCaptureMessage(shared)
+        return
+      }
 
       const next = withGamepadControlForTeamAction(
         latestMapping.current,
@@ -427,7 +489,7 @@ export function GamepadInputHostPanel({
         } for ${actionLabel(pending.action).toLowerCase()}.`,
       )
     },
-    [teams],
+    [sharedTeamEditRefusal, teams],
   )
 
   const onOutcome = useCallback((outcome: GamepadBuzzOutcome) => {
@@ -488,14 +550,44 @@ export function GamepadInputHostPanel({
       .join(';')}`
   }, [sony.materializedMapping, sony.wbuzzController?.controllerIndex])
 
+  /**
+   * The exact controls the supported profile last applied, so it can withdraw
+   * its OWN bindings and nothing else (§8: one mutable resource, one
+   * authoritative lifecycle owner).
+   *
+   * Keyed by controller + button, not by controller alone: a teacher may bind a
+   * free button on the Wbuzz pad itself through the generic controls, and that
+   * binding is theirs, not this owner's.
+   */
+  const appliedProfileControlsRef = useRef<ReadonlySet<string> | null>(null)
+  const controlKey = (binding: { controllerIndex: number; buttonIndex: number }) =>
+    `${binding.controllerIndex}:${binding.buttonIndex}`
+
   useEffect(() => {
-    if (sony.materializedMapping.bindings.length === 0) return
-    // Buzzer slot → team is many-to-one (CBN-1): several Buzzers may share a team.
-    const validation = validateGamepadMapping(sony.materializedMapping, teams, {
-      allowSharedTeamPrimary: true,
+    const materialized = sony.materializedMapping
+    if (materialized.bindings.length > 0) {
+      // Buzzer slot → team is many-to-one (CBN-1): several Buzzers may share a team.
+      const validation = validateGamepadMapping(materialized, teams, {
+        allowSharedTeamPrimary: true,
+      })
+      if (!validation.ok) return
+      appliedProfileControlsRef.current = new Set(validation.mapping.bindings.map(controlKey))
+      setMapping(validation.mapping)
+      return
+    }
+    // The supported profile now maps nothing — the teacher unassigned every
+    // Buzzer, or the mapping stopped being materializable. Visible assignment
+    // state and the live gameplay mapping must agree IMMEDIATELY, so withdraw
+    // the controls this profile applied instead of leaving the previous Buzzers
+    // buzzing until a reload.
+    const owned = appliedProfileControlsRef.current
+    if (owned === null) return
+    appliedProfileControlsRef.current = null
+    setMapping((current) => {
+      const kept = current.bindings.filter((binding) => !owned.has(controlKey(binding)))
+      if (kept.length === current.bindings.length) return current
+      return { version: GAMEPAD_MAPPING_VERSION, bindings: kept }
     })
-    if (!validation.ok) return
-    setMapping(validation.mapping)
   }, [sonyMappingKey, sony.materializedMapping, teams])
 
   useGamepadBuzzInput({
@@ -517,6 +609,26 @@ export function GamepadInputHostPanel({
 
   const applyMapping = useCallback(
     (next: GamepadMapping, editedTeamId?: string, editedAction: LocalInputAction = PRIMARY_BUZZ): boolean => {
+      /*
+        The guided handset setup is the THIRD generic write path (after capture
+        and per-team Clear), and `previewSonyBuzzApply` replaces every binding the
+        staged team holds for all five recipe actions at once. Unguarded it
+        destroyed a shared mapping AND reported success, which is worse than the
+        two paths that merely did nothing. Guarded here as well as at the guided
+        call site, so a future caller cannot reopen it.
+
+        `Clear all controller buttons` passes no `editedTeamId` and is deliberately
+        unaffected: it is an explicitly plural control, and its own disagreement
+        with Buzzer setup is recorded as open.
+      */
+      if (editedTeamId !== undefined) {
+        const shared = sharedTeamEditRefusal(latestMapping.current, editedTeamId, editedAction)
+        if (shared !== null) {
+          setIssues([])
+          setCaptureMessage(shared)
+          return false
+        }
+      }
       const validation = validateGamepadMapping(
         next,
         teams,
@@ -530,7 +642,7 @@ export function GamepadInputHostPanel({
       setMapping(validation.mapping)
       return true
     },
-    [teams],
+    [sharedTeamEditRefusal, teams],
   )
 
   const onSonyCapturingChange = useCallback((next: boolean) => {
@@ -616,6 +728,7 @@ export function GamepadInputHostPanel({
           diagnosticsStatus={diagnostics.status}
           activeMapping={mapping}
           onApplyMapping={applyMapping}
+          sharedTeamEditRefusal={guidedSharedTeamEditRefusal}
           capturing={capture.mode === 'sony-setup'}
           onCapturingChange={onSonyCapturingChange}
           testMode={testMode}
@@ -821,13 +934,24 @@ export function GamepadInputHostPanel({
                 aria-label={`Clear the controller button for ${teamLabel}`}
                 disabled={control === null}
                 onClick={() => {
+                  const shared = sharedTeamEditRefusal(mapping, team.id, pendingAction)
+                  if (shared !== null) {
+                    setCaptureMessage(shared)
+                    return
+                  }
                   const cleared = applyMapping(
                     withGamepadControlForTeamAction(mapping, team.id, pendingAction, null),
                     team.id,
                     pendingAction,
                   )
-                  // Say "cleared" only when it was (CBN-1 review: no false success copy).
-                  setCaptureMessage(cleared ? `Controller button cleared for ${teamLabel}.` : null)
+                  // Say "cleared" only when it was (CBN-1 review: no false success
+                  // copy). A `false` now means either validation refused it — whose
+                  // reason renders separately in `gih-issues` — or the shared-team
+                  // guard refused it, where `applyMapping` has already set the
+                  // message AND that message is the whole explanation. Nulling
+                  // unconditionally would erase it, which on a campaign about
+                  // silent destruction is the one thing this must not do.
+                  if (cleared) setCaptureMessage(`Controller button cleared for ${teamLabel}.`)
                 }}
               >
                 Clear
@@ -869,6 +993,7 @@ export function GamepadInputHostPanel({
         diagnosticsStatus={diagnostics.status}
         activeMapping={mapping}
         onApplyMapping={applyMapping}
+        sharedTeamEditRefusal={guidedSharedTeamEditRefusal}
         capturing={capture.mode === 'sony-setup'}
         onCapturingChange={onSonyCapturingChange}
         testMode={testMode}
