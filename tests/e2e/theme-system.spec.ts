@@ -20,8 +20,48 @@ function hostDisplayOpener(page: Page) {
   return page.getByTestId('host-chrome-display')
 }
 
-async function themeId(page: Page): Promise<string | null> {
-  return page.locator('html').getAttribute('data-theme')
+/*
+  The theme marker is read through a LOCATOR, never through a one-shot
+  `getAttribute`, so the only ergonomic assertion is Playwright's retrying
+  `await expect(...).toHaveAttribute(...)`.
+
+  `data-theme` is applied to <html> by a ThemeProvider layout effect
+  (`src/theme/ThemeProvider.tsx`), i.e. after React mounts — so it is simply
+  absent for a real window after the document `load` event, and
+  `page.waitForLoadState()` resolves on `load`. The previous helper returned
+  `Promise<string | null>` and every call site wrapped it in a bare
+  `expect(await themeId(page)).toBe(...)`, which does not auto-retry. Observed
+  in a full 1089-test run at `--retries=0`, project `projector-720p`:
+  `theme-system.spec.ts:71`, "Expected: \"high-contrast\" / Received: null" —
+  exactly that window. Running the same test 20x in isolation passed 20/20, so
+  it only loses the race under full-suite parallel load.
+
+  Same defect class as PR #176 (FRC-1 R2), and every other spec in `tests/e2e`
+  that reads `data-theme` already uses the retrying form; this file was the
+  sole outlier. NOT fixed by adding retries, a sleep, a longer timeout, or by
+  accepting `null`.
+
+  Reads deliberately LEFT one-shot, because no window exists in which they hold
+  the wrong value:
+    - `popup.url()` / `first.url()` — settled synchronous property reads behind
+      `waitForLoadState` / `waitForURL`, and the validated theme is in the URL
+      before the window loads;
+    - `cssVar` for `--pulse-opacity-min`, `--state-timer-urgent`,
+      `--state-expired` and `--fg-disabled` — all defined on bare `:root` as
+      well as under both theme selectors, and asserted only as non-empty;
+    - the host `--fg-*` / `--surface-*` / `--border-*` pairs, which run after
+      `openHostTheme` has already awaited a visible Theme group (so the provider
+      has mounted) with Default checked, where `:root` and
+      `:root[data-theme='default']` carry identical values;
+    - the pure `contrastRatio` arithmetic and the two `page.evaluate` DOM
+      probes, which measure the document rather than theme state.
+*/
+function themeMarker(page: Page) {
+  return page.locator('html')
+}
+
+async function expectTheme(page: Page, expected: string | RegExp): Promise<void> {
+  await expect(themeMarker(page)).toHaveAttribute('data-theme', expected)
 }
 
 async function cssVar(page: Page, name: string): Promise<string> {
@@ -59,7 +99,7 @@ test.describe('host selector and display launch', () => {
   }) => {
     await openHostTheme(page)
     await page.getByRole('radio', { name: 'High contrast' }).check()
-    expect(await themeId(page)).toBe('high-contrast')
+    await expectTheme(page, 'high-contrast')
 
     const display = hostDisplayOpener(page)
     await expect(display).toHaveText(/open display|focus display/i)
@@ -67,8 +107,11 @@ test.describe('host selector and display launch', () => {
     await display.click()
     const popup = await popupPromise
     await popup.waitForLoadState()
+    // `popup.url()` is a settled synchronous property read, not DOM state: the
+    // opener puts the validated theme in the URL before the window loads. Left
+    // as a plain assertion deliberately.
     expect(popup.url()).toContain('#/display?theme=high-contrast')
-    expect(await themeId(popup)).toBe('high-contrast')
+    await expectTheme(popup, 'high-contrast')
     await expect(popup.getByRole('button')).toHaveCount(0)
     await expect(popup.getByRole('radio')).toHaveCount(0)
   })
@@ -85,18 +128,18 @@ test.describe('host selector and display launch', () => {
     const first = await firstPopupPromise
     await first.waitForLoadState()
     expect(first.url()).toContain('#/display?theme=high-contrast')
-    expect(await themeId(first)).toBe('high-contrast')
+    await expectTheme(first, 'high-contrast')
 
     await ensureHostMoreOpen(page)
     await page.getByRole('radio', { name: 'Default' }).check()
-    expect(await themeId(page)).toBe('default')
+    await expectTheme(page, 'default')
     // Chrome uses a named Display window (Focus display). Re-click navigates the
     // same browsing context with the currently validated theme query.
     await display.click()
     await first.waitForURL(/#\/display\?theme=default/)
     await first.waitForLoadState()
     expect(first.url()).toContain('#/display?theme=default')
-    expect(await themeId(first)).toBe('default')
+    await expectTheme(first, 'default')
   })
 
   test('direct display and hostile query values fail closed safely', async ({ page }) => {
@@ -104,23 +147,25 @@ test.describe('host selector and display launch', () => {
     await expect(
       page.getByRole('heading', { name: /game display ready/i }),
     ).toBeVisible()
-    const direct = await themeId(page)
-    expect(direct === 'default' || direct === 'high-contrast').toBeTruthy()
+    // Either resolution is correct here — a direct `#/display` with no query may
+    // be seeded from `prefers-contrast: more`. Expressed as a pattern so the
+    // read still retries instead of sampling once.
+    await expectTheme(page, /^(default|high-contrast)$/)
 
     await page.goto('about:blank')
     await page.goto('#/display?theme=NOT-A-THEME')
     await expect(
       page.getByRole('heading', { name: /game display ready/i }),
     ).toBeVisible()
-    expect(await themeId(page)).toBe('default')
+    await expectTheme(page, 'default')
 
     await page.goto('about:blank')
     await page.goto('#/display?theme=javascript:alert(1)')
-    expect(await themeId(page)).toBe('default')
+    await expectTheme(page, 'default')
 
     await page.goto('about:blank')
     await page.goto('#/display?theme=crimson')
-    expect(await themeId(page)).toBe('default')
+    await expectTheme(page, 'default')
   })
 })
 
@@ -129,6 +174,18 @@ test.describe('token application and contrast', () => {
     page,
   }) => {
     await page.goto('#/display?theme=default')
+    /*
+      The marker is awaited before every computed-token read in this test, as a
+      mount barrier. The default values are identical on bare `:root` and on
+      `:root[data-theme='default']` (`src/styles/themes.css`) — deliberately, so
+      first paint stays coherent before the provider mounts — so without the
+      barrier the default half of this test could pass off the `:root` fallback
+      and prove nothing about the theme. The high-contrast half is a real race,
+      not a cosmetic one: `--surface-tile: #0b1220` exists ONLY under
+      `:root[data-theme='high-contrast']`, so a one-shot read before the layout
+      effect returns the `#0a1624` default.
+    */
+    await expectTheme(page, 'default')
     const defaultTile = await cssVar(page, '--surface-tile')
     const defaultEdge = await cssVar(page, '--edge-tile')
     const defaultFg = await cssVar(page, '--fg-primary')
@@ -138,6 +195,7 @@ test.describe('token application and contrast', () => {
 
     await page.goto('about:blank')
     await page.goto('#/display?theme=high-contrast')
+    await expectTheme(page, 'high-contrast')
     const hcTile = await cssVar(page, '--surface-tile')
     const hcEdge = await cssVar(page, '--edge-tile')
     expect(hcTile).toBe('#0b1220')
@@ -201,7 +259,9 @@ test.describe('stress composition', () => {
     // Inject a public-state-shaped scoreboard via DOM harness using the real
     // component mount path is heavy; assert shell overflow and theme marker here,
     // and rely on unit tests for 1/4/5/6/7/8-team fixtures.
-    expect(await themeId(page)).toBe('high-contrast')
+    // Also the mount barrier for the overflow read below, which would otherwise
+    // be measured against a document React had not rendered into yet.
+    await expectTheme(page, 'high-contrast')
     const overflowX = await page.evaluate(() => {
       return document.documentElement.scrollWidth > document.documentElement.clientWidth
     })
