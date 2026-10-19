@@ -76,4 +76,27 @@ installVitestBroadcastChannelPolyfill()
 
 afterEach(() => {
   cleanup()
+  /*
+    Per-test web-storage isolation (FRC-7).
+
+    Vitest isolates a fresh jsdom per FILE, not per test, so `sessionStorage`
+    and `localStorage` persist between the `it`s in one file. That made a
+    full-suite-only flake: `FoundationControls.test.tsx` writes
+    `cqs.buzzersWereReady:<sessionId>:<gameId>` through `rememberBuzzersReady`,
+    and the next test's `FoundationControls` read it back on mount via
+    `buzzersWereReady(buzzerScope)`, so whether it bit depended on async
+    settling order — which shifts with CPU contention.
+
+    Clearing here rather than in one test file keeps every suite honest about
+    what it seeded, and no product code depends on web storage surviving a
+    test. Wrapped because a storage accessor can throw (blocked site data), and
+    a teardown must never be the thing that fails a run.
+  */
+  for (const storage of [globalThis.sessionStorage, globalThis.localStorage]) {
+    try {
+      storage?.clear()
+    } catch {
+      // Unavailable or blocked storage is not a teardown failure.
+    }
+  }
 })
