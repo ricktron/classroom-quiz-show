@@ -122,6 +122,38 @@ describe('ClassroomSetupPanel', () => {
     expect(onSelectedIdentitiesChange).not.toHaveBeenCalled()
   })
 
+  it('Phase 3 R1: follower Names stay read-only — no Selected claim that never reaches the session', () => {
+    const { onSelectedIdentitiesChange } = renderSetup({ leadership: 'follower' })
+    fireEvent.click(screen.getByTestId('readiness-names'))
+    expect(screen.getByTestId('setup-names-read-only')).toHaveTextContent(
+      /another classroom quiz show window is running this class/i,
+    )
+    expect(screen.getByTestId('team-name-selection-board')).toHaveAttribute('data-read-only', 'true')
+    expect(screen.getByTestId('tnsb-manual-red')).toBeDisabled()
+    expect(screen.getByTestId('tnsb-choice-red-0')).toBeDisabled()
+    fireEvent.click(screen.getByTestId('tnsb-choice-red-0'))
+    expect(onSelectedIdentitiesChange).not.toHaveBeenCalled()
+    expect(screen.queryByTestId('tnsb-claimed-red')).toBeNull()
+  })
+
+  it('Phase 3 R1: unknown leadership still publishes typed names (storage-unavailable stays usable)', () => {
+    const { onSelectedIdentitiesChange } = renderSetup({ leadership: 'unknown' })
+    fireEvent.click(screen.getByTestId('readiness-names'))
+    expect(screen.queryByTestId('setup-names-read-only')).toBeNull()
+    fireEvent.change(screen.getByTestId('tnsb-manual-red'), { target: { value: 'Comet Crew' } })
+    fireEvent.blur(screen.getByTestId('tnsb-manual-red'))
+    expect(onSelectedIdentitiesChange).toHaveBeenCalled()
+    expect(screen.getByTestId('tnsb-claimed-red')).toHaveTextContent('Selected: Comet Crew')
+  })
+
+  it('Phase 3 R1: leader publishes name-bank selection', () => {
+    const { onSelectedIdentitiesChange } = renderSetup({ leadership: 'leader' })
+    fireEvent.click(screen.getByTestId('readiness-names'))
+    fireEvent.click(screen.getByTestId('tnsb-choice-red-0'))
+    expect(onSelectedIdentitiesChange).toHaveBeenCalled()
+    expect(screen.getByTestId('tnsb-claimed-red')).toHaveTextContent(/^Selected:/)
+  })
+
   it('keeps Sony copy free of WebHID and profile identifiers', () => {
     renderSetup()
     fireEvent.click(screen.getByTestId('readiness-names'))

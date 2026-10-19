@@ -321,17 +321,14 @@ const NON_COMMAND_HOST_CONTROLS: readonly string[] = [
  * picker's `<label className="btn">` — the exact affordance class this repair
  * had to fix — and miss `<select>` / `<textarea>` / `<input>` controls entirely.
  *
- * KNOWN GAP, recorded here rather than implied away. This sweeps ONE posture.
- * The SETUP posture is not inventoried, and ten further affordances become
- * actionable there in a demoted window (`host-change-game`, the five
- * `readiness-*` tasks, `setup-revisit-names`, `setup-open-display`,
- * `setup-reveal-buzzers`, `setup-skip-buzzers`) — all verified non-command, but
- * none checked by this test. Setup is also where `ClassroomSetupPanel` renders,
- * whose team-name controls stay actionable in a window that cannot dispatch,
- * show "Selected: <name>", and silently never reach the session. That is a real
- * OPEN defect, not an allowlist omission, so it is deliberately not given an
- * entry below. Still invisible either way: a `div`/`li` with a click handler and
- * no role, and `contenteditable`.
+ * This sweeps ONE posture (PLAY). The SETUP posture is not inventoried, and ten
+ * further affordances become actionable there in a demoted window
+ * (`host-change-game`, the five `readiness-*` tasks, `setup-revisit-names`,
+ * `setup-open-display`, `setup-reveal-buzzers`, `setup-skip-buzzers`) — all
+ * verified non-command, but none checked by this test. Class Setup team-name
+ * silent loss on a follower / dispatch-unavailable window was closed as Phase 3
+ * R1 (`ClassroomSetupPanel` + `canPublishSessionTeamNames`). Still invisible
+ * either way: a `div`/`li` with a click handler and no role, and `contenteditable`.
  */
 /**
  * A stable identifier for an affordance: its `data-testid` when it has one,

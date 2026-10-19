@@ -14,6 +14,14 @@ export const FOLLOWER_HOME_WRITE_BLOCKED_MESSAGE =
 export const FOLLOWER_HOME_READ_ONLY_DETAIL =
   'This window is read-only until that window closes. Resume class, Start fresh, New Game, imports, and changes to your games are turned off here.'
 
+/**
+ * Class Setup Names when this window is a known follower.
+ * Session team identities are Host mutations; a follower must not show
+ * "Selected: …" for a name that never reaches the session (Phase 3 R1).
+ */
+export const FOLLOWER_CLASS_SETUP_NAMES_MESSAGE =
+  'Another Classroom Quiz Show window is running this class. Team names cannot be changed here.'
+
 export const UNKNOWN_WRITE_BLOCKED_MESSAGE =
   'Your edits could not be saved. They are still open here.'
 
@@ -22,6 +30,17 @@ export const UNREADABLE_SESSION_TEACHER_MESSAGE =
 
 export function canPersistMutations(leadership: PersistLeadership): boolean {
   return leadership === 'leader'
+}
+
+/**
+ * Whether Class Setup may publish Session team names into the live session.
+ *
+ * Matches session-command availability (`leadership !== 'follower'`): a storage-
+ * unavailable / unknown window must remain usable and must not silently drop a
+ * "Selected" name. A known follower is permanent read-only for this surface.
+ */
+export function canPublishSessionTeamNames(leadership: PersistLeadership): boolean {
+  return leadership !== 'follower'
 }
 
 export function rejectIfCannotPersist(

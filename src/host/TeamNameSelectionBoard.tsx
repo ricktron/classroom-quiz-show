@@ -23,6 +23,11 @@ export interface TeamNameSelectionBoardProps {
    * and a typed name can be cleared. Defaults to true (unchanged behavior).
    */
   readonly nameBankAvailable?: boolean
+  /**
+   * Known read-only Host (follower). Disables every name control so the board
+   * cannot show "Selected: …" for a mutation that will never reach the session.
+   */
+  readonly readOnly?: boolean
   readonly reducedMotion?: boolean
   readonly highContrast?: boolean
   readonly grayscale?: boolean
@@ -44,6 +49,7 @@ export function TeamNameSelectionBoard({
   onReset,
   onDraft,
   nameBankAvailable = true,
+  readOnly = false,
   reducedMotion = false,
   highContrast = false,
   grayscale = false,
@@ -56,6 +62,7 @@ export function TeamNameSelectionBoard({
       data-high-contrast={highContrast ? 'true' : 'false'}
       data-grayscale={grayscale ? 'true' : 'false'}
       data-name-bank={nameBankAvailable ? 'available' : 'none'}
+      data-read-only={readOnly ? 'true' : 'false'}
     >
       {views.map((view) => (
         <article
@@ -93,7 +100,7 @@ export function TeamNameSelectionBoard({
                       data-testid={`tnsb-choice-${view.teamId}-${choiceIndex}`}
                       data-color={color}
                       data-ordinal={choiceIndex + 1}
-                      disabled={view.claimedName !== null}
+                      disabled={readOnly || view.claimedName !== null}
                       aria-label={`${choiceColorLabel(color, choiceIndex)}: ${name}`}
                       onClick={() => onClaim(view.teamId, choiceIndex)}
                     >
@@ -114,7 +121,7 @@ export function TeamNameSelectionBoard({
                   type="button"
                   className="btn btn--secondary"
                   data-testid={`tnsb-cycle-${view.teamId}`}
-                  disabled={view.claimedName !== null}
+                  disabled={readOnly || view.claimedName !== null}
                   onClick={() => onCycle(view.teamId)}
                 >
                   More names
@@ -123,6 +130,7 @@ export function TeamNameSelectionBoard({
                   type="button"
                   className="btn btn--secondary"
                   data-testid={`tnsb-reset-${view.teamId}`}
+                  disabled={readOnly}
                   onClick={() => onReset(view.teamId)}
                 >
                   Choose again
@@ -134,6 +142,7 @@ export function TeamNameSelectionBoard({
                   type="button"
                   className="btn btn--secondary"
                   data-testid={`tnsb-reset-${view.teamId}`}
+                  disabled={readOnly}
                   onClick={() => onReset(view.teamId)}
                 >
                   Clear name
@@ -146,6 +155,7 @@ export function TeamNameSelectionBoard({
               claimedName={view.claimedName}
               onManual={onManual}
               onDraft={onDraft}
+              readOnly={readOnly}
             />
           </div>
         </article>
@@ -159,23 +169,26 @@ function ManualNameField({
   claimedName,
   onManual,
   onDraft,
+  readOnly = false,
 }: {
   readonly teamId: string
   readonly claimedName: string | null
   readonly onManual: (teamId: string, name: string) => void
   readonly onDraft?: (teamId: string, draft: string | null) => void
+  readonly readOnly?: boolean
 }) {
   const [draft, setDraft] = useState(claimedName ?? '')
   // Report the field's real text on mount (a remount resets it to the claimed
   // name) and withdraw it on unmount, so Class Setup only ever counts text that
   // is visibly typed in a mounted field (never a hidden or stale draft).
   useEffect(() => {
+    if (readOnly) return
     onDraft?.(teamId, claimedName ?? '')
     return () => onDraft?.(teamId, null)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- teamId and claimedName are part of this field's key, so they never change for one mount
   }, [])
   const commit = () => {
-    if (draft.trim().length === 0) return
+    if (readOnly || draft.trim().length === 0) return
     onManual(teamId, draft)
   }
   return (
@@ -186,7 +199,10 @@ function ManualNameField({
         data-testid={`tnsb-manual-${teamId}`}
         value={draft}
         maxLength={40}
+        disabled={readOnly}
+        readOnly={readOnly}
         onChange={(event) => {
+          if (readOnly) return
           setDraft(event.target.value)
           onDraft?.(teamId, event.target.value)
         }}
