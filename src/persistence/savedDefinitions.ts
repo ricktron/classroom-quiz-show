@@ -60,21 +60,28 @@ export async function listSavedDefinitionRecords(
   adapter: PersistenceAdapter,
 ): Promise<PersistenceResult<readonly SavedDefinitionRecord[]>> {
   let parsed: SavedDefinitionRecord[] = []
+  let corruptRecordMessage: string | null = null
   const result = await adapter.withTransaction([OBJECT_STORE_SAVED_DEFINITIONS], async (tx) => {
     const records = await tx.getAll(OBJECT_STORE_SAVED_DEFINITIONS)
     const next: SavedDefinitionRecord[] = []
     for (const record of records) {
       const checked = readSavedDefinitionRecord(record)
-      if (!checked.ok) throw new PersistenceDataError(checked.message)
+      if (!checked.ok) {
+        corruptRecordMessage = checked.message
+        throw new PersistenceDataError(checked.message)
+      }
       next.push(checked.value)
     }
     next.sort((a, b) => a.title.localeCompare(b.title) || a.gameId.localeCompare(b.gameId))
     parsed = next
   })
   if (!result.ok) {
-    return result.code === 'transaction-failed'
-      ? persistenceErr('corrupt', 'A saved definition record is corrupt.')
-      : result
+    // Only accuse corruption when a row failed the record check — not when the
+    // transaction itself failed for an infrastructure reason (Phase 3 R5).
+    if (corruptRecordMessage !== null) {
+      return persistenceErr('corrupt', 'A saved definition record is corrupt.')
+    }
+    return result
   }
   return persistenceOk(parsed)
 }
@@ -108,11 +115,15 @@ export async function saveDefinition(
         : serializeAuthoringDraft(options.draft)
 
   let outcome: 'created' | 'noop' | 'replaced' | 'needs-replace' = 'created'
+  /** Set only when the work callback saw unreadable existing bytes (not infra failure). */
+  let corruptExistingMessage: string | null = null
   const result = await adapter.withTransaction([OBJECT_STORE_SAVED_DEFINITIONS], async (tx) => {
     const existing = await tx.get(OBJECT_STORE_SAVED_DEFINITIONS, definition.id)
     const existingRecord = existing === undefined ? null : readSavedDefinitionRecord(existing)
     if (existing !== undefined && !existingRecord?.ok) {
-      throw new PersistenceDataError(existingRecord?.message ?? 'Existing saved definition is corrupt.')
+      corruptExistingMessage =
+        existingRecord?.message ?? 'Existing saved definition is corrupt.'
+      throw new PersistenceDataError(corruptExistingMessage)
     }
 
     const preservedDraft =
@@ -142,7 +153,10 @@ export async function saveDefinition(
       return
     }
     const checked = existingRecord
-    if (!checked || !checked.ok) throw new PersistenceDataError('The existing saved definition record is corrupt.')
+    if (!checked || !checked.ok) {
+      corruptExistingMessage = 'The existing saved definition record is corrupt.'
+      throw new PersistenceDataError(corruptExistingMessage)
+    }
     if (
       checked.value.jsonText === record.jsonText &&
       (checked.value.authoringDraftJson ?? '') === (record.authoringDraftJson ?? '')
@@ -159,9 +173,19 @@ export async function saveDefinition(
   })
 
   if (!result.ok) {
-    return result.code === 'transaction-failed'
-      ? persistenceErr('corrupt', 'The existing saved definition record is corrupt.')
-      : result
+    // A refused write is not evidence the Game record is corrupt (Phase 3 R5).
+    if (corruptExistingMessage !== null) {
+      return persistenceErr('corrupt', corruptExistingMessage)
+    }
+    if (result.code === 'transaction-failed') {
+      return persistenceErr(
+        'transaction-failed',
+        options.mode === 'replace'
+          ? 'The saved game could not be replaced. Existing saved games were left as they were.'
+          : 'The game could not be saved. Existing saved games were left as they were.',
+      )
+    }
+    return result
   }
   return persistenceOk(outcome)
 }
@@ -192,17 +216,22 @@ export async function loadLibraryRecord(
   registry?: RoundRegistry,
 ): Promise<PersistenceResult<LibraryRecord>> {
   const loaded: { record?: SavedDefinitionRecord } = {}
+  let corruptRecordMessage: string | null = null
   const result = await adapter.withTransaction([OBJECT_STORE_SAVED_DEFINITIONS], async (tx) => {
     const stored = await tx.get(OBJECT_STORE_SAVED_DEFINITIONS, gameId)
     if (stored === undefined) return
     const checked = readSavedDefinitionRecord(stored)
-    if (!checked.ok) throw new PersistenceDataError(checked.message)
+    if (!checked.ok) {
+      corruptRecordMessage = checked.message
+      throw new PersistenceDataError(checked.message)
+    }
     loaded.record = checked.value
   })
   if (!result.ok) {
-    return result.code === 'transaction-failed'
-      ? persistenceErr('corrupt', 'The saved definition record is corrupt.')
-      : result
+    if (corruptRecordMessage !== null) {
+      return persistenceErr('corrupt', 'The saved definition record is corrupt.')
+    }
+    return result
   }
   const record = loaded.record
   if (record === undefined) return persistenceErr('not-found', 'No saved definition exists for that game id.')
