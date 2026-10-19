@@ -1,8 +1,39 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import type { ComponentProps } from 'react'
 import { DiagnosticReportPanel } from './DiagnosticReportPanel'
 import * as copyModule from './diagnostics/copyDiagnosticText'
+
+/*
+  Per-test isolation for the two globals this file installs.
+
+  The `vi.spyOn(copyModule, 'copyDiagnosticText')` below is covered centrally:
+  `vitest.config.ts` sets `restoreMocks: true`, which restores every spy before
+  each test. It previously leaked, because Vitest gives a fresh jsdom per FILE
+  and nothing here restored it — so whenever the clipboard-failure case ran
+  first, the success case read the leaked 'failed' resolution,
+  `navigator.clipboard.writeText` was never reached, and the assertion failed
+  with "expected 'spy' to be called 1 times, but got 0 times". Reproducible at
+  `--sequence.shuffle --sequence.seed=2` and `=7`; the committed source order
+  passed, which is why CI never saw it.
+
+  `navigator.clipboard` is a different problem and no config option covers it:
+  `unstubGlobals` reverts `vi.stubGlobal`, not `Object.defineProperty`. The
+  success case replaces the whole property with a `vi.fn()`-backed stub, and
+  `restoreMocks` does not touch a plain `vi.fn()`, so without this the stub
+  stayed installed — with its call count — for the rest of the file. The
+  original descriptor is captured at import time, before any test can redefine
+  it, and put back after each test.
+*/
+const ORIGINAL_CLIPBOARD = Object.getOwnPropertyDescriptor(navigator, 'clipboard')
+
+afterEach(() => {
+  if (ORIGINAL_CLIPBOARD) {
+    Object.defineProperty(navigator, 'clipboard', ORIGINAL_CLIPBOARD)
+  } else {
+    delete (navigator as unknown as { clipboard?: unknown }).clipboard
+  }
+})
 
 function renderPanel(
   overrides: Partial<ComponentProps<typeof DiagnosticReportPanel>> = {},
