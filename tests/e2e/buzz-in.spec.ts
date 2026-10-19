@@ -2,6 +2,31 @@ import { test, expect, type Page } from '@playwright/test'
 import { ensureHostMoreOpen } from './helpers/hostMore'
 import { FORBIDDEN_DISPLAY_LABELS } from '../../src/test/leakLabels'
 
+/*
+  The claim-acknowledgement marker (`data-claim-changed` / `bqd--claim-changed`)
+  is deliberately NOT asserted in this spec.
+
+  It is a 420ms transient (`CLAIM_CHANGE_HOLD_MS`, `src/display/BuzzQueueDisplay.tsx`)
+  and this is a long teacher journey: by the time the assertion ran it sat behind
+  several preceding `await expect(...)` polls, each a real browser round-trip, so
+  under load the hold had legitimately expired and the attribute read "false".
+  Observed in a consolidated preflight run on main: `buzz-in.spec.ts:164`,
+  "expect(locator).toHaveAttribute(expected) failed — unexpected value 'false'",
+  in a run that was otherwise 824 passed / 1 failed. The product was correct; the
+  assertion was racing a bounded animation it did not control.
+
+  Removing it loses no coverage, which is the only reason it is removed. The
+  property is owned in two places that pin it deterministically:
+    - `src/display/BuzzQueueDisplay.test.tsx` — fake timers, asserting the set,
+      that a waiting-count change does not cancel it, and the expiry;
+    - `tests/e2e/s05-buzz-active-claim-choreography.spec.ts` — false -> true ->
+      expiry on the projector, asserted immediately after the triggering state
+      injection under a held-acknowledgement harness built for exactly this.
+
+  What this spec still asserts at both points is the semantic outcome: which team
+  is active, that the previous team is gone, and the waiting count.
+*/
+
 /**
  * Slice 8 — local input contract and keyboard buzz-in, end to end in a real
  * browser.
@@ -134,7 +159,6 @@ test('the full buzz-in flow: configure, arm, buzz, promote — mirrored on the p
   await expect(host.getByTestId('lih-active')).toHaveText(TEAM_ONE)
   await expect(display.getByTestId('bqd-active')).toHaveText(TEAM_ONE)
   await expect(display.getByTestId('bqd')).toHaveAttribute('data-status', 'active')
-  await expect(display.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
 
   // ── 5. The timer was interrupted through the Slice 7 seam ─────────────────
   await expect(display.getByTestId('rtd')).toHaveAttribute('data-status', 'interrupted')
@@ -161,8 +185,6 @@ test('the full buzz-in flow: configure, arm, buzz, promote — mirrored on the p
   await expect(host.getByTestId('lih-active')).toHaveText(TEAM_TWO)
   await expect(host.getByTestId('lih-waiting')).toHaveText('Empty')
   await expect(display.getByTestId('bqd-active')).toHaveText(TEAM_TWO)
-  await expect(display.getByTestId('bqd')).toHaveAttribute('data-claim-changed', 'true')
-  await expect(display.getByTestId('bqd')).toHaveClass(/bqd--claim-changed/)
   await expect(display.getByTestId('bqd')).not.toContainText(TEAM_ONE)
   await expect(display.getByTestId('bqd-waiting')).toHaveText('No teams waiting')
   // Marking incorrect moved no points.
