@@ -3,7 +3,8 @@
 - **Document id:** `CQS-POST-MVP-OPPORTUNITY-REGISTER`
 - **Authorization:** `AUTHORIZE-CQS-PLAN-S01-EXPANDED-VISION-DOCUMENTATION-1`
 - **Slice:** `CQS-PLAN-S01` (planning-only)
-- **Last reviewed:** 2026-08-03 (all entries)
+- **Last reviewed:** 2026-10-19 (`CQS-OPP-MULTI-CONTROLLER-TEAMS` Phase 3
+  R2–R4 closure); other entries last reviewed 2026-08-03
 - **Status:** Accepted planning register — **authorizes no implementation**
 
 This is the **canonical authority for deferred capabilities, their
@@ -491,26 +492,23 @@ note only *additional* authority where it exists.
   (it silently destroyed the profile mapping instead) and remains parked here.
   Unassigning every Buzzer also withdraws the applied mapping immediately
   rather than at the next reload.
-- **Known open, not repaired (2026-10-18, FRC-3):** four defects in the same
-  "visible Buzzer state must match the live mapping" family remain, across the
-  three items below.
-  (a) `Clear all controller buttons` AND a per-team Clear on a non-shared team
-  both clear the live mapping while Buzzer setup still shows the slot assigned
-  and the mapping saved — the disagreement FRC-3 closed for the unassign path,
-  in the other direction.
-  (b) The supported profile's *apply* still replaces the whole live mapping, so a
-  generic binding a teacher made on any controller is dropped at the next
-  association change. This also masks FRC-3's withdraw fix in the multi-slot
-  route: unassigning slots one at a time re-runs the apply between each, so the
-  teacher-visible outcome there is unchanged. And because `Clear all` empties
-  the live mapping without telling the profile owner, the profile's record of
-  what it applied can go stale and over-withdraw a later generic binding that
-  happens to occupy a button it once owned.
-  (c) A team row shows only the FIRST of its bindings ("Buzzer 1"), giving no
-  hint that another Buzzer is also mapped to it; the truth appears only in the
-  refusal message after the teacher attempts a change.
-  Each needs an owner decision about destructive copy and row presentation
-  rather than a silent behaviour change.
+- **Closed (2026-10-19, Phase 3 R2–R4 on main `d4908fc…`):** the four defects
+  in the "visible Buzzer state must match the live mapping" family that remained
+  after FRC-3 are repaired on main. No new opportunity ids; parked generic
+  multi-controller capture above is unchanged.
+  (a) Clear / live-mapping divergence — `Clear all controller buttons` and
+  per-team Clear on a non-shared team now keep Buzzer-setup slots aligned with
+  the live mapping (PR
+  [#180](https://github.com/ricktron/classroom-quiz-show/pull/180) →
+  `a7290c3…`).
+  (b) Supported-profile apply — apply preserves unrelated generic bindings
+  instead of wholesale replacement on association change (PR
+  [#181](https://github.com/ricktron/classroom-quiz-show/pull/181) →
+  `a9f6079…`).
+  (c) Multi-Buzzer team row — the normal non-error team row names every mapped
+  Buzzer, not only the first (PR
+  [#182](https://github.com/ricktron/classroom-quiz-show/pull/182) →
+  `d4908fc…`).
 - **Dependencies:** stable physical-controller practice (OADL2-S07
   follow-ups, keep-alive resolution); `CQS-RA2-CONTROLLER-01`.
 - **Trigger:** a real class configuration needs more than four

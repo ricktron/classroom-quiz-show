@@ -267,13 +267,16 @@ preview cannot promise an apply that will be refused). The guided path needed it
 most: it replaces every binding the staged team holds for all five recipe
 actions at once, and reported success while doing so.
 
-**Clear all controller buttons is NOT covered**, and that is deliberate: it is
-an explicitly plural control that honestly describes itself, and it passes no
-edited team, so it cannot trip a per-team guard. It therefore still clears a
-shared team's Buzzers while Buzzer setup continues to show them assigned and
-saved — a known open disagreement recorded under
-`CQS-OPP-MULTI-CONTROLLER-TEAMS`. Settling it is an owner decision about
-destructive copy, not a silent behaviour change. See ADR-019 §6.
+**Clear all controller buttons is NOT covered by the per-team fail-closed
+guard**, and that is deliberate: it is an explicitly plural control that
+honestly describes itself, and it passes no edited team, so it cannot trip a
+per-team guard. **Hardened (2026-10-19, Phase 3 R2):** Clear all now also
+empties Buzzer-setup slot assignments, and per-team Clear unassigns the matching
+Wbuzz slot, so visible setup state and the live mapping agree immediately. The
+prior Clear / slot disagreement recorded under
+`CQS-OPP-MULTI-CONTROLLER-TEAMS` is closed (PR
+[#180](https://github.com/ricktron/classroom-quiz-show/pull/180) →
+`a7290c3…`). See ADR-019 §6.
 
 **"Controller not attached" and "controller has no such button" are NOT validation
 failures.** A mapping made while a controller was plugged in must survive it being
