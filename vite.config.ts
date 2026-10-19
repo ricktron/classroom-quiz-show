@@ -48,13 +48,6 @@ function resolveGitDir(): string | null {
   return target.length > 0 ? resolve(here, target) : null
 }
 
-/**
- * Read a ref, trying the worktree's own gitdir first and then the repository's
- * common directory.
- *
- * A linked worktree keeps `HEAD` locally but shares `refs/` and `packed-refs`
- * with the common dir, so a branch tip generally is NOT under its own gitdir.
- */
 /** Read a file, or null when it is absent or unreadable. */
 function readFileOrNull(path: string): string | null {
   try {
@@ -78,11 +71,20 @@ function readPackedRef(dir: string, ref: string): string | null {
   for (const line of packed.split('\n')) {
     if (line.startsWith('#') || line.startsWith('^')) continue
     const [sha, name] = line.split(' ')
-    if (name === ref && sha) return sha.trim()
+    // Trim BOTH, not just the sha: a CRLF file leaves `name` as "refs/heads/x\r",
+    // which never equals `ref`, and resolution silently degrades to `unknown`.
+    if (name?.trim() === ref && sha) return sha.trim()
   }
   return null
 }
 
+/**
+ * Read a ref, trying the worktree's own gitdir first and then the repository's
+ * common directory.
+ *
+ * A linked worktree keeps `HEAD` locally but shares `refs/` and `packed-refs`
+ * with the common dir, so a branch tip generally is NOT under its own gitdir.
+ */
 function readRef(gitDir: string, ref: string): string | null {
   for (const dir of refSearchDirs(gitDir)) {
     const loose = readFileOrNull(resolve(dir, ref))?.trim()
@@ -92,6 +94,26 @@ function readRef(gitDir: string, ref: string): string | null {
   }
   return null
 }
+
+/**
+ * A resolved value is only usable if it is actually a commit id.
+ *
+ * Without this, the detached-HEAD branch returned the HEAD file's contents
+ * verbatim — so an empty `HEAD` shipped `sourceSha: ""`, and arbitrary prose
+ * shipped that prose, both of which contradict the degrade-to-`'unknown'`
+ * contract this function states for itself. An interrupted git write or a
+ * partially copied tree is enough to produce it.
+ *
+ * It also closes the one real consequence of `resolveGitDir` not constraining
+ * its `gitdir:` target: a hand-crafted pointer could aim at any directory and
+ * have the first line of a file named `HEAD` embedded in the bundle. Validating
+ * the SHAPE neutralises that without constraining the path — which matters,
+ * because a legitimate submodule pointer is RELATIVE (`gitdir: ../.git/modules/x`)
+ * and banning `..` there would break it.
+ */
+const SHA_PATTERN = /^[0-9a-f]{40}$/
+const asSha = (value: string | null | undefined): string | null =>
+  value !== null && value !== undefined && SHA_PATTERN.test(value) ? value : null
 
 function sourceSha(): string {
   if (process.env.CQS_SOURCE_SHA && process.env.CQS_SOURCE_SHA.length > 0) {
@@ -103,14 +125,15 @@ function sourceSha(): string {
   try {
     const gitDir = resolveGitDir()
     if (gitDir === null) return 'unknown'
-    const head = readFileSync(resolve(gitDir, 'HEAD'), 'utf8').trim()
+    const head = readFileOrNull(resolve(gitDir, 'HEAD'))?.trim()
+    if (head === undefined) return 'unknown'
     // Detached HEAD (what a pinned preflight worktree uses) is the sha itself.
-    if (!head.startsWith('ref: ')) return head
+    if (!head.startsWith('ref: ')) return asSha(head) ?? 'unknown'
     const ref = head.slice('ref: '.length).trim()
     if (ref.includes('..') || ref.startsWith('/') || ref.includes('\\')) {
       return 'unknown'
     }
-    return readRef(gitDir, ref) ?? 'unknown'
+    return asSha(readRef(gitDir, ref)) ?? 'unknown'
   } catch {
     return 'unknown'
   }
