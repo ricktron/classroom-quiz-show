@@ -217,7 +217,22 @@ describe('M40: the Final answer reaches the projector only at explicit reveal', 
     store.dispatch({ type: 'REVEAL_FINAL_ANSWER', issuedAt: AT, roundId: ROUND })
 
     expect(phaseOf(store)).toBe('answer-revealed')
-    expect(wire(store)).toContain(ANSWER)
+    /*
+      PRESENCE is asserted on the PUBLISHED edge alone — the last place in this
+      file that still read the dual sweep, and the sibling of the two guards
+      fixed in R3.
+
+      `wire()` includes the raw projection, which carries the answer even when
+      the published snapshot has fallen back to `INITIAL_PUBLIC_STATE`. So a
+      validator-rejecting key at `answer-revealed` left this GREEN while the
+      projector showed the neutral waiting panel at the reveal itself — the
+      climax of the Final. Reproduced by a reviewer, and now RED.
+
+      The absence assertion above correctly stays on `wire()`: for absence, both
+      edges must be clean.
+    */
+    expect(JSON.stringify(store.getPublicState())).toContain(ANSWER)
+    expect(publishedFinalDto(store)?.stage).toBe('answer-revealed')
   })
 
   it('keeps every private wager and response fact hidden at responses-locked', () => {
@@ -257,8 +272,14 @@ describe('M40: the Final answer reaches the projector only at explicit reveal', 
     // sanitizer takes its early return and never enters the Final branch. The
     // old name and comment claimed this proved something about a live round; it
     // does not. What it legitimately pins is that the empty case carries no
-    // Final content at all. The real anti-vacuity guard for the stage walk is
-    // the positive `toContain(ANSWER)` after the reveal, above.
+    // Final content at all.
+    //
+    // Anti-vacuity for the stage walk does NOT rest on this test. It rests on
+    // two things above: the published-edge `toContain(ANSWER)` after the reveal,
+    // and the per-stage published `stage` assertion inside `assertAnswerAbsent`.
+    // An earlier version of this comment named the reveal assertion "the real
+    // anti-vacuity guard" while that assertion still read the raw edge, which
+    // claimed more than it exercised.
     const store = createSessionStore()
     const serialized = wire(store)
     expect(serialized).not.toContain(ANSWER)
