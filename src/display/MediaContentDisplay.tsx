@@ -127,11 +127,26 @@ function ImagePrompt({
 
   useEffect(() => {
     let cancelled = false
-    void ensureDisplayPackMediaHydration().then((changed) => {
+    /*
+      Settle on BOTH outcomes.
+
+      `setHydrationSettled(true)` is what releases the hosted-path fallback, so
+      a rejecting hydration promise would leave this stuck on "Loading image…"
+      for the rest of the lesson — a projector that never shows the clue. None
+      of the three layers below `ensureDisplayPackMediaHydration` rejects today
+      (`open`, `withTransaction` and `loadPackMediaAssets` all return results
+      rather than throwing, and `close()` cannot throw), so this is not a live
+      defect — but relying on that is relying on four other files not changing.
+      Settling in `catch` too makes the guarantee local, and it fails OPEN to
+      the pre-FRC-6 behaviour, which is the right direction: an honest hosted
+      attempt beats a permanent placeholder.
+    */
+    const settle = (changed: boolean) => {
       if (cancelled) return
       setHydrationSettled(true)
       if (changed) setHydrateTick((tick) => tick + 1)
-    })
+    }
+    void ensureDisplayPackMediaHydration().then(settle, () => settle(false))
     const unsubscribe = subscribePackScopeAnnouncements(() => {
       void ensureDisplayPackMediaHydration().then((changed) => {
         if (!cancelled && changed) setHydrateTick((tick) => tick + 1)

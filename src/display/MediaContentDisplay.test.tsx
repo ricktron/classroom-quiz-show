@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MediaContentDisplay } from './MediaContentDisplay'
 import {
   joinBaseAndMediaPath,
@@ -66,11 +66,17 @@ describe('joinBaseAndMediaPath / resolveSameOriginMediaSrc', () => {
 })
 
 /**
- * The Display does not resolve an authored path to its hosted URL until pack
- * media hydration settles, so an image clue begins on a loading placeholder
- * (FRC-6). Waiting here is the contract, not a timing hack: resolving earlier
- * is what let the projector paint a deployed asset sitting at an authored clue
- * path.
+ * Wait for the hosted `<img>` to exist, because the Display does not resolve an
+ * authored path to its hosted URL until pack media hydration settles — an image
+ * clue begins on a loading placeholder (FRC-6).
+ *
+ * What this helper is NOT: a detector for that behaviour. It only waits for
+ * `mcd-img` to appear, so it would pass on the first tick if the repair were
+ * reverted — a reviewer was right that an earlier docblock calling the wait
+ * "the contract" overstated it. The repair itself is pinned by
+ * `packMediaTransientAdjudication.test.tsx` and by the `:213` test below, both
+ * of which go red on a revert; this is a timing helper serving pre-existing
+ * assertions that were not otherwise changed.
  */
 async function waitForHostedImage(): Promise<void> {
   await waitFor(() => {
@@ -266,7 +272,7 @@ describe('MediaContentDisplay', () => {
     expect(screen.getByTestId('mcd-caption')).toHaveTextContent(long)
   })
 
-  it('uses pack-scoped object URLs when the registry has assets', () => {
+  it('uses pack-scoped object URLs when the registry has assets', async () => {
     const registry = createPackResourceRegistry({
       createObjectURL: () => 'blob:display-pack',
       revokeObjectURL: () => undefined,
@@ -290,6 +296,14 @@ describe('MediaContentDisplay', () => {
       attribution: null,
     }
     render(<MediaContentDisplay content={content} />)
+    expect(screen.getByTestId('mcd-img')).toHaveAttribute('src', 'blob:display-pack')
+    // Drain the hydration settle inside act: the pack blob paints immediately,
+    // but the settle lands a microtask later and would otherwise update state
+    // outside any act scope, which is a warning this branch must not add.
+    await act(async () => {
+      await Promise.resolve()
+      await Promise.resolve()
+    })
     expect(screen.getByTestId('mcd-img')).toHaveAttribute('src', 'blob:display-pack')
   })
 
