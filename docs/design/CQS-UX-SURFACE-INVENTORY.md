@@ -634,11 +634,38 @@ hardware, recovery, and the end-to-end experience.
 - **Primary job:** see and retain the result.
 - **Important states:** just completed; historical; ledger view.
 - **UX risks:** implying defensible individual analytics, which is a
-  permanent non-goal.
-- **Principles:** `P21`, `P22`, `P20`.
+  permanent non-goal; reporting a count the teacher cannot reconcile with what
+  they did (see the open residual below).
+- **Principles:** `P21`, `P22`, `P20`, `P08`.
 - **Research routing:** Cooper, Podmajersky.
 - **Ownership / state:** **ALREADY IMPLEMENTED FOUNDATION**
   (`SessionSummaryPanel`, `CompletedSummaryLedgerPanel`, ADR-015, ADR-016).
+- **Open residual — owner decision, what `observed` should mean
+  (2026-10-18, FRC-4):** start a board response timer, disarm it with Undo,
+  let the window elapse. The summary then reports `timerStarts: 0` and
+  `timerExpirations: 1` — both for the session (`timerActivity.observed`) and
+  for that board row. Measured, not inferred, and pinned by a detector in
+  `src/state/boardUndoDisarmAfterExpiry.test.ts`.
+
+  This **conforms to the Summary V1 contract** (`src/summary/contract.ts`):
+  `observed` is derived from *effective* history, and Undo makes the start
+  un-happened, while the expiry event is marked `reversible: false` by CBN-2
+  and so survives. Internally consistent, and incoherent to read: a timer that
+  never started cannot expire. The engine behaviour was adjudicated EXPECTED
+  and is not a defect.
+
+  The decision is which of these `observed` should mean, and it is the owner's
+  because it is a contract change, not a copy change: (a) leave it and let the
+  summary mirror effective history exactly; (b) suppress an expiry whose start
+  was undone, which makes `observed` no longer a pure projection of effective
+  history; or (c) report both numbers with the asymmetry made explicit. Any
+  of the three touches ADR-015's contract and (b) touches ADR-002's
+  latest-only Undo semantics.
+
+  **Recorded here because the FRC-4 commit (`035373e`) says this residual is
+  "recorded as an owner decision" and, when a reviewer checked, no durable
+  record existed** — only a test comment and the commit message itself, both
+  of which AGENTS.md ranks below repository truth. This entry is that record.
 
 ### 30. Game versus Session conceptual UX
 
