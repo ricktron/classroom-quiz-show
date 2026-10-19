@@ -4,19 +4,34 @@ import { importGameFromUnknown } from '../import/importGame'
 import { boardGameFile, richBoardConfig } from '../test/categoryBoardFixtures'
 import { findUndoTarget, responsePhaseFor } from './reducer'
 import { undoLabelFor } from '../host/liveUndo'
+import { deriveSessionSummaryV1 } from '../summary/deriveSessionSummary'
 
 /**
  * FRC-4 — after start timer → disarm → expiry, what does ONE "Undo disarm clue"
  * actually do?
  *
  * The previous campaign reported "one Undo produces no visible effect" and left
- * it unverified. Adjudicated here as EXPECTED, and pinned so the contract cannot
- * drift: the Undo has a truthful reversible target, reverses a genuine teacher
- * action, and advances the teacher-visible Undo label — but the clue stays
- * closed, because RESPONSE_TIMER_EXPIRED is an irreversible clock fact (CBN-2)
- * that independently disarms (reducer `RESPONSE_TIMER_EXPIRED`). Latest-only
- * Undo (ADR-002) is unchanged: the teacher's second press reaches the timer
- * start and really does reopen the clue.
+ * it unverified.
+ *
+ * ENGINE VERDICT: EXPECTED. The Undo has a truthful reversible target and
+ * reverses a genuine teacher action, but the clue stays closed because
+ * RESPONSE_TIMER_EXPIRED is an irreversible clock fact (CBN-2) that
+ * independently disarms (see the reducer's `RESPONSE_TIMER_EXPIRED` case). The
+ * disarm-free replay genuinely ends disarmed, so this is not a masked bug.
+ * Latest-only Undo (ADR-002) is unchanged: the teacher's second press reaches
+ * the timer start and really does reopen the clue. That is what this file pins.
+ *
+ * USABILITY IS A SEPARATE VERDICT and is NOT settled here (EXECUTION-GUIDANCE
+ * §6.1). An earlier version of this adjudication argued the press is
+ * "acknowledged" because the Live Undo control re-labels itself, and folded
+ * that into the engine verdict. An independent reviewer measured every Host
+ * surface across one press and found the label is the ONLY teacher-visible
+ * change — and that offering "Undo disarm clue" while the clue is already
+ * disarmed and will stay disarmed collides with `CQS-UX-P08`'s first
+ * consequence, "do not make an action look available when the system is already
+ * in the resulting state". There is also no live region, so a screen-reader
+ * user gets no announcement at all. Routed to docs/design rather than decided
+ * in an engine test; the surface-inventory entry records it.
  */
 
 const AT = 1_000_000
@@ -73,9 +88,10 @@ describe('board Undo after a disarm that an expiry already subsumed (FRC-4)', ()
     const undo = store.dispatch({ type: 'UNDO', issuedAt: AT + 60_000 })
     expect(undo.status).toBe('accepted')
 
-    // The press IS acknowledged on the Host: the one control the teacher used
-    // now names the next thing it would reverse. This is the visible effect the
-    // previous report said was absent.
+    // The one teacher-visible change: the control the teacher used now names the
+    // next thing it would reverse. Recorded as the observed fact — NOT as a
+    // finding that this is sufficient acknowledgement, which is a UX verdict
+    // routed to docs/design.
     expect(label(store)).toBe('Undo timer start')
   })
 
@@ -104,15 +120,67 @@ describe('board Undo after a disarm that an expiry already subsumed (FRC-4)', ()
     expect(label(store)).toBe('Undo arm clue')
   })
 
-  it('never re-expires the window after the timer start is undone (CBN-2 holds)', () => {
+  it('leaves the original expiry in history as a fact after the start is undone', () => {
     const store = boardStoreAtExpiredAfterDisarm()
     store.dispatch({ type: 'UNDO', issuedAt: AT + 60_000 })
     store.dispatch({ type: 'UNDO', issuedAt: AT + 61_000 })
-    const expiredAgain = store
+    const expiries = store
       .getHistory()
       .filter((event) => event.type === 'RESPONSE_TIMER_EXPIRED')
-    // The original expiry stays in history as an observed fact; no new one.
-    expect(expiredAgain).toHaveLength(1)
+    /*
+      Scope note, because the earlier version of this test over-claimed. It does
+      NOT pin CBN-2's "exactly one effective expiry per countdown": that rule
+      lives in the planner's three-way match (src/state/reducer.ts) and in the
+      expiry hook (src/host/useResponseTimerExpiry.ts), and an independent
+      reviewer deleted BOTH and watched all four detectors here stay green.
+      Nothing re-dispatches to this pure store, so a re-expiry cannot arise in
+      it. What this legitimately pins is narrower and still worth having: the
+      irreversible expiry stays in history as an observed clock fact once the
+      reversible start above it is neutralized, and the derived timer returns to
+      idle rather than to a second expiry.
+    */
+    expect(expiries).toHaveLength(1)
+    expect(expiries[0]!.reversible).toBe(false)
     expect(phase(store).timer.status).toBe('idle')
+  })
+
+  it('records a summary whose expiry count outlives the start it came from', () => {
+    /*
+      The residual this adjudication creates and must not leave unpinned. The
+      two-press path above is what the verdict calls "the teacher gets where
+      they intended" — and after it, the saved session summary reports one
+      expiration and ZERO starts, because the start is reversible and dropped
+      from effective history while the expiry is irreversible and stays.
+
+      That conforms to the Summary V1 contract, which defines `observed` as
+      counted directly from effective authoritative events — so it is a contract
+      that permits an incoherent reading, not a contract violation. It is still a
+      durable host record a teacher can open, so it is pinned here with its real
+      numbers instead of being described in prose, and recorded as an owner
+      decision about what `observed` should mean when an irreversible fact
+      outlives its reversible cause.
+    */
+    const store = boardStoreAtExpiredAfterDisarm()
+    store.dispatch({ type: 'UNDO', issuedAt: AT + 60_000 })
+    store.dispatch({ type: 'UNDO', issuedAt: AT + 61_000 })
+    // A summary exists only for a completed session.
+    store.dispatch({ type: 'END_GAME_SESSION', issuedAt: AT + 70_000 })
+
+    const result = deriveSessionSummaryV1(store.getHistory())
+    expect(result.status).toBe('available')
+    if (result.status !== 'available') throw new Error('expected an available summary')
+
+    // Session-wide: one expiry counted, zero starts.
+    expect(result.summary.timerActivity.observed.starts).toBe(0)
+    expect(result.summary.timerActivity.observed.expirations).toBe(1)
+
+    // And the same incoherence on the board round's own row.
+    const boards = result.summary.categoryBoards
+    expect(boards.kind).toBe('rounds')
+    if (boards.kind !== 'rounds') throw new Error('expected a category-board section')
+    const board = boards.rounds.find((round) => round.roundId === ROUND)
+    expect(board).toBeDefined()
+    expect(board!.observed.timerStarts).toBe(0)
+    expect(board!.observed.timerExpirations).toBe(1)
   })
 })

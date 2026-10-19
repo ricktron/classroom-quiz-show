@@ -331,13 +331,29 @@ hardware, recovery, and the end-to-end experience.
 - **Important states:** board; clue open; armed; buzz queue active;
   adjudicating; between clues; round transition; Final; complete.
 - **UX risks:** controls moving between states; too many simultaneous primary
-  decisions; ceremony delaying correct input.
-- **Principles:** `P02`, `P04`, `P16`, `P13`, `P12`, `P19`.
+  decisions; ceremony delaying correct input; **an Undo offered for a change the
+  system has already arrived at by another route** (see the open question below).
+- **Principles:** `P02`, `P04`, `P16`, `P13`, `P12`, `P19`, `P08`, `P17`.
 - **Research routing:** Endsley & Jones, Cooper, Swink.
 - **Ownership / state:** **ALREADY IMPLEMENTED FOUNDATION** (`src/host/`
   panels). No separate current S05 Host-polish child remains open; the Host stays
   deliberately restrained. Any future Host visual refinement requires fresh
   owner authorization.
+- **Open question routed here (2026-10-19, FRC-4):** after
+  `start timer -> disarm -> expiry`, Live Undo offers **"Undo disarm clue"** while
+  the clue is already disarmed and will stay disarmed, because the irreversible
+  expiry disarms independently. The engine behaviour is correct and pinned
+  (`src/state/boardUndoDisarmAfterExpiry.test.ts`); what is unresolved is the
+  affordance. One press changes exactly one thing a teacher can see — the
+  control's own label, from "Undo disarm clue" to "Undo timer start" — with no
+  live region, so a screen-reader user hears nothing. That reads as a dead
+  control at the one-second standard, and it is the `CQS-UX-P08` shape "do not
+  make an action look available when the system is already in the resulting
+  state" (compare `CQS-UXF-05`). Candidate directions: name what the press will
+  actually do, or reach past a disarm the expiry has already subsumed — the
+  latter would touch latest-only Undo (ADR-002) and needs owner authority.
+  Deliberately NOT decided in the engine adjudication: functional correctness
+  and usability are separate verdicts (EXECUTION-GUIDANCE §6.1).
 
 ### 13. Category-board Host
 
