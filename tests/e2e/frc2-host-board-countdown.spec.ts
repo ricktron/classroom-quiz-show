@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 /**
- * CBN-5: during a BOARD clue, the teacher's Host response countdown must visibly
+ * FRC-2: during a BOARD clue, the teacher's Host response countdown must visibly
  * progress while the window runs, and agree with the projector's countdown —
  * both derive from the one durable deadline.
  *
@@ -85,7 +85,7 @@ async function hostAndProjectorSeconds(
   return [seconds(hostText), seconds(projectorText)]
 }
 
-test('CBN-5: the Host board response countdown ticks and agrees with the projector', async ({
+test('FRC-2: the Host board response countdown ticks and agrees with the projector', async ({
   page,
   context,
 }, info) => {
@@ -110,7 +110,7 @@ test('CBN-5: the Host board response countdown ticks and agrees with the project
   expect(Math.abs(host - projector)).toBeLessThanOrEqual(1)
 })
 
-test('CBN-5: pausing the Host board countdown freezes the same number on both surfaces', async ({
+test('FRC-2: pausing the Host board countdown freezes the same number on both surfaces', async ({
   page,
   context,
 }, info) => {

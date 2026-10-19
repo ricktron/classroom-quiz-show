@@ -242,7 +242,7 @@ export function ResponseTimerHostPanel({
  * The four facts, in words.
  *
  * The remaining time is computed from the durable deadline against a clock read
- * at RENDER time, exactly as the projector does it (CBN-5). While the window
+ * at RENDER time, exactly as the projector does it (FRC-2). While the window
  * runs, `useRunningClockNow` re-reads that clock at the projector's cadence, so
  * the teacher's number visibly progresses instead of standing still until some
  * other change happens to re-render the panel.

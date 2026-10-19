@@ -16,9 +16,16 @@ import {
 } from '../test/leftoverRunningBoardFixtures'
 
 /**
- * CBN-5 — the teacher's BOARD response countdown must visibly progress while the
+ * FRC-2 — the teacher's BOARD response countdown must visibly progress while the
  * window runs, derived like the projector's from the one durable deadline and a
  * clock read at the rendering edge.
+ *
+ * Identifier note: this work shipped labelled CBN-5, which is wrong. CBN-1..14
+ * are the 2026-10-17 Court recertification receipt's own rows, and CBN-5 there
+ * is "Over-maximum wager silently not saved, no message" — an unrelated item
+ * that is still open. FRC-* (final residual closure) is the scheme for findings
+ * that came from the repair campaign's own final report rather than from that
+ * receipt.
  *
  * This is the same timer-authority principle CBN-3 established for the Final.
  * The panel's own contract claims the host and projector "cannot disagree about
@@ -99,7 +106,7 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-describe('the host board response countdown ticks from the durable deadline (CBN-5)', () => {
+describe('the host board response countdown ticks from the durable deadline (FRC-2)', () => {
   it('advances under a controlled clock with no new store state', () => {
     const store = boardStore()
     const clock = createManualClock(AT)
