@@ -181,6 +181,13 @@ describe('in-app board authoring', () => {
     fireEvent.change(screen.getByLabelText(/game title/i), { target: { value: 'Follower Keeps This' } })
     const writes = trackDurableWrites(adapter)
     fireEvent.click(screen.getByTestId('authoring-save'))
+    /*
+      Deliberately over-constrained: this asserts the one SETTLED copy a failed
+      write produces today, so it will also red on an honest copy change. That
+      direction is safe — stricter, never weaker — and it is the only way to
+      bind the assertion to a settled state rather than to the pre-save
+      "Unsaved" that a negative check would have caught.
+    */
     await waitFor(() => {
       expect(screen.getByTestId('authoring-save-status')).toHaveTextContent(/save problem/i)
     })
@@ -209,6 +216,13 @@ describe('in-app board authoring', () => {
     expect(screen.getByLabelText(/game title/i)).toHaveValue('Still In This Window')
     const writes = trackDurableWrites(adapter)
     fireEvent.click(screen.getByTestId('authoring-save'))
+    /*
+      Deliberately over-constrained: this asserts the one SETTLED copy a failed
+      write produces today, so it will also red on an honest copy change. That
+      direction is safe — stricter, never weaker — and it is the only way to
+      bind the assertion to a settled state rather than to the pre-save
+      "Unsaved" that a negative check would have caught.
+    */
     await waitFor(() => {
       expect(screen.getByTestId('authoring-save-status')).toHaveTextContent(/save problem/i)
     })
@@ -369,6 +383,13 @@ describe('M04: Save means the Game is really on the device', () => {
       against the very lie this test names. Verified: with that negative
       assertion, mutating `completeSave` to treat a failed write as ok let the
       status settle to "Saved" and all ten tests still passed.
+    */
+    /*
+      Deliberately over-constrained: this asserts the one SETTLED copy a failed
+      write produces today, so it will also red on an honest copy change. That
+      direction is safe — stricter, never weaker — and it is the only way to
+      bind the assertion to a settled state rather than to the pre-save
+      "Unsaved" that a negative check would have caught.
     */
     await waitFor(() => {
       expect(screen.getByTestId('authoring-save-status')).toHaveTextContent(/save problem/i)

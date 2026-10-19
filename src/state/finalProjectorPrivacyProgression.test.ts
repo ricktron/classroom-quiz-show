@@ -29,14 +29,25 @@ const WAGER = 137
 const PROMPT = 'Which process drives plate motion?'
 
 /**
- * Every string on the wire for this store.
+ * Every string the projector could receive, from BOTH edges of the boundary.
  *
- * `store.getPublicState()` — not `toPublicState(store.getState())` — because
- * that is exactly what the broadcaster publishes (`src/sync/broadcaster.ts`).
- * Asserting the sanitizer alone would leave a leak ADDED inside
- * `getPublicState`, downstream of the sanitizer, completely undetected.
+ * Two reads, deliberately, because each alone has a blind spot:
+ *
+ *  - `store.getPublicState()` is what the broadcaster publishes
+ *    (`src/sync/broadcaster.ts`), so it catches a leak added DOWNSTREAM of the
+ *    sanitizer. But it is `safeToPublicState`, which validates with
+ *    `hasExactOwnKeys`: a leak that adds an unexpected key fails validation and
+ *    the whole snapshot falls back to `INITIAL_PUBLIC_STATE`. Asserting only
+ *    this is therefore blind to every leak the host's own validator rejects —
+ *    including publishing `answer` at `responses-locked`, the exact mutation
+ *    this file exists to kill.
+ *  - `toPublicState(store.getState())` is the raw projection, which shows that
+ *    leak plainly but would miss anything added after it.
+ *
+ * So both are swept. A string must be absent from each.
  */
-const wire = (store: SessionStore): string => JSON.stringify(store.getPublicState())
+const wire = (store: SessionStore): string =>
+  JSON.stringify(store.getPublicState()) + JSON.stringify(toPublicState(store.getState()))
 
 const finalDto = (store: SessionStore): PublicFinalWagerState | null => {
   const round = toPublicState(store.getState()).round
@@ -133,6 +144,14 @@ describe('M40: the Final answer reaches the projector only at explicit reveal', 
     store.dispatch({ type: 'LOCK_FINAL_RESPONSES', issuedAt: AT, roundId: ROUND })
     expect(phaseOf(store)).toBe('responses-locked')
     assertAnswerAbsent()
+    /*
+      And the PUBLISHED snapshot is still a live Final at this stage. Without
+      this, a leak that fails `hasExactOwnKeys` would blank the wire to
+      `INITIAL_PUBLIC_STATE` and the absence assertion above would pass while
+      the projector showed the neutral waiting panel for the whole stage.
+    */
+    expect(JSON.stringify(store.getPublicState())).toContain(PROMPT)
+    expect(finalDto(store)?.stage).toBe('responses-locked')
 
     // The walk really covered the stages, so none of the above passed because
     // the Final had not started.
@@ -169,13 +188,15 @@ describe('M40: the Final answer reaches the projector only at explicit reveal', 
     const dto = finalDto(store)
     expect(dto).not.toBeNull()
     expect(dto!.stage).toBe('responses-locked')
-    // Whatever per-team shape this stage carries, it must expose no private fact.
-    const perTeam = 'teams' in dto! ? (dto as { teams: readonly Record<string, unknown>[] }).teams : []
-    for (const team of perTeam) {
-      expect(team).not.toHaveProperty('wager')
-      expect(team).not.toHaveProperty('response')
-      expect(team).not.toHaveProperty('outcome')
-    }
+    /*
+      `responses-locked` carries NO per-team key at all — that is the strongest
+      possible answer, and it is asserted directly. A loop over `teams` here
+      would have been decorative: it never executed, so its `not.toHaveProperty`
+      checks were dead while reading like pinned invariants.
+    */
+    expect(dto).not.toHaveProperty('teams')
+    expect(dto).not.toHaveProperty('answer')
+    expect(Object.keys(dto!).sort()).toEqual(['kind', 'prompt', 'stage'])
   })
 
   it('publishes nothing about the Final before a session exists', () => {
