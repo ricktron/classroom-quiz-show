@@ -43,7 +43,7 @@ function resolveGitDir(): string | null {
   }
   // A worktree's gitdir pointer. `git` writes an absolute path here.
   const pointer = readFileOrNull(dotGit)?.trim()
-  if (pointer === undefined || !pointer.startsWith('gitdir: ')) return null
+  if (!pointer?.startsWith('gitdir: ')) return null
   const target = pointer.slice('gitdir: '.length).trim()
   return target.length > 0 ? resolve(here, target) : null
 }
