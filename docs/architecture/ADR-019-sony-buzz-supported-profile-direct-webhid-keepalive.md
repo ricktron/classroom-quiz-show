@@ -191,10 +191,12 @@ every binding a team holds for the edited action, so beside a many-to-one
 mapping a generic per-team Assign or Clear destroyed that team's other Buzzers
 for the session while the copy described one button, and the guided handset
 setup did the same for all five recipe actions at once while reporting
-"Applied handset profile". The Host panel now refuses all three generic write
-paths — press-to-assign, Clear, and the guided handset setup (both Apply and
-Preview) — before the validator sees it, for **every** action rather than the
-buzz action alone — the profile binds all five Sony colours per slot, and the
+"Applied handset profile". The Host panel now refuses all three generic
+per-team paths — press-to-assign, Clear, and the guided handset setup — before
+the validator sees it, for **every** action rather than the buzz action alone.
+The guided **Preview** is guarded too, for truthfulness rather than for
+destruction: `previewSonyBuzzApply` is pure and writes nothing, so guarding it
+only stops the preview promising an apply that will be refused — the profile binds all five Sony colours per slot, and the
 secondary colours drive team name selection in Class Setup, so losing them
 leaves a handset whose colour buttons silently do nothing. The validator scoping
 described above is unchanged; this is a later, separate guard against an edit

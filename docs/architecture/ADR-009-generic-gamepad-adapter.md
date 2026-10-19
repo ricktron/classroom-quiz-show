@@ -261,10 +261,19 @@ Other teams' supported-profile Buzzers are never re-judged by a generic edit.
 That describes **validation**. Since FRC-3 (2026-10-18) the Host panel refuses
 *before* validation when the edited team already holds several bindings for that
 action, because applying it would replace all of them while the control
-expresses one. This covers **all three** generic write paths enumerated above —
-press-to-assign, Clear, and the guided handset setup. The guided path needed it
+expresses one. This covers the three generic **per-team** paths enumerated above —
+press-to-assign, Clear, and the guided handset setup (its Preview too, so the
+preview cannot promise an apply that will be refused). The guided path needed it
 most: it replaces every binding the staged team holds for all five recipe
-actions at once, and reported success while doing so. See ADR-019 §6.
+actions at once, and reported success while doing so.
+
+**Clear all controller buttons is NOT covered**, and that is deliberate: it is
+an explicitly plural control that honestly describes itself, and it passes no
+edited team, so it cannot trip a per-team guard. It therefore still clears a
+shared team's Buzzers while Buzzer setup continues to show them assigned and
+saved — a known open disagreement recorded under
+`CQS-OPP-MULTI-CONTROLLER-TEAMS`. Settling it is an owner decision about
+destructive copy, not a silent behaviour change. See ADR-019 §6.
 
 **"Controller not attached" and "controller has no such button" are NOT validation
 failures.** A mapping made while a controller was plugged in must survive it being
