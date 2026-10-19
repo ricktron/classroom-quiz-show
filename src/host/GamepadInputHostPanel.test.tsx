@@ -1048,15 +1048,37 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(await buzzOnFreshClue(panel, 2)).toBeNull()
   })
 
+  it('Phase 3 R3: applying the supported profile preserves an unrelated generic binding', async () => {
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await panel.flush()
+    panel.attachWbuzz()
+    await panel.connect()
+    // Start with only Buzzer 1 on red so Buzzer 4’s RED is free for a generic bind.
+    for (const slot of [2, 3, 4] as const) {
+      fireEvent.change(screen.getByTestId(`sbs-slot-${slot}`), { target: { value: '' } })
+    }
+    fireEvent.click(screen.getByTestId('sbs-save-mapping'))
+    await panel.flush()
+
+    fireEvent.click(screen.getByTestId('gih-capture-green'))
+    await panel.pressRedAndSettle(buttonIndexForSlotColor(4, 'red'))
+    panel.refresh()
+    expect(screen.getByTestId('gih-control-green')).toHaveTextContent('Buzzer 4 · Red')
+
+    // Association change re-runs profile apply — must not silently drop green’s binding.
+    fireEvent.change(screen.getByTestId('sbs-slot-3'), { target: { value: 'blue' } })
+    await panel.flush()
+    panel.refresh()
+    expect(screen.getByTestId('gih-control-green')).toHaveTextContent('Buzzer 4 · Red')
+    expect(await buzzOnFreshClue(panel, 4)).toBe('green')
+  })
+
   it('FRC-3: withdrawing the profile mapping keeps a generic binding on the same pad', async () => {
     /*
-      Scoped to the WITHDRAW branch on purpose. The profile's APPLY branch still
-      replaces the whole live mapping, so a generic binding made before an
-      association change is wiped by that apply — a pre-existing behaviour
-      recorded as a remaining defect, not repaired here. This drives the single
-      transition from "profile maps something" straight to "profile maps
-      nothing", which is the branch this change added, and proves it withdraws
-      only the controls the profile itself applied.
+      Scoped to the WITHDRAW branch. Phase 3 R3 repairs the APPLY branch so a
+      generic binding survives association changes; this case still drives the
+      single transition from "profile maps something" to "profile maps nothing"
+      and proves withdraw removes only profile-owned controls.
     */
     const panel = renderWbuzzPanel({ selectionMode: false })
     await panel.flush()
