@@ -7,6 +7,7 @@ import { publicTeamDisplayName } from '../state/reducer'
 import {
   describeGamepadControl,
   EMPTY_GAMEPAD_MAPPING,
+  gamepadControlForTeamAction,
   gamepadControlsForTeamAction,
   pruneUnknownGamepadTeams,
   validateGamepadMapping,
