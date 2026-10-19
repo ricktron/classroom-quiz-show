@@ -575,8 +575,31 @@ export function GamepadInputHostPanel({
         allowSharedTeamPrimary: true,
       })
       if (!validation.ok) return
-      appliedProfileControlsRef.current = new Set(validation.mapping.bindings.map(controlKey))
-      setMapping(validation.mapping)
+      const previouslyOwned = appliedProfileControlsRef.current
+      const profileControls = new Set(validation.mapping.bindings.map(controlKey))
+      appliedProfileControlsRef.current = profileControls
+      // Phase 3 R3: apply owns only the controls the profile materializes.
+      // Preserve unrelated generic bindings on other physical controls — never
+      // silently wipe a teacher's non-profile assignment on association change.
+      // Drop controls the profile previously owned but no longer materializes
+      // (partial unassign) so they are not mistaken for generics (FRC-3b).
+      setMapping((current) => {
+        const keptGeneric = current.bindings.filter((binding) => {
+          const key = controlKey(binding)
+          if (profileControls.has(key)) return false
+          if (previouslyOwned?.has(key)) return false
+          return true
+        })
+        if (keptGeneric.length === 0) return validation.mapping
+        const merged: GamepadMapping = {
+          version: GAMEPAD_MAPPING_VERSION,
+          bindings: [...validation.mapping.bindings, ...keptGeneric],
+        }
+        const mergedValidation = validateGamepadMapping(merged, teams, {
+          allowSharedTeamPrimary: true,
+        })
+        return mergedValidation.ok ? mergedValidation.mapping : validation.mapping
+      })
       return
     }
     // The supported profile now maps nothing — the teacher unassigned every
