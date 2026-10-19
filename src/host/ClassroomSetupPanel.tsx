@@ -9,7 +9,11 @@ import {
   sessionTeamNamesAreUnique,
   type TeamNameSelectionState,
 } from '../session/teamNameSelection'
-import { canPersistMutations, type PersistLeadership } from './writeAuthority'
+import {
+  canPublishSessionTeamNames,
+  FOLLOWER_CLASS_SETUP_NAMES_MESSAGE,
+  type PersistLeadership,
+} from './writeAuthority'
 import {
   canStartPlay,
   classSetupBuzzerHardwarePresent,
@@ -206,9 +210,14 @@ export function ClassroomSetupPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reset only when bank contents or team ids change
   }, [bankKey, teamSignature])
 
+  // Session team names are Host session mutations, not IndexedDB library writes.
+  // Gate on session-publish authority (not leader-only persist): unknown /
+  // storage-unavailable must stay usable; follower is known read-only (R1).
+  const namesReadOnly = !canPublishSessionTeamNames(leadership)
+
   const persistAndPublish = useCallback(
     (state: TeamNameSelectionState) => {
-      if (!canPersistMutations(leadership)) return
+      if (!canPublishSessionTeamNames(leadership)) return
       onSelectedIdentitiesChange(claimedSessionTeamNames(state))
     },
     [leadership, onSelectedIdentitiesChange],
@@ -216,7 +225,7 @@ export function ClassroomSetupPanel({
 
   const applySonyObservations = useCallback(
     (observations: readonly ClassroomSetupObservation[]) => {
-      if (observations.length === 0) return
+      if (namesReadOnly || observations.length === 0) return
       setSelection((current) => {
         let state = current
         for (const observation of observations) {
@@ -245,7 +254,7 @@ export function ClassroomSetupPanel({
         return state
       })
     },
-    [persistAndPublish],
+    [namesReadOnly, persistAndPublish],
   )
 
   useEffect(() => {
@@ -265,19 +274,24 @@ export function ClassroomSetupPanel({
     applySonyObservations(observationBatch)
   }, [observationBatch, applySonyObservations])
 
-  const recordTypedName = useCallback((teamId: string, draft: string | null) => {
-    setTypedNames((current) => {
-      if (draft === null) {
-        if (!(teamId in current)) return current
-        const next = { ...current }
-        delete next[teamId]
-        return next
-      }
-      return current[teamId] === draft ? current : { ...current, [teamId]: draft }
-    })
-  }, [])
+  const recordTypedName = useCallback(
+    (teamId: string, draft: string | null) => {
+      if (namesReadOnly) return
+      setTypedNames((current) => {
+        if (draft === null) {
+          if (!(teamId in current)) return current
+          const next = { ...current }
+          delete next[teamId]
+          return next
+        }
+        return current[teamId] === draft ? current : { ...current, [teamId]: draft }
+      })
+    },
+    [namesReadOnly],
+  )
 
   const apply = (state: TeamNameSelectionState) => {
+    if (namesReadOnly) return
     setSelection(state)
     persistAndPublish(state)
   }
@@ -592,6 +606,11 @@ export function ClassroomSetupPanel({
                 ? 'Each team presses Blue, Orange, Green, or Yellow — top to bottom on the controller — to choose a name. Red shows four more names for that team only. You can also type a name. Keyboard always works.'
                 : 'Type a name for each team, or pick from the name choices. Keyboard always works.'}
           </p>
+          {namesReadOnly ? (
+            <p className="host__note" data-testid="setup-names-read-only" role="status">
+              {FOLLOWER_CLASS_SETUP_NAMES_MESSAGE}
+            </p>
+          ) : null}
           <TeamNameSelectionBoard
             onDraft={recordTypedName}
             views={teamIds.map((id) => selection.views[id]!).filter(Boolean)}
@@ -611,6 +630,7 @@ export function ClassroomSetupPanel({
               apply(applyTeamNameInputs(selection, [{ kind: 'reset', teamId }]).state)
             }
             nameBankAvailable={nameBankAvailable}
+            readOnly={namesReadOnly}
             reducedMotion={reducedMotion}
             highContrast={highContrast}
             grayscale={grayscale}
