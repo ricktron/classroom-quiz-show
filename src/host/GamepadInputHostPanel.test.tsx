@@ -909,6 +909,23 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     return activeRespondent(queueOf(panel.store))
   }
 
+  /**
+   * Aim the guided setup at a team and stage all five recipe colours of one
+   * handset. Three tests needed exactly this; the loop is the recipe, so one
+   * definition keeps them staging the same thing.
+   */
+  async function stageGuidedHandset(
+    panel: ReturnType<typeof renderWbuzzPanel>,
+    teamId: string,
+    slot: 1 | 2 | 3 | 4,
+  ): Promise<void> {
+    fireEvent.change(screen.getByTestId('sbs-team'), { target: { value: teamId } })
+    for (const color of ['red', 'blue', 'orange', 'green', 'yellow'] as const) {
+      fireEvent.click(screen.getByTestId('sbs-capture'))
+      await panel.pressRedAndSettle(buttonIndexForSlotColor(slot, color))
+    }
+  }
+
   async function saveRedSharedWithBuzzer3(panel: ReturnType<typeof renderWbuzzPanel>) {
     await panel.flush()
     panel.attachWbuzz()
@@ -937,12 +954,7 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
   it('CBN-1 review: with several Buzzers on one team, the guided handset setup applies for another team', async () => {
     const panel = renderWbuzzPanel({ selectionMode: false })
     await saveRedSharedWithBuzzer3(panel)
-    fireEvent.change(screen.getByTestId('sbs-team'), { target: { value: 'blue' } })
-    // Buzzer 4 is unassigned, so its five buttons are free to capture.
-    for (const color of ['red', 'blue', 'orange', 'green', 'yellow'] as const) {
-      fireEvent.click(screen.getByTestId('sbs-capture'))
-      await panel.pressRedAndSettle(buttonIndexForSlotColor(4, color))
-    }
+    await stageGuidedHandset(panel, 'blue', 4)
     fireEvent.click(screen.getByTestId('sbs-apply'))
     expect(screen.getByTestId('sbs-status')).toHaveTextContent(/Applied handset profile/i)
     expect(screen.queryByTestId('gih-issues')?.textContent ?? '').not.toMatch(/already has a buzz button/)
@@ -1202,8 +1214,6 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(activeRespondent(queueOf(panel.store))).toBeNull()
   })
 
-
-
   it('FRC-3: the guided handset setup refuses to replace a shared team’s Buzzers', async () => {
     /*
       The third generic write path, and the worst of the three. Before this
@@ -1216,11 +1226,7 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     const panel = renderWbuzzPanel({ selectionMode: false })
     await saveRedSharedWithBuzzer3(panel)
     // Aim the guided setup at the SHARED team, the single-keystroke mistake.
-    fireEvent.change(screen.getByTestId('sbs-team'), { target: { value: 'red' } })
-    for (const color of ['red', 'blue', 'orange', 'green', 'yellow'] as const) {
-      fireEvent.click(screen.getByTestId('sbs-capture'))
-      await panel.pressRedAndSettle(buttonIndexForSlotColor(4, color))
-    }
+    await stageGuidedHandset(panel, 'red', 4)
 
     fireEvent.click(screen.getByTestId('sbs-apply'))
 
@@ -1247,11 +1253,7 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     */
     const panel = renderWbuzzPanel({ selectionMode: true })
     await saveRedSharedWithBuzzer3(panel)
-    fireEvent.change(screen.getByTestId('sbs-team'), { target: { value: 'red' } })
-    for (const color of ['red', 'blue', 'orange', 'green', 'yellow'] as const) {
-      fireEvent.click(screen.getByTestId('sbs-capture'))
-      await panel.pressRedAndSettle(buttonIndexForSlotColor(4, color))
-    }
+    await stageGuidedHandset(panel, 'red', 4)
 
     fireEvent.click(screen.getByTestId('sbs-apply'))
 
@@ -1260,6 +1262,48 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     expect(status).not.toHaveTextContent(/applied handset profile/i)
     // Not the depth layer's degraded fallback: the call-site guard ran.
     expect(status).not.toHaveTextContent(/see the controller assignments message/i)
+  })
+
+
+
+  it('FRC-3: the guided Preview refuses too, so it cannot promise a refused apply', async () => {
+    // Preview is pure — `previewSonyBuzzApply` writes nothing — so this guard is
+    // about truthfulness, not destruction: a preview that shows what "would"
+    // happen must not describe an apply the panel will then refuse.
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await saveRedSharedWithBuzzer3(panel)
+    await stageGuidedHandset(panel, 'red', 4)
+
+    fireEvent.click(screen.getByTestId('sbs-preview'))
+
+    const status = screen.getByTestId('sbs-status')
+    expect(status).toHaveTextContent(/has 2 buzzers assigned/i)
+    expect(screen.queryByTestId('sbs-preview-list')).toBeNull()
+  })
+
+  it('FRC-3: a refused per-team Clear keeps its reason on screen', async () => {
+    /*
+      Pins the teacher-visible outcome: a refused Clear shows WHY, rather than
+      going silent.
+
+      Scope limit, stated because it would otherwise look like more coverage
+      than it is: this is satisfied by the call-site pre-check, which returns
+      before `applyMapping`. The `if (cleared)` message-preservation inside the
+      Clear handler is therefore UNREACHABLE while that pre-check stands, and no
+      black-box test can bind to it — reverting it alone leaves this green. It
+      stays as defence in depth for a future caller that reaches `applyMapping`
+      without the pre-check, and it is deliberately not claimed as pinned.
+    */
+    const panel = renderWbuzzPanel({ selectionMode: false })
+    await saveRedSharedWithBuzzer3(panel)
+
+    fireEvent.click(screen.getByTestId('gih-clear-red'))
+    panel.refresh()
+
+    const status = screen.getByTestId('gih-capture-status')
+    expect(status).toHaveTextContent(/has 2 buzzers assigned/i)
+    expect(status).not.toHaveTextContent(/cleared/i)
+    expect(status.textContent ?? '').not.toBe('')
   })
 
 })
