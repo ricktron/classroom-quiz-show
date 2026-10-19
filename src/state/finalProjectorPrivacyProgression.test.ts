@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { toPublicState } from './sanitize'
-import { PUBLIC_FINAL_KIND, type PublicFinalWagerState } from './publicState'
+import {
+  PUBLIC_FINAL_KIND,
+  type PublicFinalWagerState,
+  type PublicRoundState,
+} from './publicState'
 import { createSessionStore, type SessionStore } from './store'
 import {
   AT,
@@ -47,12 +51,41 @@ const PROMPT = 'Which process drives plate motion?'
  * So both are swept. A string must be absent from each.
  */
 const wire = (store: SessionStore): string =>
-  JSON.stringify(store.getPublicState()) + JSON.stringify(toPublicState(store.getState()))
+  // NUL-separated: a needle must not be able to straddle the join seam.
+  `${JSON.stringify(store.getPublicState())}\u0000${JSON.stringify(toPublicState(store.getState()))}`
 
-const finalDto = (store: SessionStore): PublicFinalWagerState | null => {
-  const round = toPublicState(store.getState()).round
-  return round === null || round.kind !== PUBLIC_FINAL_KIND ? null : round
-}
+/**
+ * The same sweep with JSON escaping undone.
+ *
+ * A private fact nested inside a string VALUE serialises with escaped quotes
+ * (`"detail":"Playing [\"blue\",\"red\"]"`), so a quoted-key needle like
+ * `"wagers"` cannot match it. Sweeping the unescaped form too makes those
+ * needles actually bind.
+ */
+const unescapedWire = (store: SessionStore): string => wire(store).replace(/\\"/g, '"')
+
+const asFinalDto = (round: PublicRoundState | null): PublicFinalWagerState | null =>
+  round === null || round.kind !== PUBLIC_FINAL_KIND ? null : round
+
+/**
+ * The Final DTO on the RAW edge.
+ *
+ * Correct for asserting the exact key set, because a leaked key is visible here
+ * — on the published edge the same leak fails `hasExactOwnKeys` and blanks the
+ * whole snapshot, so an exact-keys assertion there would read as satisfied.
+ */
+const rawFinalDto = (store: SessionStore): PublicFinalWagerState | null =>
+  asFinalDto(toPublicState(store.getState()).round)
+
+/**
+ * The Final DTO on the PUBLISHED edge — what the broadcaster actually sends.
+ *
+ * Correct for asserting the STAGE, because this is the read that goes blank on
+ * a validator rejection. Asserting the raw stage instead would be fallback-blind,
+ * which is the very hole the stage guards below exist to close.
+ */
+const publishedFinalDto = (store: SessionStore): PublicFinalWagerState | null =>
+  asFinalDto(store.getPublicState().round)
 
 const phaseOf = (store: SessionStore): string => finalOf(store).phase
 
@@ -99,14 +132,25 @@ describe('M40: the Final answer reaches the projector only at explicit reveal', 
 
     // Walk the real progression, asserting at each stage rather than only at the end.
     const seen: string[] = []
-    const assertAnswerAbsent = () => {
+    /*
+      At every stage: the answer is absent from BOTH edges, AND the published
+      snapshot is still that stage.
+
+      The published-stage half is what makes the whole walk fallback-proof. A
+      leak that fails `hasExactOwnKeys` blanks the published snapshot to
+      `INITIAL_PUBLIC_STATE`; the absence assertion would then pass while the
+      projector showed the neutral waiting panel for the entire stage. Checking
+      the stage here closes that at every step rather than at one.
+    */
+    const assertAnswerAbsent = (publishedStage: string | null) => {
       seen.push(phaseOf(store))
       expect(wire(store)).not.toContain(ANSWER)
+      expect(publishedFinalDto(store)?.stage ?? null).toBe(publishedStage)
     }
 
-    assertAnswerAbsent()
+    assertAnswerAbsent('setup')
     store.dispatch({ type: 'BEGIN_FINAL_WAGER', issuedAt: AT, roundId: ROUND, mode: 'classic' })
-    assertAnswerAbsent()
+    assertAnswerAbsent('wager-entry')
     const eligible = finalOf(store).snapshot?.teams ?? []
     for (const team of eligible) {
       store.dispatch({
@@ -117,18 +161,24 @@ describe('M40: the Final answer reaches the projector only at explicit reveal', 
         wager: WAGER,
       })
     }
-    assertAnswerAbsent()
+    assertAnswerAbsent('wager-entry')
     store.dispatch({ type: 'LOCK_FINAL_WAGERS', issuedAt: AT, roundId: ROUND })
-    assertAnswerAbsent()
+    assertAnswerAbsent('wagers-locked')
     store.dispatch({
       type: 'START_FINAL_RESPONSE_WINDOW',
       issuedAt: AT,
       roundId: ROUND,
       captureMode: 'exact-text',
     })
-    // The prompt IS public once the window opens; the answer still is not.
-    expect(wire(store)).toContain(PROMPT)
-    assertAnswerAbsent()
+    /*
+      The prompt IS public once the window opens; the answer still is not.
+      Asserted on the PUBLISHED edge alone: `wire()` concatenates the raw
+      projection too, and the raw edge would satisfy this even when the
+      published snapshot had fallen back to `INITIAL_PUBLIC_STATE` — which is
+      exactly the blank-to-waiting-panel case this guard exists to catch.
+    */
+    expect(JSON.stringify(store.getPublicState())).toContain(PROMPT)
+    assertAnswerAbsent('response-entry')
     for (const team of eligible) {
       store.dispatch({
         type: 'RECORD_FINAL_RESPONSE',
@@ -138,12 +188,12 @@ describe('M40: the Final answer reaches the projector only at explicit reveal', 
         response: { kind: 'exact', text: `${team.teamId} wrote this` },
       })
     }
-    assertAnswerAbsent()
+    assertAnswerAbsent('response-entry')
 
     // The stage this detector exists for.
     store.dispatch({ type: 'LOCK_FINAL_RESPONSES', issuedAt: AT, roundId: ROUND })
     expect(phaseOf(store)).toBe('responses-locked')
-    assertAnswerAbsent()
+    assertAnswerAbsent('responses-locked')
     /*
       And the PUBLISHED snapshot is still a live Final at this stage. Without
       this, a leak that fails `hasExactOwnKeys` would blank the wire to
@@ -151,7 +201,7 @@ describe('M40: the Final answer reaches the projector only at explicit reveal', 
       the projector showed the neutral waiting panel for the whole stage.
     */
     expect(JSON.stringify(store.getPublicState())).toContain(PROMPT)
-    expect(finalDto(store)?.stage).toBe('responses-locked')
+    expect(publishedFinalDto(store)?.stage).toBe('responses-locked')
 
     // The walk really covered the stages, so none of the above passed because
     // the Final had not started.
@@ -178,14 +228,17 @@ describe('M40: the Final answer reaches the projector only at explicit reveal', 
     // What each team wagered, and what each team wrote, are host-private until
     // that team is explicitly revealed — which has not happened here.
     expect(serialized).not.toContain('wrote this')
-    // Both spellings: a `wagers` record would not match a `"wager"` key.
-    expect(serialized).not.toContain('"wager"')
-    expect(serialized).not.toContain('"wagers"')
+    // Both spellings, on the UNESCAPED sweep: a record nested inside a string
+    // value serialises its quotes escaped, so these needles would not otherwise
+    // match it.
+    const unescaped = unescapedWire(store)
+    expect(unescaped).not.toContain('"wager"')
+    expect(unescaped).not.toContain('"wagers"')
     // A distinctive amount, not a bare '100' that any revision or timer could
     // contain and false-red on later.
     expect(serialized).not.toContain(String(WAGER))
 
-    const dto = finalDto(store)
+    const dto = rawFinalDto(store)
     expect(dto).not.toBeNull()
     expect(dto!.stage).toBe('responses-locked')
     /*
