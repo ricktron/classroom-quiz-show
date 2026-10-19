@@ -74,9 +74,11 @@ describe('joinBaseAndMediaPath / resolveSameOriginMediaSrc', () => {
  * `mcd-img` to appear, so it would pass on the first tick if the repair were
  * reverted — a reviewer was right that an earlier docblock calling the wait
  * "the contract" overstated it. The repair itself is pinned by
- * `packMediaTransientAdjudication.test.tsx` and by the `:213` test below, both
- * of which go red on a revert; this is a timing helper serving pre-existing
- * assertions that were not otherwise changed.
+ * `packMediaTransientAdjudication.test.tsx` and, below, by "shows the pack image
+ * once it hydrates, even if the hosted path already failed" — both of which go
+ * red on a revert. Named rather than numbered: an earlier version of this
+ * docblock cited `:213`, which is a closing brace. This is a timing helper
+ * serving pre-existing assertions that were not otherwise changed.
  */
 async function waitForHostedImage(): Promise<void> {
   await waitFor(() => {

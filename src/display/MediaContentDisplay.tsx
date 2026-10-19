@@ -148,9 +148,26 @@ function ImagePrompt({
     }
     void ensureDisplayPackMediaHydration().then(settle, () => settle(false))
     const unsubscribe = subscribePackScopeAnnouncements(() => {
-      void ensureDisplayPackMediaHydration().then((changed) => {
-        if (!cancelled && changed) setHydrateTick((tick) => tick + 1)
-      })
+      /*
+        Same rejection handling on the announcement path — the sibling call two
+        lines up was guarded and this one was not, which a reviewer caught.
+
+        Consequence here is milder: `hydrationSettled` is already true by the
+        time an announcement can arrive, so a rejection cannot strand the
+        projector. But it would be an UNHANDLED promise rejection, which fails
+        the whole suite in CI even when the test itself passes. Reproduced by
+        the reviewer: teacher switches packs mid-lesson -> announcement fires ->
+        a rejecting hydration exits non-zero on "Unhandled Rejection".
+
+        A failed re-hydration means nothing changed, so there is nothing to
+        re-resolve: swallow it and keep the currently painted image.
+      */
+      void ensureDisplayPackMediaHydration().then(
+        (changed) => {
+          if (!cancelled && changed) setHydrateTick((tick) => tick + 1)
+        },
+        () => undefined,
+      )
     })
     return () => {
       cancelled = true

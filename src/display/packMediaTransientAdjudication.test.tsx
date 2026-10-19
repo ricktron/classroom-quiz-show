@@ -32,9 +32,20 @@ import { TINY_PNG_BYTES } from '../pack/testFixtures'
  *
  * Repaired the way the brief prescribes: while hydration is unresolved the
  * Display shows a neutral LOADING placeholder and does not resolve the authored
- * path to its hosted URL at all. That closes the wrong-image route and also
- * stops "Image unavailable" — a terminal claim — being asserted about a state
- * the Display cannot yet verify.
+ * path to its hosted URL at all. It also stops "Image unavailable" — a terminal
+ * claim — being asserted about a state the Display cannot yet verify.
+ *
+ * SCOPE, precisely. That closes the route *while hydration is unresolved*. It
+ * does NOT close the underlying collision: authored media paths are still not
+ * namespaced away from build output, so post-settle a clue whose media is not
+ * in a hydrated pack resolves to its hosted URL and a deployed file at that
+ * path still paints. An earlier version of this docblock said "that closes the
+ * wrong-image route" without that bound, which claimed more than the repair
+ * does — and more than this very file asserts, since the colliding-path test
+ * below now proves the post-settle paint happens.
+ *
+ * The residual is recorded in `docs/design/CQS-UX-SURFACE-INVENTORY.md`,
+ * entry 15 ("Question / clue Display").
  */
 
 const PACK_PATH = 'media-fixtures/frc6-clue.png'
@@ -74,7 +85,12 @@ afterEach(() => {
  * Let the hydration promise settle, inside `act`.
  *
  * Every test here asserts the UNRESOLVED state, which is the FRC-6 property. But
- * hydration settles on a microtask after that, and React then updates state
+ * hydration settles on a microtask after that — true in THIS harness, because
+ * jsdom provides no `indexedDB`, so `IndexedDbAdapter.open()` returns on its
+ * synchronous `!this.factory` branch. Add a polyfill such as `fake-indexeddb`
+ * to `src/test/setup.ts` and the chain would need real event-loop turns that
+ * microtask draining cannot flush. That fails LOUD rather than silently: the
+ * post-settle assertions below go red. React then updates state
  * outside the test's act scope — five "not wrapped in act(...)" warnings, which
  * the first version of this branch introduced while its commit claimed none.
  * Draining it explicitly at the end of each test keeps the warnings at zero AND
@@ -107,7 +123,7 @@ describe('FRC-6: the projector while pack hydration is unresolved', () => {
     expect(screen.queryByTestId('mcd-image-loading')).toBeNull()
   })
 
-  it('never paints a deployed asset that happens to sit at the authored path', async () => {
+  it('does not paint a deployed asset at the authored path while hydration is unresolved', async () => {
     // The reviewer's reproduction, as a regression: this exact path ships in
     // `public/media-fixtures/` AND is authored by the repo's pack fixtures with
     // different bytes. Before the repair the transient painted the deployed one.
@@ -126,7 +142,15 @@ describe('FRC-6: the projector while pack hydration is unresolved', () => {
       the projector paints it without the teacher having chosen it, not the
       path collision itself. Authored media paths are still not namespaced away
       from build output, so a hosted-media game authoring a build-asset path
-      still gets the build asset. Open residual, out of this lane — see the PR.
+      still gets the build asset.
+
+      Open residual, out of this lane, recorded in
+      `docs/design/CQS-UX-SURFACE-INVENTORY.md` entry 15 — an in-repo reference,
+      because PR text cannot be a repository dependency once the PR is merged.
+
+      KNOWN DEFECT, asserted deliberately: this assertion is expected to go RED
+      when the namespacing residual is fixed. That is the signal to delete it,
+      not a regression.
     */
     await settleHydration()
     expect(screen.getByTestId('mcd-img')).toHaveAttribute('src', hostedUrl!)
