@@ -933,8 +933,14 @@ export function GamepadInputHostPanel({
                     team.id,
                     pendingAction,
                   )
-                  // Say "cleared" only when it was (CBN-1 review: no false success copy).
-                  setCaptureMessage(cleared ? `Controller button cleared for ${teamLabel}.` : null)
+                  // Say "cleared" only when it was (CBN-1 review: no false success
+                  // copy). A `false` now means either validation refused it — whose
+                  // reason renders separately in `gih-issues` — or the shared-team
+                  // guard refused it, where `applyMapping` has already set the
+                  // message AND that message is the whole explanation. Nulling
+                  // unconditionally would erase it, which on a campaign about
+                  // silent destruction is the one thing this must not do.
+                  if (cleared) setCaptureMessage(`Controller button cleared for ${teamLabel}.`)
                 }}
               >
                 Clear

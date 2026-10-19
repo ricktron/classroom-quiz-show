@@ -1275,4 +1275,32 @@ describe('Q7-R1 supported Wbuzz: Off-by-default contract and responding evidence
     panel.refresh()
     expect(activeRespondent(queueOf(panel.store))).toBe('red')
   })
+
+
+  it('FRC-3: the guided refusal is wired in the SETUP posture too, where teachers do handset setup', async () => {
+    /*
+      The committed guided detector renders with `selectionMode: false`, so it
+      exercises only the play-posture SonyBuzzSetupSection. Class Setup is where
+      a teacher actually does handset setup, and it is a SECOND render site — the
+      one I wired second and had briefly left unwired, which the depth layer in
+      `applyMapping` then hid by degrading the message instead of letting the
+      write through. This pins that site directly.
+    */
+    const panel = renderWbuzzPanel({ selectionMode: true })
+    await saveRedSharedWithBuzzer3(panel)
+    fireEvent.change(screen.getByTestId('sbs-team'), { target: { value: 'red' } })
+    for (const color of ['red', 'blue', 'orange', 'green', 'yellow'] as const) {
+      fireEvent.click(screen.getByTestId('sbs-capture'))
+      await panel.pressRedAndSettle(buttonIndexForSlotColor(4, color))
+    }
+
+    fireEvent.click(screen.getByTestId('sbs-apply'))
+
+    const status = screen.getByTestId('sbs-status')
+    expect(status).toHaveTextContent(/has 2 buzzers assigned/i)
+    expect(status).not.toHaveTextContent(/applied handset profile/i)
+    // Not the depth layer's degraded fallback: the call-site guard ran.
+    expect(status).not.toHaveTextContent(/see the controller assignments message/i)
+  })
+
 })

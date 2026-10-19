@@ -491,8 +491,9 @@ note only *additional* authority where it exists.
   (it silently destroyed the profile mapping instead) and remains parked here.
   Unassigning every Buzzer also withdraws the applied mapping immediately
   rather than at the next reload.
-- **Known open, not repaired (2026-10-18, FRC-3):** three members of the same
-  "visible Buzzer state must match the live mapping" family remain.
+- **Known open, not repaired (2026-10-18, FRC-3):** four defects in the same
+  "visible Buzzer state must match the live mapping" family remain, across the
+  three items below.
   (a) `Clear all controller buttons` AND a per-team Clear on a non-shared team
   both clear the live mapping while Buzzer setup still shows the slot assigned
   and the mapping saved — the disagreement FRC-3 closed for the unassign path,
