@@ -165,6 +165,13 @@ test('a reset class does not inherit the previous class\'s last buzz line or tim
 
   // The other half of the contract: the teacher's DURABLE keyboard setup is
   // still there. These bindings are device truth, not this class's play.
+  //
+  // A smoke check, not a discriminator, and worth saying so: keyboard bindings
+  // are written straight to config storage, and `enabled` defaults to On, so a
+  // remounted panel would re-derive exactly these values and pass this too. The
+  // claim that clearing in place preserves device setup is discriminated by the
+  // controller case below, where `enabled` defaults to Off and the mapping is
+  // materialized in memory.
   await expect(page.getByTestId('lih-enabled')).toHaveText('On')
   await expect(page.getByTestId('lih-key-granite')).toHaveText('1')
   await expect(page.getByTestId('lih-key-nimbus')).toHaveText('2')
@@ -216,6 +223,10 @@ test('a reset class does not inherit the previous class\'s controller buzz line'
   // And the other half: the teacher's handset setup survives the reset. The
   // handsets did not unpair because a new class walked in, so controller
   // buzzing stays on and the slot-to-team mapping stays bound.
+  //
+  // This one DOES discriminate: `enabled` defaults to Off and the mapping to
+  // empty, so keying this panel instead of clearing in place — which would
+  // destroy the device setup the design promises to keep — fails here.
   await expect(page.getByTestId('gih-enabled')).toHaveText('On')
   await expect(page.getByTestId('gih-control-granite')).toContainText('Buzzer 1')
   await expect(page.getByTestId('gih-count')).not.toHaveText('None detected')

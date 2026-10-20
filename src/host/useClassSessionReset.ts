@@ -36,8 +36,11 @@ export function useClassSessionReset(
 ): void {
   const [seenSessionId, setSeenSessionId] = useState(classSessionId)
   if (seenSessionId !== classSessionId) {
-    // Set the guard first: the immediate re-render this schedules must be a
-    // no-op, or the component would clear on every pass.
+    // What matters is that the guard is set at all, so the immediate re-render
+    // this schedules is a no-op. The ORDER of these two does not matter: both
+    // queue in the same pass and both apply before that re-render. (A reviewer
+    // ran the swapped form to check — it behaves identically. The earlier
+    // comment here claimed the order was load-bearing, which was wrong.)
     setSeenSessionId(classSessionId)
     clear()
   }

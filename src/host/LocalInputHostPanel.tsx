@@ -135,6 +135,12 @@ export function LocalInputHostPanel({
     device truth by the same rule. (The teams-change effect below does clear the
     capture flow, for a different reason: a different Game can invalidate the
     bindings being edited.)
+
+    Unlike the controller panel, this one's bindings are written straight to
+    config storage, so a remount would reload them rather than lose them. What
+    clearing in place buys here is the `aria-live` guarantee above, not survival
+    of the mapping, plus not discarding a key capture the teacher is part-way
+    through. The controller panel is the one that genuinely cannot be keyed.
   */
   useClassSessionReset(classSessionId, () => {
     setLastOutcome(null)

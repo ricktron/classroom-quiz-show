@@ -66,7 +66,8 @@ describe('useClassSessionReset', () => {
     fill()
 
     // Same class from here on: re-rendering must not keep wiping what this class
-    // has done. A hook without its guard would clear on every pass.
+    // has done. A guardless hook fails this — by throwing React's
+    // "Too many re-renders", since clearing on every pass schedules another.
     view.rerender(<Panel classSessionId="period-2" />)
     fireEvent.click(screen.getByRole('button', { name: 'rerender' }))
     view.rerender(<Panel classSessionId="period-2" />)
