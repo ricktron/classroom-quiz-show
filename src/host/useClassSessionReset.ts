@@ -20,6 +20,10 @@ import { useState } from 'react'
  * previous class's buzz before the clear landed. A render-phase update re-renders
  * immediately, before committing, so nothing stale is painted or announced.
  *
+ * That distinction is not just reasoning — `useClassSessionReset.test.tsx` pins
+ * it by recording every COMMIT and asserting the previous class's value is never
+ * among those after the change. An effect-based version of this hook fails it.
+ *
  * `clear` must only call state setters. It is invoked during render, so it may
  * not dispatch, write storage, or call a parent callback.
  *

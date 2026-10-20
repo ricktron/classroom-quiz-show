@@ -43,7 +43,9 @@ import {
  * event history alone.
  *
  * Public entrypoint for Slice 15. Internally uses `currentSessionEvents` and
- * `replay`; never accepts separately supplied state; never reads React,
+ * `replay` for everything it reports, and `effectiveEvents` only for the
+ * whole-log counts in `derivationBasis`; never accepts separately supplied
+ * state; never reads React,
  * browser globals, clocks, locale, randomness, public state, persistence, or
  * network.
  *

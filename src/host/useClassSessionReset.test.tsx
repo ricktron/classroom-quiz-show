@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { useClassSessionReset } from './useClassSessionReset'
 
@@ -22,12 +22,13 @@ function Panel({ classSessionId }: { readonly classSessionId?: string | null }) 
   useClassSessionReset(classSessionId, () => {
     setPerClass('')
   })
-  // Counts commits, so a hook that cleared on every pass would run away.
-  if (renders < 50) void renders
   return (
     <div>
       <output data-testid="per-class">{perClass}</output>
       <output data-testid="durable">{durable}</output>
+      {/* Rendered so an in-component re-render is observable, which is what the
+          "clears once" case uses to re-render without changing the session. */}
+      <output data-testid="renders">{renders}</output>
       <button type="button" onClick={() => setPerClass('this class buzzed')}>
         record play
       </button>
@@ -99,5 +100,53 @@ describe('useClassSessionReset', () => {
     view.rerender(<Panel classSessionId="period-1" />)
     expect(perClass()).toHaveTextContent('')
     expect(durable()).toHaveTextContent('buzzer 1 is red')
+  })
+
+  it('never COMMITS the previous class\'s value, which an effect-based clear would', () => {
+    // This is the hook's reason for existing in this form, so it gets a
+    // detector rather than only a comment.
+    //
+    // Both panels render their per-class slice into an `aria-live` region. A
+    // clear that ran in an effect would commit the stale value first and clear
+    // it on the next pass — one painted frame, and one announcement to a screen
+    // reader, of a buzz the new class never made. Clearing during render
+    // discards that pass before it is committed.
+    //
+    // `committed` records what actually reached the DOM, so the two
+    // implementations are distinguishable: an effect-based hook appends the
+    // stale value after the session changes; this one never does.
+    const committed: string[] = []
+    function Observed({ classSessionId }: { readonly classSessionId?: string | null }) {
+      const [perClass, setPerClass] = useState('')
+      useClassSessionReset(classSessionId, () => {
+        setPerClass('')
+      })
+      // No dependency array on purpose: this must record EVERY commit, not
+      // every change. Keyed on `perClass` it would miss the stale commit
+      // entirely, since the stale value is unchanged from before the reset —
+      // which is exactly how a first attempt at this detector let the
+      // effect-based implementation pass.
+      useEffect(() => {
+        committed.push(perClass)
+      })
+      return (
+        <div>
+          <output data-testid="per-class">{perClass}</output>
+          <button type="button" onClick={() => setPerClass('this class buzzed')}>
+            record play
+          </button>
+        </div>
+      )
+    }
+
+    const view = render(<Observed classSessionId="period-1" />)
+    fireEvent.click(screen.getByRole('button', { name: 'record play' }))
+    expect(committed).toContain('this class buzzed')
+
+    const beforeReset = committed.length
+    view.rerender(<Observed classSessionId="period-2" />)
+    expect(perClass()).toHaveTextContent('')
+    // Nothing the previous class did was committed on or after the change.
+    expect(committed.slice(beforeReset)).not.toContain('this class buzzed')
   })
 })

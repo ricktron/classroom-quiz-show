@@ -32,6 +32,11 @@ export const SESSION_SUMMARY_CONTRACT_VERSION = 1 as const
  * would imply undone events that never existed.
  */
 export type SessionSummaryDerivationBasisV1 = {
+  /**
+   * Retained verbatim from V1. It names the MECHANISM (effective history plus
+   * replay), which is still accurate; it does not name the window, which is now
+   * the current class session. Changing the literal would be a contract change.
+   */
   readonly kind: 'effective-history-and-replay'
   /** Events remaining after undo neutralization, across the whole log. */
   readonly effectiveEventCount: number
