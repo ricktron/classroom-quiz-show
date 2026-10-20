@@ -473,6 +473,15 @@ export async function getHidSimSnapshot(page: Page): Promise<{
   requestCalls: number
   getDevicesCalls: number
   openCalls: number
+  /**
+   * Product ids the simulator is currently OFFERING as granted devices.
+   *
+   * Needed because call counts alone cannot tell "the product refused the
+   * wrong device" from "there was no wrong device to refuse" — both produce
+   * identical counts and identical UI. A journey about a refusal has to be
+   * able to assert that something was there to refuse (CBJ-10, review F1).
+   */
+  grantedProductIds: number[]
   sendCalls: { reportId: number; bytes: number[] }[]
   violations: string[]
 }> {
@@ -483,6 +492,7 @@ export async function getHidSimSnapshot(page: Page): Promise<{
       requestCalls: state.requestCalls,
       getDevicesCalls: state.getDevicesCalls,
       openCalls: state.openCalls,
+      grantedProductIds: state.granted.map((device) => device.productId),
       sendCalls: state.sendCalls.map((c) => ({ reportId: c.reportId, bytes: [...c.bytes] })),
       violations: [...state.violations],
     }

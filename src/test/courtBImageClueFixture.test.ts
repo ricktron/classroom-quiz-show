@@ -39,10 +39,20 @@ import {
  *     the archive bytes anyway — it is insensitive only to the build clock.
  *  2. THE COLLISION IS STILL ARMED — a real build asset still ships at the
  *     authored clue path. If someone renames or deletes
- *     `public/media-fixtures/s05-f1-stress-diagram.png`, the authored path
- *     resolves to nothing, the wrong-image defect becomes unreachable, and
- *     CBJ-08 would keep passing while proving nothing. That is the vacuous
- *     pass this test exists to prevent.
+ *     `public/media-fixtures/s05-f1-stress-diagram.png`, the scenario stops
+ *     being real: nothing else is served at that path, so a projector that
+ *     resolved it early would paint a BROKEN image rather than another clue's
+ *     picture, and the natural-size discriminator in CBJ-08 would have nothing
+ *     to compare against.
+ *
+ *     Scope of that claim, measured rather than assumed: independent review
+ *     removed the asset AND seeded the early-resolve defect, and CBJ-08 still
+ *     failed — its primary detector records the `src` ATTRIBUTE, which the
+ *     product sets whether or not the file resolves. So this guard protects
+ *     the realism of the scenario and the size discriminator; it is NOT what
+ *     keeps the primary detection alive. An earlier version of this comment
+ *     claimed CBJ-08 would "pass while proving nothing" without it, which
+ *     overstated the guard.
  *  3. THE TWO IMAGES REMAIN DISTINGUISHABLE BY SIZE — the pack image and the
  *     colliding asset must keep different natural dimensions, so the journey's
  *     size assertion is a real discriminator and not a tautology.
@@ -126,7 +136,7 @@ describe('Court B image-clue pack fixture (CBJ-08)', () => {
   it('the authored clue path still collides with a shipped build asset (the defect stays reachable)', () => {
     expect(
       existsSync(HOSTED_ASSET_PATH),
-      'CBJ-08 needs a real build asset at the authored clue path; without it the wrong-image defect cannot occur and the journey would pass vacuously',
+      'CBJ-08 needs a real build asset at the authored clue path: without it an early-resolving projector paints a broken image instead of another clue, and the natural-size discriminator has nothing to compare against',
     ).toBe(true)
     expect(HOSTED_ASSET_PATH.endsWith(`public/${COURT_B_IMAGE_AUTHORED_PATH}`)).toBe(true)
   })

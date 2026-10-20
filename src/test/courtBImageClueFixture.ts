@@ -212,18 +212,23 @@ export async function buildCourtBImageCluePackBytes(): Promise<Uint8Array> {
   }
   const image = courtBPackImageBytes()
   const built = await buildPackFromDefinition(imported.definition, {
-    acquireMediaBytes: async (sourcePath: string) =>
-      sourcePath === COURT_B_IMAGE_AUTHORED_PATH
-        ? { status: 'success' as const, bytes: image }
-        : {
-            status: 'failure' as const,
-            issue: packIssue(
-              'pack-media-acquisition-failed',
-              'media',
-              sourcePath,
-              `Court B image-clue fixture has no media for ${JSON.stringify(sourcePath)}.`,
-            ),
-          },
+    // Resolves from memory, so there is nothing to await; `ResolveMediaBytes`
+    // is promise-returning, hence the explicit `Promise.resolve` rather than an
+    // `async` function with no `await` in it.
+    acquireMediaBytes: (sourcePath: string) =>
+      Promise.resolve(
+        sourcePath === COURT_B_IMAGE_AUTHORED_PATH
+          ? { status: 'success' as const, bytes: image }
+          : {
+              status: 'failure' as const,
+              issue: packIssue(
+                'pack-media-acquisition-failed',
+                'media',
+                sourcePath,
+                `Court B image-clue fixture has no media for ${JSON.stringify(sourcePath)}.`,
+              ),
+            },
+      ),
   })
   if (built.status !== 'success') {
     throw new Error(

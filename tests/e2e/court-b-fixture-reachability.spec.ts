@@ -9,6 +9,7 @@ import {
   COURT_B_PACK_IMAGE_WIDTH,
 } from '../../src/test/courtBImageClueFixture'
 import {
+  UNSUPPORTED_HID_PRODUCT_ID,
   assertProductReadBoundary,
   assertWbuzzBoundaryInstalled,
   getHidSimSnapshot,
@@ -410,6 +411,30 @@ test('[CBJ-09] Final response window runs out, then settlement and Undo still wo
     passing. The end-of-game summary therefore has to report an expiry, and the
     Undo stack has to be unaffected by it.
   */
+  /*
+    PRECONDITION, PAIRED WITH THE LINE BELOW — DO NOT SEPARATE THEM.
+
+    This journey only catches a reversible expiry while the settlement is
+    ALREADY in history when the window expires. Independent review confirmed
+    that moving the clock advance above the settlement makes this journey pass
+    with the defect present (review F2).
+
+    So the requirement is executable, not just described: the settlement must be
+    the current Undo target at the moment the clock is advanced. If the two
+    lines below are moved above the settlement together, this assertion fails
+    instead of the journey quietly going vacuous.
+
+    Honest limit: this does not make the ordering impossible to break. Moving
+    the `fastForward` line ALONE, leaving this assertion behind, would still
+    pass. A UI-level journey cannot see event order directly; the structural
+    defence against this defect class is the product's own type
+    (`FinalWindowExpiryEventBase.reversible: false`), which makes the mutation
+    fail to compile at all.
+  */
+  await expect(
+    page.getByRole('group', { name: 'Live game actions' }).getByRole('button').first(),
+    'CBJ-09 requires the settlement to be in history BEFORE the window expires; it is not, so the steps have been reordered and this journey would no longer catch a reversible expiry',
+  ).toHaveText('Undo Final correct (Nimbus)')
   await page.clock.fastForward('00:31')
 
   /*
@@ -439,18 +464,23 @@ test('[CBJ-09] Final response window runs out, then settlement and Undo still wo
     Everything above this point is about what the expiry must NOT do, and all of
     it would still hold if the expiry had never fired at all — a `fastForward`
     that silently stopped firing the timer would leave this journey green while
-    testing nothing. The session summary counts observed timer expirations, so
-    the count is read back as evidence that the fact was recorded.
+    testing nothing. So the recorded fact is read back.
+
+    Read from the Final section's own response-window counter, not the
+    "Timer and buzz activity" total: that total sums board timer, Final wager
+    window and Final response window expirations into one number, so it would
+    also be satisfied by some OTHER window expiring (review F3). This counter is
+    specific to the window this journey is about.
   */
-  const timerActivity = page.getByRole('region', { name: 'Timer and buzz activity' })
-  await expect(timerActivity).toBeVisible()
-  const expirations = Number(
-    /Timer expirations\s*(\d+)/.exec((await timerActivity.innerText()).replace(/\n/g, ' '))?.[1] ??
-      'NaN',
+  const finalSection = page.getByRole('region', { name: 'Final Wager', exact: true })
+  await expect(finalSection).toBeVisible()
+  const responseWindow = /Response-window transitions[^\n]*\n?\s*(\d+)\s*\/\s*(\d+)\s*\/\s*(\d+)\s*\/\s*(\d+)/.exec(
+    await finalSection.innerText(),
   )
+  expect(responseWindow, 'the summary must report the Final response-window transitions').not.toBeNull()
   expect(
-    expirations,
-    'the Final response window must actually have expired; the summary recorded no expiry',
+    Number(responseWindow?.[4] ?? 'NaN'),
+    'the Final response window must actually have expired; the summary recorded no expiry for it',
   ).toBeGreaterThanOrEqual(1)
 })
 
@@ -502,6 +532,21 @@ test('[CBJ-10 refusal] A granted Sony device that is not the supported profile i
   await installWbuzzHardwareSimulator(page, 'unsupported-pid')
   await reachBuzzerSetup(page)
   await assertWbuzzBoundaryInstalled(page)
+
+  /*
+    There must be something to refuse.
+
+    Everything below is about the product NOT adopting a non-supported device,
+    and all of it holds just as well when the simulator offers no device at all
+    — same counts, same UI. So a refusal journey has to assert the wrong device
+    is genuinely on offer first, or it cannot tell a working refusal from an
+    empty one. (Found by independent review: with `unsupported-pid` granting
+    nothing, every later assertion here still passed.)
+  */
+  expect(
+    (await getHidSimSnapshot(page)).grantedProductIds,
+    'the simulator must be offering the non-supported device, or this journey proves nothing',
+  ).toEqual([UNSUPPORTED_HID_PRODUCT_ID])
 
   await page.getByRole('button', { name: 'Connect buzzers' }).click()
   // Refused: the teacher is never told the receiver is connected.

@@ -7,6 +7,13 @@ Durable checkpoint ledger for a blinded Court B BLACK-BOX TEACHER RUN
 **not** eligibility, and **not** a recertification result. Rows are written as a
 run proceeds; a row claims only what the named tester actually reported.
 
+**Audience: run operator only. Do not hand this file, or a link to it, to a
+blinded tester.** It states the population composition below, so a tester who
+read it would acquire a prior on whether their own build is the clean one. A
+tester receives only their opaque build code, the committed fixtures, and
+[`COURT-B-BLACK-BOX-BRIEF.md`](COURT-B-BLACK-BOX-BRIEF.md) — which does not
+link here.
+
 ## Why this file exists
 
 A blinded Court B run is long, externally rate-limited, and interruptible. Two
