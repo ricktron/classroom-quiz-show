@@ -21,10 +21,19 @@ export const SESSION_SUMMARY_CONTRACT_KIND =
 /** Explicit contract version. Bump only with a reviewed contract change. */
 export const SESSION_SUMMARY_CONTRACT_VERSION = 1 as const
 
-/** How the summary was produced from history. */
+/**
+ * How the summary was produced from history.
+ *
+ * Both counts describe the WHOLE append-only log, which may hold several class
+ * sessions: one host run can reset between class periods. The summary itself is
+ * derived from the current class session's window — from the latest
+ * `SESSION_INITIALIZED` onward — and no field here reports that window's size,
+ * deliberately: a pair where one count was the window and the other the log
+ * would imply undone events that never existed.
+ */
 export type SessionSummaryDerivationBasisV1 = {
   readonly kind: 'effective-history-and-replay'
-  /** Events remaining after undo neutralization. */
+  /** Events remaining after undo neutralization, across the whole log. */
   readonly effectiveEventCount: number
   /** Full append-only history length, including undone events and undo markers. */
   readonly historyEventCount: number
@@ -227,7 +236,13 @@ export interface SessionSummaryV1 {
   readonly sessionId: string
   readonly gameId: string
   readonly gameTitle: string
-  /** `occurredAt` of the effective `SESSION_INITIALIZED` event. */
+  /**
+   * `occurredAt` of the LATEST effective `SESSION_INITIALIZED` event — the start
+   * of the class session this summary is about.
+   *
+   * A log may hold more than one: "Reset this class session" begins another class
+   * over the same log, and this is that class's start, not the host run's.
+   */
   readonly recordedSessionStartAt: number
   /** `occurredAt` of the effective `GAME_SESSION_ENDED` event. */
   readonly recordedCompletionAt: number

@@ -879,6 +879,28 @@ export function FoundationControls({
       >
         <legend className="visually-hidden">Session command controls</legend>
 
+        {/*
+          Why these panels carry a key, and why one of them does not (CBN-NEW-1).
+
+          "Reset this class session" starts a new class over the same append-only
+          log. It does not remount the Host and does not bump the store epoch, and
+          these panels' early returns for "no round yet" happen INSIDE mounted
+          components — so without help, their React state is the PREVIOUS class's:
+          an armed "End the game" confirmation on an action the app itself calls
+          irreversible, typed Final wagers with Save enabled, a typed manual
+          correction with its confirmation already ticked, a last-buzz line
+          naming a buzz this class never made, and the timer length another class
+          chose.
+
+          A panel whose local state is entirely per-class is keyed on the class
+          session, so a reset gives the next class a fresh one. Each key value is
+          DISTINCT per panel: React maps old children by key value, and two
+          siblings sharing one value collapse into a single map entry, leaving the
+          overwritten fiber undeleted and its <section> orphaned in the document
+          with duplicate element ids. `LocalInputHostPanel` is NOT keyed, because
+          it also owns the durable keyboard mapping, which must survive a reset —
+          it clears only its per-class slices instead.
+        */}
         {game && playReady && (
           <div className="foundation__gameplay" data-testid="host-gameplay">
             {/*
@@ -889,17 +911,22 @@ export function FoundationControls({
             */}
             <div className="foundation__lead">
               {/* Q6-RP-1 (G1): ordinary round progression — never via Advanced diagnostics. */}
-              <RoundProgressHostPanel dispatch={dispatch} game={game} clock={clock} />
+              <RoundProgressHostPanel
+                key={`rph-${classSessionId}`}
+                dispatch={dispatch}
+                game={game}
+                clock={clock}
+              />
               <CategoryBoardHostPanel dispatch={dispatch} game={game} clock={clock} />
             </div>
-            <ResponseTimerHostPanel dispatch={dispatch} game={game} clock={clock} />
+            <ResponseTimerHostPanel
+              key={`rth-${classSessionId}`}
+              dispatch={dispatch}
+              game={game}
+              clock={clock}
+            />
             <FinalWagerHostPanel
-              /*
-                Not keyed, unlike the panels above and below: remounting this one
-                leaves its old <section> in the DOM. It clears its own per-class
-                state on a session change instead — see the note in the panel.
-              */
-              classSessionId={classSessionId}
+              key={`fwh-${classSessionId}`}
               dispatch={dispatch}
               game={game}
               clock={clock}
@@ -914,15 +941,14 @@ export function FoundationControls({
                 void persistence.retryActiveSessionPersist(() => store.getHistory(), registry)
               }}
             />
-            <LocalInputHostPanel dispatch={dispatch} game={game} clock={clock} />
-            {/*
-              Keyed for the same reason: the typed manual correction, and the
-              explicit confirmation that unlocks a large or negative one, are the
-              teacher's unsaved intent for THIS class. A reset must not leave the
-              next class pre-confirmed to apply another class's amount.
-            */}
+            <LocalInputHostPanel
+              classSessionId={classSessionId}
+              dispatch={dispatch}
+              game={game}
+              clock={clock}
+            />
             <TeamScoringPanel
-              key={classSessionId}
+              key={`tsp-${classSessionId}`}
               dispatch={dispatch}
               game={game}
               history={history}

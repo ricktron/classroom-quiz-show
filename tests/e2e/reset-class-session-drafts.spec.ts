@@ -93,3 +93,55 @@ test('a reset class does not inherit a typed manual correction or its confirmati
   await expect(page.getByTestId('tsp-manual-input')).toHaveValue('')
   await expect(page.locator('[data-testid="tsp-confirm"]:checked')).toHaveCount(0)
 })
+
+test('a reset class does not inherit an armed end-the-game confirmation', async ({
+  page,
+  context,
+}, info) => {
+  test.skip(info.project.name !== 'desktop-1080p', 'round-progress journey runs once (1080p)')
+  await importPlayNamesDisplayStartRound1(page, context)
+
+  // First class: arm "End the game" — the confirmation step for an action the
+  // app itself calls irreversible — but never confirm it.
+  await page.getByTestId('rph-end-early').click()
+  await expect(page.getByTestId('rph-end-confirm')).toBeVisible()
+
+  await resetClassSession(page)
+  await page.getByRole('button', { name: 'Start Round 1' }).click()
+
+  // The new class must not open with another class's confirmation already armed:
+  // one click on a control it never asked for would end its session for good.
+  await expect(page.getByTestId('rph-end-confirm')).toHaveCount(0)
+  await expect(page.getByTestId('rph-end-early')).toBeVisible()
+})
+
+test('a reset class does not inherit the previous class\'s last buzz line or timer choice', async ({
+  page,
+  context,
+}, info) => {
+  test.skip(info.project.name !== 'desktop-1080p', 'buzz journey runs once (1080p)')
+  await importPlayNamesDisplayStartRound1(page, context)
+
+  // First class: open a clue, arm the window, pick a non-default timer length,
+  // and buzz in from the keyboard.
+  await page.getByRole('button', { name: 'Rocks, 200 points' }).click()
+  await page.getByRole('button', { name: 'Show prompt on display' }).click()
+  await page.getByTestId('rth-arm').click()
+  await expect(page.getByTestId('lih-armed')).toContainText('Armed')
+  await page.getByTestId('rth-duration').selectOption('120')
+  await page.keyboard.press('Digit1')
+  await expect(page.getByTestId('lih-outcome')).toContainText('buzzed in')
+
+  await resetClassSession(page)
+  await page.getByRole('button', { name: 'Start Round 1' }).click()
+
+  // A class that has not buzzed yet must not be told that it has — this line is
+  // an aria-live region, so a screen reader announces it too.
+  await expect(page.getByTestId('lih-outcome')).not.toContainText('buzzed in')
+
+  // And the response window goes back to the length this Game authored, rather
+  // than the length the previous class happened to pick.
+  await page.getByRole('button', { name: 'Rocks, 200 points' }).click()
+  await page.getByRole('button', { name: 'Show prompt on display' }).click()
+  await expect(page.getByTestId('rth-duration')).toHaveValue('30')
+})

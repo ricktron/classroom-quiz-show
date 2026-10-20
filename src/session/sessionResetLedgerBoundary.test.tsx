@@ -205,6 +205,10 @@ describe('Reset this class session — the score-ledger boundary', () => {
     store.dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: resetAt })
     openTile(store)
     awardFull(store, 'red')
+    // Award a second tile and undo it, so the two basis counts MUST differ and
+    // the assertion below cannot pass by their being coincidentally equal.
+    awardFull(store, 'blue', TILE, 100)
+    store.dispatch({ type: 'UNDO', issuedAt: resetAt + 500 })
     store.dispatch({ type: 'END_GAME_SESSION', issuedAt: resetAt + 1_000 })
 
     const result = deriveSessionSummaryV1(store.getHistory())
@@ -219,11 +223,12 @@ describe('Reset this class session — the score-ledger boundary', () => {
     // the window is what narrowed, not the meaning of these two counts. If this
     // reported the window instead, the pair would imply undone events that never
     // existed.
-    expect(summary.derivationBasis.historyEventCount).toBe(store.getHistory().length)
-    expect(summary.derivationBasis.effectiveEventCount).toBe(
-      store.getHistory().filter((event) => event.type !== 'EVENT_UNDONE').length,
-    )
-    expect(summary.derivationBasis.effectiveEventCount).toBeGreaterThan(5)
+    const basis = summary.derivationBasis
+    expect(basis.historyEventCount).toBe(store.getHistory().length)
+    // One undo marker plus the event it neutralized: effective is 2 short of the
+    // log, so neither count can stand in for the other.
+    expect(basis.effectiveEventCount).toBe(basis.historyEventCount - 2)
+    expect(basis.effectiveEventCount).toBeGreaterThan(5)
 
     // One award in this class — not the three the log holds across both.
     expect(summary.scoreActivity.observed.scoreChangeCount).toBe(1)

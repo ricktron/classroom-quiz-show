@@ -80,6 +80,14 @@ export interface LocalInputHostPanelProps {
    * "defaults, not persisted" — still fully usable).
    */
   readonly storage?: LocalConfigStorage | null
+  /**
+   * The current class session's id.
+   *
+   * This panel is not remounted on a class reset — it owns the durable keyboard
+   * mapping, which must survive one — so it clears its own per-class slices when
+   * this changes instead (CBN-NEW-1).
+   */
+  readonly classSessionId?: string | null
 }
 
 /** What the panel is currently doing about key capture. */
@@ -92,6 +100,7 @@ export function LocalInputHostPanel({
   game,
   clock = systemClock,
   storage,
+  classSessionId,
 }: LocalInputHostPanelProps) {
   const teams = game.definition.teams
   const roundIndex = game.currentRoundIndex
@@ -109,6 +118,29 @@ export function LocalInputHostPanel({
   const [captureMessage, setCaptureMessage] = useState<string | null>(null)
   const [issues, setIssues] = useState<readonly KeyboardMappingIssue[]>([])
   const [lastOutcome, setLastOutcome] = useState<KeyboardBuzzOutcome | null>(null)
+
+  /*
+    A new class inherits none of the previous class's input activity.
+
+    The teams-change effect below already clears this set when a different Game
+    is loaded; a class reset keeps the same Game, so that effect does not fire and
+    `lastOutcome` used to survive. Its line is an `aria-live` region, so leaving
+    it would not merely look wrong — a screen reader would announce that a class
+    which has not buzzed yet just buzzed in. Adjusting state during render rather
+    than in an effect means nothing stale is painted or announced at all.
+
+    `mapping`, `loadNote` and `enabled` are deliberately NOT cleared: the
+    keyboard bindings and whether keyboard buzzing is on are the teacher's
+    durable device setup, not this class's play.
+  */
+  const [inputForSession, setInputForSession] = useState<string | null | undefined>(classSessionId)
+  if (inputForSession !== classSessionId) {
+    setInputForSession(classSessionId)
+    setLastOutcome(null)
+    setCaptureMessage(null)
+    setIssues([])
+    setCapture({ mode: 'idle' })
+  }
 
   const initial = useMemo(
     () => loadKeyboardMapping(configStorage, teams),
