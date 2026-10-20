@@ -1164,17 +1164,55 @@ export function effectiveEvents(history: readonly SessionEvent[]): readonly Sess
 }
 
 /**
+ * The effective events belonging to the CURRENT class session: everything from
+ * the latest `SESSION_INITIALIZED` onward, that event included.
+ *
+ * `history` is append-only and spans the whole host run, so after "Reset this
+ * class session" it still holds the previous class's events. Replayed STATE is
+ * unaffected — `SESSION_INITIALIZED` builds a brand-new `PrivateSessionState`,
+ * so scores, boards, timers, buzzes and wagers all start clean — but any surface
+ * that asks the history a question directly ("has this team already been awarded
+ * this tile?", "what changed last?", "what would Undo touch?", "what does this
+ * class's summary say?") would otherwise answer for both classes at once.
+ *
+ * The cut is INCLUSIVE of the init because consumers replay the slice and need
+ * the event that creates the session, and because the summary reports that
+ * event's time as the class's start.
+ *
+ * A history with no `SESSION_INITIALIZED` yields every effective event, so this
+ * is only ever narrower than {@link effectiveEvents}, never different in kind.
+ * `recoveryBannerContext` and `hostPlayPosture` take the same latest-init cut
+ * for their own questions, exclusive of the init, since they ask what has
+ * HAPPENED since it.
+ */
+export function currentSessionEvents(
+  history: readonly SessionEvent[],
+): readonly SessionEvent[] {
+  const effective = effectiveEvents(history)
+  for (let i = effective.length - 1; i >= 0; i -= 1) {
+    if (effective[i]?.type === 'SESSION_INITIALIZED') return effective.slice(i)
+  }
+  return effective
+}
+
+/**
  * Find the latest reversible event that has not already been undone — the target
  * of the next UNDO. Returns `null` when there is nothing to undo (empty history,
- * or every reversible event already undone), which makes UNDO a safe no-op.
+ * every reversible event already undone, or nothing reversible in THIS class
+ * session), which makes UNDO a safe no-op.
+ *
+ * Scoped to the current class session: undo must not reach across a reset into
+ * the class before it. Reversing one of those events changes nothing a teacher
+ * can see — the reset already discarded its effect — yet it would spend the Undo
+ * affordance and record an `EVENT_UNDONE` against another class's history.
  */
 export function findUndoTarget(
   history: readonly SessionEvent[],
 ): SessionEvent | null {
-  const undone = collectUndoneIds(history)
-  for (let i = history.length - 1; i >= 0; i -= 1) {
-    const event = history[i]
-    if (event.reversible && !undone.has(event.id)) return event
+  const scoped = currentSessionEvents(history)
+  for (let i = scoped.length - 1; i >= 0; i -= 1) {
+    const event = scoped[i]
+    if (event.reversible) return event
   }
   return null
 }

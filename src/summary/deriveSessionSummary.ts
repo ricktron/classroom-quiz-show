@@ -12,7 +12,7 @@ import type { SessionEvent } from '../state/events'
 import type { PrivateGameState, PrivateState } from '../state/privateState'
 import {
   categoryBoardStateFor,
-  effectiveEvents,
+  currentSessionEvents,
   finalWagerStateFor,
   replay,
   responsePhaseFor,
@@ -41,10 +41,15 @@ import {
  * Derive one deterministic host-private session summary from authoritative
  * event history alone.
  *
- * Public entrypoint for Slice 15. Internally uses `effectiveEvents` and
+ * Public entrypoint for Slice 15. Internally uses `currentSessionEvents` and
  * `replay`; never accepts separately supplied state; never reads React,
  * browser globals, clocks, locale, randomness, public state, persistence, or
  * network.
+ *
+ * The event window is THIS class session — from the latest `SESSION_INITIALIZED`
+ * onward. A host run may hold several classes on one append-only log (that is
+ * what "Reset this class session" does), and a summary that counted all of them
+ * would report another class's figures to this one.
  */
 export function deriveSessionSummaryV1(
   history: readonly SessionEvent[],
@@ -72,7 +77,7 @@ export function deriveSessionSummaryV1(
     return { status: 'active-or-incomplete' }
   }
 
-  const effective = effectiveEvents(history)
+  const effective = currentSessionEvents(history)
   const endIndex = findLastIndex(effective, (event) => event.type === 'GAME_SESSION_ENDED')
   if (endIndex < 0) {
     return { status: 'invalid-history', reason: 'ended-without-game-session-ended' }
