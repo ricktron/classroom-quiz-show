@@ -1,6 +1,12 @@
 import { test, expect, type Page } from '@playwright/test'
 import { importPlayNamesDisplayStartRound1 } from './helpers/courtQualificationJourney'
 import { ensureHostMoreOpen } from './helpers/hostMore'
+import {
+  installSimulatedSupportedWbuzz,
+  pressSimulatedGamepadButton,
+  settleGamepadPolls,
+} from './helpers/simulatedGamepad'
+import { buttonIndexForSlotColor } from '../../src/input/sonyBuzzSupportedProfile'
 
 /**
  * CBN-NEW-1, second artifact class: the Host's own unsaved drafts must not cross
@@ -18,6 +24,19 @@ import { ensureHostMoreOpen } from './helpers/hostMore'
  */
 
 const wagers = (page: Page) => page.getByRole('group', { name: 'Team wagers' })
+
+/**
+ * The Final panel must be the ONLY one in the document.
+ *
+ * Keying two siblings on the same value orphans one panel's `<section>` with
+ * duplicate element ids; `.first()` would quietly pass against that, and this is
+ * the panel the whole key-collision analysis came from, so it gets the explicit
+ * check rather than relying on it.
+ */
+async function expectExactlyOneFinalPanel(page: Page): Promise<void> {
+  await expect(page.locator('section.fwh')).toHaveCount(1)
+  await expect(page.locator('#fwh-title')).toHaveCount(1)
+}
 
 async function awardRocks200(page: Page, teamName: string): Promise<void> {
   await page.getByRole('button', { name: 'Rocks, 200 points' }).click()
@@ -54,6 +73,7 @@ test('a reset class does not inherit the previous class\'s typed Final wager', a
   // First class: score, reach the Final, and TYPE a wager without saving it.
   await awardRocks200(page, 'Granite')
   await beginFinal(page)
+  await expectExactlyOneFinalPanel(page)
   const firstWager = wagers(page).getByRole('spinbutton', { name: /^Wager \(0–200\)$/ }).first()
   await firstWager.fill('50')
   await expect(firstWager).toHaveValue('50')
@@ -65,7 +85,9 @@ test('a reset class does not inherit the previous class\'s typed Final wager', a
   await awardRocks200(page, 'Team Granite')
   await beginFinal(page)
 
-  // Nothing of the previous class may be sitting in this class's input.
+  // Nothing of the previous class may be sitting in this class's input, and the
+  // remount must not have left the previous class's panel behind.
+  await expectExactlyOneFinalPanel(page)
   const secondWager = wagers(page).getByRole('spinbutton', { name: /^Wager \(0–200\)$/ }).first()
   await expect(secondWager).toHaveValue('')
 })
@@ -144,4 +166,40 @@ test('a reset class does not inherit the previous class\'s last buzz line or tim
   await page.getByRole('button', { name: 'Rocks, 200 points' }).click()
   await page.getByRole('button', { name: 'Show prompt on display' }).click()
   await expect(page.getByTestId('rth-duration')).toHaveValue('30')
+})
+
+test('a reset class does not inherit the previous class\'s controller buzz line', async ({
+  page,
+  context,
+}, info) => {
+  test.skip(info.project.name !== 'desktop-1080p', 'controller journey runs once (1080p)')
+  // Simulated handsets only — this says nothing about physical Sony/Namtai
+  // hardware, which is a separate owner session.
+  await installSimulatedSupportedWbuzz(page)
+  await importPlayNamesDisplayStartRound1(page, context)
+
+  // First class: open a clue, arm the window, turn controller buzzing on, and
+  // buzz in from a handset.
+  await page.getByRole('button', { name: 'Rocks, 200 points' }).click()
+  await page.getByRole('button', { name: 'Show prompt on display' }).click()
+  await page.getByTestId('rth-arm').click()
+
+  const controllers = page.getByTestId('gih-advanced-generic')
+  if ((await controllers.getAttribute('open')) === null) {
+    await controllers.locator(':scope > summary').click()
+  }
+  await settleGamepadPolls(page, 12)
+  await page.getByTestId('gih-toggle').click()
+  await expect(page.getByTestId('gih-enabled')).toHaveText('On')
+  await settleGamepadPolls(page, 12)
+  await pressSimulatedGamepadButton(page, buttonIndexForSlotColor(1, 'red'))
+  await expect(page.getByTestId('gih-outcome')).toContainText('buzzed in', { timeout: 10_000 })
+
+  await resetClassSession(page)
+  await page.getByRole('button', { name: 'Start Round 1' }).click()
+
+  // The disclosure stays open across the reset, so this line is on screen — and
+  // it is an aria-live region, so a screen reader announces it. A class that has
+  // not buzzed must not be told that it has.
+  await expect(page.getByTestId('gih-outcome')).not.toContainText('buzzed in')
 })

@@ -139,7 +139,6 @@ export function FinalWagerHostPanel({
   const [responseSeconds, setResponseSeconds] = useState<number>(authoredSeconds)
   const [wagerDrafts, setWagerDrafts] = useState<Record<string, string>>({})
   const [responseDrafts, setResponseDrafts] = useState<Record<string, string>>({})
-
   const wagersDurable = isActiveSessionHistoryDurable(eventHistoryLength, activeSessionDurability)
   const liveFinal = round === null || definition === null ? null : finalWagerStateFor(game, round.id)
   // CBN-3: the host countdown ticks while either Final window runs.

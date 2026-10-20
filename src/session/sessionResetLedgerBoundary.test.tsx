@@ -241,9 +241,13 @@ describe('Reset this class session — the score-ledger boundary', () => {
   it('does not report the previous class\'s Final semantics for a class that never reached the Final', async () => {
     // A competitive profile's `finalSemantics` is compared field-for-field when
     // the Host decides whether two completed classes may be rolled up together.
-    // Inheriting the previous class's Final semantics makes an honest class look
-    // incompatible, and the ledger then quietly leaves it out of the cross-class
-    // totals a teacher is reading.
+    //
+    // Inheriting the previous class's Final semantics made the two profiles
+    // IDENTICAL, so the classes were silently MERGED into one rollup under a
+    // profile falsely claiming this class had played a Final. Nothing was
+    // dropped from the ledger — every profile group renders its own rollup with
+    // a printed separation reason — so the harm was a wrong total, not a missing
+    // one.
     const definition = finalDefinition()
     const store = createSessionStore()
     store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 'period-1' })

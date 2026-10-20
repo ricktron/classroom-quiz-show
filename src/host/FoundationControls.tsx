@@ -989,6 +989,7 @@ export function FoundationControls({
       */}
       {game && (
         <GamepadInputHostPanel
+                classSessionId={classSessionId}
           dispatch={dispatch}
           game={game}
           clock={clock}
