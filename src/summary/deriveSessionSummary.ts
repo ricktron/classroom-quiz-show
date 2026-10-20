@@ -12,6 +12,7 @@ import type { SessionEvent } from '../state/events'
 import type { PrivateGameState, PrivateState } from '../state/privateState'
 import {
   categoryBoardStateFor,
+  currentSessionEvents,
   effectiveEvents,
   finalWagerStateFor,
   replay,
@@ -41,10 +42,17 @@ import {
  * Derive one deterministic host-private session summary from authoritative
  * event history alone.
  *
- * Public entrypoint for Slice 15. Internally uses `effectiveEvents` and
- * `replay`; never accepts separately supplied state; never reads React,
+ * Public entrypoint for Slice 15. Internally uses `currentSessionEvents` and
+ * `replay` for everything it reports, and `effectiveEvents` only for the
+ * whole-log counts in `derivationBasis`; never accepts separately supplied
+ * state; never reads React,
  * browser globals, clocks, locale, randomness, public state, persistence, or
  * network.
+ *
+ * The event window is THIS class session — from the latest `SESSION_INITIALIZED`
+ * onward. A host run may hold several classes on one append-only log (that is
+ * what "Reset this class session" does), and a summary that counted all of them
+ * would report another class's figures to this one.
  */
 export function deriveSessionSummaryV1(
   history: readonly SessionEvent[],
@@ -72,7 +80,7 @@ export function deriveSessionSummaryV1(
     return { status: 'active-or-incomplete' }
   }
 
-  const effective = effectiveEvents(history)
+  const effective = currentSessionEvents(history)
   const endIndex = findLastIndex(effective, (event) => event.type === 'GAME_SESSION_ENDED')
   if (endIndex < 0) {
     return { status: 'invalid-history', reason: 'ended-without-game-session-ended' }
@@ -107,8 +115,19 @@ export function deriveSessionSummaryV1(
     kind: SESSION_SUMMARY_CONTRACT_KIND,
     version: SESSION_SUMMARY_CONTRACT_VERSION,
     derivationBasis: {
+      /*
+        Both counts describe the whole append-only log, as the contract documents
+        them: `effectiveEventCount` is what survives undo neutralization and
+        `historyEventCount` is the full length including undone events and undo
+        markers. They are deliberately NOT the session window `effective` below.
+
+        Reporting the window here instead would make the pair lie about each
+        other: a one-class-old log of 11 events whose 5-event second class is
+        being summarised would read "effective 5 of history 11" and imply six
+        undone events that never existed.
+      */
       kind: 'effective-history-and-replay',
-      effectiveEventCount: effective.length,
+      effectiveEventCount: effectiveEvents(history).length,
       historyEventCount: history.length,
     },
     sessionId: state.session.sessionId,

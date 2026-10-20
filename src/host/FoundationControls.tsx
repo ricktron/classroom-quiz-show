@@ -879,6 +879,33 @@ export function FoundationControls({
       >
         <legend className="visually-hidden">Session command controls</legend>
 
+        {/*
+          Why these panels carry a key, and why one of them does not (CBN-NEW-1).
+
+          "Reset this class session" starts a new class over the same append-only
+          log. It does not remount the Host and does not bump the store epoch, and
+          these panels' early returns for "no round yet" happen INSIDE mounted
+          components — so without help, their React state is the PREVIOUS class's:
+          an armed "End the game" confirmation on an action the app itself calls
+          irreversible, typed Final wagers with Save enabled, a typed manual
+          correction with its confirmation already ticked, a last-buzz line
+          naming a buzz this class never made, and the timer length another class
+          chose.
+
+          A panel whose local state is entirely per-class is keyed on the class
+          session, so a reset gives the next class a fresh one. Each key value is
+          DISTINCT per panel: React maps old children by key value, and two
+          siblings sharing one value collapse into a single map entry, leaving the
+          overwritten fiber undeleted and its <section> orphaned in the document
+          with duplicate element ids.
+
+          The two INPUT panels are not keyed: `LocalInputHostPanel` here, and
+          `GamepadInputHostPanel` further down outside this fieldset. Both own
+          the teacher's durable device setup — keyboard bindings, controller
+          mapping, receiver and handset evidence — which must survive a class
+          reset, so they clear only their per-class slice through
+          `useClassSessionReset` instead of remounting.
+        */}
         {game && playReady && (
           <div className="foundation__gameplay" data-testid="host-gameplay">
             {/*
@@ -889,11 +916,22 @@ export function FoundationControls({
             */}
             <div className="foundation__lead">
               {/* Q6-RP-1 (G1): ordinary round progression — never via Advanced diagnostics. */}
-              <RoundProgressHostPanel dispatch={dispatch} game={game} clock={clock} />
+              <RoundProgressHostPanel
+                key={`rph-${classSessionId}`}
+                dispatch={dispatch}
+                game={game}
+                clock={clock}
+              />
               <CategoryBoardHostPanel dispatch={dispatch} game={game} clock={clock} />
             </div>
-            <ResponseTimerHostPanel dispatch={dispatch} game={game} clock={clock} />
+            <ResponseTimerHostPanel
+              key={`rth-${classSessionId}`}
+              dispatch={dispatch}
+              game={game}
+              clock={clock}
+            />
             <FinalWagerHostPanel
+              key={`fwh-${classSessionId}`}
               dispatch={dispatch}
               game={game}
               clock={clock}
@@ -908,8 +946,19 @@ export function FoundationControls({
                 void persistence.retryActiveSessionPersist(() => store.getHistory(), registry)
               }}
             />
-            <LocalInputHostPanel dispatch={dispatch} game={game} clock={clock} />
-            <TeamScoringPanel dispatch={dispatch} game={game} history={history} clock={clock} />
+            <LocalInputHostPanel
+              classSessionId={classSessionId}
+              dispatch={dispatch}
+              game={game}
+              clock={clock}
+            />
+            <TeamScoringPanel
+              key={`tsp-${classSessionId}`}
+              dispatch={dispatch}
+              game={game}
+              history={history}
+              clock={clock}
+            />
             <SessionSummaryPanel
               game={game}
               history={history}
@@ -945,6 +994,7 @@ export function FoundationControls({
       */}
       {game && (
         <GamepadInputHostPanel
+          classSessionId={classSessionId}
           dispatch={dispatch}
           game={game}
           clock={clock}
@@ -1023,6 +1073,12 @@ export function FoundationControls({
                 disabled={!persistence.canDispatchSessionCommands}
                 onClick={() => {
                   if (hasSession && !startSessionArmed) {
+                    // Arming one of these two controls disarms the other: they
+                    // are adjacent, they mean different things, and a
+                    // confirmation left loaded on the one the teacher did NOT
+                    // choose is a click away from discarding the class they just
+                    // set up (CBN-NEW-1).
+                    setResetArmed(false)
                     setStartSessionArmed(true)
                     return
                   }
@@ -1045,10 +1101,12 @@ export function FoundationControls({
                 disabled={!hasSession || !persistence.canDispatchSessionCommands}
                 onClick={() => {
                   if (!resetArmed) {
+                    setStartSessionArmed(false)
                     setResetArmed(true)
                     return
                   }
                   setResetArmed(false)
+                  setStartSessionArmed(false)
                   const definition = game?.definition ?? null
                   const reset = dispatch({
                     type: 'INIT_SESSION',

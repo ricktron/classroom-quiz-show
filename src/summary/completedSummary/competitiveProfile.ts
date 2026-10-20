@@ -1,7 +1,7 @@
 import { deepFreeze } from '../../game/deepFreeze'
 import { FINAL_WAGER_ROUND_TYPE } from '../../game/finalWager/definition'
 import type { SessionEvent } from '../../state/events'
-import { effectiveEvents, replay } from '../../state/reducer'
+import { currentSessionEvents, replay } from '../../state/reducer'
 import {
   SESSION_SUMMARY_CONTRACT_KIND,
   SESSION_SUMMARY_CONTRACT_VERSION,
@@ -70,7 +70,7 @@ export async function deriveCompetitiveProfileV1(
       return { status: 'unavailable', message: fingerprint.message }
     }
 
-    const effective = effectiveEvents(history)
+    const effective = currentSessionEvents(history)
     const finalRound = definition.rounds.find((round) => round.type === FINAL_WAGER_ROUND_TYPE)
     const finalStarted = findLast(effective, 'FINAL_WAGER_STARTED')
     const responseStarted = findLast(effective, 'FINAL_RESPONSE_WINDOW_STARTED')

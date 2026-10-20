@@ -61,6 +61,7 @@ import type { PersistenceAdapter } from '../persistence'
 import type { HostInputDiagnosticSignals } from './diagnostics/types'
 import type { WebHidTransport } from '../input/webHidTransport'
 import { systemClock, type Clock } from '../time/clock'
+import { useClassSessionReset } from './useClassSessionReset'
 import './GamepadInputHostPanel.css'
 
 /**
@@ -154,6 +155,14 @@ export interface GamepadInputHostPanelProps {
   readonly onInputDiagnosticSignals?: (signals: HostInputDiagnosticSignals) => void
   /** Whether Buzzer Check (SBS test mode) is on. Lift only — Class Setup status copy. */
   readonly onBuzzerCheckChange?: (on: boolean) => void
+  /**
+   * The current class session's id.
+   *
+   * This panel is not remounted on a class reset — it owns the durable
+   * controller mapping and receiver/handset evidence, all of which must survive
+   * one — so it clears only its per-class slice when this changes (CBN-NEW-1).
+   */
+  readonly classSessionId?: string | null
 }
 
 /** What the panel is currently doing about button capture. */
@@ -205,6 +214,7 @@ export function GamepadInputHostPanel({
   onReceiverDropSettledChange,
   onInputDiagnosticSignals,
   onBuzzerCheckChange,
+  classSessionId,
 }: GamepadInputHostPanelProps) {
   const teams = game.definition.teams
   const gameId = game.definition.id
@@ -222,6 +232,28 @@ export function GamepadInputHostPanel({
   )
   /** Which action the next capture assigns. Host UI state, per panel. */
   const [pendingActionKey, setPendingActionKey] = useState<string>('primary-buzz')
+
+  /*
+    A new class is not told it buzzed when it has not (CBN-NEW-1).
+
+    `lastOutcome` is the one slice here that is a fact about PLAY — "<team>
+    buzzed in from a controller" — rather than about the teacher's hardware. It
+    renders into an `aria-live` region inside a disclosure that stays open once
+    opened, so after a reset a screen reader would announce the previous class's
+    buzz, with the new class's team name substituted because the display name
+    resolves live.
+
+    Everything else here is deliberately preserved: the controller `mapping`, the
+    receiver and handset evidence (`diagnostics`, `respondingSlots`,
+    `lastTestObservation`, `recentTestObservations`), the mapping-edit flow and
+    `enabled` are the teacher's durable device setup and stay true across a class
+    reset. That is also why this panel is not simply keyed on the session like
+    the gameplay panels.
+  */
+  useClassSessionReset(classSessionId, () => {
+    setLastOutcome(null)
+  })
+
   const selectionBatchRef = useRef<(SonyBuzzTestObservation & { readonly at: number })[]>([])
   const selectionBatchScheduledRef = useRef(false)
   const [testMode, setTestMode] = useState(false)

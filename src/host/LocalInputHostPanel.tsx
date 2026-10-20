@@ -40,6 +40,7 @@ import { LOCAL_INPUT_TRANSLATION_MESSAGE } from '../input/commandTranslation'
 import { useKeyboardBuzzInput, type KeyboardBuzzOutcome } from './useKeyboardBuzzInput'
 import { responseOpportunityFor } from './responseOpportunity'
 import { systemClock, type Clock } from '../time/clock'
+import { useClassSessionReset } from './useClassSessionReset'
 import './LocalInputHostPanel.css'
 
 /**
@@ -80,6 +81,14 @@ export interface LocalInputHostPanelProps {
    * "defaults, not persisted" — still fully usable).
    */
   readonly storage?: LocalConfigStorage | null
+  /**
+   * The current class session's id.
+   *
+   * This panel is not remounted on a class reset — it owns the durable keyboard
+   * mapping, which must survive one — so it clears its own per-class slices when
+   * this changes instead (CBN-NEW-1).
+   */
+  readonly classSessionId?: string | null
 }
 
 /** What the panel is currently doing about key capture. */
@@ -92,6 +101,7 @@ export function LocalInputHostPanel({
   game,
   clock = systemClock,
   storage,
+  classSessionId,
 }: LocalInputHostPanelProps) {
   const teams = game.definition.teams
   const roundIndex = game.currentRoundIndex
@@ -109,6 +119,32 @@ export function LocalInputHostPanel({
   const [captureMessage, setCaptureMessage] = useState<string | null>(null)
   const [issues, setIssues] = useState<readonly KeyboardMappingIssue[]>([])
   const [lastOutcome, setLastOutcome] = useState<KeyboardBuzzOutcome | null>(null)
+
+  /*
+    A new class inherits none of the previous class's input activity.
+
+    `lastOutcome` is the one slice here that is a fact about PLAY — "<team>
+    buzzed in" — rather than about the teacher's hardware. Its line is an
+    `aria-live` region, so leaving it would not merely look wrong: a screen
+    reader would announce that a class which has not buzzed just buzzed in.
+
+    `mapping`, `loadNote` and `enabled` are deliberately NOT cleared — the
+    keyboard bindings and whether keyboard buzzing is on are the teacher's
+    durable device setup, not this class's play — and neither are `capture`,
+    `captureMessage` or `issues`, which belong to the mapping-edit flow and are
+    device truth by the same rule. (The teams-change effect below does clear the
+    capture flow, for a different reason: a different Game can invalidate the
+    bindings being edited.)
+
+    Unlike the controller panel, this one's bindings are written straight to
+    config storage, so a remount would reload them rather than lose them. What
+    clearing in place buys here is the `aria-live` guarantee above, not survival
+    of the mapping, plus not discarding a key capture the teacher is part-way
+    through. The controller panel is the one that genuinely cannot be keyed.
+  */
+  useClassSessionReset(classSessionId, () => {
+    setLastOutcome(null)
+  })
 
   const initial = useMemo(
     () => loadKeyboardMapping(configStorage, teams),

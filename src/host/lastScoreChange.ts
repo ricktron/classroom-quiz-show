@@ -1,5 +1,5 @@
 import type { SessionEvent } from '../state/events'
-import { effectiveEvents } from '../state/reducer'
+import { currentSessionEvents } from '../state/reducer'
 import { FINAL_OUTCOME_LABEL } from '../game/finalWager/finalState'
 import { SCORE_ADJUSTMENT_MODE_LABEL } from '../game/teams/scoring'
 
@@ -13,7 +13,10 @@ import { SCORE_ADJUSTMENT_MODE_LABEL } from '../game/teams/scoring'
  * award (Q7 R1 item 10). A zero-delta settlement (a team that wagered 0) moved
  * no points, so it is not a score change.
  *
- * Derived from the EFFECTIVE log, so an undone event is never named.
+ * Derived from the effective log of the CURRENT class session, so an undone
+ * event is never named and a class that has not scored yet shows no line —
+ * after "Reset this class session" the previous class's award is not this
+ * class's last change.
  */
 export interface LastScoreChange {
   readonly teamId: string
@@ -23,7 +26,7 @@ export interface LastScoreChange {
 }
 
 export function lastScoreChangeOf(history: readonly SessionEvent[]): LastScoreChange | null {
-  const events = effectiveEvents(history)
+  const events = currentSessionEvents(history)
   for (let i = events.length - 1; i >= 0; i -= 1) {
     const event = events[i]
     if (event.type === 'TEAM_SCORE_ADJUSTED') {

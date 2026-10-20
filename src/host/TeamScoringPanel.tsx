@@ -5,7 +5,7 @@ import type { PrivateGameState } from '../state/privateState'
 import type { DispatchResult } from '../state/store'
 import {
   categoryBoardStateFor,
-  effectiveEvents,
+  currentSessionEvents,
   findUndoTarget,
   publicTeamDisplayName,
   teamScoreFor,
@@ -56,7 +56,9 @@ import './TeamScoringPanel.css'
  *  - no target selected → every scoring action is disabled;
  *  - no live tile → the tile presets do not exist, only manual correction does;
  *  - an adjustment already submitted for this (team, tile, mode) → that preset is
- *    disabled, derived from the EFFECTIVE event log so undo re-enables it;
+ *    disabled, derived from THIS class session's effective event log so undo
+ *    re-enables it — and so a class that follows a reset can score the tiles the
+ *    class before it already won;
  *  - a negative or large manual amount → an explicit confirmation is required.
  *
  * ## Not here
@@ -149,7 +151,7 @@ export function TeamScoringPanel({
   const active = game.gameLifecycle === 'active'
   const liveTile = liveTileOf(game)
   const target = teams.find((team) => team.id === targetId) ?? null
-  const scoreEvents = effectiveEvents(history).filter(isTeamScoreAdjusted)
+  const scoreEvents = currentSessionEvents(history).filter(isTeamScoreAdjusted)
   const lastChange = lastScoreChangeOf(history)
   const undoTarget = findUndoTarget(history)
   // A Final settlement that moved points is a score change too (CB-06b); its
