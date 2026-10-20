@@ -897,9 +897,14 @@ export function FoundationControls({
           DISTINCT per panel: React maps old children by key value, and two
           siblings sharing one value collapse into a single map entry, leaving the
           overwritten fiber undeleted and its <section> orphaned in the document
-          with duplicate element ids. `LocalInputHostPanel` is NOT keyed, because
-          it also owns the durable keyboard mapping, which must survive a reset —
-          it clears only its per-class slices instead.
+          with duplicate element ids.
+
+          The two INPUT panels are not keyed: `LocalInputHostPanel` here, and
+          `GamepadInputHostPanel` further down outside this fieldset. Both own
+          the teacher's durable device setup — keyboard bindings, controller
+          mapping, receiver and handset evidence — which must survive a class
+          reset, so they clear only their per-class slice through
+          `useClassSessionReset` instead of remounting.
         */}
         {game && playReady && (
           <div className="foundation__gameplay" data-testid="host-gameplay">
@@ -989,7 +994,7 @@ export function FoundationControls({
       */}
       {game && (
         <GamepadInputHostPanel
-                classSessionId={classSessionId}
+          classSessionId={classSessionId}
           dispatch={dispatch}
           game={game}
           clock={clock}
@@ -1068,6 +1073,12 @@ export function FoundationControls({
                 disabled={!persistence.canDispatchSessionCommands}
                 onClick={() => {
                   if (hasSession && !startSessionArmed) {
+                    // Arming one of these two controls disarms the other: they
+                    // are adjacent, they mean different things, and a
+                    // confirmation left loaded on the one the teacher did NOT
+                    // choose is a click away from discarding the class they just
+                    // set up (CBN-NEW-1).
+                    setResetArmed(false)
                     setStartSessionArmed(true)
                     return
                   }
@@ -1090,10 +1101,12 @@ export function FoundationControls({
                 disabled={!hasSession || !persistence.canDispatchSessionCommands}
                 onClick={() => {
                   if (!resetArmed) {
+                    setStartSessionArmed(false)
                     setResetArmed(true)
                     return
                   }
                   setResetArmed(false)
+                  setStartSessionArmed(false)
                   const definition = game?.definition ?? null
                   const reset = dispatch({
                     type: 'INIT_SESSION',

@@ -61,6 +61,7 @@ import type { PersistenceAdapter } from '../persistence'
 import type { HostInputDiagnosticSignals } from './diagnostics/types'
 import type { WebHidTransport } from '../input/webHidTransport'
 import { systemClock, type Clock } from '../time/clock'
+import { useClassSessionReset } from './useClassSessionReset'
 import './GamepadInputHostPanel.css'
 
 /**
@@ -235,25 +236,24 @@ export function GamepadInputHostPanel({
   /*
     A new class is not told it buzzed when it has not (CBN-NEW-1).
 
-    `lastOutcome` is the one slice here that is a fact about PLAY — "<team> buzzed
-    in from a controller" — rather than about the teacher's hardware. It is
-    rendered into an `aria-live` region inside a disclosure that stays open once
+    `lastOutcome` is the one slice here that is a fact about PLAY — "<team>
+    buzzed in from a controller" — rather than about the teacher's hardware. It
+    renders into an `aria-live` region inside a disclosure that stays open once
     opened, so after a reset a screen reader would announce the previous class's
-    buzz, with the new class's team name substituted because `nameOf` resolves
-    live. Adjusting state during render means it is never painted or announced.
+    buzz, with the new class's team name substituted because the display name
+    resolves live.
 
     Everything else here is deliberately preserved: the controller `mapping`, the
     receiver and handset evidence (`diagnostics`, `respondingSlots`,
-    `lastTestObservation`, `recentTestObservations`) and `enabled` are the
-    teacher's durable device setup and remain true across a class reset — the
-    handsets did not unpair because a new class walked in. That is also why this
-    panel is not simply keyed on the session like the gameplay panels.
+    `lastTestObservation`, `recentTestObservations`), the mapping-edit flow and
+    `enabled` are the teacher's durable device setup and stay true across a class
+    reset. That is also why this panel is not simply keyed on the session like
+    the gameplay panels.
   */
-  const [inputForSession, setInputForSession] = useState<string | null | undefined>(classSessionId)
-  if (inputForSession !== classSessionId) {
-    setInputForSession(classSessionId)
+  useClassSessionReset(classSessionId, () => {
     setLastOutcome(null)
-  }
+  })
+
   const selectionBatchRef = useRef<(SonyBuzzTestObservation & { readonly at: number })[]>([])
   const selectionBatchScheduledRef = useRef(false)
   const [testMode, setTestMode] = useState(false)

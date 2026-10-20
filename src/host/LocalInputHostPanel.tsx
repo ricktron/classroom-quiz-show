@@ -40,6 +40,7 @@ import { LOCAL_INPUT_TRANSLATION_MESSAGE } from '../input/commandTranslation'
 import { useKeyboardBuzzInput, type KeyboardBuzzOutcome } from './useKeyboardBuzzInput'
 import { responseOpportunityFor } from './responseOpportunity'
 import { systemClock, type Clock } from '../time/clock'
+import { useClassSessionReset } from './useClassSessionReset'
 import './LocalInputHostPanel.css'
 
 /**
@@ -122,25 +123,22 @@ export function LocalInputHostPanel({
   /*
     A new class inherits none of the previous class's input activity.
 
-    The teams-change effect below already clears this set when a different Game
-    is loaded; a class reset keeps the same Game, so that effect does not fire and
-    `lastOutcome` used to survive. Its line is an `aria-live` region, so leaving
-    it would not merely look wrong — a screen reader would announce that a class
-    which has not buzzed yet just buzzed in. Adjusting state during render rather
-    than in an effect means nothing stale is painted or announced at all.
+    `lastOutcome` is the one slice here that is a fact about PLAY — "<team>
+    buzzed in" — rather than about the teacher's hardware. Its line is an
+    `aria-live` region, so leaving it would not merely look wrong: a screen
+    reader would announce that a class which has not buzzed just buzzed in.
 
-    `mapping`, `loadNote` and `enabled` are deliberately NOT cleared: the
+    `mapping`, `loadNote` and `enabled` are deliberately NOT cleared — the
     keyboard bindings and whether keyboard buzzing is on are the teacher's
-    durable device setup, not this class's play.
+    durable device setup, not this class's play — and neither are `capture`,
+    `captureMessage` or `issues`, which belong to the mapping-edit flow and are
+    device truth by the same rule. (The teams-change effect below does clear the
+    capture flow, for a different reason: a different Game can invalidate the
+    bindings being edited.)
   */
-  const [inputForSession, setInputForSession] = useState<string | null | undefined>(classSessionId)
-  if (inputForSession !== classSessionId) {
-    setInputForSession(classSessionId)
+  useClassSessionReset(classSessionId, () => {
     setLastOutcome(null)
-    setCaptureMessage(null)
-    setIssues([])
-    setCapture({ mode: 'idle' })
-  }
+  })
 
   const initial = useMemo(
     () => loadKeyboardMapping(configStorage, teams),

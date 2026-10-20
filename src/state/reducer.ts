@@ -1181,9 +1181,15 @@ export function effectiveEvents(history: readonly SessionEvent[]): readonly Sess
  *
  * A history with no `SESSION_INITIALIZED` yields every effective event, so this
  * is only ever narrower than {@link effectiveEvents}, never different in kind.
- * `recoveryBannerContext` and `hostPlayPosture` take the same latest-init cut
- * for their own questions, exclusive of the init, since they ask what has
- * HAPPENED since it.
+ *
+ * `recoveryBannerContext` and `hostPlayPosture` take a RELATED but different
+ * cut: theirs lands at the latest `GAME_INITIALIZED`, falling back to
+ * `SESSION_INITIALIZED` only when there is none, and is exclusive of it, since
+ * they ask what has HAPPENED since the init rather than what belongs to this
+ * class. The two coincide on the reset path, which re-dispatches
+ * `INITIALIZE_GAME`, and diverge on the `INIT_SESSION`-alone path — a
+ * pre-existing residual carried to the register, not something this cut
+ * changes.
  */
 export function currentSessionEvents(
   history: readonly SessionEvent[],

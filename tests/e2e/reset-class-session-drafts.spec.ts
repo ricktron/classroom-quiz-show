@@ -158,8 +158,16 @@ test('a reset class does not inherit the previous class\'s last buzz line or tim
   await page.getByRole('button', { name: 'Start Round 1' }).click()
 
   // A class that has not buzzed yet must not be told that it has — this line is
-  // an aria-live region, so a screen reader announces it too.
-  await expect(page.getByTestId('lih-outcome')).not.toContainText('buzzed in')
+  // an aria-live region, so a screen reader announces it too. Asserted as the
+  // exact empty-state copy, not as an absent substring: the latter would pass
+  // just as well if the line stopped rendering at all.
+  await expect(page.getByTestId('lih-outcome')).toHaveText('No buzz keys pressed yet.')
+
+  // The other half of the contract: the teacher's DURABLE keyboard setup is
+  // still there. These bindings are device truth, not this class's play.
+  await expect(page.getByTestId('lih-enabled')).toHaveText('On')
+  await expect(page.getByTestId('lih-key-granite')).toHaveText('1')
+  await expect(page.getByTestId('lih-key-nimbus')).toHaveText('2')
 
   // And the response window goes back to the length this Game authored, rather
   // than the length the previous class happened to pick.
@@ -199,7 +207,39 @@ test('a reset class does not inherit the previous class\'s controller buzz line'
   await page.getByRole('button', { name: 'Start Round 1' }).click()
 
   // The disclosure stays open across the reset, so this line is on screen — and
-  // it is an aria-live region, so a screen reader announces it. A class that has
-  // not buzzed must not be told that it has.
-  await expect(page.getByTestId('gih-outcome')).not.toContainText('buzzed in')
+  // it is an aria-live region, so a screen reader announces it. Asserted as the
+  // exact empty-state copy so it cannot pass by the line disappearing.
+  await expect(page.getByTestId('gih-outcome')).toHaveText(
+    'No controller buttons pressed yet.',
+  )
+
+  // And the other half: the teacher's handset setup survives the reset. The
+  // handsets did not unpair because a new class walked in, so controller
+  // buzzing stays on and the slot-to-team mapping stays bound.
+  await expect(page.getByTestId('gih-enabled')).toHaveText('On')
+  await expect(page.getByTestId('gih-control-granite')).toContainText('Buzzer 1')
+  await expect(page.getByTestId('gih-count')).not.toHaveText('None detected')
+})
+
+test('a reset disarms the sibling start-new-session confirmation', async ({
+  page,
+  context,
+}, info) => {
+  test.skip(info.project.name !== 'desktop-1080p', 'session-control journey runs once (1080p)')
+  await importPlayNamesDisplayStartRound1(page, context)
+  await ensureHostMoreOpen(page)
+
+  // The teacher first reaches for "Start new game session", which arms itself,
+  // then changes their mind and uses the control beside it instead.
+  const start = page.getByTestId('start-new-game-session')
+  await start.scrollIntoViewIfNeeded()
+  await start.click()
+  await expect(start).toHaveText('Confirm start new class session')
+
+  await resetClassSession(page)
+
+  // The sibling must not still be holding period 1's confirmation. One click on
+  // it dispatches INIT_SESSION alone, which discards the class that was just
+  // reset AND unloads the Game mid-lesson.
+  await expect(start).toHaveText('Start new game session')
 })

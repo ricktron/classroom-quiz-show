@@ -11,7 +11,10 @@ import { ensureHostMoreOpen } from './helpers/hostMore'
  * does not delete the saved game."
  *
  * Replayed state was already reset correctly; what used to survive was
- * everything DERIVED from the append-only log by reading all of it. The second
+ * everything DERIVED from the append-only log by reading all of it. The claim is
+ * about surfaces that answer a question ABOUT THIS CLASS — the Advanced
+ * "Event history (append-only)" list still shows every class's events, which is
+ * what it is for. The second
  * class inherited the first class's ledger: full credit silently disabled on
  * every tile the first class had already won, the first class's award still
  * named as "Last score change" with a live Undo, and a Session summary
