@@ -186,4 +186,27 @@ export const COURT_B_JOURNEYS = [
   { id: 'CBJ-05', title: 'Final: wagers, question, responses, reveal, settlement, winner', requiresFinal: true },
   { id: 'CBJ-06', title: 'Final tie: tied-finish completion', requiresFinal: true },
   { id: 'CBJ-07', title: 'Host reload + Resume during the Final', requiresFinal: true },
+  /*
+    CBJ-08 starts from the committed portable pack
+    (docs/qualification/fixtures/court-b-image-clue.cqs-pack), which is a
+    Board-only game: see src/test/courtBImageClueFixture.ts for why an image
+    clue cannot live in the shared fixture. `requiresFinal: false` is therefore
+    correct AND load-bearing — marking it true would demand a Final from
+    content that deliberately has none.
+  */
+  {
+    id: 'CBJ-08',
+    title: "Image clue from a portable pack: the projector shows the pack's image",
+    requiresFinal: false,
+  },
+  {
+    id: 'CBJ-09',
+    title: 'Final response window runs out, then settlement and Undo still work',
+    requiresFinal: true,
+  },
+  {
+    id: 'CBJ-10',
+    title: 'Simulated Sony receiver: supported profile connects, wrong device refused',
+    requiresFinal: false,
+  },
 ] as const

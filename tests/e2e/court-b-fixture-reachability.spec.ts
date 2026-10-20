@@ -1,6 +1,19 @@
 import { test, expect, type BrowserContext, type Page } from '@playwright/test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import {
+  COURT_B_IMAGE_ALT,
+  COURT_B_IMAGE_AUTHORED_PATH,
+  COURT_B_IMAGE_FIXTURE_TITLE,
+  COURT_B_PACK_IMAGE_HEIGHT,
+  COURT_B_PACK_IMAGE_WIDTH,
+} from '../../src/test/courtBImageClueFixture'
+import {
+  assertProductReadBoundary,
+  assertWbuzzBoundaryInstalled,
+  getHidSimSnapshot,
+  installWbuzzHardwareSimulator,
+} from './helpers/simulatedWbuzzHardware'
 
 /**
  * Court B harness (CB-07): every journey named in
@@ -16,7 +29,21 @@ import { resolve } from 'node:path'
 const FIXTURE_DIR = resolve(process.cwd(), 'docs/qualification/fixtures')
 const GAME_FILE = resolve(FIXTURE_DIR, 'court-b-final-qualification.game.json')
 const SPREADSHEET = resolve(FIXTURE_DIR, 'court-b-final-qualification.xlsx')
+const IMAGE_CLUE_PACK = resolve(FIXTURE_DIR, 'court-b-image-clue.cqs-pack')
 const TITLE = 'Court B Final Qualification'
+
+/*
+  CBJ-08 constants come from the fixture module rather than being restated, so
+  the journey cannot drift from the committed pack it is asserting about. The
+  colliding path and the two image sizes are the journey's discriminators; the
+  vitest guard (src/test/courtBImageClueFixture.test.ts) proves the collision is
+  still armed and the sizes still differ.
+*/
+const IMAGE_CLUE_TITLE = COURT_B_IMAGE_FIXTURE_TITLE
+const IMAGE_CLUE_ALT = COURT_B_IMAGE_ALT
+const COLLIDING_ASSET_PATH = COURT_B_IMAGE_AUTHORED_PATH
+const PACK_IMAGE_WIDTH = COURT_B_PACK_IMAGE_WIDTH
+const PACK_IMAGE_HEIGHT = COURT_B_PACK_IMAGE_HEIGHT
 
 test.beforeEach(({ page }, info) => {
   void page
@@ -199,6 +226,315 @@ test('[CBJ-06] Final tie: tied-finish completion', async ({ page, context }) => 
   await page.getByRole('button', { name: 'Accept the tie' }).click()
   await page.getByRole('button', { name: /^Accept the tie and end the game/ }).click()
   await expect(display.locator('body')).toContainText(/a tie/i)
+})
+
+/**
+ * CBJ-08: the image clue arrives in a portable pack, so the route runs through
+ * the Host console's pack import under **More** — the only place the product
+ * accepts a pack. Reached entirely by clicking from Home (Import Game → Play →
+ * More → Choose pack file); no typed route, no test id, no state injection.
+ * `<summary>` has no mapped ARIA role, so "More" is addressed by its visible
+ * text, which is what a teacher clicks.
+ */
+async function importImageCluePack(page: Page) {
+  const more = page.getByText('More', { exact: true }).first()
+  if (!(await more.isVisible().catch(() => false))) {
+    throw new Error('CBJ-08: the Host "More" disclosure was not visible')
+  }
+  if ((await page.getByLabel('Choose pack file').isVisible().catch(() => false)) === false) {
+    await more.click()
+  }
+  await expect(page.getByLabel('Choose pack file')).toBeVisible()
+  await page.getByLabel('Choose pack file').setInputFiles(IMAGE_CLUE_PACK)
+  await expect(page.getByText(/pack import succeeded/i).first()).toBeVisible({ timeout: 30_000 })
+}
+
+/**
+ * Every `src` any `<img>` on the projector has held since this call, in order.
+ *
+ * The defect CBJ-08 exists to catch is transient: the wrong image paints from
+ * the hosted build asset and is then REPLACED by the pack blob, so a single
+ * read after the fact sees the correct final state and the journey passes while
+ * a class watched the wrong diagram. Recording every src instead of sampling
+ * one is what makes the assertion honest. (The same single-read race is on
+ * record as a test-trust gap in portable-packs.spec.ts, 2026-10-17.)
+ *
+ * This observes the projector's own DOM. It injects no product state and
+ * changes no behaviour.
+ */
+async function recordProjectorImageSources(display: Page) {
+  await display.evaluate(() => {
+    const seen: string[] = []
+    ;(window as unknown as { __cbj08Sources: string[] }).__cbj08Sources = seen
+    const record = () => {
+      for (const img of document.querySelectorAll('img')) {
+        const src = img.getAttribute('src')
+        if (src !== null && src !== '' && !seen.includes(src)) seen.push(src)
+      }
+    }
+    record()
+    new MutationObserver(record).observe(document.documentElement, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['src'],
+    })
+  })
+}
+
+async function projectorImageSources(display: Page): Promise<string[]> {
+  return display.evaluate(
+    () => (window as unknown as { __cbj08Sources?: string[] }).__cbj08Sources ?? [],
+  )
+}
+
+test('[CBJ-08] Image clue from a portable pack: the projector shows the pack\'s image', async ({
+  page,
+  context,
+}) => {
+  // Ordinary start: a game from Home, so the Host console is reached by clicking.
+  await importGameFile(page)
+  await playToClassSetup(page)
+  await importImageCluePack(page)
+  // The pack's own game is now the active game.
+  await expect(page.getByText(IMAGE_CLUE_TITLE).first()).toBeVisible()
+
+  const display = await namesDisplayStart(page, context)
+  await recordProjectorImageSources(display)
+  await page.getByRole('button', { name: 'Start Round 1' }).click()
+  await page.getByRole('button', { name: 'Diagrams, 100 points' }).click()
+  await page.getByRole('button', { name: 'Show prompt on display' }).click()
+
+  // The settled projector image is the PACK's image, delivered as a blob.
+  const projected = display.getByRole('img', { name: IMAGE_CLUE_ALT })
+  await expect(projected).toBeVisible({ timeout: 30_000 })
+  await expect(projected).toHaveAttribute('src', /^blob:/, { timeout: 30_000 })
+
+  // ...and it is the pack's picture, not the shipped asset that sits at the same
+  // authored path. Dimensions are an independent discriminator from the scheme.
+  const size = await projected.evaluate((img) => ({
+    width: (img as HTMLImageElement).naturalWidth,
+    height: (img as HTMLImageElement).naturalHeight,
+  }))
+  expect(size, 'the projector must show the pack image (48x16), not the hosted asset (960x540)').toEqual(
+    { width: PACK_IMAGE_WIDTH, height: PACK_IMAGE_HEIGHT },
+  )
+
+  // The hosted build asset at the colliding path must NEVER have painted.
+  const sources = await projectorImageSources(display)
+  expect(sources.length, 'the projector should have painted at least one image').toBeGreaterThan(0)
+  expect(
+    sources.filter((src) => src.includes(COLLIDING_ASSET_PATH)),
+    `the projector painted the hosted build asset before pack media hydrated; sources seen: ${JSON.stringify(sources)}`,
+  ).toEqual([])
+  expect(sources.every((src) => src.startsWith('blob:'))).toBe(true)
+})
+
+/**
+ * CBJ-09: the Final response window must genuinely RUN OUT before settlement,
+ * then settlement and Undo must still work and the game must still complete.
+ *
+ * No state injection and no manufactured Final: the ordinary UI opens the
+ * window, and only then is the page clock advanced past the 30 seconds the
+ * fixture authors. A blind tester reaches the same state by waiting.
+ *
+ * Display-free on purpose: `page.clock.install()` plus a second page is the
+ * known rAF-stall shape in this suite, and nothing this journey asserts is
+ * projector-side.
+ */
+test('[CBJ-09] Final response window runs out, then settlement and Undo still work', async ({
+  page,
+}) => {
+  await page.clock.install()
+  await importGameFile(page)
+  await playToClassSetup(page)
+  const setup = page.getByRole('region', { name: 'Class setup' })
+  await setup.getByRole('button', { name: /^Names/ }).click()
+  const fields = setup.getByRole('textbox', { name: 'Type a name' })
+  await fields.nth(0).fill('Granite')
+  await fields.nth(0).press('Enter')
+  await fields.nth(1).fill('Nimbus')
+  await fields.nth(1).press('Enter')
+  await page.getByRole('button', { name: 'Start Game' }).click()
+  await page.getByRole('button', { name: 'Start Round 1' }).click()
+  await scoreTile(page, 'Rocks, 200 points', 'Granite')
+  await scoreTile(page, 'Skies, 100 points', 'Nimbus')
+
+  await toFinalWithWagers(page, { granite: '100', nimbus: '50' })
+  await page.getByRole('radio', { name: 'Adjudicate without capturing wording' }).check()
+  await page.getByRole('button', { name: 'Show the question and start the response window' }).click()
+
+  // The window is RUNNING: the panel must not already claim time is up.
+  const finalPanel = page.getByRole('region', { name: 'Final wager' })
+  await expect(finalPanel).not.toContainText('time up')
+
+  /*
+    Both teams answer while the window is still open, as they would in a class.
+    This is required, not decorative: "Lock all responses" stays disabled until
+    responses exist, so a journey that expired the window with nothing recorded
+    would stall at the lock rather than reach settlement. (Observed: the first
+    run of this journey timed out on exactly that disabled control.)
+  */
+  const responses = page.getByRole('group', { name: 'Team responses' })
+  await responses.getByRole('button', { name: 'Answered (no wording)' }).first().click()
+  await responses.getByRole('button', { name: 'Answered (no wording)' }).last().click()
+
+  /*
+    ORDER MATTERS, and getting it wrong makes this journey prove nothing.
+
+    The defect class (CBN-2 / NEW-1) is a reversible expiry sitting ON TOP of
+    latest-only Undo, burying the settlement underneath an inert "Undo time up".
+    That can only happen when the window expires AFTER a team is settled.
+
+    The first version of this journey expired the window first and settled
+    afterwards, which leaves the settlement on top of the stack. It passed
+    against a seeded reversible-expiry mutant — a vacuous pass. So the team is
+    settled while the window is still running, and only then is the clock
+    advanced past the deadline.
+
+    (The reverse order — expiry before settlement — is already covered by
+    tests/e2e/court-b-c-final-undo-integrity.spec.ts.)
+  */
+  await page.getByRole('button', { name: 'Lock all responses' }).click()
+  await page.getByRole('button', { name: 'Reveal the answer' }).click()
+  await revealAndJudge(page, 'Nimbus', 'Correct')
+  await expect(scores(page)).toHaveText(/Granite\s*200\s*Nimbus\s*150/)
+
+  /*
+    The window now EXPIRES, through the ordinary passage of time.
+
+    There is no "time up" banner to read at this point — after a settlement the
+    Final panel has moved to revealing/judging — so the expiry is proven by its
+    CONSEQUENCES below, not by a label. This matters: if `fastForward` ever
+    stopped firing the expiry, a journey that only read labels would keep
+    passing. The end-of-game summary therefore has to report an expiry, and the
+    Undo stack has to be unaffected by it.
+  */
+  await page.clock.fastForward('00:31')
+
+  /*
+    The expiry must not become the undo target. Both halves are asserted: the
+    offered action NAMES the settlement, and it is not an expiry undo. A label
+    check alone would still pass if the control were inert, so the click's
+    visible score effect is asserted too.
+  */
+  const liveUndo = page.getByRole('group', { name: 'Live game actions' }).getByRole('button').first()
+  await expect(liveUndo).not.toHaveText(/time up/i)
+  await expect(liveUndo).toHaveText('Undo Final correct (Nimbus)')
+  await liveUndo.click()
+  await expect(scores(page)).toHaveText(/Granite\s*200\s*Nimbus\s*100/)
+
+  // Continuation: the class can finish the Final and end the game.
+  await finalPanel.getByRole('button', { name: /^Correct \(/ }).click()
+  await expect(scores(page)).toHaveText(/Granite\s*200\s*Nimbus\s*150/)
+  await revealAndJudge(page, 'Granite', 'Incorrect')
+  await expect(scores(page)).toHaveText(/Granite\s*100\s*Nimbus\s*150/)
+  await page.getByRole('button', { name: 'End the game session' }).click()
+  await page.getByRole('button', { name: 'End the game — this cannot be undone' }).click()
+  await expect(page.getByRole('heading', { name: 'Session summary' })).toBeVisible()
+
+  /*
+    POSITIVE PROOF THE WINDOW REALLY EXPIRED.
+
+    Everything above this point is about what the expiry must NOT do, and all of
+    it would still hold if the expiry had never fired at all — a `fastForward`
+    that silently stopped firing the timer would leave this journey green while
+    testing nothing. The session summary counts observed timer expirations, so
+    the count is read back as evidence that the fact was recorded.
+  */
+  const timerActivity = page.getByRole('region', { name: 'Timer and buzz activity' })
+  await expect(timerActivity).toBeVisible()
+  const expirations = Number(
+    /Timer expirations\s*(\d+)/.exec((await timerActivity.innerText()).replace(/\n/g, ' '))?.[1] ??
+      'NaN',
+  )
+  expect(
+    expirations,
+    'the Final response window must actually have expired; the summary recorded no expiry',
+  ).toBeGreaterThanOrEqual(1)
+})
+
+/**
+ * CBJ-10: the simulated Sony receiver at the platform boundary.
+ *
+ * SIMULATION IS NOT PHYSICAL EVIDENCE (brief rule 6). What this proves is the
+ * teacher-visible contract either side of the boundary: the exact supported
+ * profile reaches a connected state, and a Sony device that is NOT the
+ * supported profile is refused instead of silently adopted.
+ *
+ * The boundary is installed through the repository's proven mechanism
+ * (`installWbuzzHardwareSimulator`: `page.addInitScript` plus
+ * `Object.defineProperty(navigator, 'hid', ...)`), and the journey asserts the
+ * boundary is really installed and that the PRODUCT read it — so a broken fake
+ * fails loudly rather than passing quietly.
+ */
+async function reachBuzzerSetup(page: Page) {
+  await importGameFile(page)
+  await playToClassSetup(page)
+  const setup = page.getByRole('region', { name: 'Class setup' })
+  const show = setup.getByRole('button', { name: 'Show buzzer setup' })
+  if (await show.isVisible().catch(() => false)) {
+    await show.click()
+  } else {
+    await page.getByRole('button', { name: 'Check buzzers' }).first().click()
+  }
+}
+
+test('[CBJ-10] Simulated Sony receiver: supported profile connects, wrong device refused', async ({
+  page,
+}) => {
+  await installWbuzzHardwareSimulator(page, 'ready')
+  await reachBuzzerSetup(page)
+  // The fake must really be installed before anything is claimed about it.
+  await assertWbuzzBoundaryInstalled(page)
+
+  await page.getByRole('button', { name: 'Connect buzzers' }).click()
+  await expect(page.getByRole('button', { name: 'Buzzers connected' })).toBeVisible({
+    timeout: 15_000,
+  })
+  // The product read the boundary, and honoured the receiver's framing contract.
+  await assertProductReadBoundary(page)
+})
+
+test('[CBJ-10 refusal] A granted Sony device that is not the supported profile is refused', async ({
+  page,
+}) => {
+  await installWbuzzHardwareSimulator(page, 'unsupported-pid')
+  await reachBuzzerSetup(page)
+  await assertWbuzzBoundaryInstalled(page)
+
+  await page.getByRole('button', { name: 'Connect buzzers' }).click()
+  // Refused: the teacher is never told the receiver is connected.
+  await expect(page.getByRole('button', { name: 'Buzzers connected' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Connect buzzers' })).toBeVisible()
+  /*
+    The refusal came from the product's own filter, not from an absent boundary.
+
+    These assertions are calibrated against the OBSERVED behaviour of a seeded
+    wrong-PID-acceptance mutant, because a plausible-looking weaker set did not
+    catch it. With the mutant, the product adopts the already-granted wrong
+    device, never asks for permission, and the teacher is told "Failed to
+    reconnect". Clean, it refuses that device, therefore has no receiver, and so
+    HAS to ask — requestCalls rises and the teacher is told permission is
+    needed.
+
+    So `requestCalls > 0` is the load-bearing claim: it is only true of a
+    product that declined the granted device. (An earlier revision replaced it
+    with `requestCalls + getDevicesCalls > 0`, reasoning that either entry point
+    should count; that is true in general but it let the mutant through, because
+    the mutant's whole behaviour is to be satisfied by `getDevices` alone.)
+  */
+  const snapshot = await getHidSimSnapshot(page)
+  expect(snapshot.getDevicesCalls, 'the product must have consulted the boundary').toBeGreaterThan(0)
+  expect(
+    snapshot.requestCalls,
+    'the product must not adopt the granted non-supported device — with no receiver it has to ask',
+  ).toBeGreaterThan(0)
+  expect(snapshot.openCalls, 'a non-supported device must never be opened').toBe(0)
+  expect(snapshot.violations).toEqual([])
+  // Teacher-visible: never the "we had it and lost it" story about a device
+  // that was never the receiver.
+  await expect(page.getByText(/Failed to reconnect/i)).toHaveCount(0)
 })
 
 test('[CBJ-07] Host reload + Resume during the Final', async ({ page, context }) => {
