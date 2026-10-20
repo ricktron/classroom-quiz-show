@@ -894,6 +894,12 @@ export function FoundationControls({
             </div>
             <ResponseTimerHostPanel dispatch={dispatch} game={game} clock={clock} />
             <FinalWagerHostPanel
+              /*
+                Not keyed, unlike the panels above and below: remounting this one
+                leaves its old <section> in the DOM. It clears its own per-class
+                state on a session change instead — see the note in the panel.
+              */
+              classSessionId={classSessionId}
               dispatch={dispatch}
               game={game}
               clock={clock}
@@ -909,7 +915,19 @@ export function FoundationControls({
               }}
             />
             <LocalInputHostPanel dispatch={dispatch} game={game} clock={clock} />
-            <TeamScoringPanel dispatch={dispatch} game={game} history={history} clock={clock} />
+            {/*
+              Keyed for the same reason: the typed manual correction, and the
+              explicit confirmation that unlocks a large or negative one, are the
+              teacher's unsaved intent for THIS class. A reset must not leave the
+              next class pre-confirmed to apply another class's amount.
+            */}
+            <TeamScoringPanel
+              key={classSessionId}
+              dispatch={dispatch}
+              game={game}
+              history={history}
+              clock={clock}
+            />
             <SessionSummaryPanel
               game={game}
               history={history}

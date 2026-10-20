@@ -93,6 +93,13 @@ export interface FinalWagerHostPanelProps {
   readonly activeSessionDurability?: ActiveSessionDurabilityView
   /** Optional retry after a failed active-session write. */
   readonly onRetryActiveSessionPersist?: () => void
+  /**
+   * The current class session's id, so this panel's per-class UI state does not
+   * cross a class reset (CBN-NEW-1).
+   *
+   * Omitted in isolated panel tests, where there is only ever one class.
+   */
+  readonly classSessionId?: string | null
 }
 
 /** Host-facing description of each Final phase. Host-only copy. */
@@ -127,6 +134,7 @@ export function FinalWagerHostPanel({
   eventHistoryLength = 0,
   activeSessionDurability = FULLY_DURABLE_SESSION,
   onRetryActiveSessionPersist,
+  classSessionId = null,
 }: FinalWagerHostPanelProps) {
   const roundIndex = game.currentRoundIndex
   const round = roundIndex === null ? null : (game.definition.rounds[roundIndex] ?? null)
@@ -139,6 +147,38 @@ export function FinalWagerHostPanel({
   const [responseSeconds, setResponseSeconds] = useState<number>(authoredSeconds)
   const [wagerDrafts, setWagerDrafts] = useState<Record<string, string>>({})
   const [responseDrafts, setResponseDrafts] = useState<Record<string, string>>({})
+
+  /*
+    Behave as a fresh mount would when the class session changes, WITHOUT
+    remounting (CBN-NEW-1).
+
+    Every piece of state above is this class's: how the teacher chose to run its
+    Final, and — in the two draft maps — wagers and responses they have typed but
+    not yet saved. "Reset this class session" does not remount the Host or bump
+    the store epoch, and the non-Final early return below happens inside a
+    mounted component, so without this the next class reached its Final with
+    another class's numbers already in the inputs and Save enabled. One click
+    would have recorded another class's wager.
+
+    Keying this element on the session id in `FoundationControls` was the obvious
+    fix and is what the sibling Class Setup panel does, but remounting THIS panel
+    leaves its old `<section>` in the DOM — two live Final panels with duplicate
+    element ids and, in the accessibility tree, one input with a doubled name and
+    one with none. Adjusting state during render is React's documented answer for
+    exactly this case: it re-renders immediately, before committing, so nothing
+    stale is ever painted and no effect has to clean up after it.
+  */
+  const [stateForSession, setStateForSession] = useState<string | null>(classSessionId)
+  if (stateForSession !== classSessionId) {
+    setStateForSession(classSessionId)
+    setMode(DEFAULT_FINAL_ELIGIBILITY_MODE)
+    setCaptureMode('exact-text')
+    setWagerSeconds(authoredSeconds)
+    setResponseSeconds(authoredSeconds)
+    setWagerDrafts({})
+    setResponseDrafts({})
+  }
+
   const wagersDurable = isActiveSessionHistoryDurable(eventHistoryLength, activeSessionDurability)
   const liveFinal = round === null || definition === null ? null : finalWagerStateFor(game, round.id)
   // CBN-3: the host countdown ticks while either Final window runs.

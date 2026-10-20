@@ -13,6 +13,7 @@ import type { PrivateGameState, PrivateState } from '../state/privateState'
 import {
   categoryBoardStateFor,
   currentSessionEvents,
+  effectiveEvents,
   finalWagerStateFor,
   replay,
   responsePhaseFor,
@@ -112,8 +113,19 @@ export function deriveSessionSummaryV1(
     kind: SESSION_SUMMARY_CONTRACT_KIND,
     version: SESSION_SUMMARY_CONTRACT_VERSION,
     derivationBasis: {
+      /*
+        Both counts describe the whole append-only log, as the contract documents
+        them: `effectiveEventCount` is what survives undo neutralization and
+        `historyEventCount` is the full length including undone events and undo
+        markers. They are deliberately NOT the session window `effective` below.
+
+        Reporting the window here instead would make the pair lie about each
+        other: a one-class-old log of 11 events whose 5-event second class is
+        being summarised would read "effective 5 of history 11" and imply six
+        undone events that never existed.
+      */
       kind: 'effective-history-and-replay',
-      effectiveEventCount: effective.length,
+      effectiveEventCount: effectiveEvents(history).length,
       historyEventCount: history.length,
     },
     sessionId: state.session.sessionId,

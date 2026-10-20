@@ -7,6 +7,8 @@ import { teamBoardGameFile, twoTeams } from '../test/teamFixtures'
 import { findUndoTarget } from '../state/reducer'
 import { lastScoreChangeOf } from '../host/lastScoreChange'
 import { deriveSessionSummaryV1 } from '../summary/deriveSessionSummary'
+import { deriveCompetitiveProfileV1 } from '../summary/completedSummary/competitiveProfile'
+import { FINAL_ROUND_ID, finalDefinition, playToReveal } from '../test/finalWagerFixtures'
 
 /**
  * CBN-NEW-1 — the Reset / Session ledger boundary.
@@ -162,9 +164,33 @@ describe('Reset this class session — the score-ledger boundary', () => {
     // Undo must not reach across the boundary into the previous class's events:
     // reversing one of those changes nothing a teacher can see, yet it spends the
     // Undo affordance and writes an EVENT_UNDONE marker against another class.
-    const target = findUndoTarget(store.getHistory())
-    const preResetIds = new Set([beforeReset!.id])
-    expect(target === null || !preResetIds.has(target.id)).toBe(true)
+    //
+    // The exact claim is NULL, not merely "not that one event": a reset session
+    // holds only `SESSION_INITIALIZED` and `GAME_INITIALIZED`, both irreversible.
+    // Asserting null also pins the cut's position — an implementation that cut at
+    // the wrong index and returned a DIFFERENT pre-reset event would pass a
+    // weaker check.
+    expect(findUndoTarget(store.getHistory())).toBeNull()
+    expect(findUndoTarget(reloadOf(store).getHistory())).toBeNull()
+
+    // Once this class does something reversible, Undo targets THAT.
+    store.dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: AT })
+    expect(findUndoTarget(store.getHistory())?.type).toBe('ROUND_ADVANCED')
+  })
+
+  it('still honours undo markers inside the current class session', () => {
+    // The session cut must NARROW the effective log, never replace it: an event
+    // this class already undid must stay uncounted.
+    const store = freshSession('period-1')
+    resetClassSession(store, 'period-2')
+    store.dispatch({ type: 'ADVANCE_TO_NEXT_ROUND', issuedAt: AT })
+    openTile(store)
+    awardFull(store, 'red')
+    expect(fullCreditEnabledFor(store, 'red')).toBe(false)
+
+    store.dispatch({ type: 'UNDO', issuedAt: AT })
+    expect(lastScoreChangeOf(store.getHistory())).toBeNull()
+    expect(fullCreditEnabledFor(store, 'red')).toBe(true)
   })
 
   it('summarises the class that was actually played, not the one before it', () => {
@@ -189,11 +215,70 @@ describe('Reset this class session — the score-ledger boundary', () => {
     expect(summary.sessionId).toBe('period-2')
     // The new class started when it was reset, not when the first class started.
     expect(summary.recordedSessionStartAt).toBe(resetAt)
+    // The derivation basis still describes the WHOLE log, as its contract says:
+    // the window is what narrowed, not the meaning of these two counts. If this
+    // reported the window instead, the pair would imply undone events that never
+    // existed.
+    expect(summary.derivationBasis.historyEventCount).toBe(store.getHistory().length)
+    expect(summary.derivationBasis.effectiveEventCount).toBe(
+      store.getHistory().filter((event) => event.type !== 'EVENT_UNDONE').length,
+    )
+    expect(summary.derivationBasis.effectiveEventCount).toBeGreaterThan(5)
+
     // One award in this class — not the three the log holds across both.
     expect(summary.scoreActivity.observed.scoreChangeCount).toBe(1)
     expect(summary.scoreActivity.observed.tileLinkedAdjustmentCount).toBe(1)
     const blue = summary.scoreActivity.observed.perTeam.find((team) => team.teamId === 'blue')
     expect(blue?.scoreChangeCount).toBe(0)
     expect(blue?.netDelta).toBe(0)
+  })
+
+  it('does not report the previous class\'s Final semantics for a class that never reached the Final', async () => {
+    // A competitive profile's `finalSemantics` is compared field-for-field when
+    // the Host decides whether two completed classes may be rolled up together.
+    // Inheriting the previous class's Final semantics makes an honest class look
+    // incompatible, and the ledger then quietly leaves it out of the cross-class
+    // totals a teacher is reading.
+    const definition = finalDefinition()
+    const store = createSessionStore()
+    store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 'period-1' })
+    store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT, definition })
+    store.dispatch({
+      type: 'ADJUST_TEAM_SCORE',
+      issuedAt: AT,
+      teamId: 'red',
+      delta: 200,
+      mode: 'manual-correction',
+      source: { kind: 'manual' },
+    })
+    store.dispatch({ type: 'SELECT_ROUND', issuedAt: AT, roundId: FINAL_ROUND_ID })
+
+    // Period 1 runs its Final with deliberately NON-default semantics.
+    playToReveal(store, { mode: 'inclusive', captureMode: 'host-only' })
+    store.dispatch({ type: 'END_GAME_SESSION', issuedAt: AT })
+
+    const first = await deriveCompetitiveProfileV1(store.getHistory())
+    expect(first.status).toBe('available')
+    if (first.status !== 'available') return
+    expect(first.profile.finalSemantics).toEqual({
+      presence: 'present',
+      eligibilityMode: 'inclusive',
+      responseCaptureMode: 'host-only',
+    })
+
+    // Reset, then a second class that ends WITHOUT ever reaching the Final.
+    store.dispatch({ type: 'INIT_SESSION', issuedAt: AT + 1_000, sessionId: 'period-2' })
+    store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT + 1_000, definition })
+    store.dispatch({ type: 'END_GAME_SESSION', issuedAt: AT + 2_000 })
+
+    const second = await deriveCompetitiveProfileV1(store.getHistory())
+    expect(second.status).toBe('available')
+    if (second.status !== 'available') return
+    expect(second.profile.finalSemantics).toEqual({
+      // The GAME still has a Final round; THIS class simply never played it.
+      presence: 'present',
+      eligibilityMode: 'unavailable',
+      responseCaptureMode: 'unavailable',
+    })
   })
 })
