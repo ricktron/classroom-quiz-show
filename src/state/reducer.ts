@@ -1186,9 +1186,10 @@ export function effectiveEvents(history: readonly SessionEvent[]): readonly Sess
  * cut: theirs lands at the latest `GAME_INITIALIZED`, falling back to
  * `SESSION_INITIALIZED` only when there is none, and is exclusive of it, since
  * they ask what has HAPPENED since the init rather than what belongs to this
- * class. The two coincide on the reset path, which re-dispatches
- * `INITIALIZE_GAME`, and diverge on the `INIT_SESSION`-alone path — a
- * pre-existing residual carried to the register, not something this cut
+ * class. The two coincide wherever `INITIALIZE_GAME` follows the session init —
+ * which the reset control does only WHEN A GAME IS LOADED — and diverge on the
+ * `INIT_SESSION`-alone path, which a reset with no game loaded also takes. That
+ * is a pre-existing residual carried to the register, not something this cut
  * changes.
  */
 export function currentSessionEvents(

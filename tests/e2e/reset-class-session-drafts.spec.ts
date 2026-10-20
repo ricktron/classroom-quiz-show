@@ -166,9 +166,10 @@ test('a reset class does not inherit the previous class\'s last buzz line or tim
   // The other half of the contract: the teacher's DURABLE keyboard setup is
   // still there. These bindings are device truth, not this class's play.
   //
-  // A smoke check, not a discriminator, and worth saying so: keyboard bindings
-  // are written straight to config storage, and `enabled` defaults to On, so a
-  // remounted panel would re-derive exactly these values and pass this too. The
+  // A smoke check, not a discriminator, and worth saying so: `enabled` defaults
+  // to On, and these `1`/`2` values are `defaultKeyboardMapping(teams)` from the
+  // absent-storage fallback — this spec never rebinds a key — so a remounted
+  // panel would re-derive exactly them and pass this too. The
   // claim that clearing in place preserves device setup is discriminated by the
   // controller case below, where `enabled` defaults to Off and the mapping is
   // materialized in memory.
