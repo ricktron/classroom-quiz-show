@@ -396,11 +396,17 @@ export async function setHidSimMode(page: Page, mode: HidSimMode): Promise<void>
  * (CBJ-10 self-test).
  *
  * Without this, a journey that relies on the simulated receiver degrades
- * silently: `navigator.hid` is simply absent, the product reports no WebHID
- * support, the teacher never sees a Connect affordance, and a journey written
- * around "no receiver" assertions would still pass — qualifying nothing. The
- * failure mode is a vacuous pass, which is the thing Court B exists to catch,
- * so it is asserted rather than assumed.
+ * silently — but NOT by `navigator.hid` going missing. Measured: with the
+ * installer made a no-op, `navigator.hid` is still present, still answers
+ * `getDevices` / `requestDevice` / `addEventListener`, and only `isSimulated`
+ * is false. It is the browser's REAL WebHID, which has no receiver attached, so
+ * the run quietly stops testing the product against a simulated receiver and
+ * starts testing the host machine's hardware situation.
+ *
+ * (An earlier version of this comment said `navigator.hid` would be "simply
+ * absent" and the Connect affordance would disappear. That was wrong, and it
+ * contradicted both the error message below and the marker comment in
+ * `installScript`. Independent review measured it.)
  *
  * Checks three separate things, because each can break on its own:
  *  - `navigator.hid` exists at all (the init script ran before navigation);

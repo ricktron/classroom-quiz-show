@@ -206,7 +206,23 @@ export const COURT_B_JOURNEYS = [
   },
   {
     id: 'CBJ-10',
-    title: 'Simulated Sony receiver: supported profile connects, wrong device refused',
+    title: 'Simulated Sony receiver: the supported profile connects',
+    requiresFinal: false,
+  },
+  /*
+    CBJ-11 is the refusal half of the receiver boundary, and it is a SEPARATE
+    journey id on purpose.
+
+    It began life as a second test inside CBJ-10 titled "[CBJ-10 refusal]".
+    Independent review showed that title is invisible to the registry guard
+    below (the pattern matches `[CBJ-nn]` exactly), so the test could be deleted
+    with lint, typecheck and every guard still green — while the brief went on
+    advertising a refusal journey that no longer existed. Giving it its own id
+    puts it under the same three-way guard as every other journey.
+  */
+  {
+    id: 'CBJ-11',
+    title: 'Simulated Sony receiver: a device that is not the supported profile is refused',
     requiresFinal: false,
   },
 ] as const

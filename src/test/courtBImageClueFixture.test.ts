@@ -93,7 +93,24 @@ let built: Uint8Array
 
 beforeAll(async () => {
   built = await buildCourtBImageCluePackBytes()
-  if (process.env.CQS_WRITE_COURT_B_FIXTURE === '1') writeFileSync(PACK_PATH, built)
+  /*
+    Regeneration is a deliberate local act, never something CI can do.
+
+    Without the CI guard this env var turns the freshness test into a
+    self-fulfilling one: point it at a corrupted pack and `beforeAll` rewrites
+    the file, then all eight tests pass. Independent review demonstrated
+    exactly that. The rewrite still shows up in `git status`, so it cannot land
+    unnoticed, but a green run on a corrupted artifact is the wrong signal to
+    emit at all.
+  */
+  if (process.env.CQS_WRITE_COURT_B_FIXTURE === '1') {
+    if (process.env.CI) {
+      throw new Error(
+        'CQS_WRITE_COURT_B_FIXTURE regenerates a committed fixture and must never run in CI.',
+      )
+    }
+    writeFileSync(PACK_PATH, built)
+  }
 })
 
 describe('Court B image-clue pack fixture (CBJ-08)', () => {

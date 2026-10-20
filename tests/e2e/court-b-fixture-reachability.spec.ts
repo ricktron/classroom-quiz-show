@@ -266,7 +266,7 @@ async function importImageCluePack(page: Page) {
 async function recordProjectorImageSources(display: Page) {
   await display.evaluate(() => {
     const seen: string[] = []
-    ;(window as unknown as { __cbj08Sources: string[] }).__cbj08Sources = seen
+    ;(window as unknown as { __cqsCbj08Sources: string[] }).__cqsCbj08Sources = seen
     const record = () => {
       for (const img of document.querySelectorAll('img')) {
         const src = img.getAttribute('src')
@@ -285,7 +285,7 @@ async function recordProjectorImageSources(display: Page) {
 
 async function projectorImageSources(display: Page): Promise<string[]> {
   return display.evaluate(
-    () => (window as unknown as { __cbj08Sources?: string[] }).__cbj08Sources ?? [],
+    () => (window as unknown as { __cqsCbj08Sources?: string[] }).__cqsCbj08Sources ?? [],
   )
 }
 
@@ -396,6 +396,21 @@ test('[CBJ-09] Final response window runs out, then settlement and Undo still wo
     (The reverse order — expiry before settlement — is already covered by
     tests/e2e/court-b-c-final-undo-integrity.spec.ts.)
   */
+  /*
+    The window is still live when responses are locked.
+
+    This is a real liveness assertion — it is what makes "the window was
+    running, then it ran out" true rather than assumed. It is NOT an ordering
+    guard: I tried to use it as one and measured that it fails to be one. An
+    expiry moved up can simply be inserted BELOW this line and above the lock,
+    and the journey passes again. Position-based assertions cannot constrain
+    where a later line is inserted; see the note on the clock advance below.
+  */
+  await expect(
+    finalPanel,
+    'CBJ-09 requires the response window to be live when responses are locked',
+  ).not.toContainText('time up')
+
   await page.getByRole('button', { name: 'Lock all responses' }).click()
   await page.getByRole('button', { name: 'Reveal the answer' }).click()
   await revealAndJudge(page, 'Nimbus', 'Correct')
@@ -424,12 +439,22 @@ test('[CBJ-09] Final response window runs out, then settlement and Undo still wo
     lines below are moved above the settlement together, this assertion fails
     instead of the journey quietly going vacuous.
 
-    Honest limit: this does not make the ordering impossible to break. Moving
-    the `fastForward` line ALONE, leaving this assertion behind, would still
-    pass. A UI-level journey cannot see event order directly; the structural
-    defence against this defect class is the product's own type
-    (`FinalWindowExpiryEventBase.reversible: false`), which makes the mutation
-    fail to compile at all.
+    HONEST LIMIT, measured rather than assumed. This catches the refactor that
+    moves these two lines together, and nothing more. Moving the `fastForward`
+    line ALONE — leaving this assertion behind, inserting the advance lower
+    down — still passes with a reversible expiry present. Two independent
+    reviews and one attempt of my own to close it agree on this. A UI-level
+    journey cannot observe event ORDER, and no assertion at a fixed source
+    position can stop a line being inserted after it, so this is not fixable
+    here; claiming otherwise would be worse than recording it.
+
+    What this defect class actually rests on, in order of strength:
+      1. the product's own type, `FinalWindowExpiryEventBase.reversible: false`
+         — a single-site mutation does not compile at all;
+      2. `src/state/finalUndoIntegrity.test.ts`, which asserts the expiry is
+         irreversible at the event layer, independent of any journey ordering;
+      3. this journey, which is the only end-to-end check and is ordering
+         sensitive.
   */
   await expect(
     page.getByRole('group', { name: 'Live game actions' }).getByRole('button').first(),
@@ -510,7 +535,7 @@ async function reachBuzzerSetup(page: Page) {
   }
 }
 
-test('[CBJ-10] Simulated Sony receiver: supported profile connects, wrong device refused', async ({
+test('[CBJ-10] Simulated Sony receiver: the supported profile connects', async ({
   page,
 }) => {
   await installWbuzzHardwareSimulator(page, 'ready')
@@ -526,7 +551,7 @@ test('[CBJ-10] Simulated Sony receiver: supported profile connects, wrong device
   await assertProductReadBoundary(page)
 })
 
-test('[CBJ-10 refusal] A granted Sony device that is not the supported profile is refused', async ({
+test('[CBJ-11] Simulated Sony receiver: a device that is not the supported profile is refused', async ({
   page,
 }) => {
   await installWbuzzHardwareSimulator(page, 'unsupported-pid')
