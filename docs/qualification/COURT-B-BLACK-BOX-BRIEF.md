@@ -74,7 +74,7 @@ Adding a journey means adding it here, to `COURT_B_JOURNEYS` in
 `src/test/courtBQualificationFixture.ts`, and a reachability test; the guard
 fails otherwise.
 
-### Notes on the three journeys added for the fresh Court B
+### Notes on the four journeys added for the fresh Court B
 
 - **CBJ-08** starts from the portable pack, not the shared fixture. What it
   measures is that the projector shows *the pack's* image. The authored clue
@@ -88,6 +88,11 @@ fails otherwise.
   advances a controlled page clock to reach the same expiry deterministically,
   and only after the ordinary UI has opened the window.
 - **CBJ-10 and CBJ-11** use a simulated receiver at the platform boundary.
+  **The run operator supplies it; you cannot create one.** If your run was not
+  set up with a simulated receiver, these two rows are not yours to perform —
+  record them as "not supplied" and move on. Do NOT record them as a route you
+  could not discover: that would report an apparatus gap as a product defect.
+  Real Sony/Namtai hardware is explicitly out of scope here (rule 6).
   Simulation is not physical evidence (rule 6). Their purpose is the
   teacher-visible contract either side of that boundary: the exact supported
   profile reaches a connected state (CBJ-10), and a device that is not the
