@@ -8,8 +8,10 @@ Durable checkpoint ledger for a blinded Court B BLACK-BOX TEACHER RUN
 run proceeds; a row claims only what the named tester actually reported.
 
 **Audience: run operator only. Do not hand this file, or a link to it, to a
-blinded tester.** Nothing in the repository links here, deliberately — the
-tester-facing brief must not reach it. An operator arrives here from the
+blinded tester.** Nothing TESTER-FACING links here, deliberately — the
+tester-facing brief must not reach it. The operator-only
+[`COURTB-SEED-REACHABILITY-MATRIX.md`](COURTB-SEED-REACHABILITY-MATRIX.md) does
+reference this file, which is intended: an operator needs both. An operator arrives here from the
 campaign brief or from this directory. It states the population composition below, so a tester who
 read it would acquire a prior on whether their own build is the clean one. A
 tester receives only their opaque build code, the committed fixtures, and
@@ -41,7 +43,7 @@ each row is written **immediately** when its state changes — not at the end.
 | Preferred concurrency if service limits appear | **1** |
 | Never | launch all builds together |
 | On interruption | resume **only** incomplete builds; never re-run a `COMPLETE` row |
-| Completion | Court B is **incomplete** unless all 14 rows are terminal |
+| Completion | Court B is **incomplete** unless all 14 DECLARED BUILDS have a terminal row. Re-declaring an `INVALID` build under a fresh code grows the ledger past 14 rows; what must be complete is the declared population, not the row count |
 
 Terminal statuses are `COMPLETE` and `INVALID`. `NOT STARTED`, `RUNNING` and
 `RATE-LIMITED` are non-terminal and must be resumed.
@@ -51,14 +53,15 @@ Terminal statuses are `COMPLETE` and `INVALID`. `NOT STARTED`, `RUNNING` and
 | `NOT STARTED` | row declared; no tester assigned yet |
 | `RUNNING` | a tester is working this build now (counts against concurrency) |
 | `COMPLETE` | tester returned a valid terminal report, frozen before unsealing |
-| `INVALID` | run cannot be counted (build identity leaked or unverified, tester inspected implementation, harness fault, a `RUNNING` build whose tester was lost, or a tester report of **"not reached"**/**"not supplied"** for the only action that discriminates this build); needs a fresh build code AND a fresh tester |
+| `INVALID` | run cannot be counted (build identity leaked or unverified, tester inspected implementation, harness fault, a `RUNNING` build whose tester was lost, or a tester report of **"not reached"** or **"not supplied"** for an action the brief asks for); needs a fresh build code AND a fresh tester |
 | `RATE-LIMITED` | stopped by a service limit, not by a finding; resume later |
 
 ## The simulated receiver is a run precondition, not an option
 
-Three of the declared seeds are only observable through the simulated receiver —
-S8 (buzzer truth), S10 (hardware boundary) — and the `CBJ-10`/`CBJ-11` journeys
-every tester is asked to attempt. The brief correctly tells a tester with no
+Two of the declared seeds are only observable through the simulated receiver:
+S8 (buzzer truth) and S10 (hardware boundary). The `CBJ-10`/`CBJ-11` journeys
+every tester is asked to attempt need it too, though those are journeys rather
+than seeds. The brief correctly tells a tester with no
 receiver to record those rows as "not supplied" rather than as a route they
 could not discover.
 
@@ -183,6 +186,9 @@ blank until the mapping is unsealed.
 ## Resume procedure
 
 1. Read this file first; it is the authority on what has already been run.
+   Re-check the run precondition before resuming: if the setup no longer has a
+   simulated receiver, the run may NOT be resumed, for the same reason it could
+   not have started.
 2. Count rows by status. Non-terminal rows are the remaining work.
 3. Start at most 2 (preferably 1 under service limits) non-terminal builds.
 4. Write the row to `RUNNING` **before** the tester begins.
@@ -196,4 +202,5 @@ blank until the mapping is unsealed.
    seen part of the build, so re-running them is no longer blind, and their
    partial observations cannot be audited. Write the row `INVALID`, then
    re-declare the same seed under a FRESH build code with a FRESH tester. This
-   is the one resume path that costs a row rather than recovering it.
+   is a resume path that costs a row rather than recovering it; the `INVALID`
+   cause for a "not reached" or "not supplied" report is the other.
