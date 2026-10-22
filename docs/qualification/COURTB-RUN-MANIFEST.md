@@ -36,6 +36,7 @@ each row is written **immediately** when its state changes — not at the end.
 | Rule | Value |
 | --- | --- |
 | Expected population | **14** = 1 clean + 13 seeded defective |
+| Run precondition | a **simulated receiver must be supplied** — without one the run MUST NOT START (see below) |
 | Maximum blinded tester concurrency | **2** |
 | Preferred concurrency if service limits appear | **1** |
 | Never | launch all builds together |
@@ -50,8 +51,33 @@ Terminal statuses are `COMPLETE` and `INVALID`. `NOT STARTED`, `RUNNING` and
 | `NOT STARTED` | row declared; no tester assigned yet |
 | `RUNNING` | a tester is working this build now (counts against concurrency) |
 | `COMPLETE` | tester returned a valid terminal report, frozen before unsealing |
-| `INVALID` | run cannot be counted (build identity leaked or unverified, tester inspected implementation, harness fault, or a `RUNNING` build whose tester was lost); needs a fresh build code AND a fresh tester |
+| `INVALID` | run cannot be counted (build identity leaked or unverified, tester inspected implementation, harness fault, a `RUNNING` build whose tester was lost, or a tester report of **"not reached"**/**"not supplied"** for the only action that discriminates this build); needs a fresh build code AND a fresh tester |
 | `RATE-LIMITED` | stopped by a service limit, not by a finding; resume later |
+
+## The simulated receiver is a run precondition, not an option
+
+Three of the declared seeds are only observable through the simulated receiver —
+S8 (buzzer truth), S10 (hardware boundary) — and the `CBJ-10`/`CBJ-11` journeys
+every tester is asked to attempt. The brief correctly tells a tester with no
+receiver to record those rows as "not supplied" rather than as a route they
+could not discover.
+
+That makes the receiver a precondition of the RUN, not a property of individual
+builds, and the consequence is deliberately the strict one:
+
+- **A run set up without a simulated receiver MUST NOT START.** It cannot reach
+  a valid completion, because the expected population above is fixed at 14 and
+  two of its declared seeds would have no route a tester is permitted to walk.
+- **Seeds are never dropped to accommodate a missing receiver.** The population
+  is declared here and only here; shrinking it to 12 or 13 would make completion
+  unreportable by this file's own Completion rule, and a run that cannot report
+  completion is not a cheaper run — it is a void one.
+- If a receiver genuinely cannot be supplied, that is a reason to defer Court B,
+  and to say so, rather than to serve a population nobody can judge.
+
+A tester who reports "not supplied" for an action on a run that WAS set up with a
+receiver is reporting an apparatus fault, not a finding: that row is `INVALID`
+and is re-declared under a fresh build code with a fresh tester.
 
 ## Blinding rules the ledger has to protect
 

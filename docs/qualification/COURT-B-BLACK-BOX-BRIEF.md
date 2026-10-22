@@ -144,7 +144,8 @@ workflows, not fixture-dependent routes — so they are listed here rather than 
 
 - **Delete a saved game when you have two.** Both files you were given import as
   the same game, so they make one library entry, not two. Get a second, distinct
-  entry using an ordinary Home control — `New Game`, or `Import demo game` — then
+  entry using an ordinary Home control — `Import demo game` is the quickest;
+  `New Game` also works but takes you into the editor first — then
   delete a specific entry that is NOT first in the list. Confirm the one you
   chose is gone and the other survives. (Using the demo here is only to populate
   the library; it is still not qualification content.)
