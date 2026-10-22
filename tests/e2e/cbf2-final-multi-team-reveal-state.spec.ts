@@ -90,6 +90,23 @@ test('CB-F2: a judged Final team keeps its status when the next team is revealed
     .not.toBe('ready')
   const aAfterJudgment = await statusOf(display, 't0')
 
+  // The team whose turn has NOT come must still read "ready". Without this a
+  // rail that marks every team revealed the moment anyone settles passes every
+  // other assertion here, because they are all `not.toBe('ready')`.
+  //
+  // Wait for a POSITIVE signal that the settlement reached the projector before
+  // reading the other channel. Polling t0 for `not 'ready'` would not do: it
+  // already read `revealed` before the judgment, so it passes instantly and the
+  // read below would race the snapshot rather than test it.
+  await expect(
+    display.getByLabel(new RegExp(`^${GRANITE}: 150 points?$`)),
+    'the settlement must have reached the projector before the next check means anything',
+  ).toBeVisible({ timeout: 10_000 })
+  expect(
+    await statusOf(display, 't1'),
+    `${NIMBUS} has not been revealed yet, so settling ${GRANITE} must not mark it`,
+  ).toBe('ready')
+
   // Now reveal team B. A has already been adjudicated in front of the class.
   await page.getByRole('button', { name: new RegExp(`^Reveal ${NIMBUS}`) }).click()
   await expect.poll(() => statusOf(display, 't1')).not.toBe('ready')

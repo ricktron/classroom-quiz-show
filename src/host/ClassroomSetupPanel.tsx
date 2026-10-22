@@ -430,9 +430,9 @@ export function ClassroomSetupPanel({
       key: `t${index}`,
       name: claimed[team.id] ?? team.name,
       accent: team.accent,
-      score: Object.prototype.hasOwnProperty.call(teamScores, team.id)
-        ? teamScores[team.id]
-        : INITIAL_TEAM_SCORE,
+      // `??` is nullish-only, so a real 0 or a negative score passes through
+      // and only a missing team falls back — the engine's own default.
+      score: teamScores[team.id] ?? INITIAL_TEAM_SCORE,
     })),
   }
 

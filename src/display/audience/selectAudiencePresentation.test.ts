@@ -121,9 +121,9 @@ describe('selectUniqueLeader', () => {
 })
 
 describe('selectAudiencePresentation', () => {
-  it('keeps public wire version 8 as the only schema in fixtures', () => {
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(9)
-    expect(baseState().schemaVersion).toBe(9)
+  it('keeps the current public wire version as the only schema in fixtures', () => {
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(10)
+    expect(baseState().schemaVersion).toBe(10)
   })
 
   it('maps top-level waiting, ready, unavailable, and complete scenes', () => {

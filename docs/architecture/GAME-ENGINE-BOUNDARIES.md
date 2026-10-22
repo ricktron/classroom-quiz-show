@@ -470,10 +470,14 @@ text, optional caption/attribution and an explicit load-failure fallback.
 At Slice 11 completion, `PUBLIC_STATE_SCHEMA_VERSION` was **7** (media-era
 public DTO pin); the sync envelope remained version **2**. That **7** figure is
 historical Slice 11 status — it is **not** the current PublicState schema.
-**Current** `PUBLIC_STATE_SCHEMA_VERSION` is **9** (S05 Path A nested
-`response.boardOutcome` allow-list; see
+**Current** `PUBLIC_STATE_SCHEMA_VERSION` is **10** (CB-F2 required
+`settledTeamKeys` inside the `team-reveal` and `resolution` members of
+`PublicRoundState`, so each Final team's settled state is a published fact
+rather than something the projector infers from the single current reveal).
+Schema **9** carried the S05 Path A nested `response.boardOutcome` allow-list;
+see
 [`../CQS-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY.md`](../CQS-S05-BOARD-OUTCOME-PUBLIC-AUTHORITY.md)
-and ADR-008 Path A amendment). Schema **8** carried buzz choreography-era
+and ADR-008 Path A amendment. Schema **8** carried buzz choreography-era
 response facts without board outcome. Older schema consumers fail closed.
 Audio, video, remote media and timer/media coupling remain deferred.
 

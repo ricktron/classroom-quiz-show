@@ -49,8 +49,17 @@ import { isValidSameOriginPath } from '../game/media/limits'
  * display validates `response` without `boardOutcome`, so a v9 payload would
  * either drop the judgement or fail the guard inconsistently. Failing closed on
  * the version mismatch keeps projector safety fail-closed.
+ *
+ * CB-F2 adds the required `settledTeamKeys` field INSIDE the `team-reveal` and
+ * `resolution` members of `PublicRoundState` (9 → 10). Deliberate for the same
+ * class of reason, and for the Slice 14 reason specifically: a version-9 display
+ * validates those stages with an exact-key guard that does not know the field,
+ * so every v10 Final snapshot would fail that guard and freeze the projector on
+ * its last good frame — a class would watch a stale Final through every reveal
+ * with no indication anything was wrong. Failing closed on the VERSION instead
+ * makes the mismatch visible and unambiguous.
  */
-export const PUBLIC_STATE_SCHEMA_VERSION = 9 as const
+export const PUBLIC_STATE_SCHEMA_VERSION = 10 as const
 
 /**
  * Coarse, public-safe lifecycle phase. This is intentionally NOT the private

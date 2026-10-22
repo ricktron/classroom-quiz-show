@@ -50,7 +50,7 @@ function serialized(store: SessionStore): string {
 
 describe('the wire protocol', () => {
   it('is at public-state version 8 and envelope version 2', () => {
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(9)
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(10)
     expect(SYNC_SCHEMA_VERSION).toBe(3)
   })
 
@@ -456,5 +456,65 @@ describe('the sanitizer fails closed', () => {
     playToReveal(store)
     const projected: PublicState = safeToPublicState(store.getState())
     expect(isPublicState(projected)).toBe(true)
+  })
+})
+
+/**
+ * CB-F2 — the settled-team key list must fail closed.
+ *
+ * The repair publishes `settledTeamKeys` so the projector stops inferring each
+ * team's Final status from one value. The commit claims the list "fails closed
+ * rather than making the projector invent a status", and these prove it: the
+ * rejection branches had no coverage, so weakening the guard to a bare
+ * `Array.isArray` left the whole suite green.
+ */
+describe('CB-F2 settledTeamKeys fails closed', () => {
+  const base = {
+    kind: 'final' as const,
+    stage: 'team-reveal' as const,
+    prompt: { kind: 'text' as const, text: 'Q' },
+    answer: 'A',
+    reveal: {
+      teamKey: 't0',
+      response: { kind: 'not-captured' as const },
+      wager: 10,
+      settlement: null,
+    },
+  }
+
+  it('accepts an empty list and a list of distinct keys', () => {
+    expect(isPublicRoundState({ ...base, settledTeamKeys: [] })).toBe(true)
+    expect(isPublicRoundState({ ...base, settledTeamKeys: ['t0', 't1'] })).toBe(true)
+  })
+
+  it('rejects a team-reveal payload with no settledTeamKeys at all', () => {
+    expect(isPublicRoundState(base)).toBe(false)
+  })
+
+  for (const [label, value] of [
+    ['a non-array', 't0'],
+    ['a null', null],
+    ['an object', { t0: true }],
+    ['a non-string element', ['t0', 1]],
+    ['a null element', ['t0', null]],
+    ['an empty-string key', ['t0', '']],
+    ['duplicate keys', ['t0', 't0']],
+  ] as const) {
+    it(`rejects ${label}`, () => {
+      expect(isPublicRoundState({ ...base, settledTeamKeys: value })).toBe(false)
+    })
+  }
+
+  it('rejects a resolution payload missing settledTeamKeys', () => {
+    expect(
+      isPublicRoundState({
+        kind: 'final',
+        stage: 'resolution',
+        prompt: null,
+        answer: null,
+        reveal: null,
+        outcome: 'tied',
+      }),
+    ).toBe(false)
   })
 })

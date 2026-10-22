@@ -122,22 +122,22 @@ function channelStatus(
 }
 
 /**
- * Thin team-segmented signature strip. Fails closed (omitted) when teams are
- * unavailable or absent — never invents channels.
- */
-/**
  * Teams whose Final settlement is already public (CB-F2). Taken from the round
  * DTO the rail already receives, so no caller has to remember to pass it and no
  * second source of truth can drift from the sanitizer.
  */
 function settledKeysOf(round: PublicRoundState | null): readonly string[] {
-  if (round === null || round.kind !== PUBLIC_FINAL_KIND) return []
+  if (round?.kind !== PUBLIC_FINAL_KIND) return []
   if (round.stage === 'team-reveal' || round.stage === 'resolution') {
     return round.settledTeamKeys
   }
   return []
 }
 
+/**
+ * Thin team-segmented signature strip. Fails closed (omitted) when teams are
+ * unavailable or absent — never invents channels.
+ */
 function TeamChannelRail({
   teams,
   response,

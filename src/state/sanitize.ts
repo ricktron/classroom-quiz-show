@@ -462,6 +462,14 @@ function toPublicFinalReveal(
  * ORDER, never the settlement map's key order, so it cannot depend on object
  * enumeration.
  */
+function lastSettledTeamId(final: FinalWagerRoundState): string | null {
+  for (let index = final.revealedTeamIds.length - 1; index >= 0; index -= 1) {
+    const teamId = final.revealedTeamIds[index]
+    if (settlementFor(final, teamId) !== null) return teamId
+  }
+  return null
+}
+
 /**
  * The opaque keys of every team whose Final settlement is already public, in
  * reveal order (CB-F2).
@@ -485,14 +493,6 @@ function settledTeamKeysOf(
     if (!keys.includes(key)) keys.push(key)
   }
   return keys
-}
-
-function lastSettledTeamId(final: FinalWagerRoundState): string | null {
-  for (let index = final.revealedTeamIds.length - 1; index >= 0; index -= 1) {
-    const teamId = final.revealedTeamIds[index]
-    if (settlementFor(final, teamId) !== null) return teamId
-  }
-  return null
 }
 
 /** Did Final finish with one team ahead, or a shared lead? */
