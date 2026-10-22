@@ -477,6 +477,31 @@ describe('CB-F2 SignalRail per-team Final status', () => {
     expect(statusOf('t2')).toBe('revealed') // the current reveal
   })
 
+  it('keeps settled teams marked at the resolution stage too', () => {
+    // Without this, dropping `resolution` from the stage check reintroduces the
+    // CB-F2 symptom after the last judgment and stays green everywhere else.
+    render(
+      <SignalRail
+        mode="final"
+        response={null}
+        teams={THREE}
+        round={{
+          kind: PUBLIC_FINAL_KIND,
+          stage: 'resolution',
+          prompt: PROMPT,
+          answer: 'Answer',
+          reveal: null,
+          settledTeamKeys: ['t0', 't1'],
+          outcome: 'unique-leader',
+        }}
+        revealedTeamName={null}
+      />,
+    )
+    expect(statusOf('t0')).toBe('revealed')
+    expect(statusOf('t1')).toBe('revealed')
+    expect(statusOf('t2')).toBe('ready')
+  })
+
   it('does not mark an unrelated team when only the LAST team is settled', () => {
     // Guards the mirror-image error of "always the first key".
     renderFinal({ teams: THREE, settledTeamKeys: ['t2'], revealedTeamName: null })

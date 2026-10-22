@@ -430,9 +430,12 @@ export function ClassroomSetupPanel({
       key: `t${index}`,
       name: claimed[team.id] ?? team.name,
       accent: team.accent,
-      // `??` is nullish-only, so a real 0 or a negative score passes through
-      // and only a missing team falls back — the engine's own default.
-      score: teamScores[team.id] ?? INITIAL_TEAM_SCORE,
+      // Own-property only, exactly as the engine's `teamScoreFor` reads it: a
+      // team id may legally be `constructor` or `toString`, and `??` alone would
+      // then hand the projector an inherited Object member instead of a score.
+      score: Object.hasOwn(teamScores, team.id)
+        ? teamScores[team.id]
+        : INITIAL_TEAM_SCORE,
     })),
   }
 
