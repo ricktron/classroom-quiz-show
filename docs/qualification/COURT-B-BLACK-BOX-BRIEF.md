@@ -98,6 +98,68 @@ fails otherwise.
   profile reaches a connected state (CBJ-10), and a device that is not the
   supported profile is refused rather than silently accepted (CBJ-11).
 
+## Other ordinary teacher actions
+
+A blind run is not only the journeys above. These are things a teacher does on a
+normal school day, and they carry the same weight: do each through visible
+controls and report what you actually saw.
+
+The journey table exists because each row is mechanically proven reachable from
+the fixture. These actions are not in that table — they are ordinary product
+workflows, not fixture-dependent routes — so they are listed here rather than as
+`CBJ-nn` rows.
+
+- **A second class period.** After playing at least one clue and scoring a team,
+  find the control that starts a new class session on the same game. Then look
+  hard at what the NEW class inherits: are tiles the previous class already won
+  still playable at full value? Does "Last score change" still name the previous
+  class's award, with Undo still offered for it? Does the session summary report
+  the previous class's figures? A new class should begin with a clean ledger.
+  Reload the page after the reset and check again.
+
+- **More than one buzzer on a team.** With the receiver connected, map several
+  handsets to the SAME team and at least one to a different team. Check the team
+  rows and the live buzz line: do they name all of the buzzers mapped to a team,
+  or only one? Press each handset and confirm the team that lights up is the team
+  that buzzer belongs to.
+
+- **Let a BOARD clue's response timer run out.** Not the Final — a board clue.
+  Run the response timer to expiry, then try Undo. Does Undo reach the real
+  teacher action, or does it get stuck on an inert "time up" entry?
+
+- **Delete a saved game when you have two.** Get a second game into the library,
+  then delete a specific one that is NOT first in the list. Confirm the one you
+  chose is gone and the other survives.
+
+- **Act the instant the app starts.** Reload and immediately, before the app has
+  settled, use a control that changes something — type a name, score a team,
+  press a game control. Then check whether what you did actually took effect. A
+  control that looks usable but silently discards the action is a defect.
+
+- **Display presence after a host reload.** With the projector window open,
+  reload the host. Then close the projector window and watch the host's Display
+  status. Does the host still claim a display is connected when none is?
+
+- **Mid-game, check the scores on the setup screen.** Once a team has points,
+  leave gameplay with `Back to setup`. Read the scores that screen shows for each
+  team, word for word, and say whether they match what the class actually has.
+  Then return to gameplay and confirm the real scores are still there. A setup
+  screen reporting zeros for a class that has points is a defect even though
+  nothing is lost.
+
+- **Watch every team's status while you judge the Final.** With at least two
+  teams in the Final, reveal and judge the FIRST team and note what the projector
+  shows for it; then reveal and judge the SECOND team and look at the first team
+  again. A team the class already watched be judged must not go back to looking
+  as though its turn has not come. With three teams, check the earlier two after
+  judging the third.
+
+- **On a tie, quote the summary verbatim.** After accepting a tie, write down
+  EXACTLY what the session summary's completion context says and exactly what the
+  standings rows say. Then say whether those words match what you saw happen. A
+  summary describing a single winner while two teams sit on identical scores is a
+  defect even if every number on screen is right.
+
 ## Non-claims
 
 Reachability proves a route exists from the fixture. It does not prove the route
