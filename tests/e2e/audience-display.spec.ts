@@ -338,6 +338,7 @@ test.describe('audience display scenes and privacy', () => {
         round: {
           kind: 'final',
           stage: 'team-reveal',
+          settledTeamKeys: [],
           prompt: { kind: 'text', text: 'Final question' },
           answer: '42',
           reveal: {
@@ -481,6 +482,7 @@ test.describe('audience display scenes and privacy', () => {
     const pendingReveal = {
       kind: 'final' as const,
       stage: 'team-reveal' as const,
+      settledTeamKeys: [],
       prompt: { kind: 'text' as const, text: 'Final question' },
       answer: '42',
       reveal: {
@@ -541,6 +543,7 @@ test.describe('audience display scenes and privacy', () => {
         round: {
           kind: 'final',
           stage: 'resolution',
+          settledTeamKeys: [],
           prompt: pendingReveal.prompt,
           answer: '42',
           reveal: settledReveal.reveal,

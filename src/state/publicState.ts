@@ -290,6 +290,21 @@ export type PublicFinalWagerState =
       readonly prompt: PublicPromptContent
       readonly answer: string
       readonly reveal: PublicFinalReveal
+      /**
+       * Every team whose Final settlement is already public, in reveal order
+       * (CB-F2).
+       *
+       * `reveal` names only the team on screen NOW. A projector that derives
+       * each team's status from that one value has no way to remember a team the
+       * class already watched be adjudicated, so revealing the next team made
+       * the previous one look as though its turn had never come.
+       *
+       * Publishing this leaks nothing: each settlement was shown to the room
+       * when it happened, and the scoreboard already carries the resulting
+       * scores. It deliberately carries KEYS only — never another team's wager
+       * or response, which stay private until their own reveal.
+       */
+      readonly settledTeamKeys: readonly string[]
     }
   | {
       readonly kind: typeof PUBLIC_FINAL_KIND
@@ -310,6 +325,8 @@ export type PublicFinalWagerState =
        * when no team was ever revealed.
        */
       readonly reveal: PublicFinalReveal | null
+      /** Settled teams, as at `team-reveal` (CB-F2). */
+      readonly settledTeamKeys: readonly string[]
       readonly outcome: PublicFinalOutcome
     }
   | { readonly kind: typeof PUBLIC_FINAL_KIND; readonly stage: 'sudden-death' }
@@ -911,8 +928,16 @@ const PUBLIC_FINAL_STAGE_KEYS: Readonly<Record<string, readonly string[]>> = {
   'response-entry': ['kind', 'stage', 'prompt', 'timer'],
   'responses-locked': ['kind', 'stage', 'prompt'],
   'answer-revealed': ['kind', 'stage', 'prompt', 'answer'],
-  'team-reveal': ['kind', 'stage', 'prompt', 'answer', 'reveal'],
-  resolution: ['kind', 'stage', 'prompt', 'answer', 'reveal', 'outcome'],
+  'team-reveal': ['kind', 'stage', 'prompt', 'answer', 'reveal', 'settledTeamKeys'],
+  resolution: [
+    'kind',
+    'stage',
+    'prompt',
+    'answer',
+    'reveal',
+    'settledTeamKeys',
+    'outcome',
+  ],
   'sudden-death': ['kind', 'stage'],
   complete: ['kind', 'stage', 'outcome'],
 }
@@ -921,6 +946,17 @@ const PUBLIC_FINAL_RESPONSE_EXACT_KEYS = ['kind', 'text'] as const
 const PUBLIC_FINAL_RESPONSE_BARE_KEYS = ['kind'] as const
 const PUBLIC_FINAL_SETTLEMENT_KEYS = ['outcome', 'delta'] as const
 const PUBLIC_FINAL_REVEAL_KEYS = ['teamKey', 'response', 'wager', 'settlement'] as const
+
+/**
+ * A settled-team key list (CB-F2): opaque positional keys only, no duplicates.
+ * Rejects anything else so a malformed payload fails closed rather than making
+ * the projector invent a status for a team.
+ */
+function isPublicTeamKeyList(value: unknown): value is readonly string[] {
+  if (!Array.isArray(value)) return false
+  if (!value.every((key) => typeof key === 'string' && key.length > 0)) return false
+  return new Set(value).size === value.length
+}
 
 const PUBLIC_FINAL_OUTCOMES: readonly string[] = ['unique-leader', 'tied']
 const PUBLIC_SETTLEMENT_OUTCOMES: readonly string[] = ['correct', 'incorrect', 'no-response']
@@ -1008,13 +1044,15 @@ function isPublicFinalWagerState(v: Record<string, unknown>): boolean {
         isPublicPromptContent(v.prompt) &&
         typeof v.answer === 'string' &&
         v.answer.length > 0 &&
-        isPublicFinalReveal(v.reveal)
+        isPublicFinalReveal(v.reveal) &&
+        isPublicTeamKeyList(v.settledTeamKeys)
       )
     case 'resolution':
       return (
         isNullablePublicPrompt(v.prompt) &&
         isNullableString(v.answer) &&
         (v.reveal === null || isPublicFinalReveal(v.reveal)) &&
+        isPublicTeamKeyList(v.settledTeamKeys) &&
         typeof v.outcome === 'string' &&
         PUBLIC_FINAL_OUTCOMES.includes(v.outcome)
       )

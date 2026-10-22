@@ -462,6 +462,31 @@ function toPublicFinalReveal(
  * ORDER, never the settlement map's key order, so it cannot depend on object
  * enumeration.
  */
+/**
+ * The opaque keys of every team whose Final settlement is already public, in
+ * reveal order (CB-F2).
+ *
+ * Reads the reveal ORDER, never the settlement map's key order, for the same
+ * reason {@link lastSettledTeamId} does: object enumeration is not a fact about
+ * what the class watched. A team the loaded game does not have is skipped
+ * rather than published under a key no scoreboard would match.
+ */
+function settledTeamKeysOf(
+  game: PrivateGameState,
+  final: FinalWagerRoundState,
+): readonly string[] {
+  const keys: string[] = []
+  for (const teamId of final.revealedTeamIds) {
+    if (settlementFor(final, teamId) === null) continue
+    const index = teamIndexById(game.definition.teams, teamId)
+    if (index < 0) continue
+    // Exactly the key `toPublicTeams` assigns, so the two cannot disagree.
+    const key = `t${index}`
+    if (!keys.includes(key)) keys.push(key)
+  }
+  return keys
+}
+
 function lastSettledTeamId(final: FinalWagerRoundState): string | null {
   for (let index = final.revealedTeamIds.length - 1; index >= 0; index -= 1) {
     const teamId = final.revealedTeamIds[index]
@@ -564,6 +589,7 @@ function toPublicFinalWagerState(
         prompt: publicPrompt,
         answer,
         reveal,
+        settledTeamKeys: settledTeamKeysOf(game, final),
       }
     }
     case 'resolution':
@@ -582,6 +608,7 @@ function toPublicFinalWagerState(
         // final team is the climax, and blanking it at that instant would take
         // the moment away from the class.
         reveal: played ? toPublicFinalReveal(game, final) : null,
+        settledTeamKeys: settledTeamKeysOf(game, final),
         outcome: finalOutcomeOf(game),
       }
     }

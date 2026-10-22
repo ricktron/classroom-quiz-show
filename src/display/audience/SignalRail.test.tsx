@@ -229,6 +229,7 @@ describe('SignalRail', () => {
         round={{
           kind: PUBLIC_FINAL_KIND,
           stage: 'resolution',
+          settledTeamKeys: [],
           prompt: null,
           answer: null,
           reveal: null,
@@ -260,6 +261,7 @@ describe('SignalRail', () => {
         round={{
           kind: PUBLIC_FINAL_KIND,
           stage: 'team-reveal',
+          settledTeamKeys: [],
           prompt: PROMPT,
           answer: 'A',
           reveal: {

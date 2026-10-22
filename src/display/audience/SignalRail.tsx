@@ -98,11 +98,18 @@ function channelStatus(
   team: PublicTeam,
   response: PublicResponseState | null,
   revealedTeamName: string | null,
+  settledTeamKeys: readonly string[],
 ): string {
   if (response?.buzz.status === 'active' && response.buzz.activeTeamKey === team.key) {
     return 'Answering'
   }
   if (revealedTeamName !== null && revealedTeamName === team.name) {
+    return 'Revealed'
+  }
+  // A team the class already watched be adjudicated stays revealed when the
+  // host moves on to the next one (CB-F2). Keyed, not named, so two teams
+  // sharing a class name cannot be confused for one another.
+  if (settledTeamKeys.includes(team.key)) {
     return 'Revealed'
   }
   if (response?.boardOutcome.status === 'resolved' && response.boardOutcome.teamKey === team.key) {
@@ -118,15 +125,31 @@ function channelStatus(
  * Thin team-segmented signature strip. Fails closed (omitted) when teams are
  * unavailable or absent — never invents channels.
  */
+/**
+ * Teams whose Final settlement is already public (CB-F2). Taken from the round
+ * DTO the rail already receives, so no caller has to remember to pass it and no
+ * second source of truth can drift from the sanitizer.
+ */
+function settledKeysOf(round: PublicRoundState | null): readonly string[] {
+  if (round === null || round.kind !== PUBLIC_FINAL_KIND) return []
+  if (round.stage === 'team-reveal' || round.stage === 'resolution') {
+    return round.settledTeamKeys
+  }
+  return []
+}
+
 function TeamChannelRail({
   teams,
   response,
   revealedTeamName,
+  round,
 }: {
   readonly teams: PublicTeamsState | null
   readonly response: PublicResponseState | null
   readonly revealedTeamName: string | null
+  readonly round: PublicRoundState | null
 }) {
+  const settledTeamKeys = settledKeysOf(round)
   if (teams === null || teams.status !== 'available' || teams.teams.length === 0) {
     return null
   }
@@ -138,7 +161,7 @@ function TeamChannelRail({
       aria-label="Team channels"
     >
       {teams.teams.map((team) => {
-        const status = channelStatus(team, response, revealedTeamName)
+        const status = channelStatus(team, response, revealedTeamName, settledTeamKeys)
         const answering =
           response?.buzz.status === 'active' && response.buzz.activeTeamKey === team.key
         return (
@@ -271,6 +294,7 @@ export function SignalRail({
         teams={teams}
         response={response}
         revealedTeamName={revealedTeamName}
+        round={round}
       />
       <EventBody
         mode={mode}

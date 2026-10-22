@@ -336,6 +336,7 @@ describe('the exact-key guard for every Final stage', () => {
           wager: 10,
           settlement: null,
         },
+        settledTeamKeys: [],
       },
     ],
     [
@@ -346,6 +347,7 @@ describe('the exact-key guard for every Final stage', () => {
         prompt: null,
         answer: null,
         reveal: null,
+        settledTeamKeys: [],
         outcome: 'tied',
       },
     ],

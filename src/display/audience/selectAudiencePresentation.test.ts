@@ -260,6 +260,7 @@ describe('selectAudiencePresentation', () => {
       {
         kind: PUBLIC_FINAL_KIND,
         stage: 'team-reveal',
+        settledTeamKeys: [],
         prompt: TEXT_PROMPT,
         answer: 'Paris',
         reveal: {
@@ -272,6 +273,7 @@ describe('selectAudiencePresentation', () => {
       {
         kind: PUBLIC_FINAL_KIND,
         stage: 'resolution',
+        settledTeamKeys: [],
         prompt: TEXT_PROMPT,
         answer: 'Paris',
         reveal: null,

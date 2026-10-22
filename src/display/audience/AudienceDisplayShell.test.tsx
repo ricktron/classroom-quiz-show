@@ -140,6 +140,7 @@ describe('AudienceDisplayShell', () => {
           round: {
             kind: PUBLIC_FINAL_KIND,
             stage: 'resolution',
+            settledTeamKeys: [],
             prompt: null,
             answer: null,
             reveal: null,
