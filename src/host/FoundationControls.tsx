@@ -739,6 +739,7 @@ export function FoundationControls({
         <ClassroomSetupPanel
           key={state.session.sessionId}
           teams={game.definition.teams}
+          teamScores={game.teamScores}
           teamNameBank={teamNameBank}
           initialSessionNames={game.sessionTeamNames}
           leadership={persistence.leadership}

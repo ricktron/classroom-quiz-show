@@ -334,8 +334,8 @@ describe('the public buzz guard', () => {
 })
 
 describe('the wire protocol', () => {
-  it('is at public-state version 9 and envelope version 2', () => {
-    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(9)
+  it('pins the current public-state and envelope versions', () => {
+    expect(PUBLIC_STATE_SCHEMA_VERSION).toBe(10)
     // The envelope did NOT change: `sentAt` is unchanged and no new transport
     // metadata was needed, so version 2 stands.
     expect(SYNC_SCHEMA_VERSION).toBe(3)

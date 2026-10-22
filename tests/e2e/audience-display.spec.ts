@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 import { FORBIDDEN_DISPLAY_LABELS } from '../../src/test/leakLabels'
+import { PUBLIC_STATE_SCHEMA_VERSION } from '../../src/state/publicState'
 import {
   expectAcknowledgementExpires,
   holdPresentationAckClock,
@@ -7,7 +8,9 @@ import {
 
 /**
  * Slice 18 audience display system — targeted projector viewport coverage.
- * Injects sanitized public-state wire-8 snapshots over BroadcastChannel.
+ * Injects sanitized public-state snapshots over BroadcastChannel, stamped with
+ * the CURRENT `PUBLIC_STATE_SCHEMA_VERSION` so a future bump cannot leave these
+ * fixtures silently version-rejected.
  */
 
 const CHANNEL_NAME = 'classroom-quiz-show:sync'
@@ -23,7 +26,7 @@ function team(key: string, name: string, accent: string, score: number) {
 
 function baseSnapshot(overrides: PublicSnapshot = {}): PublicSnapshot {
   return {
-    schemaVersion: 9,
+    schemaVersion: PUBLIC_STATE_SCHEMA_VERSION,
     revision: 1,
     phase: 'ready',
     headline: 'Session ready',
@@ -338,6 +341,7 @@ test.describe('audience display scenes and privacy', () => {
         round: {
           kind: 'final',
           stage: 'team-reveal',
+          settledTeamKeys: [],
           prompt: { kind: 'text', text: 'Final question' },
           answer: '42',
           reveal: {
@@ -481,6 +485,7 @@ test.describe('audience display scenes and privacy', () => {
     const pendingReveal = {
       kind: 'final' as const,
       stage: 'team-reveal' as const,
+      settledTeamKeys: [],
       prompt: { kind: 'text' as const, text: 'Final question' },
       answer: '42',
       reveal: {
@@ -541,6 +546,7 @@ test.describe('audience display scenes and privacy', () => {
         round: {
           kind: 'final',
           stage: 'resolution',
+          settledTeamKeys: [],
           prompt: pendingReveal.prompt,
           answer: '42',
           reveal: settledReveal.reveal,

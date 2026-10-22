@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { TeamDefinition } from '../game/teams/definition'
+import { INITIAL_TEAM_SCORE } from '../game/teams/scoring'
 import { TeamScoreboard } from '../display/TeamScoreboard'
 import {
   applyTeamNameInputs,
@@ -48,6 +49,20 @@ export interface ClassroomSetupObservation {
 
 export interface ClassroomSetupPanelProps {
   readonly teams: readonly TeamDefinition[]
+  /**
+   * Live scores for this class session, by team id (CB-F1).
+   *
+   * The Display task and the Ready overview both preview the audience display
+   * by rendering the REAL `TeamScoreboard`, whose heading is "Scores" and whose
+   * per-team accessible name is `<team>: <n> points`. A preview fed placeholder
+   * zeroes therefore does not merely look approximate — mid-game it states, and
+   * announces, that a class which has points has none. `Back to setup` is the
+   * surface a teacher returns to between clues, so it has to be true there.
+   *
+   * Required rather than optional-defaulting-to-zero on purpose: a caller that
+   * forgets would reintroduce exactly that false zero silently.
+   */
+  readonly teamScores: Readonly<Record<string, number>>
   readonly teamNameBank: readonly string[]
   readonly initialSessionNames?: Readonly<Record<string, string>>
   readonly leadership: PersistLeadership
@@ -125,6 +140,7 @@ function rowTestId(id: SetupTaskId): string {
 
 export function ClassroomSetupPanel({
   teams,
+  teamScores,
   teamNameBank,
   initialSessionNames = {},
   leadership,
@@ -404,13 +420,22 @@ export function ClassroomSetupPanel({
     setExpandOverride(id)
   }
 
+  // Previews the audience display, so it carries this class's REAL scores
+  // (CB-F1). Before any award they are genuinely zero; mid-game they are not,
+  // and this surface must not claim otherwise. Missing id → the same initial
+  // score the engine uses, never a fabricated zero for a team that has points.
   const previewTeams = {
     status: 'available' as const,
     teams: teams.map((team, index) => ({
       key: `t${index}`,
       name: claimed[team.id] ?? team.name,
       accent: team.accent,
-      score: 0,
+      // Own-property only, exactly as the engine's `teamScoreFor` reads it: a
+      // team id may legally be `constructor` or `toString`, and `??` alone would
+      // then hand the projector an inherited Object member instead of a score.
+      score: Object.hasOwn(teamScores, team.id)
+        ? teamScores[team.id]
+        : INITIAL_TEAM_SCORE,
     })),
   }
 

@@ -96,6 +96,7 @@ describe('each Final stage renders from the DTO alone', () => {
     renderFinal({
       kind: PUBLIC_FINAL_KIND,
       stage: 'team-reveal',
+      settledTeamKeys: [],
       prompt: PROMPT,
       answer: 'Mantle convection',
       reveal: {
@@ -116,6 +117,7 @@ describe('each Final stage renders from the DTO alone', () => {
     renderFinal({
       kind: PUBLIC_FINAL_KIND,
       stage: 'team-reveal',
+      settledTeamKeys: [],
       prompt: PROMPT,
       answer: 'Mantle convection',
       reveal: {
@@ -137,6 +139,7 @@ describe('each Final stage renders from the DTO alone', () => {
     renderFinal({
       kind: PUBLIC_FINAL_KIND,
       stage: 'team-reveal',
+      settledTeamKeys: [],
       prompt: PROMPT,
       answer: 'A',
       reveal: { teamKey: 't0', response: { kind }, wager: 0, settlement: null },
@@ -148,6 +151,7 @@ describe('each Final stage renders from the DTO alone', () => {
     const { unmount } = renderFinal({
       kind: PUBLIC_FINAL_KIND,
       stage: 'resolution',
+      settledTeamKeys: [],
       prompt: PROMPT,
       answer: 'A',
       reveal: null,
@@ -158,6 +162,7 @@ describe('each Final stage renders from the DTO alone', () => {
     renderFinal({
       kind: PUBLIC_FINAL_KIND,
       stage: 'resolution',
+      settledTeamKeys: [],
       prompt: null,
       answer: null,
       reveal: null,
@@ -197,6 +202,7 @@ describe('it fails closed', () => {
       {
         kind: PUBLIC_FINAL_KIND,
         stage: 'team-reveal',
+        settledTeamKeys: [],
         prompt: PROMPT,
         answer: 'A',
         reveal: { teamKey: 't9', response: { kind: 'no-response' }, wager: 0, settlement: null },
@@ -223,6 +229,7 @@ describe('no host-only label reaches the projector', () => {
       {
         kind: PUBLIC_FINAL_KIND,
         stage: 'team-reveal',
+        settledTeamKeys: [],
         prompt: PROMPT,
         answer: 'A',
         reveal: {
@@ -270,6 +277,7 @@ describe('S05 Final presentation choreography', () => {
   ): PublicRoundState => ({
     kind: PUBLIC_FINAL_KIND,
     stage: 'team-reveal',
+    settledTeamKeys: [],
     prompt: PROMPT,
     answer: 'Mantle convection',
     reveal: {
@@ -360,6 +368,7 @@ describe('S05 Final presentation choreography', () => {
     const resolution: PublicRoundState = {
       kind: PUBLIC_FINAL_KIND,
       stage: 'resolution',
+      settledTeamKeys: [],
       prompt: null,
       answer: null,
       reveal: null,

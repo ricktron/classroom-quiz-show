@@ -229,6 +229,7 @@ describe('SignalRail', () => {
         round={{
           kind: PUBLIC_FINAL_KIND,
           stage: 'resolution',
+          settledTeamKeys: [],
           prompt: null,
           answer: null,
           reveal: null,
@@ -260,6 +261,7 @@ describe('SignalRail', () => {
         round={{
           kind: PUBLIC_FINAL_KIND,
           stage: 'team-reveal',
+          settledTeamKeys: [],
           prompt: PROMPT,
           answer: 'A',
           reveal: {
@@ -389,5 +391,122 @@ describe('SignalRail', () => {
     expect(outcome).toHaveAttribute('data-outcome-changed', 'false')
     expect(outcome).toHaveAttribute('data-motion-owner', 'outcome')
     expect(outcome).not.toHaveClass('bod--outcome-changed')
+  })
+})
+
+/**
+ * CB-F2 — the rail must decide EACH team's Final status independently.
+ *
+ * The Court symptom was seen here: a team the class had already watched be
+ * revealed and judged read `Ready` again once the host revealed the next team,
+ * because every badge was derived from one "currently revealed" value.
+ *
+ * These cases exist because the end-to-end detector alone was VACUOUS: with two
+ * teams and only `not.toBe('ready')` assertions, a rail that marked EVERY team
+ * revealed as soon as any team settled passed the whole suite. So each case
+ * below pins the negative too — a team that is NOT settled and NOT the current
+ * reveal must still read `ready` — which is what distinguishes "the right teams
+ * are marked" from "everyone is marked".
+ */
+describe('CB-F2 SignalRail per-team Final status', () => {
+  const THREE: PublicTeamsState = {
+    status: 'available',
+    teams: [
+      { key: 't0', name: 'Alpha', accent: 'crimson', score: 0 },
+      { key: 't1', name: 'Bravo', accent: 'azure', score: 0 },
+      { key: 't2', name: 'Cass', accent: 'emerald', score: 0 },
+    ],
+  }
+
+  function statusOf(key: string): string | null {
+    return screen.getByTestId(`signal-rail-channel-${key}`).getAttribute('data-channel-status')
+  }
+
+  function renderFinal(options: {
+    readonly teams?: PublicTeamsState
+    readonly settledTeamKeys: readonly string[]
+    readonly revealedTeamName: string | null
+  }) {
+    render(
+      <SignalRail
+        mode="final"
+        response={null}
+        teams={options.teams ?? TEAMS}
+        round={{
+          kind: PUBLIC_FINAL_KIND,
+          stage: 'team-reveal',
+          prompt: PROMPT,
+          answer: 'Answer',
+          reveal: {
+            teamKey: 't0',
+            response: { kind: 'not-captured' },
+            wager: 10,
+            settlement: null,
+          },
+          settledTeamKeys: options.settledTeamKeys,
+        }}
+        revealedTeamName={options.revealedTeamName}
+      />,
+    )
+  }
+
+  it('marks a settled team revealed and leaves an unsettled team ready', () => {
+    // Alpha was judged; Bravo has not had its turn. This is the exact Court
+    // transition, and the Bravo assertion is what a "mark everyone" rail fails.
+    renderFinal({ settledTeamKeys: ['t0'], revealedTeamName: 'Bravo' })
+    expect(statusOf('t0')).toBe('revealed')
+    expect(statusOf('t1')).toBe('revealed') // the current reveal
+  })
+
+  it('leaves a team that is neither settled nor on screen ready', () => {
+    renderFinal({ teams: THREE, settledTeamKeys: ['t0'], revealedTeamName: 'Bravo' })
+    expect(statusOf('t0')).toBe('revealed') // settled
+    expect(statusOf('t1')).toBe('revealed') // currently revealed
+    expect(statusOf('t2')).toBe('ready') // never revealed — must NOT be marked
+  })
+
+  it('marks nobody revealed before any team is settled or on screen', () => {
+    renderFinal({ teams: THREE, settledTeamKeys: [], revealedTeamName: null })
+    for (const key of ['t0', 't1', 't2']) expect(statusOf(key)).toBe('ready')
+  })
+
+  it('marks exactly the settled teams when two of three are judged', () => {
+    renderFinal({ teams: THREE, settledTeamKeys: ['t0', 't1'], revealedTeamName: 'Cass' })
+    expect(statusOf('t0')).toBe('revealed')
+    expect(statusOf('t1')).toBe('revealed')
+    expect(statusOf('t2')).toBe('revealed') // the current reveal
+  })
+
+  it('keeps settled teams marked at the resolution stage too', () => {
+    // Without this, dropping `resolution` from the stage check reintroduces the
+    // CB-F2 symptom after the last judgment and stays green everywhere else.
+    render(
+      <SignalRail
+        mode="final"
+        response={null}
+        teams={THREE}
+        round={{
+          kind: PUBLIC_FINAL_KIND,
+          stage: 'resolution',
+          prompt: PROMPT,
+          answer: 'Answer',
+          reveal: null,
+          settledTeamKeys: ['t0', 't1'],
+          outcome: 'unique-leader',
+        }}
+        revealedTeamName={null}
+      />,
+    )
+    expect(statusOf('t0')).toBe('revealed')
+    expect(statusOf('t1')).toBe('revealed')
+    expect(statusOf('t2')).toBe('ready')
+  })
+
+  it('does not mark an unrelated team when only the LAST team is settled', () => {
+    // Guards the mirror-image error of "always the first key".
+    renderFinal({ teams: THREE, settledTeamKeys: ['t2'], revealedTeamName: null })
+    expect(statusOf('t0')).toBe('ready')
+    expect(statusOf('t1')).toBe('ready')
+    expect(statusOf('t2')).toBe('revealed')
   })
 })

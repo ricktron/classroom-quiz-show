@@ -32,6 +32,7 @@ function renderSetup(
   render(
     <ClassroomSetupPanel
       teams={TEAMS}
+      teamScores={{}}
       teamNameBank={['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf', 'Hotel']}
       leadership="leader"
       observation={null}
@@ -172,6 +173,7 @@ describe('ClassroomSetupPanel', () => {
     const { rerender } = render(
       <ClassroomSetupPanel
         teams={TEAMS}
+        teamScores={{}}
         teamNameBank={[
           'Alpha',
           'Bravo',
@@ -204,6 +206,7 @@ describe('ClassroomSetupPanel', () => {
     rerender(
       <ClassroomSetupPanel
         teams={TEAMS}
+        teamScores={{}}
         teamNameBank={[
           'Alpha',
           'Bravo',
@@ -241,6 +244,7 @@ describe('ClassroomSetupPanel', () => {
     const { rerender } = render(
       <ClassroomSetupPanel
         teams={TEAMS}
+        teamScores={{}}
         teamNameBank={[
           'Alpha',
           'Bravo',
@@ -275,6 +279,7 @@ describe('ClassroomSetupPanel', () => {
     rerender(
       <ClassroomSetupPanel
         teams={TEAMS}
+        teamScores={{}}
         teamNameBank={[
           'Alpha',
           'Bravo',
@@ -330,6 +335,7 @@ describe('ClassroomSetupPanel', () => {
     const { rerender } = render(
       <ClassroomSetupPanel
         teams={TEAMS}
+        teamScores={{}}
         teamNameBank={bank}
         leadership="leader"
         observation={null}
@@ -349,6 +355,7 @@ describe('ClassroomSetupPanel', () => {
     rerender(
       <ClassroomSetupPanel
         teams={TEAMS}
+        teamScores={{}}
         teamNameBank={bank}
         leadership="leader"
         observation={null}
@@ -394,6 +401,7 @@ describe('ClassroomSetupPanel', () => {
     const { rerender } = render(
       <ClassroomSetupPanel
         teams={TEAMS}
+        teamScores={{}}
         teamNameBank={bank}
         leadership="leader"
         observation={null}
@@ -417,6 +425,7 @@ describe('ClassroomSetupPanel', () => {
     rerender(
       <ClassroomSetupPanel
         teams={TEAMS}
+        teamScores={{}}
         teamNameBank={bank}
         leadership="leader"
         observation={null}
@@ -846,6 +855,7 @@ describe('ClassroomSetupPanel', () => {
     const { rerender } = render(
       <ClassroomSetupPanel
         teams={TEAMS}
+        teamScores={{}}
         teamNameBank={['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf', 'Hotel']}
         leadership="leader"
         observation={null}
@@ -874,6 +884,7 @@ describe('ClassroomSetupPanel', () => {
     rerender(
       <ClassroomSetupPanel
         teams={grown}
+        teamScores={{}}
         teamNameBank={['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf', 'Hotel']}
         leadership="leader"
         observation={null}
@@ -902,6 +913,7 @@ describe('Q7-R1 buzzer reveal status follows the live Buzzer Check', () => {
     return (
       <ClassroomSetupPanel
         teams={TEAMS}
+        teamScores={{}}
         teamNameBank={[]}
         leadership="leader"
         observation={null}
@@ -1101,5 +1113,53 @@ describe('ClassroomSetupPanel — typed names count as typed (Court B CB-03)', (
       red: 'Comet Crew',
       blue: 'Ozone Owls',
     })
+  })
+})
+
+/**
+ * CB-F1 — the Class Setup preview of the audience display must carry this
+ * class's real scores.
+ *
+ * Court B finding: mid-game, `Back to setup` showed a surface headed "Scores"
+ * reading 0 for every team while a team was on 200. The preview renders the real
+ * `TeamScoreboard`, so the false zero was both displayed and announced as
+ * "<team>: 0 points".
+ *
+ * These assert the ANNOUNCED VALUE, not the presence of some text: a surface
+ * that merely reworded the zero would still fail.
+ */
+describe('CB-F1 Class Setup display preview score truth', () => {
+  it('shows the live score for a team that has scored', () => {
+    renderSetup({
+      ...READY_OPTIONALS_UNRESOLVED,
+      teamScores: { red: 200, blue: 0 },
+    })
+    const preview = screen.getByTestId('setup-display-preview')
+    expect(preview).toBeTruthy()
+    expect(screen.getByLabelText('Comet Crew: 200 points')).toBeTruthy()
+    expect(screen.getByLabelText('Ozone Owls: 0 points')).toBeTruthy()
+    expect(screen.queryByLabelText('Comet Crew: 0 points')).toBeNull()
+  })
+
+  it('still shows zero for a class that has not scored yet', () => {
+    renderSetup({ ...READY_OPTIONALS_UNRESOLVED, teamScores: {} })
+    expect(screen.getByLabelText('Comet Crew: 0 points')).toBeTruthy()
+    expect(screen.getByLabelText('Ozone Owls: 0 points')).toBeTruthy()
+  })
+
+  it('reports a negative score as the class would hear it, never as zero', () => {
+    renderSetup({
+      ...READY_OPTIONALS_UNRESOLVED,
+      teamScores: { red: -150, blue: 50 },
+    })
+    expect(screen.getByLabelText('Comet Crew: minus 150 points')).toBeTruthy()
+    expect(screen.getByLabelText('Ozone Owls: 50 points')).toBeTruthy()
+    expect(screen.queryByLabelText('Comet Crew: 0 points')).toBeNull()
+  })
+
+  it('does not invent a score for a team the score map omits', () => {
+    renderSetup({ ...READY_OPTIONALS_UNRESOLVED, teamScores: { red: 300 } })
+    expect(screen.getByLabelText('Comet Crew: 300 points')).toBeTruthy()
+    expect(screen.getByLabelText('Ozone Owls: 0 points')).toBeTruthy()
   })
 })
