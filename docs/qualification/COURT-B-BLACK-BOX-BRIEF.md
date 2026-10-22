@@ -74,6 +74,16 @@ Adding a journey means adding it here, to `COURT_B_JOURNEYS` in
 `src/test/courtBQualificationFixture.ts`, and a reachability test; the guard
 fails otherwise.
 
+### Notes on the journeys
+
+- **CBJ-04** — score a team that is **not** the first team in the list, and check
+  that the points land on the team you actually chose and on no other. Scoring
+  the first team cannot tell you whether the award went where you aimed it,
+  because the right answer and the wrong answer look the same.
+- **CBJ-05 and CBJ-09** — watch the projector during the window between locking
+  responses and pressing Reveal. Nothing about the answer may reach the class
+  before you reveal it.
+
 ### Notes on the four journeys added for the fresh Court B
 
 - **CBJ-08** starts from the portable pack, not the shared fixture. What it
@@ -123,18 +133,37 @@ workflows, not fixture-dependent routes — so they are listed here rather than 
   or only one? Press each handset and confirm the team that lights up is the team
   that buzzer belongs to.
 
+  This needs the simulated receiver, which **the run operator supplies and you
+  cannot create**. If your run was not set up with one, record this action as
+  "not supplied" and move on. Do NOT record it as a route you could not
+  discover: that would report an apparatus gap as a product defect.
+
 - **Let a BOARD clue's response timer run out.** Not the Final — a board clue.
   Run the response timer to expiry, then try Undo. Does Undo reach the real
   teacher action, or does it get stuck on an inert "time up" entry?
 
-- **Delete a saved game when you have two.** Get a second game into the library,
-  then delete a specific one that is NOT first in the list. Confirm the one you
-  chose is gone and the other survives.
+- **Delete a saved game when you have two.** Both files you were given import as
+  the same game, so they make one library entry, not two. Get a second, distinct
+  entry using an ordinary Home control — `New Game`, or `Import demo game` — then
+  delete a specific entry that is NOT first in the list. Confirm the one you
+  chose is gone and the other survives. (Using the demo here is only to populate
+  the library; it is still not qualification content.)
 
 - **Act the instant the app starts.** Reload and immediately, before the app has
   settled, use a control that changes something — type a name, score a team,
-  press a game control. Then check whether what you did actually took effect. A
-  control that looks usable but silently discards the action is a defect.
+  press a game control.
+
+  Report BOTH of these, because they are what distinguish the two possible
+  behaviours: (a) when you first reached it, was the control **disabled**, or was
+  it enabled and usable? (b) did the action you took actually take effect once
+  the app settled, or was it accepted and then silently discarded? A control that
+  is disabled until ready is correct. A control that looks usable and then
+  discards your action is a defect.
+
+  If the app had already finished loading before you could act, say so plainly
+  and record this action as **not reached** — do not record it as passing. Being
+  too late is an apparatus limit, not evidence that the build is healthy, and
+  rule 5 does not ask you to repeat an attempt you never landed.
 
 - **Display presence after a host reload.** With the projector window open,
   reload the host. Then close the projector window and watch the host's Display
