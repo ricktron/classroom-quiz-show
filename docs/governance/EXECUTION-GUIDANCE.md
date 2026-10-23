@@ -373,6 +373,71 @@ Do not mark a product slice `Complete` before merge and required evidence.
 - A builder's canonical downstream consumer must accept what the builder
   produces.
 
+### Run-owned browser and process teardown
+
+Every automated probe, test harness, mutation run and qualification run **owns
+the browser and process resources it itself launched**, and must release them
+when that unit of work finishes — not at the end of the campaign. Ownership
+follows what the run started, never what it merely used or attached to.
+
+At minimum, closing a unit of work releases:
+
+- run-owned pages;
+- run-owned browser contexts;
+- the run-owned browser process itself;
+- run-owned preview / static servers, once no other active unit needs them —
+  **a server the run did not itself start is never run-owned**, however the run
+  reached it;
+- run-owned probe and helper processes;
+- run-owned CDP / debug listener ports.
+
+Prefer cleanup that cannot be skipped — `finally`, teardown hooks, trap
+handlers, explicit lifecycle ownership — over cleanup that depends on someone
+remembering later.
+
+**A run must establish its own ownership marker before it opens anything.**
+This is a requirement, not a convenience: a run that cannot prove ownership has
+no safe way to clean up, because the only remaining discriminator is the process
+name — the one thing that must never be used. Launch run-owned browsers with a
+unique `--user-data-dir` under the run's scratch path, record PIDs, allocate
+ports the run itself owns, or use a process group.
+
+**Scope cleanup to owned resources only.** Never terminate `Chrome`,
+`Chromium`, `node` or `Electron` by process name. Scope every kill by the marker
+the run established: a unique `--user-data-dir`, a recorded PID, a port the run
+allocated, a process group, a scratch path, or another explicit run identifier.
+
+Two specific traps:
+
+- **A shared or attached resource is not owned.** `playwright.config.ts` serves
+  the browser suite on a fixed port with `reuseExistingServer` outside CI, so a
+  local run may attach to a preview server a developer — or a concurrent
+  worktree session — started. Killing "whatever is on that port" therefore
+  terminates someone else's work. Kill by port ONLY for a port the run itself
+  allocated.
+- **People's own applications are never targets.** A developer's, owner's or
+  human tester's browser, application and processes are out of scope regardless
+  of what a run happened to use them for. If a human's browser needs closing,
+  ask them.
+
+**Verify teardown independently.** A cleanup command's own success message is
+not evidence. After cleanup, confirm separately that no run-owned browser
+process, browser context (where observable), preview/static server, helper
+process, or debug listener remains. Beware a search command that matches
+itself.
+
+Leaked automation resources are an **apparatus** fact before they are a product
+fact. Where they materially raise host load, memory pressure or swap, or where
+they plausibly caused a timeout or race, classify the observation first as
+`HARNESS / APPARATUS CONTAMINATION`, freeze it, and decide whether the affected
+evidence is still interpretable. Do not retry to green before classifying.
+
+That classification **invalidates evidence; it never clears a finding.** A
+contaminated observation is re-taken in a clean environment, and the original row
+is recorded as void with its reason. "There was a leak, so the timeout was
+probably apparatus" is not a disposition — an unreproduced symptom stays open
+until it has been observed cleanly.
+
 ### Persistence and identity
 
 - `deleteDatabase.onblocked` is not successful deletion.

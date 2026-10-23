@@ -58,19 +58,21 @@ Terminal statuses are `COMPLETE` and `INVALID`. `NOT STARTED`, `RUNNING` and
 
 ## The simulated receiver is a run precondition, not an option
 
-Two of the declared seeds are only observable through the simulated receiver:
-S8 (buzzer truth) and S10 (hardware boundary). The `CBJ-10`/`CBJ-11` journeys
-every tester is asked to attempt need it too, though those are journeys rather
-than seeds. The brief correctly tells a tester with no
-receiver to record those rows as "not supplied" rather than as a route they
-could not discover.
+One declared seed is only observable through the simulated receiver: **S8**
+(buzzer truth). S10 also required it and has since been retired as
+black-box-unsuitable, so S8 is now the sole seed dependency. The `CBJ-10` /
+`CBJ-11` journeys every tester is asked to attempt still need the receiver too,
+though those are journeys rather than seeds. The brief correctly tells a tester
+with no receiver to record those rows as "not supplied" rather than as a route
+they could not discover.
 
 That makes the receiver a precondition of the RUN, not a property of individual
 builds, and the consequence is deliberately the strict one:
 
 - **A run set up without a simulated receiver MUST NOT START.** It cannot reach
   a valid completion, because the expected population above is fixed at 14 and
-  two of its declared seeds would have no route a tester is permitted to walk.
+  one of its declared seeds (S8) would have no route a tester is permitted to
+  walk, as would the `CBJ-10` / `CBJ-11` journeys asked of every tester.
 - **Seeds are never dropped to accommodate a missing receiver.** The population
   is declared here and only here; shrinking it to 12 or 13 would make completion
   unreportable by this file's own Completion rule, and a run that cannot report
@@ -81,6 +83,47 @@ builds, and the consequence is deliberately the strict one:
 A tester who reports "not supplied" for an action on a run that WAS set up with a
 receiver is reporting an apparatus fault, not a finding: that row is `INVALID`
 and is re-declared under a fresh build code with a fresh tester.
+
+### How the simulated receiver must be installed
+
+The boundary is `navigator.hid`. In the Chromium used for these runs
+`navigator.hid` is a **non-writable accessor**, so plain assignment
+(`navigator.hid = fake`) fails *silently* — the property keeps its real value
+and the product goes on reading the real boundary. That failure mode is what
+made S8 and the `CBJ-10` / `CBJ-11` journeys unexercisable on the 2026-10-17
+run, and it produced tester reports about dead handsets that were apparatus
+artefacts rather than product behaviour.
+
+The fake boundary must therefore be installed with `Object.defineProperty`
+(configurable), and the installation must **fail loudly** — a run may not
+proceed on the assumption that it worked.
+
+Before a run starts, prove all five:
+
+1. the simulator reports itself installed;
+2. the product actually reads the simulated boundary;
+3. the supported-receiver path reaches a connected / waiting state through
+   ordinary teacher UI (`Connect buzzers` → "Receiver connected — waiting for
+   buzzers.");
+4. the real host WebHID cannot silently substitute for the fake;
+5. **the receiver exposes at least three distinguishable handsets, and at least
+   two of them can be mapped to the SAME team through the ordinary mapping UI.**
+
+Proof 5 is not pedantry. S8's route is "map several handsets to the same team,
+then read that team's row", and its discriminator is whether the row names every
+mapped buzzer or only the first. A receiver exposing ONE handset satisfies proofs
+1–4, lets the run start legitimately, and then presents a tester with a row that
+truthfully names its single buzzer on BOTH the clean and the seeded build — and
+because a receiver *was* supplied, the "not supplied" disposition does not apply,
+so nothing flags the row. Prove the handsets before a build is served.
+
+If the simulator is **external run tooling** rather than a repository file, the
+run receipt must record its exact procedure, its script version or hash, the
+Chromium behaviour it depends on, and the loud-failure check. It must not be
+left as tribal knowledge.
+
+Simulation remains simulation. No Sony/Namtai physical claim may be inferred
+from it (brief rule 6).
 
 ## Blinding rules the ledger has to protect
 
@@ -133,16 +176,22 @@ and is re-declared under a fresh build code with a fresh tester.
 ## Declared seed population
 
 The 13 seeded defects are declared HERE, before a run, so that "all 14 rows are
-terminal" is checkable against a population that can be reconstructed later. Six
-are carried from the 2026-10-17 run so blind-attribution accuracy stays
-comparable; seven cover defect classes repaired since.
+terminal" is checkable against a population that can be reconstructed later. Ten are retained from the
+declared population; three replace seeds retired as black-box-unsuitable (see
+below) and are drawn from the existing Court A register rather than invented.
+
+**Every seed below carries BOTH required gates** — `TEST-LAYER LIVE` and
+`INSTRUCTION-LAYER DISCRIMINATING` — recorded per seed in
+[`COURTB-SEED-REACHABILITY-MATRIX.md`](COURTB-SEED-REACHABILITY-MATRIX.md). A
+seed that is live but whose tester wording does not separate clean from seeded
+is **not** Court-B eligible.
 
 These are the Court B seeds. They are NOT the same set as the mutations used to
 qualify the journey apparatus itself — do not conflate the two.
 
 | Seed | Defect | Class |
 | --- | --- | --- |
-| S1 | deduction debits the first team instead of the scored one | scoring truth |
+| S1 | award **and** deduction credit/debit the first team instead of the scored one | scoring truth |
 | S2 | Final answer published at responses-locked, before explicit reveal | projector privacy |
 | S3 | Display presence lie after Host reload | presence truth |
 | S4 | typed name not reported until blur — first Start activation lost | setup |
@@ -151,14 +200,32 @@ qualify the journey apparatus itself — do not conflate the two.
 | S7 | Reset this class session leaks the prior class's ledger | session boundary |
 | S8 | team row names only the first mapped Buzzer | buzzer truth |
 | S9 | board response-timer expiry becomes reversible | Undo integrity |
-| S10 | WebHID accepts any Sony device as the receiver | hardware boundary |
-| S11 | projector paints the hosted build asset before pack media hydrate | pack media |
 | S12 | Library Delete removes the first game, not the chosen one | data safety |
-| S13 | startup action loss on host boot | startup |
+| M26 | every fresh mapped keyboard buzz press is ignored | local input |
+| M04 | authoring Save reports success but the authored title is not durably written | authoring durability |
+| M01 | Home `Resume class` stays enabled but is inert | resume |
 
 S5 and S9 require a two-file mutation: the event types pin `reversible: false`,
 so the type must be widened for the seed to compile at all. A seed that does not
 compile is `INVALID`, never a finding.
+
+### Retired as BLACK-BOX-UNSUITABLE (history — never valid black-box seeds)
+
+Three originally declared seeds were retired after an instruction-level
+clean-vs-seeded gate showed a blinded teacher following the brief could not
+distinguish clean from seeded. They were **live mutations** — they compiled and
+failed their own detectors — which is exactly why liveness alone is not
+sufficient to declare a seed.
+
+| Retired seed | Defect | Why unsuitable as a black-box route | Replaced by |
+| --- | --- | --- | --- |
+| S10 | WebHID accepts any Sony device as the receiver | reachable only through the simulated receiver, and the discriminating state is a device-identity decision a teacher cannot observe directly | M26 (needs no apparatus at all) |
+| S11 | projector paints the hosted build asset before pack media hydrate | on the 2026-10-17 run the fixtures carried no image clue, so no tester could walk the route and every one of them reported it not applicable. An image-clue pack has since been committed and `CBJ-08` is live, so the route now EXISTS — but S11 has never been put through the instruction-level gate, and an untested route is not an eligible seed. Retired on that ground, not on reachability | M04 (discriminator is a string the tester chooses) |
+| S13 | startup action loss on host boot | requires acting inside an unverifiable boot window; a tester who was late cannot know it, and "not reached" is not evidence of health | M01 (persistent, objectively confirmable precondition, no timing window) |
+
+These rows are preserved as apparatus history. They are **not** to be described
+as valid black-box seeds in any later record, and they must not be re-declared
+into an active population without passing the instruction-level gate first.
 
 ## Run header
 
@@ -179,9 +246,15 @@ and a new table rather than overwriting history.
 One row per build. `Build` is the opaque code a tester is given. `Seed` stays
 blank until the mapping is unsealed.
 
-| Build | Tester | Mapping hash | Started | Completed | Status | Findings | Attribution | Seed (post-unseal) |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| *(none declared)* | — | — | — | — | `NOT STARTED` | — | — | — |
+| Build | Tester | Mapping hash | Started | Completed | Status | Teardown verified | Findings | Attribution | Seed (post-unseal) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| *(none declared)* | — | — | — | — | `NOT STARTED` | — | — | — | — |
+
+`Teardown verified` records that this build's run-owned browser session and any
+server it alone needed were released and independently confirmed gone
+(see [`PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](PRE-OWNER-FUNCTIONAL-QUALIFICATION.md)
+§9.1.1). A row is not terminal until it is filled, so the step is auditable
+after the run rather than taken on trust.
 
 ## Resume procedure
 

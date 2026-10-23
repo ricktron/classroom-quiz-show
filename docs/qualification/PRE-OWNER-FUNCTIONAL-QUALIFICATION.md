@@ -513,6 +513,62 @@ but the **eligibility rule was too permissive** without a black-box interaction
 fidelity check and without REACH→ACT→VISIBLE EFFECT→CONTINUATION proof for
 ordinary owner-facing controls.
 
+### 9.1.1 Run-owned browser teardown during a Court run
+
+The general rule is in
+[`../governance/EXECUTION-GUIDANCE.md`](../governance/EXECUTION-GUIDANCE.md) §8.
+A Court run is held to the stricter form below, because its evidence is
+timing-sensitive and its conclusions are used to gate owner handoff.
+
+**Tear down per evidence unit, not per campaign.** Close run-owned browser
+state after the smallest sensible unit: an individual seed probe where
+practical, a mutation probe, a tester build, or a qualification sub-batch — and
+at minimum after every bounded batch. Accumulating dozens of browser sessions
+until a campaign ends is explicitly not the pattern: a 13-route validation
+batch once left 200 run-owned Chromium processes and 14 run-owned static
+servers alive at once.
+
+**Blinded Court B owns one session per tester — when the run launched it.**
+A tester session is run-owned ONLY if the run started it under the run's own
+ownership marker (its own profile / `--user-data-dir` under the run's scratch
+path, or a recorded PID). Launch it that way; it is also what keeps one tester's
+state out of another's.
+
+A **human** tester using their own browser is never a teardown target, whatever
+the brief asked them to do in it. Ask them to close their windows; do not
+terminate their browser. Rule 1's "ordinary launch, not a test harness entry"
+describes the *starting surface* a tester must begin from, not permission to
+treat their machine's browser as run property.
+
+Once a tester's report is frozen and its ledger row is terminal:
+
+1. close the pages, context and browser **that the run launched for that
+   tester**;
+2. stop that tester's run-owned server unless another active tester needs it,
+   and never a server the run merely attached to;
+3. verify the release independently, and record it in the build row's
+   `Teardown verified` cell, before treating the slot as free;
+4. only then start or release the next tester slot.
+
+Completed testers do not keep run-launched browser sessions alive until all 14
+builds finish.
+
+**Before the next batch**, verify the previous batch's owned browser and
+process resources are gone, and record the host load you measured at that point.
+A batch that starts on top of the last batch's leaked resources cannot claim its
+own environment was sound.
+
+**Host-load interaction.** Cleanup is part of keeping the qualification
+environment valid, not housekeeping after the fact. There is no fixed numeric
+threshold; what is required is that the load figure be **measured and recorded**
+at the start of each timing-sensitive batch, and that run-owned leakage be
+excluded as a contributor. Where stale automation resources are contributing,
+the environment is remediated **before** timing-sensitive evidence continues,
+and the affected observations are classified as apparatus contamination rather
+than product behaviour — which, per
+[`../governance/EXECUTION-GUIDANCE.md`](../governance/EXECUTION-GUIDANCE.md) §8,
+voids those observations rather than clearing them.
+
 ### 9.2 Supported physical-hardware path rule
 
 A current candidate that ordinarily **advertises a supported physical-hardware
