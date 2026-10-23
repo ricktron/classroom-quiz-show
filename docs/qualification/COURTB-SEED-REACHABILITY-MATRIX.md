@@ -26,8 +26,10 @@ Liveness evidence below is from the repository's own detectors at the candidate
 under test. "Brief action" names the step in the tester-facing brief
 (journeys `CBJ-01..11`, or the bullets under "Other ordinary teacher actions" in [`COURT-B-BLACK-BOX-BRIEF.md`](COURT-B-BLACK-BOX-BRIEF.md)).
 
-**The seed-site column names a FILE, never a line.** Every figure in this file
-was measured on candidate `282a06f9770f54f6a3e27894bbb0edcb007d25c0`; line
+**The seed-site column names a FILE, never a line.** Liveness figures were
+first measured on candidate `282a06f9770f54f6a3e27894bbb0edcb007d25c0`, and
+every active row was re-exercised clean-vs-seeded at
+`090e2dea1e156a913ef32092709e88643edc89a1`; line
 numbers move with any later change, which is why the table records none. (The S6
 caveat below does cite two line numbers, because it is recounting expressions
 that were tried and discarded — those lines describe code that no longer exists
@@ -38,21 +40,57 @@ compiles but goes green, is `INVALID` and must be re-expressed or replaced befor
 any build is served. The file and the described semantics are the durable part of
 each row.
 
-| Seed | Seed site (file) | Semantic defect | Teacher-visible consequence | Brief action that reaches it | Clean expected | Defective expected | Self-test | Status |
+### The two gates, recorded separately
+
+A seed is Court-B eligible only when BOTH are `YES`:
+
+- **TEST-LAYER LIVE** — the mutation compiles at the candidate and fails the
+  repository's own detectors. This proves the seed is a real defect.
+- **INSTRUCTION-LAYER DISCRIMINATING** — a blinded teacher following the EXACT
+  tester-facing wording has been *directly demonstrated* to produce observably
+  different teacher-visible outcomes on clean and seeded builds.
+
+The second gate is the one the previous apparatus lacked, and it is not
+satisfied by a unit-test failure, a browser-spec failure, a bundle difference,
+a compile success, or seed-site identity. Those are all liveness evidence. Three
+originally declared seeds were live and still had to be retired because no
+tester wording could separate the builds.
+
+Figures below were measured at candidate
+`090e2dea1e156a913ef32092709e88643edc89a1`, where every active row was exercised
+clean-vs-seeded through visible teacher UI. Re-locate each site within its named
+file on the actual candidate before a run; a seed that no longer compiles, or
+that compiles but goes green, is `INVALID` and must be re-expressed or replaced
+before any build is served.
+
+| Seed | Seed site (file) | Semantic defect | TEST-LAYER LIVE | Teacher-visible discriminator (exact) | INSTR. DISCRIM. | Brief action | Apparatus | Stop condition |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| S1 | `src/state/reducer.ts` | deduction/award debits the first team instead of the scored one | the points land on the wrong team's scoreboard row | CBJ-04 board clue: score a NON-first team | score appears on the team selected | score appears on team 1 | 6 unit failures | REACHABLE |
-| S2 | `src/state/sanitize.ts` | Final answer public at responses-locked, before explicit reveal | the class sees the Final answer while teams are still being adjudicated | CBJ-05 / CBJ-09: watch the projector between locking responses and Reveal | projector shows no answer until Reveal | answer visible at responses-locked | 3 unit + browser (M40) | REACHABLE |
-| S3 | `src/sync/displayPresence.ts` | Display presence lie after Host reload | Host claims a projector is connected when none is | extra: display presence after a host reload (close the display window) | flips to "Display not open" within seconds | keeps claiming a display is open | 3 unit failures | REACHABLE |
-| S4 | `src/host/TeamNameSelectionBoard.tsx` | typed name not reported until blur — first Start activation lost | typing both names leaves Start Game disabled / the first press does nothing | CBJ-03 names, Display and Start Game | Start enables as names are typed | Start stays disabled until blur | 11 browser failures | REACHABLE |
-| S5 | `src/state/events.ts` + `src/state/reducer.ts` | Final Undo buried by response-window expiry | after the window runs out, Undo cannot reach the settlement | CBJ-09: let the Final window RUN OUT, settle a team, then Undo | Undo reaches the settlement | Undo offers an inert "time up" | 5 integrity + browser | REACHABLE |
-| S6 | `src/summary/deriveSessionSummary.ts` | tied explicit end names the first leader Winner | the completed summary reports a single-winner completion for a game that ended tied | CBJ-06 tie **plus** the brief's "On a tie, quote the summary verbatim" step | "Final accepted tied finish", both teams tied | "Final unique-winner completion" AND "Final resolution path: Unique winner", with two teams on equal scores | 1 unit failure (`classifies accepted tied finish`) | REACHABLE — see caveat |
-| S7 | `src/state/reducer.ts` | Reset this class session leaks the prior class's ledger | the new class inherits the previous class's "Last score change" / ledger | extra: a second class period, then reload | new class starts with a clean ledger | stale "Last score change" from the previous class | 6 unit + 7 browser; DETECTED by a blinded tester in the validation slice | REACHABLE (proven) |
-| S8 | `src/input/gamepadMapping.ts` | team row names only the first mapped Buzzer | a buzzer mapped to a team lights the wrong team | extra: more than one buzzer on a team; press each handset | each buzzer lights its own team | all handsets on a controller light one team | 1 unit + 2 browser | REACHABLE — **requires the simulated receiver** (run precondition) |
-| S9 | `src/state/events.ts` + `src/state/reducer.ts` | board response-timer expiry becomes reversible | after a board timer runs out, Undo is stuck on an inert "time up" | extra: let a BOARD clue's response timer run out, then Undo | Undo walks back to the real teacher action | Undo offers the expiry | 11 unit + 2 browser | REACHABLE |
-| S10 | `src/input/webHidTransport.ts` | WebHID accepts any Sony device as the receiver | a device that is not the classroom receiver is adopted as if it were | CBJ-11 with the unsupported profile | refused; stays "needs attention" | reports Connected | CBJ-11 + 3 unit | REACHABLE — **requires the simulated receiver** (run precondition) |
-| S11 | `src/display/MediaContentDisplay.tsx` | projector paints the hosted build asset before pack media hydrate | the projector shows a diagram that is not the clue's picture | CBJ-08 image clue from the portable pack | pack's own image for the clue opened | a different clue's shipped diagram paints first | CBJ-08 | REACHABLE |
-| S12 | `src/routes/HomeRoute.tsx` | Library Delete removes the first game, not the chosen one | the wrong saved game disappears | extra: delete one of two saved games (not the first) | the chosen game goes | the first game goes | 1 unit + 3 browser | REACHABLE |
-| S13 | `src/host/useHostPersistence.ts` | startup action loss on host boot | a control looks usable at startup and silently discards the action | extra: act the instant the app starts | controls are disabled until ready; the action takes effect | the action is accepted then discarded | 3 unit + 12 browser | REACHABLE — **timing-conditional**, see stop condition |
+| S1 | `src/state/reducer.ts` | award/deduction credits the first team instead of the scored one | YES — 6 unit failures | clean: target "Beta" selected → Beta's row moves, "Last score change: Beta +100". seeded: the button still reads "to Beta, giving 100" but **Alpha's** row moves and the ledger says Alpha | **YES** | CBJ-04, scoring a NON-first team | none | — |
+| S2 | `src/state/sanitize.ts` | Final answer public at responses-locked, before explicit reveal | YES — 3 unit + browser (M40) | clean: projector reads "Responses locked", answer absent. seeded: projector renders "Final answer" / "Final answer revealed" with the answer text | **YES** | CBJ-05 / CBJ-09, between locking responses and Reveal | none | observation **must** precede Reveal; after Reveal both builds look alike |
+| S3 | `src/sync/displayPresence.ts` | Display presence lie after Host reload | YES — 3 unit failures | clean: host says not open **13 ms** after the display closes. seeded: host **claims open through ~4.3 s**, correcting at ~4.9 s. "Focus display" = claims open; "Open display" = not open | **YES** | extra: display presence after a host reload | none | **self-heals in ~5 s**; a yes/no check made later sees both builds healthy. Elapsed time must be recorded |
+| S4 | `src/host/TeamNameSelectionBoard.tsx` | typed name not reported until blur — first Start activation lost | YES — 11 browser failures | clean: second name typed, field still focused → "✓ Ready", `Start Game` enabled. seeded: "1 of 2 named", `Start Game` disabled, "Team Nimbus still needs a name" | **YES** | CBJ-03 names, Display and Start Game | none | **heals on blur**; Start Game must be read while the field still has focus |
+| S5 | `src/state/events.ts` + `src/state/reducer.ts` | Final Undo buried by response-window expiry | YES — 5 integrity + browser | clean: Undo reads "Undo response timer start". seeded: Undo reads "Undo response **time up**" | **YES** | CBJ-09, after the Final window runs out | none | must be read **before settling a team**; settlement pushes a new Undo target on top |
+| S6 | `src/summary/deriveSessionSummary.ts` | tied completion summarized as a unique winner | YES — 1 unit failure | clean summary: "Completion context: **Final accepted tied finish**". seeded: "Completion context: **Final unique-winner completion**" while the standings directly below list BOTH teams "Tied for 1st" on equal scores. Standings are byte-identical on both builds | **YES** — see caveat | CBJ-06 tie **plus** the brief's "On a tie, quote the summary verbatim" step | none | — |
+| S7 | `src/state/reducer.ts` | reset leaks the prior class's score ledger | YES — 6 unit + 7 browser | clean: after reset the ledger reads "**No score change yet.**". seeded: "**Last score change: Team Nimbus +100 (full credit)**" — the prior class's award survives, shown under the default team name | **YES** | extra: a second class period, then reload | none | observation (A) "looks reset" passes on BOTH builds; only (B) the stale ledger line discriminates. They must be asked separately |
+| S8 | `src/input/gamepadMapping.ts` | team row names only the first mapped Buzzer | YES — 1 unit + 2 browser | clean Alpha row: "**Buzzer 1 · Red · Buzzer 3 · Red**". seeded: "**Buzzer 1 · Red**" only, with the same saved mapping and the same "Receiver connected" state | **YES** | extra: more than one buzzer on a team | **simulated receiver (operator supplies) — must expose ≥3 distinguishable handsets with ≥2 mappable to ONE team; a single-handset receiver makes this seed undiscriminable while still passing the other pre-run proofs** | **label-only**: buzz routing is NOT affected, so pressing handsets must not be used as the discriminator |
+| S9 | `src/state/events.ts` + `src/state/reducer.ts` | board response-timer expiry becomes reversible | YES — 11 unit + 2 browser | clean: Undo reads "Undo timer start". seeded: Undo reads "Undo **time up**". Visible timer state identical on both ("Time up", "Not armed") | **YES** | extra: let a BOARD clue's response timer run out | none | the **label** must be READ, not the control pressed: Undo is latest-only, so pressing it steps past the expiry and then shows the real action on both builds. Must be read before judging the response or any later action. Keep distinct from S5 (Final window) |
+| S12 | `src/routes/HomeRoute.ts`/`HomeRoute.tsx` | Library Delete removes the first/most-recent game, not the chosen one | YES — 1 unit + 3 browser | clean: the chosen non-hero title disappears, the other remains, durable across reload. seeded: the **hero/most-recent** game disappears and the chosen target **remains** | **YES** | extra: delete one of two saved games, chosen by title | none | the target must NOT be the hero/most-recent card — deleting the hero makes both builds behave identically |
+| M26 | `src/input/keyboardAdapter.ts` | every fresh mapped keyboard buzz press is ignored | YES — 9 unit failures | clean: one fresh `1` → "Active team: **Alpha**", "Alpha buzzed in.". seeded: same press → "**Nobody has buzzed yet**" | **YES** | extra: buzz in on an armed clue with the keyboard | none | mutant also rejects auto-repeat (`key-held`), so holding or re-pressing cannot accidentally succeed |
+| M04 | `src/library/gameLibrary.ts` | authoring Save reports success but writes nothing durable | YES — lower layer 2 + browser 19 | clean: "Saved", and Home's entry heading carries **the tester's own title**; survives reload. seeded: "Saved", the chosen title occurs **0×**, and the entry heading still reads "**New Game**" | **YES** | extra: make a new game, give it a distinctive title, save it | none | checking that "a Library row exists" is **vacuous** — a stub row exists on both builds. The check is which title the row carries |
+| M01 | `src/routes/HomeRoute.tsx` | Home `Resume class` stays enabled but is inert | YES — 2 unit failures | clean: `Resume class` → `#/host`, class restored. seeded: stays at app root, `h1` still "Home"; a second press changes nothing | **YES** | extra: leave a class running, then come back to it | none | **no timing window** — the unfinished-class banner is persistent and the tester confirms it before acting |
+
+### Retired as BLACK-BOX-UNSUITABLE (history)
+
+These three were originally declared, were genuinely **live**, and were retired
+only because the instruction-layer gate failed: a blinded teacher following the
+brief could not separate clean from seeded. They are recorded so the reason is
+not lost, and they are **not** to be re-described as valid black-box seeds.
+
+| Retired | TEST-LAYER LIVE | Why the instruction layer failed | Replaced by |
+| --- | --- | --- | --- |
+| S10 — WebHID accepts any Sony device | YES (CBJ-11 + 3 unit) | needed the simulated receiver, and the discriminating state is a device-identity decision a teacher cannot see | M26 |
+| S11 — projector paints the build asset before pack hydration | YES (CBJ-08) | on the 2026-10-17 run the fixtures carried no image clue, so no tester could walk the route. An image-clue pack is now committed and `CBJ-08` is live, so the route EXISTS at this candidate — but S11 has never been put through the instruction-level gate, and an untested route is not an eligible seed. Retired on that ground, not on reachability | M04 |
+| S13 — startup action loss on host boot | YES (3 unit + 12 browser) | needs action inside an unverifiable boot window; a late tester cannot know they were late, and "not reached" is not evidence of health | M01 |
 
 ## S6 caveat, recorded in full
 
@@ -90,22 +128,33 @@ No artificial route and no state injection was created for it, and it was not
 replaced: the declared defect is genuinely expressible, and a tester who reads
 the summary — which the brief now requires — can see it.
 
-**Outstanding before Court B starts:** the third limb of the Phase 8 self-test
-(a blinded tester reaching the route from the brief without knowing the seed) is
-NOT yet proven for S6. It must be demonstrated on a seeded S6 build in the new
-population, and if a fresh blinded tester reads that summary and still judges the
-build correct, S6 is to be classified unsuitable for black-box Court B and
-replaced from the register rather than re-expressed a fifth time.
+**Resolved at `090e2dea` — S6 passes the instruction layer.** The seeded
+completion screen contradicts itself in a single view: "Completion context:
+**Final unique-winner completion**" sits directly above standings listing BOTH
+teams as "Tied for 1st" on identical scores. Clean and seeded standings are
+byte-identical, so that one line is the only difference, and the brief's "On a
+tie, quote the summary verbatim" step already requires the tester to read both
+strings together. No operator knowledge is needed to see the contradiction, and
+no fifth expression was created.
 
 ## Preconditions an operator must satisfy before claiming a row
 
-### The simulated receiver (S8 and S10) — a RUN precondition
+### The simulated receiver (S8) — a RUN precondition
 
-**S8 and S10 are both observable only through the simulated receiver.** S8's
-route is "more than one buzzer on a team"; S10's is `CBJ-11` with the
-unsupported profile. The brief tells a receiver-less tester to record either as
-"not supplied" rather than as a route they could not discover, so on a
-receiver-less run neither build has a route a tester is permitted to walk.
+**S8 is observable only through the simulated receiver.** Its route is "more
+than one buzzer on a team". S10 shared that dependency and has since been
+retired as black-box-unsuitable, so S8 is now the sole seed dependency; the
+`CBJ-10` / `CBJ-11` journeys asked of every tester still need the receiver as
+well. The brief tells a receiver-less tester to record these as "not supplied"
+rather than as a route they could not discover, so on a receiver-less run those
+rows have no route a tester is permitted to walk.
+
+The installation mechanism is not incidental: `navigator.hid` is a non-writable
+accessor in this Chromium, so the fake boundary must be installed with
+`Object.defineProperty` and must fail loudly. Plain assignment fails silently and
+leaves the product reading the real boundary — the exact fault that made S8
+unexercisable on the 2026-10-17 run. The manifest records the required
+pre-run proof.
 
 This file does NOT resolve that by dropping a seed. The population is declared
 in [`COURTB-RUN-MANIFEST.md`](COURTB-RUN-MANIFEST.md) and only there, it is fixed
@@ -113,6 +162,9 @@ at 14 = 1 clean + 13 seeded, and that file's Completion rule makes a short
 population unreportable — so a matrix that quietly shrank it would produce a run
 that can never complete. An earlier revision of this section said "S8 must not be
 seeded into that population", which was wrong for exactly that reason.
+
+Retiring S10 and S11 did not shrink the population either: each was replaced,
+one-for-one, from the existing Court A register.
 
 The manifest now carries the correct form as a **run precondition**: a run set up
 without a simulated receiver MUST NOT START. That keeps the 14 intact and matches
@@ -123,10 +175,16 @@ A tester who reports "not supplied" on a run that WAS set up with a receiver is
 reporting an apparatus fault, not a finding: that row is `INVALID` and is
 re-declared under a fresh build code with a fresh tester.
 
-### S13 — a timing condition, not an apparatus one
+### S13 — retired; recorded here because the reasoning still applies
 
-S13 differs in kind from the two above: nothing needs supplying, but the tester
-must act before the app has settled, which they cannot verify they achieved. The
+S13 has since been **retired as black-box-unsuitable** and replaced by M01,
+whose precondition is a persistent banner with no timing window. The reasoning
+is kept because it is the clearest statement of why an unverifiable precondition
+disqualifies a route, and the same test applies to any future candidate seed.
+
+S13 differed in kind from the receiver case: nothing needed supplying, but the
+tester had to act before the app had settled, which they cannot verify they
+achieved. The
 brief asks for the two discriminating observations — was the control disabled
 when first reached, and did the action survive once settled — and instructs the
 tester to record the action as **not reached** if the app had already loaded.

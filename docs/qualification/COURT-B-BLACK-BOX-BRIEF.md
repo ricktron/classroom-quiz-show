@@ -60,7 +60,7 @@ never paired with content that has none.
 | --- | --- | --- |
 | CBJ-01 | Import the game file and reach Class Setup | no |
 | CBJ-02 | Import the filled spreadsheet and reach Class Setup | no |
-| CBJ-03 | Names, Display and Start Game | no |
+| CBJ-03 | Names, Display and Start Game (read `Start Game` BEFORE opening the Display — see note) | no |
 | CBJ-04 | Board clue: prompt, score, answer, Undo | no |
 | CBJ-05 | Final: wagers, question, responses, reveal, settlement, winner | yes |
 | CBJ-06 | Final tie: tied-finish completion | yes |
@@ -80,9 +80,16 @@ fails otherwise.
   that the points land on the team you actually chose and on no other. Scoring
   the first team cannot tell you whether the award went where you aimed it,
   because the right answer and the wrong answer look the same.
+- **CBJ-03** — type the second team's name and then, **while that field still
+  has focus and before you click anywhere else**, look at `Start Game`. With
+  both names typed it should be usable. If it is still greyed out, or the screen
+  still says a team needs a name, report that — and report it before clicking
+  away, because clicking elsewhere can repair the display and hide what you saw.
 - **CBJ-05 and CBJ-09** — watch the projector during the window between locking
   responses and pressing Reveal. Nothing about the answer may reach the class
-  before you reveal it.
+  before you reveal it. This is the only moment that measures it: once you press
+  Reveal the answer is public on purpose, so a check made afterwards cannot tell
+  a leaking build from a correct one.
 
 ### Notes on the four journeys added for the fresh Court B
 
@@ -94,7 +101,17 @@ fails otherwise.
   the clue should record exactly that.
 - **CBJ-09** requires the Final response window to actually RUN OUT. A tester
   simply waits out the 30 seconds the fixture authors rather than locking
-  responses early, then settles a team and uses Undo. The reachability spec
+  responses early. **Then look at Undo straight away, before settling anybody.**
+  Read what the Undo control offers to reverse and report that wording: it should
+  name a real thing you did, such as starting the response timer. If it instead
+  offers to undo the time running out, report that. Settling a team first puts a
+  new action on top of the one this measures, so the order matters.
+
+  This Undo reading comes FIRST, at the moment the window runs out — before you
+  record anybody's response and before you lock. Recording and locking are
+  themselves actions, and each one becomes the newest thing Undo offers to
+  reverse, which hides what this step measures. The projector check belongs
+  later, once you have locked and are on your way to Reveal. The reachability spec
   advances a controlled page clock to reach the same expiry deterministically,
   and only after the ordinary UI has opened the window.
 - **CBJ-10 and CBJ-11** use a simulated receiver at the platform boundary.
@@ -120,55 +137,112 @@ workflows, not fixture-dependent routes — so they are listed here rather than 
 `CBJ-nn` rows.
 
 - **A second class period.** After playing at least one clue and scoring a team,
-  find the control that starts a new class session on the same game. Then look
-  hard at what the NEW class inherits: are tiles the previous class already won
-  still playable at full value? Does "Last score change" still name the previous
-  class's award, with Undo still offered for it? Does the session summary report
-  the previous class's figures? A new class should begin with a clean ledger.
-  Reload the page after the reset and check again.
+  find the control that starts a new class session on the same game. Then answer
+  these as TWO SEPARATE questions, and report both — a build can pass the first
+  and fail the second:
+
+  **(A) Is the new class actually reset?** Scores back to zero, progress back to
+  the start, tiles the previous class won playable again at full value.
+
+  **(B) Is there any trace of the previous class's scoring left?** Read the
+  "Last score change" line specifically. A new class should say there has been
+  no score change yet. A line still naming the PREVIOUS class's award — possibly
+  under a default team name, since the new class is not named yet — is a defect
+  even if (A) looked perfect. Also check whether Undo is still offered for it and
+  whether the session summary reports the previous class's figures.
+
+  Reload the page after the reset and check both again.
 
 - **More than one buzzer on a team.** With the receiver connected, map several
-  handsets to the SAME team and at least one to a different team. Check the team
-  rows and the live buzz line: do they name all of the buzzers mapped to a team,
-  or only one? Press each handset and confirm the team that lights up is the team
-  that buzzer belongs to.
+  handsets to the SAME team and at least one to a different team, and save the
+  mapping. Now **read that team's row**: does it name EVERY buzzer you mapped to
+  that team, or only one of them? A team you gave two buzzers should say so — for
+  example "Buzzer 1 · Red · Buzzer 3 · Red", not just "Buzzer 1 · Red". A row
+  that names only the first buzzer is a defect even though the mapping saved and
+  the screen says so.
+
+  Pressing the handsets afterwards is ordinary exploration and worth reporting,
+  but it is not what this action measures: the question is whether the team row
+  tells the truth about what you mapped.
 
   This needs the simulated receiver, which **the run operator supplies and you
   cannot create**. If your run was not set up with one, record this action as
   "not supplied" and move on. Do NOT record it as a route you could not
   discover: that would report an apparatus gap as a product defect.
 
+- **Buzz in on a clue with the keyboard.** Open a clue, show the prompt, and arm
+  it. Before pressing anything, confirm the host shows the clue armed, shows
+  keyboard buzzing as on, and shows that nobody has buzzed yet. Note which key
+  belongs to which team.
+
+  Now press one team's buzz key **once**. Which team becomes the active team? A
+  single fresh press of a mapped buzz key must buzz that team in. If the host
+  still says nobody has buzzed, that is the finding — and say that the clue was
+  armed and keyboard buzzing was on when you pressed, so it is clear the press
+  should have counted.
+
+- **Make a new game and save it.** From Home choose `New Game`. In the editor,
+  replace the game's title with a distinctive one you invent — something no
+  fixture would use — and write it down. Press `Save` and note exactly what the
+  screen says. Then go back to `Home` and look at your list of games: is there an
+  entry whose title is **the one you typed**?
+
+  An entry still showing its old default name, or no entry carrying your title
+  anywhere on the page, is a defect even though the editor said it saved.
+  Checking only that "there is a game in the list" is not enough — there will be
+  one either way. Reload the page and look once more.
+
 - **Let a BOARD clue's response timer run out.** Not the Final — a board clue.
-  Run the response timer to expiry, then try Undo. Does Undo reach the real
-  teacher action, or does it get stuck on an inert "time up" entry?
+  Run the response timer to expiry. **Then, before you judge the response or do
+  anything else, read what the Undo control offers to reverse and write that
+  wording down.** It should name something you actually did, such as starting
+  the timer. If it instead offers to undo the time running out, report that
+  exact wording.
+
+  Do not press Undo to find out: pressing it can quietly step past the entry and
+  then show you the right one, so what the control SAYS before you touch it is
+  the observation. Judging the response first also replaces that wording with
+  your judgement, so the order matters. Once you have written the wording down
+  you are free to press Undo and report what it actually did — this only asks
+  you not to press it *instead* of reading it.
 
 - **Delete a saved game when you have two.** Both files you were given import as
   the same game, so they make one library entry, not two. Get a second, distinct
   entry using an ordinary Home control — `Import demo game` is the quickest;
-  `New Game` also works but takes you into the editor first — then
-  delete a specific entry that is NOT first in the list. Confirm the one you
-  chose is gone and the other survives. (Using the demo here is only to populate
-  the library; it is still not qualification content.)
+  `New Game` also works but takes you into the editor first.
 
-- **Act the instant the app starts.** Reload and immediately, before the app has
-  settled, use a control that changes something — type a name, score a team,
-  press a game control.
+  Now choose your target **by its visible title**, the way a teacher would, and
+  make it a game that is NOT the big card at the top (not the most recently
+  added one). Write the title down. On that game's own card, open `More`, choose
+  `Delete`, then `Confirm delete game`. Say which title actually disappeared and
+  which survived, then reload and check again. If a game you did not choose is
+  the one that vanished, that is the finding — report both titles.
 
-  Report BOTH of these, because they are what distinguish the two possible
-  behaviours: (a) when you first reached it, was the control **disabled**, or was
-  it enabled and usable? (b) did the action you took actually take effect once
-  the app settled, or was it accepted and then silently discarded? A control that
-  is disabled until ready is correct. A control that looks usable and then
-  discards your action is a defect.
+- **Leave a class running, then come back to it.** With a class in play (at
+  least one clue opened), leave the app and open it again so you land on Home.
+  Home should tell you an unfinished class session is waiting and offer to
+  resume it.
 
-  If the app had already finished loading before you could act, say so plainly
-  and record this action as **not reached** — do not record it as passing. Being
-  too late is an apparatus limit, not evidence that the build is healthy, and
-  rule 5 does not ask you to repeat an attempt you never landed.
+  First confirm, before pressing anything, that you can see that offer and that
+  the control is not greyed out. Then press it. Where does it take you?
+  Resuming must put you back in the class you left, with its board and scores.
+  Staying on Home, with the same offer still showing, is a defect — press it a
+  second time and say whether anything changed.
 
 - **Display presence after a host reload.** With the projector window open,
-  reload the host. Then close the projector window and watch the host's Display
-  status. Does the host still claim a display is connected when none is?
+  reload the host. Then close the projector window and **watch the host's
+  Display status from the instant you close it**, without doing anything else.
+
+  Report how long the host goes on claiming a display is connected, in seconds.
+  "Focus display" means it believes one is open; an offer to "Open display"
+  means it knows none is. A host that corrects itself immediately is right. A
+  host that keeps claiming a display for several seconds after you closed it is
+  the finding — and it will eventually correct itself, so a check made a while
+  later cannot tell the two apart. Say what you saw and when.
+
+  If you did not manage to watch from the moment you closed it — you looked away,
+  or you were busy — record this action as **not reached** rather than as
+  healthy. Being late is an apparatus limit, not evidence the build is correct.
 
 - **Mid-game, check the scores on the setup screen.** Once a team has points,
   leave gameplay with `Back to setup`. Read the scores that screen shows for each
