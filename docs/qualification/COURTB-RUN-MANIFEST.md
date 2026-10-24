@@ -221,7 +221,7 @@ qualify the journey apparatus itself — do not conflate the two.
 | S7 | Reset this class session leaks the prior class's ledger | session boundary |
 | S8 | a pressed handset is credited to the first buzzer's team, not its own | buzzer truth |
 | S9 | board response-timer expiry becomes reversible | Undo integrity |
-| S12 | Library Delete removes the stored-first game, not the chosen one | data safety |
+| S12 | Library Delete removes the first entry of the library list (title-sorted), not the chosen one | data safety |
 | M26 | every fresh mapped keyboard buzz press is ignored | local input |
 | M04 | authoring Save reports success but the authored title is not durably written | authoring durability |
 | M01 | Home `Resume class` stays enabled but is inert | resume |

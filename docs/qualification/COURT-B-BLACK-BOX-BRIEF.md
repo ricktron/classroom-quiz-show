@@ -228,8 +228,8 @@ workflows, not fixture-dependent routes — so they are listed here rather than 
   anything.
 
   Now choose that big card as your target, **by its visible title**, the way a
-  teacher would. Write that title down, and write down the title of the other
-  game too. On that big card itself, open `More`, choose `Delete`, then
+  teacher would. Write that title down, and write down the titles of the
+  other games too. On that big card itself, open `More`, choose `Delete`, then
   `Confirm delete game`.
 
   Say which title actually disappeared and which survived, then reload and check

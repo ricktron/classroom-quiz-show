@@ -58,7 +58,8 @@ tester wording could separate the builds.
 
 Figures below were measured at candidate
 `090e2dea1e156a913ef32092709e88643edc89a1`, where every active row was exercised
-clean-vs-seeded through visible teacher UI. Re-locate each site within its named
+clean-vs-seeded through visible teacher UI — **except S8 and S12, whose cells were
+re-measured at `d8c212ea`; see "Corrections at `d8c212ea…`" below.** Re-locate each site within its named
 file on the actual candidate before a run; a seed that no longer compiles, or
 that compiles but goes green, is `INVALID` and must be re-expressed or replaced
 before any build is served.
@@ -98,7 +99,7 @@ on another, the saved mapping identical on both builds:
 | observation | clean | seeded | |
 | --- | --- | --- | --- |
 | team row label | `Buzzer 1 · Red · Buzzer 3 · Red` | `Buzzer 1 · Red · Buzzer 3 · Red` | identical — **not** a discriminator |
-| press Buzzer 2 on an armed clue | `Active team Bravo` | `Active team Alpha` | **discriminates** (class teams named Alpha / Bravo by the operator during ordinary setup; the row keys above are the fixture's team ids) |
+| press Buzzer 2 on an armed clue | `Active team Bravo` | `Active team Alpha` | **discriminates** (the class teams were named Alpha / Bravo by the operator during ordinary setup, so the team rows render those session names rather than the fixture's authored ones) |
 
 The previous text named the row label as the discriminator and explicitly
 forbade buzz routing. That was exactly inverted, and a Court B run started on it

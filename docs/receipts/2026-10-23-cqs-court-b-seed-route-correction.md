@@ -86,7 +86,7 @@ import order. "Court B Final Qualification" sorts before the demo's
 "Earth & Space Science Board" (`Import demo game` imports
 `CANONICAL_SAMPLE_CATEGORY_BOARD_FILE`, id `imported-sample-board`) and before a
 `New Game`'s "New Game", so the fixture is `library[0]` in every arrangement this
-action produces.
+action produces on its own (see the third-entry caveat below).
 
 These S12 measurements used a **two-entry** library. A third entry whose title
 sorts before "Court B Final Qualification" would be deleted instead on the seeded
