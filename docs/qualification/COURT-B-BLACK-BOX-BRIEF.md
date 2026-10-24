@@ -154,19 +154,21 @@ workflows, not fixture-dependent routes — so they are listed here rather than 
   Reload the page after the reset and check both again.
 
 - **More than one buzzer on a team.** With the receiver connected, press RED on
-  each handset so the host lists them all, then map two handsets — say Buzzer 1
-  and Buzzer 3 — to the SAME team, map Buzzer 2 to a DIFFERENT team, and save
-  the mapping. Check the mapping saved and note which team you gave each buzzer.
+  each handset so the host lists them all. Then use **exactly these
+  assignments**: map **Buzzer 1** and **Buzzer 3** to the SAME team, and map
+  **Buzzer 2** to a DIFFERENT team. Save the mapping, check it saved, and write
+  down which team you gave each buzzer. Use these buzzer numbers as given — a
+  different arrangement can hide what this action measures.
 
-  Now start the game, open a clue and arm it. Press the handset you mapped to
-  the **different** team — Buzzer 2 in the example — **once**, and read which
-  team becomes the active team.
+  Now start the game, open a clue and arm it. Press **each** of Buzzer 1,
+  Buzzer 2 and Buzzer 3 **once**, on its own fresh armed clue, and after each
+  press write down which team the host names as the active team.
 
-  It must be the team you mapped THAT buzzer to. If a different team buzzes in —
-  typically the team holding the first buzzer — that is the finding: report which
+  Every press must name the team you mapped THAT buzzer to. Buzzer 2 is the one
+  to watch hardest: it is on its own team, so if the team holding Buzzer 1
+  becomes active when you press Buzzer 2, that is the finding — report which
   handset you pressed, which team you had mapped it to, and which team the host
-  actually named. Press the other handsets too and say whether each one buzzes
-  for the team you gave it.
+  actually named.
 
   Reading the team rows is worth reporting as well, but it is not what this
   action measures: a row can name every buzzer you mapped and the presses can
@@ -215,13 +217,19 @@ workflows, not fixture-dependent routes — so they are listed here rather than 
 
 - **Delete a saved game when you have two.** Both files you were given import as
   the same game, so they make one library entry, not two. Get a second, distinct
-  entry using an ordinary Home control — `Import demo game` is the quickest;
-  `New Game` also works but takes you into the editor first.
+  entry with the Home control **`Import demo game`**. Use that control for this
+  action and not `New Game`: a brand-new game has no rounds yet, so it does not
+  become the big card at the top and this check would measure nothing.
 
-  Now choose your target **by its visible title**, the way a teacher would, and
-  make it the **big card at the top** — the one the page presents first, under
-  "Most recent playable". Write that title down, and write down the title of the
-  other game too. On that big card itself, open `More`, choose `Delete`, then
+  Before you delete anything, look at the **big card at the top** — the one the
+  page presents first, under "Most recent playable". It should now be the demo
+  game you just added, **not** either of the two files you were given. If it is
+  not, stop and report that instead; the rest of this action will not mean
+  anything.
+
+  Now choose that big card as your target, **by its visible title**, the way a
+  teacher would. Write that title down, and write down the title of the other
+  game too. On that big card itself, open `More`, choose `Delete`, then
   `Confirm delete game`.
 
   Say which title actually disappeared and which survived, then reload and check

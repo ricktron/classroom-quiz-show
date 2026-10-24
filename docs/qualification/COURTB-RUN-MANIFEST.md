@@ -120,12 +120,20 @@ clean and the seeded build — and because a receiver *was* supplied, the "not
 supplied" disposition does not apply, so nothing flags the row. Prove the handsets
 before a build is served.
 
-**The mapping UI has an ordinary precondition.** "Which buzzer is which team" is
-rendered `hidden` until the product has seen the handsets respond, so the teacher
-presses RED on each buzzer first and the host counts them ("4 buzzers
-responding"). An operator whose harness assigns slots before that will find the
-selects present, enabled and nevertheless not interactable — which is an
-apparatus fault, not a product defect, and not evidence about S8.
+**The mapping UI has an ordinary precondition.** In the compact Class Setup
+surface, "Which buzzer is which team" is rendered `hidden` until at least one
+handset has responded (`showTeamAssignments` turns on when the summary reaches
+`controllers-need-team-setup`); the full Host panel always renders it. Once one
+slot responds, ALL four slot selects render, including slots that never
+responded — so "one responding" is enough for the UI but NOT enough for this
+run. The operator requirement is stricter on purpose: press RED on every handset
+the route needs, and read the host's count back ("3 buzzers responding" with
+three, "4 buzzers responding" with four) before assigning. An operator whose
+harness assigns slots before any handset has responded will find the selects
+present, enabled and nevertheless not interactable — which is an apparatus fault,
+not a product defect, and not evidence about S8. Note also that once the mapping
+saves, the summary becomes `sony-buzz-ready` and the block hides again in Class
+Setup, so re-reading the assignments there needs Advanced diagnostics.
 
 If the simulator is **external run tooling** rather than a repository file, the
 run receipt must record its exact procedure, its script version or hash, the
