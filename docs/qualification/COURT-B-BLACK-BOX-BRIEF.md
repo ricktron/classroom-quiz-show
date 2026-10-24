@@ -153,17 +153,24 @@ workflows, not fixture-dependent routes — so they are listed here rather than 
 
   Reload the page after the reset and check both again.
 
-- **More than one buzzer on a team.** With the receiver connected, map several
-  handsets to the SAME team and at least one to a different team, and save the
-  mapping. Now **read that team's row**: does it name EVERY buzzer you mapped to
-  that team, or only one of them? A team you gave two buzzers should say so — for
-  example "Buzzer 1 · Red · Buzzer 3 · Red", not just "Buzzer 1 · Red". A row
-  that names only the first buzzer is a defect even though the mapping saved and
-  the screen says so.
+- **More than one buzzer on a team.** With the receiver connected, press RED on
+  each handset so the host lists them all, then map two handsets — say Buzzer 1
+  and Buzzer 3 — to the SAME team, map Buzzer 2 to a DIFFERENT team, and save
+  the mapping. Check the mapping saved and note which team you gave each buzzer.
 
-  Pressing the handsets afterwards is ordinary exploration and worth reporting,
-  but it is not what this action measures: the question is whether the team row
-  tells the truth about what you mapped.
+  Now start the game, open a clue and arm it. Press the handset you mapped to
+  the **different** team — Buzzer 2 in the example — **once**, and read which
+  team becomes the active team.
+
+  It must be the team you mapped THAT buzzer to. If a different team buzzes in —
+  typically the team holding the first buzzer — that is the finding: report which
+  handset you pressed, which team you had mapped it to, and which team the host
+  actually named. Press the other handsets too and say whether each one buzzes
+  for the team you gave it.
+
+  Reading the team rows is worth reporting as well, but it is not what this
+  action measures: a row can name every buzzer you mapped and the presses can
+  still go to the wrong team.
 
   This needs the simulated receiver, which **the run operator supplies and you
   cannot create**. If your run was not set up with one, record this action as
@@ -212,11 +219,16 @@ workflows, not fixture-dependent routes — so they are listed here rather than 
   `New Game` also works but takes you into the editor first.
 
   Now choose your target **by its visible title**, the way a teacher would, and
-  make it a game that is NOT the big card at the top (not the most recently
-  added one). Write the title down. On that game's own card, open `More`, choose
-  `Delete`, then `Confirm delete game`. Say which title actually disappeared and
-  which survived, then reload and check again. If a game you did not choose is
-  the one that vanished, that is the finding — report both titles.
+  make it the **big card at the top** — the one the page presents first, under
+  "Most recent playable". Write that title down, and write down the title of the
+  other game too. On that big card itself, open `More`, choose `Delete`, then
+  `Confirm delete game`.
+
+  Say which title actually disappeared and which survived, then reload and check
+  again. The game you chose must be gone and must stay gone. If the title you
+  chose is still there — and the OTHER game is the one that vanished — that is
+  the finding; report both titles. A deletion that removes a game the teacher did
+  not choose is a defect even though the screen says the delete succeeded.
 
 - **Leave a class running, then come back to it.** With a class in play (at
   least one clue opened), leave the app and open it again so you land on Home.
