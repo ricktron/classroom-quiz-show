@@ -51,10 +51,16 @@ navigate and never to make a route work.
 The seed mutates `resolveGamepadBinding` (`src/input/gamepadMapping.ts`), which
 resolves a **pressed** control to a binding. Dropping the `buttonIndex` equality
 makes any press on that controller resolve to the first binding on it. All four
-Sony slots share one `controllerIndex`, so every press resolves to slot 1's
-binding. The team row label is rendered independently from the team's own
+Sony slots share one `controllerIndex`, and `setSlotTeam` keeps associations
+sorted by slot, so every press resolves to the binding of the LOWEST ASSIGNED
+slot — slot 1 in this configuration because the route assigns it, not slot 1
+unconditionally. The team row label is rendered independently from the team's own
 bindings (`controls.map(controlLabel).join(' · ')` in `GamepadInputHostPanel`)
 and is untouched.
+
+The class teams were named **Alpha** and **Bravo** through ordinary setup before
+the presses, so the "Active team" strings below are the names the operator typed;
+the team-row keys are the fixture's own team ids (`granite`, `nimbus`).
 
 Ordinary precondition established without state injection: receiver connected,
 RED pressed on each handset, host read back "4 buzzers responding", assignments
@@ -72,11 +78,20 @@ and forbade routing, which was inverted.
 
 ## S12 — the target must be the hero, and the second entry must be the demo
 
-The seed deletes `persistence.library[0]` — the entry IndexedDB `getAll()`
-returns first, i.e. the lowest `gameId` in key order. At this candidate that is
-`court-b-final-qualification`, which sorts before the demo's
-`imported-sample-game` and before a `New Game`'s `game-<epoch>`. This is not a
-function of import order.
+The seed deletes `persistence.library[0]`. `listSavedDefinitionRecords`
+(`src/persistence/savedDefinitions.ts`) sorts the returned list by **title**
+(`localeCompare`), tie-broken by `gameId`, so `library[0]` is the entry whose
+TITLE sorts first — not the oldest, not the most recent, and not a function of
+import order. "Court B Final Qualification" sorts before the demo's
+"Earth & Space Science Board" (`Import demo game` imports
+`CANONICAL_SAMPLE_CATEGORY_BOARD_FILE`, id `imported-sample-board`) and before a
+`New Game`'s "New Game", so the fixture is `library[0]` in every arrangement this
+action produces.
+
+These S12 measurements used a **two-entry** library. A third entry whose title
+sorts before "Court B Final Qualification" would be deleted instead on the seeded
+build; the chosen hero still survives, so the route still discriminates, but the
+"what was deleted instead" column would differ.
 
 Second entry added with `Import demo game`:
 
@@ -105,3 +120,8 @@ modified by this work.
 - Court B was not started; no build was served to a blinded tester.
 - This receipt records apparatus correction only. It is not eligibility and does
   not advance any product slice.
+- The S12 tables were measured with exactly two library entries (the Court B
+  fixture plus `Import demo game`) and with those two specific titles. They are
+  not a general claim about every library a tester could assemble.
+- The S8 "Active team" strings are the team names the operator typed during
+  ordinary setup (Alpha, Bravo), not fixture defaults.

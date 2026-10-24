@@ -233,10 +233,10 @@ workflows, not fixture-dependent routes — so they are listed here rather than 
   `Confirm delete game`.
 
   Say which title actually disappeared and which survived, then reload and check
-  again. The game you chose must be gone and must stay gone. If the title you
-  chose is still there — and the OTHER game is the one that vanished — that is
-  the finding; report both titles. A deletion that removes a game the teacher did
-  not choose is a defect even though the screen says the delete succeeded.
+  again. The game you chose must be gone and must stay gone. **If the title you
+  chose is still there, that is the finding** — say so, and also say which title
+  vanished instead, if any. A deletion that removes a game the teacher did not
+  choose is a defect even though the screen says the delete succeeded.
 
 - **Leave a class running, then come back to it.** With a class in play (at
   least one clue opened), leave the app and open it again so you land on Home.

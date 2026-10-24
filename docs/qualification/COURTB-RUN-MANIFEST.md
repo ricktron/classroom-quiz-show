@@ -108,8 +108,10 @@ Before a run starts, prove all five:
 4. the real host WebHID cannot silently substitute for the fake;
 5. **the receiver exposes at least three distinguishable handsets, at least two
    mappable to the SAME team and at least one to a DIFFERENT team through the
-   ordinary mapping UI, and the product has OBSERVED every handset** — the
-   mapping controls stay hidden until it has (see below).
+   ordinary mapping UI, and the product has OBSERVED every handset the route
+   needs.** The UI gate is weaker than this: the mapping controls appear once
+   **at least one** handset has responded, and all four selects then render. The
+   stricter requirement is this RUN's, not the product's (see below).
 
 Proof 5 is not pedantry. S8's route is "map two handsets to one team and a third
 to another, then press the differently-mapped handset on an armed clue", and its
@@ -123,7 +125,8 @@ before a build is served.
 **The mapping UI has an ordinary precondition.** In the compact Class Setup
 surface, "Which buzzer is which team" is rendered `hidden` until at least one
 handset has responded (`showTeamAssignments` turns on when the summary reaches
-`controllers-need-team-setup`); the full Host panel always renders it. Once one
+`controllers-need-team-setup`, or when Advanced diagnostics is open); the full
+Host panel always renders it. Once one
 slot responds, ALL four slot selects render, including slots that never
 responded — so "one responding" is enough for the UI but NOT enough for this
 run. The operator requirement is stricter on purpose: press RED on every handset
