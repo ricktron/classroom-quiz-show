@@ -58,7 +58,8 @@ tester wording could separate the builds.
 
 Figures below were measured at candidate
 `090e2dea1e156a913ef32092709e88643edc89a1`, where every active row was exercised
-clean-vs-seeded through visible teacher UI. Re-locate each site within its named
+clean-vs-seeded through visible teacher UI — **except S8 and S12, whose cells were
+re-measured at `d8c212ea`; see "Corrections at `d8c212ea…`" below.** Re-locate each site within its named
 file on the actual candidate before a run; a seed that no longer compiles, or
 that compiles but goes green, is `INVALID` and must be re-expressed or replaced
 before any build is served.
@@ -72,12 +73,92 @@ before any build is served.
 | S5 | `src/state/events.ts` + `src/state/reducer.ts` | Final Undo buried by response-window expiry | YES — 5 integrity + browser | clean: Undo reads "Undo response timer start". seeded: Undo reads "Undo response **time up**" | **YES** | CBJ-09, after the Final window runs out | none | must be read **before settling a team**; settlement pushes a new Undo target on top |
 | S6 | `src/summary/deriveSessionSummary.ts` | tied completion summarized as a unique winner | YES — 1 unit failure | clean summary: "Completion context: **Final accepted tied finish**". seeded: "Completion context: **Final unique-winner completion**" while the standings directly below list BOTH teams "Tied for 1st" on equal scores. Standings are byte-identical on both builds | **YES** — see caveat | CBJ-06 tie **plus** the brief's "On a tie, quote the summary verbatim" step | none | — |
 | S7 | `src/state/reducer.ts` | reset leaks the prior class's score ledger | YES — 6 unit + 7 browser | clean: after reset the ledger reads "**No score change yet.**". seeded: "**Last score change: Team Nimbus +100 (full credit)**" — the prior class's award survives, shown under the default team name | **YES** | extra: a second class period, then reload | none | observation (A) "looks reset" passes on BOTH builds; only (B) the stale ledger line discriminates. They must be asked separately |
-| S8 | `src/input/gamepadMapping.ts` | team row names only the first mapped Buzzer | YES — 1 unit + 2 browser | clean Alpha row: "**Buzzer 1 · Red · Buzzer 3 · Red**". seeded: "**Buzzer 1 · Red**" only, with the same saved mapping and the same "Receiver connected" state | **YES** | extra: more than one buzzer on a team | **simulated receiver (operator supplies) — must expose ≥3 distinguishable handsets with ≥2 mappable to ONE team; a single-handset receiver makes this seed undiscriminable while still passing the other pre-run proofs** | **label-only**: buzz routing is NOT affected, so pressing handsets must not be used as the discriminator |
+| S8 | `src/input/gamepadMapping.ts` | a pressed handset resolves to the FIRST binding on its controller, so a buzz is credited to the wrong team | YES — 1 unit + 2 browser (not re-counted; the seed is unchanged, only its description) | with Buzzer 1 + Buzzer 3 on one team and Buzzer 2 on another, pressing **Buzzer 2** on an armed clue: with the class teams named Alpha and Bravo through ordinary setup — clean "**Active team Bravo**" (the team Buzzer 2 was mapped to). seeded "**Active team Alpha**" (the lowest assigned slot's team), with the same saved mapping and the same "Receiver connected" state | **YES** | extra: more than one buzzer on a team | **simulated receiver (operator supplies) — must expose ≥3 distinguishable handsets with ≥2 mappable to ONE team and ≥1 mappable to a DIFFERENT team; without the differently-mapped handset there is nothing to misroute** | **routing, not label**: the seed mutates `resolveGamepadBinding` (press resolution), so the team ROW LABEL is byte-identical on both builds and must NOT be used as the discriminator. The handset pressed must be one mapped to a team OTHER than the first buzzer's, or both builds name the same team |
 | S9 | `src/state/events.ts` + `src/state/reducer.ts` | board response-timer expiry becomes reversible | YES — 11 unit + 2 browser | clean: Undo reads "Undo timer start". seeded: Undo reads "Undo **time up**". Visible timer state identical on both ("Time up", "Not armed") | **YES** | extra: let a BOARD clue's response timer run out | none | the **label** must be READ, not the control pressed: Undo is latest-only, so pressing it steps past the expiry and then shows the real action on both builds. Must be read before judging the response or any later action. Keep distinct from S5 (Final window) |
-| S12 | `src/routes/HomeRoute.ts`/`HomeRoute.tsx` | Library Delete removes the first/most-recent game, not the chosen one | YES — 1 unit + 3 browser | clean: the chosen non-hero title disappears, the other remains, durable across reload. seeded: the **hero/most-recent** game disappears and the chosen target **remains** | **YES** | extra: delete one of two saved games, chosen by title | none | the target must NOT be the hero/most-recent card — deleting the hero makes both builds behave identically |
+| S12 | `src/routes/HomeRoute.tsx` | Library Delete removes the library list's first entry, not the chosen one | YES — 1 unit + 3 browser (not re-counted; the seed is unchanged) | second entry added with `Import demo game`, then deleting the **hero / big card at the top** (the demo): clean — the chosen hero title disappears and "Court B Final Qualification" remains, durable across reload. seeded — the chosen hero title **survives** and "Court B Final Qualification" is deleted instead, still so after reload | **YES** | extra: delete one of two saved games, chosen by title | none | the seed removes `persistence.library[0]`. `listSavedDefinitionRecords` sorts the list by **title** (`localeCompare`), tie-broken by `gameId` — so `library[0]` is the entry whose TITLE sorts first, not the oldest, not the most recent, and not a function of import order. With the two titles this action produces, "Court B Final Qualification" sorts before "Earth & Space Science Board". So the chosen target must not be the entry whose title sorts first, and the hero is the teacher-visible way to name one. Two ways to break it: choosing a non-hero card (the teacher then picks the title-first entry itself), or using `New Game` as the second entry (a round-less stub is never `playable`, so the hero stays "Court B Final Qualification" and both builds delete it) |
 | M26 | `src/input/keyboardAdapter.ts` | every fresh mapped keyboard buzz press is ignored | YES — 9 unit failures | clean: one fresh `1` → "Active team: **Alpha**", "Alpha buzzed in.". seeded: same press → "**Nobody has buzzed yet**" | **YES** | extra: buzz in on an armed clue with the keyboard | none | mutant also rejects auto-repeat (`key-held`), so holding or re-pressing cannot accidentally succeed |
 | M04 | `src/library/gameLibrary.ts` | authoring Save reports success but writes nothing durable | YES — lower layer 2 + browser 19 | clean: "Saved", and Home's entry heading carries **the tester's own title**; survives reload. seeded: "Saved", the chosen title occurs **0×**, and the entry heading still reads "**New Game**" | **YES** | extra: make a new game, give it a distinctive title, save it | none | checking that "a Library row exists" is **vacuous** — a stub row exists on both builds. The check is which title the row carries |
 | M01 | `src/routes/HomeRoute.tsx` | Home `Resume class` stays enabled but is inert | YES — 2 unit failures | clean: `Resume class` → `#/host`, class restored. seeded: stays at app root, `h1` still "Home"; a second press changes nothing | **YES** | extra: leave a class running, then come back to it | none | **no timing window** — the unfinished-class banner is persistent and the tester confirms it before acting |
+
+## Corrections at `d8c212eaabc5eeb0f95b49743bb4cc57dd449485`
+
+Two rows above were re-exercised clean-vs-seeded on this candidate before a run
+and were found to name the WRONG teacher-visible surface. Both are
+tester-wording defects in the apparatus. Neither seed was changed, and no
+product behaviour changed: in each case the mutation is live and the instruction
+pointed a blinded teacher at a surface the mutation cannot affect.
+
+**S8 — the discriminator is routing, not the row label.** The seed mutates
+`resolveGamepadBinding`, which resolves a PRESSED control to a binding; dropping
+the `buttonIndex` equality makes any press on that controller resolve to the
+FIRST binding on it. The team ROW LABEL is rendered from the team's own bindings
+(`controls.map(controlLabel).join(' · ')` in `GamepadInputHostPanel`) and is
+therefore untouched. Measured with Buzzer 1 + Buzzer 3 on one team and Buzzer 2
+on another, the saved mapping identical on both builds:
+
+| observation | clean | seeded | |
+| --- | --- | --- | --- |
+| team row label | `Buzzer 1 · Red · Buzzer 3 · Red` | `Buzzer 1 · Red · Buzzer 3 · Red` | identical — **not** a discriminator |
+| press Buzzer 2 on an armed clue | `Active team Bravo` | `Active team Alpha` | **discriminates** (the class teams were named Alpha / Bravo by the operator during ordinary setup, so the team rows render those session names rather than the fixture's authored ones) |
+
+The previous text named the row label as the discriminator and explicitly
+forbade buzz routing. That was exactly inverted, and a Court B run started on it
+would have returned S8 "healthy" from every tester.
+
+**S12 — the target must be the hero, and the second entry must be the demo.**
+The seed deletes `persistence.library[0]`. `listSavedDefinitionRecords`
+(`src/persistence/savedDefinitions.ts`) sorts the list it returns by **title**
+using `localeCompare`, with `gameId` only as a tie-break, so `library[0]` is the
+entry whose TITLE sorts first. It is **not** the oldest entry, **not** the most
+recent, and **not** a function of import order. Two earlier revisions of this
+section got the cause wrong — first import order, then `gameId` key order — while
+still predicting the right result for this particular pair; the cause is recorded
+here so a future candidate, a renamed fixture or a differently titled second
+entry is not re-derived backwards.
+
+With the two titles this action produces, "Court B Final Qualification" sorts
+before "Earth & Space Science Board", so the fixture is `library[0]`. The durable
+invariant is: *the chosen target must not be the entry whose title sorts first*,
+and the hero is the teacher-visible way to name one.
+
+Scope of the measurement below: a **two-entry** library (the fixture plus
+`Import demo game`). The brief's earlier "make a new game and save it" action can
+leave a third entry carrying a title the tester invented; if that title sorts
+before "Court B Final Qualification" the seeded build deletes the tester's own
+game instead. The chosen hero still survives, so the route still discriminates,
+but the "which game vanished" column below assumes two entries.
+
+Measured, second entry added with `Import demo game`:
+
+| chosen target | clean | seeded | |
+| --- | --- | --- | --- |
+| non-hero (`Court B Final Qualification`) | chosen deleted | chosen deleted | identical — **not** a discriminator |
+| hero (`Earth & Space Science Board`) | chosen deleted, other remains, stays gone after reload | chosen **survives**, the other game is deleted instead, still so after reload | **discriminates** |
+
+Second entry added with `New Game` instead (measured, and the reason the brief
+now forbids it for this action):
+
+| chosen target | clean | seeded | |
+| --- | --- | --- | --- |
+| hero, after `New Game` | chosen deleted | chosen deleted | identical — **not** a discriminator |
+
+A `New Game` is a round-less stub, so it is never `playable`, and the hero is
+the first *playable* entry — which leaves `Court B Final Qualification` as the
+big card at the top, i.e. the one entry the seed also removes. The brief
+therefore mandates `Import demo game` for this action and asks the tester to
+confirm the big card is the game they just added before deleting anything.
+
+The previous text instructed the tester to avoid the hero and carried a stop
+condition asserting that deleting the hero "makes both builds behave
+identically". Both were inverted. Tester-facing wording describes the visible
+hero / big card and its exact title; it never refers to storage position.
+
+Method note: these were measured against frozen served builds of this candidate
+through visible and accessible controls only, with the operator-supplied
+simulated receiver for S8. `data-testid` was used solely to EXTRACT an
+already-visible string, never to navigate and never to make a route work. The
+run, the external tooling hashes and the full observed strings are recorded in
+[`../receipts/2026-10-23-cqs-court-b-seed-route-correction.md`](../receipts/2026-10-23-cqs-court-b-seed-route-correction.md).
 
 ### Retired as BLACK-BOX-UNSUITABLE (history)
 
@@ -142,7 +223,8 @@ no fifth expression was created.
 ### The simulated receiver (S8) — a RUN precondition
 
 **S8 is observable only through the simulated receiver.** Its route is "more
-than one buzzer on a team". S10 shared that dependency and has since been
+than one buzzer on a team", and what it measures is which team a PRESS is
+credited to — not how the team rows are labelled. S10 shared that dependency and has since been
 retired as black-box-unsuitable, so S8 is now the sole seed dependency; the
 `CBJ-10` / `CBJ-11` journeys asked of every tester still need the receiver as
 well. The brief tells a receiver-less tester to record these as "not supplied"

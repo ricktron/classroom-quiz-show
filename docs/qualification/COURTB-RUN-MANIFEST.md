@@ -106,16 +106,37 @@ Before a run starts, prove all five:
    ordinary teacher UI (`Connect buzzers` → "Receiver connected — waiting for
    buzzers.");
 4. the real host WebHID cannot silently substitute for the fake;
-5. **the receiver exposes at least three distinguishable handsets, and at least
-   two of them can be mapped to the SAME team through the ordinary mapping UI.**
+5. **the receiver exposes at least three distinguishable handsets, at least two
+   mappable to the SAME team and at least one to a DIFFERENT team through the
+   ordinary mapping UI, and the product has OBSERVED every handset the route
+   needs.** The UI gate is weaker than this: the mapping controls appear once
+   **at least one** handset has responded, and all four selects then render. The
+   stricter requirement is this RUN's, not the product's (see below).
 
-Proof 5 is not pedantry. S8's route is "map several handsets to the same team,
-then read that team's row", and its discriminator is whether the row names every
-mapped buzzer or only the first. A receiver exposing ONE handset satisfies proofs
-1–4, lets the run start legitimately, and then presents a tester with a row that
-truthfully names its single buzzer on BOTH the clean and the seeded build — and
-because a receiver *was* supplied, the "not supplied" disposition does not apply,
-so nothing flags the row. Prove the handsets before a build is served.
+Proof 5 is not pedantry. S8's route is "map two handsets to one team and a third
+to another, then press the differently-mapped handset on an armed clue", and its
+discriminator is **which team the host names as active**. A receiver exposing ONE
+handset satisfies proofs 1–4, lets the run start legitimately, and then presents a
+tester with a single buzzer that is trivially credited to its own team on BOTH the
+clean and the seeded build — and because a receiver *was* supplied, the "not
+supplied" disposition does not apply, so nothing flags the row. Prove the handsets
+before a build is served.
+
+**The mapping UI has an ordinary precondition.** In the compact Class Setup
+surface, "Which buzzer is which team" is rendered `hidden` until at least one
+handset has responded (`showTeamAssignments` turns on when the summary reaches
+`controllers-need-team-setup`, or when Advanced diagnostics is open); the full
+Host panel always renders it. Once one
+slot responds, ALL four slot selects render, including slots that never
+responded — so "one responding" is enough for the UI but NOT enough for this
+run. The operator requirement is stricter on purpose: press RED on every handset
+the route needs, and read the host's count back ("3 buzzers responding" with
+three, "4 buzzers responding" with four) before assigning. An operator whose
+harness assigns slots before any handset has responded will find the selects
+present, enabled and nevertheless not interactable — which is an apparatus fault,
+not a product defect, and not evidence about S8. Note also that once the mapping
+saves, the summary becomes `sony-buzz-ready` and the block hides again in Class
+Setup, so re-reading the assignments there needs Advanced diagnostics.
 
 If the simulator is **external run tooling** rather than a repository file, the
 run receipt must record its exact procedure, its script version or hash, the
@@ -198,9 +219,9 @@ qualify the journey apparatus itself — do not conflate the two.
 | S5 | Final Undo buried by response-window expiry | Undo integrity |
 | S6 | tied explicit end names the first leader Winner | completion |
 | S7 | Reset this class session leaks the prior class's ledger | session boundary |
-| S8 | team row names only the first mapped Buzzer | buzzer truth |
+| S8 | a pressed handset is credited to the first buzzer's team, not its own | buzzer truth |
 | S9 | board response-timer expiry becomes reversible | Undo integrity |
-| S12 | Library Delete removes the first game, not the chosen one | data safety |
+| S12 | Library Delete removes the first entry of the library list (title-sorted), not the chosen one | data safety |
 | M26 | every fresh mapped keyboard buzz press is ignored | local input |
 | M04 | authoring Save reports success but the authored title is not durably written | authoring durability |
 | M01 | Home `Resume class` stays enabled but is inert | resume |
