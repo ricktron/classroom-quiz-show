@@ -8,7 +8,7 @@
  * Gate: CQS_UI_COURT_CAPTURE=1, output root CQS_UI_COURT_OUT.
  */
 
-import { expect, type Browser, type BrowserContext, type Page } from '@playwright/test'
+import { expect, test, type Browser, type BrowserContext, type Page } from '@playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { prepareDeterministicCapture } from './visualHistoryCapture'
@@ -182,15 +182,17 @@ export async function stepValue<T>(
 
 export async function newPage(
   browser: Browser,
-  info: { project: { use: { baseURL?: string } } },
   vp: Vp,
 ): Promise<{ context: BrowserContext; page: Page; close: () => Promise<void> }> {
   const context = await browser.newContext({
     viewport: { width: vp.width, height: vp.height },
-    baseURL: info.project.use.baseURL,
+    baseURL: test.info().project.use.baseURL,
   })
   const page = await context.newPage()
-  return { context, page, close: async () => void (await context.close().catch(() => undefined)) }
+  const close = async () => {
+    await context.close().catch(() => undefined)
+  }
+  return { context, page, close }
 }
 
 /** Open Home's import panel whether or not the control toggles it. */

@@ -48,7 +48,19 @@ import {
 test.describe.configure({ mode: 'serial' })
 
 test.describe('UI Court rendered baseline', () => {
-  test.skip(!CAPTURE_ON, 'Set CQS_UI_COURT_CAPTURE=1 to write PNGs')
+  /*
+   * These specs are evidence instruments, not functional tests: they capture
+   * the product and measure it, and they are gated so an ordinary
+   * `npm run test:e2e` neither runs nor writes them. The gate is stated once
+   * here instead of being repeated in every test.
+   *
+   * The project gate exists because a capture should happen ONCE, not once per
+   * Playwright project — the viewport of each shot is set explicitly, so
+   * running the same journey under three projects would triple the cost and
+   * produce three identical sets of files.
+   */
+  test.skip(!CAPTURE_ON, 'Set CQS_UI_COURT_CAPTURE=1 to run the capture instruments')
+  test.skip(() => test.info().project.name !== 'projector-720p', 'capture runs once, from one driver project')
   test.skip(!OUT_ROOT, 'Set CQS_UI_COURT_OUT to an absolute output directory')
 
   /**
@@ -61,11 +73,10 @@ test.describe('UI Court rendered baseline', () => {
   // ──────────────────────────────────────────────────────────────────────────
   // T1 — HOME / LIBRARY / AUTHORING (teacher laptop)
   // ──────────────────────────────────────────────────────────────────────────
-  test('T1 Home, Library, Authoring', async ({ browser }, info) => {
-    test.skip(info.project.name !== 'projector-720p', 'driver project only')
+  test('T1 Home, Library, Authoring', async ({ browser }) => {
     test.setTimeout(300_000)
     const vp = VP.laptop
-    const { page, close } = await newPage(browser, info, vp)
+    const { page, close } = await newPage(browser, vp)
     try {
       await page.goto('./')
       await shot(page, {
@@ -327,11 +338,10 @@ test.describe('UI Court rendered baseline', () => {
   // ──────────────────────────────────────────────────────────────────────────
   // T2 — RESUME / RECOVERY
   // ──────────────────────────────────────────────────────────────────────────
-  test('T2 Home resume and recovery', async ({ browser }, info) => {
-    test.skip(info.project.name !== 'projector-720p', 'driver project only')
+  test('T2 Home resume and recovery', async ({ browser }) => {
     test.setTimeout(240_000)
     const vp = VP.laptop
-    const { page, close } = await newPage(browser, info, vp)
+    const { page, close } = await newPage(browser, vp)
     try {
       await step('demo-and-play', 'recovery', async () => {
         await importDemoAndPlay(page)
@@ -400,11 +410,10 @@ test.describe('UI Court rendered baseline', () => {
   // T3 — CLASS SETUP at laptop and constrained projector
   // ──────────────────────────────────────────────────────────────────────────
   for (const vpKey of ['laptop', 'proj720'] as const) {
-    test(`T3 Class Setup (${VP[vpKey].label})`, async ({ browser }, info) => {
-      test.skip(info.project.name !== 'projector-720p', 'driver project only')
+    test(`T3 Class Setup (${VP[vpKey].label})`, async ({ browser }) => {
       test.setTimeout(300_000)
       const vp = VP[vpKey]
-      const { page, close } = await newPage(browser, info, vp)
+      const { page, close } = await newPage(browser, vp)
       try {
         const entered = await step(`setup-enter-${vpKey}`, 'setup', async () => {
           await importMenusJsonAndPlay(
@@ -578,15 +587,12 @@ test.describe('UI Court rendered baseline', () => {
   // T4 — HOST + DISPLAY gameplay arc
   // ──────────────────────────────────────────────────────────────────────────
   for (const displayKey of ['proj1080', 'proj720'] as const) {
-    test(`T4 Host and Display gameplay (display ${VP[displayKey].label})`, async ({
-      browser,
-    }, info) => {
-      test.skip(info.project.name !== 'projector-720p', 'driver project only')
+    test(`T4 Host and Display gameplay (display ${VP[displayKey].label})`, async ({ browser }) => {
       test.setTimeout(900_000)
       const hostVp = VP.laptop
       const dispVp = VP[displayKey]
       const suffix = displayKey
-      const { context, page: host, close } = await newPage(browser, info, hostVp)
+      const { context, page: host, close } = await newPage(browser, hostVp)
       /** Pages this run owns and must release, however the journey ends. */
       const owned: Page[] = []
       try {
@@ -759,7 +765,10 @@ test.describe('UI Court rendered baseline', () => {
         const shortest = await selectShortestDuration(host)
         if (shortest !== null) {
           await host.getByTestId('rth-start').click().catch(() => undefined)
-          await host.waitForTimeout((shortest + 2) * 1000)
+          // Synchronise on the expiry the product reports, not on the clock.
+          await expect(host.getByTestId('rth-summary')).toContainText(/time up|expired/i, {
+            timeout: (shortest + 10) * 1000,
+          })
           await hostShot('timer-expired', `P6 — timer expired after ${shortest}s`)
           await hostFull('timer-expired', `P6 — timer expired after ${shortest}s`)
           await dispShot('timer-expired', `P6 — timer expired on the projector (${shortest}s)`)
@@ -952,10 +961,9 @@ test.describe('UI Court rendered baseline', () => {
   // ──────────────────────────────────────────────────────────────────────────
   // T5 — TEAM-COUNT AND LONG-CONTENT STRESS
   // ──────────────────────────────────────────────────────────────────────────
-  test('T5 team-count and long-content stress', async ({ browser }, info) => {
-    test.skip(info.project.name !== 'projector-720p', 'driver project only')
+  test('T5 team-count and long-content stress', async ({ browser }) => {
     test.setTimeout(600_000)
-    const { context, page: host, close } = await newPage(browser, info, VP.laptop)
+    const { context, page: host, close } = await newPage(browser, VP.laptop)
     /** Pages this run owns and must release, however the journey ends. */
     const owned: Page[] = []
     try {
@@ -1024,7 +1032,7 @@ test.describe('UI Court rendered baseline', () => {
       // which is a real product behaviour but not the state under test here.
       const longCtx = await browser.newContext({
         viewport: VP.laptop,
-        baseURL: info.project.use.baseURL,
+        baseURL: test.info().project.use.baseURL,
       })
       const long = await longCtx.newPage()
       const longDisp = await stepValue('long-start', 'stress', async () => {
@@ -1086,11 +1094,10 @@ test.describe('UI Court rendered baseline', () => {
   // ──────────────────────────────────────────────────────────────────────────
   // T6 — SYSTEM / EDGE SURFACES
   // ──────────────────────────────────────────────────────────────────────────
-  test('T6 System and edge surfaces', async ({ browser }, info) => {
-    test.skip(info.project.name !== 'projector-720p', 'driver project only')
+  test('T6 System and edge surfaces', async ({ browser }) => {
     test.setTimeout(300_000)
     const vp = VP.laptop
-    const { page, close } = await newPage(browser, info, vp)
+    const { page, close } = await newPage(browser, vp)
     try {
       await page.goto('#/display')
       for (const v of [vp, VP.proj720, VP.proj1080] as const) {

@@ -219,7 +219,13 @@ const reports: Record<string, Report> = {}
 async function probe(page: Page, key: string, vp: Vp) {
   await page.setViewportSize({ width: vp.width, height: vp.height })
   await prepareDeterministicCapture(page)
-  await page.waitForTimeout(200)
+  // Wait for the resize to be painted rather than for a fixed duration: every
+  // measurement below is viewport-dependent, so reading before layout settles
+  // would record the previous viewport's numbers.
+  await page.waitForFunction(
+    ([w, h]) => window.innerWidth === w && window.innerHeight === h,
+    [vp.width, vp.height] as const,
+  )
   const data = (await page.evaluate(PROBE)) as Report
   reports[`${key}@${vp.label}`] = { ...data, url: page.url(), viewport: vp.label }
 }
@@ -247,17 +253,28 @@ function writeReports() {
 test.describe.configure({ mode: 'serial' })
 
 test.describe('UI Court metrics probe', () => {
-  test.skip(!CAPTURE_ON, 'Set CQS_UI_COURT_CAPTURE=1')
-  test.skip(!OUT_ROOT, 'Set CQS_UI_COURT_OUT')
+  /*
+   * These specs are evidence instruments, not functional tests: they capture
+   * the product and measure it, and they are gated so an ordinary
+   * `npm run test:e2e` neither runs nor writes them. The gate is stated once
+   * here instead of being repeated in every test.
+   *
+   * The project gate exists because a capture should happen ONCE, not once per
+   * Playwright project — the viewport of each shot is set explicitly, so
+   * running the same journey under three projects would triple the cost and
+   * produce three identical sets of files.
+   */
+  test.skip(!CAPTURE_ON, 'Set CQS_UI_COURT_CAPTURE=1 to run the capture instruments')
+  test.skip(() => test.info().project.name !== 'projector-720p', 'capture runs once, from one driver project')
+  test.skip(!OUT_ROOT, 'Set CQS_UI_COURT_OUT to an absolute output directory')
 
   test.afterAll(() => writeReports())
 
-  test('probe Home, Setup, Host and Display', async ({ browser }, info) => {
-    test.skip(info.project.name !== 'projector-720p', 'driver project only')
+  test('probe Home, Setup, Host and Display', async ({ browser }) => {
     test.setTimeout(600_000)
     const context = await (browser as Browser).newContext({
       viewport: VP.laptop,
-      baseURL: info.project.use.baseURL,
+      baseURL: test.info().project.use.baseURL,
     })
     const host = await context.newPage()
     try {
@@ -350,12 +367,11 @@ test.describe('UI Court metrics probe', () => {
    * on precisely because they need it. The teacher reaches the theme through
    * More -> Theme, so this drives that ordinary route.
    */
-  test('probe Host and Setup in high contrast', async ({ browser }, info) => {
-    test.skip(info.project.name !== 'projector-720p', 'driver project only')
+  test('probe Host and Setup in high contrast', async ({ browser }) => {
     test.setTimeout(420_000)
     const context = await (browser as Browser).newContext({
       viewport: VP.laptop,
-      baseURL: info.project.use.baseURL,
+      baseURL: test.info().project.use.baseURL,
     })
     const host = await context.newPage()
     try {

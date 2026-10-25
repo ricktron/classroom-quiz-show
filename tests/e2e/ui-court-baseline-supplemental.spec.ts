@@ -143,18 +143,29 @@ function worstCaseBoardGame(): string {
 test.describe.configure({ mode: 'serial' })
 
 test.describe('UI Court rendered baseline — supplemental', () => {
-  test.skip(!CAPTURE_ON, 'Set CQS_UI_COURT_CAPTURE=1 to write PNGs')
+  /*
+   * These specs are evidence instruments, not functional tests: they capture
+   * the product and measure it, and they are gated so an ordinary
+   * `npm run test:e2e` neither runs nor writes them. The gate is stated once
+   * here instead of being repeated in every test.
+   *
+   * The project gate exists because a capture should happen ONCE, not once per
+   * Playwright project — the viewport of each shot is set explicitly, so
+   * running the same journey under three projects would triple the cost and
+   * produce three identical sets of files.
+   */
+  test.skip(!CAPTURE_ON, 'Set CQS_UI_COURT_CAPTURE=1 to run the capture instruments')
+  test.skip(() => test.info().project.name !== 'projector-720p', 'capture runs once, from one driver project')
   test.skip(!OUT_ROOT, 'Set CQS_UI_COURT_OUT to an absolute output directory')
   test.use({ actionTimeout: 8_000, navigationTimeout: 30_000 })
 
   // ──────────────────────────────────────────────────────────────────────────
   // S1 — AUTHORING WITH REAL CONTENT
   // ──────────────────────────────────────────────────────────────────────────
-  test('S1 Authoring a game that already has content', async ({ browser }, info) => {
-    test.skip(info.project.name !== 'projector-720p', 'driver project only')
+  test('S1 Authoring a game that already has content', async ({ browser }) => {
     test.setTimeout(300_000)
     const vp = VP.laptop
-    const { page, close } = await newPage(browser, info, vp)
+    const { page, close } = await newPage(browser, vp)
     try {
       await step('author-import', 'authoring', async () => {
         await page.goto('./')
@@ -251,10 +262,9 @@ test.describe('UI Court rendered baseline — supplemental', () => {
   // ──────────────────────────────────────────────────────────────────────────
   // S2 — MEDIA CLUE on Host and projector
   // ──────────────────────────────────────────────────────────────────────────
-  test('S2 Media clue', async ({ browser }, info) => {
-    test.skip(info.project.name !== 'projector-720p', 'driver project only')
+  test('S2 Media clue', async ({ browser }) => {
     test.setTimeout(300_000)
-    const { context, page: host, close } = await newPage(browser, info, VP.laptop)
+    const { context, page: host, close } = await newPage(browser, VP.laptop)
     const owned: Page[] = []
     try {
       const disp = await stepValue('media-start', 'media', async () => {
@@ -299,11 +309,10 @@ test.describe('UI Court rendered baseline — supplemental', () => {
   // ──────────────────────────────────────────────────────────────────────────
   // S3 — HOST ADVANCED, AUDIO, EMERGENCY MUTE, ESCAPE AND RESET
   // ──────────────────────────────────────────────────────────────────────────
-  test('S3 Host advanced, audio, escape and reset', async ({ browser }, info) => {
-    test.skip(info.project.name !== 'projector-720p', 'driver project only')
+  test('S3 Host advanced, audio, escape and reset', async ({ browser }) => {
     test.setTimeout(420_000)
     const vp = VP.laptop
-    const { context, page: host, close } = await newPage(browser, info, vp)
+    const { context, page: host, close } = await newPage(browser, vp)
     const owned: Page[] = []
     try {
       const ok = await stepValue('adv-start', 'system', async () => {
@@ -494,11 +503,10 @@ test.describe('UI Court rendered baseline — supplemental', () => {
   // ──────────────────────────────────────────────────────────────────────────
   // S4 — SPREADSHEET AUTHORING ROUTE
   // ──────────────────────────────────────────────────────────────────────────
-  test('S4 Spreadsheet authoring route', async ({ browser }, info) => {
-    test.skip(info.project.name !== 'projector-720p', 'driver project only')
+  test('S4 Spreadsheet authoring route', async ({ browser }) => {
     test.setTimeout(180_000)
     const vp = VP.laptop
-    const { page, close } = await newPage(browser, info, vp)
+    const { page, close } = await newPage(browser, vp)
     try {
       await step('sheet-open', 'authoring', async () => {
         await page.goto('./')
@@ -519,6 +527,9 @@ test.describe('UI Court rendered baseline — supplemental', () => {
         vp,
         scrollTestId: 'home-import-templates',
       })
+      // The one assertion this capture makes: the spreadsheet route has to
+      // have actually opened, or the two shots above are of the wrong screen.
+      await expect(page.getByTestId('home-import-templates')).toBeVisible()
     } finally {
       flushManifest()
       await close()
@@ -528,11 +539,10 @@ test.describe('UI Court rendered baseline — supplemental', () => {
   // ──────────────────────────────────────────────────────────────────────────
   // S5 — COMPLETION, SUMMARY AND THE COMPLETED-SUMMARY LEDGER
   // ──────────────────────────────────────────────────────────────────────────
-  test('S5 Completion, summary and ledger', async ({ browser }, info) => {
-    test.skip(info.project.name !== 'projector-720p', 'driver project only')
+  test('S5 Completion, summary and ledger', async ({ browser }) => {
     test.setTimeout(420_000)
     const vp = VP.laptop
-    const { context, page: host, close } = await newPage(browser, info, vp)
+    const { context, page: host, close } = await newPage(browser, vp)
     const owned: Page[] = []
     try {
       const disp = await stepValue('sum-start', 'summary', async () => {
@@ -669,10 +679,9 @@ test.describe('UI Court rendered baseline — supplemental', () => {
   // ──────────────────────────────────────────────────────────────────────────
   // S6 — WORST-CASE DISPLAY FIXTURE (six categories x five values, eight teams)
   // ──────────────────────────────────────────────────────────────────────────
-  test('S6 worst-case board and team count on the projector', async ({ browser }, info) => {
-    test.skip(info.project.name !== 'projector-720p', 'driver project only')
+  test('S6 worst-case board and team count on the projector', async ({ browser }) => {
     test.setTimeout(420_000)
-    const { context, page: host, close } = await newPage(browser, info, VP.laptop)
+    const { context, page: host, close } = await newPage(browser, VP.laptop)
     const owned: Page[] = []
     try {
       const disp = await stepValue('worst-start', 'worstcase', async () => {
