@@ -20,15 +20,7 @@ import { prepareDeterministicCapture } from './helpers/visualHistoryCapture'
 import { fillAllTeamNames } from './helpers/menusClassSetup'
 import { advanceToNextRound, openAudienceFromHost } from './helpers/menusQ3'
 
-const CAPTURE_ON = process.env.CQS_UI_COURT_CAPTURE === '1'
-const OUT_ROOT = process.env.CQS_UI_COURT_OUT ?? ''
-
-type Vp = { readonly width: number; readonly height: number; readonly label: string }
-const VP = {
-  laptop: { width: 1366, height: 768, label: 'laptop-1366x768' },
-  proj1080: { width: 1920, height: 1080, label: 'projector-1920x1080' },
-  proj720: { width: 1280, height: 720, label: 'projector-1280x720' },
-} as const satisfies Record<string, Vp>
+import { CAPTURE_ON, OUT_ROOT, VP, uiCourtGame, type Vp } from './helpers/uiCourtCapture'
 
 /**
  * Browser-side probe. Runs in the page so every value is the painted truth:
@@ -252,48 +244,6 @@ function writeReports() {
   }
 }
 
-function uiCourtGame(id: string, title: string, teamCount = 2): string {
-  const accents = ['crimson', 'azure', 'emerald', 'amber', 'violet', 'teal', 'rose', 'slate']
-  const tile = (c: string, v: number) => ({
-    id: `${c}-${v}`,
-    value: v,
-    prompt: `${c} ${v}: what is H2O?`,
-    answer: 'Water',
-    notes: 'Host-only note',
-  })
-  return JSON.stringify({
-    format: 'classroom-quiz-show/game',
-    schemaVersion: 1,
-    id,
-    title,
-    timer: { responseSeconds: 45 },
-    teams: Array.from({ length: teamCount }, (_, i) => ({
-      id: `team${i + 1}`,
-      name: `Authored Team ${i + 1}`,
-      accent: accents[i % accents.length],
-    })),
-    rounds: [
-      {
-        id: 'board-round',
-        type: 'category-board',
-        title: 'Board',
-        config: {
-          categories: [
-            { id: 'science', title: 'Science', tiles: [tile('science', 100), tile('science', 200)] },
-            { id: 'history', title: 'History', tiles: [tile('history', 100), tile('history', 200)] },
-          ],
-        },
-      },
-      {
-        id: 'final-round',
-        type: 'final-wager',
-        title: 'Final Wager',
-        config: { prompt: 'Final: what moves mantle heat?', answer: 'Mantle convection' },
-      },
-    ],
-  })
-}
-
 test.describe.configure({ mode: 'serial' })
 
 test.describe('UI Court metrics probe', () => {
@@ -319,7 +269,7 @@ test.describe('UI Court metrics probe', () => {
 
       // Home, populated.
       await host.getByTestId('home-import-game').click()
-      await host.locator('#home-import-json').fill(uiCourtGame('metrics-1', 'Metrics Game'))
+      await host.locator('#home-import-json').fill(uiCourtGame({ id: 'metrics-1', title: 'Metrics Game' }))
       await host.getByTestId('home-import-json').click()
       await expect(host.getByTestId('import-quality-report')).toBeVisible()
       await probe(host, 'home-populated', VP.laptop)
@@ -411,7 +361,7 @@ test.describe('UI Court metrics probe', () => {
     try {
       await host.goto('./')
       await host.getByTestId('home-import-game').click()
-      await host.locator('#home-import-json').fill(uiCourtGame('metrics-hc', 'High Contrast Game'))
+      await host.locator('#home-import-json').fill(uiCourtGame({ id: 'metrics-hc', title: 'High Contrast Game' }))
       await host.getByTestId('home-import-json').click()
       await expect(host.getByTestId('import-quality-report')).toBeVisible({ timeout: 15_000 })
       await host.getByRole('button', { name: /^play$/i }).first().click()
