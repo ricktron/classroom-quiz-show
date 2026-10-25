@@ -200,7 +200,15 @@ function main() {
     process.exit(2)
   }
 
-  if (!args.rollback && args.sha && args.sha !== headSha) {
+  // Current-HEAD release: omit --sha or pass HEAD. Intentional rollback: --rollback.
+  // Lifecycle ticket may bind --sha + --deployment-id for an approved main deploy
+  // while this checkout is on a different feature branch — that is authorized.
+  if (
+    !args.rollback &&
+    args.sha &&
+    args.sha !== headSha &&
+    !args.deploymentId
+  ) {
     console.error(
       JSON.stringify(
         {
@@ -208,7 +216,7 @@ function main() {
           error: 'sha_not_current_head_without_rollback',
           headSha,
           authorizedSha: args.sha,
-          hint: 'For current-HEAD release, omit --sha or pass HEAD. For intentional rollback registration, add --rollback.',
+          hint: 'For current-HEAD release, omit --sha or pass HEAD. For intentional rollback, add --rollback. For lifecycle tickets, pass --deployment-id with --sha.',
         },
         null,
         2,
