@@ -50,7 +50,7 @@
 }
 
 .wbuzz-signal-trace__item[data-outcome='fail'] .wbuzz-signal-trace__outcome {
-  color: var(--fg-danger, #c45c5c);
+  color: var(--state-danger);
 }
 
 .wbuzz-signal-trace__actions {

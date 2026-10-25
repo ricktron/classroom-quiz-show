@@ -176,11 +176,11 @@
 
 /* S05 Final choreography: acknowledgement follows, never gates, authoritative state. */
 .fwd--stage-ack {
-  box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
+  box-shadow: inset 0 0 0 var(--bw-emphasis) var(--state-active);
 }
 
 .fwd__reveal--ack {
-  box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
+  box-shadow: inset 0 0 0 var(--bw-emphasis) var(--state-active);
 }
 
 .fwd__reveal-outcome--ack {

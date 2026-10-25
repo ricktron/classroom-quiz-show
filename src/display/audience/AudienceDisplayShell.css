@@ -596,7 +596,7 @@
 .audience--emphasis-final-settle .audience__result,
 .audience--emphasis-unique-leader .audience__result--unique,
 .audience--emphasis-tied .audience__result--tied {
-  outline: var(--bw-emphasized, 2px) solid var(--state-active);
+  outline: var(--bw-emphasis) solid var(--state-active);
   outline-offset: 4px;
   border-radius: var(--radius-md);
 }
@@ -612,7 +612,7 @@
 
 /* Display-side board→Final bridge (S05 board/round-flow). Remount-safe. */
 .audience__final--bridge-ack {
-  box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
+  box-shadow: inset 0 0 0 var(--bw-emphasis) var(--state-active);
   border-radius: var(--radius-panel);
   background: color-mix(in srgb, var(--state-active) 10%, transparent);
 }
@@ -626,7 +626,7 @@
 @media (prefers-reduced-motion: reduce) {
   .audience__final--bridge-ack {
     animation: none;
-    outline: var(--bw-emphasized, 2px) solid var(--state-active);
+    outline: var(--bw-emphasis) solid var(--state-active);
     outline-offset: 2px;
   }
 }
@@ -637,11 +637,11 @@
     background: transparent;
   }
   45% {
-    box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
+    box-shadow: inset 0 0 0 var(--bw-emphasis) var(--state-active);
     background: color-mix(in srgb, var(--state-active) 16%, transparent);
   }
   to {
-    box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
+    box-shadow: inset 0 0 0 var(--bw-emphasis) var(--state-active);
     background: color-mix(in srgb, var(--state-active) 10%, transparent);
   }
 }

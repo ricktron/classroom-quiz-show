@@ -33,8 +33,16 @@ a {
   color: var(--fg-interactive);
 }
 
-/* Visible, consistent focus for keyboard users on every interactive element. */
-:where(a, button, [tabindex]):focus-visible {
+/*
+ * Visible, consistent focus for keyboard users on every interactive element.
+ *
+ * `input`, `select`, `textarea` and `summary` are listed explicitly: without
+ * them those controls fell back to the user agent's 1px ring, which measures
+ * ~2.1-2.9:1 on these dark surfaces against this ring's 10.87:1. Buzzer
+ * assignment, timer length and every disclosure are operated through exactly
+ * those elements.
+ */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-offset);
   border-radius: var(--radius-sm);
@@ -154,6 +162,36 @@ a {
 }
 .accent--slate {
   --team-accent: var(--team-slate);
+}
+
+/*
+ * Text-entry controls follow the theme.
+ *
+ * `--surface-input` was declared in all three theme blocks and consumed by no
+ * component, so every field a teacher types into rendered as a browser-default
+ * white box on a dark product — including in the high-contrast theme, which is
+ * the one case where bypassing the theme matters most. Three panels had already
+ * hand-rolled the intended dark treatment (`.tsp__input`, `.fwh__input`,
+ * the import textarea); this makes that the default instead of the exception.
+ *
+ * Deliberately NOT applied to radio, checkbox, file and range inputs: those
+ * carry platform affordances the product relies on, and `.tsp__target input`
+ * already sizes the scoring radios.
+ */
+input:not([type='radio']):not([type='checkbox']):not([type='file']):not([type='range']),
+textarea,
+select {
+  min-height: var(--target-min);
+  padding: 0 var(--space-2);
+  font: inherit;
+  color: var(--fg-primary);
+  background: var(--surface-input);
+  border: var(--bw-standard) solid var(--border-standard);
+  border-radius: var(--radius-sm);
+}
+
+textarea {
+  padding: var(--space-2);
 }
 
 .visually-hidden {

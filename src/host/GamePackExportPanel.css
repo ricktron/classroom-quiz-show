@@ -26,16 +26,16 @@
 }
 
 .pack-export__warning {
-  color: var(--state-warn, #a60);
+  color: var(--state-warning);
 }
 
 .pack-export__result--ok {
-  border-left: 3px solid var(--state-ok, #2a7);
+  border-left: 3px solid var(--state-success);
   padding-left: var(--space-2);
 }
 
 .pack-export__result--bad {
-  border-left: 3px solid var(--state-bad, #c33);
+  border-left: 3px solid var(--state-danger);
   padding-left: var(--space-2);
 }
 
