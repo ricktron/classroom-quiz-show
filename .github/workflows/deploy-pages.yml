@@ -52,3 +52,26 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      # Lifecycle ticket only — no Google / clasp / Nolan credentials in Actions.
+      # School Mac consumes the ticket with existing school identity (Option B).
+      - uses: actions/checkout@v4
+
+      - name: Emit Overwatch registration ticket
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          mkdir -p artifacts
+          node scripts/emit-overwatch-registration-ticket.mjs \
+            --sha "${{ github.sha }}" \
+            --pages-url "${{ steps.deployment.outputs.page_url }}" \
+            --out artifacts/overwatch-registration-ticket.json
+
+      - name: Upload Overwatch registration ticket
+        uses: actions/upload-artifact@v4
+        with:
+          name: overwatch-registration-ticket
+          path: artifacts/overwatch-registration-ticket.json
+          if-no-files-found: error
+          retention-days: 30
