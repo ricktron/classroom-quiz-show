@@ -253,29 +253,66 @@ into an active population without passing the instruction-level gate first.
 Filled in when a run starts. One header per run; a new run appends a new header
 and a new table rather than overwriting history.
 
+### Run `CBF-D1D9828F` (terminal — 2026-10-24)
+
+Durable transfer of the frozen operator package for candidate
+`a1af00f9c5bb6c5e56d13a7a1130f9f005166ba5`. Full hashes, detection table,
+harness boundary, and limitations:
+[`../receipts/2026-10-24-cqs-final-court-b-terminal-pass.md`](../receipts/2026-10-24-cqs-final-court-b-terminal-pass.md).
+
 | Field | Value |
 | --- | --- |
-| Run id | *(not started)* |
-| Bound baseline SHA | *(not started)* |
-| Mapping sealed at | *(not started)* |
-| Mapping sha256 | *(not started)* |
-| Pre-unseal attribution sha256 | *(not started)* |
-| Concurrency used | *(not started)* |
+| Run id | `CBF-D1D9828F` |
+| Bound baseline SHA | `a1af00f9c5bb6c5e56d13a7a1130f9f005166ba5` |
+| Mapping sealed at | `2026-10-24T05:21:46+00:00` |
+| Mapping sha256 | `12b99d1966384b2eaa863674d2a2ad0d7189996a115afe9dd0986d6ca601fc95` |
+| Pre-unseal attribution sha256 | `6aac3425ea176773640a9df0f0f5f9f04cedf38ac43c09c4421d61fb18db4012` |
+| Addendum 1 sha256 | `5a9eba5c02c99140502b7f63088ecdec974f45a06e078e092d07f87eb297cb38` |
+| Declared population | 14 = 1 CLEAN + 13 seeded |
+| Ledger rows | 16 (14 declared + 2 INVALID re-declarations) |
+| DECLARED COMPLETE | 14 / 14 |
+| INVALID (re-declared) | 2 |
+| Concurrency used | 2 (prefer 1 under pressure) |
+| Court B verdict | **PASS** |
 
 ## Build ledger
 
 One row per build. `Build` is the opaque code a tester is given. `Seed` stays
-blank until the mapping is unsealed.
+blank until the mapping is unsealed. Times below are Z on 2026-10-24.
 
 | Build | Tester | Mapping hash | Started | Completed | Status | Teardown verified | Findings | Attribution | Seed (post-unseal) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| *(none declared)* | — | — | — | — | `NOT STARTED` | — | — | — | — |
+| CB3-765E83F6 | blind-01 | `12b99d196638` | 05:25Z | 06:10Z | `COMPLETE` | yes | stale Display presence ~5s (3 attempts) | DEFECT DETECTED | **S3** |
+| CB3-9BCA973A | blind-02 | `12b99d196638` | 05:25Z | 06:08Z | `COMPLETE` | yes | answer public at lock, pre-Reveal (3/3) | DEFECT DETECTED | **S2** |
+| CB3-64AD6A99 | blind-03 | `12b99d196638` | 06:08Z | 06:53Z | `COMPLETE` | yes | Final expiry poisons Undo; Undo inert | DEFECT DETECTED | **S5** |
+| CB3-E3B693C3 | blind-04 | `12b99d196638` | 06:10Z | 06:57Z | `COMPLETE` | yes | none functional (wording/feedback only) | NO DEFECT REPORTED | **CLEAN** |
+| CB3-C800260F | blind-06 | `12b99d196638` | 06:53Z | 07:48Z | `COMPLETE` | yes | reset leaks prior-class ledger (4/4) | DEFECT DETECTED | **S7** |
+| CB3-19ADDA1E | blind-05 | `12b99d196638` | 06:57Z | 07:48Z | `COMPLETE` | yes | CBJ-03 name not counted until blur | DEFECT DETECTED | **S4** |
+| CB3-3EA05CEE | — | `12b99d196638` | 07:48Z | 14:03Z | `INVALID` | yes | tester LOST before any observation (0 scripts); re-declare | n/a | **S9** (re-declared) |
+| CB3-EF73E1C2 | — | `12b99d196638` | 07:48Z | 14:03Z | `INVALID` | yes | tester LOST mid-run after 59 steps; re-declare | n/a | **S12** (re-declared) |
+| CB3-F2DCA05A | blind-07 | `12b99d196638` | 14:04Z | 14:52Z | `COMPLETE` | yes | authoring Save success / title discarded; import empty library | DEFECT DETECTED | **M04** |
+| CB3-946C00E7 | blind-08 | `12b99d196638` | 14:04Z | 14:57Z | `COMPLETE` | yes | CBJ-04 every board score change lands on first team (3/3) | DEFECT DETECTED | **S1** |
+| CB3-00388901 | blind-09 | `12b99d196638` | 14:52Z | 15:46Z | `COMPLETE` | yes | mapped keyboard buzz never registers (9/9) | DEFECT DETECTED | **M26** |
+| CB3-D70ADA46 | blind-10 | `12b99d196638` | 14:58Z | 15:50Z | `COMPLETE` | yes | Home Resume class enabled but inert (3/3) | DEFECT DETECTED | **M01** |
+| CB3-353A7445 | blind-11 | `12b99d196638` | 15:47Z | 16:33Z | `COMPLETE` | yes | CBJ-06 tie recorded as unique-winner completion (4/4) | DEFECT DETECTED | **S6** |
+| CB3-A34521C8 | blind-12 | `12b99d196638` | 15:50Z | 16:38Z | `COMPLETE` | yes | pressed handset credited to Buzzer 1's team (5/5) | DEFECT DETECTED | **S8** |
+| CB3-F3218376 | blind-13 | `5a9eba5c02c9` | 16:33Z | 17:27Z | `COMPLETE` | yes | board timer expiry Undo 'Undo time up' enabled+inert 3×3 | DEFECT DETECTED | **S9** |
+| CB3-48A0396A | blind-14 | `5a9eba5c02c9` | 16:38Z | 17:30Z | `COMPLETE` | yes | Library Delete removes wrong (title-first) game (4/4) | DEFECT DETECTED | **S12** |
 
 `Teardown verified` records that this build's run-owned browser session and any
 server it alone needed were released and independently confirmed gone
 (see [`PRE-OWNER-FUNCTIONAL-QUALIFICATION.md`](PRE-OWNER-FUNCTIONAL-QUALIFICATION.md)
 §9.1.1). A row is not terminal until it is filled, so the step is auditable
 after the run rather than taken on trust.
+
+### Terminal summary for `CBF-D1D9828F`
+
+- **COURT B: PASS** — CLEAN row is the only NO DEFECT REPORTED attribution
+  (`CB3-E3B693C3`); all 13 seeded finding conditions met on frozen evidence.
+- Harness `controls()` mid-run correction and unsupported-receiver classroom-feel
+  follow-up: see the receipt (not seeded failures; not physical claims).
+- Objective adjudication exemplar: `CB3-19ADDA1E` (attribution follows brief
+  finding condition, not tester severity adjective).
 
 ## Resume procedure
 

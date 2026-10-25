@@ -22,7 +22,7 @@
 - **Kind:** durable pre-owner functional qualification contract
 - **Status:** **ACTIVE / Q0 LANDED; Q1 LANDED / VERIFIED ON MAIN** @
   `9d8246e9811eec19a34a9f8d44b2287b8635a741`; **Q2 LANDED / VERIFIED ON
-  MAIN** @ `2dc918f934836c3fa6a0f4d554f4757f4668c691`; **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951ead3ea7ed99a7f404f60bbebcb0d68cb7` (PR #127; reviewed tip `cf207cac7dd722a903f901cd885e35583439ed02`); **Q4 LANDED / VERIFIED ON MAIN** @ `c32b72c35f33e4188793e223ad9749c4a226b806` (PR #129; proof `541718e1…`; reviewed tip `28d611e…`; post-merge reconciliation PR #130 @ `28ff239…`); **Q5 LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`); **Q6 EXECUTED on candidate `d921b07…` — Court A: GAPS REMAIN (G1, G2); Court B: NOT RUN** — [`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md)
+  MAIN** @ `2dc918f934836c3fa6a0f4d554f4757f4668c691`; **Q3 LANDED / VERIFIED ON MAIN** @ `85bb951ead3ea7ed99a7f404f60bbebcb0d68cb7` (PR #127; reviewed tip `cf207cac7dd722a903f901cd885e35583439ed02`); **Q4 LANDED / VERIFIED ON MAIN** @ `c32b72c35f33e4188793e223ad9749c4a226b806` (PR #129; proof `541718e1…`; reviewed tip `28d611e…`; post-merge reconciliation PR #130 @ `28ff239…`); **Q5 LANDED / VERIFIED ON MAIN** @ `c7e41a4…` (PR #131; proof `455c4cf…`; reviewed tip `f1d4535…`); **Q6 historical on `d921b07…` — Court A: GAPS REMAIN (G1, G2); Court B: NOT RUN** ([`../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md`](../receipts/2026-10-04-cqs-q6-court-a-b-independent-review.md)); **Q6-RP-2 later COURT-A COMPLETE / COURT-B RECOMMEND ELIGIBLE (recommendation only)**; **Final Court B BLACK-BOX TEACHER RUN `CBF-D1D9828F` on `a1af00f9…`: PASS** — [`../receipts/2026-10-24-cqs-final-court-b-terminal-pass.md`](../receipts/2026-10-24-cqs-final-court-b-terminal-pass.md); ledger [`COURTB-RUN-MANIFEST.md`](COURTB-RUN-MANIFEST.md)
 - **Companion:** [`PRE-OWNER-TEACHER-JOURNEY-MATRIX.md`](PRE-OWNER-TEACHER-JOURNEY-MATRIX.md)
 - **Observation base (Q0 registration):** `origin/main`
   `67ba2c0027f7e2439bd39bd963a7321be0ab6801` (PR #121 squash merge of
@@ -76,18 +76,17 @@
 This file is documentation / qualification contract.
 Q0–Q4 are LANDED on main. Q5 Desktop/Electron integration qualification is
 LANDED / VERIFIED ON MAIN @ c7e41a4… (PR #131; proof 455c4cf…; reviewed tip f1d4535…).
-Q6 Court review executed on d921b07…: COURT-A GAPS REMAIN (G1 round progression only in
-Advanced diagnostics; G2 stale public Display status). Court B NOT RUN.
-Eligibility path STOPPED pending repair packet Q6-RP-1 (Q3 family).
-Q6-RP-1 (G1/G2) LANDED on main @ b1392391… (PR #135). Its re-review found G3 (general Undo
-only via Advanced diagnostics; HG-13). **Q6-RP-2 LANDED / VERIFIED ON MAIN** @ `9410b62…` (PR #136; product tip `ad115a2…`; reviewed tip `825bda1…`; trees EXACT MATCH `0b8036de…`);
-On that candidate: COURT-A COMPLETE; COURT-B RECOMMEND ELIGIBLE (recommendation only).
+Q6 Court review executed on d921b07… (historical): COURT-A GAPS REMAIN (G1, G2); Court B NOT RUN.
+Q6-RP-1 / Q6-RP-2 later: COURT-A COMPLETE; COURT-B RECOMMEND ELIGIBLE (recommendation only).
+**Final Court B BLACK-BOX TEACHER RUN `CBF-D1D9828F` on candidate `a1af00f9…`: PASS**
+(14/14 DECLARED COMPLETE; 2 INVALID re-declared; ledger 16 rows; mapping + attribution sealed).
+SOFTWARE FUNCTIONAL QUALIFICATION STOPS HERE for that candidate (simulated where noted).
+OWNER FUNCTIONAL HANDOFF: ELIGIBLE (software-functional). Physical Sony/Namtai NOT CLAIMED.
 **PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE ISSUED** (historical) — candidate SHA
-`9410b6290a6dcb2f971e66da8173c3b44a6f785a` (evidence/docs main at review
-`6735107…`). **Q7: HOLD — REPAIR REQUIRED** (Q7-F01 / Q7-F02; root cause
-UNESTABLISHED). Court B now requires BLACK-BOX TEACHER RUN + supported-hardware
-rule before future RECOMMEND ELIGIBLE. S05 terminalization / S04D / S06 still
-unauthorized; product repair not authorized by this note.
+`9410b6290a6dcb2f971e66da8173c3b44a6f785a`. **Q7: HOLD — REPAIR REQUIRED** (Q7-F01 / Q7-F02;
+root cause UNESTABLISHED) still governs physical playthrough readiness.
+S05 terminalization / S04D / S06 / signing / Windows physical still unauthorized / open.
+Unsupported-receiver silent refusal = OWNER/CLASSROOM-FEEL FOLLOW-UP (non-blocking).
 ```
 
 ```text
@@ -814,14 +813,17 @@ Q2: LANDED / VERIFIED ON MAIN @ 2dc918f… (PR #125); tip aa3c18f…; tree 229e8
 Q3: LANDED / VERIFIED ON MAIN @ 85bb951… (PR #127; reviewed tip cf207ca…); PHYSICAL SONY NOT RUN
 Q4: LANDED / VERIFIED ON MAIN @ c32b72c… (PR #129; proof 541718e1…; reviewed tip 28d611e…); reconciliation PR #130 @ 28ff239…
 Q5: LANDED / VERIFIED ON MAIN @ c7e41a4… (PR #131; proof 455c4cf…; reviewed tip f1d4535…)
-Q6: EXECUTED on d921b07… — COURT-A GAPS REMAIN (G1, G2); COURT-B NOT RUN; repair packet Q6-RP-1 (Q3) required
-Q6-RP-1: LANDED / VERIFIED ON MAIN @ b1392391… (PR #135; tip 5764fa3…; trees EXACT MATCH) — G1/G2
+Q6: EXECUTED on d921b07… (historical) — COURT-A GAPS REMAIN (G1, G2); COURT-B NOT RUN
+Q6-RP-1: LANDED / VERIFIED ON MAIN @ b1392391… (PR #135) — G1/G2
 Q6-RP-2: LANDED / VERIFIED ON MAIN @ 9410b62… (PR #136) — COURT-A COMPLETE; COURT-B RECOMMEND ELIGIBLE (recommendation only)
+Court B terminal run CBF-D1D9828F @ a1af00f9…: PASS — receipt 2026-10-24-cqs-final-court-b-terminal-pass.md; manifest COURTB-RUN-MANIFEST.md
+SOFTWARE FUNCTIONAL QUALIFICATION: STOPS HERE (candidate a1af00f9…; simulated where noted)
+OWNER FUNCTIONAL HANDOFF: ELIGIBLE (software-functional); physical Sony/Namtai NOT CLAIMED
 PRE-Q7: OWNER-PLAYTHROUGH-ELIGIBLE ISSUED (historical) — candidate SHA 9410b6290a6dcb2f971e66da8173c3b44a6f785a
 Q7: HOLD — REPAIR REQUIRED (Q7-F01 Show buzzer setup; Q7-F02 physical path unusable; root cause UNESTABLISHED)
-Court B future gate: BLACK-BOX TEACHER RUN (§9.1) + supported-hardware rule (§9.2) required before RECOMMEND ELIGIBLE
+unsupported-receiver silent refuse: OWNER/CLASSROOM-FEEL FOLLOW-UP (non-blocking; not seeded)
 S05 parent: OPEN / NOT TERMINAL
-owner playthrough: HOLD (do not resume Q7 / product repair without new authority)
+owner playthrough: HOLD on physical Q7 facts (do not resume without new authority)
 Finding C: CLOSED ON MAIN BY Q3 @ 85bb951…; Finding D: CLOSED ON MAIN BY Q5 @ c7e41a4…
 functional escapes: repair/verify required — no owner-waiver through PRE-Q7
 S04D / S06: NOT AUTHORIZED
