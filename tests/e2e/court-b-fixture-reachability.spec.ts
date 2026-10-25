@@ -157,10 +157,15 @@ test('[CBJ-02] Import the filled spreadsheet and reach Class Setup', async ({ pa
   await (await chooser).setFiles(SPREADSHEET)
   await expect(page.getByRole('region', { name: 'Import quality' })).toContainText('accepted')
   await playToClassSetup(page)
-  // The fixture's teams arrive from the spreadsheet. (That the spreadsheet carries
-  // the same Final is proven by the vitest guard, which imports it in full.)
+  // Spreadsheet teams are in the Game (vitest guard imports the file in full).
+  // CANON-H-01: Class Setup shows Team N slot labels until Session names are claimed —
+  // Game defaults must not appear as already-named headers.
   await page.getByRole('region', { name: 'Class setup' }).getByRole('button', { name: /^Names/ }).click()
-  await expect(page.getByRole('region', { name: 'Class setup' })).toContainText('Team Granite')
+  const setup = page.getByRole('region', { name: 'Class setup' })
+  await expect(setup).toContainText('Team 1')
+  await expect(setup).toContainText('Team 2')
+  await expect(setup).toContainText(/0 of 2 named/i)
+  await expect(setup).not.toContainText('Team Granite')
 })
 
 test('[CBJ-03] Names, Display and Start Game', async ({ page, context }) => {

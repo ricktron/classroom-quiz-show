@@ -124,8 +124,13 @@ function seedSelection(
   return manuals.length === 0 ? start : applyTeamNameInputs(start, manuals).state
 }
 
-function teamOrdinalLabel(team: TeamDefinition, index: number): string {
-  return team.name.trim().length > 0 ? team.name : `Team ${index + 1}`
+/**
+ * CANON-H-01: Class Setup slot labels must not present Game-authored defaults
+ * (e.g. "Blue Basalts") as if the class already named the team. Host/Display
+ * already use Team N until a Session name is claimed — Setup matches that.
+ */
+function teamOrdinalLabel(_team: TeamDefinition, index: number): string {
+  return `Team ${index + 1}`
 }
 
 function readinessTestId(id: SetupTaskId): string {
@@ -439,10 +444,15 @@ export function ClassroomSetupPanel({
     })),
   }
 
+  // CANON-H-05: do not shout "✓ Ready" while optional Display/Buzzers/Sound
+  // remain unfinished. Display stays optional (Start still enabled).
+  const readyHeading =
+    optionalFacts.length > 0 ? 'Required setup complete' : '✓ Ready'
+
   const stageTitle = playReady
     ? 'In play'
     : stagePlayEnabled && !expandedTask
-      ? 'Ready'
+      ? readyHeading
       : currentTaskTitle(
           expandedTask ?? (pureDominant === 'play' ? 'names' : pureDominant),
         )
@@ -907,7 +917,7 @@ export function ClassroomSetupPanel({
       >
         {classReady && (
           <p className="classroom-setup__ready-heading" data-testid="setup-ready-heading" role="status">
-            ✓ Ready
+            {readyHeading}
           </p>
         )}
         <div className="classroom-setup__outcome-actions">

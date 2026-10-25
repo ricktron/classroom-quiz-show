@@ -72,9 +72,12 @@ for (const topEdge of [false, true]) {
     await expect(fields.nth(1)).toBeFocused()
 
     // Honest Ready state while the name is visibly typed (not "still needs a name").
+    // CANON-H-05: with optional Display/Buzzers unfinished, heading is
+    // "Required setup complete" — not absolute "✓ Ready".
     await expect(startGame(page)).toBeEnabled()
     await expect(setup.getByText(/still needs? (a )?names?\./)).toHaveCount(0)
-    await expect(setup.getByRole('status').filter({ hasText: '✓ Ready' })).toBeVisible()
+    await expect(page.getByTestId('setup-ready-heading')).toBeVisible()
+    await expect(page.getByTestId('setup-ready-heading')).toContainText(/required setup complete/i)
 
     const { before, duringPress } = await pointerClick(page, startGame(page), { topEdge })
     // The press itself must not move the action out from under the pointer.

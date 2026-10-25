@@ -505,6 +505,26 @@ describe('teacher Home', () => {
     }
   })
 
+  it('CANON-H-10: Import cold-start makes demo the sole primary next action', async () => {
+    await renderReadyHome()
+    await waitFor(() => expect(screen.getByTestId('home-import-game')).toBeEnabled())
+    fireEvent.click(screen.getByTestId('home-import-game'))
+    expect(screen.getByTestId('home-import')).toBeInTheDocument()
+    expect(screen.getByTestId('home-import-lead')).toHaveTextContent(/demo/i)
+    const demo = screen.getByTestId('home-import-demo')
+    expect(demo).toBeEnabled()
+    expect(demo).not.toHaveClass('btn--secondary')
+    expect(screen.getByTestId('home-import-cold-start')).toContainElement(demo)
+    for (const id of [
+      'home-download-board-plus-final',
+      'home-download-classic-board',
+      'home-import-json',
+      'home-import-spreadsheet',
+    ] as const) {
+      expect(screen.getByTestId(id)).toHaveClass('btn--secondary')
+    }
+  })
+
   it('features the most recent playable Game and demotes New Game when the library is populated', async () => {
     const adapter = createMemoryPersistenceAdapter()
     await seedSavedGame(adapter, 'Hero Board')
