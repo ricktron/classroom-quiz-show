@@ -32,7 +32,8 @@
     "capture:visual-history:menus": "node scripts/historian-archive-guard.mjs menus",
     "capture:visual-history:pre-owner": "CQS_PRE_OWNER_VISUAL_HISTORY_CAPTURE=1 playwright test tests/e2e/pre-owner-visual-history-capture.spec.ts --project=projector-720p",
     "verify": "npm run lint && npm run typecheck && npm run test:run",
-    "verify:all": "npm run lint && npm run typecheck && npm run test:run && npm run build && npm run test:e2e"
+    "verify:all": "npm run lint && npm run typecheck && npm run test:run && npm run build && npm run test:e2e",
+    "register:overwatch": "node scripts/register-school-overwatch.mjs"
   },
   "dependencies": {
     "fflate": "0.8.3",
