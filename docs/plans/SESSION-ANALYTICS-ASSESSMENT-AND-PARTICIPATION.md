@@ -2,6 +2,7 @@
 
 - **Document id:** `CQS-PLAN-INSIGHT-PARTICIPATION`
 - **Slice:** `CQS-PLAN-S01` (planning-only) · **Date:** 2026-08-03
+- **Last reconciled:** 2026-10-24 (Amendment 006 multi-audience analytics)
 - **Status:** Explanatory planning view for `CQS-ARC-INSIGHT` and
   `CQS-ARC-PARTICIPATION` — **authorizes no implementation**
 
@@ -9,16 +10,19 @@ Canonical decisions:
 [`../decisions/EXPANDED-VISION-OWNER-DECISIONS.md`](../decisions/EXPANDED-VISION-OWNER-DECISIONS.md)
 (`CQS-OD-035`…`CQS-OD-038`, `CQS-OD-053`…`CQS-OD-056`,
 `CQS-OD-058`…`CQS-OD-066`, `CQS-OD-071`); architecture lineage: clauses
-`CQS-RA2-TELEMETRY-01`, `CQS-RA2-ARCHIVE-01`, `CQS-RA2-QUESTION-ID-01`;
-deferral dossiers: the `CQS-OPP-HISTORICAL-ARCHIVE` through
-`CQS-OPP-ASSESSMENT-IMPORT` entries of
+`CQS-RA2-TELEMETRY-01`, `CQS-RA2-ARCHIVE-01`, `CQS-RA2-QUESTION-ID-01`,
+`CQS-RA6-ANALYTICS-01`; deferral dossiers: the
+`CQS-OPP-HISTORICAL-ARCHIVE` through `CQS-OPP-ASSESSMENT-IMPORT` entries
+(and Amendment 006 analytics/device opportunities) of
 [`POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md).
 
-None of this exists today. The current implementation persists an active
-session for recovery only (ADR-013) and projects a live scoreboard. MVP
-**Slices 15–16** (unstarted) own the session-summary contract and the
-completed-summary ledger / compatible reporting seed; the full archive,
-telemetry, and assessment promotion remain post-MVP for this arc.
+None of the full insight/participation surface exists as a product
+capability today. Historical foundation delivered the session-summary
+contract and completed-summary ledger (Slices 15–16, Complete); the
+full archive, telemetry journal, multi-audience analytics, and
+assessment promotion remain post-MVP / separately authorized for this
+arc. Canonical current status:
+[`../STATUS.md`](../STATUS.md).
 
 ## 1. Two separated history layers (§10.8; `CQS-RA2-TELEMETRY-01`)
 
@@ -46,7 +50,7 @@ retention-until-deletion; private response and wager text uses
 game-configurable retention. Archives are host-private and distinct from
 the recovery store (`CQS-RA2-ARCHIVE-01`).
 
-## 3. Question analytics (§15.2; `CQS-OD-038`, `CQS-OD-045`)
+## 3. Question analytics (§15.2; `CQS-OD-038`, `CQS-OD-045`; `CQS-RA6-ANALYTICS-01`)
 
 Planned per-question analytics: times played; sessions and sections;
 percentage with any buzz; observed first-buzz latency; early-buzz
@@ -59,14 +63,62 @@ labels: fast and highly accurate; fast but misleading; slow but
 productive; difficult and engaging; low engagement; likely too easy;
 likely ambiguous; strong discriminator; high early-buzz trap.
 
+**Useful available evidence (capture when meaningful; not every format
+provides identical fields):** question identity and version; response
+outcome; answer selections where the format has them; attempt sequence;
+timing where meaningful; game/session context (preset/ruleset, section
+or event label, completion state). Prefer durable, host/operator-owned,
+**exportable** local evidence (CSV, JSON, or suitable local structured
+storage may suffice initially). A sophisticated analytics dashboard is
+**deferred**.
+
 **Analytics language (§10.9, binding).** Use *observed buzz latency*,
 *first accepted buzz*, *queue depth*, *early-buzz frequency*, *response
 duration*. Never claim scientifically precise human reaction time from
 browser or controller timing — event-log sequence is the authority and
-timestamps are evidence (ADR-008 §13, carried forward). Classical item
-statistics need far larger samples than a class provides for stable
-interpretation (research finding `CQS-RF-ITEM-01`) — labels stay
-suggestive, not psychometric.
+timestamps are evidence (ADR-008 §13, carried forward). Distinguish
+**observed responses** from **inferred understanding**; account for
+**participation bias**; avoid **unsupported causal conclusions**; never
+claim individual mastery from team answers. Classical item statistics
+need far larger samples than a class provides for stable interpretation
+(research finding `CQS-RF-ITEM-01`) — labels stay suggestive, not
+psychometric.
+
+### 3.1 Educator instructional investigation goals
+
+Long-term direction for educator uses of session/question evidence
+(teacher-controlled; no automatic grading authority):
+
+- Identify concepts needing reteaching.
+- Evaluate which review activities are effective.
+- Identify misconceptions and commonly selected incorrect answers.
+- Pilot potential assessment questions during gameplay.
+- Select and revise candidates for formal tests under teacher control
+  (recommendation vs promotion — `CQS-OD-055`).
+- Investigate whether confusing wording in slides, homework, readings,
+  or other instructional resources may explain performance patterns.
+- Compare sections, sessions, and school years.
+- Investigate whether revised instruction corresponds with improved
+  outcomes (correlation/investigation language only — not causal proof).
+- Track question effectiveness and revision history (item-family /
+  revision identity — `CQS-OD-058`).
+
+### 3.2 Event-operator analytics uses
+
+Long-term direction for noneducational / event-operator uses (same
+honesty rules; operator-owned exportable evidence):
+
+- Audience engagement and participation patterns.
+- Question popularity and skip/low-engagement signals.
+- Pacing and dwell-time calibration.
+- Difficulty calibration across events or client audiences.
+- Client-facing summary reports (host-controlled content; no PII by
+  default).
+- Iterative game improvement between events.
+
+Educational analytics remain a specialized capability; event-operator
+uses do not require curriculum linkage (`CQS-OD-066` stays unresolved
+and is not a prerequisite for noneducational summaries).
 
 ## 4. Transcript workflow (§15.3; `CQS-OD-053`, `CQS-OD-054`, `CQS-OD-061`, `CQS-OD-062`)
 
@@ -103,16 +155,23 @@ LLM-generated draft
 Item families connect game clue revisions, practice adaptations,
 multiple-choice adaptations, and test item revisions (`CQS-OD-058`).
 Possible test evidence: percentage correct; distractor selections;
-omission rate; item discrimination when sample size permits; class or
-section comparisons; revision history.
+omission rate; item discrimination when sample size permits; class,
+section, or school-year comparisons; revision history; linkage back to
+instructional resources under investigation (§3.1).
 
 CQS **recommends** assessment candidates via configurable thresholds; the
 **teacher explicitly promotes** them, and may promote anything manually
-(`CQS-OD-055`, `CQS-OD-065`).
+(`CQS-OD-055`, `CQS-OD-065`). Cross-year improvement investigation uses
+the same honesty rules as §3 — observed patterns may inform teaching
+changes; they do not prove causation.
 
 **Hard rule:** never infer that a student mastered a concept because
 their team answered correctly. Team evidence is team evidence
 (`CQS-OD-060` keeps roster linkage parked and distinct).
+
+This lifecycle is an **educator-specialized** path. Event-operator
+improvement loops (§3.2) reuse session/question evidence without
+requiring assessment promotion or GCS linkage.
 
 ## 6. GCS boundary (§15.5) — decision 66 remains unresolved
 

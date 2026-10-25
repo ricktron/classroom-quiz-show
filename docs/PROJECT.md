@@ -15,6 +15,16 @@ invariants live in [`CQS-PRODUCT-CONTRACT.md`](CQS-PRODUCT-CONTRACT.md).
 Detailed remaining direction lives in
 [`plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md`](plans/CQS-REAL-MVP-S04-FAMILY-DIRECTION.md).
 
+**Long-term product vision (documentation only; not REAL MVP scope).** CQS
+is intended to grow into a highly customizable professional game-show and
+interactive entertainment platform for educators **and** event operators
+(DJs, trivia hosts, event businesses, and similar). Educational analytics
+are a specialized capability, not the sole product identity. See
+[`plans/EXPANDED-CQS-VISION-ARC.md`](plans/EXPANDED-CQS-VISION-ARC.md) and
+[`decisions/ROADMAP-AMENDMENT-006-multi-audience-product-vision.md`](decisions/ROADMAP-AMENDMENT-006-multi-audience-product-vision.md).
+Current development remains REAL MVP Jeopardy-style board + Final
+qualification; post-MVP arcs stay inactive until separately authorized.
+
 Initial subject seeds: **Earth & Space Science** (primary) and **Ecology**
 (secondary). The engine itself is subject-agnostic.
 
@@ -111,8 +121,13 @@ audio, or board styling.
 >   target, not an exclusive dependency and not a tested compatibility claim.
 > - **The product must remain fully usable without buzzer hardware.**
 > - **Student-owned devices, student phones and networked buzzers remain
->   excluded.** No backend, account, WebRTC, Bluetooth requirement, cloud
->   dependency or classroom Wi-Fi dependency is authorized.
+>   excluded** for REAL MVP and currently accepted expanded-vision arcs.
+>   No backend, account, WebRTC, Bluetooth requirement, cloud dependency
+>   or classroom Wi-Fi dependency is authorized for ordinary play.
+>   Optional individual-device participation is a **recorded long-term
+>   aspiration only** (`CQS-RA6-DEVICE-01`,
+>   `CQS-OPP-OPTIONAL-DEVICE-PARTICIPATION`); it does **not** supersede
+>   this exclusion until a future explicit owner decision revisits it.
 > - Local buzzer input must pass through a **hardware-independent input adapter**
 >   and the existing command/event/reducer architecture.
 >

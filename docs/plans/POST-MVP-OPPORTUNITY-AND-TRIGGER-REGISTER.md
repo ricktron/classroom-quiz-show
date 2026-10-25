@@ -3,8 +3,11 @@
 - **Document id:** `CQS-POST-MVP-OPPORTUNITY-REGISTER`
 - **Authorization:** `AUTHORIZE-CQS-PLAN-S01-EXPANDED-VISION-DOCUMENTATION-1`
 - **Slice:** `CQS-PLAN-S01` (planning-only)
-- **Last reviewed:** 2026-10-19 (`CQS-OPP-MULTI-CONTROLLER-TEAMS` Phase 3
-  R2–R4 closure); other entries last reviewed 2026-08-03
+- **Last reviewed:** 2026-10-24 (Amendment 006: multi-audience analytics /
+  optional-device / export-evidence / operator-packaging entries added;
+  activation states of prior entries unchanged). Prior:
+  2026-10-19 (`CQS-OPP-MULTI-CONTROLLER-TEAMS` Phase 3 R2–R4 closure);
+  other historical entries last reviewed 2026-08-03.
 - **Status:** Accepted planning register — **authorizes no implementation**
 
 This is the **canonical authority for deferred capabilities, their
@@ -14,7 +17,13 @@ deferred, dependencies, an **externally observable trigger**, evidence
 required, decision authority, likely arc, and principal risks. Decision ids
 refer to
 [`../decisions/EXPANDED-VISION-OWNER-DECISIONS.md`](../decisions/EXPANDED-VISION-OWNER-DECISIONS.md);
-arcs to [`EXPANDED-CQS-VISION-ARC.md`](EXPANDED-CQS-VISION-ARC.md).
+arcs to [`EXPANDED-CQS-VISION-ARC.md`](EXPANDED-CQS-VISION-ARC.md);
+Amendment 006 lineage to
+[`../decisions/ROADMAP-AMENDMENT-006-multi-audience-product-vision.md`](../decisions/ROADMAP-AMENDMENT-006-multi-audience-product-vision.md).
+
+Classification vocabulary used for Amendment 006 additions: **Long-term
+product direction** · **Preserve future compatibility** · **Deferred
+opportunity** · **Requires future owner decision**.
 
 A trigger is a **reconsideration** condition — when it fires, the Program
 Orchestrator and owner decide; nothing self-activates. "Decision authority"
@@ -340,20 +349,27 @@ note only *additional* authority where it exists.
 
 ## CQS-OPP-QUESTION-ANALYTICS — Question and session analytics
 
-- **Intent:** `CQS-OD-038`, `CQS-OD-045` (calibration), §15.2; per-question
-  play statistics, honest observed-latency language, quality labels,
-  class/section views.
+- **Intent:** `CQS-OD-038`, `CQS-OD-045` (calibration), §15.2,
+  `CQS-RA6-ANALYTICS-01`; per-question play statistics, honest
+  observed-latency language, quality labels, class/section views, plus
+  educator investigation goals and event-operator engagement/calibration
+  uses elaborated in
+  [`SESSION-ANALYTICS-ASSESSMENT-AND-PARTICIPATION.md`](SESSION-ANALYTICS-ASSESSMENT-AND-PARTICIPATION.md)
+  §3.1–§3.2. Prefer exportable host-owned evidence before any dashboard.
 - **Activation:** `post-mvp-priority` · **Arc:** `CQS-ARC-INSIGHT`
+  · **Classification:** Deferred opportunity · Long-term product
+  direction
 - **Deferred because:** needs archives (data), item identity (join key),
   and the analytics-language rules to be enforceable.
 - **Dependencies:** `CQS-OPP-HISTORICAL-ARCHIVE`; `CQS-OPP-QUESTION-BANK`
   (family identity); §10.9 language rules.
-- **Trigger:** at least five archived sessions exist for one course.
-- **Evidence required:** the archives; a mock analytics sheet reviewed by
-  the owner for over-claiming.
+- **Trigger:** at least five archived sessions exist for one course **or**
+  one event-operator series.
+- **Evidence required:** the archives; a mock analytics sheet (educator
+  and/or event-operator lens) reviewed by the owner for over-claiming.
 - **Risks:** small-sample over-interpretation (item statistics are
   unstable at classroom N — see research record); one-number quality
-  reduction (prohibited).
+  reduction (prohibited); unsupported causal claims about instruction.
 
 ## CQS-OPP-TRANSCRIPT-IMPORT — External recording & transcript import
 
@@ -390,9 +406,13 @@ note only *additional* authority where it exists.
 ## CQS-OPP-ASSESSMENT-ANALYTICS — Gameplay-to-test analytics
 
 - **Intent:** `CQS-OD-055`, `CQS-OD-058`, `CQS-OD-059`, `CQS-OD-065`,
-  §10.10, §15.4; candidate recommendation, teacher promotion, aggregate
-  test-item statistics joined by item family.
+  §10.10, §15.4, `CQS-RA6-ANALYTICS-01` educator goals; candidate
+  recommendation, teacher promotion, assessment-item selection/revision,
+  cross-section and cross-year investigation (honest/non-causal),
+  aggregate test-item statistics joined by item family.
 - **Activation:** `post-mvp-priority` · **Arc:** `CQS-ARC-INSIGHT`
+  · **Classification:** Deferred opportunity · Long-term product
+  direction (educator-specialized)
 - **Deferred because:** requires item-family identity end-to-end and the
   teacher's assessment workflow to remain external (`CQS-OD-059`).
 - **Dependencies:** `CQS-OPP-QUESTION-ANALYTICS`; item-family adoption in
@@ -536,6 +556,81 @@ note only *additional* authority where it exists.
   confirming aggregates only.
 - **Risks:** individual-record leakage through careless aggregation;
   authority drift toward CQS becoming an assessment system (rejected).
+
+## CQS-OPP-ANALYTICS-EXPORT-EVIDENCE — Exportable session/question evidence
+
+- **Intent:** `CQS-RA6-ANALYTICS-01`; durable teacher/operator-owned
+  export of useful available evidence (question identity/version,
+  outcomes, selections, attempt sequence, timing where meaningful,
+  game/session context) as CSV, JSON, or suitable local structured
+  storage — **before** any sophisticated analytics dashboard.
+- **Activation:** `parked` · **Arc:** `CQS-ARC-INSIGHT`
+  · **Classification:** Deferred opportunity · Preserve future
+  compatibility
+- **Deferred because:** archive and item-identity foundations must exist;
+  dashboard scope must not precede exportable truth.
+- **Dependencies:** `CQS-OPP-HISTORICAL-ARCHIVE`; preferably
+  `CQS-OPP-QUESTION-BANK` identity; honesty rules in
+  [`SESSION-ANALYTICS-ASSESSMENT-AND-PARTICIPATION.md`](SESSION-ANALYTICS-ASSESSMENT-AND-PARTICIPATION.md)
+  §3.
+- **Trigger:** the owner manually reconstructs session/question evidence
+  from summaries or notes at least twice and records export friction.
+- **Evidence required:** the friction log; a sample export schema that
+  does not invent per-format fields the engine cannot supply.
+- **Risks:** speculative schemas; dashboard scope creep; mixing telemetry
+  into authoritative history (prohibited by `CQS-RA2-TELEMETRY-01`).
+
+## CQS-OPP-MULTI-AUDIENCE-OPERATOR-PACKAGING — Event-operator packaging
+
+- **Intent:** `CQS-RA6-AUDIENCE-01`, `CQS-RA6-CUSTOMIZE-01`; packaging and
+  workflows so DJs, event businesses, trivia hosts, and similar operators
+  can customize experiences for clients without educator-only framing as
+  the sole product identity.
+- **Activation:** `parked` · **Arc:** `CQS-ARC-OPERATOR` (late) /
+  cross-cutting product identity
+  · **Classification:** Long-term product direction · Deferred
+  opportunity
+- **Deferred because:** REAL MVP and early post-MVP arcs remain
+  classroom-first; multi-audience packaging must not dilute teacher
+  product excellence or authorize premature SaaS/cloud complexity.
+- **Dependencies:** stable host console / Loan Mode thinking
+  (`CQS-OPP-HOST-CONSOLE`); customization simplicity (`CQS-OD-081`);
+  format catalog progress without prescribing the next format.
+- **Trigger:** a concrete noneducational operator trial (or paid/client
+  event request) is recorded, **and** REAL MVP teacher product has
+  reached a separately authorized post-MVP readiness gate.
+- **Evidence required:** the trial/request record; a packaging brief that
+  preserves local-first ordinary play without mandatory cloud/accounts.
+- **Risks:** education-product dilution; premature commercial scope;
+  configuration overload for ordinary users.
+
+## CQS-OPP-OPTIONAL-DEVICE-PARTICIPATION — Optional individual-device play
+
+- **Intent:** `CQS-RA6-DEVICE-01`; optional individual-device participation
+  for some future experiences (including Jackbox-like variety), while
+  conventional games remain playable without student phones, accounts, or
+  mandatory cloud services.
+- **Activation:** `parked` · **Requires future owner decision** before any
+  design or implementation · **Arc:** undetermined (would need its own
+  authorized plan after the decision)
+  · **Classification:** Requires future owner decision · Deferred
+  opportunity
+- **Deferred because:** current REAL MVP and accepted expanded-vision
+  non-goals **exclude** student phones, student-owned devices as
+  controllers, and networked buzzers (Amendment 001;
+  [`../PROJECT.md`](../PROJECT.md); expanded vision §8). Those
+  restrictions remain binding; this entry records aspiration only.
+- **Dependencies:** explicit future owner decision revisiting the
+  restrictions listed in `CQS-RA6-DEVICE-01`; privacy/identity/no-backend
+  review; input-architecture ADR path; retention of phone-free play path.
+- **Trigger:** the owner explicitly authorizes a decision packet to
+  revisit Amendment 001 / phone exclusions (not merely a feature request).
+- **Evidence required:** the owner decision record naming which
+  non-goals/ADRs are amended; a threat/privacy review; proof that
+  phone-free conventional play remains first-class.
+- **Risks:** silent supersession of privacy invariants; mandatory cloud
+  creep; classroom Wi-Fi fragility; equity (students without devices);
+  contradicting "usable without controllers/phones" goals.
 
 ---
 
