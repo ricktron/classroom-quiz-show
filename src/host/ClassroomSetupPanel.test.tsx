@@ -53,7 +53,7 @@ function renderSetup(
 }
 
 describe('ClassroomSetupPanel', () => {
-  it('keeps Play disabled while only authored Game names are visible', () => {
+  it('keeps Play disabled while session names are still unset', () => {
     renderSetup()
     expect(screen.getByTestId('setup-play')).toBeDisabled()
     expect(screen.getByTestId('setup-play-blocker')).toHaveTextContent(/still need names/i)
@@ -68,6 +68,46 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('setup-row-display')).toBeInTheDocument()
     expect(screen.getByTestId('setup-row-sound')).toBeInTheDocument()
     expect(screen.queryByTestId('setup-ready-heading')).toBeNull()
+  })
+
+  it('CANON-H-01: Game-default titles do not look named while the Names gate blocks Start', () => {
+    const authored = createTeamDefinitions([
+      { id: 'basalts', name: 'Blue Basalts', accent: 'azure' },
+      { id: 'rhyolites', name: 'Red Rhyolites', accent: 'crimson' },
+    ])
+    renderSetup({ teams: authored, initialSessionNames: {} })
+    fireEvent.click(screen.getByTestId('readiness-names'))
+    expect(screen.getByTestId('setup-names-task')).toBeVisible()
+    expect(screen.getByTestId('tnsb-team-basalts').querySelector('.tnsb__title')).toHaveTextContent(
+      'Team 1',
+    )
+    expect(screen.getByTestId('tnsb-team-rhyolites').querySelector('.tnsb__title')).toHaveTextContent(
+      'Team 2',
+    )
+    expect(screen.getByTestId('tnsb-team-basalts').querySelector('.tnsb__title')?.textContent).not.toMatch(
+      /Blue Basalts/,
+    )
+    expect(screen.getByTestId('tnsb-team-rhyolites').querySelector('.tnsb__title')?.textContent).not.toMatch(
+      /Red Rhyolites/,
+    )
+    expect(screen.getByTestId('setup-play')).toBeDisabled()
+    expect(screen.getByTestId('setup-play-blocker')).toHaveTextContent(
+      /Team 1 and Team 2 still need names/i,
+    )
+    expect(screen.getByTestId('readiness-names')).toHaveTextContent(/0 of 2 named/i)
+  })
+
+  it('CANON-H-05: ✓ Ready only when required and optional facts are settled', () => {
+    renderSetup({
+      initialSessionNames: { red: 'Comet Crew', blue: 'Ozone Owls' },
+      sonyReady: true,
+      displayOpen: true,
+      audioUnderstood: true,
+      audioMuted: false,
+    })
+    expect(screen.getByTestId('setup-ready-heading')).toHaveTextContent('✓ Ready')
+    expect(screen.getByTestId('setup-play')).not.toBeDisabled()
+    expect(screen.queryByTestId('setup-ready-status')).toBeNull()
   })
 
   it('separates Buzzers workflow selection from Names Start readiness', () => {
@@ -497,7 +537,9 @@ describe('ClassroomSetupPanel', () => {
 
   it('shows Ready with Start Game sole dominant while optionals stay unresolved', () => {
     const { onOpenDisplay, onPlay } = renderSetup({ ...READY_OPTIONALS_UNRESOLVED })
-    expect(screen.getByTestId('setup-ready-heading')).toHaveTextContent(/ready/i)
+    // CANON-H-05: optional path unfinished → no absolute "✓ Ready" overclaim.
+    expect(screen.getByTestId('setup-ready-heading')).toHaveTextContent(/required setup complete/i)
+    expect(screen.getByTestId('setup-ready-heading')).not.toHaveTextContent(/✓\s*Ready/)
     expect(screen.getByTestId('setup-play')).not.toBeDisabled()
     expect(screen.getByTestId('setup-play')).toHaveClass('classroom-setup__play--dominant')
     expect(screen.getByTestId('setup-open-display-secondary')).toBeVisible()
@@ -976,7 +1018,8 @@ describe('ClassroomSetupPanel — typed names count as typed (Court B CB-03)', (
     fireEvent.change(field, { target: { value: 'Ozone Owls' } })
     expect(screen.getByTestId('setup-play')).toBeEnabled()
     expect(screen.queryByTestId('setup-play-blocker')).toBeNull()
-    expect(screen.getByTestId('setup-ready-heading')).toHaveTextContent('Ready')
+    // Optionals still unresolved in this fixture → honesty wording, not ✓ Ready.
+    expect(screen.getByTestId('setup-ready-heading')).toHaveTextContent(/required setup complete/i)
     // Committed state still chooses the task: the field being typed in stays mounted.
     expect(screen.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'names')
     expect(document.activeElement).toBe(field)

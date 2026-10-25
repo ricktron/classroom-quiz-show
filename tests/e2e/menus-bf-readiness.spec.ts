@@ -25,7 +25,9 @@ test('Ready with optionals unresolved keeps Start Game sole dominant then enters
   await fillAllTeamNames(page)
 
   await expect(page.getByTestId('setup-ready-heading')).toBeVisible()
-  await expect(page.getByTestId('setup-ready-heading')).toContainText(/ready/i)
+  // CANON-H-05: optionals unresolved → "Required setup complete", not "✓ Ready".
+  await expect(page.getByTestId('setup-ready-heading')).toContainText(/required setup complete/i)
+  await expect(page.getByTestId('setup-ready-heading')).not.toContainText(/✓\s*Ready/)
   await expect(page.getByTestId('setup-play')).toBeEnabled()
   await expect(page.getByTestId('setup-play')).toHaveClass(/classroom-setup__play--dominant/)
   await expect(page.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'play')
