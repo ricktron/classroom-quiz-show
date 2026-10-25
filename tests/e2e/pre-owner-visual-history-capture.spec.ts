@@ -214,7 +214,8 @@ test.describe('pre-owner Q6-RP-2 visual history capture', () => {
         folder: 'audience',
         basename: `pre-owner-display-board-playing-${vp.label}.png`,
         waitFor: async () => {
-          await expect(display!.getByTestId('nexus-detail')).toHaveText(/^Playing$/i, {
+          // CANON-H-09: Nexus stage names the beat; generic Playing detail is suppressed.
+          await expect(display!.getByTestId('nexus-stage')).toHaveText(/^Board open$/i, {
             timeout: 15_000,
           })
         },
