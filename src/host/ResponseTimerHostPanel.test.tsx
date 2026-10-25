@@ -153,18 +153,16 @@ describe('what the panel states', () => {
 })
 
 describe('controls are disabled when illegal, not offered and refused', () => {
-  it('disables everything while the board grid is showing, and says why', () => {
+  it('defers Arm/Timer walls while the board grid is showing, and says why (CANON-H-11)', () => {
     renderPanel()
-    expect(button(/^arm clue$/i)).toBeDisabled()
-    expect(button(/start timer/i)).toBeDisabled()
-    expect(button(/^pause$/i)).toBeDisabled()
-    expect(button(/^resume$/i)).toBeDisabled()
-    expect(button(/stop timer/i)).toBeDisabled()
-    expect(button(/reset window/i)).toBeDisabled()
+    expect(screen.queryByTestId('rth-arm')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('rth-start')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('rth-duration')).not.toBeInTheDocument()
+    expect(screen.getByTestId('rth-deferred')).toBeInTheDocument()
     expect(screen.getByTestId('rth-unavailable')).toHaveTextContent('Open a tile')
   })
 
-  it('explains the `selected` stage specifically', () => {
+  it('explains the `selected` stage specifically and keeps Arm/Timer deferred', () => {
     const store = boardStore()
     store.dispatch({
       type: 'SELECT_CATEGORY_BOARD_TILE',
@@ -174,6 +172,8 @@ describe('controls are disabled when illegal, not offered and refused', () => {
     })
     renderPanel(store)
     expect(screen.getByTestId('rth-unavailable')).toHaveTextContent('Show the prompt')
+    expect(screen.queryByTestId('rth-arm')).not.toBeInTheDocument()
+    expect(screen.getByTestId('rth-deferred')).toBeInTheDocument()
   })
 
   it('explains that a revealed answer ends the window', () => {
@@ -182,6 +182,7 @@ describe('controls are disabled when illegal, not offered and refused', () => {
     store.dispatch({ type: 'REVEAL_CATEGORY_BOARD_ANSWER', issuedAt: AT, roundId: ROUND })
     renderPanel(store)
     expect(screen.getByTestId('rth-unavailable')).toHaveTextContent('the response window is over')
+    expect(screen.queryByTestId('rth-arm')).not.toBeInTheDocument()
   })
 
   it('disables arm once armed and disarm until it is', () => {
@@ -405,7 +406,7 @@ function teamBoardStore(): SessionStore {
 const TILE = LEFTOVER_TILE
 
 describe('correct-closed Host timer presentation (F7)', () => {
-  it('disables Arm/Start/Pause/Stop and enables Reset while Correct owns leftover running', () => {
+  it('defers Arm/Start/Pause/Stop and keeps Reset while Correct owns leftover running', () => {
     const store = teamBoardStore()
     dispatchLeftoverRunningResolve(store, 'correct', AT)
     expect(responsePhaseFor(store.getState().session!.game!, ROUND).timer.status).toBe('running')
@@ -414,13 +415,10 @@ describe('correct-closed Host timer presentation (F7)', () => {
     expect(screen.getByTestId('rth-status')).toHaveTextContent('Closed — not a live response timer')
     expect(screen.getByTestId('rth-status')).not.toHaveTextContent('Running')
     expect(screen.getByTestId('rth-remaining')).toHaveTextContent('—')
-    expect(button(/^arm clue$/i)).toBeDisabled()
-    expect(button(/start timer/i)).toBeDisabled()
-    expect(button(/^pause$/i)).toBeDisabled()
-    expect(button(/^resume$/i)).toBeDisabled()
-    expect(button(/stop timer/i)).toBeDisabled()
+    expect(screen.queryByTestId('rth-arm')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('rth-start')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('rth-duration')).not.toBeInTheDocument()
     expect(button(/reset window/i)).toBeEnabled()
-    expect(screen.getByTestId('rth-duration')).toBeDisabled()
   })
 
   it('enables Reset after idle-timer Correct (outcome alone makes phase non-initial)', () => {
@@ -444,8 +442,8 @@ describe('correct-closed Host timer presentation (F7)', () => {
     expect(responsePhaseFor(store.getState().session!.game!, ROUND).timer.status).toBe('idle')
     renderPanel(store)
     expect(button(/reset window/i)).toBeEnabled()
-    expect(button(/^arm clue$/i)).toBeDisabled()
-    expect(button(/start timer/i)).toBeDisabled()
+    expect(screen.queryByTestId('rth-arm')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('rth-start')).not.toBeInTheDocument()
   })
 
   it('restores normal controls after Correct → Reset', () => {

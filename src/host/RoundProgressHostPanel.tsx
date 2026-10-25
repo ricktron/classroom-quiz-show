@@ -156,7 +156,13 @@ export function RoundProgressHostPanel({
         {confirming === null && (
           <button
             type="button"
-            className={boardDone ? 'btn rph__primary' : 'btn btn--secondary'}
+            className={
+              boardDone
+                ? 'btn rph__primary'
+                : !hasNext
+                  ? 'btn btn--quiet-danger'
+                  : 'btn btn--secondary'
+            }
             data-testid={hasNext ? 'rph-next' : 'rph-end'}
             disabled={clueOpen}
             onClick={() => (needsConfirm ? setConfirming(kind) : advance())}
@@ -167,7 +173,7 @@ export function RoundProgressHostPanel({
         {confirming === null && hasNext && (
           <button
             type="button"
-            className="btn btn--secondary"
+            className="btn btn--quiet-danger"
             data-testid="rph-end-early"
             disabled={clueOpen}
             onClick={() => setConfirming('end')}

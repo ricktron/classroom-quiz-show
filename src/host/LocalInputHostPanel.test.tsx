@@ -120,6 +120,20 @@ function queueOf(store: SessionStore) {
   return responsePhaseFor(game, ROUND).queue
 }
 
+describe('adjudication density (CANON-H-11)', () => {
+  it('hides Mark correct / incorrect / pass until a team has buzzed', () => {
+    const store = boardStore()
+    openClue(store)
+    arm(store)
+    renderPanel(store)
+    expect(screen.queryByTestId('lih-correct')).not.toBeInTheDocument()
+    expect(screen.getByTestId('lih-awaiting-buzz')).toHaveTextContent(/buzzes in/i)
+    press('Digit1')
+    expect(screen.getByTestId('lih-correct')).toBeInTheDocument()
+    expect(screen.queryByTestId('lih-awaiting-buzz')).not.toBeInTheDocument()
+  })
+})
+
 describe('what the panel states', () => {
   it('omits Slice-number ordinary teacher copy', () => {
     const store = boardStore()
@@ -485,13 +499,15 @@ describe('running the queue', () => {
     expect(activeRespondent(queueOf(store))).toBe('green')
   })
 
-  it('disables both queue actions when there is nobody to advance', () => {
+  it('defers queue adjudication when there is nobody to advance (CANON-H-11)', () => {
     const store = boardStore()
     openClue(store)
     arm(store)
     renderPanel(store)
-    expect(screen.getByRole('button', { name: /mark incorrect and advance/i })).toBeDisabled()
-    expect(screen.getByRole('button', { name: /pass and advance/i })).toBeDisabled()
+    expect(screen.queryByTestId('lih-correct')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('lih-incorrect')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('lih-pass')).not.toBeInTheDocument()
+    expect(screen.getByTestId('lih-awaiting-buzz')).toBeInTheDocument()
   })
 
   it('announces the active team and the queue in a live region', () => {

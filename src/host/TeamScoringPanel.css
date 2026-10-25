@@ -27,6 +27,43 @@
   font-size: 1.1rem;
 }
 
+/* CANON-H-06: pre-round keeps scoreboard + next-beat copy; ops stay closed. */
+.tsp--pre-round {
+  max-width: 40rem;
+}
+
+.tsp__next-beat {
+  margin: 0 0 var(--space-3);
+  font-size: 1rem;
+  color: var(--fg-primary);
+}
+
+.tsp__ops-disclosure {
+  margin: 0;
+  padding: var(--space-2);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+}
+
+.tsp__ops-disclosure > summary {
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--fg-muted);
+  list-style: disclosure-closed;
+}
+
+.tsp__ops-disclosure[open] > summary {
+  margin-bottom: var(--space-3);
+  list-style: disclosure-open;
+}
+
+.tsp__ops-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 /* ── Scoreboard ─────────────────────────────────────────────────────────── */
 .tsp__board {
   list-style: none;
