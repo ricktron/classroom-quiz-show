@@ -212,6 +212,13 @@ horizontal overflow. Headline results, after correction 4 above:
 
 These are recorded as findings-input, not written off.
 
+**One of them closed during the campaign.** Replacing the timer-expiry
+capture's fixed wait with a wait on the expiry the Host actually reports made
+`host-session-summary` reachable, so the final baseline has **11** unreached
+states rather than 12. The change was prompted by a SonarCloud finding against
+this lane's own instruments, which is the second time an external check caught
+something in the court rather than in the product.
+
 ---
 
 ## 4. The courts that sat
@@ -778,7 +785,7 @@ tree as committed:
 | `npm run test:run` | **3197 passed**, 2 skipped, 220 files |
 | `npm run build` | clean |
 | Full Playwright suite (`desktop-1080p`, `projector-720p`, `mobile-host`) | **856 passed**, 329 skipped, **0 failed** — the same pass count as the pre-repair baseline |
-| Rendered re-capture | 183 states + the new worst-case projector fixture, same journeys, same viewports |
+| Rendered re-capture | 196 captures across 207 manifest rows — 183 baseline states plus the worst-case projector fixture — same journeys, same viewports |
 | DOM metrics re-measure | 31 state files, both themes |
 
 Risk-based revalidation, as the brief requires: tranche 1 was pure styling, so
