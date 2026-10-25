@@ -80,6 +80,28 @@ a {
 }
 
 /*
+ * CANON-H-07: destructive End-the-game mid-play must not share equal weight with
+ * ordinary secondary chrome. Quiet text treatment; confirmation still required.
+ */
+.btn--quiet-danger {
+  color: var(--fg-muted);
+  background: transparent;
+  border-color: transparent;
+  font-size: 0.95rem;
+  font-weight: 550;
+  min-height: var(--target-minimum, 2.5rem);
+  padding: 0.45rem 0.75rem;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.btn--quiet-danger:hover:not(:disabled) {
+  color: var(--state-danger);
+  background: var(--state-danger-wash, transparent);
+  border-color: transparent;
+}
+
+/*
  * Disabled presentation uses semantic disabled tokens — never whole-control
  * opacity, which washes out borders and text together.
  */
