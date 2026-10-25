@@ -12,6 +12,7 @@ coverage/
 playwright-report/
 test-results/
 *.tsbuildinfo
+artifacts/
 
 # Editor / OS
 .DS_Store
