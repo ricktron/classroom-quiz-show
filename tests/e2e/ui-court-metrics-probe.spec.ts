@@ -390,4 +390,91 @@ test.describe('UI Court metrics probe', () => {
       await context.close().catch(() => undefined)
     }
   })
+
+  /**
+   * High contrast on the surfaces that actually have controls.
+   *
+   * The first pass measured high contrast only on the Display, which has no
+   * interactive controls at all — so it said nothing about focus rings,
+   * disabled states or control contrast under the theme a teacher would turn
+   * on precisely because they need it. The teacher reaches the theme through
+   * More -> Theme, so this drives that ordinary route.
+   */
+  test('probe Host and Setup in high contrast', async ({ browser }, info) => {
+    test.skip(info.project.name !== 'projector-720p', 'driver project only')
+    test.setTimeout(420_000)
+    const context = await (browser as Browser).newContext({
+      viewport: VP.laptop,
+      baseURL: info.project.use.baseURL,
+    })
+    const host = await context.newPage()
+    try {
+      await host.goto('./')
+      await host.getByTestId('home-import-game').click()
+      await host.locator('#home-import-json').fill(uiCourtGame('metrics-hc', 'High Contrast Game'))
+      await host.getByTestId('home-import-json').click()
+      await expect(host.getByTestId('import-quality-report')).toBeVisible({ timeout: 15_000 })
+      await host.getByRole('button', { name: /^play$/i }).first().click()
+      await expect(host.getByTestId('classroom-setup')).toBeVisible({ timeout: 20_000 })
+
+      // Turn high contrast on through the teacher's own route.
+      await host.locator('details[data-testid="host-more"] > summary').click()
+      await host.getByRole('radio', { name: /high contrast/i }).check()
+      await expect(host.locator('html')).toHaveAttribute('data-theme', 'high-contrast', {
+        timeout: 10_000,
+      })
+      await host.locator('details[data-testid="host-more"] > summary').click()
+
+      await probe(host, 'hc-setup-initial', VP.laptop)
+      await focusWalk(host, 'hc-setup-initial')
+      await host.screenshot({
+        path: `${OUT_ROOT}/system/hc-setup-initial--laptop-1366x768.png`,
+        fullPage: true,
+      })
+
+      const skip = host.getByTestId('setup-skip-buzzers')
+      if (await skip.isVisible().catch(() => false)) await skip.click()
+      await host.getByTestId('readiness-names').click()
+      await fillAllTeamNames(host)
+      await expect(host.getByTestId('setup-ready-heading')).toBeVisible()
+      await probe(host, 'hc-setup-ready', VP.laptop)
+      await host.screenshot({
+        path: `${OUT_ROOT}/system/hc-setup-ready--laptop-1366x768.png`,
+        fullPage: true,
+      })
+
+      await host.getByTestId('setup-play').click()
+      await expect(host.getByTestId('tsp-scoreboard')).toBeVisible()
+      await advanceToNextRound(host)
+      await expect(host.getByTestId('cbh-grid')).toBeVisible({ timeout: 15_000 })
+      await probe(host, 'hc-host-board', VP.laptop)
+      await host.screenshot({
+        path: `${OUT_ROOT}/system/hc-host-board--laptop-1366x768.png`,
+        fullPage: true,
+      })
+
+      await host.getByTestId('cbh-tile-science-100').click()
+      await host.getByTestId('cbh-reveal-prompt').click()
+      await host.getByTestId('rth-arm').click()
+      await host.keyboard.press('Digit1')
+      await probe(host, 'hc-host-buzz-active', VP.laptop)
+      await focusWalk(host, 'hc-host-buzz-active', 20)
+      await host.screenshot({
+        path: `${OUT_ROOT}/system/hc-host-buzz-active--laptop-1366x768.png`,
+        fullPage: true,
+      })
+
+      const display = await openAudienceFromHost(context, host)
+      await probe(display, 'hc-display-buzz-active', VP.proj1080)
+      await probe(display, 'hc-display-buzz-active', VP.proj720)
+      await display.setViewportSize(VP.proj720)
+      await display.screenshot({
+        path: `${OUT_ROOT}/system/hc-display-buzz-active--projector-1280x720.png`,
+      })
+      await display.close().catch(() => undefined)
+    } finally {
+      writeReports()
+      await context.close().catch(() => undefined)
+    }
+  })
 })
