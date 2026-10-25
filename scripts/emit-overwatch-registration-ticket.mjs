@@ -87,7 +87,8 @@ function main() {
 
   // deploy-pages can finish before the deployment status is queryable.
   // Bounded retry only (not uncontrolled polling): ~12 × 5s.
-  const maxAttempts = Number(process.env.OW_TICKET_RETRY_ATTEMPTS || 12)
+  // GitHub may mark deploy-pages complete ~60–90s before deployment status=success.
+  const maxAttempts = Number(process.env.OW_TICKET_RETRY_ATTEMPTS || 24)
   const delayMs = Number(process.env.OW_TICKET_RETRY_MS || 5000)
   let chosen = null
   let status = null
