@@ -70,7 +70,7 @@
    */
   --type-projector-brand: clamp(0.75rem, 1vw, 0.95rem);
   --type-projector-meta: clamp(0.72rem, 0.9vw, 0.9rem);
-  --type-projector-label: clamp(0.72rem, 1vw, 0.9rem);
+  --type-projector-label: clamp(0.9rem, 1.4vw, 1.4rem);
   --type-projector-status: clamp(0.8rem, 1.2vw, 1.1rem);
   --type-projector-status-idle: clamp(0.75rem, 1.1vw, 1rem);
   --type-projector-question: clamp(1.25rem, 0.5rem + 2.7vh, 3.25rem);

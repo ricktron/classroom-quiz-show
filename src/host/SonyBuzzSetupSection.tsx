@@ -287,7 +287,7 @@ function SupportedProfileBlock({
 
   return (
     <div className="sbs__supported" data-testid="sbs-supported-profile">
-      <h5 className="sbs__heading">Buzzers</h5>
+      <h5 className="sbs__heading">Classroom buzzer set</h5>
       <p className="host__note" data-testid="sbs-teacher-intro">
         {summary === 'sony-buzz-ready'
           ? 'These buzzers are already ready. Press RED on each one if you want a quick check. You do not need to pair them again for a normal class.'

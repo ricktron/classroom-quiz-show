@@ -81,8 +81,13 @@ a {
   background: var(--surface-raised);
 }
 
+/*
+ * `--fg-on-danger` exists for exactly this pairing. `--fg-on-accent-fill`
+ * (white) on `--state-danger` measures 2.77:1, below AA for button text;
+ * `--fg-on-danger` measures ~7:1 on the same fill.
+ */
 .btn--destructive {
-  color: var(--fg-on-accent-fill);
+  color: var(--fg-on-danger);
   background: var(--state-danger);
   border-color: var(--state-danger);
 }

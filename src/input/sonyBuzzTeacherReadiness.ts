@@ -168,7 +168,7 @@ export function receiverLayerLabel(layer: SonyBuzzReceiverLayer): string {
     case 'unsupported':
       return 'Buzzers are not available in this browser'
     case 'needs-permission':
-      return 'Permission required — use Connect classroom buzzers'
+      return 'Permission required — use Connect buzzers below'
     case 'connecting':
       return 'Connecting…'
     case 'connected':

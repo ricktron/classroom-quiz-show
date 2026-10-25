@@ -504,7 +504,14 @@ function describeOutcome(
   if (outcome === null) return 'No buzz keys pressed yet.'
   switch (outcome.kind) {
     case 'accepted':
-      return `${nameOf(outcome.teamId)} buzzed in.`
+      /*
+       * Scoped on purpose. `lastOutcome` is cleared only on a new class, not
+       * per clue, so this sentence outlives the clue it describes and used to
+       * read as a bare "Team 2 buzzed in." directly beneath "Active team:
+       * Nobody has buzzed yet" — in an aria-live region, so it was also the
+       * only thing a screen reader announced.
+       */
+      return `Last buzz key press: ${nameOf(outcome.teamId)} buzzed in.`
     case 'ignored':
       return KEYBOARD_IGNORE_MESSAGE[outcome.reason]
     case 'untranslated':

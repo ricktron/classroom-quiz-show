@@ -663,16 +663,27 @@ export function FoundationControls({
           )}
         </div>
         <div className="foundation__chrome-actions" role="group" aria-label="Host controls">
+          {/*
+            * Emergency mute is deliberately one-way: a stray second press must
+            * not un-silence a room. It therefore must not keep LOOKING
+            * available once it has done its job — `CQS-UX-P08` names that
+            * exact anti-pattern, and this product already answers it correctly
+            * one panel away, where `Connect buzzers` disables itself and
+            * becomes `Buzzers connected`. Same pattern here. Restoring sound
+            * stays in More -> Presentation sound, as it was.
+            */}
           <button
             type="button"
             className="btn btn--secondary"
             data-testid="host-chrome-mute"
+            disabled={presentationAudio.status.muted}
+            aria-disabled={presentationAudio.status.muted}
             onClick={() => {
               presentationAudio.setMuted(true)
               setAudioUnderstood(true)
             }}
           >
-            {presentationAudio.status.muted ? 'Sound is muted' : 'Mute all sounds'}
+            {presentationAudio.status.muted ? 'All sounds muted' : 'Mute all sounds'}
           </button>
           <button
             type="button"

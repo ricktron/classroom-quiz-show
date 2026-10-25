@@ -117,7 +117,17 @@ function channelStatus(
     if (response.boardOutcome.kind === 'incorrect') return 'Incorrect'
     if (response.boardOutcome.kind === 'passed') return 'Passed'
   }
-  if (response?.armed) return 'Ready'
+  /*
+   * OPEN (UI court, routed to the owner): this used to read
+   *   if (response?.armed) return 'Ready'
+   *   return 'Ready'
+   * — a dead branch whose existence shows the per-team word was meant to vary
+   * with arming, but which made every team strip read READY even while
+   * buzz-in was closed. Collapsed to the single reachable outcome; what the
+   * non-armed word should SAY on a public screen is a product decision, not a
+   * copy fix, because it depends on whether the strip means "this team is in
+   * the game" or "this team may buzz now".
+   */
   return 'Ready'
 }
 
@@ -237,7 +247,7 @@ function EventBody({
             data-testid="signal-rail-status"
             data-buzz-ready={response.armed ? 'armed' : 'ready'}
           >
-            {response.armed ? 'Waiting for a buzz' : 'Response ready'}
+            {response.armed ? 'Waiting for a buzz' : 'Buzz-in closed'}
           </p>
         ) : null}
         <BuzzQueueDisplay buzz={response.buzz} teams={teams} />

@@ -208,7 +208,7 @@ test('RP1-B: board-only game ends through the ordinary End the game control', as
   // Irreversible → always confirmed; unplayed clues are named.
   await host.getByTestId('rph-end').click()
   await expect(host.getByTestId('rph-confirm')).toContainText('4 clues have not been played')
-  await expect(host.getByTestId('rph-confirm')).toContainText("can't be undone")
+  await expect(host.getByTestId('rph-confirm')).toContainText('cannot be undone')
   await host.getByTestId('rph-cancel').click()
   await expect(host.getByTestId('cbh-grid')).toBeVisible()
 

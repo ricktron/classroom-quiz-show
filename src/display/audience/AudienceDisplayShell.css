@@ -394,7 +394,12 @@
 
 .signal-rail__channel-name {
   font-family: var(--font-sans);
-  font-size: clamp(0.65rem, 0.95vw, 0.85rem);
+  /*
+   * This strip is how the room learns which team is answering. It capped at
+   * 0.85rem — 13.6px on a 1920-wide projection — so it did not grow with the
+   * screen at all, while the clue text and the winner headline both do.
+   */
+  font-size: clamp(0.8rem, 1.25vw, 1.25rem);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -405,7 +410,9 @@
 
 .signal-rail__channel-status {
   font-family: var(--font-mono);
-  font-size: clamp(0.6rem, 0.85vw, 0.75rem);
+  /* Capped at 12px: the per-team state word was the smallest text on the
+     public screen and the only place it is stated per team. */
+  font-size: clamp(0.75rem, 1.15vw, 1.15rem);
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -679,7 +686,9 @@
 .audience--scene-quiet-cognition .signal-rail .rtd__armed,
 .audience--scene-quiet-cognition .signal-rail .rtd__status {
   margin: 0;
-  font-size: clamp(0.7rem, 1.05vw, 0.9rem);
+  /* "BUZZERS ARMED" / "BUZZERS NOT ARMED" is the single fact that tells the
+     room whether it may answer. It capped at 14.4px on a 1080p projection. */
+  font-size: clamp(0.85rem, 1.25vw, 1.25rem);
 }
 
 .audience--scene-quiet-cognition .signal-rail .rtd__clock {
@@ -703,11 +712,13 @@
 }
 
 .audience--scene-quiet-cognition .signal-rail .bqd__label {
-  font-size: clamp(0.65rem, 1vw, 0.85rem);
+  /* The word that says WHICH state the room is in, directly above the team
+     name it qualifies. It capped at 13.6px while that name reaches 41.6px. */
+  font-size: clamp(0.8rem, 1.2vw, 1.2rem);
 }
 
 .audience--scene-quiet-cognition .signal-rail .bqd__active {
-  font-size: clamp(1.05rem, 2.2vw, 1.75rem);
+  font-size: clamp(1.05rem, 2.2vw, 2.6rem);
 }
 
 .audience--scene-quiet-cognition .signal-rail .bqd__waiting {
@@ -716,7 +727,7 @@
 
 /* Board-outcome foundation text densify — coexist with F1 clue + buzz geometry. */
 .audience--scene-quiet-cognition .signal-rail .bod {
-  font-size: clamp(0.85rem, 1.35vw + 0.4rem, 1.15rem);
+  font-size: clamp(0.95rem, 1.35vw + 0.4rem, 1.9rem);
   padding-top: 0.1em;
 }
 

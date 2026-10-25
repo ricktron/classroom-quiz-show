@@ -88,6 +88,58 @@ function mediaGame(): string {
   })
 }
 
+/**
+ * The worst-case valid board the inventory names as S05-F1 stress scope:
+ * six categories x five values (30 tiles) with the product maximum of eight
+ * teams. `CQS-UX-P14` requires Display work to be judged against a worst-case
+ * valid fixture rather than a pleasant demo case, and every Display conclusion
+ * in this lane had otherwise been drawn against a two-category, three-value,
+ * two-team board.
+ */
+function worstCaseBoardGame(): string {
+  const categories = [
+    'Earth Structure',
+    'Plate Tectonics',
+    'Weather Systems',
+    'The Solar System',
+    'Rocks and Minerals',
+    'Oceans and Atmosphere',
+  ]
+  const values = [100, 200, 300, 400, 500]
+  return JSON.stringify({
+    format: 'classroom-quiz-show/game',
+    schemaVersion: 1,
+    id: 'ui-court-worst-case',
+    title: 'Worst Case Board Stress',
+    timer: { responseSeconds: 45 },
+    teams: Array.from({ length: 8 }, (_, i) => ({
+      id: `team${i + 1}`,
+      name: `Authored Team ${i + 1}`,
+      accent: ACCENTS[i % ACCENTS.length],
+    })),
+    rounds: [
+      {
+        id: 'board-round',
+        type: 'category-board',
+        title: 'Board',
+        config: {
+          categories: categories.map((title, c) => ({
+            id: `cat${c + 1}`,
+            title,
+            tiles: values.map((value) => ({
+              id: `cat${c + 1}-${value}`,
+              value,
+              prompt: `${title} for ${value}: what process is shown here?`,
+              answer: 'Mantle convection',
+              notes: 'Host-only note — never project',
+            })),
+          })),
+        },
+      },
+    ],
+  })
+}
+
 test.describe.configure({ mode: 'serial' })
 
 test.describe('UI Court rendered baseline — supplemental', () => {
@@ -608,6 +660,126 @@ test.describe('UI Court rendered baseline — supplemental', () => {
           note: 'start-new-game-session not visible after completion',
         })
       }
+    } finally {
+      flushManifest()
+      for (const p of owned) await p.close().catch(() => undefined)
+      await close()
+    }
+  })
+  // ──────────────────────────────────────────────────────────────────────────
+  // S6 — WORST-CASE DISPLAY FIXTURE (six categories x five values, eight teams)
+  // ──────────────────────────────────────────────────────────────────────────
+  test('S6 worst-case board and team count on the projector', async ({ browser }, info) => {
+    test.skip(info.project.name !== 'projector-720p', 'driver project only')
+    test.setTimeout(420_000)
+    const { context, page: host, close } = await newPage(browser, info, VP.laptop)
+    const owned: Page[] = []
+    try {
+      const disp = await stepValue('worst-start', 'worstcase', async () => {
+        await importMenusJsonAndPlay(host, worstCaseBoardGame())
+        await expect(host.getByTestId('classroom-setup')).toBeVisible({ timeout: 20_000 })
+        await readyAndStart(host)
+        const opened = await openAudienceFromHost(context, host)
+        owned.push(opened)
+        await advanceToNextRound(host)
+        await expect(host.getByTestId('cbh-grid')).toBeVisible({ timeout: 15_000 })
+        return opened
+      })
+      if (!disp) return
+
+      for (const vp of [VP.proj1080, VP.proj720] as const) {
+        await shot(disp, {
+          id: 'display-worst-board',
+          surface: 'worstcase',
+          state: 'projector board — 6 categories x 5 values, 8 teams',
+          vp,
+        })
+      }
+      await shot(host, {
+        id: 'host-worst-board',
+        surface: 'worstcase',
+        state: 'Host board — 6 categories x 5 values, 8 teams',
+        vp: VP.laptop,
+        fullPage: true,
+      })
+
+      await step('worst-clue', 'worstcase', async () => {
+        await host.getByTestId('cbh-tile-cat1-100').click()
+        await host.getByTestId('cbh-reveal-prompt').click()
+        await expect(host.getByTestId('lih-open')).toContainText('Open', { timeout: 10_000 })
+      })
+      for (const vp of [VP.proj1080, VP.proj720] as const) {
+        await shot(disp, {
+          id: 'display-worst-clue-revealed',
+          surface: 'worstcase',
+          state: 'projector clue revealed, worst-case fixture',
+          vp,
+        })
+      }
+
+      await step('worst-arm', 'worstcase', async () => {
+        await host.getByTestId('rth-arm').click()
+        await expect(host.getByTestId('lih-armed')).toContainText('Armed', { timeout: 10_000 })
+      })
+      for (const vp of [VP.proj1080, VP.proj720] as const) {
+        await shot(disp, {
+          id: 'display-worst-armed',
+          surface: 'worstcase',
+          state: 'projector armed, worst-case fixture',
+          vp,
+        })
+      }
+
+      await step('worst-buzz', 'worstcase', async () => {
+        await host.keyboard.press('Digit1')
+        await expect(host.getByTestId('lih-active')).toContainText('Team 1', { timeout: 10_000 })
+      })
+      for (const vp of [VP.proj1080, VP.proj720] as const) {
+        await shot(disp, {
+          id: 'display-worst-buzz-active',
+          surface: 'worstcase',
+          state: 'projector active team, worst-case fixture',
+          vp,
+        })
+      }
+
+      await step('worst-correct', 'worstcase', async () => {
+        await host.getByTestId('lih-correct').click()
+        await expect(host.getByTestId('lih-board-outcome')).toContainText(/correct/i, {
+          timeout: 10_000,
+        })
+      })
+      for (const vp of [VP.proj1080, VP.proj720] as const) {
+        await shot(disp, {
+          id: 'display-worst-outcome',
+          surface: 'worstcase',
+          state: 'projector correct outcome, worst-case fixture',
+          vp,
+        })
+      }
+
+      // Does the eight-team scoreboard fit the constrained projector?
+      const clipped = await disp.evaluate(() => {
+        const el = document.querySelector('[data-testid="display-scores"]')
+        if (!el) return { found: false }
+        const r = el.getBoundingClientRect()
+        return {
+          found: true,
+          bottom: Math.round(r.bottom),
+          viewportHeight: window.innerHeight,
+          clippedBy: Math.round(r.bottom - window.innerHeight),
+          docScrollHeight: document.documentElement.scrollHeight,
+        }
+      })
+      record({
+        id: 'worst-case-scoreboard-fit',
+        surface: 'worstcase',
+        state: `eight-team scoreboard box at 1280x720: ${JSON.stringify(clipped)}`,
+        viewport: VP.proj720.label,
+        file: null,
+        status: 'CAPTURED',
+        note: 'measurement only; positive clippedBy means the scoreboard runs past the frame',
+      })
     } finally {
       flushManifest()
       for (const p of owned) await p.close().catch(() => undefined)
