@@ -23,6 +23,8 @@
 - `src/routes/HomeRoute.tsx` (+ focused tests)
 - `tests/e2e/court-b-b-pending-name-start.spec.ts` (Ready wording)
 - `tests/e2e/menus-bf-readiness.spec.ts` (Ready wording)
+- `tests/e2e/court-b-fixture-reachability.spec.ts` (CBJ-02 Team N honesty)
+- `tests/e2e/menus-slice-cd-home-authoring.spec.ts` (Import demo primary)
 
 ## Before / after evidence
 
