@@ -188,6 +188,15 @@ This project separates two kinds of durable decision records:
      qualification. Product Contract and detailed S04-family direction
      are registered. **Documentation only — no product implementation
      authorized.**
+   - [`ROADMAP-AMENDMENT-006-multi-audience-product-vision.md`](ROADMAP-AMENDMENT-006-multi-audience-product-vision.md)
+     — multi-audience product-vision and analytics reconciliation
+     (2026-10-24): long-term educators + event-operator identity;
+     customization / entertainment goals; multi-audience analytics uses;
+     optional individual-device participation as aspiration with
+     explicit prospective supersession status (`CQS-RA6-*`). Does **not**
+     amend REAL MVP sequence, renumber `CQS-OD-001`…`CQS-OD-086`, resolve
+     `CQS-OD-066`, or activate post-MVP arcs. **Documentation only — no
+     product implementation authorized.**
 
 ## When an ADR is required
 

@@ -2,16 +2,28 @@
 
 - **Document id:** `CQS-PLAN-GAMEPLAY-POLICIES`
 - **Slice:** `CQS-PLAN-S01` (planning-only) · **Date:** 2026-08-03
+- **Last reconciled:** 2026-10-24 (Amendment 006 multi-audience / format
+  pathway note)
 - **Status:** Explanatory planning view — **authorizes no implementation**
 
 This is a domain view. Canonical authority lives elsewhere: decisions in
 [`../decisions/EXPANDED-VISION-OWNER-DECISIONS.md`](../decisions/EXPANDED-VISION-OWNER-DECISIONS.md)
 (`CQS-OD-xxx`), architecture lineage in
 [`../decisions/ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md`](../decisions/ROADMAP-AMENDMENT-002-expanded-gameplay-vision.md)
-(`CQS-RA2-xxx`), deferral dossiers in
+(`CQS-RA2-xxx`) and
+[`../decisions/ROADMAP-AMENDMENT-006-multi-audience-product-vision.md`](../decisions/ROADMAP-AMENDMENT-006-multi-audience-product-vision.md)
+(`CQS-RA6-xxx`), deferral dossiers in
 [`POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md)
 (`CQS-OPP-xxx`). Nothing here is implemented unless it names the current
 implementation explicitly.
+
+**Development strategy (binding).** Current REAL MVP completes and
+qualifies the Jeopardy-style category-board + Final experience. Additional
+game families (television-, party-, home-, and internet-inspired) remain
+long-term direction under `CQS-RA6-CUSTOMIZE-01` / `CQS-ARC-FORMATS`.
+This document does **not** prescribe the second game format; catalog
+entries stay deferred until separately authorized. IP-safe inspiration
+only — no commercial branding, artwork, or music imitation.
 
 ## 1. The six-layer product model (binding vocabulary)
 

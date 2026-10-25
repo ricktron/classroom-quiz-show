@@ -36,9 +36,20 @@ CQS is no longer being designed merely as a personal classroom utility.
 It is being designed as a **serious potential distributable education
 product** whose first/primary owner-user is the developer/teacher.
 
+**Long-term identity (not REAL MVP scope).** Beyond REAL MVP, CQS's
+accepted expanded vision includes a multi-audience platform for educators
+and entertainment/event operators, with customization and professional
+presentation as core goals, and educational analytics as a specialized
+capability rather than the sole product definition. That direction is
+recorded in
+[`plans/EXPANDED-CQS-VISION-ARC.md`](plans/EXPANDED-CQS-VISION-ARC.md) and
+[`decisions/ROADMAP-AMENDMENT-006-multi-audience-product-vision.md`](decisions/ROADMAP-AMENDMENT-006-multi-audience-product-vision.md).
+It does **not** authorize post-MVP arcs, SaaS, or device networking.
+
 REAL MVP must therefore avoid architectural decisions that make later
 distribution, compatibility, privacy, support, recovery, school-IT
-adoption, or teacher-data durability unnecessarily expensive.
+adoption, teacher-data durability, or safe multi-audience expansion
+unnecessarily expensive.
 
 This does **not** authorize premature SaaS, commercial, or cloud
 complexity.

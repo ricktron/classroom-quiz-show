@@ -1,14 +1,22 @@
 # Expanded Vision — Owner Decision Register
 
-> **Routing note (Amendments 003 and 004).** Passages below that describe the
-> MVP as an **18-slice** plan were true when `CQS-PLAN-S01` recorded them.
-> Amendment 003 later set a **22-slice** plan. The **current** MVP sequence is
-> the **23-slice** plan in [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md), per
+> **Routing note (Amendments 003, 004, and 006).** Passages below that
+> describe the MVP as an **18-slice** plan were true when `CQS-PLAN-S01`
+> recorded them. Amendment 003 later set a **22-slice** plan. The
+> historical completed foundation sequence is the **23-slice** plan in
+> [`../plans/MVP-ARC.md`](../plans/MVP-ARC.md), per
 > [`ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md`](ROADMAP-AMENDMENT-004-mvp-audio-and-release-rebalance.md)
 > (prior:
 > [`ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md`](ROADMAP-AMENDMENT-003-remaining-mvp-rebalance.md)).
-> No `CQS-OD-*` acceptance or activation state in this register is changed by
-> that note. **`CQS-OD-066` remains unresolved.**
+> The **current** Program is `CQS-REAL-MVP-1` in
+> [`../plans/CQS-REAL-MVP-ARC.md`](../plans/CQS-REAL-MVP-ARC.md).
+> Amendment 006
+> ([`ROADMAP-AMENDMENT-006-multi-audience-product-vision.md`](ROADMAP-AMENDMENT-006-multi-audience-product-vision.md))
+> reconciles multi-audience long-term identity, analytics uses, and
+> optional device-participation aspiration **outside** this numbered
+> register. **No `CQS-OD-*` acceptance or activation state in this
+> register is changed by that note. Decision numbers 1–86 and the
+> primary tally remain 86. `CQS-OD-066` remains unresolved.**
 
 - **Register id:** `CQS-EXPANDED-VISION-DECISIONS`
 - **Authorization:** `AUTHORIZE-CQS-PLAN-S01-EXPANDED-VISION-DOCUMENTATION-1`
@@ -29,7 +37,10 @@ remaining-MVP rebalance in
 sequencing lives in
 [`../plans/EXPANDED-CQS-VISION-ARC.md`](../plans/EXPANDED-CQS-VISION-ARC.md);
 deferred work lives in
-[`../plans/POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](../plans/POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md).
+[`../plans/POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md`](../plans/POST-MVP-OPPORTUNITY-AND-TRIGGER-REGISTER.md);
+multi-audience / optional-device reconciliation lineage lives in
+[`ROADMAP-AMENDMENT-006-multi-audience-product-vision.md`](ROADMAP-AMENDMENT-006-multi-audience-product-vision.md)
+(does **not** add `CQS-OD-087+` entries).
 
 ## How to read this register
 
