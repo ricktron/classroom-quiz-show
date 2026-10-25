@@ -99,6 +99,7 @@ function channelStatus(
   response: PublicResponseState | null,
   revealedTeamName: string | null,
   settledTeamKeys: readonly string[],
+  round: PublicRoundState | null,
 ): string {
   if (response?.buzz.status === 'active' && response.buzz.activeTeamKey === team.key) {
     return 'Answering'
@@ -117,8 +118,14 @@ function channelStatus(
     if (response.boardOutcome.kind === 'incorrect') return 'Incorrect'
     if (response.boardOutcome.kind === 'passed') return 'Passed'
   }
+  // CANON-H-03: only claim Ready when the public response window is armed.
+  // Armed + idle claim → Ready. Disarmed response DTO → Standby (not Ready).
   if (response?.armed) return 'Ready'
-  return 'Ready'
+  if (response) return 'Standby'
+  // Final unsettled teams keep Ready as turn vocabulary (CB-F2); board/idle
+  // without a response DTO must not flood Ready (CANON-H-03 / H-09).
+  if (round?.kind === PUBLIC_FINAL_KIND) return 'Ready'
+  return 'Standby'
 }
 
 /**
@@ -161,7 +168,7 @@ function TeamChannelRail({
       aria-label="Team channels"
     >
       {teams.teams.map((team) => {
-        const status = channelStatus(team, response, revealedTeamName, settledTeamKeys)
+        const status = channelStatus(team, response, revealedTeamName, settledTeamKeys, round)
         const answering =
           response?.buzz.status === 'active' && response.buzz.activeTeamKey === team.key
         return (
@@ -235,9 +242,10 @@ function EventBody({
           <p
             className={`signal-rail__status${response.armed ? ' signal-rail__status--armed' : ''}`}
             data-testid="signal-rail-status"
-            data-buzz-ready={response.armed ? 'armed' : 'ready'}
+            data-buzz-ready={response.armed ? 'armed' : 'standby'}
           >
-            {response.armed ? 'Waiting for a buzz' : 'Response ready'}
+            {/* CANON-H-03: do not say Ready while Host truth is not armed. */}
+            {response.armed ? 'Waiting for a buzz' : 'Standing by'}
           </p>
         ) : null}
         <BuzzQueueDisplay buzz={response.buzz} teams={teams} />
@@ -250,13 +258,9 @@ function EventBody({
     )
   }
 
-  return (
-    <div className="signal-rail__event" data-testid="signal-rail-event">
-      <p className="signal-rail__status" data-testid="signal-rail-status">
-        Ready
-      </p>
-    </div>
-  )
+  // CANON-H-09 / H-03: no bare footer Ready when there is no response DTO —
+  // team channels already carry Standby; do not echo ops completion language.
+  return <div className="signal-rail__event" data-testid="signal-rail-event" />
 }
 
 export function SignalRail({

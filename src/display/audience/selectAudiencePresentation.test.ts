@@ -500,6 +500,30 @@ describe('selectAudiencePresentation', () => {
     const blob = JSON.stringify(presentation)
     expect(blob).not.toMatch(/category-board|final-wager|teacher|class title|host notes/i)
   })
+
+  it('CANON-H-09: suppresses generic Playing detail on board/clue Nexus stages', () => {
+    const board = selectAudiencePresentation(baseState({ round: OPEN_BOARD, detail: 'Playing' }))
+    expect(board.nexus.stageLabel).toBe('Board open')
+    expect(board.nexus.detail).toBeNull()
+
+    const selected = selectAudiencePresentation(
+      baseState({
+        detail: 'Playing',
+        round: {
+          kind: PUBLIC_BOARD_KIND,
+          stage: 'selected',
+          selection: {
+            categoryTitle: 'Science',
+            value: 100,
+            prompt: null,
+            answer: null,
+          },
+        },
+      }),
+    )
+    expect(selected.nexus.stageLabel).toBe('Selected')
+    expect(selected.nexus.detail).toBeNull()
+  })
 })
 
 

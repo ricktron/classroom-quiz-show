@@ -310,6 +310,37 @@
   padding-block: var(--space-1);
 }
 
+/*
+ * CANON-H-09: Host-session ops chrome ("Session ready — Playing") must not
+ * compete with the theatrical stage. Nexus Core already names the beat
+ * (Board open / Selected / Question / Answer). Keep host-line for a11y tree
+ * but remove it from the visual projector composition.
+ */
+.audience--scene-board .audience__host-line,
+.audience--scene-quiet-cognition .audience__host-line,
+.audience--scene-answer .audience__host-line,
+.audience--scene-board .audience__game-line,
+.audience--scene-quiet-cognition .audience__game-line,
+.audience--scene-answer .audience__game-line {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Demote unarmed Standby channel labels vs armed Ready / Answering. */
+.signal-rail__channel[data-channel-status='standby'] .signal-rail__channel-status {
+  color: var(--fg-muted);
+  opacity: 0.78;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
 /* Completion: Nexus + Final body own "Game complete"; drop duplicate right line. */
 .audience--scene-complete .audience__game-line {
   position: absolute;

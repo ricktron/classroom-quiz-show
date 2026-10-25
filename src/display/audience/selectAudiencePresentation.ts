@@ -395,10 +395,14 @@ function nexusFor(
   // Q6-RP-1 (G2): the host now derives "Game complete" at completion — never
   // print the same words twice in the Nexus Core.
   const normalizedDetail = detail === null ? null : detail.trim().replace(/\.$/, '').toLowerCase()
+  // CANON-H-09: generic Host-session "Playing" is ops chrome on the audience
+  // stage once Nexus already names Board open / Selected / Question / Answer.
+  const boardStageLabels = new Set(['Board open', 'Selected', 'Question', 'Answer'])
   const cleanedDetail =
     detail !== null &&
     ((stageLabel === 'Game complete' && normalizedDetail === 'playing') ||
-      normalizedDetail === stageLabel.toLowerCase())
+      normalizedDetail === stageLabel.toLowerCase() ||
+      (boardStageLabels.has(stageLabel) && normalizedDetail === 'playing'))
       ? null
       : detail
   return {

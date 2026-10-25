@@ -85,7 +85,11 @@ export function ResponseTimerDisplay({
       </p>
 
       <p className="rtd__status" data-testid="rtd-status">
-        {STATUS_LABEL[status]}
+        {/*
+          CANON-H-03: idle + disarmed must not read as play Ready. Armed idle
+          still says Ready (buzzers live). Live timer statuses keep their labels.
+        */}
+        {status === 'idle' && !armed ? 'Idle' : STATUS_LABEL[status]}
       </p>
 
       {showsClock && (

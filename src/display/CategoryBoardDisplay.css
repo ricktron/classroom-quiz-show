@@ -71,9 +71,10 @@
 
 .cbd__category {
   margin: 0;
-  padding: clamp(0.3rem, 0.75vw, 0.6rem) clamp(0.25rem, 0.6vw, 0.5rem);
-  min-height: clamp(2rem, 4.8vh, 3.4rem);
-  max-height: 20%;
+  padding: clamp(0.4rem, 0.9vw, 0.75rem) clamp(0.3rem, 0.7vw, 0.6rem);
+  /* CANON-H-04: category identity must survive projector distance vs values. */
+  min-height: clamp(2.6rem, 6vh, 4.1rem);
+  max-height: 28%;
   flex: 0 1 auto;
   display: flex;
   flex-wrap: wrap;
@@ -81,12 +82,12 @@
   justify-content: center;
   gap: 0.15rem 0.3rem;
   font-family: var(--font-sans);
-  font-size: clamp(0.82rem, 1.25vw + 0.15vh, 1.35rem);
-  line-height: 1.12;
+  font-size: clamp(1.05rem, 1.9vw + 0.35vh, 1.95rem);
+  line-height: 1.1;
   font-weight: 800;
   text-align: center;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: var(--fg-strong);
   background: transparent;
   border: 0;
@@ -123,7 +124,8 @@
   border-radius: var(--radius-tile);
   font-family: var(--font-sans);
   font-weight: 900;
-  font-size: clamp(1.45rem, 2.85vw + 0.35vh, 3.35rem);
+  /* Values stay strong (DC-PROJ-010) but must not drown category headers (H-04). */
+  font-size: clamp(1.35rem, 2.55vw + 0.3vh, 3.05rem);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
@@ -231,6 +233,40 @@
   border-radius: var(--radius-md);
   padding: 0.1rem 0.45rem;
   line-height: 1.1;
+}
+
+/*
+ * CANON-H-02: SELECTED / pre-reveal is a theatrical beat — category + value must
+ * read as the room-scale focal, not a thin mid-screen chip in empty grid.
+ * Prompt/answer stages keep the tighter header so authored text owns the stage.
+ */
+.cbd--selected {
+  justify-content: center;
+  min-height: min(62vh, 100%);
+  gap: clamp(1.1rem, 3.2vh, 2.75rem);
+  padding: clamp(1.25rem, 3.5vh, 3rem) clamp(1rem, 3vw, 2.5rem);
+}
+
+.cbd--selected .cbd__selection-header {
+  gap: clamp(0.55rem, 1.4vw, 1.15rem) clamp(0.75rem, 2vw, 1.5rem);
+  flex-direction: column;
+  align-items: center;
+}
+
+.cbd--selected .cbd__selection-category {
+  font-size: clamp(1.85rem, 4.4vw + 1.1vh, 4.5rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--fg-strong);
+  max-width: 22ch;
+  line-height: 1.05;
+}
+
+.cbd--selected .cbd__selection-value {
+  font-size: clamp(2.35rem, 5.2vw + 1.3vh, 5.25rem);
+  font-weight: 900;
+  padding: 0.22rem 0.85rem;
+  border-width: var(--bw-emphasis, 3px);
 }
 
 /* Wrapper for MediaContentDisplay — presentation lives on `.mcd*` classes. */

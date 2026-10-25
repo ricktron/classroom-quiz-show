@@ -147,6 +147,13 @@ describe('selected stage', () => {
     expect(screen.queryByTestId('cbd-answer')).not.toBeInTheDocument()
   })
 
+  it('CANON-H-02: marks SELECTED-only open stage for theatrical scale CSS', () => {
+    renderAt(select('alpha-300'))
+    const open = screen.getByTestId('cbd-open')
+    expect(open).toHaveClass('cbd--selected')
+    expect(open).toHaveAttribute('data-stage', 'selected')
+  })
+
   it('shows no other tile content', () => {
     const { container } = renderAt(select('alpha-300'))
     const text = container.textContent ?? ''
