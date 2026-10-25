@@ -85,21 +85,33 @@ function main() {
     process.exit(1)
   }
 
-  const deps = ghJson(`repos/${REPO}/deployments?environment=github-pages&per_page=15`)
+  // deploy-pages can finish before the deployment status is queryable.
+  // Bounded retry only (not uncontrolled polling): ~12 × 5s.
+  const maxAttempts = Number(process.env.OW_TICKET_RETRY_ATTEMPTS || 12)
+  const delayMs = Number(process.env.OW_TICKET_RETRY_MS || 5000)
   let chosen = null
   let status = null
-  for (const d of deps) {
-    if (d.sha !== sha) continue
-    const st = ghJson(`repos/${REPO}/deployments/${d.id}/statuses`)
-    if (!Array.isArray(st) || !st.length) continue
-    const top = st[0]
-    if (top.state !== 'success') {
+  let attempts = 0
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    attempts = attempt
+    const deps = ghJson(`repos/${REPO}/deployments?environment=github-pages&per_page=15`)
+    for (const d of deps) {
+      if (d.sha !== sha) continue
+      const st = ghJson(`repos/${REPO}/deployments/${d.id}/statuses`)
+      if (!Array.isArray(st) || !st.length) continue
+      const top = st[0]
+      if (top.state !== 'success') {
+        status = top
+        continue
+      }
+      chosen = d
       status = top
-      continue
+      break
     }
-    chosen = d
-    status = top
-    break
+    if (chosen) break
+    if (attempt < maxAttempts) {
+      spawnSync('sleep', [String(Math.ceil(delayMs / 1000))], { stdio: 'ignore' })
+    }
   }
 
   const ticket = {
@@ -131,8 +143,10 @@ function main() {
           deploymentSha: null,
           expectedSha: sha,
           note: 'No successful github-pages deployment yet for authorized source SHA.',
+          lookupAttempts: attempts,
         },
     sourceCommit: sha,
+    lookupAttempts: attempts,
     releaseAuthorization: {
       policy: POLICY,
       promotionAuthority: 'owner-release',
