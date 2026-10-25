@@ -223,7 +223,7 @@ filing. Reviewer identity, remit and blindness state:
 | --- | --- | --- | --- |
 | `FI-1` | first impression, teacher, 20 Host/Home/Setup states | **no** — screenshots only | no |
 | `FI-2` | first impression, student at the back of the room, 24 projector states plus the distance aids | **no** — screenshots only | no |
-| `ZE` | zero-explanation teacher: drive a live build and run a quiz, no docs, ~30 interactive runs | **no** — the running product only | no |
+| `ZE` | zero-explanation teacher: drive a live build and run a quiz, no docs; 32 interactive runs, task **completed** (30-clue board authored, projector opened, clues played, full Final, finished at a named winner) | **no** — the running product only | no |
 | `BENCH-A` | teacher/operator UX, information architecture, cognitive load, classroom pressure P1–P8 | yes | no |
 | `BENCH-B` | student/projector experience and distance legibility | yes | no |
 | `BENCH-C` | visual design, hierarchy, cross-surface consistency sweep | yes | no |
@@ -669,8 +669,12 @@ session found — Resume class / Start fresh". Team names gone from view, Start
 Game gone. "Resume class" restored everything, so the data was safe — but
 **"Start fresh" was offered at equal prominence, and it discards the setup**,
 live, in front of a class. The reviewer self-corrected; a teacher under
-pressure might not. Needs one confirming reproduction before repair, which is
-why it is routed rather than fixed.
+pressure might not.
+
+The reviewer also reports it as **intermittent** — "not reproducible every
+time" — which is why it is routed rather than repaired: an intermittent
+state-recovery trigger needs to be understood before it is changed, and
+guessing at it from one observation would be the wrong kind of confidence.
 
 ### `UIX-O18` — Smaller zero-explanation findings worth a decision together (MEDIUM)
 
