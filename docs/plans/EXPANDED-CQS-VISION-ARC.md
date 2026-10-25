@@ -105,17 +105,21 @@ summary ledger and compatible reporting; the theme and design-token
 foundation; and the Phase 2B audience-display composition (board-first shell,
 Nexus Core, adaptive scores, Signal Rails) on public-state wire **8**. Public-
 state wire **8**, sync envelope **2**, game-file schema **1**, IndexedDB
-schema **2**. **Slices 1–18 are `Complete`**; **Slices 19–23 remain `Planned`
-and unauthorized** under Amendment 004. Next planned product frontier:
-**Slice 19 — Self-Contained Portable Packs** (unauthorized).
+schema **2**. **Frozen snapshot claim (2026-08-06):** Slices 1–18
+`Complete`; Slices 19–23 then still `Planned` under Amendment 004, with
+Slice 19 as the then-next unauthorized frontier. **Later history:** the
+23-slice foundation roadmap completed; current Program is
+`CQS-REAL-MVP-1` — see [`../STATUS.md`](../STATUS.md). Do not treat the
+frozen Slice 19–23 "Planned" wording as live status.
 
 > **Reconciliation note.** This section previously recorded a post-Slice-14
-> snapshot (slices 1–14 Complete; Slices 15–22 Planned; next candidate Slice
-> 15). That wording became stale across completed Slices 15–18 and is updated
-> here under `AUTHORIZE-CQS-SLICE-18-POST-MERGE-RECONCILIATION-1` while
-> historical product thesis, post-MVP sequencing, preservation clauses, and
-> owner-decision meaning remain unchanged. See [`../STATUS.md`](../STATUS.md)
-> for canonical current slice status.
+> snapshot, then a post-Slice-18 snapshot under
+> `AUTHORIZE-CQS-SLICE-18-POST-MERGE-RECONCILIATION-1`. Amendment 006
+> (2026-10-24) labels the body as historical and points live status to
+> [`../STATUS.md`](../STATUS.md) without rewriting the dated capability
+> inventory. Historical product thesis updates live in §1; post-MVP
+> sequencing, preservation clauses, and owner-decision meaning otherwise
+> remain as recorded.
 
 Nothing in the expanded vision beyond the completed MVP paragraph above is
 implemented. No statement in this arc may be read as "CQS supports X" for any
