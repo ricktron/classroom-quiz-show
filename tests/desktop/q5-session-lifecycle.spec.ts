@@ -52,8 +52,12 @@ async function importQ3GameToClassSetupOnDesktop(page: Page, suffix: string): Pr
 }
 
 async function expectHostPrivateAnswerVisible(host: Page): Promise<void> {
-  await expect(host.getByTestId('cbh-answer')).toContainText('Water')
   await expect(host.getByTestId('cbh-prompt')).toContainText(/what is H2O/i)
+  const gradingKey = host.getByTestId('cbh-grading-key')
+  if ((await gradingKey.getAttribute('open')) === null) {
+    await host.getByTestId('cbh-grading-key-summary').click()
+  }
+  await expect(host.getByTestId('cbh-answer')).toContainText('Water')
 }
 
 test('Q5-A: desktop build identity binds sourceSha to exact candidate HEAD', async () => {

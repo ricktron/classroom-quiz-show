@@ -1027,9 +1027,8 @@ interface GameListProps {
 }
 
 function libraryStatusLabel(entry: SavedDefinitionSummary): string {
-  if (entry.playable) {
-    return entry.hasDraft ? 'Playable · Draft' : 'Playable'
-  }
+  // T5 DC-DRIFT-007: playable wins — do not collide with Draft on the same badge.
+  if (entry.playable) return 'Playable'
   if (entry.hasDraft) return 'Draft'
   return 'Needs content'
 }

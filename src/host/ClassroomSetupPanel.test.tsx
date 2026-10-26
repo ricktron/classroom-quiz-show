@@ -543,6 +543,9 @@ describe('ClassroomSetupPanel', () => {
     expect(screen.getByTestId('setup-play')).not.toBeDisabled()
     expect(screen.getByTestId('setup-play')).toHaveClass('classroom-setup__play--dominant')
     expect(screen.getByTestId('setup-open-display-secondary')).toBeVisible()
+    // T5 DC-DRIFT-004: Ready overview has one Class-Setup Open display (outcome
+    // secondary) — not a second Open display on the Display row.
+    expect(screen.queryByTestId('setup-open-display')).toBeNull()
     expect(screen.getByTestId('setup-current-task')).toHaveAttribute('data-task', 'play')
     expect(screen.queryByTestId('setup-buzzers-task')).toBeNull()
     expect(screen.queryByTestId('setup-display-task')).toBeNull()
