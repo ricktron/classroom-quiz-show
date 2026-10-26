@@ -258,7 +258,8 @@ function describeGameRound(game: PublicGameView | null): string | null {
   if (game.roundAvailability === 'unavailable') return 'Round unavailable'
   if (game.currentRound === null) {
     if (game.roundCount === 0) return null
-    return `${game.roundCount} rounds`
+    // T5 DC-DRIFT-018: singular when one round.
+    return game.roundCount === 1 ? '1 round' : `${game.roundCount} rounds`
   }
   return `Round ${game.currentRound} of ${game.roundCount}`
 }

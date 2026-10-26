@@ -28,13 +28,17 @@ import {
 import { useSemanticPresentationAck } from '../useSemanticPresentationAck'
 import './AudienceDisplayShell.css'
 
+function roundsPhrase(count: number): string {
+  return count === 1 ? '1 round' : `${count} rounds`
+}
+
 /** Neutral public-safe game line preserved for existing projector contracts. */
 function describeGame(game: PublicGameView): string {
   if (game.status === 'ended') return 'Game complete'
   switch (game.roundAvailability) {
     case 'available':
       return game.currentRound === null
-        ? `Game ready — ${game.roundCount} rounds`
+        ? `Game ready — ${roundsPhrase(game.roundCount)}`
         : `Round ${game.currentRound} of ${game.roundCount}`
     case 'unavailable':
       return 'This round is not available yet'
@@ -42,7 +46,7 @@ function describeGame(game: PublicGameView): string {
     default:
       return game.roundCount === 0
         ? 'Game ready'
-        : `Game ready — ${game.roundCount} rounds, waiting for the host`
+        : `Game ready — ${roundsPhrase(game.roundCount)}, waiting for the host`
   }
 }
 

@@ -512,7 +512,9 @@ export function ClassroomSetupPanel({
         </button>
       )
     }
-    if (item.id === 'display' && !displayOpen) {
+    // T5 DC-DRIFT-004: Ready overview already offers one Open display beside Start
+    // Game — do not also put Open display on the Display row in that overview.
+    if (item.id === 'display' && !displayOpen && !(stagePlayEnabled && !expandedTask)) {
       return (
         <button
           type="button"
