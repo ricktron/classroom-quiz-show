@@ -27,12 +27,15 @@ import './CategoryBoardHostPanel.css'
  *
  * ## Private preview vs. public content
  *
- * The host legitimately sees more than the class: the prompt, the answer, the
- * acceptable alternates, and the teacher notes are all visible from the moment
- * a tile is selected. The panel therefore makes the distinction explicit rather
- * than implicit — every private block is badged "Host only", and a persistent
- * "On the display now" line states exactly what the projector is showing. A
- * teacher must never have to guess whether the answer is already up.
+ * The host legitimately holds more than the class: the prompt, the answer, the
+ * acceptable alternates, and the teacher notes. Privacy authority remains the
+ * allow-list sanitizer (ADR-002) — these facts never ride PublicState before an
+ * authorized reveal. On the Host surface, the prompt stays immediately readable
+ * for the next beat; the grading key (answer / alternates / notes) stays behind
+ * a closed-by-default Host-only disclosure so a wrong-window share does not make
+ * answers the highest-legibility content (CANON-H-12). Every private block is
+ * still badged "Host only", and "On the display now" states exactly what the
+ * projector is showing.
  *
  * ## Bounded controls
  *
@@ -223,12 +226,7 @@ export function CategoryBoardHostPanel({
 
           <HostOnlyPrompt prompt={location.tile.prompt} />
 
-          <HostOnlyBlock label="Correct answer" testId="cbh-answer">
-            {location.tile.answer}
-          </HostOnlyBlock>
-
-          <HostOnlyAlternates tile={location.tile} />
-          <HostOnlyNotes tile={location.tile} />
+          <HostGradingKey tile={location.tile} />
 
           <p className="host__note cbh__hint">
             {progress.stage === 'answer'
@@ -246,13 +244,16 @@ function HostOnlyBlock({
   label,
   testId,
   children,
+  tone = 'ops',
 }: {
   readonly label: string
   readonly testId: string
   readonly children: React.ReactNode
+  /** `ops` = always-needed Host preview; `grading` = answer-key blast-radius content. */
+  readonly tone?: 'ops' | 'grading'
 }) {
   return (
-    <div className="cbh__private">
+    <div className={`cbh__private cbh__private--${tone}`}>
       <p className="cbh__private-label">
         <span className="cbh__private-badge">Host only</span>
         {label}
@@ -265,6 +266,34 @@ function HostOnlyBlock({
         {children}
       </div>
     </div>
+  )
+}
+
+/**
+ * Answer / alternates / notes — Host-only grading facts.
+ *
+ * Closed by default (CANON-H-12): if the Host window is accidentally shared,
+ * these must not be the highest-legibility content on screen. Opening is an
+ * explicit teacher gesture for adjudication. This is Host layout blast-radius
+ * hardening, not Display CSS privacy — public projection still goes through
+ * the sanitizer alone.
+ */
+function HostGradingKey({ tile }: { readonly tile: CategoryBoardTile }) {
+  return (
+    <details className="cbh__grading-key" data-testid="cbh-grading-key">
+      <summary className="cbh__grading-key-summary" data-testid="cbh-grading-key-summary">
+        <span className="cbh__private-badge">Host only</span>
+        Show grading key
+        <span className="cbh__grading-key-hint">Answer, alternates, notes — keep off the projector</span>
+      </summary>
+      <div className="cbh__grading-key-body" data-testid="cbh-grading-key-body">
+        <HostOnlyBlock label="Correct answer" testId="cbh-answer" tone="grading">
+          {tile.answer}
+        </HostOnlyBlock>
+        <HostOnlyAlternates tile={tile} />
+        <HostOnlyNotes tile={tile} />
+      </div>
+    </details>
   )
 }
 
@@ -317,7 +346,7 @@ function HostOnlyPrompt({ prompt }: { readonly prompt: PromptContent }) {
 function HostOnlyAlternates({ tile }: { readonly tile: CategoryBoardTile }) {
   if (tile.alternates.length === 0) return null
   return (
-    <div className="cbh__private">
+    <div className="cbh__private cbh__private--grading">
       <p className="cbh__private-label">
         <span className="cbh__private-badge">Host only</span>
         Acceptable alternates
@@ -334,7 +363,7 @@ function HostOnlyAlternates({ tile }: { readonly tile: CategoryBoardTile }) {
 function HostOnlyNotes({ tile }: { readonly tile: CategoryBoardTile }) {
   if (tile.notes === null) return null
   return (
-    <HostOnlyBlock label="Teacher notes" testId="cbh-notes">
+    <HostOnlyBlock label="Teacher notes" testId="cbh-notes" tone="grading">
       {tile.notes}
     </HostOnlyBlock>
   )

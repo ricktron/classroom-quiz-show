@@ -128,9 +128,10 @@
 .fwh__private {
   margin: 0;
   padding: 0.4rem 0.55rem;
-  border: 1px dashed var(--border-panel);
+  border: 1px dashed color-mix(in srgb, var(--state-host) 45%, var(--border-panel));
   border-radius: var(--radius);
   font-size: 0.95rem;
+  color: var(--fg-muted);
 }
 
 .fwh__private-tag {
@@ -138,11 +139,50 @@
   margin-right: 0.4rem;
   padding: 0.05rem 0.4rem;
   border-radius: var(--radius);
-  background: var(--border-panel);
+  background: var(--state-host-wash);
+  border: 1px solid var(--state-host);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  color: var(--fg-primary);
+}
+
+/* CANON-H-12: closed-by-default Final grading key (Host blast-radius). */
+.fwh__grading-key {
+  margin: 0 0 0.55rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px dashed color-mix(in srgb, var(--state-host) 55%, var(--border-panel));
+  border-radius: var(--radius);
+}
+
+.fwh__grading-key-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.55rem;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--fg-primary);
+}
+
+.fwh__grading-key-summary::-webkit-details-marker {
+  display: none;
+}
+
+.fwh__grading-key-hint {
+  flex: 1 1 12rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+
+.fwh__grading-key-body {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.45rem;
 }
 
 .fwh__leader {

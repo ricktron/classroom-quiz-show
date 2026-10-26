@@ -141,6 +141,8 @@ export async function expectDisplayPrivate(
 export async function openBoardClue(host: Page): Promise<void> {
   await host.getByTestId('cbh-tile-science-100').click()
   await expect(host.getByTestId('cbh-prompt')).toContainText(/what is H2O/i)
+  await expect(host.getByTestId('cbh-grading-key')).not.toHaveAttribute('open')
+  await host.getByTestId('cbh-grading-key-summary').click()
   await expect(host.getByTestId('cbh-answer')).toContainText('Water')
   await host.getByTestId('cbh-reveal-prompt').click()
   await expect(host.getByTestId('lih-open')).toContainText('Open')

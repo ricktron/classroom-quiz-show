@@ -153,8 +153,26 @@
 .cbh__private {
   padding: var(--space-2);
   background: var(--surface-base);
-  border: 1px solid var(--state-host);
+  border: 1px solid var(--border-panel);
   border-radius: var(--radius);
+}
+
+/*
+ * Ops preview (prompt): private and explicit, but not the loudest band on the
+ * Host clue column — primary CTAs must outrank private text if a wrong window
+ * is shared (CANON-H-12 blast-radius).
+ */
+.cbh__private--ops {
+  border-color: var(--border-panel);
+}
+
+/*
+ * Grading key (answer / alternates / notes): quieter than legacy gold stacks so
+ * open state still reads Host-only without becoming room-scale hero content.
+ */
+.cbh__private--grading {
+  border-color: color-mix(in srgb, var(--state-host) 45%, var(--border-panel));
+  background: color-mix(in srgb, var(--surface-base) 92%, var(--state-host-wash));
 }
 
 .cbh__private-label {
@@ -182,6 +200,53 @@
 .cbh__private-body {
   margin: 0;
   overflow-wrap: anywhere; /* a long unbroken answer must never overflow */
+}
+
+.cbh__private--grading .cbh__private-body,
+.cbh__private--grading .cbh__alternates {
+  color: var(--fg-muted);
+  font-size: 0.95rem;
+}
+
+/*
+ * CANON-H-12: closed-by-default grading key. Summary is operable at arm's
+ * length; answer text is not the default projected blast surface.
+ */
+.cbh__grading-key {
+  margin-top: var(--space-2);
+  padding: var(--space-2);
+  border: 1px dashed color-mix(in srgb, var(--state-host) 55%, var(--border-panel));
+  border-radius: var(--radius);
+  background: transparent;
+}
+
+.cbh__grading-key-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--fg-primary);
+}
+
+.cbh__grading-key-summary::-webkit-details-marker {
+  display: none;
+}
+
+.cbh__grading-key-hint {
+  flex: 1 1 12rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+
+.cbh__grading-key-body {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
 }
 
 .cbh__prompt-image {
