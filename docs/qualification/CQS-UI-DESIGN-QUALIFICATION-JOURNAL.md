@@ -921,8 +921,11 @@ three repair tranches on `main` under its own `CANON-H-` finding ids:
 | T1 — zero-explanation start honesty (`CANON-H-01` / `H-10` / `H-05`) | `958ac8f` (#194) | Class Setup slot titles, Import cold-start, Ready heading |
 | T2 — Host one-second ops (`CANON-H-06` / `H-11` / `H-07` / `H-08`) | `192d428` (#195) | pre-round scoring disclosure, deferred Arm/Timer/Adjudicate walls, quiet mid-play End chrome, badge contrast |
 | T3 — Audience/projector stage (`CANON-H-09` / `H-03` / `H-02` / `H-04`) | `b3cfa65` (#197) | Display ops chrome and Ready flood, Ready only when armed, SELECTED focal scale, 720p category hierarchy |
+| T4 — Host grading-key blast radius (`CANON-H-12`) | `5f30417` (#202) | Host clue and Final answer-key presentation |
+| T5 — drift / medium backlog honesty and CTA locus | `0249c2b` (#203) | one Open-display CTA beside Start Game, muted sound no longer reads as complete, `Playable · Draft` badge collision, one `Connection` buzzer subhead, singularised Display waiting copy |
 
-`origin/main` was merged into this branch at `af950fd`. The two courts reached
+`origin/main` was merged into this branch twice as it kept moving — at
+`af950fd` (T1–T3) and again after T4/T5. The two courts reached
 several of the same conclusions independently, which is corroboration rather
 than duplication — but it means this docket must not keep claiming as open
 things `main` has since fixed.
@@ -937,6 +940,9 @@ things `main` has since fixed.
 | `UIX-O11` / `UIX-O12` — the projector's operator telemetry band and the idle screen's repeated "Ready" | **PARTLY CLOSED** by `CANON-H-09` (quiet Display ops chrome and Ready flood). Not re-reviewed against a fresh capture by this lane. |
 | `UIX-O06` — the remaining projector type ramp | **PARTLY CLOSED** by `CANON-H-02` and `CANON-H-04`, which scale the SELECTED focal and strengthen 720p category hierarchy — the 720p half this lane could not reach by raising clamp ceilings alone. |
 | `C-01` / `UIX-R05` — destructive styling | **COMPLEMENTARY.** `main` added `.btn--quiet-danger` for the mid-play End control (`CANON-H-07`); this lane fixed the armed Final confirm, whose declared destructive styling was lost to the cascade. Both are now present and they do not overlap. |
+| `UIX-R10` — the emergency mute looked actionable once muted | **SPLIT, and both halves kept.** T5 relabelled the control `Sound muted`; it did **not** change the handler or the control's enabled state, so the button still looked actionable while already in the state it produces. The merge therefore takes `main`'s wording (ratified, and consistent with the readiness row) and keeps this lane's `disabled` / `aria-disabled`, which is the substantive half of `CQS-UX-P08`'s named anti-pattern. |
+| `UIX-R16` — the Buzzers section repeated its own heading | **CLOSED** by T5's `DC-DRIFT-015`, which names the nested block `Connection`. `main`'s wording is taken; this lane's `Classroom buzzer set` is superseded. |
+| `A-07` / `UIX-O15` — `Sound complete` while muted | **CLOSED** by T5 ("muted sound no longer reads as checklist complete"). This lane had recorded the same line as a deliberate **non-finding**, having judged it honest because the sub-line stated the real condition. `main` judged otherwise and changed it. Recorded as a disagreement resolved against this lane, not quietly dropped. |
 
 ### What is still open after the merge, re-verified on the merged tree
 
