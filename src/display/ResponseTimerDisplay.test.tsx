@@ -126,7 +126,20 @@ describe('what the class can read', () => {
       />,
     )
     expect(screen.getByTestId('rtd-armed')).toHaveTextContent('Buzzers armed')
+    expect(screen.getByTestId('rtd-status')).toHaveTextContent('Ready')
     expect(screen.queryByTestId('rtd-clock')).not.toBeInTheDocument()
+  })
+
+  it('CANON-H-03: idle + disarmed reads Idle, not Ready', () => {
+    render(
+      <ResponseTimerDisplay
+        response={{ armed: false, timer: { status: 'idle' }, buzz: NO_BUZZ, boardOutcome: NO_OUTCOME }}
+        clock={createManualClock(AT)}
+      />,
+    )
+    expect(screen.getByTestId('rtd-armed')).toHaveTextContent('Buzzers not armed')
+    expect(screen.getByTestId('rtd-status')).toHaveTextContent('Idle')
+    expect(screen.getByTestId('rtd-status')).not.toHaveTextContent('Ready')
   })
 
   it('carries each state on a data attribute too, so styling never has to parse text', () => {

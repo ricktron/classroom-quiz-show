@@ -399,11 +399,13 @@ function CategoryBoardFlow({
       ? ` cbd--flow-ack${selectionAck ? ' cbd--selection-ack' : ''}${promptAck ? ' cbd--prompt-ack' : ''}`
       : ''
 
+  const selectedOnly = round.stage === 'selected'
   return (
     <div
-      className={`cbd cbd--open${answerRevealed ? ' cbd--answer' : ''}${openAckClass}`}
+      className={`cbd cbd--open${selectedOnly ? ' cbd--selected' : ''}${answerRevealed ? ' cbd--answer' : ''}${openAckClass}`}
       data-testid="cbd-open"
       data-answer-revealed={answerRevealed ? 'true' : 'false'}
+      data-stage={round.stage}
       data-seeded={seeded ? 'true' : 'false'}
       data-flow-ack={selectionAck || promptAck ? 'true' : 'false'}
       data-flow-moment={flowMoment}
