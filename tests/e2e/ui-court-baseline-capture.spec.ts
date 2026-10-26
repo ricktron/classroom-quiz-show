@@ -18,7 +18,7 @@
 
 import { test, expect, type Page } from '@playwright/test'
 import { importMenusJsonAndPlay } from './helpers/menusGameJson'
-import { fillAllTeamNames, importDemoAndPlay } from './helpers/menusClassSetup'
+import { importDemoAndPlay } from './helpers/menusClassSetup'
 import { waitForSessionSaved } from './helpers/menusSession'
 import { advanceToNextRound, openAudienceFromHost } from './helpers/menusQ3'
 
@@ -33,6 +33,7 @@ import {
   CAPTURE_ON,
   OUT_ROOT,
   VP,
+  fillEveryTeamName,
   flushManifest,
   newPage,
   openImportPanel,
@@ -59,8 +60,15 @@ test.describe('UI Court rendered baseline', () => {
    * running the same journey under three projects would triple the cost and
    * produce three identical sets of files.
    */
+  // Skipped unless explicitly asked for: this is an evidence instrument, not a
+  // functional test, and it writes ~200 files when it runs.
   test.skip(!CAPTURE_ON, 'Set CQS_UI_COURT_CAPTURE=1 to run the capture instruments')
+  // Skipped on the other projects on purpose: a capture should happen once, and
+  // every shot sets its own viewport, so running it per project would triple
+  // the cost to produce three identical sets of files.
   test.skip(() => test.info().project.name !== 'projector-720p', 'capture runs once, from one driver project')
+  // Skipped rather than guessing a destination: the output root is run-owned
+  // and deliberately outside the repository.
   test.skip(!OUT_ROOT, 'Set CQS_UI_COURT_OUT to an absolute output directory')
 
   /**
@@ -530,7 +538,7 @@ test.describe('UI Court rendered baseline', () => {
           })
         }
 
-        await step(`setup-name-all-${vpKey}`, 'setup', () => fillAllTeamNames(page))
+        await step(`setup-name-all-${vpKey}`, 'setup', () => fillEveryTeamName(page))
         await shot(page, {
           id: 'setup-ready',
           surface: 'setup',

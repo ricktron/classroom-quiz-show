@@ -12,7 +12,6 @@ import { expect, test, type Browser, type BrowserContext, type Page } from '@pla
 import fs from 'node:fs'
 import path from 'node:path'
 import { prepareDeterministicCapture } from './visualHistoryCapture'
-import { fillAllTeamNames } from './menusClassSetup'
 
 export const CAPTURE_ON = process.env.CQS_UI_COURT_CAPTURE === '1'
 export const OUT_ROOT = process.env.CQS_UI_COURT_OUT ?? ''
@@ -28,6 +27,9 @@ export const VP = {
   proj1080: { width: 1920, height: 1080, label: 'projector-1920x1080' },
   proj720: { width: 1280, height: 720, label: 'projector-1280x720' },
 } as const satisfies Record<string, Vp>
+
+/** The product maximum (`src/game/teams/limits.ts`), used as a loop bound. */
+const MAX_TEAMS_TO_NAME = 8
 
 export const ACCENTS = [
   'crimson',
@@ -278,6 +280,33 @@ export function uiCourtGame(options: {
 }
 
 /**
+ * Name every team, re-querying between fills.
+ *
+ * `menusClassSetup.fillAllTeamNames` snapshots the input count once and then
+ * indexes into it. That is fine for two teams; at eight it flaked, because the
+ * name board re-renders as names are claimed and `nth(i)` can resolve to an
+ * element that has moved. This fills the first still-empty field each time
+ * instead, so the loop never holds a stale index.
+ */
+export async function fillEveryTeamName(page: Page): Promise<void> {
+  const manuals = page.locator('[data-testid^="tnsb-manual-"]')
+  await manuals.first().waitFor({ state: 'visible', timeout: 10_000 })
+  for (let filled = 0; filled < MAX_TEAMS_TO_NAME; filled += 1) {
+    const total = await manuals.count()
+    let target: number | null = null
+    for (let i = 0; i < total; i += 1) {
+      if ((await manuals.nth(i).inputValue()).trim() === '') {
+        target = i
+        break
+      }
+    }
+    if (target === null) return
+    await manuals.nth(target).fill(`Team ${target + 1}`)
+    await manuals.nth(target).blur()
+  }
+}
+
+/**
  * Ordinary Class Setup -> Start Game for this lane's own fixtures.
  * `menusQ3.keyboardNamesReadyStart` is pinned to the `alpha`/`bravo` fixture
  * ids, so it cannot drive these games.
@@ -285,7 +314,7 @@ export function uiCourtGame(options: {
 export async function readyAndStart(page: Page): Promise<void> {
   const skip = page.getByTestId('setup-skip-buzzers')
   if (await skip.isVisible().catch(() => false)) await skip.click()
-  await fillAllTeamNames(page)
+  await fillEveryTeamName(page)
   await expect(page.getByTestId('setup-ready-heading')).toBeVisible()
   await expect(page.getByTestId('setup-play')).toBeEnabled()
   await page.getByTestId('setup-play').click()

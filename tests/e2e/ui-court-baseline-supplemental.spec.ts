@@ -154,8 +154,15 @@ test.describe('UI Court rendered baseline — supplemental', () => {
    * running the same journey under three projects would triple the cost and
    * produce three identical sets of files.
    */
+  // Skipped unless explicitly asked for: this is an evidence instrument, not a
+  // functional test, and it writes ~200 files when it runs.
   test.skip(!CAPTURE_ON, 'Set CQS_UI_COURT_CAPTURE=1 to run the capture instruments')
+  // Skipped on the other projects on purpose: a capture should happen once, and
+  // every shot sets its own viewport, so running it per project would triple
+  // the cost to produce three identical sets of files.
   test.skip(() => test.info().project.name !== 'projector-720p', 'capture runs once, from one driver project')
+  // Skipped rather than guessing a destination: the output root is run-owned
+  // and deliberately outside the repository.
   test.skip(!OUT_ROOT, 'Set CQS_UI_COURT_OUT to an absolute output directory')
   test.use({ actionTimeout: 8_000, navigationTimeout: 30_000 })
 

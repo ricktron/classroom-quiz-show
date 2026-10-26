@@ -17,10 +17,16 @@ import { test, expect, type Browser, type Page } from '@playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import { prepareDeterministicCapture } from './helpers/visualHistoryCapture'
-import { fillAllTeamNames } from './helpers/menusClassSetup'
 import { advanceToNextRound, openAudienceFromHost } from './helpers/menusQ3'
 
-import { CAPTURE_ON, OUT_ROOT, VP, uiCourtGame, type Vp } from './helpers/uiCourtCapture'
+import {
+  CAPTURE_ON,
+  OUT_ROOT,
+  VP,
+  fillEveryTeamName,
+  uiCourtGame,
+  type Vp,
+} from './helpers/uiCourtCapture'
 
 /**
  * Browser-side probe. Runs in the page so every value is the painted truth:
@@ -264,8 +270,15 @@ test.describe('UI Court metrics probe', () => {
    * running the same journey under three projects would triple the cost and
    * produce three identical sets of files.
    */
+  // Skipped unless explicitly asked for: this is an evidence instrument, not a
+  // functional test, and it writes ~200 files when it runs.
   test.skip(!CAPTURE_ON, 'Set CQS_UI_COURT_CAPTURE=1 to run the capture instruments')
+  // Skipped on the other projects on purpose: a capture should happen once, and
+  // every shot sets its own viewport, so running it per project would triple
+  // the cost to produce three identical sets of files.
   test.skip(() => test.info().project.name !== 'projector-720p', 'capture runs once, from one driver project')
+  // Skipped rather than guessing a destination: the output root is run-owned
+  // and deliberately outside the repository.
   test.skip(!OUT_ROOT, 'Set CQS_UI_COURT_OUT to an absolute output directory')
 
   test.afterAll(() => writeReports())
@@ -303,7 +316,7 @@ test.describe('UI Court metrics probe', () => {
       if (await skip.isVisible().catch(() => false)) await skip.click()
       await host.getByTestId('readiness-names').click()
       await probe(host, 'setup-names', VP.laptop)
-      await fillAllTeamNames(host)
+      await fillEveryTeamName(host)
       await expect(host.getByTestId('setup-ready-heading')).toBeVisible()
       await probe(host, 'setup-ready', VP.laptop)
       await probe(host, 'setup-ready', VP.proj720)
@@ -401,7 +414,7 @@ test.describe('UI Court metrics probe', () => {
       const skip = host.getByTestId('setup-skip-buzzers')
       if (await skip.isVisible().catch(() => false)) await skip.click()
       await host.getByTestId('readiness-names').click()
-      await fillAllTeamNames(host)
+      await fillEveryTeamName(host)
       await expect(host.getByTestId('setup-ready-heading')).toBeVisible()
       await probe(host, 'hc-setup-ready', VP.laptop)
       await host.screenshot({
