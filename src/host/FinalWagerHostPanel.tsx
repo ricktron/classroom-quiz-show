@@ -531,21 +531,36 @@ export function FinalWagerHostPanel({
 
       {phase === 'responses-locked' && (
         <div className="fwh__actions" role="group" aria-label="Answer reveal">
-          <p className="fwh__private" data-testid="fwh-private-answer">
-            <span className="fwh__private-tag">Host only</span> Answer:{' '}
-            {definition.answer}
-          </p>
-          {definition.alternates.length > 0 && (
-            <p className="fwh__private" data-testid="fwh-private-alternates">
-              <span className="fwh__private-tag">Host only</span> Also accept:{' '}
-              {definition.alternates.join(' · ')}
-            </p>
-          )}
-          {definition.notes !== null && (
-            <p className="fwh__private" data-testid="fwh-private-notes">
-              <span className="fwh__private-tag">Host only</span> Note: {definition.notes}
-            </p>
-          )}
+          {/*
+            CANON-H-12: grading key closed by default so a wrong-window Host share
+            does not put the Final answer at highest legibility. Sanitizer remains
+            the public privacy authority — this is Host blast-radius layout only.
+          */}
+          <details className="fwh__grading-key" data-testid="fwh-grading-key">
+            <summary className="fwh__grading-key-summary" data-testid="fwh-grading-key-summary">
+              <span className="fwh__private-tag">Host only</span>
+              Show grading key
+              <span className="fwh__grading-key-hint">
+                Answer, alternates, notes — keep off the projector
+              </span>
+            </summary>
+            <div className="fwh__grading-key-body" data-testid="fwh-grading-key-body">
+              <p className="fwh__private" data-testid="fwh-private-answer">
+                <span className="fwh__private-tag">Host only</span> Answer: {definition.answer}
+              </p>
+              {definition.alternates.length > 0 && (
+                <p className="fwh__private" data-testid="fwh-private-alternates">
+                  <span className="fwh__private-tag">Host only</span> Also accept:{' '}
+                  {definition.alternates.join(' · ')}
+                </p>
+              )}
+              {definition.notes !== null && (
+                <p className="fwh__private" data-testid="fwh-private-notes">
+                  <span className="fwh__private-tag">Host only</span> Note: {definition.notes}
+                </p>
+              )}
+            </div>
+          </details>
           <button
             type="button"
             className="btn"

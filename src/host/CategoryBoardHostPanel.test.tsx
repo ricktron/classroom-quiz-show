@@ -142,13 +142,26 @@ describe('the private preview', () => {
     return rendered
   }
 
-  it('shows the prompt, answer, alternates and teacher notes as soon as a tile is selected', () => {
+  it('shows the prompt immediately and keeps the grading key closed by default (CANON-H-12)', () => {
     openTile('beta-100')
     expect(screen.getByTestId('cbh-prompt')).toHaveTextContent('Beta one hundred prompt')
+    const gradingKey = screen.getByTestId('cbh-grading-key')
+    expect(gradingKey).not.toHaveAttribute('open')
+    expect(screen.getByTestId('cbh-grading-key-summary')).toHaveTextContent(/show grading key/i)
+    // Facts remain in the Host tree for adjudication once opened; not Display.
     expect(screen.getByTestId('cbh-answer')).toHaveTextContent('Beta one hundred answer')
     expect(screen.getByTestId('cbh-alternates')).toHaveTextContent('B100 alternate one')
     expect(screen.getByTestId('cbh-alternates')).toHaveTextContent('B100 alternate two')
     expect(screen.getByTestId('cbh-notes')).toHaveTextContent('BETA-TEACHER-NOTE-100')
+  })
+
+  it('opens the grading key on explicit teacher gesture', () => {
+    openTile('beta-100')
+    const gradingKey = screen.getByTestId('cbh-grading-key')
+    expect(gradingKey).not.toHaveAttribute('open')
+    fireEvent.click(screen.getByTestId('cbh-grading-key-summary'))
+    expect(gradingKey).toHaveAttribute('open')
+    expect(screen.getByTestId('cbh-answer')).toBeVisible()
   })
 
   it('badges every private block so private is never implicit', () => {

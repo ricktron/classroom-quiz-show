@@ -164,7 +164,15 @@ test('Q7-R1-11: core clue loop next primary action stays in the teacher viewport
   const markCorrect = page.getByRole('button', { name: 'Mark correct', exact: true })
   await expectFullyInViewport(markCorrect, 'buzz: Mark correct')
   await expectFullyInViewport(markIncorrect, 'buzz: Mark incorrect and advance')
-  // The teacher adjudicates against the Host-only answer: it must be readable too.
+  // CANON-H-12: grading key starts closed; teacher opens it to adjudicate.
+  const gradingKey = page.getByTestId('cbh-grading-key')
+  await expect(gradingKey).not.toHaveAttribute('open')
+  await expectFullyInViewport(
+    page.getByTestId('cbh-grading-key-summary'),
+    'buzz: Host-only grading key summary',
+  )
+  await page.getByTestId('cbh-grading-key-summary').click()
+  await expect(gradingKey).toHaveAttribute('open')
   await expectFullyInViewport(page.getByTestId('cbh-answer'), 'buzz: Host-only correct answer')
   await markIncorrect.click()
 
@@ -229,6 +237,9 @@ test('Q7-R1-11: classic 6×5 board — bottom-row tile through Return to board w
   await expectFullyInViewport(active, 'classic buzz: active claim (Team 2)')
   const markCorrect = page.getByRole('button', { name: 'Mark correct', exact: true })
   await expectFullyInViewport(markCorrect, 'classic buzz: Mark correct')
+  // CANON-H-12: open Host grading key before reading the answer for adjudication.
+  await page.getByTestId('cbh-grading-key-summary').click()
+  await expect(page.getByTestId('cbh-grading-key')).toHaveAttribute('open')
   await expectFullyInViewport(page.getByTestId('cbh-answer'), 'classic buzz: Host-only correct answer')
   await markCorrect.click()
   await expect(page.getByTestId('lih-board-outcome')).toContainText('Team 2 — Correct')

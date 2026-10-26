@@ -121,8 +121,10 @@ test('the host sees private content the projector never receives', async ({ cont
 
   await host.getByTestId('cbh-tile-earth-structure-100').click()
 
-  // The host has everything, from the moment of selection.
+  // Prompt is immediately readable; grading key stays closed by default (CANON-H-12).
   await expect(host.getByTestId('cbh-prompt')).toContainText('Which layer of the Earth')
+  await expect(host.getByTestId('cbh-grading-key')).not.toHaveAttribute('open')
+  await host.getByTestId('cbh-grading-key-summary').click()
   await expect(host.getByTestId('cbh-answer')).toContainText('The mantle')
   await expect(host.getByTestId('cbh-alternates')).toContainText('Upper mantle')
   await expect(host.getByTestId('cbh-notes')).toContainText('Students often say')
