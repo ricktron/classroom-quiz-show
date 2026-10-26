@@ -214,7 +214,7 @@
  */
 .cbh__grading-key {
   margin-top: var(--space-2);
-  padding: var(--space-2);
+  padding: var(--space-1) var(--space-2);
   border: 1px dashed color-mix(in srgb, var(--state-host) 55%, var(--border-panel));
   border-radius: var(--radius);
   background: transparent;
