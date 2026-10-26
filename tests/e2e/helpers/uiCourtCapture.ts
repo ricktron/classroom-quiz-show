@@ -292,15 +292,18 @@ export async function fillEveryTeamName(page: Page): Promise<void> {
   const manuals = page.locator('[data-testid^="tnsb-manual-"]')
   await manuals.first().waitFor({ state: 'visible', timeout: 10_000 })
   for (let filled = 0; filled < MAX_TEAMS_TO_NAME; filled += 1) {
-    const total = await manuals.count()
-    let target: number | null = null
-    for (let i = 0; i < total; i += 1) {
-      if ((await manuals.nth(i).inputValue()).trim() === '') {
-        target = i
-        break
-      }
-    }
-    if (target === null) return
+    // One round trip for the whole board, rather than one per field.
+    const values = await manuals.evaluateAll((nodes) =>
+      nodes.map((node) => (node as HTMLInputElement).value.trim()),
+    )
+    const target = values.indexOf('')
+    if (target === -1) return
+    /*
+     * Sequential on purpose, and NOT a candidate for parallelising: naming a
+     * team re-renders the board, which is what made the indexed approach flake
+     * at eight teams in the first place. Each fill has to land, and the board
+     * has to settle, before the next index means anything.
+     */
     await manuals.nth(target).fill(`Team ${target + 1}`)
     await manuals.nth(target).blur()
   }
