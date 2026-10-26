@@ -94,7 +94,9 @@
   border-top: var(--bw-emphasis, 3px) solid var(--state-structural);
   border-radius: 0;
   box-shadow: none;
-  overflow-wrap: anywhere;
+  /* Prefer breaks at spaces; mid-word only if a single token cannot fit. */
+  overflow-wrap: break-word;
+  word-break: normal;
   hyphens: auto;
 }
 
@@ -395,18 +397,26 @@
     padding: clamp(0.2rem, 0.6vw, 0.45rem);
   }
 
+  /*
+   * CANON-H-04 iter-3 (owner-authorized): projector-height densify must NOT
+   * re-crush category headers below value glyphs. At 1280×720 this query is
+   * active; keep categories namable/hierarchical while values stay readable.
+   * Long titles wrap (overflow-wrap on base); do not clip or truncate.
+   */
   .cbd__category {
-    min-height: 0;
-    max-height: 26%;
-    padding: 0.2rem 0.2rem;
-    font-size: clamp(0.65rem, 0.95vw + 0.15vh, 0.95rem);
-    line-height: 1.1;
+    min-height: clamp(2.35rem, 5.2vh, 3.5rem);
+    max-height: 30%;
+    padding: clamp(0.28rem, 0.65vw, 0.5rem) clamp(0.22rem, 0.5vw, 0.4rem);
+    font-size: clamp(1.1rem, 2vw + 0.5vh, 1.7rem);
+    line-height: 1.08;
+    font-weight: 800;
   }
 
   .cbd__tile {
     min-height: 0;
     padding: 0.15rem;
-    font-size: clamp(0.85rem, 1.7vw + 0.2vh, 1.65rem);
+    /* Temper densify vs prior crush; keep values readable (not both weak). */
+    font-size: clamp(1.05rem, 1.9vw + 0.2vh, 1.95rem);
   }
 
   .cbd__tiles {
@@ -414,7 +424,7 @@
   }
 
   .cbd__column {
-    gap: 0.15rem;
+    gap: 0.2rem;
   }
 
   .cbd--open {
