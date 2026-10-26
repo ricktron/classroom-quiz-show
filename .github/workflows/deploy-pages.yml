@@ -45,6 +45,8 @@ jobs:
     name: Deploy
     needs: build
     runs-on: ubuntu-latest
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -52,3 +54,38 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  # Separate job: GitHub often marks deployment status=success only after the
+  # deploy job completes. Emitting inside that job races and yields false pending.
+  overwatch_ticket:
+    name: Emit Overwatch registration ticket
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Emit Overwatch registration ticket
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          # Shorter retry — deploy job already finished; status usually ready.
+          OW_TICKET_RETRY_ATTEMPTS: '12'
+          OW_TICKET_RETRY_MS: '5000'
+        run: |
+          mkdir -p artifacts
+          node scripts/emit-overwatch-registration-ticket.mjs \
+            --sha "${{ github.sha }}" \
+            --pages-url "${{ needs.deploy.outputs.page_url }}" \
+            --out artifacts/overwatch-registration-ticket.json
+
+      - name: Upload Overwatch registration ticket
+        uses: actions/upload-artifact@v4
+        with:
+          name: overwatch-registration-ticket
+          path: artifacts/overwatch-registration-ticket.json
+          if-no-files-found: error
+          retention-days: 30

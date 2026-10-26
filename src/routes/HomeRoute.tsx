@@ -779,12 +779,31 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
           <h2 id="import-title" tabIndex={-1} ref={importHeadingRef}>
             Import Game
           </h2>
-          <p className="host__note">
-            Download a blank spreadsheet template, fill it (manually or with an external tool), then
-            import the <code>.xlsx</code> here. CQS checks the file as data only — formulas and macros
-            are reported as problems, links are never opened, and nothing is playable until the check
-            passes and you save. You can also paste a game file or load the demo.
+          <p className="host__note" data-testid="home-import-lead">
+            Need a quiz now? Import the demo to play immediately. Spreadsheet and game-file paths
+            stay available below — CQS checks imports as data only (formulas/macros reported; links
+            never opened); nothing is playable until the check passes and you save.
           </p>
+          <div
+            className="home__actions"
+            role="group"
+            aria-label="Play a demo now"
+            data-testid="home-import-cold-start"
+          >
+            <button
+              type="button"
+              className="btn"
+              data-testid="home-import-demo"
+              onClick={() => {
+                if (salvageSaveInFlight.current) return
+                setImportText(CANONICAL_SAMPLE_CATEGORY_BOARD_FILE)
+                void importJson(CANONICAL_SAMPLE_CATEGORY_BOARD_FILE)
+              }}
+              disabled={busy || readOnly}
+            >
+              Import demo game
+            </button>
+          </div>
           <div
             className="home__actions"
             role="group"
@@ -793,7 +812,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
           >
             <button
               type="button"
-              className="btn"
+              className="btn btn--secondary"
               data-testid="home-download-board-plus-final"
               onClick={() => downloadWorkbookTemplate('board-plus-final')}
             >
@@ -806,21 +825,6 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
               onClick={() => downloadWorkbookTemplate('classic-board')}
             >
               Download Classic Board template
-            </button>
-          </div>
-          <div className="home__actions">
-            <button
-              type="button"
-              className="btn btn--secondary"
-              data-testid="home-import-demo"
-              onClick={() => {
-                if (salvageSaveInFlight.current) return
-                setImportText(CANONICAL_SAMPLE_CATEGORY_BOARD_FILE)
-                void importJson(CANONICAL_SAMPLE_CATEGORY_BOARD_FILE)
-              }}
-              disabled={busy || readOnly}
-            >
-              Import demo game
             </button>
           </div>
           <label className="home__label" htmlFor="home-import-json">
@@ -836,7 +840,7 @@ export function HomeRoute({ persistenceOptions }: HomeRouteProps = {}) {
           <div className="home__actions">
             <button
               type="button"
-              className="btn"
+              className="btn btn--secondary"
               data-testid="home-import-json"
               disabled={busy || readOnly}
               onClick={() => void importJson(importText)}

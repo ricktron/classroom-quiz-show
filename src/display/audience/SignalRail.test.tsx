@@ -59,7 +59,9 @@ describe('SignalRail', () => {
       />,
     )
     expect(screen.queryByTestId('signal-rail-channels')).toBeNull()
-    expect(screen.getByTestId('signal-rail-status')).toHaveTextContent(/ready/i)
+    // CANON-H-09/H-03: no bare Ready status when teams/response are absent.
+    expect(screen.queryByTestId('signal-rail-status')).toBeNull()
+    expect(screen.getByTestId('signal-rail-event')).toBeInTheDocument()
   })
 
   it('Expanded rail exposes only active claim in buzz panel plus anonymous waiting count', () => {
@@ -103,6 +105,35 @@ describe('SignalRail', () => {
     )
     expect(screen.getByTestId('signal-rail-status')).toHaveAttribute('data-buzz-ready', 'armed')
     expect(screen.getByTestId('signal-rail-status')).toHaveTextContent('Waiting for a buzz')
+    expect(screen.getByTestId('signal-rail-channel-t0')).toHaveAttribute('data-channel-status', 'ready')
+  })
+
+  it('CANON-H-03: disarmed response window uses Standby, not Ready', () => {
+    render(
+      <SignalRail
+        mode="compact"
+        response={{
+          armed: false,
+          timer: { status: 'idle' },
+          buzz: { status: 'none' },
+          boardOutcome: { status: 'none' },
+        }}
+        teams={TEAMS}
+        round={{ kind: PUBLIC_BOARD_KIND, stage: 'board', categories: [] }}
+        revealedTeamName={null}
+      />,
+    )
+    expect(screen.getByTestId('signal-rail-status')).toHaveAttribute('data-buzz-ready', 'standby')
+    expect(screen.getByTestId('signal-rail-status')).toHaveTextContent('Standing by')
+    expect(screen.getByTestId('signal-rail-channel-t0')).toHaveAttribute(
+      'data-channel-status',
+      'standby',
+    )
+    expect(screen.getByTestId('signal-rail-channel-t1')).toHaveAttribute(
+      'data-channel-status',
+      'standby',
+    )
+    expect(screen.queryByText(/^Ready$/)).toBeNull()
   })
 
   it('keeps BuzzQueueDisplay mounted across none → active so acknowledgement can observe it', () => {

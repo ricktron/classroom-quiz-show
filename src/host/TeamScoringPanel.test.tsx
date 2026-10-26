@@ -97,6 +97,33 @@ function openTile(drive: (...commands: SessionCommand[]) => void, tileId = 'alph
   drive(select(tileId), revealPrompt, revealAnswer)
 }
 
+describe('pre-round scoring hierarchy (CANON-H-06)', () => {
+  it('keeps the scoreboard visible and tucks scoring ops behind a closed disclosure', () => {
+    const result = importGameFromUnknown(teamBoardGameFile(twoTeams()))
+    if (result.status !== 'success') throw new Error('fixture failed to import')
+    const store = createSessionStore()
+    store.dispatch({ type: 'INIT_SESSION', issuedAt: AT, sessionId: 's' })
+    store.dispatch({ type: 'INITIALIZE_GAME', issuedAt: AT, definition: result.definition })
+    // Deliberately do NOT advance to round 1 — pre-round Host body.
+    render(
+      <TeamScoringPanel
+        dispatch={(command) => store.dispatch(command)}
+        game={store.getState().session!.game!}
+        history={store.getHistory()}
+      />,
+    )
+    expect(screen.getByTestId('tsp-scoreboard')).toBeInTheDocument()
+    expect(screen.getByTestId('tsp-pre-round-next')).toHaveTextContent(/Start Round 1/i)
+    const disclosure = screen.getByTestId('tsp-ops-disclosure')
+    expect(disclosure).not.toHaveAttribute('open')
+    // Closed <details> still mounts children; ops must live inside the disclosure.
+    expect(within(disclosure).getByTestId('tsp-manual-input')).toBeInTheDocument()
+    expect(screen.getByTestId('tsp-scoreboard').compareDocumentPosition(disclosure)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
+  })
+})
+
 describe('the team list', () => {
   it('omits Slice-number ordinary teacher copy', () => {
     renderPanel()

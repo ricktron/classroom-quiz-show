@@ -116,124 +116,156 @@ export function ResponseTimerHostPanel({
         </p>
       )}
 
-      <div className="rth__actions" role="group" aria-label="Arming controls">
-        <button
-          type="button"
-          className="btn"
-          data-testid="rth-arm"
-          disabled={!liveControlsOpen || phase.armed}
-          onClick={() => send({ type: 'ARM_RESPONSE_PHASE', issuedAt: now(), roundId: round.id })}
-        >
-          Arm clue
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          data-testid="rth-disarm"
-          disabled={!liveControlsOpen || !phase.armed}
-          onClick={() =>
-            send({ type: 'DISARM_RESPONSE_PHASE', issuedAt: now(), roundId: round.id })
-          }
-        >
-          Disarm clue
-        </button>
-      </div>
+      {/*
+        CANON-H-11: inactive Arm / Timer walls must not compete with the current
+        beat (Show prompt, board pick). Keep status + hint; show live controls
+        only when the response window can accept them. Reset stays available after
+        Correct so the teacher can reopen without hunting a hidden control.
+      */}
+      {liveControlsOpen ? (
+        <>
+          <div className="rth__actions" role="group" aria-label="Arming controls">
+            <button
+              type="button"
+              className="btn"
+              data-testid="rth-arm"
+              disabled={phase.armed}
+              onClick={() =>
+                send({ type: 'ARM_RESPONSE_PHASE', issuedAt: now(), roundId: round.id })
+              }
+            >
+              Arm clue
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              data-testid="rth-disarm"
+              disabled={!phase.armed}
+              onClick={() =>
+                send({ type: 'DISARM_RESPONSE_PHASE', issuedAt: now(), roundId: round.id })
+              }
+            >
+              Disarm clue
+            </button>
+          </div>
 
-      <div className="rth__duration">
-        <label htmlFor="rth-duration">Timer length</label>
-        <select
-          id="rth-duration"
-          data-testid="rth-duration"
-          value={durationSeconds}
-          disabled={!liveControlsOpen || timer.status !== 'idle'}
-          onChange={(event) => setDurationSeconds(Number(event.target.value))}
-        >
-          {durationOptions(authoredSeconds).map((seconds) => (
-            <option key={seconds} value={seconds}>
-              {seconds} seconds{seconds === authoredSeconds ? ' (this game’s default)' : ''}
-            </option>
-          ))}
-        </select>
-      </div>
+          <div className="rth__duration">
+            <label htmlFor="rth-duration">Timer length</label>
+            <select
+              id="rth-duration"
+              data-testid="rth-duration"
+              value={durationSeconds}
+              disabled={timer.status !== 'idle'}
+              onChange={(event) => setDurationSeconds(Number(event.target.value))}
+            >
+              {durationOptions(authoredSeconds).map((seconds) => (
+                <option key={seconds} value={seconds}>
+                  {seconds} seconds{seconds === authoredSeconds ? ' (this game’s default)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
 
-      <div className="rth__actions" role="group" aria-label="Timer controls">
-        <button
-          type="button"
-          className="btn"
-          data-testid="rth-start"
-          disabled={!liveControlsOpen || timer.status !== 'idle'}
-          onClick={() =>
-            send({
-              type: 'START_RESPONSE_TIMER',
-              issuedAt: now(),
-              roundId: round.id,
-              durationSeconds,
-            })
-          }
-        >
-          Start timer
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          data-testid="rth-pause"
-          disabled={!liveControlsOpen || timer.status !== 'running'}
-          onClick={() =>
-            send({ type: 'PAUSE_RESPONSE_TIMER', issuedAt: now(), roundId: round.id })
-          }
-        >
-          Pause
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          data-testid="rth-resume"
-          disabled={!liveControlsOpen || timer.status !== 'paused'}
-          onClick={() =>
-            send({ type: 'RESUME_RESPONSE_TIMER', issuedAt: now(), roundId: round.id })
-          }
-        >
-          Resume
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          data-testid="rth-interrupt"
-          disabled={
-            !liveControlsOpen || (timer.status !== 'running' && timer.status !== 'paused')
-          }
-          onClick={() =>
-            send({
-              type: 'INTERRUPT_RESPONSE_TIMER',
-              issuedAt: now(),
-              roundId: round.id,
-              // The typed seam. Today the host is the only possible source; a
-              // future adapter supplies another member without touching this call
-              // site's shape.
-              source: HOST_INTERRUPTION,
-            })
-          }
-        >
-          Stop timer
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          data-testid="rth-reset"
-          disabled={!open || isInitialResponsePhase(phase)}
-          onClick={() =>
-            send({ type: 'RESET_RESPONSE_PHASE', issuedAt: now(), roundId: round.id })
-          }
-        >
-          Reset window
-        </button>
-      </div>
+          <div className="rth__actions" role="group" aria-label="Timer controls">
+            <button
+              type="button"
+              className="btn"
+              data-testid="rth-start"
+              disabled={timer.status !== 'idle'}
+              onClick={() =>
+                send({
+                  type: 'START_RESPONSE_TIMER',
+                  issuedAt: now(),
+                  roundId: round.id,
+                  durationSeconds,
+                })
+              }
+            >
+              Start timer
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              data-testid="rth-pause"
+              disabled={timer.status !== 'running'}
+              onClick={() =>
+                send({ type: 'PAUSE_RESPONSE_TIMER', issuedAt: now(), roundId: round.id })
+              }
+            >
+              Pause
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              data-testid="rth-resume"
+              disabled={timer.status !== 'paused'}
+              onClick={() =>
+                send({ type: 'RESUME_RESPONSE_TIMER', issuedAt: now(), roundId: round.id })
+              }
+            >
+              Resume
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              data-testid="rth-interrupt"
+              disabled={timer.status !== 'running' && timer.status !== 'paused'}
+              onClick={() =>
+                send({
+                  type: 'INTERRUPT_RESPONSE_TIMER',
+                  issuedAt: now(),
+                  roundId: round.id,
+                  // The typed seam. Today the host is the only possible source; a
+                  // future adapter supplies another member without touching this call
+                  // site's shape.
+                  source: HOST_INTERRUPTION,
+                })
+              }
+            >
+              Stop timer
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              data-testid="rth-reset"
+              disabled={isInitialResponsePhase(phase)}
+              onClick={() =>
+                send({ type: 'RESET_RESPONSE_PHASE', issuedAt: now(), roundId: round.id })
+              }
+            >
+              Reset window
+            </button>
+          </div>
 
-      <p className="host__note rth__hint">
-        Arming is manual and stays manual: nothing arms a clue for you, and nothing
-        buzzes in yet. A timer running out records that the window ended — it awards
-        and deducts nothing.
-      </p>
+          <p className="host__note rth__hint">
+            Arming is manual and stays manual: nothing arms a clue for you, and nothing
+            buzzes in yet. A timer running out records that the window ended — it awards
+            and deducts nothing.
+          </p>
+        </>
+      ) : (
+        <div className="rth__deferred" data-testid="rth-deferred">
+          {open && !isInitialResponsePhase(phase) && (
+            <div className="rth__actions" role="group" aria-label="Response window recovery">
+              <button
+                type="button"
+                className="btn btn--secondary"
+                data-testid="rth-reset"
+                onClick={() =>
+                  send({ type: 'RESET_RESPONSE_PHASE', issuedAt: now(), roundId: round.id })
+                }
+              >
+                Reset window
+              </button>
+            </div>
+          )}
+          <p className="host__note rth__hint">
+            {open
+              ? 'Arming and timer controls return when this response opportunity is live again.'
+              : 'Arming and timer controls appear after the prompt is on the display.'}
+          </p>
+        </div>
+      )}
     </section>
   )
 }

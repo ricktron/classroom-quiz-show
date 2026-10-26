@@ -177,6 +177,14 @@ describe('the private preview', () => {
     expect(screen.getByTestId('cbh-public-stage')).toHaveTextContent(/the prompt and the answer/i)
   })
 
+  it('marks the public-stage badge for high-contrast fill (CANON-H-08)', () => {
+    openTile('alpha-100')
+    const badge = screen.getByTestId('cbh-public-stage').querySelector('.cbh__public-badge')
+    expect(badge).not.toBeNull()
+    expect(badge).toHaveTextContent(/On the display now/i)
+    expect(badge).toHaveClass('cbh__public-badge')
+  })
+
   it('renders an image prompt preview without nesting <img> inside a paragraph', () => {
     const result = importGameFromUnknown(
       boardGameFile({

@@ -332,46 +332,57 @@ export function LocalInputHostPanel({
         </dl>
       </div>
 
-      <div className="lih__actions" role="group" aria-label="Response queue controls">
-        <button
-          type="button"
-          className="btn"
-          data-testid="lih-correct"
-          disabled={!canResolve}
-          onClick={() => resolveActive('correct')}
-        >
-          Mark correct
-        </button>
-        <button
-          type="button"
-          className="btn"
-          data-testid="lih-incorrect"
-          disabled={!canResolve}
-          onClick={() => resolveActive('incorrect')}
-        >
-          Mark incorrect and advance
-        </button>
-        <button
-          type="button"
-          className="btn btn--secondary"
-          data-testid="lih-pass"
-          disabled={!canResolve}
-          onClick={() => resolveActive('passed')}
-        >
-          Pass and advance
-        </button>
-      </div>
+      {/*
+        CANON-H-11: Mark correct / incorrect / pass must not occupy equal weight
+        while nobody has buzzed. Keep the queue summary; surface adjudication
+        only when an active respondent can be resolved.
+      */}
+      {canResolve ? (
+        <>
+          <div className="lih__actions" role="group" aria-label="Response queue controls">
+            <button
+              type="button"
+              className="btn"
+              data-testid="lih-correct"
+              onClick={() => resolveActive('correct')}
+            >
+              Mark correct
+            </button>
+            <button
+              type="button"
+              className="btn"
+              data-testid="lih-incorrect"
+              onClick={() => resolveActive('incorrect')}
+            >
+              Mark incorrect and advance
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              data-testid="lih-pass"
+              onClick={() => resolveActive('passed')}
+            >
+              Pass and advance
+            </button>
+          </div>
+          <p className="host__note lih__hint">
+            Marking a response correct, incorrect, or passed moves no points —
+            awarding and deducting stay in the scoring panel, for every team. Correct
+            ends this response opportunity without revealing the answer. Close the
+            queue by resetting the window, returning to the board, or revealing the
+            answer.
+          </p>
+        </>
+      ) : (
+        <p className="host__note" data-testid="lih-awaiting-buzz">
+          {open
+            ? 'Adjudication appears when a team buzzes in.'
+            : 'Show the prompt and arm the clue before buzzes can count.'}
+        </p>
+      )}
 
       <p className="host__note" data-testid="lih-outcome" aria-live="polite">
         {describeOutcome(lastOutcome, nameOf)}
-      </p>
-
-      <p className="host__note lih__hint">
-        Marking a response correct, incorrect, or passed moves no points —
-        awarding and deducting stay in the scoring panel, for every team. Correct
-        ends this response opportunity without revealing the answer. Close the
-        queue by resetting the window, returning to the board, or revealing the
-        answer.
       </p>
 
       <h4 className="lih__heading">Buzz keys</h4>

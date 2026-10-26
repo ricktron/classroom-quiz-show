@@ -210,9 +210,12 @@ test('the full buzz-in flow: configure, arm, buzz, promote — mirrored on the p
   // ── 10. Queue exhaustion is represented on both surfaces ──────────────────
   await expect(display.getByTestId('bqd')).toHaveAttribute('data-status', 'exhausted')
   await expect(display.getByTestId('bqd-active')).toHaveText('No one left to answer')
-  // Both queue actions are now unavailable rather than silently doing nothing.
-  await expect(host.getByTestId('lih-incorrect')).toBeDisabled()
-  await expect(host.getByTestId('lih-pass')).toBeDisabled()
+  // CANON-H-11: adjudication controls are deferred (not disabled placeholders)
+  // when nobody can be resolved — unavailable rather than silently doing nothing.
+  await expect(host.getByTestId('lih-incorrect')).toHaveCount(0)
+  await expect(host.getByTestId('lih-pass')).toHaveCount(0)
+  await expect(host.getByTestId('lih-correct')).toHaveCount(0)
+  await expect(host.getByTestId('lih-awaiting-buzz')).toBeVisible()
 
   // A team that already had its turn cannot buzz again for this clue.
   await buzz(host, 'Digit1')

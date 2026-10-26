@@ -256,10 +256,15 @@ documentation **were** fetched directly.
   (https://www.jackboxgames.com/games/…, official).
   **Snippet-supported**; point values from fan wikis.
 - **CQS interpretation.** Mechanics feed the parked Bluff Lab and
-  Majority Report formats — but Jackbox's phone-based input is exactly
-  what CQS excludes, so CQS variants substitute controller-ordinal or
-  host-assisted input; that substitution is why these stay parked behind
-  `CQS-OPP-FUNNY-MODES` rather than being near-term ports.
+  Majority Report formats. Jackbox's phone-based input is **excluded by
+  current REAL MVP and accepted expanded-vision non-goals**, so present
+  CQS variants substitute controller-ordinal or host-assisted input;
+  that substitution is why these stay parked behind
+  `CQS-OPP-FUNNY-MODES` rather than being near-term ports. Optional
+  individual-device participation is a **recorded long-term aspiration**
+  only (`CQS-RA6-DEVICE-01`, `CQS-OPP-OPTIONAL-DEVICE-PARTICIPATION`) and
+  does not authorize phone networking or supersede the exclusion until a
+  future explicit owner decision.
 - **Limitation.** Per-edition scoring differs. Descriptive evidence.
 
 ## D. Learning-science scholarship

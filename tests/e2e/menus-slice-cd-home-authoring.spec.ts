@@ -29,23 +29,26 @@ test('empty Home: New Game dominant, Import adjacent, Display demoted, no dual l
   await expect(page.getByTestId('backup-restore-privacy')).toBeHidden()
 })
 
-test('Import exposes Board+Final primary and Classic secondary templates', async ({ page }) => {
+test('Import exposes demo as cold-start primary with templates secondary', async ({ page }) => {
   await page.goto('./')
   await page.getByTestId('home-import-game').click()
   await expect(page.getByTestId('home-import')).toBeVisible()
   await expect(page.getByTestId('home-import-templates')).toBeVisible()
+  // CANON-H-10: demo is the sole solid primary; templates stay discoverable secondary.
+  const demo = page.getByTestId('home-import-demo')
   const boardFinal = page.getByTestId('home-download-board-plus-final')
   const classic = page.getByTestId('home-download-classic-board')
+  await expect(demo).toBeVisible()
+  await expect(demo).not.toHaveClass(/btn--secondary/)
   await expect(boardFinal).toBeVisible()
   await expect(classic).toBeVisible()
-  await expect(boardFinal).toHaveClass(/btn/)
+  await expect(boardFinal).toHaveClass(/btn--secondary/)
   await expect(classic).toHaveClass(/btn--secondary/)
-  await expect(page.getByTestId('home-import')).toContainText(/formulas and macros/i)
+  await expect(page.getByTestId('home-import')).toContainText(/formulas\/macros/i)
   // H6: spreadsheet + JSON paste + demo co-present; no live-AI implication.
   await expect(page.getByTestId('home-import-spreadsheet')).toBeVisible()
   await expect(page.getByTestId('home-import-json')).toBeVisible()
-  await expect(page.getByTestId('home-import-demo')).toBeVisible()
-  await expect(page.getByTestId('home-import')).toContainText(/external tool/i)
+  await expect(page.getByTestId('home-import-lead')).toContainText(/demo/i)
   const importText = (await page.getByTestId('home-import').innerText()).toLowerCase()
   expect(importText).not.toMatch(/chatgpt|live ai|generate with ai|openai|ask an ai/i)
 })

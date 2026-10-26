@@ -62,8 +62,10 @@ test('Q3-A…F: keyboard golden path Home→board→Final→completion with Host
   await expect(display.getByTestId('cbd-answer')).toHaveCount(0)
   expect((await display.content()).toLowerCase()).not.toContain('water')
   await expectDisplayPrivate(display)
-  // Q6-RP-1 (G2): public status is truthful mid-round (real Host publish).
-  await expect(display.getByTestId('nexus-detail')).toHaveText('Playing')
+  // Q6-RP-1 (G2) + CANON-H-09: projector stage owns the beat; generic Host
+  // "Playing" detail is suppressed on board/clue Nexus once the round is live.
+  await expect(display.getByTestId('nexus-stage')).toHaveText(/Question|Selected|Board open|Answer/)
+  await expect(display.getByTestId('nexus-detail')).toHaveCount(0)
   await expect(display.locator('body')).not.toContainText('Waiting for the first round')
 
   // HG-07 / HG-08: arm + timer + keyboard buzz (usable without controllers).

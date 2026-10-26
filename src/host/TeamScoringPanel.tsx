@@ -150,6 +150,12 @@ export function TeamScoringPanel({
 
   const active = game.gameLifecycle === 'active'
   const liveTile = liveTileOf(game)
+  /**
+   * CANON-H-06: before the first round, scoring ops must not dominate the Host
+   * body. Keep the glanceable scoreboard; tuck target / manual correction /
+   * history behind a closed disclosure until the teacher opens it.
+   */
+  const preRound = active && game.currentRoundIndex === null
   const target = teams.find((team) => team.id === targetId) ?? null
   const scoreEvents = currentSessionEvents(history).filter(isTeamScoreAdjusted)
   const lastChange = lastScoreChangeOf(history)
@@ -266,29 +272,8 @@ export function TeamScoringPanel({
   const partialAmount = parseIntegerInput(partialText)
   const targetScore = target === null ? null : teamScoreFor(game, target.id)
 
-  return (
-    <section className="tsp" aria-labelledby="tsp-title">
-      <div className="foundation__tag foundation__tag--slice6">
-        Teams &amp; scoring — host controls, private
-      </div>
-      <h3 id="tsp-title">Teams &amp; scoring</h3>
-
-      <ol className="tsp__board" data-testid="tsp-scoreboard">
-        {teams.map((team) => (
-          <li className="tsp__team" key={team.id} data-testid={`tsp-team-${team.id}`}>
-            <span
-              className={`tsp__swatch ${teamAccentClass(team.accent)}`}
-              aria-hidden="true"
-            />
-            {/* Session name when chosen; authored Game name otherwise. */}
-            <span className="tsp__team-name">{displayName(team.id)}</span>
-            <span className="tsp__team-score" data-testid={`tsp-score-${team.id}`}>
-              {teamScoreFor(game, team.id)}
-            </span>
-          </li>
-        ))}
-      </ol>
-
+  const scoringOps = (
+    <>
       <fieldset className="tsp__targets" disabled={!active}>
         <legend>Scoring target (host only — never shown on the display)</legend>
         {teams.map((team) => (
@@ -507,6 +492,50 @@ export function TeamScoringPanel({
             : 'The next undo would affect something other than a score, so it is disabled here. To fix an older score, apply a manual correction — history is never rewritten.'}
         </p>
       </div>
+    </>
+  )
+
+  return (
+    <section
+      className={`tsp${preRound ? ' tsp--pre-round' : ''}`}
+      aria-labelledby="tsp-title"
+      data-pre-round={preRound ? 'true' : undefined}
+    >
+      <div className="foundation__tag foundation__tag--slice6">
+        Teams &amp; scoring — host controls, private
+      </div>
+      <h3 id="tsp-title">Teams &amp; scoring</h3>
+
+      <ol className="tsp__board" data-testid="tsp-scoreboard">
+        {teams.map((team) => (
+          <li className="tsp__team" key={team.id} data-testid={`tsp-team-${team.id}`}>
+            <span
+              className={`tsp__swatch ${teamAccentClass(team.accent)}`}
+              aria-hidden="true"
+            />
+            {/* Session name when chosen; authored Game name otherwise. */}
+            <span className="tsp__team-name">{displayName(team.id)}</span>
+            <span className="tsp__team-score" data-testid={`tsp-score-${team.id}`}>
+              {teamScoreFor(game, team.id)}
+            </span>
+          </li>
+        ))}
+      </ol>
+
+      {preRound ? (
+        <>
+          <p className="tsp__next-beat" data-testid="tsp-pre-round-next">
+            Start Round 1 above to open the board. Scores stay visible; scoring
+            actions wait until you need them.
+          </p>
+          <details className="tsp__ops-disclosure" data-testid="tsp-ops-disclosure">
+            <summary>Score correction (optional before the round)</summary>
+            <div className="tsp__ops-body">{scoringOps}</div>
+          </details>
+        </>
+      ) : (
+        scoringOps
+      )}
     </section>
   )
 }

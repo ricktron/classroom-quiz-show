@@ -126,8 +126,9 @@ test('RP1-A: Start Round 1 → Round 2 → Final with ordinary controls; Display
   await expect(host.getByTestId('rph-status')).toHaveText('Round 1 of 3 · 0 of 2 clues played')
   await expect(host.getByTestId('rph-next')).toHaveText('Start Round 2')
   await expect(display.getByTestId('cbd-board')).toContainText('Science')
-  // G2: in-round status is truthful on the projector.
-  await expect(display.getByTestId('nexus-detail')).toHaveText('Playing')
+  // G2 + CANON-H-09: theatrical stage label is truthful; generic Playing detail suppressed.
+  await expect(display.getByTestId('nexus-stage')).toHaveText('Board open')
+  await expect(display.getByTestId('nexus-detail')).toHaveCount(0)
   await expectDisplayStatusTruthfulInPlay(display)
 
   // A clue is open → the round cannot change until the teacher returns to the board.

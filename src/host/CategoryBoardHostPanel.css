@@ -36,12 +36,16 @@
   color: var(--fg-muted);
 }
 
+/*
+ * CANON-H-08: solid accent fill + on-fill text (not white-on-cyan wash).
+ * Verified contrast path uses --state-accent-strong / --fg-on-accent-fill tokens.
+ */
 .cbh__public-badge {
-  padding: 0.1rem 0.5rem;
+  padding: 0.15rem 0.55rem;
   border-radius: var(--radius-pill);
-  background: var(--state-success-wash);
-  border: var(--bw-standard) solid var(--state-accent);
-  color: var(--fg-primary);
+  background: var(--state-accent-strong);
+  border: var(--bw-standard) solid var(--state-accent-strong);
+  color: var(--fg-on-accent-fill);
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
