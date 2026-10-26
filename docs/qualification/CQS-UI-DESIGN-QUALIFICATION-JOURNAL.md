@@ -911,7 +911,60 @@ measure them but not judge them:
 
 ---
 
-## 13. Non-claims
+## 13. Reconciliation with the parallel UI design court on `main`
+
+While this lane's pull request was open, a **separate UI design court** landed
+three repair tranches on `main` under its own `CANON-H-` finding ids:
+
+| Landed | Commit | Scope |
+| --- | --- | --- |
+| T1 — zero-explanation start honesty (`CANON-H-01` / `H-10` / `H-05`) | `958ac8f` (#194) | Class Setup slot titles, Import cold-start, Ready heading |
+| T2 — Host one-second ops (`CANON-H-06` / `H-11` / `H-07` / `H-08`) | `192d428` (#195) | pre-round scoring disclosure, deferred Arm/Timer/Adjudicate walls, quiet mid-play End chrome, badge contrast |
+| T3 — Audience/projector stage (`CANON-H-09` / `H-03` / `H-02` / `H-04`) | `b3cfa65` (#197) | Display ops chrome and Ready flood, Ready only when armed, SELECTED focal scale, 720p category hierarchy |
+
+`origin/main` was merged into this branch at `af950fd`. The two courts reached
+several of the same conclusions independently, which is corroboration rather
+than duplication — but it means this docket must not keep claiming as open
+things `main` has since fixed.
+
+### What `main` closed, that this lane had routed
+
+| This lane | Now on `main` | Note |
+| --- | --- | --- |
+| `UIX-O08` — what the public team strip should say when buzz-in is closed | **CLOSED.** `CANON-H-03` decided it: `Ready` only when armed, otherwise `Standby`, with `Standing by` on the rail status. | This is exactly the product decision this lane declined to invent. The merge conflict in `SignalRail.tsx` was resolved **in `main`'s favour** on both hunks: its wording is ratified and this lane's placeholders (`Buzz-in closed`, the collapsed dead branch) are superseded. |
+| `UIX-R11` / `UIX-R12` — the false "Response ready" and the dead branch | **SUPERSEDED** by the same `CANON-H-03` change. | The defect this lane found is fixed; the fix on `main` is better, because the non-armed word is now a decided one rather than a holding string. |
+| `UIX-O18` item 3 — ready-made sample games unfindable, Home has no Play | **CLOSED** by `CANON-H-10`: Import demo game is the sole cold-start primary. | This was the zero-explanation court's "~40 minutes of typing I need not have done". |
+| `UIX-O11` / `UIX-O12` — the projector's operator telemetry band and the idle screen's repeated "Ready" | **PARTLY CLOSED** by `CANON-H-09` (quiet Display ops chrome and Ready flood). Not re-reviewed against a fresh capture by this lane. |
+| `UIX-O06` — the remaining projector type ramp | **PARTLY CLOSED** by `CANON-H-02` and `CANON-H-04`, which scale the SELECTED focal and strengthen 720p category hierarchy — the 720p half this lane could not reach by raising clamp ceilings alone. |
+| `C-01` / `UIX-R05` — destructive styling | **COMPLEMENTARY.** `main` added `.btn--quiet-danger` for the mid-play End control (`CANON-H-07`); this lane fixed the armed Final confirm, whose declared destructive styling was lost to the cascade. Both are now present and they do not overlap. |
+
+### What is still open after the merge, re-verified on the merged tree
+
+Checked in source at `af950fd`, not assumed:
+
+| Id | Still open? | Evidence |
+| --- | --- | --- |
+| `UIX-O16` — authoring claims a game is playable that the product refuses to load | **YES** | `validateDraft.ts` still blocks only on `!draft.final`, and `AuthoringRoute.tsx:423` still prints "This game has the required content and can be played." |
+| `E-01` — keyboard focus falls to `<body>` after every reveal and adjudication | **YES** | no `.focus()` anywhere in the live-play Host components |
+| `UIX-O01` — the scoring target never follows the team that buzzed | **YES** | `TeamScoringPanel.tsx:145` is still a `useState` initialised to `null` with zero `useEffect` in the file. `CANON-H-06` tucks the control behind a disclosure, which changes where it sits, not whether it goes stale. |
+| `UIX-O02` — the buzzer workbench during play | **PARTLY** | the generic controller diagnostics default closed, but this lane did not re-capture the play posture to confirm the whole section is quiet |
+
+So the campaign's two highest-severity findings — and its VERY HIGH scoring-target
+risk — survive the merge untouched. The terminal verdict in §11 stands, with the
+unresolved count reduced by the items above.
+
+### A note on running two courts at once
+
+The two lanes did not see each other, and that produced genuine independent
+corroboration on the Display's false readiness claim. It also produced one
+merge conflict in exactly the file both had repaired, and a docket that had to
+be reconciled after the fact. If another design lane is likely to run in
+parallel, the cheaper arrangement is one register of finding ids shared between
+them, rather than two that have to be mapped afterwards.
+
+---
+
+## 14. Non-claims
 
 This journal does **not**:
 
