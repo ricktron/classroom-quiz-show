@@ -72,6 +72,12 @@ describe('teacher summary — transport healthy alone is not ready', () => {
   it('disconnected keeps keyboard-available wording', () => {
     expect(teacherSummaryLabel('receiver-disconnected')).toMatch(/keyboard still works/i)
   })
+
+  it('T5 DC-DRIFT-015: optional receiver path stays calm (not “needs attention”)', () => {
+    expect(teacherSummaryLabel('receiver-needs-attention')).toMatch(/not connected/i)
+    expect(teacherSummaryLabel('receiver-needs-attention')).not.toMatch(/needs attention/i)
+    expect(teacherSummaryLabel('receiver-needs-attention')).toMatch(/keyboard still works/i)
+  })
 })
 
 describe('H6 class-setup readiness claims share teacher-summary layers', () => {

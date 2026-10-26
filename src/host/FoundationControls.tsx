@@ -672,7 +672,7 @@ export function FoundationControls({
               setAudioUnderstood(true)
             }}
           >
-            {presentationAudio.status.muted ? 'Sound is muted' : 'Mute all sounds'}
+            {presentationAudio.status.muted ? 'Sound muted' : 'Mute all sounds'}
           </button>
           <button
             type="button"

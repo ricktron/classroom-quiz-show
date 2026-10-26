@@ -129,7 +129,8 @@ export function teacherSummaryLabel(summary: SonyBuzzTeacherSummary): string {
     case 'sony-buzz-ready':
       return 'Buzzers ready.'
     case 'receiver-needs-attention':
-      return 'Receiver needs attention — keyboard still works.'
+      // T5 DC-DRIFT-015: optional path — calm, not alarm "needs attention".
+      return 'Receiver not connected — keyboard still works.'
   }
 }
 

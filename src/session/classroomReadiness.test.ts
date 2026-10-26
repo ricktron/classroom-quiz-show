@@ -218,8 +218,29 @@ describe('classroom readiness', () => {
       sonyReady: false,
     })
     expect(compact.find((item) => item.id === 'display')?.detail).toMatch(/window not open/i)
-    expect(compact.find((item) => item.id === 'sound')?.detail).toMatch(/not tested/i)
+    expect(compact.find((item) => item.id === 'sound')?.statusWord).toMatch(/not tested/i)
+    expect(compact.find((item) => item.id === 'sound')?.detail).toMatch(/test or mute/i)
     expect(compact.every((item) => item.status !== ('current' as never))).toBe(true)
+  })
+
+  it('T5 DC-DRIFT-006: muted sound never reads as checklist complete', () => {
+    const muted = compactReadinessItems({
+      ...ready,
+      audioUnderstood: false,
+      audioMuted: true,
+    })
+    const sound = muted.find((item) => item.id === 'sound')
+    expect(sound?.statusWord).toBe('muted')
+    expect(sound?.statusWord).not.toMatch(/complete/i)
+    expect(`${sound?.label} ${sound?.statusWord}`).not.toMatch(/Sound complete/i)
+    expect(sound?.detail).toMatch(/unmute/i)
+
+    const tested = compactReadinessItems({
+      ...ready,
+      audioUnderstood: true,
+      audioMuted: false,
+    })
+    expect(tested.find((item) => item.id === 'sound')?.statusWord).toBe('tested')
   })
 
   it('lists unresolved optional facts without revoking Ready', () => {

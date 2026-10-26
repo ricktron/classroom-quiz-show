@@ -91,7 +91,7 @@ test('branch: first output failure — no healthy lie', async ({ page }, info) =
     timeout: 8_000,
   })
   await expect(page.getByTestId('sbs-teacher-summary')).toHaveText(
-    'Receiver needs attention — keyboard still works.',
+    'Receiver not connected — keyboard still works.',
   )
   await expect(page.getByRole('button', { name: 'Connect buzzers' })).toBeEnabled()
 })

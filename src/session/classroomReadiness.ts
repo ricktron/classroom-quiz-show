@@ -416,7 +416,19 @@ export function compactReadinessItems(
       ? 'skipped'
       : 'optional'
   const displayStatus: CompactReadinessStatus = input.displayOpen ? 'complete' : 'optional'
+  // T5 DC-DRIFT-006: muted is settled, but must not read as checklist "complete".
   const soundStatus: CompactReadinessStatus = soundIsReady(input) ? 'complete' : 'optional'
+  const soundDetail = input.audioMuted
+    ? 'Off until you unmute'
+    : input.audioUnderstood
+      ? 'Tested for this class'
+      : 'Test or mute so you know what the class will hear'
+  // Never "complete" when muted — status words are mute/test facts.
+  const soundStatusWord = input.audioMuted
+    ? 'muted'
+    : input.audioUnderstood
+      ? 'tested'
+      : 'not tested'
 
   // I-REPAIR-1: Buzzers before Names (preferred: Buzzers → Teams → Names → Display → Sound).
   const items: readonly (readonly [SetupTaskId, string, CompactReadinessStatus, string])[] = [
@@ -424,14 +436,14 @@ export function compactReadinessItems(
     ['teams', 'Teams', teamsStatus, teamsDetail(input)],
     ['names', 'Names', namesStatus, namesDetail(input)],
     ['display', 'Display', displayStatus, displayFactLabel(input)],
-    ['sound', 'Sound', soundStatus, soundFactLabel(input)],
+    ['sound', 'Sound', soundStatus, soundDetail],
   ]
   return items.map(([id, label, status, detail]) => ({
     id,
     label,
     mark: markFor(status),
     status,
-    statusWord: statusWord(status),
+    statusWord: id === 'sound' ? soundStatusWord : statusWord(status),
     detail,
   }))
 }

@@ -69,6 +69,23 @@ describe('AudienceDisplayShell', () => {
     expect(screen.queryByTestId('cbd-board')).toBeNull()
   })
 
+  it('T5 DC-DRIFT-018: singularizes one-round waiting copy', () => {
+    render(
+      <AudienceDisplayShell
+        publicState={state({
+          game: {
+            status: 'active',
+            roundCount: 1,
+            currentRound: null,
+            roundAvailability: 'none',
+          },
+        })}
+      />,
+    )
+    expect(screen.getByText(/1 round,/i)).toBeInTheDocument()
+    expect(document.body.textContent).not.toMatch(/1 rounds/)
+  })
+
   it('uses Score Column for four teams and preserves authored order', () => {
     render(
       <AudienceDisplayShell
