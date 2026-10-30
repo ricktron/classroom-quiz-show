@@ -149,6 +149,8 @@ function optionMatchesAnswer(option: string, answer: string): boolean {
 }
 
 function isShortChoiceLabel(value: string): boolean {
+  // A sentence break means prompt text after the list was swallowed into an option.
+  if (/[.?!]\s+\S/.test(value)) return false
   const words = value.trim().split(/\s+/).filter((word) => word.length > 0)
   if (words.length === 0 || words.length > CHOICE_WORD_LIMIT) return false
   return !words.some((word) => /^(?:is|are|was|were|includes|means)$/i.test(word.replace(/[^a-z]/gi, '')))
@@ -189,31 +191,38 @@ function looksLikeChoicePrompt(prompt: string): boolean {
   return prompt.includes('?') || /\b(?:which|choose|select|pick|either)\b/i.test(prompt)
 }
 
+function isChoicePair(left: string, right: string): boolean {
+  return ![left, right].some((option) => /\bor\b/i.test(option) || !isShortChoiceLabel(option))
+}
+
 function colonChoice(prompt: string): RecognizedChoice | null {
   if (!looksLikeChoicePrompt(prompt)) return null
-  const colon = prompt.lastIndexOf(':')
-  if (colon < 0) return null
+  // A colon, em dash, or en dash introduces the option list.
+  const delimiter = Math.max(prompt.lastIndexOf(':'), prompt.lastIndexOf('—'), prompt.lastIndexOf('–'))
+  if (delimiter < 0) return null
   const tail = prompt
-    .slice(colon + 1)
+    .slice(delimiter + 1)
     .replace(/^[ \t]+/, '')
     .replace(/[?.!\s]+$/g, '')
     .trim()
   if (tail.length === 0) return null
   const listed = parseCommaChoiceList(tail)
-  if (listed) return { options: listed, outside: prompt.slice(0, colon) }
+  if (listed) return { options: listed, outside: prompt.slice(0, delimiter) }
   const pair = tail.match(/^(.+?)\s+or\s+(.+)$/i)
   if (!pair) return null
   const left = pair[1]?.trim() ?? ''
   const right = pair[2]?.trim() ?? ''
-  if (left.includes(',') || right.includes(',') || /\bor\b/i.test(left) || /\bor\b/i.test(right)) return null
-  if (!isShortChoiceLabel(left) || !isShortChoiceLabel(right)) return null
-  return { options: [left, right], outside: prompt.slice(0, colon) }
+  if (left.includes(',') || right.includes(',') || !isChoicePair(left, right)) return null
+  return { options: [left, right], outside: prompt.slice(0, delimiter) }
 }
 
 function letteredChoice(prompt: string): RecognizedChoice | null {
   const marker = /(?:^|\s)(?:\(([A-Da-d])\)|([A-Da-d])[.)])\s+/g
   const markers: Array<{ index: number; end: number }> = []
   for (const match of prompt.matchAll(marker)) {
+    // Options must be lettered in order from A, so prose such as "plan B." is not a list.
+    const letter = (match[1] ?? match[2] ?? '').toLowerCase()
+    if (letter !== 'abcd'[markers.length]) return null
     markers.push({ index: match.index, end: match.index + match[0].length })
   }
   if (markers.length < 2) return null
@@ -228,66 +237,57 @@ function letteredChoice(prompt: string): RecognizedChoice | null {
   return { options, outside: prompt.slice(0, markers[0]?.index ?? 0) }
 }
 
-function sentenceEitherOr(prompt: string): RecognizedChoice | null {
+/** "True or false: …" — the options are the lead words themselves. */
+function trueFalseChoice(prompt: string): RecognizedChoice | null {
+  const lead = /^\s*true\s+or\s+false\b[\s:?.,—–-]*/i.exec(prompt)
+  return lead ? { options: ['true', 'false'], outside: prompt.slice(lead[0].length) } : null
+}
+
+interface EitherOrPattern {
+  /** Captures the sentence text before the options, then the two options. */
+  readonly pattern: RegExp
+  readonly questionOnly?: boolean
+}
+
+const EITHER_OR_PATTERNS: readonly EitherOrPattern[] = [
+  // "Is this adapting to or modifying the environment?"
+  { pattern: /^((?:is|are|was|were|does|do|did)\s+(?:this|that|it|these|those)\s+)(.+)\s+or\s+(.+)$/i },
+  // "Is a tomato a fruit or a vegetable?" — both options start with an article.
+  { pattern: /^((?:is|are|was|were)\s+.+?\s+)((?:a|an|the)\s+.+?)\s+or\s+((?:a|an|the)\s+.+)$/i },
+  // "Which planet is larger, Earth or Mars?"
+  { pattern: /^(.*,\s*)([^,]+)\s+or\s+([^,]+)$/i, questionOnly: true },
+]
+
+/**
+ * Exactly one sentence must end in the either/or pair. Everything except
+ * that pair, including the other sentences, counts as outside the options.
+ */
+function eitherOrChoice(prompt: string, { pattern, questionOnly }: EitherOrPattern): RecognizedChoice | null {
   const sentences = prompt
     .split(/(?<=[.!?])\s+/)
     .map((sentence) => sentence.trim())
     .filter((sentence) => sentence.length > 0)
-  const found: Array<{ readonly options: readonly [string, string] }> = []
-  for (const sentence of sentences) {
-    const bare = sentence.replace(/[?\s]+$/g, '').trim()
-    const match = bare.match(
-      /^(?:is|are|was|were|does|do|did)\s+(?:this|that|it|these|those)\s+(.+)\s+or\s+(.+)$/i,
-    )
-    if (!match) continue
-    const left = match[1]?.trim() ?? ''
-    const right = match[2]?.trim() ?? ''
-    if (/\bor\b/i.test(left) || /\bor\b/i.test(right)) continue
-    if (!isShortChoiceLabel(left) || !isShortChoiceLabel(right)) continue
-    found.push({ options: [left, right] })
-  }
-  if (found.length !== 1) return null
-  const options = found[0]?.options
-  if (!options) return null
-  return { options, outside: removeOptionPhrases(prompt, options) }
-}
-
-function commaEitherOr(prompt: string): RecognizedChoice | null {
-  const sentences = prompt
-    .split(/(?<=[.!?])\s+/)
-    .map((sentence) => sentence.trim())
-    .filter((sentence) => sentence.length > 0)
-  const found: Array<{ readonly options: readonly [string, string] }> = []
-  for (const sentence of sentences) {
-    if (!sentence.includes('?') && !/\b(?:which|choose|select)\b/i.test(sentence)) continue
-    const bare = sentence.replace(/[?\s]+$/g, '').trim()
-    const match = bare.match(/,\s*([^,]+)\s+or\s+([^,]+)$/i)
-    if (!match) continue
-    const left = match[1]?.trim() ?? ''
-    const right = match[2]?.trim() ?? ''
-    if (/\bor\b/i.test(left) || /\bor\b/i.test(right)) continue
-    if (!isShortChoiceLabel(left) || !isShortChoiceLabel(right)) continue
-    found.push({ options: [left, right] })
-  }
-  if (found.length !== 1) return null
-  const options = found[0]?.options
-  if (!options) return null
-  return { options, outside: removeOptionPhrases(prompt, options) }
-}
-
-function removeOnce(haystack: string, needle: string): string {
-  const index = haystack.toLowerCase().indexOf(needle.toLowerCase())
-  if (index < 0 || needle.length === 0) return haystack
-  return `${haystack.slice(0, index)} ${haystack.slice(index + needle.length)}`
-}
-
-function removeOptionPhrases(prompt: string, options: readonly string[]): string {
-  const ordered = [...options].sort((a, b) => b.length - a.length)
-  return ordered.reduce((rest, option) => removeOnce(rest, option), prompt)
+  const found = sentences.flatMap((sentence, index): RecognizedChoice[] => {
+    if (questionOnly && !sentence.includes('?') && !/\b(?:which|choose|select)\b/i.test(sentence)) return []
+    const match = sentence.replace(/[?\s]+$/g, '').trim().match(pattern)
+    if (!match) return []
+    const left = match[2]?.trim() ?? ''
+    const right = match[3]?.trim() ?? ''
+    if (!isChoicePair(left, right)) return []
+    const others = sentences.filter((_, other) => other !== index)
+    return [{ options: [left, right], outside: [...others, match[1] ?? ''].join(' ') }]
+  })
+  return found.length === 1 ? (found[0] ?? null) : null
 }
 
 function recognizeChoice(prompt: string): RecognizedChoice | null {
-  return letteredChoice(prompt) ?? colonChoice(prompt) ?? sentenceEitherOr(prompt) ?? commaEitherOr(prompt)
+  const structured = trueFalseChoice(prompt) ?? letteredChoice(prompt) ?? colonChoice(prompt)
+  if (structured) return structured
+  for (const pattern of EITHER_OR_PATTERNS) {
+    const choice = eitherOrChoice(prompt, pattern)
+    if (choice) return choice
+  }
+  return null
 }
 
 function answerRevealedOutside(answer: string, outside: string): boolean {

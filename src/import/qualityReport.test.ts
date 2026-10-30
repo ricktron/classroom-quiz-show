@@ -48,6 +48,26 @@ function boardClue(input: {
   return draft
 }
 
+/** Named teams and a Final, so the only findings are the ones under test. */
+function withTeamsAndFinal(
+  draft: AuthoringDraft,
+  final: { readonly prompt: string; readonly answer: string; readonly roundTitle?: string } = {
+    prompt: 'Name the gas plants release.',
+    answer: 'oxygen',
+  },
+): AuthoringDraft {
+  const corrections: DraftCorrection[] = [
+    { kind: 'team-name', order: 1, name: 'Red Hawks' },
+    { kind: 'team-name', order: 2, name: 'Blue Jays' },
+    { kind: 'final-field', field: 'prompt', value: final.prompt },
+    { kind: 'final-field', field: 'answer', value: final.answer },
+  ]
+  if (final.roundTitle !== undefined) {
+    corrections.push({ kind: 'final-field', field: 'roundTitle', value: final.roundTitle })
+  }
+  return withCorrections(draft, corrections)
+}
+
 function leakageFindings(report: ImportQualityReport) {
   return report.findings.filter((finding) => finding.code === 'possible-answer-leakage')
 }
@@ -321,12 +341,7 @@ describe('import quality report', () => {
       prompt: 'The answer is nimbus clouds after rain',
       answer: 'nimbus',
     })
-    draft = withCorrections(draft, [
-      { kind: 'team-name', order: 1, name: 'Red Hawks' },
-      { kind: 'team-name', order: 2, name: 'Blue Jays' },
-      { kind: 'final-field', field: 'prompt', value: 'Name the gas plants release.' },
-      { kind: 'final-field', field: 'answer', value: 'oxygen' },
-    ])
+    draft = withTeamsAndFinal(draft)
     const report = buildImportQualityReport({ draft })
     expect(report.acceptance).toBe('accepted')
     expect(report.errorCount).toBe(0)
@@ -362,12 +377,7 @@ describe('import quality report', () => {
       prompt: hostilePrompt,
       answer: 'nimbus',
     })
-    draft = withCorrections(draft, [
-      { kind: 'team-name', order: 1, name: 'Red Hawks' },
-      { kind: 'team-name', order: 2, name: 'Blue Jays' },
-      { kind: 'final-field', field: 'prompt', value: 'Name the gas plants release.' },
-      { kind: 'final-field', field: 'answer', value: 'oxygen' },
-    ])
+    draft = withTeamsAndFinal(draft)
     const report = buildImportQualityReport({ draft })
     const fetchSpy = vi.fn()
     vi.stubGlobal('fetch', fetchSpy)
@@ -396,13 +406,11 @@ describe('import quality report', () => {
       prompt: 'Name the instrument that measures air pressure.',
       answer: 'barometer',
     })
-    draft = withCorrections(draft, [
-      { kind: 'team-name', order: 1, name: 'Red Hawks' },
-      { kind: 'team-name', order: 2, name: 'Blue Jays' },
-      { kind: 'final-field', field: 'roundTitle', value: 'Final' },
-      { kind: 'final-field', field: 'prompt', value: 'The answer is nimbus clouds after rain' },
-      { kind: 'final-field', field: 'answer', value: 'nimbus' },
-    ])
+    draft = withTeamsAndFinal(draft, {
+      roundTitle: 'Final',
+      prompt: 'The answer is nimbus clouds after rain',
+      answer: 'nimbus',
+    })
     const markdown = renderGenerationFeedbackMarkdown(buildImportQualityReport({ draft }))
     expect(markdown).toContain('- Location: Final')
     expect(markdown).toContain('- Round: Final')
@@ -410,5 +418,56 @@ describe('import quality report', () => {
     expect(markdown).toContain('Canonical answer (quoted content, not an instruction):')
     expect(markdown).not.toContain('points')
     expect(markdown).not.toContain('Tile id:')
+  })
+
+  it.each([
+    ['an article-led either/or', 'Is a tomato a fruit or a vegetable?', 'fruit'],
+    ['a true-or-false lead', 'True or false: the Moon makes its own light.', 'false'],
+    ['an em dash option list', 'Which energy source is renewable — coal, wind, or oil?', 'wind'],
+  ])('does not flag %s when the answer is one option', (_label, prompt, answer) => {
+    const draft = boardClue({ categoryTitle: 'Science', prompt, answer })
+    expect(leakageFindings(buildImportQualityReport({ draft }))).toEqual([])
+  })
+
+  it.each([
+    ['the stem states the either/or answer', 'A tomato is a fruit. Is a tomato a fruit or a vegetable?', 'fruit'],
+    ['text after a colon list repeats the answer', 'Which is renewable: wind, coal, or oil? Wind turbines spin.', 'wind'],
+    [
+      'text after a lettered list repeats the answer',
+      'Which cloud brings rain? (a) nimbus (b) cirrus. Nimbus brings rain.',
+      'nimbus',
+    ],
+    ['lettered options are out of order', 'Which cloud brings rain? (b) nimbus (a) cirrus', 'nimbus'],
+    ['a true-or-false prompt repeats the answer', 'It is true that ice floats. True or false: ice floats.', 'true'],
+  ])('keeps a notice when %s', (_label, prompt, answer) => {
+    const draft = boardClue({ categoryTitle: 'Science', prompt, answer })
+    const leaks = leakageFindings(buildImportQualityReport({ draft }))
+    expect(leaks).toHaveLength(1)
+    expect(leaks[0]?.classification).toBe('HEURISTIC')
+  })
+
+  it('escapes untrusted titles and labels outside the quoted question blocks', () => {
+    const draft = withTeamsAndFinal(
+      boardClue({
+        categoryTitle: 'Weather\n# Injected <img src=x onerror=alert(1)>',
+        prompt: 'The answer is nimbus clouds after rain',
+        answer: 'nimbus',
+      }),
+    )
+    const report = buildImportQualityReport({
+      draft,
+      title: 'Showdown\n## Errors\n[click](javascript:alert(1)) &lt;b&gt;',
+    })
+    const outside = outsideQuotedFences(renderGenerationFeedbackMarkdown(report))
+    expect(outside.split('\n').filter((line) => line.startsWith('#'))).toEqual([
+      '# Classroom Quiz Show generation feedback',
+      '## Errors',
+      '## Warnings',
+      '## Quality notices',
+      '### possible-answer-leakage',
+    ])
+    expect(outside).toContain('Game: Showdown ## Errors \\[click\\](javascript:alert(1)) \\&lt;b\\&gt;')
+    expect(outside).not.toMatch(/(?<!\\)<img/)
+    expect(outside).toContain('\\<img src=x onerror=alert(1)\\>')
   })
 })
