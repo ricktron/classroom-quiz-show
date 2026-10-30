@@ -168,7 +168,7 @@ describe('ending a game without a Final', () => {
     expect(end).toHaveClass('btn--quiet-danger')
     fireEvent.click(end)
     expect(dispatched).toEqual([])
-    expect(screen.getByTestId('rph-confirm')).toHaveTextContent("can't be undone")
+    expect(screen.getByTestId('rph-confirm')).toHaveTextContent('cannot be undone')
     fireEvent.click(screen.getByTestId('rph-end-confirm'))
     expect(dispatched.map((c) => c.type)).toEqual(['END_GAME_SESSION'])
     expect(game(store).gameLifecycle).toBe('ended')

@@ -71,7 +71,7 @@ function unplayedCopy(remaining: number): string {
 
 function confirmCopy(confirming: 'next' | 'end', remaining: number, nextLabel: string): string {
   if (confirming === 'end') {
-    return `${unplayedCopy(remaining)}End the game now? Scores become final. This can't be undone.`
+    return `${unplayedCopy(remaining)}End the game now? Scores become final. This cannot be undone.`
   }
   return `${unplayedCopy(remaining)}${nextLabel} now?`
 }
