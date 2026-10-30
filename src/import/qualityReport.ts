@@ -18,12 +18,35 @@ export type QualityClassification = (typeof QUALITY_CLASSIFICATIONS)[number]
 export const IMPORT_ACCEPTANCE = ['accepted', 'rejected', 'unfinished'] as const
 export type ImportAcceptance = (typeof IMPORT_ACCEPTANCE)[number]
 
+/**
+ * Question context copied from the draft that produced a finding.
+ * Presentation uses this instead of decoding a canonical id.
+ */
+export type QualityFindingSubject =
+  | {
+      readonly kind: 'tile'
+      readonly categoryTitle: string
+      readonly clueOrder: number
+      readonly tileCanonicalId: string
+      readonly prompt: string
+      readonly answer: string
+      /** Omitted when the draft did not author a point value. */
+      readonly pointValue?: number
+    }
+  | {
+      readonly kind: 'final'
+      readonly roundTitle: string
+      readonly prompt: string
+      readonly answer: string
+    }
+
 export interface QualityFinding {
   readonly classification: QualityClassification
   readonly code: string
   readonly message: string
   readonly path?: string
   readonly source: 'canonical-import' | 'authoring-draft' | 'heuristic'
+  readonly subject?: QualityFindingSubject
 }
 
 export interface ImportQualityReport {
@@ -78,8 +101,278 @@ function heuristic(
   code: string,
   message: string,
   path?: string,
+  subject?: QualityFindingSubject,
 ): QualityFinding {
-  return { classification: 'HEURISTIC', code, message, path, source: 'heuristic' }
+  return {
+    classification: 'HEURISTIC',
+    code,
+    message,
+    path,
+    source: 'heuristic',
+    ...(subject ? { subject } : {}),
+  }
+}
+
+const ANSWER_LEAKAGE_MESSAGE =
+  'The answer appears directly in the question text. Review whether this is intentional.'
+
+const LEAKAGE_MIN_ANSWER_LENGTH = 4
+const CHOICE_WORD_LIMIT = 8
+
+/**
+ * Whole-word / whole-phrase form used only by the leakage heuristic.
+ * Punctuation becomes spacing so "solid," and "solid" compare equally,
+ * while "rain" does not match inside "rainbow".
+ */
+function normalizeLeakageText(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/['’]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/ +/g, ' ')
+}
+
+function containsWordSequence(haystack: string, needle: string): boolean {
+  if (needle.length === 0) return false
+  return ` ${haystack} `.includes(` ${needle} `)
+}
+
+function leakageKey(value: string): string {
+  return normalizeLeakageText(value).replace(/^(?:a|an|the) /, '')
+}
+
+function optionMatchesAnswer(option: string, answer: string): boolean {
+  const optionKey = leakageKey(option)
+  const answerKey = leakageKey(answer)
+  return optionKey.length > 0 && optionKey === answerKey
+}
+
+function isShortChoiceLabel(value: string): boolean {
+  const words = value.trim().split(/\s+/).filter((word) => word.length > 0)
+  if (words.length === 0 || words.length > CHOICE_WORD_LIMIT) return false
+  return !words.some((word) => /^(?:is|are|was|were|includes|means)$/i.test(word.replace(/[^a-z]/gi, '')))
+}
+
+function disclosesAnswer(normalizedPrompt: string, normalizedAnswer: string): boolean {
+  const cues = [
+    `the answer is ${normalizedAnswer}`,
+    `the correct answer is ${normalizedAnswer}`,
+    `the right answer is ${normalizedAnswer}`,
+  ]
+  return cues.some((cue) => containsWordSequence(normalizedPrompt, cue))
+}
+
+interface RecognizedChoice {
+  readonly options: readonly string[]
+  /** Prompt text outside the recognized options. */
+  readonly outside: string
+}
+
+function parseCommaChoiceList(tail: string): string[] | null {
+  if (!tail.includes(',') || !/\b(?:or|and)\b/i.test(tail)) return null
+  let parts = tail
+    .split(',')
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0)
+  if (parts.length === 2 && /\s+\b(?:or|and)\b\s+/i.test(parts[1] ?? '')) {
+    const split = (parts[1] ?? '').split(/\s+\b(?:or|and)\b\s+/i)
+    if (split.length === 2) parts = [parts[0] ?? '', split[0] ?? '', split[1] ?? '']
+  }
+  if (parts.length < 3) return null
+  const options = parts.map((part) => part.replace(/^(?:or|and)\s+/i, '').trim())
+  if (options.some((option) => !isShortChoiceLabel(option) || /\b(?:or|and)\b/i.test(option))) return null
+  return options
+}
+
+function looksLikeChoicePrompt(prompt: string): boolean {
+  return prompt.includes('?') || /\b(?:which|choose|select|pick|either)\b/i.test(prompt)
+}
+
+function colonChoice(prompt: string): RecognizedChoice | null {
+  if (!looksLikeChoicePrompt(prompt)) return null
+  const colon = prompt.lastIndexOf(':')
+  if (colon < 0) return null
+  const tail = prompt
+    .slice(colon + 1)
+    .replace(/^[ \t]+/, '')
+    .replace(/[?.!\s]+$/g, '')
+    .trim()
+  if (tail.length === 0) return null
+  const listed = parseCommaChoiceList(tail)
+  if (listed) return { options: listed, outside: prompt.slice(0, colon) }
+  const pair = tail.match(/^(.+?)\s+or\s+(.+)$/i)
+  if (!pair) return null
+  const left = pair[1]?.trim() ?? ''
+  const right = pair[2]?.trim() ?? ''
+  if (left.includes(',') || right.includes(',') || /\bor\b/i.test(left) || /\bor\b/i.test(right)) return null
+  if (!isShortChoiceLabel(left) || !isShortChoiceLabel(right)) return null
+  return { options: [left, right], outside: prompt.slice(0, colon) }
+}
+
+function letteredChoice(prompt: string): RecognizedChoice | null {
+  const marker = /(?:^|\s)(?:\(([A-Da-d])\)|([A-Da-d])[.)])\s+/g
+  const markers: Array<{ index: number; end: number }> = []
+  for (const match of prompt.matchAll(marker)) {
+    markers.push({ index: match.index, end: match.index + match[0].length })
+  }
+  if (markers.length < 2) return null
+  const options: string[] = []
+  for (let index = 0; index < markers.length; index += 1) {
+    const start = markers[index]?.end ?? 0
+    const end = markers[index + 1]?.index ?? prompt.length
+    const text = prompt.slice(start, end).replace(/[?.!\s]+$/g, '').trim()
+    if (!isShortChoiceLabel(text)) return null
+    options.push(text)
+  }
+  return { options, outside: prompt.slice(0, markers[0]?.index ?? 0) }
+}
+
+function sentenceEitherOr(prompt: string): RecognizedChoice | null {
+  const sentences = prompt
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length > 0)
+  const found: Array<{ readonly options: readonly [string, string] }> = []
+  for (const sentence of sentences) {
+    const bare = sentence.replace(/[?\s]+$/g, '').trim()
+    const match = bare.match(
+      /^(?:is|are|was|were|does|do|did)\s+(?:this|that|it|these|those)\s+(.+)\s+or\s+(.+)$/i,
+    )
+    if (!match) continue
+    const left = match[1]?.trim() ?? ''
+    const right = match[2]?.trim() ?? ''
+    if (/\bor\b/i.test(left) || /\bor\b/i.test(right)) continue
+    if (!isShortChoiceLabel(left) || !isShortChoiceLabel(right)) continue
+    found.push({ options: [left, right] })
+  }
+  if (found.length !== 1) return null
+  const options = found[0]?.options
+  if (!options) return null
+  return { options, outside: removeOptionPhrases(prompt, options) }
+}
+
+function commaEitherOr(prompt: string): RecognizedChoice | null {
+  const sentences = prompt
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length > 0)
+  const found: Array<{ readonly options: readonly [string, string] }> = []
+  for (const sentence of sentences) {
+    if (!sentence.includes('?') && !/\b(?:which|choose|select)\b/i.test(sentence)) continue
+    const bare = sentence.replace(/[?\s]+$/g, '').trim()
+    const match = bare.match(/,\s*([^,]+)\s+or\s+([^,]+)$/i)
+    if (!match) continue
+    const left = match[1]?.trim() ?? ''
+    const right = match[2]?.trim() ?? ''
+    if (/\bor\b/i.test(left) || /\bor\b/i.test(right)) continue
+    if (!isShortChoiceLabel(left) || !isShortChoiceLabel(right)) continue
+    found.push({ options: [left, right] })
+  }
+  if (found.length !== 1) return null
+  const options = found[0]?.options
+  if (!options) return null
+  return { options, outside: removeOptionPhrases(prompt, options) }
+}
+
+function removeOnce(haystack: string, needle: string): string {
+  const index = haystack.toLowerCase().indexOf(needle.toLowerCase())
+  if (index < 0 || needle.length === 0) return haystack
+  return `${haystack.slice(0, index)} ${haystack.slice(index + needle.length)}`
+}
+
+function removeOptionPhrases(prompt: string, options: readonly string[]): string {
+  const ordered = [...options].sort((a, b) => b.length - a.length)
+  return ordered.reduce((rest, option) => removeOnce(rest, option), prompt)
+}
+
+function recognizeChoice(prompt: string): RecognizedChoice | null {
+  return letteredChoice(prompt) ?? colonChoice(prompt) ?? sentenceEitherOr(prompt) ?? commaEitherOr(prompt)
+}
+
+function answerRevealedOutside(answer: string, outside: string): boolean {
+  const normalizedOutside = normalizeLeakageText(outside)
+  const normalizedAnswer = normalizeLeakageText(answer)
+  if (containsWordSequence(normalizedOutside, normalizedAnswer)) return true
+  return normalizedAnswer
+    .split(' ')
+    .filter((token) => token.length >= LEAKAGE_MIN_ANSWER_LENGTH)
+    .some((token) => containsWordSequence(normalizedOutside, token))
+}
+
+/**
+ * Suppress only when the answer is one option in a recognized choice
+ * construction and is not also disclosed outside that construction.
+ * Anything less recognizable keeps the conservative notice.
+ */
+function isIntentionalUnrevealedChoice(prompt: string, answer: string): boolean {
+  const normalizedPrompt = normalizeLeakageText(prompt)
+  const normalizedAnswer = normalizeLeakageText(answer)
+  if (disclosesAnswer(normalizedPrompt, normalizedAnswer)) return false
+  const choice = recognizeChoice(prompt)
+  if (!choice) return false
+  const matched = choice.options.filter((option) => optionMatchesAnswer(option, answer))
+  if (matched.length !== 1) return false
+  return !answerRevealedOutside(answer, choice.outside)
+}
+
+function answerAppearsAsWholePhrase(prompt: string, answer: string): boolean {
+  const trimmed = answer.trim()
+  if (trimmed.length < LEAKAGE_MIN_ANSWER_LENGTH) return false
+  const normalizedAnswer = normalizeLeakageText(trimmed)
+  if (normalizedAnswer.length === 0) return false
+  return containsWordSequence(normalizeLeakageText(prompt), normalizedAnswer)
+}
+
+function tileSubject(clue: DraftClue): QualityFindingSubject {
+  return {
+    kind: 'tile',
+    categoryTitle: clue.categoryTitle,
+    clueOrder: clue.clueOrder,
+    tileCanonicalId: clue.tileCanonicalId,
+    prompt: clue.prompt,
+    answer: clue.answer,
+    ...(clue.valueAuthored === false ? {} : { pointValue: clue.value }),
+  }
+}
+
+function finalSubject(finalRound: NonNullable<AuthoringDraft['final']>): QualityFindingSubject {
+  return {
+    kind: 'final',
+    roundTitle: finalRound.roundTitle,
+    prompt: finalRound.prompt,
+    answer: finalRound.answer,
+  }
+}
+
+function answerLeakageFinding(
+  prompt: string,
+  answer: string,
+  path: string | undefined,
+  subject: QualityFindingSubject,
+): QualityFinding | null {
+  if (!answerAppearsAsWholePhrase(prompt, answer)) return null
+  if (isIntentionalUnrevealedChoice(prompt, answer)) return null
+  return heuristic('possible-answer-leakage', ANSWER_LEAKAGE_MESSAGE, path, subject)
+}
+
+export function formatQualityFindingLocation(subject: QualityFindingSubject): string {
+  if (subject.kind === 'final') {
+    const title = subject.roundTitle.trim()
+    if (title.length === 0) return 'Final'
+    return /\bfinal\b/i.test(title) ? title : `Final · ${title}`
+  }
+  const parts: string[] = []
+  const category = subject.categoryTitle.trim()
+  if (category.length > 0) parts.push(category)
+  if (subject.pointValue !== undefined) parts.push(`${subject.pointValue} points`)
+  parts.push(`Question ${subject.clueOrder}`)
+  return parts.join(' | ')
+}
+
+export function qualityFindingConcern(code: string): string | undefined {
+  if (code === 'possible-answer-leakage') return 'Possible answer giveaway'
+  return undefined
 }
 
 function collectHeuristics(draft: AuthoringDraft): QualityFinding[] {
@@ -149,29 +442,13 @@ function collectHeuristics(draft: AuthoringDraft): QualityFinding[] {
       }
     }
 
-    const answer = clue.answer.trim()
-    if (answer.length >= 4 && clue.prompt.toLowerCase().includes(answer.toLowerCase())) {
-      findings.push(
-        heuristic(
-          'possible-answer-leakage',
-          'The canonical answer also appears inside the prompt. This may be intentional, or it may give the answer away.',
-          clue.tileCanonicalId,
-        ),
-      )
-    }
+    const leakage = answerLeakageFinding(clue.prompt, clue.answer, clue.tileCanonicalId, tileSubject(clue))
+    if (leakage) findings.push(leakage)
   }
 
   if (draft.final) {
-    const answer = draft.final.answer.trim()
-    if (answer.length >= 4 && draft.final.prompt.toLowerCase().includes(answer.toLowerCase())) {
-      findings.push(
-        heuristic(
-          'possible-answer-leakage',
-          'The Final answer also appears inside the Final prompt. This may be intentional, or it may give the answer away.',
-          'final',
-        ),
-      )
-    }
+    const leakage = answerLeakageFinding(draft.final.prompt, draft.final.answer, 'final', finalSubject(draft.final))
+    if (leakage) findings.push(leakage)
   }
 
   if (GENERIC_NAME.test(draft.game.title.trim())) {
