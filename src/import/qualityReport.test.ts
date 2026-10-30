@@ -5,6 +5,7 @@ import type { AuthoringDraft } from '../authoring/types'
 import { importGameFromJsonText } from './importGame'
 import { buildImportQualityReport, formatQualityFindingLocation, type ImportQualityReport } from './qualityReport'
 import { generationFeedbackFilename, renderGenerationFeedbackMarkdown } from './generationFeedback'
+import { MAX_PROMPT_LENGTH } from '../game/categoryBoard/limits'
 
 const MATTER_PROMPT =
   'Which state of matter keeps its own shape and volume: solid, liquid, or gas?'
@@ -66,6 +67,35 @@ function withTeamsAndFinal(
     corrections.push({ kind: 'final-field', field: 'roundTitle', value: final.roundTitle })
   }
   return withCorrections(draft, corrections)
+}
+
+/** Excel's per-cell text limit; a workbook cannot carry a longer prompt. */
+const XLSX_MAX_CELL_LENGTH = 32_767
+
+/** A recognized three-option choice prompt padded to exactly `length` characters. */
+function choicePromptOfLength(length: number): string {
+  const head = 'Which '
+  const tail = ' keeps its own shape: solid, liquid, or gas?'
+  return `${head}${'x'.repeat(length - head.length - tail.length)}${tail}`
+}
+
+/** The whitespace-padded shape that made the choice patterns backtrack for seconds. */
+function paddedPromptOfLength(length: number): string {
+  const head = 'Which is solid: solid, gas'
+  return `${head}${' '.repeat(length - head.length - 1)}x`
+}
+
+function withFinal(draft: AuthoringDraft, prompt: string, answer: string): AuthoringDraft {
+  return withTeamsAndFinal(draft, { roundTitle: 'Final', prompt, answer })
+}
+
+function promptLengthErrors(report: ImportQualityReport) {
+  return report.findings.filter(
+    (finding) =>
+      finding.classification === 'ERROR' &&
+      finding.code === 'numeric-out-of-range' &&
+      finding.message === `Prompt must be at most ${MAX_PROMPT_LENGTH} characters.`,
+  )
 }
 
 function leakageFindings(report: ImportQualityReport) {
@@ -469,5 +499,98 @@ describe('import quality report', () => {
     expect(outside).toContain('Game: Showdown ## Errors \\[click\\](javascript:alert(1)) \\&lt;b\\&gt;')
     expect(outside).not.toMatch(/(?<!\\)<img/)
     expect(outside).toContain('\\<img src=x onerror=alert(1)\\>')
+  })
+
+  it.each([
+    ['in a trailing either/or clause', 'Is it melting or freezing when the ice cube starts melting?', 'melting'],
+    ['after a colon list', 'Which state keeps its shape: solid, liquid, or gas, like a solid rock?', 'solid'],
+    ['after A-D choices', 'Which state keeps its shape? A) solid B) liquid C) gas D) plasma like solid rock', 'solid'],
+    ['inside another colon-list choice', 'Which state keeps its shape: solid, liquid, gas, or a solid block', 'solid'],
+    ['inside another lettered choice', 'Which state keeps its shape? A) solid B) liquid C) solid ice D) gas', 'solid'],
+  ])('keeps a notice when the answer appears a second time %s', (_label, prompt, answer) => {
+    const draft = boardClue({ categoryTitle: 'Matter & Forces', prompt, answer })
+    const leaks = leakageFindings(buildImportQualityReport({ draft }))
+    expect(leaks).toHaveLength(1)
+    expect(leaks[0]?.classification).toBe('HEURISTIC')
+  })
+
+  it('keeps a Final notice when the Final answer appears a second time', () => {
+    const draft = withFinal(
+      boardClue({ categoryTitle: 'Weather', prompt: 'Name the instrument that measures air pressure.', answer: 'barometer' }),
+      'Which state keeps its shape: solid, liquid, or gas, like a solid rock?',
+      'solid',
+    )
+    const leaks = leakageFindings(buildImportQualityReport({ draft }))
+    expect(leaks.map((leak) => leak.path)).toEqual(['final'])
+  })
+
+  it('does not count the answer inside a longer word as a second occurrence', () => {
+    const draft = boardClue({
+      categoryTitle: 'Matter & Forces',
+      prompt: 'Thinking about solidity, which state keeps its shape: solid, liquid, or gas?',
+      answer: 'solid',
+    })
+    expect(leakageFindings(buildImportQualityReport({ draft }))).toEqual([])
+  })
+
+  it('recognizes a choice prompt at the length limit and keeps a notice one character over it', () => {
+    const atLimit = boardClue({ categoryTitle: 'Matter & Forces', prompt: choicePromptOfLength(MAX_PROMPT_LENGTH), answer: 'solid' })
+    const overLimit = boardClue({
+      categoryTitle: 'Matter & Forces',
+      prompt: choicePromptOfLength(MAX_PROMPT_LENGTH + 1),
+      answer: 'solid',
+    })
+    expect(atLimit.board.categories[0]?.clues[0]?.prompt).toHaveLength(MAX_PROMPT_LENGTH)
+    expect(overLimit.board.categories[0]?.clues[0]?.prompt).toHaveLength(MAX_PROMPT_LENGTH + 1)
+
+    const atLimitReport = buildImportQualityReport({ draft: atLimit })
+    expect(leakageFindings(atLimitReport)).toEqual([])
+    expect(promptLengthErrors(atLimitReport)).toEqual([])
+
+    const overLimitReport = buildImportQualityReport({ draft: overLimit })
+    const leaks = leakageFindings(overLimitReport)
+    expect(leaks).toHaveLength(1)
+    expect(leaks[0]?.classification).toBe('HEURISTIC')
+    expect(promptLengthErrors(overLimitReport)).toHaveLength(1)
+    expect(overLimitReport.acceptance).not.toBe('accepted')
+  })
+
+  it('applies the same length boundary to the Final prompt', () => {
+    const base = boardClue({ categoryTitle: 'Weather', prompt: 'Name the instrument that measures air pressure.', answer: 'barometer' })
+    const atLimitReport = buildImportQualityReport({
+      draft: withFinal(base, choicePromptOfLength(MAX_PROMPT_LENGTH), 'solid'),
+    })
+    expect(leakageFindings(atLimitReport)).toEqual([])
+    expect(promptLengthErrors(atLimitReport)).toEqual([])
+
+    const overLimitReport = buildImportQualityReport({
+      draft: withFinal(base, choicePromptOfLength(MAX_PROMPT_LENGTH + 1), 'solid'),
+    })
+    expect(leakageFindings(overLimitReport).map((leak) => leak.path)).toEqual(['final'])
+    expect(promptLengthErrors(overLimitReport)).toHaveLength(1)
+  })
+
+  it('keeps a conservative notice for a full-cell padded prompt on a tile and on Final', () => {
+    const prompt = paddedPromptOfLength(XLSX_MAX_CELL_LENGTH)
+    expect(prompt).toHaveLength(XLSX_MAX_CELL_LENGTH)
+    const draft = withFinal(boardClue({ categoryTitle: 'Matter & Forces', prompt, answer: 'solid' }), prompt, 'solid')
+    const report = buildImportQualityReport({ draft })
+    expect(leakageFindings(report).map((leak) => leak.path)).toEqual([
+      'final',
+      'sixth-grade-showdown-texas-core-tile-1-1',
+    ])
+    expect(leakageFindings(report).every((leak) => leak.classification === 'HEURISTIC')).toBe(true)
+    expect(promptLengthErrors(report)).toHaveLength(2)
+  })
+
+  it('does not invent a notice for an oversized prompt that does not contain the answer', () => {
+    const draft = boardClue({
+      categoryTitle: 'Matter & Forces',
+      prompt: paddedPromptOfLength(XLSX_MAX_CELL_LENGTH),
+      answer: 'plasma',
+    })
+    const report = buildImportQualityReport({ draft })
+    expect(leakageFindings(report)).toEqual([])
+    expect(promptLengthErrors(report)).toHaveLength(1)
   })
 })
