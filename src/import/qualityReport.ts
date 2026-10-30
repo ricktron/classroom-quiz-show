@@ -9,6 +9,7 @@
  */
 
 import type { AuthoringDraft, DraftClue } from '../authoring/types'
+import { MAX_PROMPT_LENGTH } from '../game/categoryBoard/limits'
 import type { AuthoringIssue } from '../authoring/issues'
 import type { ImportIssue } from './issues'
 import type { ImportResult } from './result'
@@ -136,6 +137,18 @@ function normalizeLeakageText(value: string): string {
 function containsWordSequence(haystack: string, needle: string): boolean {
   if (needle.length === 0) return false
   return ` ${haystack} `.includes(` ${needle} `)
+}
+
+function countWordSequence(haystack: string, needle: string): number {
+  if (needle.length === 0) return 0
+  const padded = ` ${haystack} `
+  const target = ` ${needle} `
+  let count = 0
+  // Step past the match but reuse its trailing space as the next leading space.
+  for (let at = padded.indexOf(target); at >= 0; at = padded.indexOf(target, at + target.length - 1)) {
+    count += 1
+  }
+  return count
 }
 
 function leakageKey(value: string): string {
@@ -303,11 +316,14 @@ function answerRevealedOutside(answer: string, outside: string): boolean {
 /**
  * Suppress only when the answer is one option in a recognized choice
  * construction and is not also disclosed outside that construction.
- * Anything less recognizable keeps the conservative notice.
+ * The whole answer must appear exactly once in the prompt, so a repeat in
+ * another option or in trailing text keeps the notice. Anything less
+ * recognizable keeps the conservative notice.
  */
 function isIntentionalUnrevealedChoice(prompt: string, answer: string): boolean {
   const normalizedPrompt = normalizeLeakageText(prompt)
   const normalizedAnswer = normalizeLeakageText(answer)
+  if (countWordSequence(normalizedPrompt, normalizedAnswer) !== 1) return false
   if (disclosesAnswer(normalizedPrompt, normalizedAnswer)) return false
   const choice = recognizeChoice(prompt)
   if (!choice) return false
@@ -352,7 +368,9 @@ function answerLeakageFinding(
   subject: QualityFindingSubject,
 ): QualityFinding | null {
   if (!answerAppearsAsWholePhrase(prompt, answer)) return null
-  if (isIntentionalUnrevealedChoice(prompt, answer)) return null
+  // An over-length prompt is already a validation error. Skip the choice
+  // patterns, whose backtracking grows with length, and keep the notice.
+  if (prompt.length <= MAX_PROMPT_LENGTH && isIntentionalUnrevealedChoice(prompt, answer)) return null
   return heuristic('possible-answer-leakage', ANSWER_LEAKAGE_MESSAGE, path, subject)
 }
 
