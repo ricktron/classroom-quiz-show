@@ -17,16 +17,27 @@
 }
 
 .quality-report__item {
-  margin: var(--space-2) 0;
+  display: grid;
+  gap: 0.2rem;
+  margin: var(--space-3) 0;
+  justify-items: start;
 }
 
 .quality-report__badge {
   display: inline-block;
-  margin-right: var(--space-2);
   padding: 0.1rem 0.45rem;
   border-radius: var(--radius-pill);
   border: 1px solid var(--border-panel);
   font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.quality-report__headline,
+.quality-report__detail {
+  margin: 0;
+}
+
+.quality-report__headline {
   font-weight: 700;
 }
 
@@ -35,7 +46,11 @@
   border-color: var(--state-host);
 }
 
-.quality-report__item--warning .quality-report__badge,
+.quality-report__item--warning .quality-report__badge {
+  background: var(--state-warning-wash);
+  border-color: var(--state-warning);
+}
+
 .quality-report__item--heuristic .quality-report__badge {
   background: var(--surface-raised);
 }

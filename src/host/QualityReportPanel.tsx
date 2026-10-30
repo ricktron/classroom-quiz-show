@@ -1,5 +1,9 @@
 import { renderGenerationFeedbackMarkdown, generationFeedbackFilename } from '../import/generationFeedback'
-import type { ImportQualityReport } from '../import/qualityReport'
+import {
+  formatQualityFindingLocation,
+  qualityFindingConcern,
+  type ImportQualityReport,
+} from '../import/qualityReport'
 import './QualityReportPanel.css'
 
 export interface QualityReportPanelProps {
@@ -42,16 +46,30 @@ export function QualityReportPanel({ report, context = 'import' }: QualityReport
         <p className="host__note">No additional quality notes.</p>
       ) : (
         <ul className="quality-report__list">
-          {report.findings.map((finding, index) => (
-            <li
-              key={`${finding.classification}-${finding.code}-${finding.path ?? ''}-${index}`}
-              className={`quality-report__item quality-report__item--${finding.classification.toLowerCase()}`}
-              data-classification={finding.classification}
-            >
-              <span className="quality-report__badge">{labelFor(finding.classification)}</span>
-              <span>{finding.message}</span>
-            </li>
-          ))}
+          {report.findings.map((finding, index) => {
+            const concern = qualityFindingConcern(finding.code)
+            const where = finding.subject ? formatQualityFindingLocation(finding.subject) : null
+            return (
+              <li
+                key={`${finding.classification}-${finding.code}-${finding.path ?? ''}-${index}`}
+                className={`quality-report__item quality-report__item--${finding.classification.toLowerCase()}`}
+                data-classification={finding.classification}
+              >
+                <span className="quality-report__badge">{labelFor(finding.classification)}</span>
+                {concern ? (
+                  <p className="quality-report__headline">
+                    <span className="quality-report__concern">{concern}</span>
+                    {where ? (
+                      <span className="quality-report__where" data-testid="quality-finding-location">
+                        {` | ${where}`}
+                      </span>
+                    ) : null}
+                  </p>
+                ) : null}
+                <p className="quality-report__detail">{finding.message}</p>
+              </li>
+            )
+          })}
         </ul>
       )}
       <button type="button" className="btn btn--secondary" onClick={downloadFeedback} data-testid="generation-feedback">
