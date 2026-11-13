@@ -1,10 +1,12 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom'
 import { HostRoute } from '../routes/HostRoute'
-import { playPath, ROUTES } from '../routes/paths'
+import { editPath, playPath, ROUTES } from '../routes/paths'
 import { ThemeProvider } from '../theme/ThemeProvider'
 import { createMemoryPersistenceAdapter } from '../persistence/memoryAdapter'
+import { createDefaultRegistry } from '../game/defaultRegistry'
+import { createNewLibraryGame } from '../library/gameLibrary'
 import type { UseHostPersistenceOptions } from './useHostPersistence'
 import { shouldResumeRecoveryFromNavigation, isContextualTeamCountReturn } from './hostResumeNavigation'
 import {
@@ -171,5 +173,94 @@ describe('FoundationControls thin semantic unit (MENUS H §5)', () => {
     expect(screen.getByTestId('host-foundation')).toHaveAttribute('data-posture', 'play')
     expect(screen.getByTestId('host-more')).toHaveAttribute('open')
     expect(screen.queryByTestId('classroom-setup')).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * UIX-O16: a teacher sent to Host for a Game that is not playable yet met a
+ * blank screen: the reason existed only inside the More drawer.
+ */
+describe('UIX-O16: Host explains a Play request for an unfinished Game', () => {
+  it('says the Game is not ready and offers the editor instead of a blank Host', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    const created = await createNewLibraryGame(adapter, createDefaultRegistry())
+    if (!created.ok) throw new Error(created.message)
+    const gameId = created.value.definition.id
+
+    renderHost(
+      { pathname: ROUTES.host, search: `?play=${encodeURIComponent(gameId)}` },
+      hostPersistenceOptions(adapter, 'fc-unfinished-play'),
+    )
+
+    const notice = await screen.findByTestId('play-not-ready')
+    expect(notice).toHaveAttribute('role', 'alert')
+    expect(notice).toHaveTextContent(/not ready to play yet/i)
+    expect(notice).toHaveTextContent(/finish what is missing/i)
+    expect(screen.getByTestId('play-not-ready-edit')).toHaveAttribute('href', editPath(gameId))
+    // Nothing was loaded: no Class Setup for a Game that cannot be played.
+    expect(screen.queryByTestId('classroom-setup')).not.toBeInTheDocument()
+    expect(screen.getByTestId('host-change-game')).toBeInTheDocument()
+  })
+
+  it('does not offer to replace an active class session with a Game that cannot be played', async () => {
+    // A class session is already running Game A; the teacher is then sent to
+    // Host for unfinished Game B. Offering "replace the current session" for a
+    // Game that will not load would contradict the not-ready notice.
+    const { adapter, gameId: playableId } = await seedSavedPlayableGame()
+    const created = await createNewLibraryGame(adapter, createDefaultRegistry())
+    if (!created.ok) throw new Error(created.message)
+    const unfinishedId = created.value.definition.id
+
+    function GoToUnfinished() {
+      const navigate = useNavigate()
+      return (
+        <button type="button" onClick={() => navigate(playPath(unfinishedId))}>
+          go to unfinished
+        </button>
+      )
+    }
+    render(
+      <MemoryRouter initialEntries={[playPath(playableId)]}>
+        <ThemeProvider>
+          <GoToUnfinished />
+          <Routes>
+            <Route
+              path={ROUTES.host}
+              element={
+                <HostRoute persistenceOptions={hostPersistenceOptions(adapter, 'fc-unfinished-active')} />
+              }
+            />
+          </Routes>
+        </ThemeProvider>
+      </MemoryRouter>,
+    )
+    await waitFor(() => {
+      expect(screen.getByTestId('classroom-setup')).toBeInTheDocument()
+    })
+    expect(screen.queryByTestId('play-not-ready')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /go to unfinished/i }))
+
+    const notice = await screen.findByTestId('play-not-ready')
+    expect(notice).toHaveTextContent(/not ready to play yet/i)
+    expect(screen.getByTestId('play-not-ready-edit')).toHaveAttribute('href', editPath(unfinishedId))
+    // The running session is untouched and no contradictory replace prompt appears.
+    await waitFor(() => {
+      expect(screen.queryByTestId('play-replace-confirm')).not.toBeInTheDocument()
+    })
+    expect(screen.getByTestId('classroom-setup')).toBeInTheDocument()
+  })
+
+  it('shows no such notice for a playable Game', async () => {
+    const { adapter, gameId } = await seedSavedPlayableGame()
+    renderHost(
+      { pathname: ROUTES.host, search: `?play=${encodeURIComponent(gameId)}` },
+      hostPersistenceOptions(adapter, 'fc-playable-play'),
+    )
+    await waitFor(() => {
+      expect(screen.getByTestId('classroom-setup')).toBeInTheDocument()
+    })
+    expect(screen.queryByTestId('play-not-ready')).not.toBeInTheDocument()
   })
 })

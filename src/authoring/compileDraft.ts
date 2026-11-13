@@ -9,6 +9,7 @@ import {
   SUPPORTED_SCHEMA_VERSION,
 } from '../import/canonicalFormat'
 import { authoringIssue } from './issues'
+import { finalMissingContentIssues } from './validateDraft'
 import type { AuthoringDraft, CompileDraftResult } from './types'
 
 export function compileApprovedDraft(draft: AuthoringDraft): CompileDraftResult {
@@ -105,6 +106,12 @@ export function compileApprovedDraft(draft: AuthoringDraft): CompileDraftResult 
           ),
         ],
       }
+    }
+    // Never emit a Final the canonical importer is certain to refuse, even for
+    // a caller that marked the draft approved without revalidating it.
+    const finalMissing = finalMissingContentIssues(draft.final)
+    if (finalMissing.length > 0) {
+      return { status: 'failure', issues: finalMissing }
     }
     const finalConfig: Record<string, unknown> = {
       prompt: draft.final.prompt,
