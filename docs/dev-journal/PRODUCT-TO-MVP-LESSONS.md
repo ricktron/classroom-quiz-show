@@ -23,6 +23,9 @@ support may justify promotion into a future generic product-development playbook
 | PTM-014 | Post-merge truth reconciliation should be routine and cheap | Q1/Q2/Q3 candidate docs otherwise became stale immediately after squash merge | Standard post-merge reconciliation packet for startup-canonical truth; historical receipts remain immutable | CANDIDATE |
 | PTM-015 | Preserve the smallest excellent product while qualifying deeply | CQS benefits from rigorous qualification without adding speculative SaaS/cloud infrastructure | Deeply test current product invariants; do not solve qualification pain by expanding architecture | CANDIDATE |
 | PTM-016 | Treat consequential external reference artifacts as review dependencies | PR #106 fidelity review stalled when Claude reference descriptions were visible but exact source bytes were not reachable; one false-open claim had to be reverted before exact artifacts were recovered, rendered, and durably stored | Preflight external inputs; prove byte identity and render/read access; use a durable immutable evidence store when the reference is an enduring dependency | CANDIDATE |
+| PTM-017 | Path fidelity is part of evidence identity | Q6 G1/G2/G3 showed that helpers, injected fixture state, and privileged UI posture could make tests reach correct states through routes an ordinary teacher could not take; Q7-F01 reinforced the natural-route gap | Record bypassed seams and interaction posture; require separate authentic-path proof before using helper/fixture evidence for ordinary-user claims | CANDIDATE |
+| PTM-018 | Error recovery belongs in the primary user journey | Q4 HG-13, Q6 G3, and later Q7 repair work showed that Undo, reload, interruption, and correction can be technically implemented yet still fail as visible teacher workflows | Put representative mistakes, correction, reload/recovery, and terminal failure handling into journey qualification when users must perform them through the product | CANDIDATE |
+| PTM-019 | Smooth qualification should trigger disconfirmation | Q6 found G1/G2/G3 after a green Q1-Q5 stack; PRE-Q7 eligibility was later followed by Q7 HOLD on F01/F02 | At major readiness gates, use a fresh adversarial/black-box pass that tries to falsify readiness and challenge assumptions shared by implementation and tests | CANDIDATE |
 
 ## Candidate reusable workflow
 
@@ -34,9 +37,9 @@ For a future product surface heading toward MVP:
 4. Prove consequential controls semantically.
 5. Prove contextual detours **and return**.
 6. Add an authentic **golden path early**.
-7. Add branch/failure qualification.
+7. Add branch/failure/error-recovery qualification.
 8. Qualify the real deployment/integration environment.
-9. Run independent adversarial review.
+9. Run independent adversarial review that tries to falsify readiness.
 10. Issue a pre-owner eligibility verdict.
 11. Let the owner perform a natural usability playthrough.
 12. Harvest owner feedback as polish/design input, not first-line functional QA.
