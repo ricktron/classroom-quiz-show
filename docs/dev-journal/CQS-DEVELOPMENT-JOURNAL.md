@@ -1310,6 +1310,17 @@ were **not** added. Their readiness claim is now truthful, but the reason is
 shown only as the importer's own wording under Quality notes. That is a
 separate owner decision.
 
+### Follow-up observation: the Host notice had to name the game
+
+The first version of the Host notice read "This game is not ready to play
+yet." A headed walk that carried a leftover class session from one game into a
+Play request for a different, unfinished game showed the notice sitting
+directly above the running game's title and Class Setup. By position it read
+as a statement about the wrong game. The unit test for that path had asserted
+both elements were present; it had not asked what a teacher would take the
+sentence to mean. The notice now names the requested game from that game's own
+saved-library entry, never from the live session.
+
 ### Interpretation: why prior evidence missed it
 
 - Every authoring fixture and Playwright helper started from a valid game or
@@ -1337,6 +1348,8 @@ for the ready state only.
 - **Give each authoring gate one from-scratch, stops-early journey.** Fixtures
   that always begin valid cannot reach defects that live in the unfinished
   state.
+- **A status sentence should name its subject when two subjects can share the
+  screen.** "This game" is only safe where exactly one game can be visible.
 
 These are candidates only. Nothing here is promoted to the lessons register.
 

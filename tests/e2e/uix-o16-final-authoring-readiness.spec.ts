@@ -191,7 +191,8 @@ test('Host recovery: Play with discarded edits explains the unfinished game and 
   // Host says what is wrong and where to fix it, instead of a blank screen.
   const notice = page.getByTestId('play-not-ready')
   await expect(notice).toBeVisible({ timeout: 20_000 })
-  await expect(notice).toContainText(/not ready to play yet/i)
+  // The title typed in the editor was discarded, so the notice names the game as saved.
+  await expect(notice).toContainText('“New Game” is not ready to play yet')
   await expect(page.getByTestId('classroom-setup')).toHaveCount(0)
   await expect(page.getByTestId('host-change-game')).toBeVisible()
 
@@ -201,6 +202,71 @@ test('Host recovery: Play with discarded edits explains the unfinished game and 
   await expect(page.getByRole('heading', { name: /edit game/i })).toBeVisible()
   await expect(page.getByLabel(/game title/i)).toHaveValue('New Game')
   await expect(validation(page)).toContainText(/missing questions or answers/i)
+
+  expect(runtime).toEqual([])
+})
+
+test('Host recovery with another class session present: the notice names the unfinished game, not the running one', async ({
+  page,
+}) => {
+  test.setTimeout(180_000)
+  const runtime = watchRuntime(page)
+
+  // Game A: a playable game with a class session already under way.
+  await page.goto('./')
+  await importHomeJsonExpectSaved(
+    page,
+    menusBoardPlusFinalGameJson({ id: 'o16-running-a', title: 'O16 Running Game A' }),
+  )
+  await page.getByTestId('home-hero-play').click()
+  await expect(page.getByTestId('classroom-setup')).toBeVisible({ timeout: 20_000 })
+  await expect(page.getByTestId('host-identity')).toContainText('O16 Running Game A')
+
+  // Game B: saved under its own title while still unfinished, then completed
+  // only in memory, so Play is offered and the saved copy is still not playable.
+  await openNewGame(page, 'O16 Unfinished Game B')
+  await saveExpectSaved(page)
+  await fillEveryBoardTile(page)
+  await finalQuestion(page).fill('O16 unsaved final question')
+  await finalAnswer(page).fill('O16 unsaved final answer')
+  await expect(validation(page)).toContainText(/can be played/i)
+  await playButton(page).click()
+  await page.getByRole('button', { name: /discard unsaved changes/i }).click()
+  await expect(page).toHaveURL(/[?&]play=/)
+
+  // Host first asks about Game A's unfinished session. Resume it.
+  await expect(page.getByTestId('persistence-recovery')).toBeVisible({ timeout: 20_000 })
+  await expect(page.getByTestId('play-not-ready')).toHaveCount(0)
+  await page.getByTestId('persistence-resume').click()
+  await expect(page.getByTestId('persistence-recovery')).toHaveCount(0)
+
+  // Game A is on screen and intact. The notice is unmistakably about Game B.
+  const notice = page.getByTestId('play-not-ready')
+  await expect(notice).toBeVisible({ timeout: 20_000 })
+  await expect(notice).toContainText(
+    '“O16 Unfinished Game B” is not ready to play yet. Open it to finish what is missing.',
+  )
+  await expect(notice).not.toContainText('O16 Running Game A')
+  await expect(notice).not.toContainText(/this game is not ready/i)
+  await expect(page.getByTestId('host-identity')).toContainText('O16 Running Game A')
+  await expect(page.getByTestId('classroom-setup')).toBeVisible()
+  await expect(page.getByTestId('play-replace-confirm')).toHaveCount(0)
+  const fits = await notice.evaluate((element) => {
+    const box = element.getBoundingClientRect()
+    return box.left >= 0 && box.right <= document.documentElement.clientWidth
+  })
+  expect(fits).toBe(true)
+
+  // The edit action is keyboard reachable and opens Game B, not Game A.
+  await page.getByTestId('play-not-ready-edit').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('heading', { name: /edit game/i })).toBeVisible()
+  await expect(page.getByLabel(/game title/i)).toHaveValue('O16 Unfinished Game B')
+
+  // Game A's session survived the detour: Home still offers to resume it.
+  await returnHomeFromAuthoring(page)
+  await expect(page.getByTestId('home-resume')).toBeVisible()
+  await expect(page.getByTestId('home-resume')).toContainText('O16 Running Game A')
 
   expect(runtime).toEqual([])
 })
