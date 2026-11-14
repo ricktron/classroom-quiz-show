@@ -2,11 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useBlocker, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   applyDraftCorrection,
+  assessAuthoringReadiness,
   canRedoAuthoring,
   canUndoAuthoring,
   completeSave,
   createGenerationWriteGate,
   emptyAuthoringUndoStack,
+  finalMissingContentIssues,
   initialSaveTrustState,
   markSaveLoaded,
   markSaveDirty,
@@ -14,6 +16,7 @@ import {
   redoAuthoring,
   saveStatusLabel,
   undoAuthoring,
+  type AuthoringReadiness,
   type AuthoringUndoStack,
   type DraftCorrection,
   type SaveTrustState,
@@ -51,6 +54,32 @@ function clueNeedsTeacher(clue: DraftClue): boolean {
 
 function clueValueLabel(clue: DraftClue): string {
   return clue.valueAuthored === false ? 'Value needed' : String(clue.value)
+}
+
+/**
+ * The one readiness line. It says a game "can be played" only when the real
+ * approve → compile → canonical import path accepts the draft as it stands.
+ * No other state may contain that phrase: tests and teachers both read it as
+ * the readiness claim.
+ */
+function readinessMessage(readiness: AuthoringReadiness): string {
+  switch (readiness.kind) {
+    case 'playable':
+      return 'This game has the required content and can be played.'
+    case 'final-incomplete': {
+      const needs =
+        readiness.missing.length > 1
+          ? 'a question and an answer'
+          : readiness.missing[0] === 'question'
+            ? 'a question'
+            : 'an answer'
+      return `The board questions are filled in. Final still needs ${needs}, so this game is not ready to play yet. You can save and come back.`
+    }
+    case 'refused':
+      return 'This game is not ready to play yet. Something besides the questions and answers still needs fixing. Open Quality notes below to see what. You can save and come back.'
+    default:
+      return 'This game still has missing questions or answers. Start with the selected tile, then finish Final. You can save and come back.'
+  }
 }
 
 export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {}) {
@@ -304,8 +333,24 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
   const tiles = useMemo(() => flattenTiles(draft), [draft])
   const selected = draft && cursor ? findClue(draft, cursor) : null
   const selectedIndex = cursor ? tiles.findIndex((tile) => sameCursor(tile, cursor)) : -1
-  const report = draft ? buildImportQualityReport({ draft, title: draft.game.title }) : null
-  const playable = draft?.status === 'ready_for_approval' || draft?.status === 'approved'
+  const readiness = useMemo(
+    () => (draft ? assessAuthoringReadiness(draft, { registry }) : null),
+    [draft, registry],
+  )
+  const playable = readiness?.kind === 'playable'
+  const report = draft
+    ? buildImportQualityReport({
+        draft,
+        title: draft.game.title,
+        // A refusal the draft validator did not predict is still shown, not hidden.
+        authoringIssues: readiness?.kind === 'refused' ? readiness.issues : undefined,
+      })
+    : null
+  // Located Final diagnostics, shown on the fields whenever Final content is missing.
+  const finalMissing =
+    draft?.profile === 'board-plus-final' && draft.final ? finalMissingContentIssues(draft.final) : []
+  const finalPromptMissing = finalMissing.find((issue) => issue.draftPath === 'final.prompt') ?? null
+  const finalAnswerMissing = finalMissing.find((issue) => issue.draftPath === 'final.answer') ?? null
 
   if (loadError) {
     return (
@@ -418,9 +463,7 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
         ) : null}
 
         <p className="host__note" data-testid="authoring-validation">
-          {draft.status === 'blocked'
-            ? 'This game still has missing questions or answers. Start with the selected tile, then finish Final. You can save and come back.'
-            : 'This game has the required content and can be played.'}
+          {readinessMessage(readiness ?? { kind: 'incomplete' })}
         </p>
 
         <section className="authoring-board" aria-label="Game board editor">
@@ -486,14 +529,28 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
             <textarea
               id="final-prompt"
               value={draft.final.prompt}
+              aria-invalid={finalPromptMissing ? true : undefined}
+              aria-describedby={finalPromptMissing ? 'final-prompt-help' : undefined}
               onChange={(event) => apply({ kind: 'final-field', field: 'prompt', value: event.target.value })}
             />
+            {finalPromptMissing ? (
+              <p id="final-prompt-help" className="host__note" data-testid="final-prompt-help">
+                {finalPromptMissing.message}
+              </p>
+            ) : null}
             <label htmlFor="final-answer">Final canonical answer</label>
             <input
               id="final-answer"
               value={draft.final.answer}
+              aria-invalid={finalAnswerMissing ? true : undefined}
+              aria-describedby={finalAnswerMissing ? 'final-answer-help' : undefined}
               onChange={(event) => apply({ kind: 'final-field', field: 'answer', value: event.target.value })}
             />
+            {finalAnswerMissing ? (
+              <p id="final-answer-help" className="host__note" data-testid="final-answer-help">
+                {finalAnswerMissing.message}
+              </p>
+            ) : null}
             <label htmlFor="final-notes">Final teacher notes</label>
             <textarea
               id="final-notes"
@@ -596,7 +653,7 @@ export function AuthoringRoute({ persistenceOptions }: AuthoringRouteProps = {})
           <details
             className="authoring-settings"
             data-testid="authoring-quality-details"
-            open={draft.status === 'blocked'}
+            open={!playable}
           >
             <summary>Quality notes</summary>
             <QualityReportPanel report={report} context="editor" />

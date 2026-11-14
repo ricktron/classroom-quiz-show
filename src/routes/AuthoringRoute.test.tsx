@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { createDefaultRegistry } from '../game/defaultRegistry'
-import { createNewLibraryGame } from '../library/gameLibrary'
+import { applyDraftCorrection } from '../authoring'
+import type { AuthoringDraft } from '../authoring/types'
+import { createNewLibraryGame, saveAuthoringDraftToLibrary } from '../library/gameLibrary'
 import { acquireOrRenewHostLease } from '../persistence/coordination'
 import { createMemoryPersistenceAdapter } from '../persistence/memoryAdapter'
 import { listSavedDefinitions, loadDefinition } from '../persistence'
@@ -41,16 +43,17 @@ function trackDurableWrites(adapter: PersistenceAdapter): { savedDefinitions: nu
   return counts
 }
 
-async function renderEditor(options: UseHostPersistenceOptions & { adapter?: PersistenceAdapter } = {}) {
-  const adapter = options.adapter ?? createMemoryPersistenceAdapter()
-  await adapter.open()
-  const registry = createDefaultRegistry()
-  const created = await createNewLibraryGame(adapter, registry)
-  if (!created.ok) throw new Error(created.message)
-  const gameId = created.value.definition.id
+type EditorOptions = UseHostPersistenceOptions & {
+  adapter?: PersistenceAdapter
+  /** Shape the saved draft before the editor opens it (applied, then saved). */
+  prepareDraft?: (draft: AuthoringDraft) => AuthoringDraft
+}
+
+function mountEditor(adapter: PersistenceAdapter, gameId: string, options: EditorOptions = {}) {
   const router = createMemoryRouter(
     [
       { path: '/', element: <p>Home page</p> },
+      { path: '/host', element: <p>Host page</p> },
       {
         path: '/edit/:gameId',
         element: (
@@ -69,11 +72,53 @@ async function renderEditor(options: UseHostPersistenceOptions & { adapter?: Per
     ],
     { initialEntries: [editPath(gameId)] },
   )
-  render(<RouterProvider router={router} />)
+  return render(<RouterProvider router={router} />)
+}
+
+async function renderEditor(options: EditorOptions = {}) {
+  const adapter = options.adapter ?? createMemoryPersistenceAdapter()
+  await adapter.open()
+  const registry = createDefaultRegistry()
+  const created = await createNewLibraryGame(adapter, registry)
+  if (!created.ok) throw new Error(created.message)
+  const gameId = created.value.definition.id
+  if (options.prepareDraft) {
+    const prepared = await saveAuthoringDraftToLibrary(
+      adapter,
+      options.prepareDraft(created.value.draft),
+      registry,
+    )
+    if (!prepared.ok) throw new Error(prepared.message)
+  }
+  const view = mountEditor(adapter, gameId, options)
   await waitFor(() => {
     expect(screen.getByLabelText(/game title/i)).toBeInTheDocument()
   })
-  return { adapter, gameId }
+  return { adapter, gameId, unmount: view.unmount }
+}
+
+/** Every board tile authored; Final left exactly as New Game creates it (empty). */
+function completeBoard(draft: AuthoringDraft): AuthoringDraft {
+  let next = draft
+  for (const category of draft.board.categories) {
+    for (const clue of category.clues) {
+      next = applyDraftCorrection(next, {
+        kind: 'clue-field',
+        categoryOrder: clue.categoryOrder,
+        clueOrder: clue.clueOrder,
+        field: 'prompt',
+        value: `Question ${clue.categoryOrder}-${clue.clueOrder}`,
+      })
+      next = applyDraftCorrection(next, {
+        kind: 'clue-field',
+        categoryOrder: clue.categoryOrder,
+        clueOrder: clue.clueOrder,
+        field: 'answer',
+        value: `Answer ${clue.categoryOrder}-${clue.clueOrder}`,
+      })
+    }
+  }
+  return next
 }
 
 async function stealLeadership(adapter: PersistenceAdapter, clock: ManualClock): Promise<void> {
@@ -395,5 +440,154 @@ describe('M04: Save means the Game is really on the device', () => {
       expect(screen.getByTestId('authoring-save-status')).toHaveTextContent(/save problem/i)
     })
     expect(screen.getByTestId('authoring-save-status')).not.toHaveTextContent(/^saved$/i)
+  })
+})
+
+/**
+ * UIX-O16: the editor told a teacher "This game has the required content and
+ * can be played" for a complete board with an empty Final, which the canonical
+ * import boundary refuses. Readiness shown here must never outrun that boundary.
+ */
+describe('UIX-O16: the editor never claims an incomplete Final can be played', () => {
+  const validation = () => screen.getByTestId('authoring-validation')
+  const play = () => screen.getByRole('button', { name: /^play$/i })
+  const finalQuestion = () => screen.getByLabelText(/final question/i)
+  const finalAnswer = () => screen.getByLabelText(/final canonical answer/i)
+
+  it('names the missing Final content, keeps Save available, and keeps Play unavailable', async () => {
+    await renderEditor({ prepareDraft: completeBoard })
+
+    expect(screen.queryAllByRole('button', { name: /, incomplete$/i })).toHaveLength(0)
+    expect(validation()).not.toHaveTextContent(/can be played/i)
+    expect(validation()).toHaveTextContent(/final still needs a question and an answer/i)
+    expect(validation()).toHaveTextContent(/save and come back/i)
+    expect(play()).toBeDisabled()
+    expect(screen.getByTestId('authoring-save')).toBeEnabled()
+
+    // The diagnostics sit on the fields that need the work, and are announced with them.
+    expect(finalQuestion()).toHaveAttribute('aria-invalid', 'true')
+    expect(finalQuestion()).toHaveAccessibleDescription(/final needs a question/i)
+    expect(finalAnswer()).toHaveAttribute('aria-invalid', 'true')
+    expect(finalAnswer()).toHaveAccessibleDescription(/final needs an answer/i)
+  })
+
+  it('follows partial Final content in both directions with no stale readiness', async () => {
+    await renderEditor({ prepareDraft: completeBoard })
+
+    // Question only: the answer is still a blocker, and only the answer.
+    fireEvent.change(finalQuestion(), { target: { value: 'Name a high cloud.' } })
+    expect(validation()).toHaveTextContent(/final still needs an answer/i)
+    expect(validation()).not.toHaveTextContent(/a question/i)
+    expect(validation()).not.toHaveTextContent(/can be played/i)
+    expect(finalQuestion()).not.toHaveAttribute('aria-invalid', 'true')
+    expect(screen.queryByTestId('final-prompt-help')).not.toBeInTheDocument()
+    expect(screen.getByTestId('final-answer-help')).toBeInTheDocument()
+    expect(play()).toBeDisabled()
+
+    // Both present: the Final diagnostics clear and the ordinary path opens.
+    fireEvent.change(finalAnswer(), { target: { value: 'Cirrus' } })
+    expect(validation()).toHaveTextContent(/can be played/i)
+    expect(screen.queryByTestId('final-prompt-help')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('final-answer-help')).not.toBeInTheDocument()
+    expect(finalAnswer()).not.toHaveAttribute('aria-invalid', 'true')
+
+    // Whitespace is not an answer: the blocker returns and the success claim goes.
+    fireEvent.change(finalAnswer(), { target: { value: '   ' } })
+    expect(validation()).not.toHaveTextContent(/can be played/i)
+    expect(validation()).toHaveTextContent(/final still needs an answer/i)
+    expect(finalAnswer()).toHaveAttribute('aria-invalid', 'true')
+    expect(play()).toBeDisabled()
+
+    // Answer only: the question is the blocker.
+    fireEvent.change(finalAnswer(), { target: { value: 'Cirrus' } })
+    fireEvent.change(finalQuestion(), { target: { value: '' } })
+    expect(validation()).not.toHaveTextContent(/can be played/i)
+    expect(validation()).toHaveTextContent(/final still needs a question/i)
+    expect(validation()).not.toHaveTextContent(/an answer/i)
+    expect(screen.getByTestId('final-prompt-help')).toBeInTheDocument()
+    expect(screen.queryByTestId('final-answer-help')).not.toBeInTheDocument()
+    expect(play()).toBeDisabled()
+  })
+
+  it('saves an incomplete Final as a draft, reopens it intact, and plays once Final is complete', async () => {
+    const { adapter, gameId, unmount } = await renderEditor({ prepareDraft: completeBoard })
+    const registry = createDefaultRegistry()
+
+    fireEvent.change(screen.getByLabelText(/game title/i), { target: { value: 'Cloud Review' } })
+    fireEvent.change(finalQuestion(), { target: { value: 'Name a high cloud.' } })
+    fireEvent.click(screen.getByTestId('authoring-save'))
+    await waitFor(() => {
+      expect(screen.getByTestId('authoring-save-status')).toHaveTextContent(/^saved$/i)
+    })
+    // Saved is not the same claim as playable.
+    expect(validation()).not.toHaveTextContent(/can be played/i)
+    expect(validation()).toHaveTextContent(/final still needs an answer/i)
+    expect(play()).toBeDisabled()
+    const savedIncomplete = await listSavedDefinitions(adapter)
+    if (!savedIncomplete.ok) throw new Error('library could not be listed')
+    expect(savedIncomplete.value.find((entry) => entry.gameId === gameId)).toEqual(
+      expect.objectContaining({ playable: false, title: 'Cloud Review' }),
+    )
+
+    // Leave and come back: same Game, same content, same honest readiness.
+    unmount()
+    // Leaving releases the editor's storage handle asynchronously. Wait for that
+    // release so the reopened editor boots its own handle, as a real revisit does.
+    await waitFor(async () => {
+      expect((await listSavedDefinitions(adapter)).ok).toBe(false)
+    })
+    mountEditor(adapter, gameId)
+    await waitFor(() => {
+      expect(screen.getByLabelText(/game title/i)).toHaveValue('Cloud Review')
+    })
+    expect(finalQuestion()).toHaveValue('Name a high cloud.')
+    expect(finalAnswer()).toHaveValue('')
+    expect(screen.queryAllByRole('button', { name: /, incomplete$/i })).toHaveLength(0)
+    expect(validation()).toHaveTextContent(/final still needs an answer/i)
+    expect(play()).toBeDisabled()
+
+    // Finish Final: the normal Save → playable path works.
+    fireEvent.change(finalAnswer(), { target: { value: 'Cirrus' } })
+    expect(validation()).toHaveTextContent(/can be played/i)
+    fireEvent.click(screen.getByTestId('authoring-save'))
+    await waitFor(() => {
+      expect(screen.getByTestId('authoring-save-status')).toHaveTextContent(/^saved$/i)
+    })
+    await waitFor(() => {
+      expect(play()).toBeEnabled()
+    })
+    const played = await loadDefinition(adapter, gameId, registry)
+    if (!played.ok) throw new Error('saved game could not be read back')
+    expect(played.value.id).toBe(gameId)
+    expect(played.value.rounds.map((round) => round.type)).toEqual(['category-board', 'final-wager'])
+    const savedComplete = await listSavedDefinitions(adapter)
+    if (!savedComplete.ok) throw new Error('library could not be listed')
+    expect(savedComplete.value.find((entry) => entry.gameId === gameId)).toEqual(
+      expect.objectContaining({ playable: true }),
+    )
+  })
+
+  it('does not claim playable for any draft the canonical check refuses', async () => {
+    // Readiness is the canonical check's answer, not only the draft validator's:
+    // a blank game title is refused by the importer though the draft has no blocker.
+    await renderEditor({
+      prepareDraft: (draft) => {
+        let next = completeBoard(draft)
+        next = applyDraftCorrection(next, { kind: 'final-field', field: 'prompt', value: 'Name a high cloud.' })
+        return applyDraftCorrection(next, { kind: 'final-field', field: 'answer', value: 'Cirrus' })
+      },
+    })
+    expect(validation()).toHaveTextContent(/can be played/i)
+    await waitFor(() => {
+      expect(play()).toBeEnabled()
+    })
+
+    fireEvent.change(screen.getByLabelText(/game title/i), { target: { value: '' } })
+    expect(validation()).not.toHaveTextContent(/can be played/i)
+    expect(validation()).toHaveTextContent(/not ready to play/i)
+    expect(play()).toBeDisabled()
+
+    fireEvent.change(screen.getByLabelText(/game title/i), { target: { value: 'Cloud Review' } })
+    expect(validation()).toHaveTextContent(/can be played/i)
   })
 })

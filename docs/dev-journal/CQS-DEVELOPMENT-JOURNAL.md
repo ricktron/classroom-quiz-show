@@ -1245,3 +1245,129 @@ verdict, roadmap state, or implementation authority.
 
 DEV_JOURNAL: ENTRY ADDED — 2026-10-15 Guidance delta harvest: reference evidence and navigation focus
 
+
+---
+
+## 2026-11-13 — UIX-O16 Final authoring readiness repair
+
+### Authorization
+
+`AUTHORIZE-CQS-UIX-O16-FINAL-AUTHORING-READINESS-REPAIR-1`
+
+Starting main: `451c0edc0a7fe11f5aa63138c2eb30b6e7155381`.
+
+### Objective
+
+The in-app editor must never say a Board + Final game "can be played" while its
+required Final content is missing. Incomplete drafts stay saveable. The
+canonical import boundary stays the final authority.
+
+### Observation: the defect, reproduced before repair
+
+Reproduced on a production build of the starting main through ordinary
+controls (New Game, fill all 30 tiles, leave Final empty, Save, Play):
+
+- the editor read "This game has the required content and can be played." and
+  Play was enabled, with both Final fields empty;
+- Host opened with no Class Setup, no board, and no explanation;
+- the browser console was empty. Nothing failed loudly.
+
+The source chain matched the historical `UIX-O16` finding recorded in the
+UI/design qualification journal on
+[PR #193](https://github.com/ricktron/classroom-quiz-show/pull/193):
+`createBlankAuthoringDraft` gives a new game a Final object with empty strings,
+`validateDraftContent` blocked only on an absent Final object, and the
+`final-wager` schema refuses an empty or whitespace-only question or answer.
+
+One detail the historical finding did not carry: the save path swallows the
+refusal by design. `saveAuthoringDraftToLibrary` falls back to "save as an
+unfinished draft" whenever approval or import fails, so the teacher saw
+"Saved" and no error, and the stored draft kept a ready status.
+
+### Observation: the family is wider than Final
+
+Probing the same boundary found other editor-reachable drafts with no draft
+blocker that the importer refuses: a blank game title, a blank category title,
+and a blank team name. Each produced the same false "can be played" line.
+
+### Repair (bounded)
+
+1. Draft validation raises one located blocker per missing Final field
+   (question, answer) on the Board + Final profile. Empty and whitespace-only
+   both count as missing. The compiler uses the same check.
+2. The editor's readiness line and Play control now take their answer from a
+   pure dry run of the one real path (approve, compile, canonical import). The
+   editor cannot call a draft playable that the importer refuses, for any
+   field, without a second validator.
+3. The Final fields carry the diagnostic next to the field, tied to it for
+   assistive technology.
+4. Host shows a short notice with a route back to the editor when a Play
+   request names a saved game that is not playable yet. The reason previously
+   existed only inside the closed More drawer.
+
+Located diagnostics for the sibling fields (title, category title, team name)
+were **not** added. Their readiness claim is now truthful, but the reason is
+shown only as the importer's own wording under Quality notes. That is a
+separate owner decision.
+
+### Follow-up observation: the Host notice had to name the game
+
+The first version of the Host notice read "This game is not ready to play
+yet." A headed walk that carried a leftover class session from one game into a
+Play request for a different, unfinished game showed the notice sitting
+directly above the running game's title and Class Setup. By position it read
+as a statement about the wrong game. The unit test for that path had asserted
+both elements were present; it had not asked what a teacher would take the
+sentence to mean. The notice now names the requested game from that game's own
+saved-library entry, never from the live session.
+
+### Interpretation: why prior evidence missed it
+
+- Every authoring fixture and Playwright helper started from a valid game or
+  filled Final first. No automated journey authored a board and stopped.
+- The readiness line was asserted in two states only: a blank board and a
+  fully valid game. The validator was tested for an absent Final object, never
+  for a present but empty one.
+- Two gates answered the same question (the draft validator and the importer)
+  and only the optimistic one was shown where the teacher works.
+- The failure was silent at every layer, so no error-driven check could see it.
+
+### What caused churn
+
+The first not-ready wording contained the phrase "can be played". Existing
+Playwright helpers read that phrase as the readiness signal, so the new copy
+would have passed a positive readiness check while blocked. Three new tests
+caught it before any browser run. The readiness copy now reserves that phrase
+for the ready state only.
+
+### Candidate reusable lesson
+
+- **A readiness claim should be computed by the boundary it is a claim about.**
+  When a surface says "ready", derive that from the gate that will actually
+  accept or refuse the work, not from a parallel approximation of it.
+- **Give each authoring gate one from-scratch, stops-early journey.** Fixtures
+  that always begin valid cannot reach defects that live in the unfinished
+  state.
+- **A status sentence should name its subject when two subjects can share the
+  screen.** "This game" is only safe where exactly one game can be visible.
+
+These are candidates only. Nothing here is promoted to the lessons register.
+
+### Evidence
+
+- Regression tests: `src/authoring/finalReadiness.test.ts`,
+  `src/library/gameLibrary.test.ts`, `src/routes/AuthoringRoute.test.tsx`,
+  `src/host/FoundationControls.test.tsx`.
+- Browser journeys: `tests/e2e/uix-o16-final-authoring-readiness.spec.ts`.
+- Historical finding: the `UIX-O16` section of
+  `docs/qualification/CQS-UI-DESIGN-QUALIFICATION-JOURNAL.md` on PR #193. That
+  journal and its verdict are historical evidence and were not changed.
+
+### Explicit non-claims
+
+Browser automation and rendered captures only. No physical classroom,
+projector, packaged desktop, or screen-reader evidence. Does not resolve
+`E-01`, `UIX-O01`, or any other finding from the UI/design qualification. Does
+not change Program status, the roadmap, or merge authority.
+
+DEV_JOURNAL: ENTRY ADDED — 2026-11-13 UIX-O16 Final authoring readiness repair

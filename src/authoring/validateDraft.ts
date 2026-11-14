@@ -25,7 +25,7 @@ import {
 } from './limits'
 import { authoringIssue, type AuthoringIssue } from './issues'
 import { draftContentFingerprint } from './fingerprint'
-import type { AuthoringDraft, DraftStatus } from './types'
+import type { AuthoringDraft, DraftFinal, DraftStatus } from './types'
 
 function lengthIssue(
   value: string,
@@ -43,6 +43,52 @@ function lengthIssue(
     )
   }
   return null
+}
+
+/**
+ * Required Final content for the Board + Final profile: one located blocker per
+ * missing field. Empty and whitespace-only text are both "missing", matching the
+ * canonical `final-wager` schema, which stays the final authority.
+ *
+ * Shared by draft validation and the compiler so the two cannot disagree about
+ * what counts as a complete Final.
+ */
+export function finalMissingContentIssues(final: DraftFinal): AuthoringIssue[] {
+  const issues: AuthoringIssue[] = []
+  if (final.prompt.trim().length === 0) {
+    issues.push(
+      authoringIssue(
+        'required-value-missing',
+        'blocker',
+        'draft',
+        'Final needs a question. This game is not ready to play without one.',
+        {
+          sheet: 'FINAL',
+          row: final.provenance.row,
+          a1: final.provenance.a1Prompt,
+          field: 'Prompt',
+          draftPath: 'final.prompt',
+        },
+      ),
+    )
+  }
+  if (final.answer.trim().length === 0) {
+    issues.push(
+      authoringIssue(
+        'required-value-missing',
+        'blocker',
+        'draft',
+        'Final needs an answer. This game is not ready to play without one.',
+        {
+          sheet: 'FINAL',
+          row: final.provenance.row,
+          field: 'Answer',
+          draftPath: 'final.answer',
+        },
+      ),
+    )
+  }
+  return issues
 }
 
 export function computeDraftStatus(issues: readonly AuthoringIssue[]): DraftStatus {
@@ -348,6 +394,10 @@ export function validateDraftContent(draft: AuthoringDraft): AuthoringIssue[] {
         ),
       )
     } else {
+      // A Final object is not Final content. The canonical import boundary
+      // refuses an empty or whitespace-only Final question or answer, so a
+      // draft that still lacks either is saveable but never ready to play.
+      issues.push(...finalMissingContentIssues(draft.final))
       const fp = lengthIssue(draft.final.prompt, MAX_PROMPT_LENGTH, 'Prompt', {
         sheet: 'FINAL',
         row: draft.final.provenance.row,

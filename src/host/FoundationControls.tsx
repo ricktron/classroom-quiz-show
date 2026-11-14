@@ -215,6 +215,21 @@ export function FoundationControls({
     setBuzzersKnownReady(true)
   }, [readyReportedScope, buzzerScope])
   const hasGame = game !== null
+  // UIX-O16: a Play request for a saved Game that is not playable yet loads
+  // nothing. Say so on the Host itself; the only other explanation is the
+  // library list inside More, which stays closed for an ordinary `?play=`.
+  // The notice is about the REQUESTED Game, so it is named from that Game's own
+  // saved-library entry, never from the live session: another Game's title and
+  // Class Setup may be on screen at the same moment.
+  const playTargetNotReadyEntry =
+    playGameId !== null &&
+    persistence.bootPhase === 'ready' &&
+    game?.definition.id !== playGameId
+      ? (persistence.library.find((entry) => entry.gameId === playGameId && !entry.playable) ??
+        null)
+      : null
+  const playTargetNotReady = playTargetNotReadyEntry !== null
+  const playTargetNotReadyTitle = playTargetNotReadyEntry?.title.trim() ?? ''
   /**
    * Whether this window may issue session commands at all: persistence boot has
    * settled AND another window does not own saving. `dispatchSessionCommand`
@@ -622,7 +637,22 @@ export function FoundationControls({
         getHistory={() => store.getHistory()}
       />
 
-      {playReplaceNeeded && (
+      {playTargetNotReady && (
+        <p className="host__note" role="alert" data-testid="play-not-ready">
+          {playTargetNotReadyTitle.length > 0
+            ? `“${playTargetNotReadyTitle}” is not ready to play yet. Open it to finish what is missing.`
+            : 'This game is not ready to play yet. Open it to finish what is missing.'}
+          <Link
+            className="btn"
+            to={editPath(playGameId ?? undefined)}
+            data-testid="play-not-ready-edit"
+          >
+            Edit this game
+          </Link>
+        </p>
+      )}
+
+      {playReplaceNeeded && !playTargetNotReady && (
         <p className="host__note" role="alert" data-testid="play-replace-confirm">
           Loading this game would replace the current class session.
           <button type="button" className="btn" onClick={() => setPlayReplaceArmed(true)}>

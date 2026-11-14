@@ -136,6 +136,85 @@ describe('teacher game library', () => {
     expect(complete.value.definition.rounds.length).toBeGreaterThan(0)
   })
 
+  it('UIX-O16: saves and reopens a draft with an incomplete Final without calling it playable, then plays once Final is complete', async () => {
+    const adapter = createMemoryPersistenceAdapter()
+    await adapter.open()
+    const registry = createDefaultRegistry()
+    const created = await createNewLibraryGame(adapter, registry)
+    expect(created.ok).toBe(true)
+    if (!created.ok) return
+    const gameId = created.value.definition.id
+
+    // Complete the whole board; leave Final with a question but no answer.
+    let draft = applyDraftCorrection(created.value.draft, { kind: 'game-title', title: 'Clouds' })
+    for (const category of draft.board.categories) {
+      for (const clue of category.clues) {
+        draft = applyDraftCorrection(draft, {
+          kind: 'clue-field',
+          categoryOrder: clue.categoryOrder,
+          clueOrder: clue.clueOrder,
+          field: 'prompt',
+          value: `Question ${clue.categoryOrder}-${clue.clueOrder}`,
+        })
+        draft = applyDraftCorrection(draft, {
+          kind: 'clue-field',
+          categoryOrder: clue.categoryOrder,
+          clueOrder: clue.clueOrder,
+          field: 'answer',
+          value: `Answer ${clue.categoryOrder}-${clue.clueOrder}`,
+        })
+      }
+    }
+    draft = applyDraftCorrection(draft, { kind: 'final-field', field: 'prompt', value: 'Name a high cloud.' })
+
+    // An incomplete draft is still saveable.
+    const incomplete = await saveAuthoringDraftToLibrary(adapter, draft, registry)
+    expect(incomplete.ok).toBe(true)
+    if (!incomplete.ok) return
+    expect(incomplete.value.playable).toBe(false)
+    expect(incomplete.value.compiledThisSave).toBe(false)
+
+    // Reopen: same Game, same authored content, and readiness that tells the truth.
+    const reopened = await openLibraryGame(adapter, gameId, registry)
+    expect(reopened.ok).toBe(true)
+    if (!reopened.ok) return
+    expect(reopened.value.summary.playable).toBe(false)
+    expect(reopened.value.draft.game.gameCanonicalId).toBe(gameId)
+    expect(reopened.value.draft.game.title).toBe('Clouds')
+    expect(reopened.value.draft.board).toEqual(draft.board)
+    expect(reopened.value.draft.final).toEqual(draft.final)
+    expect(reopened.value.draft.status).toBe('blocked')
+    expect(
+      reopened.value.draft.issues
+        .filter((issue) => issue.severity === 'blocker')
+        .map((issue) => `${issue.sheet}:${issue.field}`),
+    ).toEqual(['FINAL:Answer'])
+
+    // Correct Final on the reopened draft: it approves, imports, and is playable.
+    const corrected = applyDraftCorrection(reopened.value.draft, {
+      kind: 'final-field',
+      field: 'answer',
+      value: 'Cirrus',
+    })
+    expect(corrected.status).toBe('ready_for_approval')
+    const complete = await saveAuthoringDraftToLibrary(adapter, corrected, registry)
+    expect(complete.ok).toBe(true)
+    if (!complete.ok) return
+    expect(complete.value.playable).toBe(true)
+    expect(complete.value.compiledThisSave).toBe(true)
+    expect(complete.value.definition.id).toBe(gameId)
+    expect(complete.value.definition.rounds.map((round) => round.type)).toEqual([
+      'category-board',
+      'final-wager',
+    ])
+    const listed = await listSavedDefinitions(adapter)
+    expect(listed.ok).toBe(true)
+    if (!listed.ok) return
+    expect(listed.value.filter((entry) => entry.gameId === gameId)).toEqual([
+      expect.objectContaining({ playable: true, title: 'Clouds' }),
+    ])
+  })
+
   it('surfaces an unreadable authoring draft instead of silently dropping it', async () => {
     const adapter = createMemoryPersistenceAdapter()
     await adapter.open()
