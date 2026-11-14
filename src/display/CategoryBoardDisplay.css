@@ -471,7 +471,7 @@
 .cbd__tile--return-orient,
 .cbd__column--clear-ack .cbd__category,
 .cbd--board-enter {
-  box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
+  box-shadow: inset 0 0 0 var(--bw-emphasis) var(--state-active);
 }
 
 .cbd__selection-header--ack,
@@ -512,7 +512,7 @@
   .cbd--board-enter {
     animation: none;
     /* Static inset ring retained — meaning without theatrical motion. */
-    outline: var(--bw-emphasized, 2px) solid var(--state-active);
+    outline: var(--bw-emphasis) solid var(--state-active);
     outline-offset: 2px;
   }
 }
@@ -523,11 +523,11 @@
     background: transparent;
   }
   45% {
-    box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
+    box-shadow: inset 0 0 0 var(--bw-emphasis) var(--state-active);
     background: color-mix(in srgb, var(--state-active) 16%, transparent);
   }
   to {
-    box-shadow: inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active);
+    box-shadow: inset 0 0 0 var(--bw-emphasis) var(--state-active);
     background: color-mix(in srgb, var(--state-active) 10%, transparent);
   }
 }

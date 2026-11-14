@@ -72,7 +72,9 @@
 
 .rth__duration select {
   padding: 0.35rem 0.5rem;
-  min-height: 2.5rem;
+  /* The live timer-length control is a hot-path target: use the shared token
+     rather than a hand-rolled 2.5rem, which rendered 4px under it. */
+  min-height: var(--target-min);
   border-radius: var(--radius);
   border: 1px solid var(--border-panel);
   background: var(--surface-base);

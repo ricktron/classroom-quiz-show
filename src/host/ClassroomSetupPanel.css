@@ -96,8 +96,8 @@
 }
 
 .classroom-setup__row-summary:focus-visible {
-  outline: 2px solid var(--state-accent-strong, currentColor);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 .classroom-setup__row-mark {
@@ -255,14 +255,15 @@ html:has(.classroom-setup__outcome--ready) {
 .classroom-setup__buzzer-reveal-status {
   margin: 0 0 var(--space-3);
   padding: var(--space-2) var(--space-3);
-  border-left: 3px solid var(--accent, #2f6fed);
+  border-left: 3px solid var(--state-accent-strong);
   background: var(--surface-base, transparent);
   font-weight: 600;
 }
 
 .classroom-setup__buzzer-reveal-status:focus {
-  outline: 2px solid var(--focus-ring, var(--accent, #2f6fed));
-  outline-offset: 2px;
+  /* `--focus-ring` is a whole `outline` shorthand, not a colour. */
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 @media (max-width: 900px) {

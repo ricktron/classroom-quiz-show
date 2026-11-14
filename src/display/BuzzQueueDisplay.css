@@ -87,7 +87,7 @@
  */
 .bqd--claim-changed {
   box-shadow:
-    inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active),
+    inset 0 0 0 var(--bw-emphasis) var(--state-active),
     var(--glow-active);
   background: color-mix(in srgb, var(--state-active) 12%, var(--surface-base));
 }
@@ -123,13 +123,13 @@
   }
   45% {
     box-shadow:
-      inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active),
+      inset 0 0 0 var(--bw-emphasis) var(--state-active),
       var(--glow-active);
     background: color-mix(in srgb, var(--state-active) 16%, var(--surface-base));
   }
   to {
     box-shadow:
-      inset 0 0 0 var(--bw-emphasized, 2px) var(--state-active),
+      inset 0 0 0 var(--bw-emphasis) var(--state-active),
       var(--glow-active);
     background: color-mix(in srgb, var(--state-active) 12%, var(--surface-base));
   }

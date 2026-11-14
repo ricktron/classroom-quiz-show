@@ -197,8 +197,18 @@
   color: var(--fg-muted);
 }
 
-/* The confirmation step of an irreversible action. Text carries the meaning. */
-.fwh__confirm {
+/*
+ * The confirmation step of an irreversible action.
+ *
+ * This previously set only `border-color` and `color` at the same specificity
+ * as `.btn`, which sets background, colour AND a transparent border shorthand
+ * — so `.btn` won on cascade order and the armed "end the class session"
+ * confirm rendered as the product's affirmative blue primary, identical to
+ * Play and Mark correct. The intent was written and never painted. Stated as a
+ * complete treatment on a selector that outranks `.btn`.
+ */
+.btn.fwh__confirm {
+  color: var(--fg-on-danger);
+  background: var(--state-danger);
   border-color: var(--state-danger);
-  color: var(--state-danger);
 }

@@ -289,6 +289,17 @@ export function TeamScoringPanel({
                 setError(null)
               }}
             />
+            {/*
+              * The same swatch the team list above uses. Colour stays strictly
+              * redundant — the name and the score carry the identity — but the
+              * control that decides where points land was the one place a team
+              * appeared without the colour the teacher has been tracking on the
+              * scoreboard, the projector and the buzzers.
+              */}
+            <span
+              className={`tsp__swatch ${teamAccentClass(team.accent)}`}
+              aria-hidden="true"
+            />
             <span>
               {displayName(team.id)} ({teamScoreFor(game, team.id)})
             </span>
@@ -564,7 +575,15 @@ function TilePresetButton({
   return (
     <button
       type="button"
-      className="btn"
+      /*
+       * Award is the affirmative primary; Deduct is the same action in the
+       * opposite direction and must not compete for that rank. Rendering both
+       * as filled primaries meant that once Award disabled itself after an
+       * award, Deduct became the single loudest enabled control in the panel —
+       * pointing an interrupted teacher at the one press that takes the points
+       * away again, with Undo sitting quieter and further down.
+       */
+      className={mode === 'deduction' ? 'btn btn--secondary' : 'btn'}
       data-testid={testId}
       disabled={disabled}
       aria-label={accessibleName}

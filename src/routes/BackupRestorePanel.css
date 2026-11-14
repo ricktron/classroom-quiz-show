@@ -18,7 +18,7 @@
 }
 
 .backup-restore__summary-hint {
-  color: var(--text-muted, #5c6570);
+  color: var(--fg-muted);
   font-size: 0.95rem;
 }
 
@@ -67,7 +67,7 @@
 .backup-restore__issues {
   margin: 0;
   padding-left: 1.25rem;
-  color: var(--text-danger, #8a1f1f);
+  color: var(--state-danger);
 }
 
 .backup-restore__status {
